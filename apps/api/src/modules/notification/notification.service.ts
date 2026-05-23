@@ -57,6 +57,50 @@ export interface Notification {
   createdAt: string;
 }
 
+interface NotificationPreferenceRecord {
+  readinessInAppSurface: boolean;
+  readinessRedisNotificationFeed: boolean;
+  readinessRemotePush: boolean;
+  readinessEmail: boolean;
+  updatedAt?: Date | string | null;
+}
+
+export interface NotificationPreferences {
+  source: 'default' | 'user';
+  readiness: {
+    inAppSurface: boolean;
+    redisNotificationFeed: boolean;
+    remotePush: boolean;
+    email: boolean;
+  };
+  updatedAt: string | null;
+}
+
+export interface UpdateNotificationPreferencesInput {
+  readinessInAppSurface?: boolean;
+  readinessRedisNotificationFeed?: boolean;
+  readinessRemotePush?: boolean;
+  readinessEmail?: boolean;
+}
+
+export type ReadinessLiveChannel =
+  | 'redis_notification_feed'
+  | 'remote_push'
+  | 'email';
+
+export interface ReadinessLiveChannelConsent {
+  preferences: NotificationPreferences;
+  channels: Record<
+    ReadinessLiveChannel,
+    {
+      allowed: boolean;
+      preference: boolean;
+      reason: string;
+      pushTokenCount?: number;
+    }
+  >;
+}
+
 const NOTIFICATION_TEMPLATES: Record<
   NotificationType,
   { title: string; content: string }
@@ -240,6 +284,77 @@ export class NotificationService {
     );
   }
 
+  async getPreferences(userId: string): Promise<NotificationPreferences> {
+    const preference = (await this.preferenceModel.findUnique({
+      where: { userId },
+    })) as NotificationPreferenceRecord | null;
+    return this.toPreferenceView(preference, preference ? 'user' : 'default');
+  }
+
+  async updatePreferences(
+    userId: string,
+    input: UpdateNotificationPreferencesInput,
+  ): Promise<NotificationPreferences> {
+    const data = {
+      ...(input.readinessInAppSurface !== undefined && {
+        readinessInAppSurface: input.readinessInAppSurface,
+      }),
+      ...(input.readinessRedisNotificationFeed !== undefined && {
+        readinessRedisNotificationFeed: input.readinessRedisNotificationFeed,
+      }),
+      ...(input.readinessRemotePush !== undefined && {
+        readinessRemotePush: input.readinessRemotePush,
+      }),
+      ...(input.readinessEmail !== undefined && {
+        readinessEmail: input.readinessEmail,
+      }),
+    };
+
+    const preference = (await this.preferenceModel.upsert({
+      where: { userId },
+      create: { userId, ...data },
+      update: data,
+    })) as NotificationPreferenceRecord;
+    return this.toPreferenceView(preference, 'user');
+  }
+
+  async getReadinessLiveChannelConsent(
+    userId: string,
+  ): Promise<ReadinessLiveChannelConsent> {
+    const preferences = await this.getPreferences(userId);
+    const pushTokens = await this.getValidExpoPushTokens(userId);
+    const hasUserPreferences = preferences.source === 'user';
+
+    return {
+      preferences,
+      channels: {
+        redis_notification_feed: this.toReadinessChannelConsent(
+          preferences.readiness.redisNotificationFeed,
+          hasUserPreferences,
+        ),
+        remote_push: {
+          ...this.toReadinessChannelConsent(
+            preferences.readiness.remotePush,
+            hasUserPreferences,
+          ),
+          allowed:
+            hasUserPreferences &&
+            preferences.readiness.remotePush &&
+            pushTokens.length > 0,
+          reason: this.getReadinessRemotePushReason(
+            preferences,
+            pushTokens.length,
+          ),
+          pushTokenCount: pushTokens.length,
+        },
+        email: this.toReadinessChannelConsent(
+          preferences.readiness.email,
+          hasUserPreferences,
+        ),
+      },
+    };
+  }
+
   /**
    * 监听离线消息事件，自动创建通知
    */
@@ -407,10 +522,63 @@ export class NotificationService {
     return `${this.PUSH_TOKEN_KEY_PREFIX}${userId}`;
   }
 
+  private get preferenceModel() {
+    return (this.prisma as unknown as Record<string, any>)
+      .userNotificationPreference;
+  }
+
+  private toPreferenceView(
+    preference: NotificationPreferenceRecord | null,
+    source: NotificationPreferences['source'],
+  ): NotificationPreferences {
+    return {
+      source,
+      readiness: {
+        inAppSurface: preference?.readinessInAppSurface ?? true,
+        redisNotificationFeed:
+          preference?.readinessRedisNotificationFeed ?? false,
+        remotePush: preference?.readinessRemotePush ?? false,
+        email: preference?.readinessEmail ?? false,
+      },
+      updatedAt: preference?.updatedAt
+        ? new Date(preference.updatedAt).toISOString()
+        : null,
+    };
+  }
+
+  private async getValidExpoPushTokens(userId: string): Promise<string[]> {
+    return (await this.redis.smembers(this.getPushTokenKey(userId))).filter(
+      (token) => token.startsWith('ExponentPushToken['),
+    );
+  }
+
+  private toReadinessChannelConsent(
+    preference: boolean,
+    hasUserPreferences: boolean,
+  ) {
+    return {
+      allowed: hasUserPreferences && preference,
+      preference,
+      reason: hasUserPreferences
+        ? preference
+          ? 'user_opted_in'
+          : 'user_opted_out'
+        : 'default_opt_out',
+    };
+  }
+
+  private getReadinessRemotePushReason(
+    preferences: NotificationPreferences,
+    pushTokenCount: number,
+  ): string {
+    if (preferences.source !== 'user') return 'default_opt_out';
+    if (!preferences.readiness.remotePush) return 'user_opted_out';
+    if (pushTokenCount === 0) return 'missing_push_token';
+    return 'user_opted_in_with_push_token';
+  }
+
   private async sendRemotePush(notification: Notification): Promise<void> {
-    const pushTokens = (
-      await this.redis.smembers(this.getPushTokenKey(notification.userId))
-    ).filter((token) => token.startsWith('ExponentPushToken['));
+    const pushTokens = await this.getValidExpoPushTokens(notification.userId);
 
     if (pushTokens.length === 0) {
       return;

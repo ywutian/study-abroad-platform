@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-05-21T10:40:01.325Z",
+  "mode": "read-only-essay-prompt-source-manual-check",
+  "status": "BLOCKED_MANUAL_CHECK_INPUTS_MISSING",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "missingInputs": [
+    {
+      "input": "--campaign",
+      "reason": "campaign report is missing"
+    }
+  ],
+  "summary": {
+    "checkedUrls": 0,
+    "blockedRows": 1
+  },
+  "rows": []
+}

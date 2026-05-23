@@ -53,24 +53,74 @@ export class TimelineToolsService implements IToolHandlerProvider {
       };
     }
 
-    const schools = await this.prisma.school.findMany({
-      where: { id: { in: schoolIds } },
-      select: { name: true, nameZh: true, metadata: true },
+    const normalizedRound = round?.trim().toUpperCase();
+    const applicationYear = this.getCurrentApplicationYear();
+    const deadlineRows = await this.prisma.schoolDeadline.findMany({
+      where: {
+        schoolId: { in: schoolIds },
+        year: applicationYear,
+        source: { not: 'MANUAL' },
+        notes: { contains: 'source:' },
+        ...(normalizedRound ? { round: normalizedRound } : {}),
+      },
+      orderBy: [{ school: { name: 'asc' } }, { applicationDeadline: 'asc' }],
+      select: {
+        round: true,
+        year: true,
+        applicationDeadline: true,
+        financialAidDeadline: true,
+        decisionDate: true,
+        source: true,
+        notes: true,
+        school: { select: { name: true, nameZh: true } },
+      },
     });
 
-    const deadlines = schools.map((s) => {
-      const metadata = (s.metadata as any) || {};
-      const allDeadlines = metadata.deadlines || {};
+    const bySchool = new Map<
+      string,
+      {
+        school: string;
+        deadlines: Record<
+          string,
+          {
+            date: string;
+            year: number;
+            source: string;
+            sourceUrl: string | null;
+            financialAidDeadline: string | null;
+            decisionDate: string | null;
+          }
+        >;
+        sourcePolicy: string;
+      }
+    >();
 
-      return {
-        school: this.schoolLookup.displayName(s, locale),
-        deadlines: round
-          ? { [round]: allDeadlines[round.toLowerCase()] }
-          : allDeadlines,
+    for (const row of deadlineRows) {
+      const schoolName = this.schoolLookup.displayName(row.school, locale);
+      const bucket = bySchool.get(schoolName) ?? {
+        school: schoolName,
+        deadlines: {},
+        sourcePolicy: 'source_backed_current_year_deadlines',
       };
-    });
+      bucket.deadlines[row.round] = {
+        date: row.applicationDeadline.toISOString(),
+        year: row.year,
+        source: row.source,
+        sourceUrl: this.extractSourceUrl(row.notes),
+        financialAidDeadline: row.financialAidDeadline?.toISOString() ?? null,
+        decisionDate: row.decisionDate?.toISOString() ?? null,
+      };
+      bySchool.set(schoolName, bucket);
+    }
 
-    return { deadlines };
+    return {
+      applicationYear,
+      sourcePolicy:
+        deadlineRows.length > 0
+          ? 'source_backed_current_year_deadlines'
+          : 'no_source_backed_current_year_deadlines',
+      deadlines: Array.from(bySchool.values()),
+    };
   }
 
   async createTimeline(
@@ -136,6 +186,16 @@ Return in JSON format:
     );
 
     return extractJsonFromLlm(result, 'timeline');
+  }
+
+  private getCurrentApplicationYear(now = new Date()) {
+    return now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
+  }
+
+  private extractSourceUrl(notes?: string | null): string | null {
+    if (!notes) return null;
+    const match = /source:\s*(https?:\/\/\S+)/i.exec(notes);
+    return match ? match[1] : null;
   }
 
   async getPersonalEvents(userId: string, category?: string, locale = 'zh') {

@@ -1,0 +1,9 @@
+rowKind,id,status,summary,missing,approvalRequestId,essayPromptId,schoolId,schoolName,applicationYear,sourceType,sourceQuality,sourceUrl,confidence,rawContentSha256,approvalRequired,schemaBlocksWrite,idempotencyKey
+check,review_queue_consumer_policy_present,pass,Reviewer queue rows must carry consumer-hide policy before approval monitoring.,,,,,,,,,,,,,,
+check,review_action_present_and_consumer_gate_open,pass,Reviewer action packet should exist while public/timeline consumers remain source-gated.,,,,,,,,,,,,,,
+check,approval_request_rows_pending,pass,Approval gate should expose reviewer handoff rows without approving write workflow.,,,,,,,,,,,,,,
+check,write_plan_non_writeable_pending_candidates,pass,Write plan must carry pending approval rows as non-writeable preflight candidates.,,,,,,,,,,,,,,
+check,approval_write_plan_alignment,pass,Approval request rows and deduplicated write-plan pending candidates should align.,,,,,,,,,,,,,,
+check,db_schema_still_blocks_essay_source_writes,pass,The monitor must preserve the global DB schema blocker instead of creating write permission.,,,,,,,,,,,,,,
+check,monitor_rows_hash_only,pass,"Monitor rows must carry raw-content hashes only, never raw source bodies.",,,,,,,,,,,,,,
+check,consumer_policy_remains_hidden,pass,Essay public/timeline/chat consumers must remain hidden until source rows exist and the audit is rerun.,,,,,,,,,,,,,,

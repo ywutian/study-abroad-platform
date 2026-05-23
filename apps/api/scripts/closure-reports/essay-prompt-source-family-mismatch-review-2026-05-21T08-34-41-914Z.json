@@ -1,0 +1,224 @@
+{
+  "generatedAt": "2026-05-21T08:34:41.912Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-iowa-latest.json",
+      "generatedAt": "2026-05-21T08:34:29.578Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_review",
+        "reason": "University of Iowa has 1 manually checked source URLs with prompt matches; stage source rows for reviewer approval.",
+        "schoolId": "cmnwr8in0000mz0tiria7qm89",
+        "schoolName": "University of Iowa",
+        "recommendedAction": "stage-source-row-for-review"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8in0000mz0tiria7qm89",
+    "schoolName": "University of Iowa",
+    "sourceSearchPromptRows": 3,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": true,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 8,
+    "reachableHtmlUrls": 8,
+    "validatedSourceUrls": 1,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 1,
+    "officialContextNoPromptMatchUrls": 4,
+    "promptMatchCount": 1,
+    "promptRows": 3,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 2,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of Iowa has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8in0000mz0tiria7qm89",
+    "schoolName": "University of Iowa",
+    "topEssayPromptId": "cmor8bqx900e31jbwvervlm7d",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor8bqx900e31jbwvervlm7d",
+      "schoolId": "cmnwr8in0000mz0tiria7qm89",
+      "schoolName": "University of Iowa",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor8bqx900e31jbwvervlm7d",
+      "promptSnippet": "At the University of Iowa, we expect our students to be engaged academically, intellectually, and personally. Please describe how one or more of your activities (personal, academic",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply",
+          "https://admissions.uiowa.edu/apply-now",
+          "https://www.commonapp.org/explore/university-iowa",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://blog.collegevine.com/how-to-write-the-pomona-college-essays-2019-2020/"
+        ],
+        "finalUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "https://admissions.uiowa.edu/apply-now",
+          "https://www.commonapp.org/explore/university-iowa/",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://blog.collegevine.com/how-to-write-the-pomona-college-essays-2019-2020/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-pomona-college-essays-2019-2020/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "e Apply How to Apply First Year Admissions First-Year Admissions Main navigation First Year Admissions Transfer Admissions International Admissions Additional Admission Options How to Apply Submit your application . You can apply through the University of Iowa application or the Common Application (fall session only). We make admission decisions on a rolling basis beginning in September based on college-specific admission requirements . Pay the application fee. The $55 application fee is non-refundable ( fee waiver available ). Have your ACT or SAT scores sent by the testing agency. Our institution code is 1356 for the ACT; 6681 for the SAT. We do not require the optional science section of the ACT. If you are providing a score for ACT tests taken after September 2025, ACT will calculate a composite score using the English, Math, and Reading sections. We will not recalculate a new composite score if you have a science subscore. Superscores will not be used for admission or scholarship consideration. No",
+          "common application",
+          "fe and Housing Housing Options Student Organizations Visit Campus Contact Us Breadcrumb Home Apply Now First-year students Students currently in high school or high school graduates that haven't yet enrolled at another higher education institution. University of Iowa application Common application Requirements Transfer students Students who begin their academic career through coursework or a degree at one institution, and then decide to transfer to Iowa to finish their education. University of Iowa application Requirements International students Students who are not US citizens or US permanent residents, or students who are refugees, asylees, temporary visa holders, or require a visa. First-year students for fall: Common application Requirements First-year students for spring: University of Iowa application Requirements Transfer students: University of Iowa application Requirements Graduate and professional students Students (international or domestic) who have an undergraduate bachelor's degree and wis",
+          "Phone number (319) 335-3847 For first-year students Admissions website admissions.uiowa.edu/apply/how-apply/ Financial aid website financialaid.uiowa.edu/ Region Midwest View more in this region Follow University of Iowa Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "latform for substantial content or using a platform’s output constitute application fraud. Such applications may be declined for admissions to the Honors Program or the revocation of admissions. To ensure the integrity of the admissions process, the Honors Program adheres to the Common Application’s Policy on Application Fraud and requires applicants to confirm that all information submitted is the applicant’s own work, is factually true, and has not used any artificial intelligence platform for content or output. Your Transcript You must have a pdf of your unofficial transcript that you, yourself, will upload into the honors application. This is in addition to the official transcript your high school will need to send to the University for admission and other purposes. It takes time to obtain a copy of your high school transcript so give yourself at least two to three weeks before the application deadline. Your transcript needs to include your senior year classes. Transfer students - we will need your",
+          "Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion?",
+          "l walk you through how to tackle each and every one of Pomona’s supplements. In doing so, our hope is that your application will shine! Want to know your chances at Pomona? Calculate your chances for free right now. How to Write the Pomona Supplements For students submitting the Common Application, Pomona requires three additional short essays. Applicants will choose to answer two of three questions for Prompt 1, in responses of 200-250 words. They will also be required to explain their academic interest selections (300 words) in the “Academics” tab of the Pomona supplement. There is also an optional 50-word essay for any aspects not captured in the rest of your application, and an optional personal statement for the Theatre Program. Prompt 1 (Required) Option A: Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion? Option B: Share your favorite quote, and tell us what it means to you. The quote can be from an"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxkzda00eteiz6ozsifgpr",
+      "schoolId": "cmnwr8in0000mz0tiria7qm89",
+      "schoolName": "University of Iowa",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkzda00eteiz6ozsifgpr",
+      "promptSnippet": "In 250 words or less, please briefly describe your academic interests and your reasons for wanting to study at the University of Iowa.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply",
+          "https://admissions.uiowa.edu/apply-now",
+          "https://www.commonapp.org/explore/university-iowa",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://blog.collegevine.com/how-to-write-the-pomona-college-essays-2019-2020/"
+        ],
+        "finalUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "https://admissions.uiowa.edu/apply-now",
+          "https://www.commonapp.org/explore/university-iowa/",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://blog.collegevine.com/how-to-write-the-pomona-college-essays-2019-2020/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-pomona-college-essays-2019-2020/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "e Apply How to Apply First Year Admissions First-Year Admissions Main navigation First Year Admissions Transfer Admissions International Admissions Additional Admission Options How to Apply Submit your application . You can apply through the University of Iowa application or the Common Application (fall session only). We make admission decisions on a rolling basis beginning in September based on college-specific admission requirements . Pay the application fee. The $55 application fee is non-refundable ( fee waiver available ). Have your ACT or SAT scores sent by the testing agency. Our institution code is 1356 for the ACT; 6681 for the SAT. We do not require the optional science section of the ACT. If you are providing a score for ACT tests taken after September 2025, ACT will calculate a composite score using the English, Math, and Reading sections. We will not recalculate a new composite score if you have a science subscore. Superscores will not be used for admission or scholarship consideration. No",
+          "common application",
+          "fe and Housing Housing Options Student Organizations Visit Campus Contact Us Breadcrumb Home Apply Now First-year students Students currently in high school or high school graduates that haven't yet enrolled at another higher education institution. University of Iowa application Common application Requirements Transfer students Students who begin their academic career through coursework or a degree at one institution, and then decide to transfer to Iowa to finish their education. University of Iowa application Requirements International students Students who are not US citizens or US permanent residents, or students who are refugees, asylees, temporary visa holders, or require a visa. First-year students for fall: Common application Requirements First-year students for spring: University of Iowa application Requirements Transfer students: University of Iowa application Requirements Graduate and professional students Students (international or domestic) who have an undergraduate bachelor's degree and wis",
+          "Phone number (319) 335-3847 For first-year students Admissions website admissions.uiowa.edu/apply/how-apply/ Financial aid website financialaid.uiowa.edu/ Region Midwest View more in this region Follow University of Iowa Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "latform for substantial content or using a platform’s output constitute application fraud. Such applications may be declined for admissions to the Honors Program or the revocation of admissions. To ensure the integrity of the admissions process, the Honors Program adheres to the Common Application’s Policy on Application Fraud and requires applicants to confirm that all information submitted is the applicant’s own work, is factually true, and has not used any artificial intelligence platform for content or output. Your Transcript You must have a pdf of your unofficial transcript that you, yourself, will upload into the honors application. This is in addition to the official transcript your high school will need to send to the University for admission and other purposes. It takes time to obtain a copy of your high school transcript so give yourself at least two to three weeks before the application deadline. Your transcript needs to include your senior year classes. Transfer students - we will need your",
+          "Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion?",
+          "l walk you through how to tackle each and every one of Pomona’s supplements. In doing so, our hope is that your application will shine! Want to know your chances at Pomona? Calculate your chances for free right now. How to Write the Pomona Supplements For students submitting the Common Application, Pomona requires three additional short essays. Applicants will choose to answer two of three questions for Prompt 1, in responses of 200-250 words. They will also be required to explain their academic interest selections (300 words) in the “Academics” tab of the Pomona supplement. There is also an optional 50-word essay for any aspects not captured in the rest of your application, and an optional personal statement for the Theatre Program. Prompt 1 (Required) Option A: Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion? Option B: Share your favorite quote, and tell us what it means to you. The quote can be from an"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

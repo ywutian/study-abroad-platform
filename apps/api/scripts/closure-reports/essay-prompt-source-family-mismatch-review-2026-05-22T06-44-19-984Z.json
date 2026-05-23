@@ -1,0 +1,403 @@
+{
+  "generatedAt": "2026-05-22T06:44:19.983Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-william-mary-latest.json",
+      "generatedAt": "2026-05-22T06:42:45.437Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "William & Mary has untrusted prompt matches but official prompt-context pages did not match assigned prompt snippets; review source family before approval.",
+        "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+        "schoolName": "William & Mary",
+        "recommendedAction": "review-untrusted-context-or-find-official-source"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+    "schoolName": "William & Mary",
+    "sourceSearchPromptRows": 4,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 10,
+    "reachableHtmlUrls": 9,
+    "validatedSourceUrls": 3,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 3,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 1,
+    "promptMatchCount": 9,
+    "promptRows": 4,
+    "matchedPromptRows": 4,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 4,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 3,
+    "terminalCandidateRows": 0,
+    "reviewRows": 4,
+    "byMismatchDisposition": {
+      "review_untrusted_source_or_official_conflict": 4
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 4
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "William & Mary has 4 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+    "schoolName": "William & Mary",
+    "topEssayPromptId": "cmorwo0da00cfnoojoxgamkub",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorwo0da00cfnoojoxgamkub",
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwo0da00cfnoojoxgamkub",
+      "promptSnippet": "Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual.",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-and-mary-essays/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2024",
+          "2029"
+        ],
+        "evidenceSnippets": [
+          "Financial aid website www.wm.edu/admission/financialaid/ Guaranteed admission website www.wm.edu/admission/ca-vccs Undocumented or DACA students www.wm.edu/admission/ca-daca Region South View more in this region Follow William & Mary Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual.",
+          "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+          "lliam & Mary education, it’s no surprise that gaining admission here is competitive. On top of impressive grades and extracurriculars, you will also need unique and compelling essays to set you apart from the crowd. So, although this institution doesn’t require you to submit any supplemental essays, we strongly encourage you to do so, and in this post will explain in detail how to ensure your responses are effective. Want to get personalized odds of acceptance at William & Mary? Calculate your chances for free right now! College of William & Mary Supplemental Essay Prompts All Applicants Prompt: William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspectives and seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share a",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as a form of show and tell by proxy. (300 words each) Option A: Are there any particular communities that are important to you, and how do you see yourself being a part of our community? Option B: Share more about a personal academic interest or career goal. Option C: How has your family, culture, and/or background shaped your lived experience? Option D: What led to your interest in William & Mary? Option E: Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. Option F: If we visited your town, what would you want to show us? St. Andrews Joint Degree Program Applicants As an applicant to the Joint Degree Programme , you ar",
+          "ist, and that you’ll be ready to hit the ground running as soon as you arrive on campus. All Applicants, Option E (optional) Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. (300 words) This prompt is similar to the second Common Application prompt on overcoming challenges , so if you already picked that prompt for your Common App essay, maybe don’t choose it again for your supplement. If you haven’t written about a challenge yet, though, this prompt could be a good choice. Whereas most prompts asking about a challenge will ask you how you overcame it, this one does not. Instead, it simply wants to hear about the impact adversity had on you. While you can write about the impact in terms of overcoming the challenge, you aren’t limited to discussing a challenge that you conquered. You can just as easily choose a challenge that persists in your life and explain how you’ve learned to cope with it. If you are choosing a challenge that you didn’t overco",
+          "supplemental essays",
+          "Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself, you should take it, so we recommend drafting that second essay. Keep reading to learn how to write winning W&M essays! William & Mary Essay Prompt Breakdowns Willia",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as show and tell by proxy. (300 words each) Are there any particular communities that are important to you, and how do you see yourself being a part of our community? This is a classic Community Essay, through and through. Tell admissions about a community you are a part of and what significance it holds in your life. Then think about how your involvement in that community will impact the way you show up at W&M. What you address can be a larger cultural community—think race, sexuality, religion—or as specific as your after-school knitting club. Address the role that your community plays in your life, then consider why your particular background or experience within this comm",
+          "ollege of William &#038; Mary 2025-26 Supplemental Essay Prompt Guide No Time To Lose! The College of William and Mary Deadline Countdown is on: Regular Decision Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself"
+        ],
+        "officialContextNoPromptMatchUrls": 1,
+        "promptMatchCount": 9
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorwo0d600cdnoojvcdg0qkp",
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwo0d600cdnoojvcdg0qkp",
+      "promptSnippet": "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-and-mary-essays/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2024",
+          "2029"
+        ],
+        "evidenceSnippets": [
+          "Financial aid website www.wm.edu/admission/financialaid/ Guaranteed admission website www.wm.edu/admission/ca-vccs Undocumented or DACA students www.wm.edu/admission/ca-daca Region South View more in this region Follow William & Mary Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual.",
+          "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+          "lliam & Mary education, it’s no surprise that gaining admission here is competitive. On top of impressive grades and extracurriculars, you will also need unique and compelling essays to set you apart from the crowd. So, although this institution doesn’t require you to submit any supplemental essays, we strongly encourage you to do so, and in this post will explain in detail how to ensure your responses are effective. Want to get personalized odds of acceptance at William & Mary? Calculate your chances for free right now! College of William & Mary Supplemental Essay Prompts All Applicants Prompt: William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspectives and seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share a",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as a form of show and tell by proxy. (300 words each) Option A: Are there any particular communities that are important to you, and how do you see yourself being a part of our community? Option B: Share more about a personal academic interest or career goal. Option C: How has your family, culture, and/or background shaped your lived experience? Option D: What led to your interest in William & Mary? Option E: Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. Option F: If we visited your town, what would you want to show us? St. Andrews Joint Degree Program Applicants As an applicant to the Joint Degree Programme , you ar",
+          "ist, and that you’ll be ready to hit the ground running as soon as you arrive on campus. All Applicants, Option E (optional) Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. (300 words) This prompt is similar to the second Common Application prompt on overcoming challenges , so if you already picked that prompt for your Common App essay, maybe don’t choose it again for your supplement. If you haven’t written about a challenge yet, though, this prompt could be a good choice. Whereas most prompts asking about a challenge will ask you how you overcame it, this one does not. Instead, it simply wants to hear about the impact adversity had on you. While you can write about the impact in terms of overcoming the challenge, you aren’t limited to discussing a challenge that you conquered. You can just as easily choose a challenge that persists in your life and explain how you’ve learned to cope with it. If you are choosing a challenge that you didn’t overco",
+          "supplemental essays",
+          "Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself, you should take it, so we recommend drafting that second essay. Keep reading to learn how to write winning W&M essays! William & Mary Essay Prompt Breakdowns Willia",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as show and tell by proxy. (300 words each) Are there any particular communities that are important to you, and how do you see yourself being a part of our community? This is a classic Community Essay, through and through. Tell admissions about a community you are a part of and what significance it holds in your life. Then think about how your involvement in that community will impact the way you show up at W&M. What you address can be a larger cultural community—think race, sexuality, religion—or as specific as your after-school knitting club. Address the role that your community plays in your life, then consider why your particular background or experience within this comm",
+          "ollege of William &#038; Mary 2025-26 Supplemental Essay Prompt Guide No Time To Lose! The College of William and Mary Deadline Countdown is on: Regular Decision Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself"
+        ],
+        "officialContextNoPromptMatchUrls": 1,
+        "promptMatchCount": 9
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorw3nbg00clrazuruyo7d2h",
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorw3nbg00clrazuruyo7d2h",
+      "promptSnippet": "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-and-mary-essays/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2024",
+          "2029"
+        ],
+        "evidenceSnippets": [
+          "Financial aid website www.wm.edu/admission/financialaid/ Guaranteed admission website www.wm.edu/admission/ca-vccs Undocumented or DACA students www.wm.edu/admission/ca-daca Region South View more in this region Follow William & Mary Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual.",
+          "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+          "lliam & Mary education, it’s no surprise that gaining admission here is competitive. On top of impressive grades and extracurriculars, you will also need unique and compelling essays to set you apart from the crowd. So, although this institution doesn’t require you to submit any supplemental essays, we strongly encourage you to do so, and in this post will explain in detail how to ensure your responses are effective. Want to get personalized odds of acceptance at William & Mary? Calculate your chances for free right now! College of William & Mary Supplemental Essay Prompts All Applicants Prompt: William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspectives and seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share a",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as a form of show and tell by proxy. (300 words each) Option A: Are there any particular communities that are important to you, and how do you see yourself being a part of our community? Option B: Share more about a personal academic interest or career goal. Option C: How has your family, culture, and/or background shaped your lived experience? Option D: What led to your interest in William & Mary? Option E: Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. Option F: If we visited your town, what would you want to show us? St. Andrews Joint Degree Program Applicants As an applicant to the Joint Degree Programme , you ar",
+          "ist, and that you’ll be ready to hit the ground running as soon as you arrive on campus. All Applicants, Option E (optional) Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. (300 words) This prompt is similar to the second Common Application prompt on overcoming challenges , so if you already picked that prompt for your Common App essay, maybe don’t choose it again for your supplement. If you haven’t written about a challenge yet, though, this prompt could be a good choice. Whereas most prompts asking about a challenge will ask you how you overcame it, this one does not. Instead, it simply wants to hear about the impact adversity had on you. While you can write about the impact in terms of overcoming the challenge, you aren’t limited to discussing a challenge that you conquered. You can just as easily choose a challenge that persists in your life and explain how you’ve learned to cope with it. If you are choosing a challenge that you didn’t overco",
+          "supplemental essays",
+          "Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself, you should take it, so we recommend drafting that second essay. Keep reading to learn how to write winning W&M essays! William & Mary Essay Prompt Breakdowns Willia",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as show and tell by proxy. (300 words each) Are there any particular communities that are important to you, and how do you see yourself being a part of our community? This is a classic Community Essay, through and through. Tell admissions about a community you are a part of and what significance it holds in your life. Then think about how your involvement in that community will impact the way you show up at W&M. What you address can be a larger cultural community—think race, sexuality, religion—or as specific as your after-school knitting club. Address the role that your community plays in your life, then consider why your particular background or experience within this comm",
+          "ollege of William &#038; Mary 2025-26 Supplemental Essay Prompt Guide No Time To Lose! The College of William and Mary Deadline Countdown is on: Regular Decision Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself"
+        ],
+        "officialContextNoPromptMatchUrls": 1,
+        "promptMatchCount": 9
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorwcmcq00d944lk7bgg0q90",
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwcmcq00d944lk7bgg0q90",
+      "promptSnippet": "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/william-mary/",
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-and-mary-essays/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-college-of-william-mary-essay-2021-2022",
+          "https://www.collegeessayadvisors.com/supplemental-essay/college-of-william-mary-2019-20-supplemental-essay-prompt-guide/",
+          "https://www.koppelmangroup.com/blog/2025/8/29/how-to-write-the-william-and-mary-supplement-2025-2026"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2024",
+          "2029"
+        ],
+        "evidenceSnippets": [
+          "Financial aid website www.wm.edu/admission/financialaid/ Guaranteed admission website www.wm.edu/admission/ca-vccs Undocumented or DACA students www.wm.edu/admission/ca-daca Region South View more in this region Follow William & Mary Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual.",
+          "William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspec",
+          "lliam & Mary education, it’s no surprise that gaining admission here is competitive. On top of impressive grades and extracurriculars, you will also need unique and compelling essays to set you apart from the crowd. So, although this institution doesn’t require you to submit any supplemental essays, we strongly encourage you to do so, and in this post will explain in detail how to ensure your responses are effective. Want to get personalized odds of acceptance at William & Mary? Calculate your chances for free right now! College of William & Mary Supplemental Essay Prompts All Applicants Prompt: William & Mary is a community that fosters deep human connection. We reflect on the lessons of history to meet the challenges of a rapidly changing world. We engage diverse perspectives and seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share a",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as a form of show and tell by proxy. (300 words each) Option A: Are there any particular communities that are important to you, and how do you see yourself being a part of our community? Option B: Share more about a personal academic interest or career goal. Option C: How has your family, culture, and/or background shaped your lived experience? Option D: What led to your interest in William & Mary? Option E: Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. Option F: If we visited your town, what would you want to show us? St. Andrews Joint Degree Program Applicants As an applicant to the Joint Degree Programme , you ar",
+          "ist, and that you’ll be ready to hit the ground running as soon as you arrive on campus. All Applicants, Option E (optional) Tell us about a challenge or adversity you’ve experienced and how that has impacted you as an individual. (300 words) This prompt is similar to the second Common Application prompt on overcoming challenges , so if you already picked that prompt for your Common App essay, maybe don’t choose it again for your supplement. If you haven’t written about a challenge yet, though, this prompt could be a good choice. Whereas most prompts asking about a challenge will ask you how you overcame it, this one does not. Instead, it simply wants to hear about the impact adversity had on you. While you can write about the impact in terms of overcoming the challenge, you aren’t limited to discussing a challenge that you conquered. You can just as easily choose a challenge that persists in your life and explain how you’ve learned to cope with it. If you are choosing a challenge that you didn’t overco",
+          "supplemental essays",
+          "Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself, you should take it, so we recommend drafting that second essay. Keep reading to learn how to write winning W&M essays! William & Mary Essay Prompt Breakdowns Willia",
+          "seek wisdom in bridging differences. Together, we are unceasing in our efforts to make a meaningful difference in our communities, the state, the nation, and the world. To help us learn more about you, we invite you to share additional information by answering up to two of these optional short-answer prompts. Think of this optional opportunity as show and tell by proxy. (300 words each) Are there any particular communities that are important to you, and how do you see yourself being a part of our community? This is a classic Community Essay, through and through. Tell admissions about a community you are a part of and what significance it holds in your life. Then think about how your involvement in that community will impact the way you show up at W&M. What you address can be a larger cultural community—think race, sexuality, religion—or as specific as your after-school knitting club. Address the role that your community plays in your life, then consider why your particular background or experience within this comm",
+          "ollege of William &#038; Mary 2025-26 Supplemental Essay Prompt Guide No Time To Lose! The College of William and Mary Deadline Countdown is on: Regular Decision Deadline: Jan 5 You Have: We can help you draft in time for submission! College of William & Mary 2025-26 Application Essay Question Explanations The Requirements: Two essays of 300 words or fewer Supplemental Essay Type(s): Community , Why , Oddball How to Write William & Mary Supplemental Essays W&M offers five options for your supplemental essay(s) and gives you the option of writing one or two. Read them carefully, as you may be able to recycle something you’ve written for another school! (Talk about living sustainably!) W&M wants to fill their class with students who are “seeking to be challenged & engaged & inspired,” so choose the prompts that challenge, engage, and inspire you to share something admissions can’t learn about you in the rest of your application. And when a college offers you the chance to tell them more about yourself"
+        ],
+        "officialContextNoPromptMatchUrls": 1,
+        "promptMatchCount": 9
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

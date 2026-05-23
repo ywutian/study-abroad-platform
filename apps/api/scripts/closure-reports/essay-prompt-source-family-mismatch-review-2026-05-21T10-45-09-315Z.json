@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-05-21T10:45:09.310Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-wright-state-latest.json",
+      "generatedAt": "2026-05-21T10:44:41.222Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Wright State University official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8iti003lz0ti0z9hwm3s",
+        "schoolName": "Wright State University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iti003lz0ti0z9hwm3s",
+    "schoolName": "Wright State University",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 6,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 2,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 2,
+    "promptRows": 1,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_cross_school_prompt_owner_conflict": 1
+    },
+    "byRecommendedAction": {
+      "review-cross-school-prompt-owner-and-reassign-or-reject": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Wright State University has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iti003lz0ti0z9hwm3s",
+    "schoolName": "Wright State University",
+    "topEssayPromptId": "cmorxup9400m7eiz6jkqqgv5l",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxup9400m7eiz6jkqqgv5l",
+      "schoolId": "cmnwr8iti003lz0ti0z9hwm3s",
+      "schoolName": "Wright State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxup9400m7eiz6jkqqgv5l",
+      "promptSnippet": "Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it?",
+      "closureState": "review",
+      "mismatchDisposition": "review_cross_school_prompt_owner_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.wright.edu/admissions/undergraduate/apply/high-school-students",
+          "https://www.commonapp.org/explore/wright-state-university/",
+          "https://admissions.yale.edu/essay-topics",
+          "https://admissions.yale.edu/essays"
+        ],
+        "finalUrls": [
+          "https://www.wright.edu/admissions/undergraduate/apply/high-school-students",
+          "https://www.commonapp.org/explore/wright-state-university/",
+          "https://admissions.yale.edu/essay-topics",
+          "https://admissions.yale.edu/essays"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.yale.edu/essay-topics",
+          "https://admissions.yale.edu/essays"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts",
+          "short answer questions",
+          "short essay"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "State University is the place to make it happen. It all starts with the FREE* application process. To be considered for admission, submit these two items: Application for Undergraduate Admission . Submit your FREE* application using the Wright State University application or the Common Application. Official high school transcript Partial transcript due at time of application. Final transcript, with graduation date posted, due upon completion of your senior year. Application materials should be submitted to: Wright State University Office of Undergraduate Admissions 3640 Colonel Glenn Hwy. Dayton, OH 45435-0001 Note: High school students who have earned credit for college courses through Ohio’s College Credit Plus, Advanced Placement, International Baccalaureate, or a dual enrollment program, must submit official transcripts after the completion of these courses. High school students do not need to submit college transcripts for Wright State to make an admission decision. Important Dates and Deadlines Ap",
+          "common application",
+          "0 For first-year students Admissions website www.wright.edu/admissions/undergraduate Financial aid website www.wright.edu/raiderconnect/financial-aid Region Midwest View more in this region Follow Wright State University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it?",
+          "crumbs Home Home Apply to Yale as a First-Year Student In This Section Requirements Timelines Standardized Testing Supplementary Materials Essay Topics Essay Topics First-year applicants complete Yale-specific short essays. Review the 2025-2026 essay topics for all applications. Short answer questions All first-year applicants will respond to the following short answer questions: Students at Yale have time to explore their academic interests before committing to one or more major fields of study. Many students either modify their original academic direction or change their minds entirely. As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three from the list provided. Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) If applying with the",
+          "te Your Cost Financial Aid Office Search Ask A Question Show all breadcrumbs Home Home Apply to Yale as a First-Year Student In This Section Requirements Timelines Standardized Testing Supplementary Materials Essay Topics Essay Topics First-year applicants complete Yale-specific short essays. Review the 2025-2026 essay topics for all applications. Short answer questions All first-year applicants will respond to the following short answer questions: Students at Yale have time to explore their academic interests before committing to one or more major fields of study. Many students either modify their original academic direction or change their minds entirely. As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three from the list provided. Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and",
+          "ences have drawn you to Yale. (125 words or fewer) If applying with the QuestBridge Application, complete the above questions above via the Yale QuestBridge Questionnaire, available on the Yale Admissions Status Portal after your application is sent to Yale. If applying with the Common Application, complete the above questions and those below in the “My Colleges” section. If applying with the Coalition Application, complete the above questions and those below on the Yale Coalition Application Supplement, accessible on the Yale Admissions Status Portal . Short takes Common Application and Coalition Application only: respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college course, write a book, or create an original piece of art of any kind, what would it be? Other than a family member, who is someone who has had a significant influence on you? What has been the impact of their influence? What is something a",
+          "short answer questions",
+          "short essay",
+          "that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college course, write a book, or create an original piece of art of any kind, what would it be",
+          "essays should retain your own voice, but others may be able to catch mistakes that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college cour"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 2
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer confirms whether the matched prompt belongs to another institution before reject, reassign, or source approval actions"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

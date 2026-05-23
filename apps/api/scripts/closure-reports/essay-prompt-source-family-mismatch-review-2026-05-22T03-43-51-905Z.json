@@ -1,0 +1,458 @@
+{
+  "generatedAt": "2026-05-22T03:43:51.903Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-carleton-latest.json",
+      "generatedAt": "2026-05-22T03:43:36.536Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Carleton College has untrusted prompt matches but official prompt-context pages did not match assigned prompt snippets; review source family before approval.",
+        "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+        "schoolName": "Carleton College",
+        "recommendedAction": "review-untrusted-context-or-find-official-source"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+    "schoolName": "Carleton College",
+    "sourceSearchPromptRows": 5,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 9,
+    "reachableHtmlUrls": 9,
+    "validatedSourceUrls": 1,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 1,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 10,
+    "promptRows": 5,
+    "matchedPromptRows": 5,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 5,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 5,
+    "byMismatchDisposition": {
+      "review_untrusted_source_or_official_conflict": 5
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 5
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Carleton College has 5 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+    "schoolName": "Carleton College",
+    "topEssayPromptId": "cmor7ztds003l1jbwr1020i1q",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor7ztds003l1jbwr1020i1q",
+      "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+      "schoolName": "Carleton College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7ztds003l1jbwr1020i1q",
+      "promptSnippet": "Why are you applying to Carleton?",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/carleton-college",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/carleton-college/",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay requirements",
+          "short essay"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "arleton.edu/financial-aid/apply-for-aid/transfer-students/ Undocumented or DACA students www.carleton.edu/admissions/apply/steps/international/undocumented/ Region Midwest View more in this region Follow Carleton College Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "uides » Carleton College Supplemental Essay 2025-26 Carleton College Supplemental Essay 2025-26 Ashley Hollins Carleton College Carleton College Supplemental Essay Carleton College is among the most sought-after liberal arts colleges in the Midwest — and one that requires strong supplemental essays. In this guide, we&#8217;ll provide details about the Carleton College supplemental essays. That way, you can better understand what Carleton College admissions looks for. In addition to reviewing the Carleton College application essays, we will also provide you with the Carleton College supplemental essay prompts and give you some writing tips. Located in Northfield, Minnesota, Carleton College is known for its exceptional academic programs and vibrant campus life. With over 30 college majors and 200 student organizations to choose from, it’s no secret why the Carleton College acceptance rate low. The Carleton College ranking among liberal arts colleges is #10 nationwide, making it one of the top colleges in",
+          "finish reading our guide, you will be ready to write standout Carleton College supplemental essays that enhance your application . Let’s get started! Carleton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to cha",
+          "leton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to change each admissions cycle, and portions of this article may have been written before the final publication of the most recent guidelines. For the most up",
+          "supplemental essays",
+          "essay requirements",
+          "Why are you applying to Carleton?",
+          "I value community because …",
+          "I want to better my world by …",
+          "I am empowered by individuals who …"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 10
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor7ztdz003r1jbwcbz65tp0",
+      "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+      "schoolName": "Carleton College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7ztdz003r1jbwcbz65tp0",
+      "promptSnippet": "I value community because …",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/carleton-college",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/carleton-college/",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay requirements",
+          "short essay"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "arleton.edu/financial-aid/apply-for-aid/transfer-students/ Undocumented or DACA students www.carleton.edu/admissions/apply/steps/international/undocumented/ Region Midwest View more in this region Follow Carleton College Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "uides » Carleton College Supplemental Essay 2025-26 Carleton College Supplemental Essay 2025-26 Ashley Hollins Carleton College Carleton College Supplemental Essay Carleton College is among the most sought-after liberal arts colleges in the Midwest — and one that requires strong supplemental essays. In this guide, we&#8217;ll provide details about the Carleton College supplemental essays. That way, you can better understand what Carleton College admissions looks for. In addition to reviewing the Carleton College application essays, we will also provide you with the Carleton College supplemental essay prompts and give you some writing tips. Located in Northfield, Minnesota, Carleton College is known for its exceptional academic programs and vibrant campus life. With over 30 college majors and 200 student organizations to choose from, it’s no secret why the Carleton College acceptance rate low. The Carleton College ranking among liberal arts colleges is #10 nationwide, making it one of the top colleges in",
+          "finish reading our guide, you will be ready to write standout Carleton College supplemental essays that enhance your application . Let’s get started! Carleton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to cha",
+          "leton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to change each admissions cycle, and portions of this article may have been written before the final publication of the most recent guidelines. For the most up",
+          "supplemental essays",
+          "essay requirements",
+          "Why are you applying to Carleton?",
+          "I value community because …",
+          "I want to better my world by …",
+          "I am empowered by individuals who …"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 10
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor7zte0003t1jbwt9jm53vd",
+      "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+      "schoolName": "Carleton College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7zte0003t1jbwt9jm53vd",
+      "promptSnippet": "I want to better my world by …",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/carleton-college",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/carleton-college/",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay requirements",
+          "short essay"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "arleton.edu/financial-aid/apply-for-aid/transfer-students/ Undocumented or DACA students www.carleton.edu/admissions/apply/steps/international/undocumented/ Region Midwest View more in this region Follow Carleton College Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "uides » Carleton College Supplemental Essay 2025-26 Carleton College Supplemental Essay 2025-26 Ashley Hollins Carleton College Carleton College Supplemental Essay Carleton College is among the most sought-after liberal arts colleges in the Midwest — and one that requires strong supplemental essays. In this guide, we&#8217;ll provide details about the Carleton College supplemental essays. That way, you can better understand what Carleton College admissions looks for. In addition to reviewing the Carleton College application essays, we will also provide you with the Carleton College supplemental essay prompts and give you some writing tips. Located in Northfield, Minnesota, Carleton College is known for its exceptional academic programs and vibrant campus life. With over 30 college majors and 200 student organizations to choose from, it’s no secret why the Carleton College acceptance rate low. The Carleton College ranking among liberal arts colleges is #10 nationwide, making it one of the top colleges in",
+          "finish reading our guide, you will be ready to write standout Carleton College supplemental essays that enhance your application . Let’s get started! Carleton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to cha",
+          "leton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to change each admissions cycle, and portions of this article may have been written before the final publication of the most recent guidelines. For the most up",
+          "supplemental essays",
+          "essay requirements",
+          "Why are you applying to Carleton?",
+          "I value community because …",
+          "I want to better my world by …",
+          "I am empowered by individuals who …"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 10
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor7ztdw003p1jbwz7o7c0i4",
+      "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+      "schoolName": "Carleton College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7ztdw003p1jbwz7o7c0i4",
+      "promptSnippet": "I am empowered by individuals who …",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/carleton-college",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/carleton-college/",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay requirements",
+          "short essay"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "arleton.edu/financial-aid/apply-for-aid/transfer-students/ Undocumented or DACA students www.carleton.edu/admissions/apply/steps/international/undocumented/ Region Midwest View more in this region Follow Carleton College Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "uides » Carleton College Supplemental Essay 2025-26 Carleton College Supplemental Essay 2025-26 Ashley Hollins Carleton College Carleton College Supplemental Essay Carleton College is among the most sought-after liberal arts colleges in the Midwest — and one that requires strong supplemental essays. In this guide, we&#8217;ll provide details about the Carleton College supplemental essays. That way, you can better understand what Carleton College admissions looks for. In addition to reviewing the Carleton College application essays, we will also provide you with the Carleton College supplemental essay prompts and give you some writing tips. Located in Northfield, Minnesota, Carleton College is known for its exceptional academic programs and vibrant campus life. With over 30 college majors and 200 student organizations to choose from, it’s no secret why the Carleton College acceptance rate low. The Carleton College ranking among liberal arts colleges is #10 nationwide, making it one of the top colleges in",
+          "finish reading our guide, you will be ready to write standout Carleton College supplemental essays that enhance your application . Let’s get started! Carleton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to cha",
+          "leton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to change each admissions cycle, and portions of this article may have been written before the final publication of the most recent guidelines. For the most up",
+          "supplemental essays",
+          "essay requirements",
+          "Why are you applying to Carleton?",
+          "I value community because …",
+          "I want to better my world by …",
+          "I am empowered by individuals who …"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 10
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor7ztdn003j1jbwo2mg3i1v",
+      "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+      "schoolName": "Carleton College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7ztdn003j1jbwo2mg3i1v",
+      "promptSnippet": "When did you first learn of Carleton?",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/carleton-college",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/carleton-college/",
+          "https://www.collegeadvisor.com/essay-guides/carleton-college-supplemental-essay/",
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-carleton-college-essays-2020-2021/"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay requirements",
+          "short essay"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "arleton.edu/financial-aid/apply-for-aid/transfer-students/ Undocumented or DACA students www.carleton.edu/admissions/apply/steps/international/undocumented/ Region Midwest View more in this region Follow Carleton College Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "uides » Carleton College Supplemental Essay 2025-26 Carleton College Supplemental Essay 2025-26 Ashley Hollins Carleton College Carleton College Supplemental Essay Carleton College is among the most sought-after liberal arts colleges in the Midwest — and one that requires strong supplemental essays. In this guide, we&#8217;ll provide details about the Carleton College supplemental essays. That way, you can better understand what Carleton College admissions looks for. In addition to reviewing the Carleton College application essays, we will also provide you with the Carleton College supplemental essay prompts and give you some writing tips. Located in Northfield, Minnesota, Carleton College is known for its exceptional academic programs and vibrant campus life. With over 30 college majors and 200 student organizations to choose from, it’s no secret why the Carleton College acceptance rate low. The Carleton College ranking among liberal arts colleges is #10 nationwide, making it one of the top colleges in",
+          "finish reading our guide, you will be ready to write standout Carleton College supplemental essays that enhance your application . Let’s get started! Carleton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to cha",
+          "leton Admissions: Quick Facts Carleton College Quick Facts Carleton College Acceptance Rate: 20% Carleton College Supplemental Essay Requirements: 1 (~ 300 words) essay 1 (~ 250 words) optional essay Carleton College Application: Students can submit their application through the Common Application , QuestBridge , or Coalition App . Ensure your Carleton College supplemental essays and other required application materials are ready when applying. Carleton College Application Deadlines: Fall Early Decision: November 15 Winter Early Decision: January 15 Regular Decision: January 15 Carleton College Essay Tip: Although only one Carleton College supplemental essay is required , taking advantage of the optional second essay is a strong way to share more about yourself and add character to your application. Please note that essay requirements are subject to change each admissions cycle, and portions of this article may have been written before the final publication of the most recent guidelines. For the most up",
+          "supplemental essays",
+          "essay requirements",
+          "Why are you applying to Carleton?",
+          "I value community because …",
+          "I want to better my world by …",
+          "I am empowered by individuals who …"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 10
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

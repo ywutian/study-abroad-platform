@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmor8ephs00gh1jbwaxfyhh3z","cmnwr8iu6003wz0tio3oagiri","Rochester Institute of Technology","SHORT_ANSWER","critical","/admin/essay-prompts/cmor8ephs00gh1jbwaxfyhh3z","Please provide a brief statement about why you are you interested in being considered for the RIT Honors Program.","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

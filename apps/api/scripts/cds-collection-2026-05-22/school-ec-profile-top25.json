@@ -1,0 +1,189 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-05-22T13:30:00.000Z",
+  "purpose": "P1.5 MEDIUM tier data for activities/awards/research/course rigor/major selectivity (extensions to v2 §3.2)",
+  "confidenceTierDefinitions": {
+    "HIGH": "Official school publication (admissions blog / class profile / CDS)",
+    "MEDIUM": "Crimson / IvyWise / industry expert aggregate / Common App reports",
+    "LOW": "Counselor consensus / research papers / unverified"
+  },
+  "perSchoolEcProfile": {
+    "schoolNameNorm:caltech": {
+      "schoolNameNorm": "california institute of technology",
+      "admitsWithResearchPct": {
+        "value": 0.45,
+        "tier": "HIGH",
+        "source": "Caltech publicly reports 45% of admitted Class of 2027 conducted research"
+      }
+    },
+    "schoolNameNorm:upenn": {
+      "schoolNameNorm": "university of pennsylvania",
+      "admitsWithResearchPct": {
+        "value": 0.33,
+        "tier": "MEDIUM",
+        "source": "Industry report: nearly one-third of UPenn Class of 2026 had research experience"
+      }
+    },
+    "schoolNameNorm:mit_inferred": {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "admitsWithResearchPct": {
+        "value": 0.4,
+        "tier": "MEDIUM",
+        "source": "Inferred — peer to Caltech (45%), STEM-heavy school"
+      }
+    }
+  },
+  "globalT20DefaultEcProfile": {
+    "tier": "MEDIUM",
+    "applicableTo": "Top 20 schools without per-school EC data",
+    "indicators": {
+      "admitsWithNationalAwardPct": {
+        "value": 0.55,
+        "tier": "MEDIUM",
+        "source": "Common App: 55%+ admitted students at selective institutions list state-level or higher honor",
+        "note": "This includes state-level; pure national-level alone estimated ~30-40%"
+      },
+      "admitsWithStateOrAbovePct": {
+        "value": 0.55,
+        "tier": "MEDIUM",
+        "source": "Common App"
+      },
+      "admitsAvgApCount": {
+        "value": 11.0,
+        "tier": "MEDIUM",
+        "range": "10-14",
+        "source": "Spark Admissions / Crimson aggregate: Most Ivy admits complete 10-14 APs"
+      },
+      "admitsMinApCount": {
+        "value": 8.0,
+        "tier": "MEDIUM",
+        "source": "Crimson: 8-12 is competitive baseline"
+      },
+      "admitsWithSpikePct": {
+        "value": 0.8,
+        "tier": "LOW",
+        "source": "Counselor consensus / MIT Admissions FAQ: depth + sustained involvement over breadth",
+        "note": "No direct number published, estimate from qualitative emphasis on 'spike' at T20"
+      },
+      "admitsWithLeadershipPct": {
+        "value": 0.6,
+        "tier": "LOW",
+        "source": "Counselor consensus; Common App leadership-section completion rates",
+        "note": "Estimate"
+      },
+      "admitsAvgActivityCount": {
+        "value": 8.0,
+        "tier": "LOW",
+        "source": "Common App allows 10 activities; admits typically fill ~8",
+        "note": "Inferred from Common App fill rates"
+      }
+    }
+  },
+  "globalT21_50DefaultEcProfile": {
+    "tier": "LOW",
+    "applicableTo": "Schools ranked 21-50, when no per-school data",
+    "indicators": {
+      "admitsWithNationalAwardPct": {
+        "value": 0.3,
+        "tier": "LOW",
+        "note": "Estimate, lower than T20"
+      },
+      "admitsAvgApCount": { "value": 8.0, "tier": "LOW", "range": "6-10" },
+      "admitsWithSpikePct": { "value": 0.5, "tier": "LOW" },
+      "admitsWithLeadershipPct": { "value": 0.4, "tier": "LOW" },
+      "admitsAvgActivityCount": { "value": 7.0, "tier": "LOW" }
+    }
+  },
+  "majorSelectivityMultipliers": {
+    "purpose": "Per-school program-specific admit rate, expressed as multiplier vs overall",
+    "perSchool": [
+      {
+        "schoolNameNorm": "stanford university",
+        "major": "Computer Science",
+        "admitRate": 0.018,
+        "overallRate": 0.0391,
+        "multiplier": 0.46,
+        "tier": "MEDIUM",
+        "source": "Reports: Stanford CS admit rate ~1.8% vs overall 3.6-4%"
+      },
+      {
+        "schoolNameNorm": "massachusetts institute of technology",
+        "major": "Computer Science",
+        "admitRate": 0.07,
+        "overallRate": 0.048,
+        "multiplier": 1.46,
+        "tier": "LOW",
+        "source": "MIT does not admit by major; 6-8% figure reflects intended-CS scrutiny, not actual major-based admit"
+      },
+      {
+        "schoolNameNorm": "harvard university",
+        "major": "Computer Science",
+        "admitRate": 0.03,
+        "overallRate": 0.034,
+        "multiplier": 0.88,
+        "tier": "MEDIUM",
+        "source": "Industry reports"
+      },
+      {
+        "schoolNameNorm": "carnegie mellon university",
+        "major": "Computer Science (SCS)",
+        "admitRate": 0.06,
+        "overallRate": 0.116,
+        "multiplier": 0.52,
+        "tier": "MEDIUM",
+        "source": "CMU SCS widely understood to be much more selective than overall CMU"
+      }
+    ],
+    "majorTierDefaults": {
+      "comment": "When per-school per-major data unavailable, use these tier defaults",
+      "highly_competitive_at_school": {
+        "examples": "CS at most T20, Business at Penn Wharton, Engineering at Cornell",
+        "multiplier": 0.5,
+        "tier": "LOW"
+      },
+      "moderately_competitive": {
+        "examples": "Engineering generally, pre-med",
+        "multiplier": 0.85,
+        "tier": "LOW"
+      },
+      "uncompetitive_relative": {
+        "examples": "Humanities at STEM-focused schools, certain regional studies",
+        "multiplier": 1.1,
+        "tier": "LOW"
+      }
+    }
+  },
+  "gpaTrendData": {
+    "tier": "LOW",
+    "source": "Counselor consensus / College Board research",
+    "modifiers": {
+      "stronglyRising": { "value": 1.06, "note": "Δ ≥ 0.35" },
+      "modestlyRising": { "value": 1.03, "note": "Δ ≥ 0.15" },
+      "stable": { "value": 1.0 },
+      "modestlyFalling": { "value": 0.97 },
+      "stronglyFalling": {
+        "value": 0.93,
+        "note": "needs counselor explanation"
+      }
+    }
+  },
+  "essayQualityData": {
+    "tier": "LOW",
+    "note": "No public aggregate exists. Use existing essayQualityScore (0-10) from your AI essay review.",
+    "modifiers": {
+      "comment": "Treat as student-side signal vs implicit T20 threshold (admits assumed to clear essay screen)",
+      "threshold_T20": 7.0,
+      "below_threshold_multiplier": 0.85,
+      "above_threshold_multiplier": 1.05,
+      "at_threshold_multiplier": 1.0,
+      "missing_essay_multiplier": "skip dimension"
+    }
+  },
+  "knownGapsAndAcceptedLimitations": [
+    "Per-school EC depth (% with spike) — only LOW tier global estimate, no per-school numbers published",
+    "Per-school activity counts — Common App doesn't break down by school",
+    "Award-level granularity — '55% with state+ honor' is overall; need finer breakdown by national vs intl",
+    "Major selectivity for non-CS programs — only CS collected; engineering / business / pre-med need separate research",
+    "Essay quality — no public data, rely on existing AI score"
+  ]
+}

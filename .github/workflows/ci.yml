@@ -703,6 +703,10 @@ jobs:
           fi
 
   # ── Secret Scan ───────────────────────────────────────────
+  # Uses the OSS gitleaks binary directly (rather than gitleaks-action@v2)
+  # because the official action now requires a paid license for org repos
+  # ("🛑 missing gitleaks license. Go grab one at gitleaks.io"). The binary
+  # itself remains free under MIT; we just need to run it ourselves.
   secret-scan:
     name: Secret Scan
     runs-on: ubuntu-latest
@@ -712,10 +716,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install gitleaks (OSS)
+        run: |
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz" \
+            | tar -xz -C /tmp gitleaks
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Scan repo for secrets
+        # `--redact` masks any matched secret value in the log so the report
+        # itself can't leak. Non-zero exit means findings present → CI fails.
+        run: gitleaks detect --source . --redact --verbose --no-banner
 
   # ── SAST Scan ─────────────────────────────────────────────
   sast:

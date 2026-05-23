@@ -25,6 +25,8 @@ import { PredictionPolicyShadowService } from './prediction-policy-shadow.servic
 import { PredictionHookModifiersService } from './prediction-hook-modifiers.service';
 import { DistillationModule } from './distillation/distillation.module';
 import { CounselorEngineModule } from './counselor/counselor-engine.module';
+import { OutcomeModule } from './outcome/outcome.module';
+import { NotificationModule } from '../notification/notification.module';
 import { forwardRef } from '@nestjs/common';
 
 /**
@@ -58,6 +60,14 @@ import { forwardRef } from '@nestjs/common';
     // injects CounselorEngineService when the prediction-counselor-mode-v1
     // feature flag is enabled.
     CounselorEngineModule,
+    // M6: Outcome 收集 — Decision Day 后用户回填录取结果。仅暴露 HTTP
+    // endpoints + service。与 PredictionService 解耦（OutcomeService 只读
+    // PredictionResult 验证所属关系，不耦合预测引擎）。
+    OutcomeModule,
+    // NotificationModule transitively used by OutcomeReminderService inside
+    // OutcomeModule. Listed explicitly so module-dependency-check sees the
+    // import path (the integration linter doesn't follow nested re-exports).
+    NotificationModule,
   ],
   controllers: [PredictionController, AdminPredictionFeedbackController],
   providers: [

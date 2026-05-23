@@ -1,0 +1,168 @@
+{
+  "generatedAt": "2026-05-21T10:42:37.422Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-oklahoma-latest.json",
+      "generatedAt": "2026-05-21T10:42:13.102Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "University of Oklahoma has untrusted prompt matches but official prompt-context pages did not match assigned prompt snippets; review source family before approval.",
+        "schoolId": "cmnwr8ip3001mz0til7q2dopw",
+        "schoolName": "University of Oklahoma",
+        "recommendedAction": "review-untrusted-context-or-find-official-source"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8ip3001mz0til7q2dopw",
+    "schoolName": "University of Oklahoma",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "manual-official-source-search-or-terminal"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 7,
+    "reachableHtmlUrls": 7,
+    "validatedSourceUrls": 2,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 2,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 5,
+    "promptMatchCount": 2,
+    "promptRows": 1,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_untrusted_source_or_official_conflict": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of Oklahoma has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8ip3001mz0til7q2dopw",
+    "schoolName": "University of Oklahoma",
+    "topEssayPromptId": "cmorxpfv700iteiz6ktsl45kk",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxpfv700iteiz6ktsl45kk",
+      "schoolId": "cmnwr8ip3001mz0til7q2dopw",
+      "schoolName": "University of Oklahoma",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxpfv700iteiz6ktsl45kk",
+      "promptSnippet": "Please briefly explain your meaningful international experience.",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.ou.edu/admissions/apply/freshman/essay",
+          "https://www.ou.edu/admissions/affordability/scholarships",
+          "https://www.ou.edu/admissions/apply/international",
+          "https://www.ou.edu/pcs/about/apply.html",
+          "https://www.commonapp.org/explore/university-oklahoma/",
+          "https://blog.collegevine.com/how-to-write-the-university-of-oklahoma-essays/",
+          "https://www.collegevine.com/schools/university-of-oklahoma/essay-prompts"
+        ],
+        "finalUrls": [
+          "https://www.ou.edu/admissions/apply/freshman/essay",
+          "https://www.ou.edu/admissions/affordability/scholarships",
+          "https://www.ou.edu/admissions/apply/international",
+          "https://www.ou.edu/pcs/about/apply",
+          "https://www.commonapp.org/explore/university-oklahoma/",
+          "https://blog.collegevine.com/how-to-write-the-university-of-oklahoma-essays/",
+          "https://www.collegevine.com/schools/university-of-oklahoma/essay-prompts"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://blog.collegevine.com/how-to-write-the-university-of-oklahoma-essays/",
+          "https://www.collegevine.com/schools/university-of-oklahoma/essay-prompts"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay questions",
+          "essay question",
+          "common application",
+          "short essay",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026",
+          "2024"
+        ],
+        "evidenceSnippets": [
+          "to OU is read thoroughly, thoughtfully and fairly to evaluate all-around excellence. The questions below provide you with the opportunity to tell us more about your abilities in academics, the arts, athletics, leadership, service, and other qualities you may possess. Application Essay Questions As part of the Common Application, you will be asked to write one essay between 250 and 650 words. You must stay within that word count. You will be asked to write a response to your choice of one of the seven prompts listed below. This essay is designed to demonstrate your ability to write clearly and concisely and help you set your application apart. Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it. If this sounds like you, then please share your story. The lessons we take from obstacles we encounter can be fundamental to later success. Recount a time when you faced a challenge, setback, or failure. How did it a",
+          "to OU is read thoroughly, thoughtfully and fairly to evaluate all-around excellence. The questions below provide you with the opportunity to tell us more about your abilities in academics, the arts, athletics, leadership, service, and other qualities you may possess. Application Essay Questions As part of the Common Application, you will be asked to write one essay between 250 and 650 words. You must stay within that word count. You will be asked to write a response to your choice of one of the seven prompts listed below. This essay is designed to demonstrate your ability to write clearly and concisely and help you set your application apart. Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it. If this sounds like you, then please share your story. The lessons we take from obstacles we encounter can be fundamental to later success. Recount a time when you faced a challenge, setback, or failure. How did it",
+          "htfully and fairly to evaluate all-around excellence. The questions below provide you with the opportunity to tell us more about your abilities in academics, the arts, athletics, leadership, service, and other qualities you may possess. Application Essay Questions As part of the Common Application, you will be asked to write one essay between 250 and 650 words. You must stay within that word count. You will be asked to write a response to your choice of one of the seven prompts listed below. This essay is designed to demonstrate your ability to write clearly and concisely and help you set your application apart. Some students have a background, identity, interest, or talent that is so meaningful they believe their application would be incomplete without it. If this sounds like you, then please share your story. The lessons we take from obstacles we encounter can be fundamental to later success. Recount a time when you faced a challenge, setback, or failure. How did it affect you, and what did you learn",
+          "essay questions",
+          "essay question",
+          "common application",
+          "ic rigor and high school performance. Students may also qualify for additional need-based financial resources and are encouraged to complete the Free Application for Federal Student Aid (FAFSA). Leadership, Development & Community Involvement To receive consideration, answer the short essay questions in your OU admission application regarding your involvement in these activities. Valedictorian Oklahoma residents who are ranked 1 or 2 in their class are considered for a $10,000 tuition waiver ($2,500 x 4 years). Does not stack with automatically awarded academic scholarships. Oklahoma's Promise & Crimson Commitment Oklahoma residents whose annual family income does not exceed $60,000 can enroll in Oklahoma’s Promise between eighth and 11th grade to earn a scholarship for college tuition. Visit okhighered.org/okpromise to learn more. Crimson Commitment guarantees scholarships and grants to cover tuition and average fees for an OU student who qualifies and receives Oklahoma’s Promise for four years.",
+          "or and high school performance. Students may also qualify for additional need-based financial resources and are encouraged to complete the Free Application for Federal Student Aid (FAFSA). Leadership, Development & Community Involvement To receive consideration, answer the short essay questions in your OU admission application regarding your involvement in these activities. Valedictorian Oklahoma residents who are ranked 1 or 2 in their class are considered for a $10,000 tuition waiver ($2,500 x 4 years). Does not stack with automatically awarded academic scholarships. Oklahoma's Promise & Crimson Commitment Oklahoma residents whose annual family income does not exceed $60,000 can enroll in Oklahoma’s Promise between eighth and 11th grade to earn a scholarship for college tuition. Visit okhighered.org/okpromise to learn more. Crimson Commitment guarantees scholarships and grants to cover tuition and average fees for an OU student who qualifies and receives Oklahoma’s Promise for four years. Tuition a",
+          "or and high school performance. Students may also qualify for additional need-based financial resources and are encouraged to complete the Free Application for Federal Student Aid (FAFSA). Leadership, Development & Community Involvement To receive consideration, answer the short essay questions in your OU admission application regarding your involvement in these activities. Valedictorian Oklahoma residents who are ranked 1 or 2 in their class are considered for a $10,000 tuition waiver ($2,500 x 4 years). Does not stack with automatically awarded academic scholarships. Oklahoma's Promise & Crimson Commitment Oklahoma residents whose annual family income does not exceed $60,000 can enroll in Oklahoma’s Promise between eighth and 11th grade to earn a scholarship for college tuition. Visit okhighered.org/okpromise to learn more. Crimson Commitment guarantees scholarships and grants to cover tuition and average fees for an OU student who qualifies and receives Oklahoma’s Promise for four years. Tuition",
+          "short essay",
+          "9 / Duolingo 100 / Pearson 53 International Transfer Scholarships View More Requirements UWC Scholars Visit the UWC Scholars Program website to learn more about the UWC Scholars application and admissions process, including how they are reviewed, funded, and more. OU Application Common Application Apply Coalition with Scoir Important Dates International Freshmen Aug. 1 Fall admission application opens Nov. 1 Early action admission deadline Dec. 15 Priority scholarship application deadline Feb. 1 Fall application deadline April 15 Final documents deadline May 1 Enrollment deposit due International Transfers Aug. 1 Fall & summer admission application opens Oct. 1 Spring priority scholarship application deadline Nov. 1 Spring application deadline March 1 Fall & summer priority scholarship application deadline Feb. 1 Summer application deadline April 1 Fall application deadline May 31 Fall final documents deadline Resources Check Your Application Status Requirements & Deadlines English Proficiency Requireme",
+          "ip section of the OU Application. If you do not answer these questions, you will not be considered for OU leadership, community service and major-based scholarships. Students may also be asked a third major-specific question depending on the academic preferences you list in your Common Application. The University of Oklahoma believes strongly in educating leaders of communities in Oklahoma, as well as across the country and the world. Please share your leadership experiences and why they are important to you. The University of Oklahoma is the home of a vibrant, welcoming and compassionate University community that is often referred to as “the OU family.” Please describe your cultural and community service activities and why you chose to participate in them. What is your career area of interest, and why do you have a desire to work in this particular field?* * The third, academic-based question is asked by certain academic departments. Therefore, it may or may not appear in your scholarship section depen"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 2
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

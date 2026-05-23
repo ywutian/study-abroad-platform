@@ -17,17 +17,23 @@ import {
 import {
   TRUST_TIER_PREDICTION_WEIGHT,
   isPredictionEligibleTrustTier,
+  normalizeFieldProvenance,
   resolveSchoolTestingPolicyValue,
   toLegacyTestOptionalFlag,
 } from '@study-abroad/shared/utils';
 import type { ProfileWithRelations } from './prediction.types';
-import { getNormalizedFieldProvenance } from '../school/school-provenance.helpers';
 import { classifyMajor } from './prediction.constants';
 
 type ConfidenceLevel = 'low' | 'medium' | 'high';
 
 const SCHOOL_CONFIDENCE_LOW_WEIGHT = 0.6;
 const SCHOOL_CONFIDENCE_DOWNGRADE_WEIGHT = 0.85;
+const TERMINAL_REAL_DATA_STATUSES = new Set([
+  'MANUAL_REVIEW',
+  'OFFICIAL_BLANK',
+  'OFFICIAL_BLOCKED',
+  'NO_PUBLIC_REAL_DATA',
+]);
 
 function toNumber(value: unknown): number | undefined {
   if (typeof value === 'number') return value;
@@ -36,6 +42,14 @@ function toNumber(value: unknown): number | undefined {
     return (value as { toNumber: () => number }).toNumber();
   }
   return undefined;
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  return value as Record<string, unknown>;
 }
 
 /**
@@ -58,19 +72,24 @@ export class PredictionTransformerService {
       return { value: undefined };
     }
 
-    const provenance = getNormalizedFieldProvenance(school, field);
+    const provenance = normalizeFieldProvenance(
+      toRecord(toRecord(school.metadata).provenance)[field],
+    );
     if (!provenance) {
-      return { value: transform ? transform(value) : (value as unknown as R) };
+      return { value: undefined };
     }
 
-    const isHeuristicFallback =
-      provenance.tier === 'INFERRED' &&
+    const weight = TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];
+    const isHeuristic =
+      provenance.tier === 'INFERRED' ||
       provenance.source.toUpperCase().includes('HEURISTIC');
-    const weight = isHeuristicFallback
-      ? (provenance.confidence ?? 0.55)
-      : TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];
+    const isTerminal =
+      provenance.realDataStatus != null &&
+      TERMINAL_REAL_DATA_STATUSES.has(provenance.realDataStatus);
     if (
-      !isHeuristicFallback &&
+      isHeuristic ||
+      isTerminal ||
+      provenance.staleness === 'STALE' ||
       !isPredictionEligibleTrustTier(provenance.tier)
     ) {
       return { value: undefined, weight };
@@ -418,11 +437,20 @@ export class PredictionTransformerService {
       return resolved.value;
     };
 
+    // testingPolicy + testOptional are structural classification fields used
+    // to route admission policy display ('BLIND'/'OPTIONAL'/'REQUIRED') and
+    // by CounselorEngine modifiers. They must NOT go through the trust-tier
+    // filter — most schools lack explicit metadata.provenance entries for
+    // these fields, which would otherwise downgrade them to UNKNOWN and
+    // break the application-analysis golden render fixtures (E2E
+    // application-analysis-render expects 'BLIND' for Berkeley etc.).
+    const rawTestingPolicy = (school as any).testingPolicy ?? undefined;
+    const rawTestOptional = (school as any).testOptional ?? undefined;
     const testingPolicy =
-      captureField('testingPolicy', (school as any).testingPolicy) ??
+      rawTestingPolicy ??
       resolveSchoolTestingPolicyValue({
-        testingPolicy: (school as any).testingPolicy,
-        testOptional: (school as any).testOptional,
+        testingPolicy: rawTestingPolicy,
+        testOptional: rawTestOptional,
       });
 
     return {
@@ -445,6 +473,11 @@ export class PredictionTransformerService {
       oosAcceptanceRate: captureField(
         'oosAcceptanceRate',
         (school as any).oosAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      transferAcceptanceRate: captureField(
+        'transferAcceptanceRate',
+        (school as any).transferAcceptanceRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
       intlStudentPct: captureField(
@@ -489,10 +522,7 @@ export class PredictionTransformerService {
       testingPolicy,
       testOptional: toLegacyTestOptionalFlag({
         testingPolicy,
-        testOptional: captureField(
-          'testOptional',
-          (school as any).testOptional,
-        ),
+        testOptional: rawTestOptional,
       }),
       hasEarlyDecision: captureField(
         'hasEarlyDecision',
@@ -533,10 +563,14 @@ export class PredictionTransformerService {
         (school as any).yieldRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
-      institutionType: captureField(
-        'institutionType',
-        (school as any).institutionType,
-      ),
+      // institutionType is a structural classification (ART_DESIGN /
+      // MUSIC_CONSERVATORY / etc.) used by CounselorEngine.isAuditionOrPortfolioSchool
+      // to route to tier 4 (unavailable). It must NOT be filtered by trust-tier
+      // provenance because (a) it's categorical, not a stat to weight, and
+      // (b) most schools lack explicit metadata.provenance.institutionType
+      // entries. Pass the raw value through. Caught by
+      // verify-prediction-launch's tier4 fixture when this was wrong.
+      institutionType: (school as any).institutionType ?? undefined,
       gpaDistribution: captureField(
         'gpaDistribution',
         (school as any).gpaDistribution,
@@ -643,6 +677,7 @@ export class PredictionTransformerService {
       eaAcceptanceRate: school.eaAcceptanceRate ?? undefined,
       intlAcceptanceRate: school.intlAcceptanceRate,
       oosAcceptanceRate: school.oosAcceptanceRate,
+      transferAcceptanceRate: school.transferAcceptanceRate,
       hasEarlyDecision: school.hasEarlyDecision,
       institutionType: school.institutionType,
       gpaDistribution: school.gpaDistribution,

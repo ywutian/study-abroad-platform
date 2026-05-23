@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-05-23T05:14:02.064Z",
+  "packetStatus": "BLOCKED_EXTERNAL_ARTIFACT_REQUIRED",
+  "intakeStatus": "waiting_for_external_candidate_artifact",
+  "candidateRoot": "apps/api/scripts/closure-reports/database-migration-external-candidate-intake",
+  "candidateFilesPresent": 0,
+  "candidateSqlFilesPresent": 0,
+  "candidateArchiveFilesPresent": 0,
+  "generatedIntakeFilesPresent": 8,
+  "candidateFiles": [],
+  "exactArtifactMatches": 0,
+  "filesScanned": 1643,
+  "archivesScanned": 0,
+  "archiveEntriesScanned": 0,
+  "sourceReportPath": "apps/api/scripts/closure-reports/database-migration-external-artifact-packet-2026-05-23T05-14-01-685Z.json",
+  "sourceMarkdownPath": "apps/api/scripts/closure-reports/database-migration-external-artifact-packet-2026-05-23T05-14-01-685Z.md",
+  "manifestPath": "apps/api/scripts/closure-reports/database-migration-external-candidate-intake/TARGETS.json",
+  "manifestDigestPath": "apps/api/scripts/closure-reports/database-migration-external-candidate-intake/TARGETS.sha256",
+  "manifestSha256": "82eee3b9a752d50ff6a87b721f8149040716b95540cd99640258b0c6c7c67d4d",
+  "manifestSizeBytes": 2523,
+  "requestJsonPath": "apps/api/scripts/closure-reports/database-migration-external-candidate-intake/REQUEST.json",
+  "requestMarkdownPath": "apps/api/scripts/closure-reports/database-migration-external-candidate-intake/REQUEST.md",
+  "verificationCommand": "pnpm --filter api audit:database-migration-external-artifact-packet -- --candidate-root apps/api/scripts/closure-reports/database-migration-external-candidate-intake --scan-archives",
+  "targetRows": [
+    {
+      "migration": "20260428120000_add_mbti_and_personality_tags",
+      "sourceKind": "unrecoverable_migration",
+      "targetMigrationPath": "apps/api/prisma/migrations/20260428120000_add_mbti_and_personality_tags/migration.sql",
+      "requiredSha256": "cedbe8993cf570c0011ffcc3a5769445fe55c69285939873710d73bffeaffa66",
+      "requestSubject": "Recover exact migration SQL for 20260428120000_add_mbti_and_personality_tags"
+    }
+  ],
+  "exactMatches": [],
+  "nextCampaign": {
+    "id": "database_migration_external_exact_sql_recovery",
+    "reason": "Exact applied SQL has not been found locally or in scanned candidate artifacts; request deployment artifacts, backups, CI release bundles, or teammate clones before baseline fallback.",
+    "migration": "20260428120000_add_mbti_and_personality_tags",
+    "recommendedAction": "request-exact-sql-from-deployment-backup-or-team-clone"
+  },
+  "nextAction": "continue-external-exact-sql-recovery",
+  "guardrail": "This intake is only for checksum verification; do not copy candidates into apps/api/prisma/migrations or run Prisma write commands from this packet."
+}

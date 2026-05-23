@@ -25,6 +25,21 @@ import { ERR } from '../../common/constants/error-messages';
 
 /** Number of leading characters used for deduplication matching */
 const DEDUP_PREFIX_LENGTH = 50;
+const SOURCE_BACKED_PROMPT_WHERE: Prisma.EssayPromptWhereInput = {
+  sources: { some: { sourceUrl: { not: null } } },
+};
+
+interface EssayPromptQueryOptions {
+  requireSourceEvidence?: boolean;
+  includeSourceSummary?: boolean;
+}
+
+type PromptSourceSummaryInput = {
+  sourceType?: string | null;
+  sourceUrl?: string | null;
+  scrapedAt?: Date | string | null;
+  confidence?: number | null;
+};
 
 @Injectable()
 export class EssayPromptService {
@@ -80,7 +95,10 @@ export class EssayPromptService {
   /**
    * 查询文书题目列表
    */
-  async findAll(query: QueryEssayPromptDto) {
+  async findAll(
+    query: QueryEssayPromptDto,
+    options: EssayPromptQueryOptions = {},
+  ) {
     const {
       schoolId,
       year,
@@ -94,6 +112,7 @@ export class EssayPromptService {
 
     const where: Prisma.EssayPromptWhereInput = {
       isActive: true,
+      ...(options.requireSourceEvidence ? SOURCE_BACKED_PROMPT_WHERE : {}),
       ...(schoolId && { schoolId }),
       ...(year && { year }),
       ...(type && { type }),
@@ -116,7 +135,12 @@ export class EssayPromptService {
             select: SCHOOL_NAME_RANK_SELECT,
           },
           sources: {
-            select: { sourceType: true, sourceUrl: true, scrapedAt: true },
+            select: {
+              sourceType: true,
+              sourceUrl: true,
+              scrapedAt: true,
+              confidence: true,
+            },
           },
         },
         orderBy: [{ school: { usNewsRank: 'asc' } }, { sortOrder: 'asc' }],
@@ -126,7 +150,25 @@ export class EssayPromptService {
       this.prisma.essayPrompt.count({ where }),
     ]);
 
-    return { data, total, page, pageSize };
+    return {
+      data: options.includeSourceSummary
+        ? data.map((prompt) => this.withPublicSourceSummary(prompt))
+        : data,
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  async findAllPublic(query: QueryEssayPromptDto) {
+    return this.findAll(
+      {
+        ...query,
+        status:
+          EssayStatus.VERIFIED as unknown as QueryEssayPromptDto['status'],
+      },
+      { requireSourceEvidence: true, includeSourceSummary: true },
+    );
   }
 
   /**
@@ -158,8 +200,13 @@ export class EssayPromptService {
    * Public-safe version of findOne — excludes auditLogs and sources.
    */
   async findOnePublic(id: string) {
-    const essayPrompt = await this.prisma.essayPrompt.findUnique({
-      where: { id },
+    const essayPrompt = await this.prisma.essayPrompt.findFirst({
+      where: {
+        id,
+        isActive: true,
+        status: EssayStatus.VERIFIED,
+        ...SOURCE_BACKED_PROMPT_WHERE,
+      },
       select: {
         id: true,
         schoolId: true,
@@ -172,6 +219,14 @@ export class EssayPromptService {
         school: {
           select: SCHOOL_NAME_RANK_SELECT,
         },
+        sources: {
+          select: {
+            sourceType: true,
+            sourceUrl: true,
+            scrapedAt: true,
+            confidence: true,
+          },
+        },
       },
     });
 
@@ -179,10 +234,10 @@ export class EssayPromptService {
       throw new NotFoundException(ERR.NOT_FOUND.essayPrompt());
     }
 
-    return {
+    return this.withPublicSourceSummary({
       ...essayPrompt,
       schoolName: essayPrompt.school?.name || essayPrompt.school?.nameZh,
-    };
+    });
   }
 
   /**
@@ -193,13 +248,26 @@ export class EssayPromptService {
       schoolId,
       isActive: true,
       status: EssayStatus.VERIFIED,
+      ...SOURCE_BACKED_PROMPT_WHERE,
       ...(year && { year }),
     };
 
-    return this.prisma.essayPrompt.findMany({
+    const prompts = await this.prisma.essayPrompt.findMany({
       where,
       orderBy: [{ sortOrder: 'asc' }, { type: 'asc' }],
+      include: {
+        sources: {
+          select: {
+            sourceType: true,
+            sourceUrl: true,
+            scrapedAt: true,
+            confidence: true,
+          },
+        },
+      },
     });
+
+    return prompts.map((prompt) => this.withPublicSourceSummary(prompt));
   }
 
   /**
@@ -514,5 +582,64 @@ export class EssayPromptService {
         reason: extra?.reason,
       },
     });
+  }
+
+  private withPublicSourceSummary<
+    T extends { sources?: PromptSourceSummaryInput[] },
+  >(prompt: T) {
+    const { sources = [], ...rest } = prompt;
+    return {
+      ...rest,
+      sourceSummary: this.buildSourceSummary(sources),
+    };
+  }
+
+  private buildSourceSummary(sources: PromptSourceSummaryInput[]) {
+    const sourceUrls = Array.from(
+      new Set(
+        sources
+          .map((source) => source.sourceUrl?.trim())
+          .filter((url): url is string => Boolean(url)),
+      ),
+    );
+    const sourceTypes = Array.from(
+      new Set(
+        sources
+          .map((source) => source.sourceType?.trim())
+          .filter((sourceType): sourceType is string => Boolean(sourceType)),
+      ),
+    );
+    const scrapedAtValues = sources
+      .map((source) => source.scrapedAt)
+      .filter(Boolean)
+      .map((value) => new Date(value as string | Date))
+      .filter((date) => Number.isFinite(date.getTime()));
+    const confidenceValues = sources
+      .map((source) => source.confidence)
+      .filter(
+        (confidence): confidence is number =>
+          typeof confidence === 'number' && Number.isFinite(confidence),
+      );
+
+    return {
+      hasSourceEvidence: sourceUrls.length > 0,
+      sourceUrls,
+      sourceTypes,
+      sourceQuality: sourceTypes.some((type) =>
+        ['OFFICIAL', 'COMMON_APP', 'UC'].includes(type.toUpperCase()),
+      )
+        ? 'official'
+        : sourceTypes.length > 0
+          ? 'secondary'
+          : 'unknown',
+      latestScrapedAt:
+        scrapedAtValues.length > 0
+          ? new Date(
+              Math.max(...scrapedAtValues.map((date) => date.getTime())),
+            ).toISOString()
+          : null,
+      minConfidence:
+        confidenceValues.length > 0 ? Math.min(...confidenceValues) : null,
+    };
   }
 }

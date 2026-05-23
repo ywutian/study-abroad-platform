@@ -1,0 +1,242 @@
+{
+  "generatedAt": "2026-05-21T08:36:13.555Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-iowa-latest.json",
+      "generatedAt": "2026-05-21T08:36:06.587Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_review",
+        "reason": "University of Iowa has 1 manually checked source URLs with prompt matches; stage source rows for reviewer approval.",
+        "schoolId": "cmnwr8in0000mz0tiria7qm89",
+        "schoolName": "University of Iowa",
+        "recommendedAction": "stage-source-row-for-review"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8in0000mz0tiria7qm89",
+    "schoolName": "University of Iowa",
+    "sourceSearchPromptRows": 3,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": true,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 13,
+    "reachableHtmlUrls": 10,
+    "validatedSourceUrls": 1,
+    "trustedValidatedSourceUrls": 1,
+    "untrustedValidatedSourceUrls": 0,
+    "officialContextNoPromptMatchUrls": 5,
+    "promptMatchCount": 1,
+    "promptRows": 3,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 2,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of Iowa has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8in0000mz0tiria7qm89",
+    "schoolName": "University of Iowa",
+    "topEssayPromptId": "cmor8bqx900e31jbwvervlm7d",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor8bqx900e31jbwvervlm7d",
+      "schoolId": "cmnwr8in0000mz0tiria7qm89",
+      "schoolName": "University of Iowa",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor8bqx900e31jbwvervlm7d",
+      "promptSnippet": "At the University of Iowa, we expect our students to be engaged academically, intellectually, and personally. Please describe how one or more of your activities (personal, academic",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "https://www.commonapp.org/explore/university-iowa/",
+          "https://content.commonapp.org/Files/ReqGrid.pdf",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://honors.uiowa.edu/essay-writing-tips",
+          "https://www.pomona.edu/admissions/alerts"
+        ],
+        "finalUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "https://www.commonapp.org/explore/university-iowa/",
+          "https://content.commonapp.org/Files/ReqGrid.pdf",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://honors.uiowa.edu/essay-writing-tips",
+          "https://www.pomona.edu/admissions/alerts"
+        ],
+        "trustedValidatedSourceUrls": [
+          "https://www.pomona.edu/admissions/alerts"
+        ],
+        "untrustedValidatedSourceUrls": [],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts",
+          "writing supplement",
+          "supplemental essays"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026",
+          "2024"
+        ],
+        "evidenceSnippets": [
+          "e Apply How to Apply First Year Admissions First-Year Admissions Main navigation First Year Admissions Transfer Admissions International Admissions Additional Admission Options How to Apply Submit your application . You can apply through the University of Iowa application or the Common Application (fall session only). We make admission decisions on a rolling basis beginning in September based on college-specific admission requirements . Pay the application fee. The $55 application fee is non-refundable ( fee waiver available ). Have your ACT or SAT scores sent by the testing agency. Our institution code is 1356 for the ACT; 6681 for the SAT. We do not require the optional science section of the ACT. If you are providing a score for ACT tests taken after September 2025, ACT will calculate a composite score using the English, Math, and Reading sections. We will not recalculate a new composite score if you have a science subscore. Superscores will not be used for admission or scholarship consideration. No",
+          "common application",
+          "Phone number (319) 335-3847 For first-year students Admissions website admissions.uiowa.edu/apply/how-apply/ Financial aid website financialaid.uiowa.edu/ Region Midwest View more in this region Follow University of Iowa Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "ite See Zane State College Coed Rolling $0 $0 S See Website Website See Zaytuna College Coed 10/31/2025 01/31/2026 $50 $50 N See Website 3 Y Y Website NOTES: Transfer Applicants: The information on this grid is for first-year applicants only. To see which institutions accept the Common Application for Transfers, and what their specific requirements are, please consult www.commonapp.org. 1. Coed indicates a coeducational college, Women indicates a women's college, Men indicates a men's college, and Coordinate indicates two “coordinate” single-sex colleges geographically adjacent to each other that share an admission process, courses, faculty, etc. 2. Some colleges charge different fees for students from the U.S. and international applicants. Please consult the institution’s website for more specific instructions. 3. Common App Personal Essay (PE): The Common Application Personal Essay may be submitted to any college. This column indicates whether the college requires the Personal Essay. 4. Courses & Grad",
+          "writing supplement",
+          "latform for substantial content or using a platform’s output constitute application fraud. Such applications may be declined for admissions to the Honors Program or the revocation of admissions. To ensure the integrity of the admissions process, the Honors Program adheres to the Common Application’s Policy on Application Fraud and requires applicants to confirm that all information submitted is the applicant’s own work, is factually true, and has not used any artificial intelligence platform for content or output. Your Transcript You must have a pdf of your unofficial transcript that you, yourself, will upload into the honors application. This is in addition to the official transcript your high school will need to send to the University for admission and other purposes. It takes time to obtain a copy of your high school transcript so give yourself at least two to three weeks before the application deadline. Your transcript needs to include your senior year classes. Transfer students - we will need your",
+          "llowship Breadcrumb Home Essay Writing Tips Answer the question. This may seem like an obvious one, but we sometimes receive responses to questions we have not asked. This should be a new essay you have written about your self specifically in response to our prompt. Do not reuse common application or scholarship essays you have already written - it should be evident that you wrote a new essay in response to the question we have asked. Use the space you are given. We ask for a maximum of 750 words, but have not specified a minimum. While we see great essays at a variety of lengths, students who reach less than two thirds of the maximum words typically have not engaged with the essay prompt in a way that helps us get to know them (or that answers the question ). Remember that we want to get to know you. Most of our applicants will have good grades and scores, so we rely on your essay to get a sense of who you are. This is how you stand out. In reviewing your essay before submission, ask yourself 'could th",
+          "Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion?",
+          "ant applies. To create an account, visit The Common Application website . As a reminder, applicants to Pomona may use the Common Application, the Coalition Application or the Questbridge Application. For those applying to Pomona using the Common Application, we require two short supplemental essays. Those Pomona-specific essay prompts are now available on our Application Overview webpage . Applicants will choose to answer two of the three questions with responses of 200 to 250 words. Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion? Share your favorite quote, and tell us what it means to you. The quote can be from an author, leader, musical artist, family member or other source—famous or not. (The quote will not be part of the word limit.) We want to understand you better! Tell us about a skill you have (useless or useful) and what it says about you. September 17, 2018 Pomona College Admissions Office Expand",
+          "1 Early Decision deadline , please email admissions@pomona.edu with the request. If paying the application fee presents a financial hardship for you or your family, please request a fee waiver, consistent with our policies . Please request the “Pomona-specific fee waiver” on the Common Application, and we will automatically grant the waiver to domestic or international students. We will grant extensions to teachers and counselors for submission of the school profile, letters of recommendation, official transcripts and other materials. If an extension is needed beyond the application deadline, please email admissions@pomona.edu with your request. The Office of Financial Aid will work with families who may suffer from financial hardship as a result of natural disasters. If you have been impacted, please submit a letter of special circumstances to the Office of Financial Aid to alert us and we will work with you to take your circumstances into consideration. The College Board will automatically provide a C",
+          "supplemental essays"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxkzda00eteiz6ozsifgpr",
+      "schoolId": "cmnwr8in0000mz0tiria7qm89",
+      "schoolName": "University of Iowa",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkzda00eteiz6ozsifgpr",
+      "promptSnippet": "In 250 words or less, please briefly describe your academic interests and your reasons for wanting to study at the University of Iowa.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "https://www.commonapp.org/explore/university-iowa/",
+          "https://content.commonapp.org/Files/ReqGrid.pdf",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://honors.uiowa.edu/essay-writing-tips",
+          "https://www.pomona.edu/admissions/alerts"
+        ],
+        "finalUrls": [
+          "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "https://www.commonapp.org/explore/university-iowa/",
+          "https://content.commonapp.org/Files/ReqGrid.pdf",
+          "https://honors.uiowa.edu/application-materials-more-details",
+          "https://honors.uiowa.edu/essay-writing-tips",
+          "https://www.pomona.edu/admissions/alerts"
+        ],
+        "trustedValidatedSourceUrls": [
+          "https://www.pomona.edu/admissions/alerts"
+        ],
+        "untrustedValidatedSourceUrls": [],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts",
+          "writing supplement",
+          "supplemental essays"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026",
+          "2024"
+        ],
+        "evidenceSnippets": [
+          "e Apply How to Apply First Year Admissions First-Year Admissions Main navigation First Year Admissions Transfer Admissions International Admissions Additional Admission Options How to Apply Submit your application . You can apply through the University of Iowa application or the Common Application (fall session only). We make admission decisions on a rolling basis beginning in September based on college-specific admission requirements . Pay the application fee. The $55 application fee is non-refundable ( fee waiver available ). Have your ACT or SAT scores sent by the testing agency. Our institution code is 1356 for the ACT; 6681 for the SAT. We do not require the optional science section of the ACT. If you are providing a score for ACT tests taken after September 2025, ACT will calculate a composite score using the English, Math, and Reading sections. We will not recalculate a new composite score if you have a science subscore. Superscores will not be used for admission or scholarship consideration. No",
+          "common application",
+          "Phone number (319) 335-3847 For first-year students Admissions website admissions.uiowa.edu/apply/how-apply/ Financial aid website financialaid.uiowa.edu/ Region Midwest View more in this region Follow University of Iowa Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "ite See Zane State College Coed Rolling $0 $0 S See Website Website See Zaytuna College Coed 10/31/2025 01/31/2026 $50 $50 N See Website 3 Y Y Website NOTES: Transfer Applicants: The information on this grid is for first-year applicants only. To see which institutions accept the Common Application for Transfers, and what their specific requirements are, please consult www.commonapp.org. 1. Coed indicates a coeducational college, Women indicates a women's college, Men indicates a men's college, and Coordinate indicates two “coordinate” single-sex colleges geographically adjacent to each other that share an admission process, courses, faculty, etc. 2. Some colleges charge different fees for students from the U.S. and international applicants. Please consult the institution’s website for more specific instructions. 3. Common App Personal Essay (PE): The Common Application Personal Essay may be submitted to any college. This column indicates whether the college requires the Personal Essay. 4. Courses & Grad",
+          "writing supplement",
+          "latform for substantial content or using a platform’s output constitute application fraud. Such applications may be declined for admissions to the Honors Program or the revocation of admissions. To ensure the integrity of the admissions process, the Honors Program adheres to the Common Application’s Policy on Application Fraud and requires applicants to confirm that all information submitted is the applicant’s own work, is factually true, and has not used any artificial intelligence platform for content or output. Your Transcript You must have a pdf of your unofficial transcript that you, yourself, will upload into the honors application. This is in addition to the official transcript your high school will need to send to the University for admission and other purposes. It takes time to obtain a copy of your high school transcript so give yourself at least two to three weeks before the application deadline. Your transcript needs to include your senior year classes. Transfer students - we will need your",
+          "llowship Breadcrumb Home Essay Writing Tips Answer the question. This may seem like an obvious one, but we sometimes receive responses to questions we have not asked. This should be a new essay you have written about your self specifically in response to our prompt. Do not reuse common application or scholarship essays you have already written - it should be evident that you wrote a new essay in response to the question we have asked. Use the space you are given. We ask for a maximum of 750 words, but have not specified a minimum. While we see great essays at a variety of lengths, students who reach less than two thirds of the maximum words typically have not engaged with the essay prompt in a way that helps us get to know them (or that answers the question ). Remember that we want to get to know you. Most of our applicants will have good grades and scores, so we rely on your essay to get a sense of who you are. This is how you stand out. In reviewing your essay before submission, ask yourself 'could th",
+          "Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion?",
+          "ant applies. To create an account, visit The Common Application website . As a reminder, applicants to Pomona may use the Common Application, the Coalition Application or the Questbridge Application. For those applying to Pomona using the Common Application, we require two short supplemental essays. Those Pomona-specific essay prompts are now available on our Application Overview webpage . Applicants will choose to answer two of the three questions with responses of 200 to 250 words. Imagine having a 1 a.m. debate/discussion with your peers in college about an issue you care about. What is that issue, and what is the discussion? Share your favorite quote, and tell us what it means to you. The quote can be from an author, leader, musical artist, family member or other source—famous or not. (The quote will not be part of the word limit.) We want to understand you better! Tell us about a skill you have (useless or useful) and what it says about you. September 17, 2018 Pomona College Admissions Office Expand",
+          "1 Early Decision deadline , please email admissions@pomona.edu with the request. If paying the application fee presents a financial hardship for you or your family, please request a fee waiver, consistent with our policies . Please request the “Pomona-specific fee waiver” on the Common Application, and we will automatically grant the waiver to domestic or international students. We will grant extensions to teachers and counselors for submission of the school profile, letters of recommendation, official transcripts and other materials. If an extension is needed beyond the application deadline, please email admissions@pomona.edu with your request. The Office of Financial Aid will work with families who may suffer from financial hardship as a result of natural disasters. If you have been impacted, please submit a letter of special circumstances to the Office of Financial Aid to alert us and we will work with you to take your circumstances into consideration. The College Board will automatically provide a C",
+          "supplemental essays"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

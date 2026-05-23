@@ -1,0 +1,157 @@
+{
+  "generatedAt": "2026-05-21T10:18:55.575Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-tulane-latest.json",
+      "generatedAt": "2026-05-21T10:17:56.780Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Tulane University official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8im70006z0ti47aaywzj",
+        "schoolName": "Tulane University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8im70006z0ti47aaywzj",
+    "schoolName": "Tulane University",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 8,
+    "reachableHtmlUrls": 7,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 6,
+    "promptMatchCount": 0,
+    "promptRows": 1,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Tulane University has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8im70006z0ti47aaywzj",
+    "schoolName": "Tulane University",
+    "topEssayPromptId": "cmor88zto00bv1jbw6uouy4rg",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor88zto00bv1jbw6uouy4rg",
+      "schoolId": "cmnwr8im70006z0ti47aaywzj",
+      "schoolName": "Tulane University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor88zto00bv1jbw6uouy4rg",
+      "promptSnippet": "Please briefly elaborate on one of your extracurricular activities or work experiences.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://tulane.edu/apply",
+          "https://admission.tulane.edu/apply",
+          "https://admission.tulane.edu/apply/instructions",
+          "https://admission.tulane.edu/apply/deadlines-forms",
+          "https://apply.tulane.edu/apply/",
+          "https://www.commonapp.org/explore/tulane-university/"
+        ],
+        "finalUrls": [
+          "https://tulane.edu/apply",
+          "https://admission.tulane.edu/apply",
+          "https://admission.tulane.edu/apply/instructions",
+          "https://admission.tulane.edu/apply/deadlines-forms",
+          "https://apply.tulane.edu/apply/",
+          "https://www.commonapp.org/explore/tulane-university/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2024",
+          "2029",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "ulane Today Tulanian Magazine Calendar of Events Experts Press Releases Statements Athletics Account Login Email Gibson Online Apply to Tulane Undergraduate Admission You can apply for admission with no application fee to all of Tulane's undergraduate academic programs using the Common Application. Visit the Office of Undergraduate Admission to learn more . Access the Common Application Graduate Admission Each school at Tulane administers its own admission process for graduate and professional students, many of which do not require an application fee. Learn more about graduate admissions . Apply for Graduate Programs School of Professional Advancement The Tulane School of Professional Advancement is committed to helping working adults reach their full potential in their educations and careers. Visit the School of Professional Advancement for more information . Apply to SoPA ---> 6823 St. Charles Avenue New Orleans, LA 70118 504-865-5000 Maps & Directions Footer Menu II Give to Tulane Medical Center News",
+          "common application",
+          "ORMATION VISITING STUDENTS Apply to Tulane today using the application options below. All applications are reviewed the same way.--> How To Apply for Admission The 2025 freshman application now is open. --> The 2024 freshman application will open on August 1, 2023. --> Visit the Common Application to start your application for first-year or transfer admission. Common Application First-Year Application Information Application instructions What we’re looking for Application status Deadlines, forms and submissions Portfolios & auditions Secondary School Report (School Counselor Recommendation) † Are you from Louisiana? Our Focus Louisiana program encourages our best home-grown talent to study here. Are you a home-schooled student? Home-schooled students have the same application requirements as students from traditional schools. However, we do have some recommendations for the admission process based on successful homeschooled applicants who have been admitted in the past. These recommendations can be foun",
+          "ying to other schools or applying for financial aid. However, some Tulane merit scholarship applications (e.g. the Community Service Fellowship, artistic awards, etc.) are due in December, which may prohibit RD applicants from receiving those scholarships. Step 3 APPLY Visit the Common Application to start your application to Tulane. Step 4 Check your email for information about logging into... Your Green Wave Portal (Application Status Portal) There, you can review your application checklist (below) and begin working on separate scholarship applications. You will also receive information on logging into Gibson Online , where you may monitor the financial aid process. Application (including list of activities and personal statement) High School Transcript Secondary School Report/School Counselor Recommendation* SAT or ACT Scores (optional) Portfolio or audition materials (optional) *We do not require teacher recommendations (only a counselor recommendation), but we are happy to review additional recomme",
+          "ecommend you save any fillable PDF forms to your computer before filling in your information. All deadlines refer to postmark dates . Early Decision Applicants August 1 - Application Opens - Application Opens The Early Decision application for the fall of 2024 is now closed. --> Common Application November 1 - First-Year Early Decision Application Due Common Application --> - Early Decision Agreement Form * - Secondary School Report * - Certification of Finances ( international applicants )* - Optional portfolio/audition November 15 - Need-based financial aid applications CSS Profile FAFSA December 5 - Need-based financial aid applications FAFSA - Deans' Honor Scholarship - Paul Tulane Award - Community Service Fellowship - Stamps Scholarship - Studio Art Portfolio Award - Musicianship Scholarship --> by December 15 - Early Decision decisions released January 1 - Need-based financial aid applications FAFSA --> January 15 - Enrollment Deposit Deadline (non-refundable after this date) February 1 - Legisla",
+          "Apply Meet Us For Admits Information For... custom css-js - global Green Wave Portal Welcome to the Tulane application portal for full-time undergraduates! Freshman and transfer applications for the 2026-27 academic year will open August 1. --> All applicants must apply via the Common Application . &#xA0;For information on full-time undergraduate application options and deadlines, visit admission.tulane.edu/apply/deadlines-forms . It typically takes 24-48 hours for Tulane to receive a Common App after it has been submitted the first applications for 2026 will not begin arriving to Tulane until mid- to late August -->. As soon as we receive your application, you will receive an email notification with credentials to log into this portal. Returning users: Log in to continue an application. First-time users: Create an account to start a new application. To apply to pre-college and summer programs, visit summer.tulane.edu . To apply for part-time undergraduate programs, visit applysopa.tulane.edu . For inf",
+          "edu Financial aid website financialaid.tulane.edu For transfer students Admissions website admission.tulane.edu Financial aid website financialaid.tulane.edu Region South View more in this region Follow Tulane University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 6,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

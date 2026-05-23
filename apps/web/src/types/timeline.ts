@@ -24,6 +24,8 @@ export interface TaskResponse {
   completedAt?: string;
   essayPrompt?: string;
   wordLimit?: number;
+  sourceStatus?: 'generic' | 'source_backed' | 'source_review_required' | 'first_party';
+  sourcePolicy?: string;
   sortOrder: number;
 }
 

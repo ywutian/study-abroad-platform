@@ -1,0 +1,159 @@
+{
+  "generatedAt": "2026-05-21T10:46:52.988Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-uncw-latest.json",
+      "generatedAt": "2026-05-21T10:46:44.830Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "University of North Carolina Wilmington has untrusted prompt matches but official prompt-context pages did not match assigned prompt snippets; review source family before approval.",
+        "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+        "schoolName": "University of North Carolina Wilmington",
+        "recommendedAction": "review-untrusted-context-or-find-official-source"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+    "schoolName": "University of North Carolina Wilmington",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "manual-official-source-search-or-terminal"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 8,
+    "reachableHtmlUrls": 8,
+    "validatedSourceUrls": 3,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 3,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 1,
+    "promptMatchCount": 3,
+    "promptRows": 1,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_untrusted_source_or_official_conflict": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of North Carolina Wilmington has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+    "schoolName": "University of North Carolina Wilmington",
+    "topEssayPromptId": "cmor8qbd100m91jbwu01c8qgi",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor8qbd100m91jbwu01c8qgi",
+      "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+      "schoolName": "University of North Carolina Wilmington",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor8qbd100m91jbwu01c8qgi",
+      "promptSnippet": "Reflect on your identity, including your background and experiences, and how you envision your identity contributing to the UNCW community.",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/university-north-carolina-wilmington/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/unc-wilmington-supplemental-essay-prompt-guide/",
+          "https://blog.collegevine.com/how-to-write-the-unc-wilmington-essays",
+          "https://www.collegevine.com/schools/university-of-north-carolina-at-wilmington-unc-wilmington/essay-prompts"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/university-north-carolina-wilmington/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/unc-wilmington-supplemental-essay-prompt-guide/",
+          "https://blog.collegevine.com/how-to-write-the-unc-wilmington-essays",
+          "https://www.collegevine.com/schools/university-of-north-carolina-at-wilmington-unc-wilmington/essay-prompts"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://www.collegeessayadvisors.com/supplemental-essay/unc-wilmington-supplemental-essay-prompt-guide/",
+          "https://blog.collegevine.com/how-to-write-the-unc-wilmington-essays",
+          "https://www.collegevine.com/schools/university-of-north-carolina-at-wilmington-unc-wilmington/essay-prompts"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2024"
+        ],
+        "evidenceSnippets": [
+          "edu Phone number (910) 962-3243 For first-year students Admissions website uncw.edu/admissions/undergraduate/ Financial aid website uncw.edu/finaid/ Region South View more in this region Follow University of North Carolina Wilmington Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Reflect on your identity, including your background and experiences, and how you envision your identity contributing to the UNCW community.",
+          "r How did you find CEA? Internet Search Podcast New York Times Guidance counselor/school Social Media YouTube Friend Special Event Delehey College Consulting Perks at Work Repeat Client Other I am potentially interested in (select all that apply): Common App and Coalition Essays Supplemental Essays University of California Essays University of Texas Essays BSMD Essays Resume Review Graduate Essays (Law, Biz, Med, etc.) Private School Essays General College Counseling Other GPA: School list with priorities noted: Anything else we should know? Email This field is for validation purposes and should be left unchanged. &#916; School Stats: State: North Carolina Acceptance Rate: 69% Undergrad Population: 14,494 Out-of-State Tuition: $22,597 In-State Tuition: $4,443 Supplemental Essay Prompt Guides: Agnes Scott College Alvernia University American University Amherst College Appalachian State University Babson College Bard College Barnard College Baylor University Berry College Bethany College Bishop’s Universit",
+          "Started University of North Carolina Wilmington (UNC) 2025-26 Supplemental Essay Prompt Guide No Time To Lose! The UNC Wilmington Deadline Countdown is on: Regular Decision Deadline: Feb 1 You Have: We can help you draft in time for submission! UNC Wilmington 2025-26 Application Essay Question Explanations The Requirements: Why Supplemental Essay Type(s): 1 essay of 250 words All writing is carefully reviewed by the Admission Committee for content, clarity, mechanics and effort. Responses are an important factor in distinguishing admissible candidates within the applicant pool. Please respond to the following prompt thoughtfully. Your response should be approximately 250 words. Reflect on your identity, including your background and experiences, and how you envision your identity contributing to the UNCW community. UNC Wilmington wants to accept students from a range of backgrounds who will contribute to their community, so tell admissions about what makes you you and how that will inform your engag",
+          "ught so. Sign up for free instructional videos, guides, worksheets and more! One-On-One Advising Learn more » Common App Essay Prompt Guide Learn more » Supplemental Essay Prompt Guide Learn more » YouTube Tutorials Learn more » Contact us for rates and more! One-On-One Advising Common Application Essay Supplemental Essays UC Essays Postgrad Essays Assessments and Revisions Resources Common App Guide Supplemental Essay Guide UC Essay Guide Notification Dates Sitemap FAQ Reviews Careers Partnerships CEA Gives Back Press Contact Join the VIP List Get admissions news, writing tips, and insight into our advising process. Be Social Watch, Listen and Learn Privacy Policy | Terms of Use | Cookie Policy © 2026 College Essay Advisors. All Rights Reserved. Home Book College EssAI About Why CEA? Meet The Founder Meet the Team Uncommon College Essay Process Testimonials Where Our Students Get In CEA’s Take on AI Press FAQ One-On-One Advising Undergraduate Admissions Graduate Admissions Medical School Admissions Bus",
+          "supplemental essays",
+          "essay question"
+        ],
+        "officialContextNoPromptMatchUrls": 1,
+        "promptMatchCount": 3
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

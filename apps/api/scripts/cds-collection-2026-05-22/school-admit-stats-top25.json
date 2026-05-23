@@ -1,0 +1,857 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-05-22T11:00:00.000Z",
+  "approach": "Claude direct via WebSearch tool, parsed by Claude (this session)",
+  "confidenceTierDefinitions": {
+    "HIGH": "Official CDS or school admissions office publication",
+    "MEDIUM": "Crimson Education / IvyWise / school admissions blog aggregate",
+    "LOW": "NACAC / Common App cross-school baseline aggregate"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "princeton university",
+      "displayName": "Princeton University",
+      "rank": 1,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0462,
+          "tier": "HIGH",
+          "sources": [
+            {
+              "url": "https://admission.princeton.edu/apply/admission-statistics",
+              "snippet": "Class of 2028: 40,468 applications, 1,868 admits, 4.62%"
+            },
+            {
+              "url": "https://www.commondatasets.fyi/princeton",
+              "snippet": "2023-2024: 4.5%, 39,644 apps, 1,782 admits"
+            }
+          ]
+        },
+        "edAcceptanceRate": {
+          "value": null,
+          "tier": "HIGH",
+          "note": "Princeton stopped releasing EA/RD split since Class of 2024. Historical (Class 2023): EA 13.93% vs RD 4.19% = ~3.3x multiplier",
+          "historicalEaRate": 0.1393,
+          "historicalRdRate": 0.0419
+        },
+        "eaAcceptanceRate": {
+          "value": null,
+          "tier": "HIGH",
+          "note": "Princeton REA / single-choice EA"
+        },
+        "intlAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Not disclosed. Class composition: 17.6% intl"
+        },
+        "sat25": {
+          "value": 1510,
+          "tier": "HIGH",
+          "source": "CDS C-9 2023-2024"
+        },
+        "sat75": {
+          "value": 1560,
+          "tier": "HIGH",
+          "source": "CDS C-9 2023-2024"
+        },
+        "satMedian": { "value": 1540, "tier": "HIGH" },
+        "act25": { "value": 34, "tier": "HIGH" },
+        "act75": { "value": 35, "tier": "HIGH" },
+        "actMedian": { "value": 34, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "HIGH",
+          "source": "CDS C-11 2023-2024",
+          "bands": [
+            { "range": "4.0", "pct": 0.667 },
+            { "range": "3.75-3.99", "pct": 0.267 },
+            { "range": "3.50-3.74", "pct": 0.044 },
+            { "range": "<3.50", "pct": 0.022 }
+          ]
+        },
+        "legacyClassPct": {
+          "value": 0.112,
+          "tier": "HIGH",
+          "source": "Class of 2028 official; rises to 18% including siblings/grandparents",
+          "legacyAdmitRate": 0.31,
+          "legacyAdmitMultiplier": 6.7
+        },
+        "athleteClassPct": {
+          "value": 0.18,
+          "tier": "MEDIUM",
+          "athleteAdmitRate": 0.3,
+          "note": "Recruited athletes ~18% of undergrad body, admit rate ~30% = ~6.5x"
+        },
+        "firstGenClassPct": { "value": 0.16, "tier": "HIGH" },
+        "intlStudentPct": {
+          "value": 0.176,
+          "tier": "HIGH",
+          "note": "Class of 2028"
+        }
+      },
+      "ecProfile": {
+        "tier": "MEDIUM",
+        "note": "Princeton does not publish EC profile statistics in CDS"
+      },
+      "totalApps": 40468,
+      "totalAdmits": 1868
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "displayName": "Massachusetts Institute of Technology",
+      "rank": 2,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.05,
+          "tier": "HIGH",
+          "sources": [
+            {
+              "url": "https://ir.mit.edu/projects/2023-24-common-data-set/",
+              "snippet": "MIT 2023-24 CDS overall ~5%"
+            }
+          ]
+        },
+        "eaAcceptanceRate": {
+          "value": 0.052,
+          "tier": "HIGH",
+          "source": "MIT Class of 2028: 12,563 EA apps, 661 admits = 5.2%"
+        },
+        "edAcceptanceRate": null,
+        "intlAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "MIT is fully need-blind for internationals (rare among elite). Intl admit ratio relative to domestic is similar."
+        },
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1570, "tier": "HIGH" },
+        "act25": { "value": 34, "tier": "HIGH" },
+        "act75": { "value": 36, "tier": "HIGH" },
+        "satMath_median": { "value": 800, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "MEDIUM",
+          "note": "MIT does not publish admit GPA distribution. Most admits 3.5+; 99% of class-rank-reporting students in top 10%"
+        },
+        "classRankTop10Pct": {
+          "value": 0.99,
+          "tier": "HIGH",
+          "note": "Of the 28% who submitted"
+        },
+        "legacyClassPct": {
+          "value": 0.0,
+          "tier": "HIGH",
+          "source": "MIT publicly states it does not consider legacy in admissions",
+          "legacyAdmitMultiplier": 1.0
+        },
+        "athleteClassPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "MIT D3 sports, no athletic scholarships. Recruited athletes exist but small share."
+        },
+        "firstGenClassPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "estimate": 0.16
+        },
+        "intlStudentPct": { "value": 0.1, "tier": "HIGH" },
+        "needBlindInternational": true
+      },
+      "ecProfile": {
+        "tier": "MEDIUM",
+        "note": "STEM-heavy. Crimson reports T20 STEM admits typically have national-level STEM awards (USAMO, USACO, Intel, etc.)"
+      },
+      "totalAppsEA": 12563,
+      "totalAdmitsEA": 661
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "displayName": "Harvard University",
+      "rank": 3,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.034,
+          "tier": "HIGH",
+          "source": "Harvard CDS 2023-2024 (Class of 2027)"
+        },
+        "eaAcceptanceRate": {
+          "value": 0.085,
+          "tier": "HIGH",
+          "note": "EA ~8-9%, RD ~2.7%"
+        },
+        "rdAcceptanceRate": { "value": 0.027, "tier": "HIGH" },
+        "edAcceptanceRate": null,
+        "intlAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Highly competitive for intl; not separately published"
+        },
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1580, "tier": "HIGH" },
+        "act25": { "value": 34, "tier": "HIGH" },
+        "act75": { "value": 36, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "HIGH",
+          "source": "Class of 2029 self-reported",
+          "bands": [
+            { "range": "4.0", "pct": 0.724 },
+            { "range": "3.75-3.99", "pct": 0.2 },
+            { "range": "<3.75", "pct": 0.076 }
+          ],
+          "avgRange": "3.9-4.0"
+        },
+        "classRankTop10Pct": { "value": 0.94, "tier": "HIGH" },
+        "classRankTop25Pct": { "value": 0.99, "tier": "HIGH" },
+        "legacyClassPct": {
+          "value": null,
+          "tier": "HIGH",
+          "legacyAdmitRate": 0.33,
+          "legacyAdmitMultiplier": 5.5,
+          "source": "SFFA case data 2014-2019: 33% legacy admit vs 6% overall = 5.5x"
+        },
+        "athleteClassPct": {
+          "value": null,
+          "tier": "HIGH",
+          "athleteAdmitRate": 0.86,
+          "athleteAdmitMultiplier": 20.0,
+          "source": "Recruited athletes ~86% admit rate vs 4.2% overall = ~20x"
+        },
+        "aldcOfAdmits": {
+          "value": 0.33,
+          "tier": "HIGH",
+          "note": "ALDC = Athletes/Legacies/Donors/Faculty kids = ~33% of admits but only 5% of apps"
+        },
+        "firstGenClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": 0.16, "tier": "HIGH" }
+      },
+      "ecProfile": {
+        "tier": "MEDIUM",
+        "note": "Holistic review heavy; no published EC stats"
+      }
+    },
+    {
+      "schoolNameNorm": "stanford university",
+      "displayName": "Stanford University",
+      "rank": 3,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0391,
+          "tier": "HIGH",
+          "source": "Stanford CDS 2023-2024: 53,733 apps, 2,099 admits"
+        },
+        "edAcceptanceRate": null,
+        "eaAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Stanford REA — not officially published. Estimated 2x RD rate, so ~7-8%"
+        },
+        "intlAcceptanceRate": { "value": null, "tier": "MEDIUM" },
+        "sat25": { "value": 1500, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "MEDIUM",
+          "note": "Stanford does not publish GPA distribution. Reported avg ~3.9"
+        },
+        "gpaAvg": { "value": 3.9, "tier": "MEDIUM" },
+        "legacyClassPct": {
+          "value": 0.16,
+          "tier": "HIGH",
+          "source": "Stanford enrolls legacies at ~16% of class",
+          "note": "Legacy boost only in REA round",
+          "legacyAdmitRate": 0.11,
+          "legacyAdmitMultiplier": 2.8
+        },
+        "athleteClassPct": {
+          "value": 0.12,
+          "tier": "HIGH",
+          "source": "12% of enrolled are recruited D1 athletes (36 varsity teams)",
+          "note": "Athletes get +48pp admit bump (vs 4% baseline)"
+        },
+        "firstGenClassPct": { "value": 0.21, "tier": "HIGH" },
+        "intlStudentPct": {
+          "value": 0.114,
+          "tier": "HIGH",
+          "note": "11.4% of admits are international"
+        },
+        "publicHsPct": { "value": 0.66, "tier": "HIGH" }
+      },
+      "ecProfile": {
+        "tier": "MEDIUM",
+        "note": "Stanford emphasizes intellectual vitality + spike. STEM admits typically have research/competition awards."
+      },
+      "totalApps": 53733,
+      "totalAdmits": 2099
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "displayName": "Yale University",
+      "rank": 5,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0373,
+          "tier": "HIGH",
+          "source": "Class of 2028: 57,465 apps, 2,146 admits"
+        },
+        "eaAcceptanceRate": {
+          "value": 0.0902,
+          "tier": "HIGH",
+          "source": "Class of 2028 SCEA"
+        },
+        "rdAcceptanceRate": { "value": 0.0275, "tier": "HIGH" },
+        "edAcceptanceRate": null,
+        "satMedian": { "value": 1540, "tier": "HIGH" },
+        "actMedian": { "value": 35, "tier": "HIGH" },
+        "sat25": { "value": 1500, "tier": "MEDIUM" },
+        "sat75": { "value": 1580, "tier": "MEDIUM" },
+        "classRankTop10Pct": { "value": 0.96, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW", "note": "Yale CDS GPA marked N/A" },
+        "legacyClassPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "legacyAdmitMultiplier": 4.5
+        },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 57465
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "displayName": "University of Pennsylvania",
+      "rank": 6,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0587,
+          "tier": "HIGH",
+          "source": "UPenn CDS 2023-2024: 59,465 apps, 3,489 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.1422,
+          "tier": "HIGH",
+          "source": "Class of 2028: 8,683 ED apps, 1,235 admits"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1500, "tier": "HIGH" },
+        "sat75": { "value": 1570, "tier": "HIGH" },
+        "satMedian": { "value": 1540, "tier": "HIGH" },
+        "gpaMedian": { "value": 3.9, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "LOW",
+          "note": "UPenn CDS GPA percentiles N/A"
+        },
+        "legacyClassPct": {
+          "value": null,
+          "tier": "HIGH",
+          "legacyOfEdAdmits": 0.24,
+          "legacyAdmitMultiplier": 5.5,
+          "source": "Legacy ~24% of Penn ED admits; 5-6x boost"
+        },
+        "athleteClassPct": {
+          "value": 0.1,
+          "tier": "HIGH",
+          "athleteOfEdPool": 0.2,
+          "source": "Student-athletes 10% of undergrad body, 20% of ED pool"
+        },
+        "firstGenClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Class of 2028 reps 109 countries"
+        }
+      },
+      "totalApps": 59465,
+      "totalAdmits": 3489,
+      "totalEdApps": 8683,
+      "totalEdAdmits": 1235
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "displayName": "California Institute of Technology",
+      "rank": 7,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.025,
+          "tier": "HIGH",
+          "source": "Class of 2028: 13,856 apps, 356 admits"
+        },
+        "eaAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Caltech REA — admit rates similar to RD (~5%)"
+        },
+        "edAcceptanceRate": null,
+        "sat25": { "value": 1540, "tier": "HIGH" },
+        "sat75": { "value": 1590, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "MEDIUM",
+          "note": "Most admits near 4.0 unweighted, full AP/IB load"
+        },
+        "legacyClassPct": {
+          "value": 0.0,
+          "tier": "HIGH",
+          "note": "Caltech does not consider legacy",
+          "legacyAdmitMultiplier": 1.0
+        },
+        "athleteClassPct": {
+          "value": 0.0,
+          "tier": "HIGH",
+          "note": "Caltech D3, no athletic recruiting bump"
+        },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 13856,
+      "totalAdmits": 356
+    },
+    {
+      "schoolNameNorm": "duke university",
+      "displayName": "Duke University",
+      "rank": 7,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.051,
+          "tier": "HIGH",
+          "source": "Class of 2028: 54,191 apps, ~2,764 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.129,
+          "tier": "HIGH",
+          "source": "Class of 2028 ED"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": {
+          "tier": "MEDIUM",
+          "note": "Most admits 3.75-4.0, top 10% HS class"
+        },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "D1 sports with recruiting"
+        },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 54191
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "displayName": "Brown University",
+      "rank": 9,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0523,
+          "tier": "HIGH",
+          "source": "CDS 2023-2024: 51,316 apps, 2,686 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.1435,
+          "tier": "HIGH",
+          "source": "Class of 2028: 6,251 ED apps, 898 admits"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "satMedian": { "value": 1540, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "legacyAdmitMultiplier": 4.5
+        },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 51316,
+      "totalAdmits": 2686
+    },
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "displayName": "Johns Hopkins University",
+      "rank": 9,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": { "value": 0.064, "tier": "HIGH" },
+        "edAcceptanceRate": { "value": 0.117, "tier": "HIGH" },
+        "eaAcceptanceRate": null,
+        "intlAcceptanceRate": {
+          "value": 0.045,
+          "tier": "HIGH",
+          "source": "10,700 intl apps, 480 admits = 4.5%"
+        },
+        "sat25": { "value": 1530, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      }
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "displayName": "Northwestern University",
+      "rank": 9,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": null,
+          "tier": "HIGH",
+          "note": "Class of 2028 overall not isolated; RD 5.91%"
+        },
+        "rdAcceptanceRate": { "value": 0.0591, "tier": "HIGH" },
+        "edAcceptanceRate": {
+          "value": 0.2301,
+          "tier": "HIGH",
+          "source": "Class of 2028: 5,154 ED apps, 1,186 admits"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Test-optional; not published Class of 2028"
+        },
+        "sat75": { "value": null, "tier": "MEDIUM" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalEdApps": 5154,
+      "totalEdAdmits": 1186
+    },
+    {
+      "schoolNameNorm": "columbia university",
+      "displayName": "Columbia University",
+      "rank": 12,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0385,
+          "tier": "HIGH",
+          "source": "Class of 2028: 60,248 apps"
+        },
+        "edAcceptanceRate": {
+          "value": 0.1323,
+          "tier": "HIGH",
+          "source": "Class of 2028: 6,007 ED apps, 795 admits"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "act25": { "value": 34, "tier": "HIGH" },
+        "act75": { "value": 36, "tier": "HIGH" },
+        "classRankTop10Pct": { "value": 0.94, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 60248
+    },
+    {
+      "schoolNameNorm": "cornell university",
+      "displayName": "Cornell University",
+      "rank": 12,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.084,
+          "tier": "HIGH",
+          "source": "Class of 2028: 65,612 apps, 5,516 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.116,
+          "tier": "HIGH",
+          "source": "Class of 2028: 9,973 ED apps, 1,161 admits"
+        },
+        "rdAcceptanceRate": { "value": 0.078, "tier": "HIGH" },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 65612
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "displayName": "University of Chicago",
+      "rank": 12,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.0448,
+          "tier": "HIGH",
+          "source": "Class of 2028: 43,612 apps, 1,955 admits"
+        },
+        "edAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "UChicago does not release ED/EA/RD breakdown"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1590, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 43612,
+      "totalAdmits": 1955
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "displayName": "Rice University",
+      "rank": 17,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.08,
+          "tier": "HIGH",
+          "source": "Class of 2028"
+        },
+        "edAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "Class of 2028 ED I: 447 admits; full ED+EDII rate not yet published"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      }
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "displayName": "Dartmouth College",
+      "rank": 18,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.054,
+          "tier": "HIGH",
+          "source": "Class of 2028: 31,656 apps"
+        },
+        "edAcceptanceRate": {
+          "value": 0.1918,
+          "tier": "HIGH",
+          "source": "Class of 2028: 3,551 ED apps, 606 admits"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1480, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 31656,
+      "totalEdApps": 3551,
+      "totalEdAdmits": 606
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "displayName": "Vanderbilt University",
+      "rank": 18,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.051,
+          "tier": "HIGH",
+          "source": "Class of 2028"
+        },
+        "edAcceptanceRate": {
+          "value": 0.152,
+          "tier": "HIGH",
+          "source": "Class of 2028 ED I+II: 5,835 apps"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1500, "tier": "HIGH" },
+        "sat75": { "value": 1570, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalEdApps": 5835
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "displayName": "University of Notre Dame",
+      "rank": 20,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.111,
+          "tier": "HIGH",
+          "source": "Class of 2028: 29,943 apps"
+        },
+        "eaAcceptanceRate": {
+          "value": 0.111,
+          "tier": "HIGH",
+          "note": "Note: REA admit rate reported same as overall, suggests merged numbers"
+        },
+        "edAcceptanceRate": null,
+        "sat25": { "value": 1470, "tier": "HIGH" },
+        "sat75": { "value": 1540, "tier": "HIGH" },
+        "classRankTop10Pct": { "value": 0.92, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 29943
+    },
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "displayName": "University of Michigan, Ann Arbor",
+      "rank": 21,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": { "value": 0.156, "tier": "HIGH" },
+        "eaAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "UMich EA non-binding, ~half of class admitted via EA but rate not separately published"
+        },
+        "edAcceptanceRate": null,
+        "oosAcceptanceRate": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "OOS significantly more competitive than in-state"
+        },
+        "sat25": { "value": 1360, "tier": "HIGH" },
+        "sat75": { "value": 1530, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": {
+          "value": null,
+          "tier": "MEDIUM",
+          "note": "D1 Big Ten, recruiting present"
+        },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      }
+    },
+    {
+      "schoolNameNorm": "carnegie mellon university",
+      "displayName": "Carnegie Mellon University",
+      "rank": 24,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.116,
+          "tier": "HIGH",
+          "source": "Class of 2028: 33,941 apps, 3,959 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.138,
+          "tier": "HIGH",
+          "note": "Alternative source: 4,528 ED apps, 567 admits = 12.5%"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1510, "tier": "HIGH" },
+        "sat75": { "value": 1560, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" },
+        "note": "CMU SCS (CS school) has much lower admit rate than overall — likely ~5-8%"
+      },
+      "totalApps": 33941
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "displayName": "Georgetown University",
+      "rank": 22,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.1291,
+          "tier": "HIGH",
+          "source": "Class of 2028: 26,131 apps, 3,374 admits"
+        },
+        "eaAcceptanceRate": {
+          "value": 0.1026,
+          "tier": "HIGH",
+          "source": "Class of 2028 EA: 8,584 apps, 881 admits"
+        },
+        "edAcceptanceRate": null,
+        "sat25": { "value": 1400, "tier": "HIGH" },
+        "sat75": { "value": 1540, "tier": "HIGH" },
+        "classRankAvg": { "value": "top 6%", "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 26131
+    },
+    {
+      "schoolNameNorm": "emory university",
+      "displayName": "Emory University",
+      "rank": 24,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.145,
+          "tier": "HIGH",
+          "source": "Class of 2028: 34,914 apps, 5,058 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.32,
+          "tier": "HIGH",
+          "note": "EDI: 32%, EDII Oxford 11%, EDII ECAS 12%"
+        },
+        "ed2AcceptanceRate": { "value": 0.12, "tier": "HIGH" },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1480, "tier": "MEDIUM" },
+        "sat75": { "value": 1540, "tier": "MEDIUM" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 34914
+    },
+    {
+      "schoolNameNorm": "washington university in st. louis",
+      "displayName": "Washington University in St. Louis",
+      "rank": 24,
+      "cycleYear": 2024,
+      "fields": {
+        "acceptanceRate": {
+          "value": 0.12,
+          "tier": "HIGH",
+          "source": "Class of 2028: 32,754 apps, 3,951 admits"
+        },
+        "edAcceptanceRate": {
+          "value": 0.25,
+          "tier": "HIGH",
+          "source": "Class of 2028 ED I+II: 4,817 apps, 1,217 admits"
+        },
+        "eaAcceptanceRate": null,
+        "sat25": { "value": 1500, "tier": "HIGH" },
+        "sat75": { "value": 1570, "tier": "HIGH" },
+        "gpaDistribution": { "tier": "LOW" },
+        "legacyClassPct": { "value": null, "tier": "MEDIUM" },
+        "athleteClassPct": { "value": null, "tier": "MEDIUM" },
+        "intlStudentPct": { "value": null, "tier": "MEDIUM" }
+      },
+      "totalApps": 32754,
+      "totalEdApps": 4817,
+      "totalEdAdmits": 1217
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorvz98u007hrazuse0papfp","cmn1htkoo000qvqf2jgkrffw1","Washington University in St. Louis","ACTIVITY","critical","/admin/essay-prompts/cmorvz98u007hrazuse0papfp","Submit a detailed description of one project completed during high school that reflects creativity, energy, and an entrepreneurial spirit.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

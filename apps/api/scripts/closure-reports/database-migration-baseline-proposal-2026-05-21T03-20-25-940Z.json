@@ -1,0 +1,291 @@
+{
+  "generatedAt": "2026-05-21T03:20:25.942Z",
+  "mode": "read-only-database-migration-baseline-proposal",
+  "status": "PASS_NO_DB_MIGRATION_BLOCKER",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "operatorApprovalGranted": false,
+  "prismaResolveOrDeployExecuted": false,
+  "sourceArtifacts": {
+    "schemaWorklist": {
+      "path": "../../../../../../tmp/database-schema-compatibility-latest.json",
+      "exists": true,
+      "status": "BLOCKED",
+      "generatedAt": "2026-05-21T03:00:47.171Z",
+      "error": null
+    },
+    "migrationReconciliation": {
+      "path": "../../../../../../tmp/database-migration-history-reconciliation-latest.json",
+      "exists": true,
+      "status": "BLOCKED_UNRECOVERABLE_MIGRATION_HISTORY",
+      "generatedAt": "2026-05-21T03:07:00.517Z",
+      "error": null
+    },
+    "restoreCandidateBundle": {
+      "path": "../../../../../../tmp/database-migration-restore-candidate-bundle-latest.json",
+      "exists": true,
+      "status": "STAGED_RESTORE_CANDIDATES_WITH_BLOCKERS",
+      "generatedAt": "2026-05-21T03:07:15.229Z",
+      "error": null
+    },
+    "checksumReview": {
+      "path": "../../../../../../tmp/database-migration-checksum-review-latest.json",
+      "exists": true,
+      "status": "PASS",
+      "generatedAt": "2026-05-21T03:07:29.165Z",
+      "error": null
+    },
+    "checksumVariantAnalysis": {
+      "path": null,
+      "exists": false,
+      "status": null,
+      "generatedAt": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    "localArtifactSearch": {
+      "path": null,
+      "exists": false,
+      "status": null,
+      "generatedAt": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    "externalArtifactPacket": {
+      "path": null,
+      "exists": false,
+      "status": null,
+      "generatedAt": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    "baselineResolution": {
+      "path": "../../../../../../tmp/database-migration-baseline-resolution-latest.json",
+      "exists": true,
+      "status": "PASS_NO_MISMATCH",
+      "generatedAt": "2026-05-21T03:19:30.959Z",
+      "error": null
+    },
+    "baselineScopePreflight": {
+      "path": null,
+      "exists": false,
+      "status": null,
+      "generatedAt": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    "backupEvidencePacket": {
+      "path": null,
+      "exists": false,
+      "status": null,
+      "generatedAt": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    "baselineApprovalRequest": {
+      "path": null,
+      "exists": false,
+      "status": null,
+      "generatedAt": null,
+      "error": "No artifact path provided and no latest report was found"
+    }
+  },
+  "summary": {
+    "schemaWorklistStatus": "BLOCKED",
+    "schemaRows": 37,
+    "missingTables": 1,
+    "missingColumns": 0,
+    "unappliedRepoMigrations": 1,
+    "appliedMigrationsMissingFromRepo": 5,
+    "reconciliationStatus": "BLOCKED_UNRECOVERABLE_MIGRATION_HISTORY",
+    "recoverableFromGit": 4,
+    "checksumMatchedRows": 4,
+    "checksumMismatchRows": 0,
+    "restoreBundleStatus": "STAGED_RESTORE_CANDIDATES_WITH_BLOCKERS",
+    "stagedRestoreCandidates": 4,
+    "restoreBundleBlockedRows": 1,
+    "checksumReviewStatus": "PASS",
+    "unresolvedChecksumMismatches": 0,
+    "checksumVariantAnalysisStatus": null,
+    "checksumVariantChecks": 0,
+    "checksumVariantExactMatches": 0,
+    "checksumVariantUnresolved": 0,
+    "localArtifactSearchStatus": null,
+    "localCandidateFilesRead": 0,
+    "externalArtifactPacketStatus": null,
+    "externalFilesScanned": 0,
+    "externalArchivesScanned": 0,
+    "externalArchiveEntriesScanned": 0,
+    "exactSqlArtifactMatches": 0,
+    "baselineResolutionStatus": "PASS_NO_MISMATCH",
+    "baselineDecision": "continue-external-search",
+    "baselineTargetScope": null,
+    "baselineApprovalReady": false,
+    "baselineMissingRequiredFields": 0,
+    "baselineDbWriteAllowed": false,
+    "baselineScopePreflightStatus": null,
+    "baselineScopeEffectiveTarget": null,
+    "baselineScopeMissingInputs": 0,
+    "baselineScopeBackupEvidenceProvided": false,
+    "backupEvidencePacketStatus": null,
+    "backupEvidenceReady": false,
+    "backupEvidenceMissingInputs": 0,
+    "backupArtifactExists": false,
+    "baselineApprovalRequestStatus": null,
+    "baselineApprovalRequestReady": false,
+    "baselineApprovalMissingInputs": 0,
+    "baselineRequiredFields": []
+  },
+  "baselineDecisionHandoff": {
+    "status": "PASS_NO_MISMATCH",
+    "generatedAt": "2026-05-21T03:19:30.959Z",
+    "path": "../../../../../../tmp/database-migration-baseline-resolution-latest.json",
+    "approvalReady": false,
+    "destructiveDbWriteAllowedByThisPlan": false,
+    "summary": {
+      "checksumReviewStatus": "PASS",
+      "externalArtifactPacketStatus": null,
+      "checksumMismatchRows": 0,
+      "unresolvedChecksumMismatches": 0,
+      "exactMatchLocations": 0,
+      "externalExactArtifactMatches": 0,
+      "combinedExactArtifactMatches": 0,
+      "decision": "continue-external-search",
+      "targetScope": null,
+      "approvalReady": false,
+      "missingRequiredFields": 0,
+      "productionScopeAllowed": false,
+      "destructiveDbWriteAllowedByThisPlan": false
+    },
+    "requiredOperatorInputs": [
+      {
+        "key": "external-exact-sql-or-baseline-decision",
+        "requiredWhen": "checksum mismatch has no local exact SQL match",
+        "required": false,
+        "provided": false,
+        "expected": "exact SQL artifact match, restore-exact-sql decision, or baseline-resolve-local-only decision",
+        "actual": "continue-external-search"
+      },
+      {
+        "key": "target-scope",
+        "requiredWhen": "baseline-resolve-local-only",
+        "required": false,
+        "provided": false,
+        "expected": "local-existing|local-disposable|staging-clone",
+        "actual": null
+      },
+      {
+        "key": "approved-operator-workflow",
+        "requiredWhen": "baseline-resolve-local-only or restore-exact-sql",
+        "required": false,
+        "provided": false,
+        "expected": "approved workflow id",
+        "actual": null
+      },
+      {
+        "key": "operator-ack",
+        "requiredWhen": "baseline-resolve-local-only or restore-exact-sql",
+        "required": false,
+        "provided": false,
+        "expected": "APPROVED_DATABASE_MIGRATION_BASELINE_RESOLVE",
+        "actual": null
+      },
+      {
+        "key": "rationale",
+        "requiredWhen": "baseline-resolve-local-only or restore-exact-sql",
+        "required": false,
+        "provided": false,
+        "expected": "operator rationale",
+        "actual": null
+      },
+      {
+        "key": "backup-evidence",
+        "requiredWhen": "baseline-resolve-local-only",
+        "required": false,
+        "provided": false,
+        "expected": "backup, disposable DB, or staging clone evidence",
+        "actual": null
+      }
+    ],
+    "operatorGuardrails": {
+      "mode": "read-only",
+      "productionScopeAllowed": false,
+      "supportedBaselineScopes": [
+        "local-existing",
+        "local-disposable",
+        "staging-clone"
+      ],
+      "requiredAck": "APPROVED_DATABASE_MIGRATION_BASELINE_RESOLVE",
+      "destructiveDbWriteAllowedByThisPlan": false,
+      "writeCommandsIntentionallyOmitted": [
+        "prisma migrate resolve",
+        "prisma migrate deploy",
+        "prisma db push",
+        "SQL restore",
+        "migration-directory writes"
+      ],
+      "evidenceMustRemainAttached": [
+        "schema compatibility worklist",
+        "migration reconciliation",
+        "checksum review",
+        "local artifact search",
+        "external artifact packet",
+        "baseline resolution artifact"
+      ]
+    },
+    "recommendedNextStep": {
+      "id": "rerun-schema-compatibility",
+      "action": "rerun DB schema compatibility and platform closure audit"
+    }
+  },
+  "unresolvedMismatches": [],
+  "missingEvidence": [
+    {
+      "kind": "database_migration_local_artifact_search",
+      "path": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    {
+      "kind": "database_migration_external_artifact_packet",
+      "path": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    {
+      "kind": "database_migration_baseline_scope_preflight",
+      "path": null,
+      "error": "No artifact path provided and no latest report was found"
+    },
+    {
+      "kind": "database_migration_backup_evidence_packet",
+      "path": null,
+      "error": "No artifact path provided and no latest report was found"
+    }
+  ],
+  "decisionPacket": {
+    "purpose": "Consolidate exact-SQL exhaustion evidence before a human operator chooses external restore or non-production baseline resolve.",
+    "preferredPath": "continue-external-search-or-baseline-resolve-local-only",
+    "prohibitedScopes": [
+      "production"
+    ],
+    "supportedBaselineTargetScopes": [
+      "local-existing",
+      "local-disposable",
+      "staging-clone"
+    ],
+    "requiredAck": "APPROVED_DATABASE_MIGRATION_BASELINE_RESOLVE",
+    "requiredHumanInputs": [
+      "--decision baseline-resolve-local-only",
+      "--target-scope <local-existing|local-disposable|staging-clone>",
+      "--approved-operator-workflow <approved workflow id>",
+      "--operator-ack APPROVED_DATABASE_MIGRATION_BASELINE_RESOLVE",
+      "--rationale <why exact SQL cannot be recovered and why this target may be resolved>",
+      "--backup-evidence <backup, disposable DB, or staging clone evidence>"
+    ],
+    "unresolvedMigrations": [],
+    "auditOnlyCommandTemplate": "pnpm --filter api audit:database-migration-baseline-resolution -- --checksum-review /tmp/database-migration-checksum-review-latest.json --external-artifact-packet <external-artifact-packet.json> --decision baseline-resolve-local-only --target-scope <local-existing|local-disposable|staging-clone> --approved-operator-workflow <id> --operator-ack APPROVED_DATABASE_MIGRATION_BASELINE_RESOLVE --rationale <text> --backup-evidence <text> --out /tmp/database-migration-baseline-resolution-approved.json",
+    "platformAuditCommandTemplate": "pnpm --filter api audit:platform-data-closure -- --schema-worklist /tmp/database-schema-compatibility-latest.json --migration-reconciliation /tmp/database-migration-history-reconciliation-latest.json --restore-candidate-bundle /tmp/database-migration-restore-candidate-bundle-latest.json --checksum-review /tmp/database-migration-checksum-review-latest.json --checksum-variant-analysis <checksum-variant-analysis.json> --local-artifact-search <local-artifact-search.json> --external-artifact-packet <external-artifact-packet.json> --baseline-resolution /tmp/database-migration-baseline-resolution-latest.json --baseline-scope-preflight <baseline-scope-preflight.json> --backup-evidence-packet <backup-evidence-packet.json> --baseline-approval-request <baseline-approval-request.json> --baseline-proposal /Users/yitianwu/Documents/study-abroad-platform/apps/api/scripts/closure-reports/database-migration-baseline-proposal-2026-05-21T03-20-25-940Z.json",
+    "writeCommandsIntentionallyOmitted": "This proposal packet does not include prisma migrate resolve, migrate deploy, db push, SQL restore, or migration-directory writes."
+  },
+  "recommendedSequence": [
+    "Rerun schema compatibility and platform closure audit.",
+    "Continue with the next DB-backed P0/P1 data worklist."
+  ],
+  "nextCampaign": {
+    "id": "database_schema_compatibility",
+    "reason": "Migration blocker cleared in evidence; rerun the DB-backed closure gate."
+  }
+}

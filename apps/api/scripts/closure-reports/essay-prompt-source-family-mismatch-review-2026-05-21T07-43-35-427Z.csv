@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorwb3cq00ar44lk6u1gt18i","cmn1htkq30018vqf2xt2csyoe","Purdue University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorwb3cq00ar44lk6u1gt18i","Briefly discuss your reasons for pursuing the alternate major and campus location (Indianapolis or West Lafayette) you have selected.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

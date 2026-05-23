@@ -1,0 +1,157 @@
+{
+  "generatedAt": "2026-05-21T08:02:23.003Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-harvey-mudd-latest.json",
+      "generatedAt": "2026-05-21T08:02:15.674Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_review",
+        "reason": "Harvey Mudd College has 2 manually checked source URLs with prompt matches; stage source rows for reviewer approval.",
+        "schoolId": "cmnwr8iwe004zz0tilegv5ian",
+        "schoolName": "Harvey Mudd College",
+        "recommendedAction": "stage-source-row-for-review"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iwe004zz0tilegv5ian",
+    "schoolName": "Harvey Mudd College",
+    "sourceSearchPromptRows": 2,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": true,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 2,
+    "trustedValidatedSourceUrls": 1,
+    "untrustedValidatedSourceUrls": 1,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 2,
+    "promptRows": 2,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Harvey Mudd College has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iwe004zz0tilegv5ian",
+    "schoolName": "Harvey Mudd College",
+    "topEssayPromptId": "cmorwfm2i0001noojmzxkwt8m",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorwfm2i0001noojmzxkwt8m",
+      "schoolId": "cmnwr8iwe004zz0tilegv5ian",
+      "schoolName": "Harvey Mudd College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwfm2i0001noojmzxkwt8m",
+      "promptSnippet": "Many students choose Harvey Mudd because they don’t want to give up their interests in the Humanities, Social Sciences, and the Arts – or HSA, as we call it at HMC. Briefly (in 100",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.hmc.edu/admission/apply/first-year-students/",
+          "https://www.hmc.edu/admission/apply/faqs/",
+          "https://www.hmc.edu/admission/apply/",
+          "https://www.commonapp.org/explore/harvey-mudd-college",
+          "https://empowerly.com/applications/essay-scoop-harvey-mudd/"
+        ],
+        "finalUrls": [
+          "https://www.hmc.edu/admission/apply/first-year-students/",
+          "https://www.hmc.edu/admission/apply/faqs/",
+          "https://www.hmc.edu/admission/apply/",
+          "https://www.commonapp.org/explore/harvey-mudd-college/",
+          "https://empowerly.com/applications/essay-scoop-harvey-mudd/"
+        ],
+        "trustedValidatedSourceUrls": [
+          "https://www.hmc.edu/admission/apply/first-year-students/"
+        ],
+        "untrustedValidatedSourceUrls": [
+          "https://empowerly.com/applications/essay-scoop-harvey-mudd/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2024",
+          "2025",
+          "2029",
+          "2028"
+        ],
+        "evidenceSnippets": [
+          "Many students choose HMC because they don’t want to give up their interests in the Humanities, Social Sciences and the Arts – or HSA as we call it at HMC. Briefly describe what you",
+          "rd National Merit Scholarship FIRST Robotics Scholarship RIF Scholarship Esterbrook Merit Award VEX Scholarship Outside Scholarships Additional Resources Toggle sub-menu of Additional Resources Outside and Private Awards Managing Your Finances Constitution Day Required Materials Common Application School Report submitted by your counselor. Teacher Recommendation from a STEM teacher. Teacher Recommendation from a humanities, social sciences or arts teacher. Official High School Transcript. If you use Parchment to order your high school transcript(s), be sure to choose “Harvey Mudd College – Admission” as your selection. College/University Transcript (if applicable). This is not required for any ungraded college enrichment program/courses. If you use Parchment to order your college transcript(s), be sure to choose “Harvey Mudd College – Admission” as your selection. A personal essay is required within the application. $70 Application Fee or Fee Waiver Fee waivers are available to those who demonstrate fin",
+          "common application",
+          "res If you do not find the answers to your questions, please feel free to contact the Office of Admission at admission@hmc.edu . Application deadlines and fee waivers Do all required application materials need to be received by the application deadline? No. While we ask for your Common Application to be submitted by 11:59 p.m. of your local timezone, we don’t expect all application materials to be received by the application deadline. So please don’t panic if your application is missing materials to be submitted by your school(s). We know that they are processing many requests and understand that delays can occur. Keep in mind that we are also processing a high volume of application materials. We may have your material in our queue, we just haven’t gotten to it yet. Once we have processed the majority of the materials, we will send a series of emails about incomplete applications and missing materials. We promise to let you know if we’re missing anything. Are waivers available for the application fee? A",
+          "aluate an application and render a final decision even if all pieces of the application have not been received. Furthermore, the Common App cutoff dates for Early Decision II (January 21) and Regular Decision (February 6) are the final dates for documents to be submitted via the Common Application. If you are applying for financial aid, please refer to our Financial Aid website for more detailed instruction. Standardized Testing Since 2020 we announced these additional changes to our previous standardized testing policy: We will no longer be considering SAT subject test scores . For the high school classes of 2021 and 2022, HMC will be ACT/SAT optional for all applicants . HMC extends its ACT/SAT optional pilot through 2023 . HMC extends its ACT/SAT optional pilot for an additional year, through 2024 . HMC extends its ACT/SAT optional pilot for another year, through 2025. HMC extends its ACT/SAT optional pilot for another year, through 2026. Important: Students will not be at a disadvantage in our admis",
+          "bsite hmc.college-tour.com/?pk_campaign=admiss-common-app Financial aid website www.hmc.edu/admission/afford/applying-for-financial-aid/transfer-applicants/ Region West View more in this region Follow Harvey Mudd College Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 2
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

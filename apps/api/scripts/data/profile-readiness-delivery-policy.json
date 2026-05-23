@@ -1,0 +1,134 @@
+{
+  "policyVersion": "profile-readiness-delivery-policy-v1",
+  "status": "approved_for_dry_run_and_in_app_surface",
+  "approvedAt": "2026-05-20",
+  "sourceAdr": "docs/adr/0021-notification-retention-and-readiness-delivery.md",
+  "channels": {
+    "in_app_readiness_surface": {
+      "enabled": true,
+      "consentBasis": "first_party_product_surface",
+      "writesNotificationFeed": false
+    },
+    "dashboard": {
+      "enabled": true,
+      "consentBasis": "first_party_product_surface",
+      "writesNotificationFeed": false
+    },
+    "redis_notification_feed": {
+      "enabled": false,
+      "consentBasis": "requires_future_notification_preference",
+      "writesNotificationFeed": true
+    },
+    "remote_push": {
+      "enabled": false,
+      "consentBasis": "requires_push_token_and_future_notification_preference",
+      "writesNotificationFeed": false
+    },
+    "email": {
+      "enabled": false,
+      "consentBasis": "requires_future_email_preference",
+      "writesNotificationFeed": false
+    }
+  },
+  "frequencyCap": {
+    "perUserPerCampaignDays": 7,
+    "perUserTotalReadinessPromptsPer30Days": 3,
+    "quietHoursLocal": {
+      "start": "21:00",
+      "end": "08:00"
+    },
+    "dedupeKey": "profile-readiness:{campaignId}:{userId}"
+  },
+  "copy": {
+    "profile.missing": {
+      "title": "Create your profile",
+      "content": "A profile is required before predictions, school planning, essays, and timelines can become personalized.",
+      "cta": "Create profile"
+    },
+    "profile.gpa_anchor": {
+      "title": "Complete your GPA anchor",
+      "content": "Add GPA and scale so predictions and school-list advice use your real academic baseline.",
+      "cta": "Update GPA"
+    },
+    "profile.major": {
+      "title": "Add your intended major",
+      "content": "Your major helps recommendations and application analysis compare the right programs.",
+      "cta": "Add major"
+    },
+    "profile.test_strategy": {
+      "title": "Set your test strategy",
+      "content": "Tell us whether you have scores, plan to test, or are applying test-optional.",
+      "cta": "Update scores"
+    },
+    "profile.activities": {
+      "title": "Add activities",
+      "content": "Activities make profile analysis and school fit less generic.",
+      "cta": "Add activities"
+    },
+    "profile.awards": {
+      "title": "Add awards",
+      "content": "Awards help the platform understand academic and extracurricular distinction.",
+      "cta": "Add awards"
+    },
+    "profile.basic_context": {
+      "title": "Complete basic school context",
+      "content": "Grade, curriculum, and school context help compare your profile fairly.",
+      "cta": "Update profile"
+    },
+    "profile.demographics": {
+      "title": "Review applicant context",
+      "content": "Applicant context keeps recommendation and timeline guidance aligned with your situation.",
+      "cta": "Review context"
+    },
+    "profile.education": {
+      "title": "Add education history",
+      "content": "Education history helps interpret GPA, curriculum, and school context.",
+      "cta": "Add education"
+    },
+    "school_list.add_first": {
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools"
+    },
+    "school_list.min_count": {
+      "title": "Expand your school list",
+      "content": "A broader list makes reach, target, and safety planning more useful.",
+      "cta": "Review schools"
+    },
+    "school_list.balance": {
+      "title": "Balance your school list",
+      "content": "A balanced list helps reduce strategy risk across reach, target, and safety schools.",
+      "cta": "Balance list"
+    },
+    "timeline.missing_school_round": {
+      "title": "Set application rounds",
+      "content": "Application rounds let the platform generate the right deadline tasks for each school.",
+      "cta": "Update timeline"
+    },
+    "timeline.overdue_tasks": {
+      "title": "Review overdue timeline tasks",
+      "content": "Overdue tasks can hide execution risk even when your school list is ready.",
+      "cta": "Open timeline"
+    },
+    "essays.none": {
+      "title": "Start your essay workspace",
+      "content": "Essay drafts connect your profile to prompt-specific guidance and deadlines.",
+      "cta": "Start essays"
+    },
+    "essays.prompt_link_missing": {
+      "title": "Link essays to prompts",
+      "content": "Prompt links keep essay work connected to each school's current requirements.",
+      "cta": "Review essays"
+    },
+    "recommendation_letters.min_submitted": {
+      "title": "Track recommendation letters",
+      "content": "Recommendation status helps application readiness reflect what is still outstanding.",
+      "cta": "Review letters"
+    },
+    "resume.none": {
+      "title": "Create a resume artifact",
+      "content": "A resume gives essay, activity, and application analysis more reliable context.",
+      "cta": "Create resume"
+    }
+  }
+}

@@ -138,6 +138,9 @@ function HeroGradient({
 function SchoolHeroMedia({
   coverUrl,
   schoolName,
+  sourceUrl,
+  sourceQuality,
+  sourceType,
   hue,
   initial,
   size,
@@ -145,6 +148,9 @@ function SchoolHeroMedia({
 }: {
   coverUrl?: string | null;
   schoolName: string;
+  sourceUrl?: string | null;
+  sourceQuality?: string;
+  sourceType?: string | null;
   hue: number;
   initial: string;
   size: HeroMediaSize;
@@ -182,6 +188,10 @@ function SchoolHeroMedia({
           loading={priority ? undefined : 'lazy'}
           unoptimized
           onError={() => setFailed(true)}
+          title={sourceUrl ?? sourceType ?? undefined}
+          data-source-url={sourceUrl ?? undefined}
+          data-source-quality={sourceQuality}
+          data-source-type={sourceType ?? undefined}
           className={imageClassName}
         />
       ) : (
@@ -192,6 +202,10 @@ function SchoolHeroMedia({
           decoding="async"
           fetchPriority={priority ? 'high' : 'low'}
           onError={() => setFailed(true)}
+          title={sourceUrl ?? sourceType ?? undefined}
+          data-source-url={sourceUrl ?? undefined}
+          data-source-quality={sourceQuality}
+          data-source-type={sourceType ?? undefined}
           className={imageClassName}
         />
       )}
@@ -222,7 +236,14 @@ export function SchoolCard({
   const subName = getSchoolSubName(school, locale);
   const initial = schoolName.charAt(0).toUpperCase();
   const hue = schoolHue(school);
-  const campusCoverUrl = school.media?.campusCover?.url ?? null;
+  const campusCover = school.media?.campusCover;
+  const campusCoverUrl = campusCover?.url ?? null;
+  const campusCoverSourceUrl = campusCover?.sourcePageUrl ?? campusCover?.originalUrl ?? null;
+  const campusCoverSourceQuality = campusCoverSourceUrl
+    ? 'approved_media_source'
+    : campusCoverUrl
+      ? 'approved_media_source_unavailable'
+      : 'missing_media_source';
   const logoUrl = school.media?.logo?.url ?? school.logoUrl;
 
   const acceptanceSource = getSchoolFieldSource(school, 'acceptanceRate');
@@ -457,6 +478,9 @@ export function SchoolCard({
           <SchoolHeroMedia
             coverUrl={campusCoverUrl}
             schoolName={schoolName}
+            sourceUrl={campusCoverSourceUrl}
+            sourceQuality={campusCoverSourceQuality}
+            sourceType={campusCover?.sourceType ?? null}
             hue={hue}
             initial={initial}
             size={isCompact ? 'gridCompact' : 'grid'}
@@ -554,6 +578,9 @@ export function SchoolCard({
         <SchoolHeroMedia
           coverUrl={campusCoverUrl}
           schoolName={schoolName}
+          sourceUrl={campusCoverSourceUrl}
+          sourceQuality={campusCoverSourceQuality}
+          sourceType={campusCover?.sourceType ?? null}
           hue={hue}
           initial={initial}
           size="list"

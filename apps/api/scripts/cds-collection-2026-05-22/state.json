@@ -1,0 +1,163 @@
+{
+  "startedAt": "2026-05-22T11:00:00.000Z",
+  "approach": "Claude-direct (this session) using WebSearch + manual parsing",
+  "planFile": "/Users/yitianwu/.claude/plans/websearch-golden-hickey.md",
+  "processed": [],
+  "pending": [
+    {
+      "name": "Princeton University",
+      "schoolNameNorm": "princeton university",
+      "rank": 1
+    },
+    {
+      "name": "Massachusetts Institute of Technology",
+      "schoolNameNorm": "massachusetts institute of technology",
+      "rank": 2
+    },
+    {
+      "name": "Harvard University",
+      "schoolNameNorm": "harvard university",
+      "rank": 3
+    },
+    {
+      "name": "Stanford University",
+      "schoolNameNorm": "stanford university",
+      "rank": 3
+    },
+    {
+      "name": "Yale University",
+      "schoolNameNorm": "yale university",
+      "rank": 5
+    },
+    {
+      "name": "University of Pennsylvania",
+      "schoolNameNorm": "university of pennsylvania",
+      "rank": 6
+    },
+    {
+      "name": "California Institute of Technology",
+      "schoolNameNorm": "california institute of technology",
+      "rank": 7
+    },
+    {
+      "name": "Duke University",
+      "schoolNameNorm": "duke university",
+      "rank": 7
+    },
+    {
+      "name": "Brown University",
+      "schoolNameNorm": "brown university",
+      "rank": 9
+    },
+    {
+      "name": "Johns Hopkins University",
+      "schoolNameNorm": "johns hopkins university",
+      "rank": 9
+    },
+    {
+      "name": "Northwestern University",
+      "schoolNameNorm": "northwestern university",
+      "rank": 9
+    },
+    {
+      "name": "Columbia University",
+      "schoolNameNorm": "columbia university",
+      "rank": 12
+    },
+    {
+      "name": "Cornell University",
+      "schoolNameNorm": "cornell university",
+      "rank": 12
+    },
+    {
+      "name": "University of Chicago",
+      "schoolNameNorm": "university of chicago",
+      "rank": 12
+    },
+    {
+      "name": "Rice University",
+      "schoolNameNorm": "rice university",
+      "rank": 17
+    },
+    {
+      "name": "Dartmouth College",
+      "schoolNameNorm": "dartmouth college",
+      "rank": 18
+    },
+    {
+      "name": "Vanderbilt University",
+      "schoolNameNorm": "vanderbilt university",
+      "rank": 18
+    },
+    {
+      "name": "University of Notre Dame",
+      "schoolNameNorm": "university of notre dame",
+      "rank": 20
+    },
+    {
+      "name": "University of Michigan, Ann Arbor",
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "rank": 21
+    },
+    {
+      "name": "Georgetown University",
+      "schoolNameNorm": "georgetown university",
+      "rank": 22
+    },
+    {
+      "name": "Carnegie Mellon University",
+      "schoolNameNorm": "carnegie mellon university",
+      "rank": 24
+    },
+    {
+      "name": "Emory University",
+      "schoolNameNorm": "emory university",
+      "rank": 24
+    },
+    {
+      "name": "Washington University in St. Louis",
+      "schoolNameNorm": "washington university in st. louis",
+      "rank": 24
+    }
+  ],
+  "skippedAsAlreadyHaveUCData": [
+    { "name": "University of California, Berkeley", "rank": 15 },
+    { "name": "University of California, Los Angeles", "rank": 15 }
+  ],
+  "failed": [],
+  "stats": {
+    "webSearchCallsApprox": 40,
+    "schoolsCompleted": 23,
+    "schoolsFailed": 0,
+    "schoolsSkipped": 2,
+    "startedAt": "2026-05-22T11:00:00.000Z",
+    "completedAt": "2026-05-22T13:00:00.000Z",
+    "finalStatus": "PARTIAL_SUCCESS",
+    "notes": "All 23 target schools have HIGH-tier core data (acceptance + SAT + ED/EA where published). EC profile (P1.5 MEDIUM tier) not collected — to do later. 4 v3 case revaluation requires M3 engine — defer to user."
+  },
+  "schoolsCompletedList": [
+    "princeton university",
+    "massachusetts institute of technology",
+    "harvard university",
+    "stanford university",
+    "yale university",
+    "university of pennsylvania",
+    "california institute of technology",
+    "duke university",
+    "brown university",
+    "johns hopkins university",
+    "northwestern university",
+    "columbia university",
+    "cornell university",
+    "university of chicago",
+    "rice university",
+    "dartmouth college",
+    "vanderbilt university",
+    "university of notre dame",
+    "university of michigan, ann arbor",
+    "carnegie mellon university",
+    "georgetown university",
+    "emory university",
+    "washington university in st. louis"
+  ]
+}

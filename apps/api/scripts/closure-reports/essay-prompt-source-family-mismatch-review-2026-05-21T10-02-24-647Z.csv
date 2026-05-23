@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorwkwyt006xnooj51afbwyi","cmn1htkom000pvqf2se90bue1","University of Virginia","SHORT_ANSWER","critical","/admin/essay-prompts/cmorwkwyt006xnooj51afbwyi","What about your individual background, perspective, or experience will serve as a source of strength for you or those around you at UVA? Feel free to write about any past experienc","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

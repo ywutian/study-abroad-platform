@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-05-22T07:45:30.264Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "PASS_NO_SOURCE_FAMILY_MISMATCH",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-harvard-latest.json",
+      "generatedAt": "2026-05-22T07:45:20.493Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_review",
+        "reason": "Harvard University has 6 trusted manually checked source URLs with prompt matches; stage source rows for reviewer approval.",
+        "schoolId": "cmn1htkn60002vqf2r731l78m",
+        "schoolName": "Harvard University",
+        "recommendedAction": "stage-source-row-for-review"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmn1htkn60002vqf2r731l78m",
+    "schoolName": "Harvard University",
+    "sourceSearchPromptRows": 3,
+    "sourceSearchRecommendedAction": "review-validated-source-before-write"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": false,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 8,
+    "reachableHtmlUrls": 7,
+    "validatedSourceUrls": 6,
+    "trustedValidatedSourceUrls": 6,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 18,
+    "promptRows": 3,
+    "matchedPromptRows": 3,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 0,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 0,
+    "byMismatchDisposition": {},
+    "byRecommendedAction": {}
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_search_continue",
+    "reason": "No source-family mismatch rows require reviewer routing; continue source validation/search campaigns."
+  },
+  "rows": []
+}

@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-05-21T10:20:51.932Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-villanova-latest.json",
+      "generatedAt": "2026-05-21T10:20:43.225Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Villanova University official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8iun0041z0tin8tw3f6b",
+        "schoolName": "Villanova University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iun0041z0tin8tw3f6b",
+    "schoolName": "Villanova University",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "retry-blocked-candidates-or-external-source-search"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 4,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 0,
+    "promptRows": 1,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Villanova University has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iun0041z0tin8tw3f6b",
+    "schoolName": "Villanova University",
+    "topEssayPromptId": "cmorxj17j00cdeiz6ibex4drl",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxj17j00cdeiz6ibex4drl",
+      "schoolId": "cmnwr8iun0041z0tin8tw3f6b",
+      "schoolName": "Villanova University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxj17j00cdeiz6ibex4drl",
+      "promptSnippet": "Villanovans are known for “holding doors open” because inclusion is at the core of who we are. Take us on a journey through your background and describe how your life experience ha",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.villanova.edu/university/undergraduate-admission/applying-to-villanova/application-essays.html",
+          "https://www.villanova.edu/university/undergraduate-admission/applying-to-villanova/first-year-applicants.html",
+          "https://www.commonapp.org/explore/villanova-university/"
+        ],
+        "finalUrls": [
+          "https://www.villanova.edu/university/undergraduate-admission/applying-to-villanova/application-essays.html",
+          "https://www.villanova.edu/university/undergraduate-admission/applying-to-villanova/first-year-applicants.html",
+          "https://www.commonapp.org/explore/villanova-university/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "writing supplement",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026",
+          "2031"
+        ],
+        "evidenceSnippets": [
+          "strengthens all of us.\" Please detail a time when someone has borrowed some of your strength in their time of need. Common Application Essay Should you apply to Villanova via the Common Application, you will be required to submit the essay of your choice from the 2025-26 Common Application Essay Prompts . Coalition Application Essay Should you apply to Villanova via the Coalition Application, you will be required to submit the essay of your choice from the 2025-26 Coalition Application Essay Prompts . Important Note The Admission Committee expects that each writing supplement be the original work of the applicant, unaided by artificial intelligence. Those found to be submitting writing that is not their own may be denied or have their admission rescinded. PRO-TIPS To alleviate the stress and anxiety surrounding the composition of your writing supplements, please consider these tips. We hope they may help guide you as you craft your responses! Speak Your Truth Every person has a story to tell. We want to know",
+          "n of our Augustinian identity. At Villanova, we view our writing supplements as a unique opportunity for students to move beyond the transcript and introduce the individual behind the application. Villanova requires applicants to submit both their application essay ((through the Common Application or Coalition Application) and Villanova writing supplement . The supplemental response must be different from the response shared in the Common Application or Coalition Application essay section. Villanova Writing Supplement (2025-26) For the Villanova-specific essay, we hope to gain a deeper understanding of your thoughts, experiences, and opinions. Choose one of the five topics below and submit a written response in about 250 words. Prompt One: St. Augustine states that well-being is “not concerned with myself alone, but with my neighbor’s good as well.” How have you advocated for equity and justice in your communities? Prompt Two: What is a lesson in life that you have learned that you would want to share w",
+          "writing supplement",
+          "essay prompts",
+          "common application",
+          "is best for you. APPLICATION CHECKLIST The following application materials are required for all first-year students. First-year international students can find additional required application materials below. Application for Admission Villanova University is a member of both the Common Application and the Coalition Application. You can choose to apply through either form. A complete application for admission will include one of the following: Common Application with essay. Please be sure to fully complete the activities section of the Common Application, as supplemental resumes and accomplishments after submission cannot be added to your application. Villanova Member School Section with Villanova Writing Supplements OR Coalition Application with essay. Please be sure to fully complete the activities section of the Coalition Application, as supplemental resumes and accomplishments after submission cannot be added to your application. Villanova Part II Section with Villanova Writing Supplements Within 48",
+          "gram Religious Affiliation Study Abroad Undergraduate Research Veteran Fee Waiver Application information Find out about requirements, fees, and deadlines First-year All first-time, first-year students seeking to apply to Villanova should complete the following steps: Submit the Common Application with the Member School Section for Villanova. Ask your school counselor to send the Secondary School Report Form and your official High School transcript. Villanova University has announced a test-optional policy for the 2025-26 Admission Cycle. Should you choose to submit scores, Villanova offers you the option to self-report your SAT and/or ACT. All non-native English speakers are required to submit official TOEFL, IELTS or Duolingo results. Visit admission.villanova.edu for more information about the application process for first-year students. Transfer Complete the Transfer Common Application or the Villanova University Transfer Application with appropriate program information and submit with required cred"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

@@ -207,6 +207,7 @@ export function extractSchoolMetrics(school: {
   act25?: number | null;
   act75?: number | null;
   graduationRate?: any;
+  transferAcceptanceRate?: any;
 }): SchoolMetrics {
   return {
     acceptanceRate:
@@ -220,5 +221,9 @@ export function extractSchoolMetrics(school: {
     act75: school.act75 ?? undefined,
     graduationRate:
       school.graduationRate != null ? Number(school.graduationRate) : undefined,
+    transferAcceptanceRate:
+      school.transferAcceptanceRate != null
+        ? Number(school.transferAcceptanceRate)
+        : undefined,
   };
 }

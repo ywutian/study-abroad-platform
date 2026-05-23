@@ -34,6 +34,26 @@ describe('NotificationController', () => {
             getNotifications: jest.fn().mockResolvedValue([mockNotification]),
             getUnreadCount: jest.fn().mockResolvedValue(5),
             registerPushToken: jest.fn().mockResolvedValue(undefined),
+            getPreferences: jest.fn().mockResolvedValue({
+              source: 'default',
+              readiness: {
+                inAppSurface: true,
+                redisNotificationFeed: false,
+                remotePush: false,
+                email: false,
+              },
+              updatedAt: null,
+            }),
+            updatePreferences: jest.fn().mockResolvedValue({
+              source: 'user',
+              readiness: {
+                inAppSurface: true,
+                redisNotificationFeed: true,
+                remotePush: false,
+                email: false,
+              },
+              updatedAt: '2026-05-20T19:00:00.000Z',
+            }),
             markAsRead: jest.fn().mockResolvedValue(true),
             markAllAsRead: jest.fn().mockResolvedValue(3),
             deleteNotification: jest.fn().mockResolvedValue(true),
@@ -98,6 +118,42 @@ describe('NotificationController', () => {
         'android',
       );
       expect(result).toEqual({ success: true });
+    });
+  });
+
+  describe('preferences', () => {
+    it('should return notification preferences for the user', async () => {
+      const result = await controller.getPreferences(mockUser);
+
+      expect(notificationService.getPreferences).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual(
+        expect.objectContaining({
+          source: 'default',
+          readiness: expect.objectContaining({
+            inAppSurface: true,
+            redisNotificationFeed: false,
+          }),
+        }),
+      );
+    });
+
+    it('should update notification preferences for the user', async () => {
+      const body = { readinessRedisNotificationFeed: true };
+
+      const result = await controller.updatePreferences(mockUser, body);
+
+      expect(notificationService.updatePreferences).toHaveBeenCalledWith(
+        'user-1',
+        body,
+      );
+      expect(result).toEqual(
+        expect.objectContaining({
+          source: 'user',
+          readiness: expect.objectContaining({
+            redisNotificationFeed: true,
+          }),
+        }),
+      );
     });
   });
 

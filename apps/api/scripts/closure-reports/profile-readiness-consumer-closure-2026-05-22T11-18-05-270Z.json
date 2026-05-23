@@ -1,0 +1,4866 @@
+{
+  "generatedAt": "2026-05-22T11:18:05.292Z",
+  "mode": "read-only-profile-readiness-consumer-closure",
+  "status": "READINESS_CONSUMER_CLOSURE_REVIEW",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationSendAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "disposition": {
+      "path": "scripts/closure-reports/profile-readiness-disposition-2026-05-22T11-17-32-982Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:17:32.996Z",
+      "status": "READINESS_DISPOSITION_PACKET_READY",
+      "summary": {
+        "openRows": 500,
+        "dispositionRows": 500,
+        "unmappedRows": 0,
+        "blockedRows": 0,
+        "allOpenRowsHaveDisposition": true,
+        "adminDeliveryBlockedRows": 0,
+        "adminDeliveryIncludesUserIds": false,
+        "dispatchBatches": null,
+        "dispatchBlockedBatches": null,
+        "inAppSurfaceReadyBatches": null,
+        "liveGateStatus": "BLOCKED_FOR_LIVE_DELIVERY",
+        "liveGateBlockedChannels": [
+          "redis_notification_feed",
+          "remote_push",
+          "email"
+        ],
+        "liveGateBlockers": [
+          "channel_disabled_by_policy",
+          "recipient_user_ids_redacted"
+        ],
+        "byDisposition": {
+          "user_prompt": 492,
+          "system_generation": 6,
+          "operator_review": 2
+        },
+        "byRequiredActor": {
+          "user": 492,
+          "system": 6,
+          "operator": 2
+        },
+        "byDomain": {
+          "profile": 325,
+          "school_list": 167,
+          "application_analysis": 1,
+          "deadline": 2,
+          "prediction": 5
+        },
+        "byGap": {
+          "profile.gpa_anchor": 128,
+          "profile.major": 99,
+          "profile.missing": 4,
+          "profile.test_strategy": 94,
+          "school_list.add_first": 167,
+          "application_analysis.predictions_required": 1,
+          "deadline.round_missing": 2,
+          "prediction.missing": 5
+        },
+        "bySeverity": {
+          "critical": 492,
+          "warning": 8
+        },
+        "topDispositionGroups": [
+          {
+            "key": "school_list:prompt-user:school_list.add_first",
+            "count": 167,
+            "score": 835,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 167,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.gpa_anchor",
+            "count": 128,
+            "score": 640,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 128,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.major",
+            "count": 99,
+            "score": 495,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 99,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.test_strategy",
+            "count": 94,
+            "score": 470,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 94,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.missing",
+            "count": 4,
+            "score": 20,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 4,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "prediction:run-prediction:prediction.missing",
+            "count": 5,
+            "score": 15,
+            "disposition": "system_generation",
+            "requiredActor": "system",
+            "highestSeverity": "warning",
+            "bySeverity": {
+              "critical": 0,
+              "warning": 5,
+              "info": 0
+            }
+          },
+          {
+            "key": "deadline:review-deadline-source:deadline.round_missing",
+            "count": 2,
+            "score": 6,
+            "disposition": "operator_review",
+            "requiredActor": "operator",
+            "highestSeverity": "warning",
+            "bySeverity": {
+              "critical": 0,
+              "warning": 2,
+              "info": 0
+            }
+          },
+          {
+            "key": "application_analysis:run-prediction:application_analysis.predictions_required",
+            "count": 1,
+            "score": 3,
+            "disposition": "system_generation",
+            "requiredActor": "system",
+            "highestSeverity": "warning",
+            "bySeverity": {
+              "critical": 0,
+              "warning": 1,
+              "info": 0
+            }
+          }
+        ]
+      }
+    },
+    "adminDelivery": {
+      "path": "scripts/closure-reports/profile-readiness-admin-delivery-2026-05-22T11-17-43-541Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:17:43.545Z",
+      "status": null,
+      "summary": {
+        "openRows": 500,
+        "uniqueRecipients": 171,
+        "byQueue": {
+          "user_prompt": 492,
+          "system_generation": 6,
+          "operator_review": 2
+        },
+        "byStatus": {
+          "ready_for_in_app_admin_delivery": 492,
+          "ready_for_system_generation": 6,
+          "ready_for_operator_review": 2
+        },
+        "bySeverity": {
+          "critical": 492,
+          "warning": 8
+        },
+        "campaignGroups": 8
+      }
+    },
+    "dispatch": {
+      "path": "../../../../../../tmp/profile-readiness-dispatch-dry-run-2026-05-22T11-17-43-540Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:17:43.545Z",
+      "status": null,
+      "summary": {
+        "sourceGeneratedAt": "2026-05-22T11:11:39.419Z",
+        "sourceSummary": {
+          "users": 173,
+          "profiles": 169,
+          "usersWithoutProfile": 4,
+          "usersWithSchoolList": 6,
+          "schoolListItems": 30,
+          "applicationTimelines": 10,
+          "byDomain": {
+            "profile": 994,
+            "school_list": 173,
+            "application_analysis": 6,
+            "deadline": 2,
+            "prediction": 5,
+            "timeline": 23,
+            "execution": 517
+          },
+          "byAction": {
+            "prompt-user": 1138,
+            "run-prediction": 6,
+            "review-deadline-source": 2,
+            "balance-school-list": 6,
+            "generate-timeline": 18,
+            "set-application-round": 2,
+            "run-application-analysis": 5,
+            "start-essay-workflow": 173,
+            "add-recommendation-letters": 172,
+            "create-resume": 172,
+            "match-activity-template": 15,
+            "match-award-competition": 11
+          },
+          "byGap": {
+            "profile.gpa_anchor": 128,
+            "profile.major": 99,
+            "profile.missing": 4,
+            "profile.test_strategy": 94,
+            "school_list.add_first": 167,
+            "application_analysis.predictions_required": 1,
+            "deadline.round_missing": 2,
+            "prediction.missing": 5,
+            "profile.activities": 154,
+            "profile.basic_context": 112,
+            "profile.demographics": 111,
+            "school_list.balance": 2,
+            "school_list.min_count": 4,
+            "timeline.missing_school_round": 20,
+            "application_analysis.not_run": 5,
+            "essays.none": 168,
+            "essays.prompt_link_missing": 5,
+            "recommendation_letters.min_submitted": 172,
+            "resume.none": 172,
+            "profile.activities.template_unmatched": 15,
+            "profile.awards": 154,
+            "profile.awards.competition_unmatched": 11,
+            "profile.education": 112,
+            "timeline.overdue_tasks": 3
+          },
+          "bySeverity": {
+            "critical": 492,
+            "warning": 411,
+            "info": 817
+          }
+        },
+        "openRows": 500,
+        "dispatchBatches": 8,
+        "totalAudienceMemberships": 496,
+        "notificationReadyBatches": 0,
+        "inAppSurfaceReadyBatches": 5,
+        "blockedBatches": 0,
+        "liveNotificationBlockedBatches": 8
+      }
+    },
+    "liveGate": {
+      "path": "scripts/closure-reports/profile-readiness-live-delivery-gate-2026-05-22T11-17-43-545Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:17:43.553Z",
+      "status": "BLOCKED_FOR_LIVE_DELIVERY",
+      "summary": {
+        "candidateRows": 1720,
+        "candidateRecipients": 173,
+        "includesUserIds": false,
+        "readyChannels": [],
+        "blockedChannels": [
+          "redis_notification_feed",
+          "remote_push",
+          "email"
+        ],
+        "blockers": [
+          "channel_disabled_by_policy",
+          "recipient_user_ids_redacted"
+        ]
+      }
+    },
+    "policy": {
+      "path": "scripts/data/profile-readiness-delivery-policy.json",
+      "found": true,
+      "generatedAt": null,
+      "status": "approved_for_dry_run_and_in_app_surface",
+      "summary": null
+    }
+  },
+  "summary": {
+    "totalChecks": 13,
+    "passedChecks": 12,
+    "warningChecks": 1,
+    "failedChecks": 0,
+    "userPromptGaps": 5,
+    "missingCopyGaps": [],
+    "schoolListAddFirstRows": 167,
+    "schoolListAddFirstReadyRows": 167,
+    "schoolListAddFirstRouteRows": 167,
+    "topCampaignGroup": "school_list:prompt-user:school_list.add_first",
+    "topCampaignDeliveryRows": 167,
+    "topCampaignReadyRows": 167,
+    "topCampaignAnonymized": true,
+    "topCampaignAllowedChannels": [
+      "dashboard",
+      "in_app_readiness_surface"
+    ],
+    "topCampaignLiveChannelsDisabled": [
+      "email",
+      "redis_notification_feed",
+      "remote_push"
+    ],
+    "topCampaignStatusCounts": {
+      "ready_for_in_app_admin_delivery": 167
+    },
+    "topDispositionCampaign": {
+      "id": "profile_readiness_user_prompt_delivery",
+      "reason": "167 rows are ready for user-prompt disposition in school_list:prompt-user:school_list.add_first; weighted readiness score 835 with highest severity critical.",
+      "group": "school_list:prompt-user:school_list.add_first",
+      "score": 835,
+      "highestSeverity": "critical"
+    },
+    "liveGateStatus": "BLOCKED_FOR_LIVE_DELIVERY",
+    "liveGateBlockers": [
+      "channel_disabled_by_policy",
+      "recipient_user_ids_redacted"
+    ]
+  },
+  "topCampaignDeliveryContract": {
+    "defaultReportsStayAnonymized": true,
+    "rawUserIdsIncluded": false,
+    "writesFirstPartyFacts": false,
+    "sendsNotifications": false,
+    "approvedDeliverySurfaces": [
+      "in_app_readiness_surface",
+      "dashboard"
+    ],
+    "liveChannelsRemainDisabledUntilPolicyApproval": [
+      "redis_notification_feed",
+      "remote_push",
+      "email"
+    ],
+    "suppressBeforeDisplay": [
+      "re-check row suppressWhen conditions",
+      "respect per-user per-campaign frequency cap",
+      "hide row if user already completed the first-party field"
+    ]
+  },
+  "topCampaignDeliveryRows": [
+    {
+      "recipientKey": "00f0ded9f430935fdedc8db1",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:00f0ded9f430935fdedc8db1",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "04e7256b305932c30c94dcb1",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:04e7256b305932c30c94dcb1",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "069adf71ed91b67b5bd8647a",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:069adf71ed91b67b5bd8647a",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "071da0c4742da8dc1dcf6d94",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:071da0c4742da8dc1dcf6d94",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "07e5ae3fb4bc7e2f3abf6d6e",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:07e5ae3fb4bc7e2f3abf6d6e",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "07f56d07aabc5e498391d8ea",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:07f56d07aabc5e498391d8ea",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0839ab4ac6894f45f8b5326e",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0839ab4ac6894f45f8b5326e",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0987deb326b0cf9536be5edb",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0987deb326b0cf9536be5edb",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0af15af6f8c94bb8bc34116a",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0af15af6f8c94bb8bc34116a",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0b5ad10783abd6c1462144a9",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0b5ad10783abd6c1462144a9",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0bedcbf1da324b470b0c1b76",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0bedcbf1da324b470b0c1b76",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0db0cf45beeef44e4f5ad691",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0db0cf45beeef44e4f5ad691",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0e0e1801367036b7da53ce63",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0e0e1801367036b7da53ce63",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0e5fc82d5211441ce6acb8a0",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0e5fc82d5211441ce6acb8a0",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0fb59725a227fac3fc75dc14",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0fb59725a227fac3fc75dc14",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0fb9d5944b420b594f6eb95f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0fb9d5944b420b594f6eb95f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0fdaf9fc2a953a2c1a38b72c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0fdaf9fc2a953a2c1a38b72c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "0ff88f19a1363122441452ae",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:0ff88f19a1363122441452ae",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "11dd76414bada0ed104c2265",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:11dd76414bada0ed104c2265",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "1204f93a7efd7af12fbc2924",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:1204f93a7efd7af12fbc2924",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "12fa5aa67e13035ed2fe94a9",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:12fa5aa67e13035ed2fe94a9",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "13bf78bd172a63271d1fac48",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:13bf78bd172a63271d1fac48",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "13d8d8819466efe18e24e5ff",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:13d8d8819466efe18e24e5ff",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "1500b0b863d4a038abd97619",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:1500b0b863d4a038abd97619",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "16e3334ff8056801a6a19f91",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:16e3334ff8056801a6a19f91",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "171e2063b6c3e3df23b73496",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:171e2063b6c3e3df23b73496",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "183cb8e383c4d448d533bd83",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:183cb8e383c4d448d533bd83",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "18c9d038f473702fa45fe736",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:18c9d038f473702fa45fe736",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "1938a7b212a0cb4a222c1dfb",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:1938a7b212a0cb4a222c1dfb",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "1a5b0a46226de7b2fdf7ee6d",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:1a5b0a46226de7b2fdf7ee6d",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "27d10e0014d3d3f6e50a8711",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:27d10e0014d3d3f6e50a8711",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "2aa8ae2841e941080f283cc7",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:2aa8ae2841e941080f283cc7",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "2bad6db4e0c27281a315208c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:2bad6db4e0c27281a315208c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "301bab4168bcd8b9da467ddd",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:301bab4168bcd8b9da467ddd",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "30300b62cf60b25ace2aa505",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:30300b62cf60b25ace2aa505",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "30b23685dd6eb0e10efcfcf7",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:30b23685dd6eb0e10efcfcf7",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "30fe2d5347423af96ac6d4da",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:30fe2d5347423af96ac6d4da",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "3181f198897bc42eb9c1bcd0",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:3181f198897bc42eb9c1bcd0",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "31c3ed47a802490c4846fe1f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:31c3ed47a802490c4846fe1f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "3230af06184fff02111b4d9d",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:3230af06184fff02111b4d9d",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "35e0dc4735a90f6a12623fc2",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:35e0dc4735a90f6a12623fc2",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "39c4a716b89ff7b7278249b9",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:39c4a716b89ff7b7278249b9",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "3ccaf93035fe93ab284da697",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:3ccaf93035fe93ab284da697",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "3d7cef5200f0c6c5980b779f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:3d7cef5200f0c6c5980b779f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "3e2d435a34a48cffb81641d5",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:3e2d435a34a48cffb81641d5",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "3e34f78c649f87bdad55bc79",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:3e34f78c649f87bdad55bc79",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "41cab8192bb7944cf1674c74",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:41cab8192bb7944cf1674c74",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "435d643300b960f51c341e94",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:435d643300b960f51c341e94",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "460914874de7d773fb20d981",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:460914874de7d773fb20d981",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "4a372f98e4b8ee78197c22b6",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:4a372f98e4b8ee78197c22b6",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "4cb57262998138cf87aad6a8",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:4cb57262998138cf87aad6a8",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "4ef64767ddcdaf15bbc2080d",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:4ef64767ddcdaf15bbc2080d",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "4f8c4e9527c625cebc8cbe71",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:4f8c4e9527c625cebc8cbe71",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "523553cf7ce332d90a40dca6",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:523553cf7ce332d90a40dca6",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "54df2014c63795a607ffe6d2",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:54df2014c63795a607ffe6d2",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5504c626383507821dfcb876",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5504c626383507821dfcb876",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5504fdb4c0003bda7135c70f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5504fdb4c0003bda7135c70f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "592a40705457aa2f3b26803a",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:592a40705457aa2f3b26803a",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5a31951ab9099420bd72f06f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5a31951ab9099420bd72f06f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5a33fc159e57a535e8cf1e0f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5a33fc159e57a535e8cf1e0f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5a84c043be7d20ddd26a2d37",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5a84c043be7d20ddd26a2d37",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5c19cd612af2bdd05a2d7673",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5c19cd612af2bdd05a2d7673",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5dced8f2cab4208d93ea32cc",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5dced8f2cab4208d93ea32cc",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5eb6652a2acf0b6fddf19eea",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5eb6652a2acf0b6fddf19eea",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5f0584b602b4f719b7ff66f4",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5f0584b602b4f719b7ff66f4",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5f60d121d5f8e1c60d3a7954",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5f60d121d5f8e1c60d3a7954",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "5f99150f51a167a11be62e9c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:5f99150f51a167a11be62e9c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "61f0530f41a4b1e7fa623b29",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:61f0530f41a4b1e7fa623b29",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "65b959f31034539c5f366774",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:65b959f31034539c5f366774",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "668e804694a0d5279493d75e",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:668e804694a0d5279493d75e",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "67288596e86e425949c367bb",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:67288596e86e425949c367bb",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "6a3e84271e6bc8e1f626e70c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:6a3e84271e6bc8e1f626e70c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "6a9586dc76eca3beb6bba023",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:6a9586dc76eca3beb6bba023",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "6ea879a16a966e83548baebe",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:6ea879a16a966e83548baebe",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "6f6a6ebf8b74420c7c988135",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:6f6a6ebf8b74420c7c988135",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "6f9b54841f8fa0f67f59711f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:6f9b54841f8fa0f67f59711f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "70275824c96e0ed9635e9621",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:70275824c96e0ed9635e9621",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "70c39343466c9d6903b6b909",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:70c39343466c9d6903b6b909",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "7203b8a5306454a2f2dcafbd",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:7203b8a5306454a2f2dcafbd",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "7233d6ef918dae794c026c44",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:7233d6ef918dae794c026c44",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "724bc9edd9733fd71aafc056",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:724bc9edd9733fd71aafc056",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "72a5835d4cc0d8701fb65afb",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:72a5835d4cc0d8701fb65afb",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "72af9488d9d43119ff287984",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:72af9488d9d43119ff287984",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "7570ebc496c4a58cf91b507c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:7570ebc496c4a58cf91b507c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "75838bb0ca7fd1cc46d9f8f4",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:75838bb0ca7fd1cc46d9f8f4",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "75b0b435d01ee63221d07883",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:75b0b435d01ee63221d07883",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "76173fed23213267fcbdb625",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:76173fed23213267fcbdb625",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "7e2df240033ce09916c1a824",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:7e2df240033ce09916c1a824",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "7e58f65e491b62feb920ccf7",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:7e58f65e491b62feb920ccf7",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "87840ad0e7cd3705c86d4a5d",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:87840ad0e7cd3705c86d4a5d",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "89560102c8965d0f1b544a1b",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:89560102c8965d0f1b544a1b",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "89910bbd433dad1e86e522ed",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:89910bbd433dad1e86e522ed",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "8d7b12f1f4da99c94959e2ab",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:8d7b12f1f4da99c94959e2ab",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "8de25c15c6a15becbec7815f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:8de25c15c6a15becbec7815f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "94199cf9466b86ddd3c2aca6",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:94199cf9466b86ddd3c2aca6",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "94582f1f73f879f138b62246",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:94582f1f73f879f138b62246",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "970550533738cbfcf61daf11",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:970550533738cbfcf61daf11",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "970c61016c09de767e490847",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:970c61016c09de767e490847",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "97179e2b93703fe351e5dac2",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:97179e2b93703fe351e5dac2",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "97c68cc201886124c3e4f445",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:97c68cc201886124c3e4f445",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "981ef0d2644104a14ce860fd",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:981ef0d2644104a14ce860fd",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "98dfd71a8e5b3c8220d93a2f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:98dfd71a8e5b3c8220d93a2f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "994e8b28c3cb36bf8b4935b7",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:994e8b28c3cb36bf8b4935b7",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "9acaace15769689a2e8d8f79",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:9acaace15769689a2e8d8f79",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "9dc574d4dd0f02d25750ecd5",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:9dc574d4dd0f02d25750ecd5",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "9ee435ab1a9d1b8f505711e6",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:9ee435ab1a9d1b8f505711e6",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a0f26938ef29cb764a09d121",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a0f26938ef29cb764a09d121",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a192f2bcd9de194245d069aa",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a192f2bcd9de194245d069aa",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a4df23251f62c39a81f2f2ce",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a4df23251f62c39a81f2f2ce",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a59939baa4add6136b8a46d7",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a59939baa4add6136b8a46d7",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a5db6455215f7e110a7bc07b",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a5db6455215f7e110a7bc07b",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a6446192083fe17748decf25",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a6446192083fe17748decf25",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "a877a2151e5b797711a07fa6",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:a877a2151e5b797711a07fa6",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "aad8b68304ca8ea63b2312d4",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:aad8b68304ca8ea63b2312d4",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ac0a29e33f3d00ca5be75584",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ac0a29e33f3d00ca5be75584",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ace96bc16dc15505a994e478",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ace96bc16dc15505a994e478",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ada2a75f79c70b2e703df7c7",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ada2a75f79c70b2e703df7c7",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ae5657e23b66e66516a7e9d1",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ae5657e23b66e66516a7e9d1",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "af0e0c0e572ee90213df32e5",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:af0e0c0e572ee90213df32e5",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "b1dfe73fda884c4099abd257",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:b1dfe73fda884c4099abd257",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "b3d85db19dcad793cfc05d01",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:b3d85db19dcad793cfc05d01",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "b5853ffb646ffd786f986979",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:b5853ffb646ffd786f986979",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "b60bef5e17fd3650b1c95823",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:b60bef5e17fd3650b1c95823",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "b8a277a6cd429920ef85d6db",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:b8a277a6cd429920ef85d6db",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ba24bac742056fd91695e8d4",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ba24bac742056fd91695e8d4",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "be4770d2280c186f9e6a8ffc",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:be4770d2280c186f9e6a8ffc",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "bef00e3cfdf053cfca345af1",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:bef00e3cfdf053cfca345af1",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "bf6a84d9cfb6cfc9d069bf1e",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:bf6a84d9cfb6cfc9d069bf1e",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c414d57ebae4292c129c8073",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c414d57ebae4292c129c8073",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c475a6d251d8b078d2826981",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c475a6d251d8b078d2826981",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c4d64c860a51a29038c15b16",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c4d64c860a51a29038c15b16",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c5f1fc238a035e8fe3c386bd",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c5f1fc238a035e8fe3c386bd",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c680e4451570f2e75a4c3659",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c680e4451570f2e75a4c3659",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c6c26599ad02f5ef7d181061",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c6c26599ad02f5ef7d181061",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c9706c565798085285c7f213",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c9706c565798085285c7f213",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "c9b51675e0ee089bc3dc2d41",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:c9b51675e0ee089bc3dc2d41",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ca269f0d74c11e503917667d",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ca269f0d74c11e503917667d",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "cdd1a893337ce61ea3e86a63",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:cdd1a893337ce61ea3e86a63",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "cdfa7a42e15e6f930aeb078a",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:cdfa7a42e15e6f930aeb078a",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "cff4908bc7552632f53f82f0",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:cff4908bc7552632f53f82f0",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "d394d8ed654c6e76df4649c9",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:d394d8ed654c6e76df4649c9",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "d3ea679cb62edcd18c915bf5",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:d3ea679cb62edcd18c915bf5",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "d42425c0370a3ce26645ae07",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:d42425c0370a3ce26645ae07",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "d7f38f16416febbb40e19769",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:d7f38f16416febbb40e19769",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "d8c29c743de39f58796ec3f2",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:d8c29c743de39f58796ec3f2",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "dba262b494aac35337dc453a",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:dba262b494aac35337dc453a",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "dcf79bc49e46cd2900c75b7e",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:dcf79bc49e46cd2900c75b7e",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "dd830f0917357a6c9a64c80b",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:dd830f0917357a6c9a64c80b",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "e1a2a0bfb30fd9e12f28f1bf",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:e1a2a0bfb30fd9e12f28f1bf",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "e300d7e0198bdcdd266c4d64",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:e300d7e0198bdcdd266c4d64",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "e4a2dd617ded5a4f75a0fb6d",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:e4a2dd617ded5a4f75a0fb6d",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "e56f4cd9413b9ecbf1bcbcba",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:e56f4cd9413b9ecbf1bcbcba",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "e68e1710d1631379c3567a0f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:e68e1710d1631379c3567a0f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "e75b8f15f0abc0f737026417",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:e75b8f15f0abc0f737026417",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ea3a01bf118cba4ca26a30cb",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ea3a01bf118cba4ca26a30cb",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "eccccd4bd2b1aeab19c7b90f",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:eccccd4bd2b1aeab19c7b90f",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "ef8e2db14c12df9f2824f921",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:ef8e2db14c12df9f2824f921",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f2526159c034c9c47f29a41c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f2526159c034c9c47f29a41c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f2bd455344f18dd398fd7727",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f2bd455344f18dd398fd7727",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f34466dccff86de7782bd650",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f34466dccff86de7782bd650",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f3652e1e7f273867dfc33cd0",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f3652e1e7f273867dfc33cd0",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f508587700d963a3aa0c7816",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f508587700d963a3aa0c7816",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f6215af433166476d1d6620b",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f6215af433166476d1d6620b",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "f7a172b26f74da08ee92a521",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:f7a172b26f74da08ee92a521",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "fb1dab5da10f8a978267e902",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:fb1dab5da10f8a978267e902",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "fc34d9f828d41668e99d6532",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:fc34d9f828d41668e99d6532",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    },
+    {
+      "recipientKey": "fdb725ce58cec7818228713c",
+      "campaignId": "school-list-prompt-user-school-list-add-first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "severity": "critical",
+      "status": "ready_for_in_app_admin_delivery",
+      "route": "/schools",
+      "title": "Add your first target school",
+      "content": "A school list unlocks school-specific readiness, deadlines, predictions, and essays.",
+      "cta": "Add schools",
+      "allowedChannels": [
+        "in_app_readiness_surface",
+        "dashboard"
+      ],
+      "liveChannelsDisabled": [
+        "redis_notification_feed",
+        "remote_push",
+        "email"
+      ],
+      "frequencyDedupeKey": "profile-readiness:school-list-prompt-user-school-list-add-first:fdb725ce58cec7818228713c",
+      "suppressWhen": [
+        "SchoolListItem count > 0"
+      ]
+    }
+  ],
+  "consumerContract": {
+    "firstPartyFactsAreUserCollected": true,
+    "defaultReportsStayAnonymized": true,
+    "liveNotificationsRemainPolicyGated": true,
+    "checkedSurfaces": [
+      "GET /profiles/me/readiness",
+      "profile readiness shared route",
+      "profile action bar nextActions rendering",
+      "/schools frontend route",
+      "admin delivery package copy/route/channel/suppression",
+      "dispatch dry-run in-app surface batches"
+    ]
+  },
+  "nextCampaign": {
+    "id": "profile_readiness_user_prompt_delivery_school_list_add_first",
+    "reason": "In-app/dashboard readiness consumer closure is ready; live Redis/push/email remains policy-gated, so continue with school_list.add_first user-prompt delivery or monitor completion.",
+    "reviewOnlyWarnings": [
+      "live_delivery_policy_gate_review_only"
+    ],
+    "topDispositionCampaign": {
+      "id": "profile_readiness_user_prompt_delivery",
+      "reason": "167 rows are ready for user-prompt disposition in school_list:prompt-user:school_list.add_first; weighted readiness score 835 with highest severity critical.",
+      "group": "school_list:prompt-user:school_list.add_first",
+      "score": 835,
+      "highestSeverity": "critical"
+    }
+  },
+  "checks": [
+    {
+      "id": "disposition_packet_ready",
+      "status": "pass",
+      "summary": "Every open first-party readiness row must have a user/operator/system disposition.",
+      "evidence": [
+        "/Users/yitianwu/Documents/study-abroad-platform/apps/api/scripts/closure-reports/profile-readiness-disposition-2026-05-22T11-17-32-982Z.json"
+      ],
+      "missing": []
+    },
+    {
+      "id": "top_campaign_school_list_add_first",
+      "status": "pass",
+      "summary": "The highest-priority user prompt campaign should be school_list.add_first.",
+      "evidence": [
+        "group=school_list:prompt-user:school_list.add_first",
+        "severity=critical"
+      ],
+      "missing": []
+    },
+    {
+      "id": "policy_copy_covers_user_prompt_gaps",
+      "status": "pass",
+      "summary": "Every user-prompt gap needs approved in-app/dashboard copy before delivery packages are considered consumable.",
+      "evidence": [
+        "copyGaps=5"
+      ],
+      "missing": []
+    },
+    {
+      "id": "admin_delivery_ready_and_anonymized",
+      "status": "pass",
+      "summary": "Admin delivery must be privacy-safe and have zero blocked copy rows.",
+      "evidence": [
+        "blockedRows=0",
+        "includesUserIds=false"
+      ],
+      "missing": []
+    },
+    {
+      "id": "school_list_add_first_delivery_rows_ready",
+      "status": "pass",
+      "summary": "school_list.add_first rows must route to /schools, stay in in-app/dashboard surfaces, and include suppression rules.",
+      "evidence": [
+        "rows=167",
+        "ready=167",
+        "route=/schools=167"
+      ],
+      "missing": []
+    },
+    {
+      "id": "top_campaign_delivery_preflight_rows_ready",
+      "status": "pass",
+      "summary": "The top disposition campaign must have anonymized, ready, non-live delivery rows with suppression rules.",
+      "evidence": [
+        "rows=167",
+        "ready=167",
+        "includesUserIds=false"
+      ],
+      "missing": []
+    },
+    {
+      "id": "dispatch_in_app_surface_ready",
+      "status": "pass",
+      "summary": "Dispatch dry-run must have unblocked in-app/dashboard readiness batches before consumer closure can be claimed.",
+      "evidence": [
+        "dispatchBatches=8",
+        "blockedBatches=0",
+        "inAppSurfaceReadyBatches=5"
+      ],
+      "missing": []
+    },
+    {
+      "id": "live_delivery_policy_gate_review_only",
+      "status": "warn",
+      "summary": "Live Redis/push/email blockers may remain review-only when in-app/admin delivery is the approved surface.",
+      "evidence": [
+        "status=BLOCKED_FOR_LIVE_DELIVERY",
+        "channel_disabled_by_policy",
+        "recipient_user_ids_redacted"
+      ],
+      "missing": []
+    },
+    {
+      "id": "profile_readiness_api_endpoint",
+      "status": "pass",
+      "summary": "The user-facing readiness endpoint and shared route must exist.",
+      "evidence": [
+        "ProfileController Get(me/readiness)",
+        "profileRoutes.readiness"
+      ],
+      "missing": []
+    },
+    {
+      "id": "profile_service_emits_school_list_add_first",
+      "status": "pass",
+      "summary": "ProfileReadinessService must emit school_list.add_first and route it to /schools.",
+      "evidence": [
+        "profile-readiness.service.ts"
+      ],
+      "missing": []
+    },
+    {
+      "id": "frontend_profile_consumes_readiness_actions",
+      "status": "pass",
+      "summary": "The profile first fold must render readiness nextActions as clickable UI.",
+      "evidence": [
+        "profile-header.tsx"
+      ],
+      "missing": []
+    },
+    {
+      "id": "frontend_schools_route_exists",
+      "status": "pass",
+      "summary": "The /schools route must exist for school_list.add_first.",
+      "evidence": [
+        "apps/web/src/app/[locale]/(main)/schools"
+      ],
+      "missing": []
+    },
+    {
+      "id": "frontend_action_labels_localized",
+      "status": "pass",
+      "summary": "The Add Schools readiness action must be localized in English and Chinese.",
+      "evidence": [
+        "apps/web/src/messages/en.json",
+        "apps/web/src/messages/zh.json"
+      ],
+      "missing": []
+    }
+  ]
+}

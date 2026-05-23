@@ -32,7 +32,6 @@ const DEFAULT_TASKS = [
     essayPrompt: 'Common App Personal Statement',
     wordLimit: 650,
   },
-  { title: '完成学校补充文书', type: TaskType.ESSAY },
   { title: '提交成绩单', type: TaskType.DOCUMENT },
   { title: '提交标化成绩', type: TaskType.TEST },
   { title: '获取推荐信', type: TaskType.RECOMMENDATION },
@@ -117,6 +116,11 @@ export class TimelineApplicationService {
           where: { id: schoolId },
           include: {
             deadlines: {
+              where: {
+                year: applicationYear,
+                source: { not: 'MANUAL' },
+                notes: { not: null },
+              },
               orderBy: [{ year: 'desc' }, { applicationDeadline: 'asc' }],
             },
           },
@@ -135,18 +139,31 @@ export class TimelineApplicationService {
         const existingRounds = new Set(existingTimelines.map((t) => t.round));
 
         const effectiveDeadlines = this.selectEffectiveDeadlines(
-          school.deadlines ?? [],
+          (school.deadlines ?? []).filter((deadline) =>
+            this.isSourceBackedCurrentYearDeadline(deadline, applicationYear),
+          ),
           now,
         );
 
         if (effectiveDeadlines.length > 0) {
+          const sourceBackedEssayPrompts =
+            await this.prisma.essayPrompt.findMany({
+              where: {
+                schoolId,
+                isActive: true,
+                status: 'VERIFIED',
+                sources: { some: { sourceUrl: { not: null } } },
+              },
+              orderBy: { sortOrder: 'asc' },
+              select: { prompt: true, wordLimit: true },
+            });
+
           for (const dl of effectiveDeadlines) {
             if (existingRounds.has(dl.round)) continue;
 
             const tasks = this.buildSmartTasks(
               dl.round,
-              dl.essayPrompts,
-              dl.essayCount,
+              sourceBackedEssayPrompts,
               {
                 interviewRequired: dl.interviewRequired ?? false,
                 financialAidDeadline: dl.financialAidDeadline,
@@ -167,75 +184,11 @@ export class TimelineApplicationService {
             createdForSchool += 1;
             existingRounds.add(dl.round);
           }
-        }
-
-        if (createdForSchool === 0) {
-          const metadata = school.metadata as Record<string, any> | null;
-          const deadlines = metadata?.deadlines as
-            | Record<string, string>
-            | undefined;
-
-          if (deadlines && Object.keys(deadlines).length > 0) {
-            for (const [roundKey, dateStr] of Object.entries(deadlines)) {
-              const round = roundKey.toUpperCase();
-              if (existingRounds.has(round)) continue;
-
-              const parsedDate = rollAnnualDateForward(
-                this.parseMetadataDate(dateStr, applicationYear) ??
-                  new Date(applicationYear, 0, 15),
-                now,
-              ); // Jan 15 typical RD fallback
-              const verifiedPrompts = await this.prisma.essayPrompt.findMany({
-                where: { schoolId, isActive: true, status: 'VERIFIED' },
-                orderBy: { sortOrder: 'asc' },
-                select: { prompt: true, wordLimit: true },
-              });
-              const tasks = this.buildSmartTasks(
-                round,
-                verifiedPrompts.length > 0 ? verifiedPrompts : null,
-                null,
-              );
-              const timeline = await this.prisma.applicationTimeline.create({
-                data: {
-                  userId,
-                  schoolId,
-                  schoolName: getSchoolDisplayName(school, locale),
-                  round,
-                  deadline: parsedDate,
-                  tasks: { create: tasks },
-                },
-                include: { tasks: true },
-              });
-              created.push(this.mapTimelineToResponse(timeline));
-              createdForSchool += 1;
-              existingRounds.add(round);
-            }
-          }
-        }
-
-        if (createdForSchool === 0 && !existingRounds.has('RD')) {
-          const defaultDeadline = rollAnnualDateForward(
-            new Date(applicationYear, 0, 15),
-            now,
-          ); // Jan 15 typical RD
-          const timeline = await this.prisma.applicationTimeline.create({
-            data: {
-              userId,
-              schoolId,
-              schoolName: getSchoolDisplayName(school, locale),
-              round: 'RD',
-              deadline: defaultDeadline,
-              tasks: {
-                create: DEFAULT_TASKS.map((task, index) => ({
-                  ...task,
-                  sortOrder: index,
-                })),
-              },
-            },
-            include: { tasks: true },
+        } else {
+          failed.push({
+            schoolId,
+            reason: 'DEADLINE_SOURCE_REQUIRED',
           });
-          created.push(this.mapTimelineToResponse(timeline));
-          createdForSchool += 1;
         }
       } catch (error) {
         this.logger.warn(
@@ -247,6 +200,20 @@ export class TimelineApplicationService {
     }
 
     return { created, failed };
+  }
+
+  private isSourceBackedCurrentYearDeadline<
+    T extends { year?: number; source?: string | null; notes?: string | null },
+  >(deadline: T, applicationYear: number): boolean {
+    const source = deadline.source?.trim().toUpperCase();
+    const notes = deadline.notes?.trim() ?? '';
+
+    return (
+      deadline.year === applicationYear &&
+      Boolean(source) &&
+      source !== 'MANUAL' &&
+      /https?:\/\//i.test(notes)
+    );
   }
 
   private selectEffectiveDeadlines<
@@ -286,7 +253,6 @@ export class TimelineApplicationService {
   private buildSmartTasks(
     round: string,
     essayPrompts: any,
-    essayCount: number | null,
     options?: {
       interviewRequired?: boolean;
       financialAidDeadline?: Date | null;
@@ -340,15 +306,6 @@ export class TimelineApplicationService {
           type: TaskType.ESSAY,
           essayPrompt: prompt,
           wordLimit: wordLimit || 250,
-          sortOrder: sortOrder++,
-        });
-      }
-    } else {
-      const count = essayCount || 1;
-      for (let i = 0; i < count; i++) {
-        tasks.push({
-          title: `完成学校补充文书 ${count > 1 ? `#${i + 1}` : ''}`.trim(),
-          type: TaskType.ESSAY,
           sortOrder: sortOrder++,
         });
       }
@@ -751,6 +708,8 @@ export class TimelineApplicationService {
   }
 
   mapTaskToResponse(task: any): TaskResponseDto {
+    const sourceState = this.resolveTaskSourceState(task);
+
     return {
       id: task.id,
       timelineId: task.timelineId,
@@ -762,7 +721,31 @@ export class TimelineApplicationService {
       completedAt: task.completedAt,
       essayPrompt: task.essayPrompt,
       wordLimit: task.wordLimit,
+      ...sourceState,
       sortOrder: task.sortOrder,
+    };
+  }
+
+  private resolveTaskSourceState(
+    task: any,
+  ): Pick<TaskResponseDto, 'sourceStatus' | 'sourcePolicy'> {
+    if (task.type !== TaskType.ESSAY) {
+      return { sourceStatus: 'first_party' };
+    }
+
+    const text = `${task.title ?? ''} ${task.essayPrompt ?? ''}`.toLowerCase();
+    if (text.includes('common app') || text.includes('personal statement')) {
+      return {
+        sourceStatus: 'generic',
+        sourcePolicy:
+          'Generic Common App writing task; not a school-specific sourced prompt.',
+      };
+    }
+
+    return {
+      sourceStatus: 'source_review_required',
+      sourcePolicy:
+        'School-specific essay task must link to a source-backed verified EssayPrompt before it is treated as authoritative.',
     };
   }
 }

@@ -1,0 +1,347 @@
+{
+  "generatedAt": "2026-05-21T07:23:36.587Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-oregon-state-latest.json",
+      "generatedAt": "2026-05-21T07:23:31.168Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Oregon State University official prompt-context pages did not match 4 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+        "schoolName": "Oregon State University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+    "schoolName": "Oregon State University",
+    "sourceSearchPromptRows": 4,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 6,
+    "validatedSourceUrls": 0,
+    "officialContextNoPromptMatchUrls": 5,
+    "promptMatchCount": 0,
+    "promptRows": 4,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 4,
+    "emittedRows": 4,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 4,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 4
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 4
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Oregon State University has 4 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+    "schoolName": "Oregon State University",
+    "topEssayPromptId": "cmorxf7aw00jv8vvhw16abjns",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxf7aw00jv8vvhw16abjns",
+      "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+      "schoolName": "Oregon State University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxf7aw00jv8vvhw16abjns",
+      "promptSnippet": "Describe an extracurricular activity, role, or award that demonstrates a meaningful aspect of who you are. Explain what the activity is quickly (around 20 words) and spend the rest",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university"
+        ],
+        "finalUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2027",
+          "2028"
+        ],
+        "evidenceSnippets": [
+          "ding Transcripts and Other Documents AP/IB/CLEP/Military Credit Credit Earned in High School Residency Smarter Balanced Policy How do I start the application process? You have two great options for applying to Oregon State. Apply directly through the OSU app , or you can use the Common Application . You can also check out our Common App FAQ if you need help with this option. Apply to OSU Image Choose your application from above (see our application deadlines ) Image Complete your application (remember, OSU is test-optional ) Image Pay the $65 application fee or request a waiver (at the end of the application) More details are available on our Application Workshops page . What can I expect after applying? As our team works through your application, first-year students can check their admission status in Beaver Basecamp. If you've been offered a spot on the waitlist, please review the waitlist FAQ page for next steps. Check Admission Status Admitted Students Here are some important links on how to estimat",
+          "common application",
+          "essay prompts",
+          "Common Application FAQ | Undergraduate Admissions | Oregon State University Skip to main content Undergraduate Admissions Search Search Open Search Page Request Info Visit Apply Majors List of All Majors Arts and Social Sciences Business Engineering and Information Systems Health and Wellness Oceans and Coasts Pre-Health Science and Natural Resources Teacher Education Visits & Events In-Person Tours Prospective Student Events Admitted Student Events Virtual OSU: Live Events Virtual OSU: On Demand Living in Corvallis Cost & Aid Tuition, Costs, and Financial Support WUE Overview Nonresident Tuition Equity Bridge to Success Program Scholarships Campus Life On-Campus Living Diversity at Oregon State Campus Activities Campus Traditio",
+          "dmissions Status Information Student Account Holds Advanced Credit Opportunities Transfer Credits and Guides Credit for Prior Learning & Assessment-Based Learning Credit Earning Credit in High School Admission Appeals - Extended Admissions General Admissions FAQ Waiting List FAQ Common Application FAQ Graduates of Non-standard or Unaccredited High Schools, Home-Schooled Students, and GED Recipients Undocumented Student Information Publications and Forms Contact Info Which office of Admissions would you like to contact? Domestic | International | Graduate OSU Admissions Instagram OSU Admissions TikTok OSU Admissions Twitter OSU Admissions Facebook OSU Admissions Youtube Enrollment Management Copyright &#169; 2026 Oregon State University | Privacy Disclaimer and Accessibility Information | Non-discrimination Statement | Sitemap",
+          "r-students Financial aid website scholarships.oregonstate.edu/ Undocumented or DACA students admissions.oregonstate.edu/undocumented-student-information Region West View more in this region Follow Oregon State University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorwusbw00j9noojj2304bn7",
+      "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+      "schoolName": "Oregon State University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwusbw00j9noojj2304bn7",
+      "promptSnippet": "Please write about up to three activities, roles, or awards you have been involved in that showcase different dimensions of who you are, demonstrating personal significance and/or ",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university"
+        ],
+        "finalUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2027",
+          "2028"
+        ],
+        "evidenceSnippets": [
+          "ding Transcripts and Other Documents AP/IB/CLEP/Military Credit Credit Earned in High School Residency Smarter Balanced Policy How do I start the application process? You have two great options for applying to Oregon State. Apply directly through the OSU app , or you can use the Common Application . You can also check out our Common App FAQ if you need help with this option. Apply to OSU Image Choose your application from above (see our application deadlines ) Image Complete your application (remember, OSU is test-optional ) Image Pay the $65 application fee or request a waiver (at the end of the application) More details are available on our Application Workshops page . What can I expect after applying? As our team works through your application, first-year students can check their admission status in Beaver Basecamp. If you've been offered a spot on the waitlist, please review the waitlist FAQ page for next steps. Check Admission Status Admitted Students Here are some important links on how to estimat",
+          "common application",
+          "essay prompts",
+          "Common Application FAQ | Undergraduate Admissions | Oregon State University Skip to main content Undergraduate Admissions Search Search Open Search Page Request Info Visit Apply Majors List of All Majors Arts and Social Sciences Business Engineering and Information Systems Health and Wellness Oceans and Coasts Pre-Health Science and Natural Resources Teacher Education Visits & Events In-Person Tours Prospective Student Events Admitted Student Events Virtual OSU: Live Events Virtual OSU: On Demand Living in Corvallis Cost & Aid Tuition, Costs, and Financial Support WUE Overview Nonresident Tuition Equity Bridge to Success Program Scholarships Campus Life On-Campus Living Diversity at Oregon State Campus Activities Campus Traditio",
+          "dmissions Status Information Student Account Holds Advanced Credit Opportunities Transfer Credits and Guides Credit for Prior Learning & Assessment-Based Learning Credit Earning Credit in High School Admission Appeals - Extended Admissions General Admissions FAQ Waiting List FAQ Common Application FAQ Graduates of Non-standard or Unaccredited High Schools, Home-Schooled Students, and GED Recipients Undocumented Student Information Publications and Forms Contact Info Which office of Admissions would you like to contact? Domestic | International | Graduate OSU Admissions Instagram OSU Admissions TikTok OSU Admissions Twitter OSU Admissions Facebook OSU Admissions Youtube Enrollment Management Copyright &#169; 2026 Oregon State University | Privacy Disclaimer and Accessibility Information | Non-discrimination Statement | Sitemap",
+          "r-students Financial aid website scholarships.oregonstate.edu/ Undocumented or DACA students admissions.oregonstate.edu/undocumented-student-information Region West View more in this region Follow Oregon State University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor8jhnx00jh1jbwl0aso224",
+      "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+      "schoolName": "Oregon State University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor8jhnx00jh1jbwl0aso224",
+      "promptSnippet": "Describe up to three activities, roles, or awards that showcase different dimensions of who you are, demonstrating personal significance and/or community contribution. Highlight me",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university"
+        ],
+        "finalUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2027",
+          "2028"
+        ],
+        "evidenceSnippets": [
+          "ding Transcripts and Other Documents AP/IB/CLEP/Military Credit Credit Earned in High School Residency Smarter Balanced Policy How do I start the application process? You have two great options for applying to Oregon State. Apply directly through the OSU app , or you can use the Common Application . You can also check out our Common App FAQ if you need help with this option. Apply to OSU Image Choose your application from above (see our application deadlines ) Image Complete your application (remember, OSU is test-optional ) Image Pay the $65 application fee or request a waiver (at the end of the application) More details are available on our Application Workshops page . What can I expect after applying? As our team works through your application, first-year students can check their admission status in Beaver Basecamp. If you've been offered a spot on the waitlist, please review the waitlist FAQ page for next steps. Check Admission Status Admitted Students Here are some important links on how to estimat",
+          "common application",
+          "essay prompts",
+          "Common Application FAQ | Undergraduate Admissions | Oregon State University Skip to main content Undergraduate Admissions Search Search Open Search Page Request Info Visit Apply Majors List of All Majors Arts and Social Sciences Business Engineering and Information Systems Health and Wellness Oceans and Coasts Pre-Health Science and Natural Resources Teacher Education Visits & Events In-Person Tours Prospective Student Events Admitted Student Events Virtual OSU: Live Events Virtual OSU: On Demand Living in Corvallis Cost & Aid Tuition, Costs, and Financial Support WUE Overview Nonresident Tuition Equity Bridge to Success Program Scholarships Campus Life On-Campus Living Diversity at Oregon State Campus Activities Campus Traditio",
+          "dmissions Status Information Student Account Holds Advanced Credit Opportunities Transfer Credits and Guides Credit for Prior Learning & Assessment-Based Learning Credit Earning Credit in High School Admission Appeals - Extended Admissions General Admissions FAQ Waiting List FAQ Common Application FAQ Graduates of Non-standard or Unaccredited High Schools, Home-Schooled Students, and GED Recipients Undocumented Student Information Publications and Forms Contact Info Which office of Admissions would you like to contact? Domestic | International | Graduate OSU Admissions Instagram OSU Admissions TikTok OSU Admissions Twitter OSU Admissions Facebook OSU Admissions Youtube Enrollment Management Copyright &#169; 2026 Oregon State University | Privacy Disclaimer and Accessibility Information | Non-discrimination Statement | Sitemap",
+          "r-students Financial aid website scholarships.oregonstate.edu/ Undocumented or DACA students admissions.oregonstate.edu/undocumented-student-information Region West View more in this region Follow Oregon State University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxpyi700jpeiz6pb66p83w",
+      "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+      "schoolName": "Oregon State University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxpyi700jpeiz6pb66p83w",
+      "promptSnippet": "Tell us about an extracurricular activity, work experience, volunteering, or other non-school activity that is meaningful to you. Explain what it is in around 20 words, then descri",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university"
+        ],
+        "finalUrls": [
+          "https://admissions.oregonstate.edu/application-process",
+          "https://admissions.oregonstate.edu/admission-requirements",
+          "https://admissions.oregonstate.edu/common-application-faq",
+          "https://admissions.oregonstate.edu/undergraduate-admission-deadlines",
+          "https://www.commonapp.org/explore/oregon-state-university/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2027",
+          "2028"
+        ],
+        "evidenceSnippets": [
+          "ding Transcripts and Other Documents AP/IB/CLEP/Military Credit Credit Earned in High School Residency Smarter Balanced Policy How do I start the application process? You have two great options for applying to Oregon State. Apply directly through the OSU app , or you can use the Common Application . You can also check out our Common App FAQ if you need help with this option. Apply to OSU Image Choose your application from above (see our application deadlines ) Image Complete your application (remember, OSU is test-optional ) Image Pay the $65 application fee or request a waiver (at the end of the application) More details are available on our Application Workshops page . What can I expect after applying? As our team works through your application, first-year students can check their admission status in Beaver Basecamp. If you've been offered a spot on the waitlist, please review the waitlist FAQ page for next steps. Check Admission Status Admitted Students Here are some important links on how to estimat",
+          "common application",
+          "essay prompts",
+          "Common Application FAQ | Undergraduate Admissions | Oregon State University Skip to main content Undergraduate Admissions Search Search Open Search Page Request Info Visit Apply Majors List of All Majors Arts and Social Sciences Business Engineering and Information Systems Health and Wellness Oceans and Coasts Pre-Health Science and Natural Resources Teacher Education Visits & Events In-Person Tours Prospective Student Events Admitted Student Events Virtual OSU: Live Events Virtual OSU: On Demand Living in Corvallis Cost & Aid Tuition, Costs, and Financial Support WUE Overview Nonresident Tuition Equity Bridge to Success Program Scholarships Campus Life On-Campus Living Diversity at Oregon State Campus Activities Campus Traditio",
+          "dmissions Status Information Student Account Holds Advanced Credit Opportunities Transfer Credits and Guides Credit for Prior Learning & Assessment-Based Learning Credit Earning Credit in High School Admission Appeals - Extended Admissions General Admissions FAQ Waiting List FAQ Common Application FAQ Graduates of Non-standard or Unaccredited High Schools, Home-Schooled Students, and GED Recipients Undocumented Student Information Publications and Forms Contact Info Which office of Admissions would you like to contact? Domestic | International | Graduate OSU Admissions Instagram OSU Admissions TikTok OSU Admissions Twitter OSU Admissions Facebook OSU Admissions Youtube Enrollment Management Copyright &#169; 2026 Oregon State University | Privacy Disclaimer and Accessibility Information | Non-discrimination Statement | Sitemap",
+          "r-students Financial aid website scholarships.oregonstate.edu/ Undocumented or DACA students admissions.oregonstate.edu/undocumented-student-information Region West View more in this region Follow Oregon State University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

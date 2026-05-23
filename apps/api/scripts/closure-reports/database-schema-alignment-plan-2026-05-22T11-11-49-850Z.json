@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-05-22T11:11:49.876Z",
+  "mode": "read-only-database-schema-alignment-plan",
+  "status": "BLOCKED_DIVERGENT_MIGRATION_HISTORY",
+  "sourceWorklist": "scripts/closure-reports/database-schema-compatibility-worklist-2026-05-22T11-11-39-418Z.json",
+  "inputs": {
+    "database": {
+      "attempted": true,
+      "available": true,
+      "target": {
+        "protocol": "postgresql",
+        "host": "localhost",
+        "port": "5433",
+        "database": "study_abroad",
+        "schema": "public",
+        "userPresent": true,
+        "passwordPresent": true
+      },
+      "error": null
+    },
+    "prismaSchema": {
+      "path": "prisma/schema.prisma",
+      "modelCount": 149,
+      "scalarFieldCount": 1975,
+      "enumCount": 102
+    },
+    "dbSchema": {
+      "tableCount": 150,
+      "columnCount": 2022,
+      "appliedMigrationCount": 65,
+      "latestAppliedMigration": "20260517050000_closure_v2_closure_target",
+      "repoMigrationCount": 61,
+      "latestRepoMigration": "20260520191100_add_user_notification_preferences"
+    },
+    "worklistGeneratedAt": "2026-05-22T11:11:39.485Z",
+    "worklistStatus": "BLOCKED"
+  },
+  "summary": {
+    "rows": 37,
+    "missingTables": 1,
+    "missingColumns": 0,
+    "unappliedRepoMigrations": 1,
+    "appliedMigrationsMissingFromRepo": 5,
+    "missingObjectsWithoutRepoMigration": 0,
+    "lastCommonMigration": "20260515143000_chat_workbench_foundation",
+    "firstUnappliedRepoMigration": "20260520191100_add_user_notification_preferences",
+    "latestRepoMigration": "20260520191100_add_user_notification_preferences"
+  },
+  "riskAssessment": {
+    "destructiveDbWriteAllowedByThisPlan": false,
+    "blockers": [
+      "The target database has applied migrations that are absent from the repo migration directory.",
+      "1 repo migrations are not recorded as applied in the target database."
+    ],
+    "risks": [
+      "Blindly running migrate deploy against a valuable database could compound a divergent migration history.",
+      "Last common migration: 20260515143000_chat_workbench_foundation."
+    ],
+    "decision": "Resolve or explicitly review blockers before DB-backed data closure can proceed."
+  },
+  "migrationCoverage": {
+    "missingTables": [
+      {
+        "table": "user_notification_preferences",
+        "model": "UserNotificationPreference",
+        "coveredByMigrations": [
+          "20260520191100_add_user_notification_preferences"
+        ],
+        "disposition": "migration-backed"
+      }
+    ],
+    "missingColumns": []
+  },
+  "migrationHistory": {
+    "unappliedRepoMigrations": [
+      "20260520191100_add_user_notification_preferences"
+    ],
+    "appliedMigrationsMissingFromRepo": [
+      "20260428120000_add_mbti_and_personality_tags",
+      "20260504090000_add_school_historical_data_and_nullable_deadlines",
+      "20260505120000_add_school_cds_importance_and_scorecard_snapshot",
+      "20260517040000_closure_v2_core_schema",
+      "20260517050000_closure_v2_closure_target"
+    ]
+  },
+  "recommendedSequence": [
+    "Confirm the target database is the intended local/staging database, not production.",
+    "Create a backup or disposable clone before any schema write.",
+    "Restore or review the DB-applied migration files that are missing from the repo, or document an explicit baseline/resolve decision.",
+    "Do not run migrate deploy against valuable data until migration history divergence is resolved.",
+    "After reconciliation, rerun audit:database-schema-compatibility and this alignment plan."
+  ],
+  "verificationCommands": [
+    "pnpm --filter api audit:database-schema-compatibility -- --out /tmp/database-schema-compatibility.json --db-timeout-ms 8000",
+    "pnpm --filter api audit:database-schema-alignment-plan -- --worklist /Users/yitianwu/Documents/study-abroad-platform/apps/api/scripts/closure-reports/database-schema-compatibility-worklist-2026-05-22T11-11-39-418Z.json --out /tmp/database-schema-alignment-plan.json",
+    "pnpm --filter api audit:platform-data-closure -- --out /tmp/platform-data-closure.json --db-timeout-ms 8000",
+    "pnpm --filter api audit:profile-readiness-worklist -- --out /tmp/profile-readiness-worklist.json --limit 3000"
+  ],
+  "nextCampaign": {
+    "id": "database_schema_compatibility",
+    "reason": "DB-backed data campaigns remain blocked until schema compatibility is resolved or explicitly reviewed."
+  }
+}

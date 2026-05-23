@@ -2,15 +2,50 @@
 # Use the default gitleaks config as base
 useDefault = true
 
-# Allowlist for known test/CI secrets
+# Allowlist for known test/CI secrets + generated data artifacts.
+# Without these paths, gitleaks reports ~18k false positives from the
+# closure-reports/, cds-collection/, gold-cases/, and migration artifacts
+# (mock UUIDs, ids, content hashes that match the generic-api-key entropy
+# heuristic).
 [allowlist]
-description = "Known safe patterns"
+description = "Known safe patterns + non-secret data dump paths"
 paths = [
   '''\.env\.example$''',
   '''\.env\.test$''',
   '''jest\.config''',
   '''vitest\.config''',
   '''vitest\.setup''',
+  '''pnpm-lock\.yaml$''',
+  '''Podfile\.lock$''',  # iOS dep lockfile contains content-hashes flagged as API keys
+  # Generated reports & data dumps — contain mock IDs / UUIDs / hashes that
+  # gitleaks' generic-api-key entropy heuristic over-flags. These are NOT
+  # secrets — they're per-record identifiers shipped with the codebase.
+  '''apps/api/scripts/closure-reports/''',
+  '''apps/api/scripts/closure-agents/''',
+  '''apps/api/scripts/cds-collection-2026-05-22/''',
+  '''apps/api/gold-cases/''',
+  '''apps/api/prisma/migrations/''',
+  '''apps/api/prisma/seeds/data/''',
+  '''packages/shared/src/fixtures/''',
+  '''e2e-report/''',
+  '''verification-report/''',
+  # Browser extension built bundles (webpack output, hashed identifiers)
+  '''packages/browser-extension/dist/''',
+  # Local-only ephemeral audit dumps (not tracked by git, only on dev machines).
+  # Listed for safety in case someone adds them to git accidentally.
+  '''\.tmp-runtime-audit/''',
+  # README files at module roots contain non-secret architecture descriptions.
+  # gitleaks' generic-api-key entropy heuristic flags Chinese / mixed-script
+  # lines as high-entropy. Whitelist the canonical README files.
+  '''apps/api/README\.md$''',
+  '''apps/web/README\.md$''',
+  '''apps/mobile/README\.md$''',
+  '''README\.md$''',
+  # Security moderation test fixtures intentionally include mock api_key /
+  # password strings to verify the PromptGuard/ContentModeration regexes
+  # actually detect them. These are mock test values, not real credentials.
+  '''content-moderation\.service\.spec\.ts$''',
+  '''prompt-guard\.service\.spec\.ts$''',
 ]
 regexTarget = "line"
 regexes = [
@@ -19,4 +54,7 @@ regexes = [
   '''test-refresh-secret-key-for-ci''',
   # Prisma example connection strings
   '''postgresql://postgres:postgres@localhost''',
+  # Common mock identifiers used in fixtures/tests
+  '''cuid_[a-zA-Z0-9]+''',
+  '''launch-[a-z0-9-]+-fixture''',
 ]

@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { mapSchoolMeta } from './recommendation.constants';
+import { mapSourcedSchoolMeta } from './recommendation.constants';
 
 // Minimal mock matching RecommendationSchoolResult shape
 function buildMockSchool(overrides: Record<string, unknown> = {}) {
@@ -24,13 +24,36 @@ function buildMockSchool(overrides: Record<string, unknown> = {}) {
     ipedsId: null,
     transferAcceptanceRate: null,
     rankings: [],
+    metadata: {
+      provenance: {
+        acceptanceRate: {
+          source: 'COLLEGE_SCORECARD',
+          sourceUrl: 'https://collegescorecard.ed.gov/school/?166683',
+          fetchedAt: '2026-01-01T00:00:00.000Z',
+          tier: 'OFFICIAL',
+        },
+        retentionRate: {
+          source: 'IPEDS',
+          sourceUrl: 'https://nces.ed.gov/ipeds/datacenter',
+          fetchedAt: '2026-01-01T00:00:00.000Z',
+          tier: 'OFFICIAL',
+        },
+        testingPolicy: {
+          source: 'OFFICIAL_WEBSITE',
+          sourceUrl: 'https://mit.edu/apply',
+          fetchedAt: '2026-01-01T00:00:00.000Z',
+          tier: 'OFFICIAL',
+        },
+      },
+    },
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
   } as any;
 }
 
-describe('mapSchoolMeta', () => {
+describe('mapSourcedSchoolMeta', () => {
   it('should map all fields from a complete school record', () => {
-    const result = mapSchoolMeta(buildMockSchool());
+    const result = mapSourcedSchoolMeta(buildMockSchool());
 
     expect(result.nameZh).toBe('麻省理工');
     expect(result.usNewsRank).toBe(1);
@@ -48,7 +71,7 @@ describe('mapSchoolMeta', () => {
   });
 
   it('should return undefined for null/empty logoUrl and website', () => {
-    const result = mapSchoolMeta(
+    const result = mapSourcedSchoolMeta(
       buildMockSchool({ logoUrl: null, website: '' }),
     );
 
@@ -57,7 +80,7 @@ describe('mapSchoolMeta', () => {
   });
 
   it('should return undefined for null testOptional and hasEarlyDecision', () => {
-    const result = mapSchoolMeta(
+    const result = mapSourcedSchoolMeta(
       buildMockSchool({
         testingPolicy: undefined,
         testOptional: null,
@@ -71,7 +94,7 @@ describe('mapSchoolMeta', () => {
   });
 
   it('should convert Decimal retentionRate to number', () => {
-    const result = mapSchoolMeta(
+    const result = mapSourcedSchoolMeta(
       buildMockSchool({ retentionRate: new Prisma.Decimal(92.3) }),
     );
 
@@ -80,14 +103,16 @@ describe('mapSchoolMeta', () => {
   });
 
   it('should return undefined for null retentionRate', () => {
-    const result = mapSchoolMeta(buildMockSchool({ retentionRate: null }));
+    const result = mapSourcedSchoolMeta(
+      buildMockSchool({ retentionRate: null }),
+    );
 
     expect(result.retentionRate).toBeUndefined();
   });
 
   it('should clamp acceptanceRate via clampPercentRate', () => {
     // Prisma Decimal with reasonable percentage
-    const result = mapSchoolMeta(
+    const result = mapSourcedSchoolMeta(
       buildMockSchool({ acceptanceRate: new Prisma.Decimal(15.5) }),
     );
 
@@ -95,9 +120,57 @@ describe('mapSchoolMeta', () => {
   });
 
   it('should handle null acceptanceRate', () => {
-    const result = mapSchoolMeta(buildMockSchool({ acceptanceRate: null }));
+    const result = mapSourcedSchoolMeta(
+      buildMockSchool({ acceptanceRate: null }),
+    );
 
     expect(result.acceptanceRate).toBeUndefined();
+  });
+
+  it('should hide source-sensitive fields when provenance is missing', () => {
+    const result = mapSourcedSchoolMeta(
+      buildMockSchool({
+        scorecardId: '166683',
+        metadata: { provenance: {} },
+      }),
+    );
+
+    expect(result.acceptanceRate).toBeUndefined();
+    expect(result.retentionRate).toBeUndefined();
+    expect(result.weakFields).toEqual(
+      expect.objectContaining({
+        acceptanceRate: 'hidden_until_field_provenance_exists',
+        retentionRate: 'hidden_until_field_provenance_exists',
+      }),
+    );
+    expect(result.sourceUrls.collegeScorecardUrl).toBe(
+      'https://collegescorecard.ed.gov/school/?166683',
+    );
+  });
+
+  it('should hide source-sensitive fields when provenance is stale or manual review', () => {
+    const result = mapSourcedSchoolMeta(
+      buildMockSchool({
+        metadata: {
+          provenance: {
+            acceptanceRate: {
+              source: 'COLLEGE_SCORECARD',
+              fetchedAt: '2020-01-01T00:00:00.000Z',
+              tier: 'OFFICIAL',
+            },
+            retentionRate: {
+              source: 'IPEDS',
+              fetchedAt: '2026-01-01T00:00:00.000Z',
+              tier: 'OFFICIAL',
+              realDataStatus: 'MANUAL_REVIEW',
+            },
+          },
+        },
+      }),
+    );
+
+    expect(result.acceptanceRate).toBeUndefined();
+    expect(result.retentionRate).toBeUndefined();
   });
 
   // ============================================
@@ -106,7 +179,7 @@ describe('mapSchoolMeta', () => {
 
   describe('sourceUrls', () => {
     it('should return undefined URLs when scorecardId and ipedsId are null', () => {
-      const result = mapSchoolMeta(
+      const result = mapSourcedSchoolMeta(
         buildMockSchool({ scorecardId: null, ipedsId: null, website: '' }),
       );
 
@@ -116,7 +189,9 @@ describe('mapSchoolMeta', () => {
     });
 
     it('should build College Scorecard URL when scorecardId exists', () => {
-      const result = mapSchoolMeta(buildMockSchool({ scorecardId: '166683' }));
+      const result = mapSourcedSchoolMeta(
+        buildMockSchool({ scorecardId: '166683' }),
+      );
 
       expect(result.sourceUrls.collegeScorecardUrl).toBe(
         'https://collegescorecard.ed.gov/school/?166683',
@@ -124,7 +199,9 @@ describe('mapSchoolMeta', () => {
     });
 
     it('should build IPEDS URL when ipedsId exists', () => {
-      const result = mapSchoolMeta(buildMockSchool({ ipedsId: '166683' }));
+      const result = mapSourcedSchoolMeta(
+        buildMockSchool({ ipedsId: '166683' }),
+      );
 
       expect(result.sourceUrls.ipedsUrl).toBe(
         'https://nces.ed.gov/ipeds/datacenter/institutionprofile.aspx?unitId=166683',
@@ -132,7 +209,7 @@ describe('mapSchoolMeta', () => {
     });
 
     it('should include website URL when website is present', () => {
-      const result = mapSchoolMeta(
+      const result = mapSourcedSchoolMeta(
         buildMockSchool({ website: 'https://mit.edu' }),
       );
 
@@ -140,13 +217,13 @@ describe('mapSchoolMeta', () => {
     });
 
     it('should return undefined websiteUrl when website is empty string', () => {
-      const result = mapSchoolMeta(buildMockSchool({ website: '' }));
+      const result = mapSourcedSchoolMeta(buildMockSchool({ website: '' }));
 
       expect(result.sourceUrls.websiteUrl).toBeUndefined();
     });
 
     it('should build all source URLs when all IDs are present', () => {
-      const result = mapSchoolMeta(
+      const result = mapSourcedSchoolMeta(
         buildMockSchool({
           scorecardId: '111111',
           ipedsId: '222222',
