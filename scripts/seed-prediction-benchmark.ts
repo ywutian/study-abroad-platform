@@ -21,6 +21,49 @@ import { runStructuralBenchmarkProgrammatic } from './m3-structural-benchmark';
 
 const prisma = new PrismaClient();
 
+interface ProfileSnapshot {
+  source: 'real-user' | 'synthetic';
+  gpa: number | null;
+  gpaScale: number | null;
+  satTotal: number | null;
+  actComposite: number | null;
+  toefl: number | null;
+  applicationRound: string | null;
+  targetMajor: string | null;
+  isInternational: boolean;
+  isFirstGeneration: boolean;
+  isRecruitedAthlete: boolean;
+  legacyAtSchools: string[];
+  activityCount: number;
+  awardCount: number;
+  topAwardLevel: string | null;
+  apCount: number | null;
+  gpaTrend: string | null;
+  testOptional: boolean;
+}
+
+interface SchoolAnchorSnapshot {
+  schoolId: string;
+  acceptanceRate: number | null;
+  edAcceptanceRate: number | null;
+  eaAcceptanceRate: number | null;
+  intlAcceptanceRate: number | null;
+  sat25: number | null;
+  sat75: number | null;
+  act25: number | null;
+  act75: number | null;
+  hasGpaDistribution: boolean;
+  legacyClassPct: number | null;
+  athleteClassPct: number | null;
+  firstGenClassPct: number | null;
+  legacyAdmitMultiplier: number | null;
+  athleteAdmitMultiplier: number | null;
+  admitProfileConfidenceTier: 'HIGH' | 'MEDIUM' | 'LOW' | null;
+  admitProfileSource: string | null;
+  admitProfileCycleYear: number | null;
+  cdsBandCount: number;
+}
+
 interface CaseReplayResult {
   caseId: string;
   schoolName: string;
@@ -39,6 +82,94 @@ interface CaseReplayResult {
     deltaPp: number;
     source: string;
   }>;
+  profileSnapshot?: ProfileSnapshot;
+  schoolAnchorSnapshot?: SchoolAnchorSnapshot;
+}
+
+function nullableNumber(value: any): number | null {
+  if (value === null || value === undefined) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function buildProfileSnapshot(
+  profile: any,
+  source: 'real-user' | 'synthetic',
+  round: string
+): ProfileSnapshot {
+  const testScores = Array.isArray(profile.testScores) ? profile.testScores : [];
+  const findScore = (type: string) => testScores.find((s: any) => s?.type === type)?.score ?? null;
+  const awards = Array.isArray(profile.awards) ? profile.awards : [];
+  const awardLevels = awards.map((a: any) => a?.level).filter(Boolean) as string[];
+  const levelRank: Record<string, number> = {
+    INTERNATIONAL: 5,
+    National: 4,
+    NATIONAL: 4,
+    STATE: 3,
+    REGIONAL: 2,
+    SCHOOL: 1,
+  };
+  const topLevel =
+    awardLevels.length === 0
+      ? null
+      : awardLevels.reduce((max, lvl) =>
+          (levelRank[lvl] ?? 0) > (levelRank[max] ?? 0) ? lvl : max
+        );
+
+  return {
+    source,
+    gpa: nullableNumber(profile.gpa),
+    gpaScale: nullableNumber(profile.gpaScale),
+    satTotal:
+      nullableNumber(profile.sat) ?? nullableNumber(profile.satWritingOrTotal) ?? findScore('SAT'),
+    actComposite: nullableNumber(profile.act) ?? findScore('ACT'),
+    toefl: findScore('TOEFL'),
+    applicationRound: round ?? profile.applicationRound ?? null,
+    targetMajor: profile.intendedMajor ?? profile.targetMajor ?? null,
+    isInternational: !!profile.international || !!profile.isInternational,
+    isFirstGeneration: !!profile.firstGeneration || !!profile.isFirstGen,
+    isRecruitedAthlete: !!profile.recruitedAthlete,
+    legacyAtSchools: Array.isArray(profile.legacy)
+      ? profile.legacy.filter((s: any) => typeof s === 'string')
+      : [],
+    activityCount: Array.isArray(profile.activities) ? profile.activities.length : 0,
+    awardCount: awards.length,
+    topAwardLevel: topLevel,
+    apCount: nullableNumber(profile.apCount),
+    gpaTrend: profile.gpaTrend ?? null,
+    testOptional: !!profile.testOptional,
+  };
+}
+
+async function buildSchoolAnchorSnapshot(schoolId: string): Promise<SchoolAnchorSnapshot> {
+  const school: any = await prisma.school.findUnique({
+    where: { id: schoolId },
+  });
+  const cdsBandCount = await prisma.schoolCdsAdmitBand.count({
+    where: { schoolId },
+  });
+  return {
+    schoolId,
+    acceptanceRate: nullableNumber(school?.acceptanceRate),
+    edAcceptanceRate: nullableNumber(school?.edAcceptanceRate),
+    eaAcceptanceRate: nullableNumber(school?.eaAcceptanceRate),
+    intlAcceptanceRate: nullableNumber(school?.intlAcceptanceRate),
+    sat25: nullableNumber(school?.sat25),
+    sat75: nullableNumber(school?.sat75),
+    act25: nullableNumber(school?.act25),
+    act75: nullableNumber(school?.act75),
+    hasGpaDistribution: !!school?.gpaDistribution,
+    legacyClassPct: nullableNumber(school?.legacyClassPct),
+    athleteClassPct: nullableNumber(school?.athleteClassPct),
+    firstGenClassPct: nullableNumber(school?.firstGenClassPct),
+    legacyAdmitMultiplier: nullableNumber(school?.legacyAdmitMultiplier),
+    athleteAdmitMultiplier: nullableNumber(school?.athleteAdmitMultiplier),
+    admitProfileConfidenceTier:
+      (school?.admitProfileConfidenceTier as 'HIGH' | 'MEDIUM' | 'LOW' | null) ?? null,
+    admitProfileSource: school?.admitProfileSource ?? null,
+    admitProfileCycleYear: school?.admitProfileCycleYear ?? null,
+    cdsBandCount,
+  };
 }
 
 const V3_CASES: Array<{
@@ -78,14 +209,19 @@ const V3_CASES: Array<{
   },
 ];
 
-async function runV3Cases(): Promise<CaseReplayResult[]> {
+async function runV3Cases(): Promise<{
+  cases: CaseReplayResult[];
+  profileSource: 'real-user' | 'synthetic';
+}> {
   // Use Alice Zhang's seeded profile if present; fall back to a synthetic
   // top-bracket profile so the script still works on a fresh DB.
   let profile: any = await prisma.profile.findFirst({
     where: { user: { email: 'alice.zhang@demo.studyabroad.com' } },
     include: { activities: true, awards: true, testScores: true },
   });
+  let profileSource: 'real-user' | 'synthetic' = 'real-user';
   if (!profile) {
+    profileSource = 'synthetic';
     profile = {
       gpa: 3.95,
       gpaScale: 4.0,
@@ -141,6 +277,7 @@ async function runV3Cases(): Promise<CaseReplayResult[]> {
 
     const stagedProfile = { ...profile, applicationRound: c.round };
     const prediction: PredictionOutput = predict(stagedProfile, school);
+    const schoolAnchorSnapshot = await buildSchoolAnchorSnapshot(school.id);
     out.push({
       caseId: c.caseId,
       schoolName: c.displayName,
@@ -162,9 +299,50 @@ async function runV3Cases(): Promise<CaseReplayResult[]> {
         deltaPp: cb.deltaPp ?? 0,
         source: cb.source ?? '',
       })),
+      profileSnapshot: buildProfileSnapshot(profile, profileSource, c.round),
+      schoolAnchorSnapshot,
     });
   }
-  return out;
+  return { cases: out, profileSource };
+}
+
+/**
+ * Aggregate tier breakdown across all schools touched by this run.
+ * Powers the "Data Sources" card on the admin page so reviewers know
+ * what fraction of school anchors are Claude-inferred (MEDIUM) vs real
+ * (HIGH) vs global fallback (LOW).
+ */
+async function buildDataSourceBreakdown(usedSchoolIds: string[]) {
+  if (usedSchoolIds.length === 0) {
+    return {
+      schoolsUsed: 0,
+      byTier: { HIGH: 0, MEDIUM: 0, LOW: 0, UNFLAGGED: 0 },
+      cdsBandsAvailable: 0,
+      globalBaselinesUsed: 0,
+    };
+  }
+  const tierRows = await prisma.$queryRaw<Array<{ tier: string | null; n: bigint }>>`
+    SELECT "admitProfileConfidenceTier" AS tier, COUNT(*)::bigint AS n
+    FROM "School"
+    WHERE id = ANY(${usedSchoolIds}::text[])
+    GROUP BY "admitProfileConfidenceTier"
+  `;
+  const byTier = { HIGH: 0, MEDIUM: 0, LOW: 0, UNFLAGGED: 0 };
+  for (const row of tierRows) {
+    const key =
+      row.tier === 'HIGH' || row.tier === 'MEDIUM' || row.tier === 'LOW' ? row.tier : 'UNFLAGGED';
+    byTier[key] = Number(row.n);
+  }
+  const cdsBandsAvailable = await prisma.schoolCdsAdmitBand.count({
+    where: { schoolId: { in: usedSchoolIds } },
+  });
+  const globalBaselinesUsed = await prisma.globalAdmitBaseline.count();
+  return {
+    schoolsUsed: usedSchoolIds.length,
+    byTier,
+    cdsBandsAvailable,
+    globalBaselinesUsed,
+  };
 }
 
 function gitSha(): string {
@@ -185,8 +363,16 @@ async function main() {
   console.log(`  ${structural.passed}/${structural.total} tests passed`);
 
   console.log('Running 4 v3 ADMITTED case replays...');
-  const cases = await runV3Cases();
-  console.log(`  ${cases.length} cases replayed`);
+  const { cases, profileSource } = await runV3Cases();
+  console.log(`  ${cases.length} cases replayed (profile source: ${profileSource})`);
+
+  const usedSchoolIds = cases
+    .map((c) => c.schoolAnchorSnapshot?.schoolId)
+    .filter((v): v is string => !!v);
+  const dataSources = await buildDataSourceBreakdown(usedSchoolIds);
+  console.log(
+    `  Data tier breakdown: HIGH=${dataSources.byTier.HIGH}, MEDIUM=${dataSources.byTier.MEDIUM}, LOW=${dataSources.byTier.LOW}, UNFLAGGED=${dataSources.byTier.UNFLAGGED}`
+  );
 
   const summary = {
     structuralTestsPassed: structural.passed,
@@ -196,6 +382,7 @@ async function main() {
       cases.length > 0 ? cases.reduce((a, c) => a + c.predictedProbability, 0) / cases.length : 0,
     casesAdmittedMaxProb: Math.max(...cases.map((c) => c.predictedProbability), 0),
     casesAdmittedMinProb: Math.min(...cases.map((c) => c.predictedProbability), 1),
+    dataSources,
   };
 
   const run = await prisma.predictionBenchmarkRun.create({

@@ -11577,6 +11577,63 @@
     "empty": {
       "title": "还没有 benchmark 数据",
       "description": "本地跑 `pnpm exec tsx scripts/seed-prediction-benchmark.ts` 来 seed 第一次运行。"
+    },
+    "tier": {
+      "HIGH": "HIGH · 真实 CDS 数据",
+      "MEDIUM": "MEDIUM · Claude 推断",
+      "LOW": "LOW · 全局默认值",
+      "unflagged": "未标注"
+    },
+    "dataSources": {
+      "title": "本次运行使用的数据来源",
+      "subtitle": "读取了 {schoolsUsed} 所学校的 anchor 数据",
+      "highHint": "官方 CDS / SFFA",
+      "mediumHint": "Claude 推断 — 请审核",
+      "lowHint": "全局默认 (×4 legacy, ×3 athlete)",
+      "cdsBands": "CDS 分位",
+      "globalBaselines": "{count} 个 P(category|apply) 先验",
+      "warning": "⚠️ MEDIUM 档的数据是 Claude 根据同档学校 pattern 推断的，需要人工审核。下方展开每个 case 可以看到喂给预测的具体数值。"
+    },
+    "inputs": {
+      "profile": "申请者档案（输入到 M3）",
+      "schoolAnchor": "学校 anchor 数据（M3 读取）",
+      "profileSource": {
+        "real-user": "真实用户 profile",
+        "synthetic": "AI 生成 profile"
+      },
+      "gpa": "GPA",
+      "sat": "SAT",
+      "act": "ACT",
+      "round": "轮次",
+      "major": "专业",
+      "gpaTrend": "GPA 趋势",
+      "activities": "活动数",
+      "awards": "奖项数",
+      "apCount": "AP 数量",
+      "flag": {
+        "international": "国际生",
+        "firstGen": "第一代大学生",
+        "athlete": "招募运动员",
+        "legacy": "Legacy ({count} 校)",
+        "testOptional": "不交标化分"
+      }
+    },
+    "anchor": {
+      "acceptanceRate": "总录取率",
+      "edRate": "ED 录取率",
+      "eaRate": "EA 录取率",
+      "intlRate": "国际录取率",
+      "sat": "SAT 25–75",
+      "act": "ACT 25–75",
+      "gpaDistribution": "GPA 分布",
+      "cdsBands": "CDS 分位",
+      "legacyClassPct": "Legacy 占班 %",
+      "legacyMult": "Legacy 录取 ×",
+      "athleteClassPct": "运动员占班 %",
+      "athleteMult": "运动员录取 ×",
+      "firstGenClassPct": "First-gen 占班 %",
+      "cycleYear": "数据年份",
+      "source": "来源说明"
     }
   }
 }
