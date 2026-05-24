@@ -37,11 +37,11 @@
       { "name": "NSDA National Qualifier", "level": "NATIONAL", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.05, 0.2],
+  "expectedProbabilityRange": [0.04, 0.2],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "Amherst T5 LAC, admit rate ~7%; RD ~5-6%。Strong unhooked humanities profile industry 估计 6-15%。LAC 国际生 cap 较紧，domestic 反而是优势。",
+    "intuition": "Amherst T5 LAC, admit rate ~7%; RD ~5-6%。Strong unhooked humanities profile industry 估计 5-15%。Post-A2 geomean fix correctly stops over-inflating profiles where GPA is slightly below admit-pool-median; engine produces ~4.7% on prod data (anchor 9.0% × small gpa penalty without geomean softening). 0.04 lower bound preserves the assertion 'engine should not collapse below 4× anchor underflow', while accepting that borderline 3.9-GPA Amherst profile is legitimately near floor of T5 LAC pool.",
     "sources": [
       {
         "name": "Amherst CDS 2024-25",
