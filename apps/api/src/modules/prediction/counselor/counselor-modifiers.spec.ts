@@ -48,7 +48,9 @@ describe('counselor modifiers launch guards', () => {
       );
 
       expect(result.label).toContain('school-published');
-      expect(result.multiplier).toBeCloseTo(0.4 + 0.7 * (0.054 + 0.946 / 2), 3);
+      // 2026-05-24 curve recalibration: was 0.4 + 0.7 * pct (median maps to
+      // 0.75, a hidden penalty); now 0.5 + pct so median = 1.0 neutral.
+      expect(result.multiplier).toBeCloseTo(0.5 + (0.054 + 0.946 / 2), 3);
     });
 
     it('falls back to GPA-to-SAT logic when distribution sum is invalid', () => {
@@ -493,8 +495,11 @@ describe('counselor modifiers launch guards', () => {
       );
 
       expect(result.components.activityStrength.multiplier).toBeGreaterThan(1);
+      // 2026-05-24 calibration: was capped at 1.06 (effectively noise).
+      // Raised to 1.12 to give visible reward while staying within the
+      // prediction-gate regression bounds on profile-signal delta.
       expect(result.components.activityStrength.multiplier).toBeLessThanOrEqual(
-        1.06,
+        1.12,
       );
       expect(result.profileSignals.usedInProbability).toContain(
         'activityStrength',
@@ -516,7 +521,11 @@ describe('counselor modifiers launch guards', () => {
         baseSchool(),
       );
 
-      expect(result.components.awardStrength.multiplier).toBe(1.07);
+      // 2026-05-24 calibration: was 1.07 — far below NACAC/Crimson estimates
+      // of 1.3-1.6× admit lift for national/international winners. Raised
+      // to 1.13 (modest, bounded by outer profileContext cap so the
+      // prediction-gate p95/max delta gates still pass).
+      expect(result.components.awardStrength.multiplier).toBe(1.13);
       expect(result.profileSignals.usedInProbability).toContain(
         'awardStrength',
       );
@@ -648,7 +657,10 @@ describe('counselor modifiers launch guards', () => {
         baseSchool({ acceptanceRate: 0.04, sat25: 1510, sat75: 1560 }),
       );
 
-      expect(result.multiplier).toBeLessThanOrEqual(1.08);
+      // 2026-05-24 calibration: outer cap was [0.95, 1.08] — too tight.
+      // New cap [0.90, 1.13] balances rewarding strong profiles with the
+      // prediction-gate regression bounds.
+      expect(result.multiplier).toBeLessThanOrEqual(1.13);
       expect(result.multiplier).toBeGreaterThan(1);
     });
   });

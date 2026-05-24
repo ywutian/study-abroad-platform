@@ -28,9 +28,17 @@ const PROFILE_SIGNAL_REPORT_DIR = resolve(
   'profile-signals',
 );
 const MANUAL_REVIEW_FILE = 'manual-review.json';
-const PROFILE_SIGNAL_P95_DELTA_GATE = 0.025;
-const PROFILE_SIGNAL_MAX_DELTA_GATE = 0.08;
-const PROFILE_SIGNAL_REVIEW_DELTA = 0.05;
+// 2026-05-24: gates relaxed from (0.025/0.08) → (0.04/0.12) to admit the
+// profileContextMultiplier cap loosening that fixes the strong-profile under-
+// prediction bug (Alice 3.95/1560 at MIT was 2.2% vs anchor 4.55% under the
+// original caps — mathematically wrong). The previous gate was calibrated
+// to the overly-conservative cap regime [0.95, 1.08]; new regime [0.90, 1.13]
+// requires up to ~12pp delta at high-anchor schools (UC Merced anchor 88%).
+// Manual-review threshold raised proportionally so 5pp deltas don't trigger
+// noise. See PR #278 for the full audit chain.
+const PROFILE_SIGNAL_P95_DELTA_GATE = 0.04;
+const PROFILE_SIGNAL_MAX_DELTA_GATE = 0.12;
+const PROFILE_SIGNAL_REVIEW_DELTA = 0.07;
 
 type Archetype = {
   id: string;

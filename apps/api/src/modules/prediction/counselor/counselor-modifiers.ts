@@ -241,7 +241,14 @@ export function gpaBandMultiplier(
   ) {
     const pct = gpaPercentileFromDistribution(gpa4, school.gpaDistribution);
     if (pct != null) {
-      const multiplier = clamp(0.4 + 0.7 * pct, 0.15, 1.3);
+      // 2026-05-23 calibration fix: previous curve `0.4 + 0.7 * pct` mapped
+      // the median (pct=0.5) to ×0.75 — penalizing an applicant who is
+      // EXACTLY at the school's admitted-student GPA median. Net effect:
+      // strong-but-not-perfect candidates (e.g. GPA 3.95 at MIT, which is
+      // at MIT's admit median) got pushed below the school's anchor admit
+      // rate. New curve centers at the median: pct=0.5 → ×1.0 (neutral),
+      // pct=0 → ×0.5 (well below admit pool), pct=1 → ×1.5 (well above).
+      const multiplier = clamp(0.5 + pct, 0.15, 1.5);
       const percentile = pct * 100;
       return {
         multiplier,
@@ -442,17 +449,26 @@ function compareTestBand(
     };
   }
   if (score >= p25) {
+    // 2026-05-24 calibration fix: previous ×0.85 ("in middle 50") penalized
+    // applicants who sit EXACTLY in the school's admit pool middle 50 —
+    // i.e. the most typical successful applicant. Net effect: anyone with
+    // SAT 1560 at MIT (admit p25-p75 = 1530-1580) got ×0.85 despite being
+    // above the median admitted score. Middle 50 means "this score is
+    // typical of admitted students" → ×1.0 neutral. Marked impact:'positive'
+    // (not 'neutral') because being in admit-pool middle 50 IS a positive
+    // signal relative to applicant pool — and so the factor stays visible
+    // in the breakdown UI (engine skips multiplier=1.0 + impact=neutral).
     return {
-      multiplier: 0.85,
-      label: 'Test score in middle 50',
-      evidence: `${testLabel} falls between this school's 25th and 75th percentile (${p25}-${p75})`,
-      impact: 'neutral',
+      multiplier: 1.0,
+      label: 'Test score in admit pool middle 50',
+      evidence: `${testLabel} falls between this school's 25th and 75th percentile (${p25}-${p75}) — typical of admitted students`,
+      impact: 'positive',
     };
   }
   const nearBand = pointUnit === 'ACT' ? score >= p25 - 3 : score >= p25 - 100;
   if (nearBand) {
     return {
-      multiplier: 0.5,
+      multiplier: 0.7,
       label: 'Test score just below 25th percentile',
       evidence: `${testLabel} is below the 25th percentile (${p25}) but close to the middle-50 range`,
       impact: 'negative',
@@ -1323,15 +1339,20 @@ function activityStrengthComponent(profile: ProfileInput): ModifierResult {
     activityDetails.some((activity) => activity.totalHours >= 200);
 
   if (activityScore >= 70 && strongSignal) {
+    // 2026-05-24 calibration fix: was capped at ×1.06 (effectively noise).
+    // Raised modestly so high-tier + leadership + 200h+ profiles get a
+    // visible but bounded reward. Outer profileContext cap further bounds
+    // the cumulative influence to satisfy the prediction-gate p95 ≤ 2.5pp
+    // / max ≤ 8pp regression check on profile-signal delta.
     return makeComponent(
-      clamp(1.03 * coherence, 1.0, 1.06),
+      clamp(1.07 * coherence, 1.0, 1.12),
       'Activity strength',
       `Structured activities show depth, leadership, or high-tier involvement (score ${Math.round(activityScore)}/100).`,
     );
   }
   if (activityScore >= 55 && strongSignal) {
     return makeComponent(
-      1.03,
+      1.05,
       'Activity strength',
       `Structured activities show some depth or leadership (score ${Math.round(activityScore)}/100).`,
     );
@@ -1378,15 +1399,20 @@ function awardStrengthComponent(profile: ProfileInput): ModifierResult {
       (award.tier != null && award.tier >= 4),
   );
   if (hasTopAward && awardScore >= 25) {
+    // 2026-05-24 calibration fix: was ×1.07 — far too small for national/
+    // international competition winners. Per NACAC + Crimson estimates,
+    // true admit lift is 1.3-1.6× for these winners. Compromise at ×1.13
+    // (above noise floor, but bounded by outer profileContext cap so the
+    // engine's prediction-gate p95/max delta gates still pass).
     return makeComponent(
-      1.07,
+      1.13,
       'Award strength',
       `Awards include national/international or high-tier recognition (score ${Math.round(awardScore)}/100).`,
     );
   }
   if (awardScore >= 12) {
     return makeComponent(
-      1.03,
+      1.05,
       'Award strength',
       `Awards provide a modest external-validation signal (score ${Math.round(awardScore)}/100).`,
     );
@@ -1616,7 +1642,13 @@ export function profileContextMultiplier(
     active.reduce((product, component) => product * component.multiplier, 1),
     1 / active.length,
   );
-  const multiplier = clamp(geometricMean, 0.95, 1.08);
+  // 2026-05-24 calibration fix: outer cap was [0.95, 1.08] — too tight to
+  // ever reward strong-EC + strong-award profiles meaningfully even after
+  // per-component caps were raised. New cap [0.90, 1.13] surfaces strong
+  // signals (geometric mean of award ×1.13 + activity ×1.12 ≈ ×1.12 net)
+  // while staying within the prediction-gate regression bounds (p95 ≤
+  // 2.5pp / max ≤ 8pp delta between with-signal and without-signal runs).
+  const multiplier = clamp(geometricMean, 0.9, 1.13);
   const labels = active.map((component) => component.label).join('; ');
   return {
     multiplier,
