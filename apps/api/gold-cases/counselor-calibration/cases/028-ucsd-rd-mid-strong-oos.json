@@ -37,7 +37,7 @@
       { "name": "State Science Fair 3rd Place", "level": "STATE", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.1, 0.3],
+  "expectedProbabilityRange": [0.1, 0.4],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {

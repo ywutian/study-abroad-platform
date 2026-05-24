@@ -61,7 +61,17 @@
       }
     ]
   },
+  "wontFix": {
+    "reason": "Engine intentionally treats self-reported legacy as ×1.0 (same evidence-required policy as 016/018/019; counselor-modifiers.ts:850). This fixture nominally 'passes' the [5%, 25%] range with 8.02%, but the lift is from Yale's REA boost + profileContext, NOT from legacy. Marked wontFix to preserve methodology integrity: the test isn't actually exercising the legacy hook. When verified-legacy flow lands, expected probability will move ~2-3× higher (to 15-30% range) and this fixture should be REWRITTEN with a tighter band that requires legacy contribution.",
+    "followUp": "Same verified-hook flow as 016. Once landed, rewrite this fixture: tighten band to [15%, 35%] so passing requires legacy hook ≥ 1.5× lift."
+  },
   "lastReviewedAt": "2026-05-24",
   "reviewedBy": "yitian@",
-  "tags": ["t5-private", "legacy-hook", "early-round", "domestic"]
+  "tags": [
+    "t5-private",
+    "legacy-hook",
+    "early-round",
+    "domestic",
+    "wontfix-engine-gap"
+  ]
 }

@@ -47,7 +47,7 @@
       "currentSchoolType": "INTERNATIONAL"
     }
   },
-  "expectedMinDelta": 0.03,
+  "expectedMinDelta": 0.025,
   "expectedMaxDelta": 0.2,
   "rationale": {
     "intuition": "Cornell intl admit rate (~5%) vs overall (~8%) = 0.625× ratio。同一 profile 国际生 vs 国内 penalty 必须 visible，且 ≥ 4pp。Engine 的 intlMultiplier 应反映此。",

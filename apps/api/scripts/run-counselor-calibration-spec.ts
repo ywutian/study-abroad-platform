@@ -25,6 +25,7 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import { NestFactory } from '@nestjs/core';
+import { Prisma } from '@prisma/client';
 
 import type {
   AnyFixture,
@@ -289,6 +290,159 @@ function writeReport(results: FixtureResult[], totalMs: number) {
   );
 }
 
+/**
+ * Minimal UC CDS bands fixture — the CI prediction-gate seed DB doesn't load
+ * SchoolCdsAdmitBand rows for the 9 UC schools (the only schools with Tier 1
+ * CDS bands on prod). Without these, fixtures 031-035 (UC system) fall back
+ * to Tier 2 scorecard rather than testing the Tier 1 anchor path they're
+ * meant to exercise. Mirrors the pattern in run-counselor-gold-cases.ts
+ * (loadMinimalCdsFixture).
+ *
+ * Numbers below sourced from prod DB SchoolCdsAdmitBand rows (verified by
+ * /tmp/audit-anchor-paths.ts at 2026-05-24). Run locally against prod via
+ * Cloud SQL Proxy to refresh if needed.
+ */
+const MINIMAL_UC_CDS_FIXTURE = [
+  {
+    schoolNameNorm: 'university of california, los angeles',
+    bands: [
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'SAT',
+        testBand: '1500-1600',
+        admitRate: 0.18,
+        sampleCount: 800,
+      },
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'GPA_ONLY',
+        testBand: 'ANY',
+        admitRate: 0.14,
+        sampleCount: 1500,
+      },
+    ],
+  },
+  {
+    schoolNameNorm: 'university of california, berkeley',
+    bands: [
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'GPA_ONLY',
+        testBand: 'ANY',
+        admitRate: 0.25,
+        sampleCount: 1200,
+      },
+    ],
+  },
+  {
+    schoolNameNorm: 'university of california, san diego',
+    bands: [
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'SAT',
+        testBand: '1500-1600',
+        admitRate: 0.55,
+        sampleCount: 500,
+      },
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'GPA_ONLY',
+        testBand: 'ANY',
+        admitRate: 0.38,
+        sampleCount: 1200,
+      },
+      {
+        gpaBand: '3.50-3.74',
+        testType: 'SAT',
+        testBand: '1400-1499',
+        admitRate: 0.22,
+        sampleCount: 700,
+      },
+    ],
+  },
+  {
+    schoolNameNorm: 'university of california, santa barbara',
+    bands: [
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'GPA_ONLY',
+        testBand: 'ANY',
+        admitRate: 0.4,
+        sampleCount: 1000,
+      },
+    ],
+  },
+  {
+    schoolNameNorm: 'university of california, merced',
+    bands: [
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'SAT',
+        testBand: '1500-1600',
+        admitRate: 0.92,
+        sampleCount: 500,
+      },
+      {
+        gpaBand: '3.75-4.00',
+        testType: 'GPA_ONLY',
+        testBand: 'ANY',
+        admitRate: 0.88,
+        sampleCount: 1200,
+      },
+    ],
+  },
+] as const;
+
+async function loadMinimalUcCdsBands(prisma: PrismaService) {
+  let upserted = 0;
+  for (const row of MINIMAL_UC_CDS_FIXTURE) {
+    const school = await prisma.school.findUnique({
+      where: { nameNorm: row.schoolNameNorm },
+      select: { id: true },
+    });
+    if (!school) {
+      console.warn(
+        `⚠️  UC CDS fixture skipped: school not found (${row.schoolNameNorm})`,
+      );
+      continue;
+    }
+    for (const band of row.bands) {
+      await prisma.schoolCdsAdmitBand.upsert({
+        where: {
+          schoolId_gpaBand_testType_testBand_cycleYear: {
+            schoolId: school.id,
+            gpaBand: band.gpaBand,
+            testType: band.testType,
+            testBand: band.testBand,
+            cycleYear: 2024,
+          },
+        },
+        update: {
+          admitRate: new Prisma.Decimal(band.admitRate),
+          sampleCount: band.sampleCount,
+        },
+        create: {
+          schoolId: school.id,
+          gpaBand: band.gpaBand,
+          testType: band.testType,
+          testBand: band.testBand,
+          admitRate: new Prisma.Decimal(band.admitRate),
+          sampleCount: band.sampleCount,
+          cycleYear: 2024,
+          source: 'calibration-spec-fixture:uc-system:2024',
+          sourceUrl: 'fixture',
+        },
+      });
+      upserted += 1;
+    }
+  }
+  if (upserted > 0) {
+    console.log(
+      `Seeded ${upserted} UC CDS band(s) for calibration spec runtime.`,
+    );
+  }
+}
+
 async function main() {
   const start = Date.now();
   const caseFiles = readdirSync(CASES_DIR)
@@ -314,6 +468,11 @@ async function main() {
   );
   const counselor = app.get(CounselorEngineService);
   const prisma = app.get(PrismaService);
+
+  // Seed UC CDS bands if missing (CI seed DB doesn't load Tier 1 anchor data
+  // for UC schools; fixtures 031-035 require this to exercise the cds-bands-v1
+  // path. No-op when the bands already exist — upserts are idempotent).
+  await loadMinimalUcCdsBands(prisma);
 
   // Collect unique school names needed
   const uniqueSchoolNames = Array.from(

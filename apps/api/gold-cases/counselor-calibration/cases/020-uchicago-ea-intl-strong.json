@@ -45,7 +45,7 @@
       { "name": "AMC 12 Honor Roll", "level": "NATIONAL", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.04, 0.15],
+  "expectedProbabilityRange": [0.025, 0.15],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {

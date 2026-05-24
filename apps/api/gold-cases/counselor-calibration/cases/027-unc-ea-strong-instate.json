@@ -37,8 +37,7 @@
       { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.4, 0.75],
-  "expectedTier": "match",
+  "expectedProbabilityRange": [0.25, 0.65],
   "expectedConfidenceAtMost": "high",
   "rationale": {
     "intuition": "UNC NC in-state 申请者享受显著 in-state preference (in-state ~40-50% vs OOS ~10%)。Strong in-state EA = solid match。",

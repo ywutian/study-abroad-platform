@@ -1,0 +1,68 @@
+{
+  "kind": "standalone",
+  "id": "033-ucsd-rd-strong-instate",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "University of California, San Diego",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Biology",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1500 }],
+    "activities": [
+      {
+        "name": "Biology Olympiad",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Hospital Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 40,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "USABO Open Round Qualifier",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.55, 0.99],
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UCSD CA in-state RD admit rate >30%; strong CA profile (GPA 3.92, SAT 1500, USABO) + bio 应 high-safety: CDS band 0.88 + in-state lift -> engine cap (0.98). Range upper 0.99 = engine cap; lower 0.55 = floor below which spec fails (something is wrong with in-state preference or CDS band lookup).",
+    "sources": [
+      {
+        "name": "UCSD CDS 2024-25",
+        "evidence": "Overall admit rate 26.77%; CA in-state ~33%, OOS ~22%"
+      },
+      {
+        "name": "SchoolCdsAdmitBand",
+        "evidence": "UCSD has 5 CDS band cells in DB (Tier 1 anchor)"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t30-public",
+    "stem-bio",
+    "regular-decision",
+    "domestic-instate",
+    "uc-tier1-cds-band"
+  ]
+}
