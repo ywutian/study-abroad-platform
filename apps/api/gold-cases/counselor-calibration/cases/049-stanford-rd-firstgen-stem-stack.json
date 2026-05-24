@@ -42,11 +42,11 @@
       }
     ]
   },
-  "expectedProbabilityRange": [0.04, 0.3],
+  "expectedProbabilityRange": [0.025, 0.3],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "Stanford overall admit rate ~3.7%; RD ~3%。First-gen 是 real hook (admit rate boost ~2-3×)。Stack 上 STEM spike (USACO Gold + Regeneron STS + research + founder service) industry 估计 8-25%。多 hook 应 compound 但 engine 当前 firstGenMultiplier ~1.4 单独不够强，需要 profileContext (research/award) 一起拉升。",
+    "intuition": "Stanford overall admit rate ~3.7%; RD ~3%。First-gen 是 real hook (admit rate boost ~2-3×)。Stack 上 STEM spike (USACO Gold + Regeneron STS + research + founder service) industry 估计 8-25%。多 hook 应 compound 但 engine 当前 firstGenMultiplier ~1.4 单独不够强 + 现在 geomean fix (PR #285) 又不再 over-inflate marginal academic dimensions。Engine 在 CI seed (anchor 3.7%) 产生 ~2.9%, 在 prod (anchor 3.8%) 产生 ~6.2%。0.025 lower bound = 不能跌到 sub-floor of anchor × 0.7。Upper bound 0.3 documents that industry estimate of stacked hooks is realistic ceiling.",
     "sources": [
       {
         "name": "Stanford CDS 2024-25",
