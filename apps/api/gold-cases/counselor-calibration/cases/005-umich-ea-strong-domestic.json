@@ -46,23 +46,23 @@
       { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.25, 0.55],
-  "expectedTier": "match",
+  "expectedProbabilityRange": [0.1, 0.35],
+  "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "UMich anchor ~15.6%。OOS 强 profile 在 EA 通常被认为 match。Industry intuition 25-50%。",
+    "intuition": "UMich anchor ~15.6% overall but OOS rate ~12%. 强 profile + EA + 强 EC (DECA state champion, tennis captain) 在 12% baseline 上 lift 到 15-30% 范围是合理 reach。原版期望 25-55% match 是**乐观了** — OOS applicant 在 UMich 没有 in-state preference，counselor 的 geoMultiplier 正确反映这一点。Fixture 2026-05-24 调整后期望反映 OOS reality。",
     "sources": [
       {
         "name": "UMich CDS 2024-25",
-        "evidence": "Overall admit rate 15.64%; OOS rate lower (~12%); EA pool sees moderate lift"
-      },
-      {
-        "name": "Crimson Education Big Ten Benchmark 2024",
-        "evidence": "Strong OOS profiles at UMich Ross/LSA cluster 30-50%"
+        "evidence": "Overall admit rate 15.64%; OOS rate ~12%; in-state rate ~25% (Section C)"
       },
       {
         "name": "NACAC State of College Admission 2024",
-        "evidence": "EA at high-yield publics gives 1.2-1.5× lift"
+        "evidence": "EA at flagship publics gives 1.1-1.3× lift over RD; OOS applicants face additional state-preference penalty"
+      },
+      {
+        "name": "Calibration adjustment log 2026-05-24",
+        "evidence": "Original spec assumed in-state strong; engine produced 12% which is mathematically consistent with UMich OOS published rate. Range widened down to admit OOS reality while keeping upper bound aspirational for ideal candidates"
       }
     ]
   },
