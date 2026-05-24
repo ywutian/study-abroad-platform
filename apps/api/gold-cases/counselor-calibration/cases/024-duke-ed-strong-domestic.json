@@ -1,0 +1,81 @@
+{
+  "kind": "standalone",
+  "id": "024-duke-ed-strong-domestic",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Duke University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.94,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Public Policy",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1530 }],
+    "activities": [
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "Secretary General",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Local Government Internship",
+        "category": "RESEARCH",
+        "role": "Policy Intern",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 12,
+        "yearsActive": 2
+      },
+      {
+        "name": "Tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "NHSMUN Best Delegate", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.12, 0.32],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Duke ED overall ~13% vs RD ~5%。Strong unhooked domestic + ED commitment → 15-30% industry estimate。",
+    "sources": [
+      {
+        "name": "Duke CDS 2024-25",
+        "evidence": "Overall admit rate 5.4%; ED admit rate 12.9% (~2.4× lift)"
+      },
+      {
+        "name": "NACAC 2024 §4.2",
+        "evidence": "T20 ED admit rate consistently 2-3× RD"
+      },
+      {
+        "name": "Crimson Duke Profile 2024",
+        "evidence": "Mid-strong unhooked ED at Duke clusters 15-25%"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "humanities-policy",
+    "early-decision",
+    "domestic",
+    "unhooked"
+  ]
+}

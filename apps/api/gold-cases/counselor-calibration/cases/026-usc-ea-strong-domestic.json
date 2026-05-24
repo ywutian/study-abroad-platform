@@ -1,0 +1,63 @@
+{
+  "kind": "standalone",
+  "id": "026-usc-ea-strong-domestic",
+  "scenarioGroup": "T30_EA_MID_STRONG",
+  "schoolName": "University of Southern California",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "WA",
+    "targetMajor": "Film Production",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1460 }],
+    "activities": [
+      {
+        "name": "Student Film Festival",
+        "category": "ARTS",
+        "role": "Founder + Director",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "School Newspaper",
+        "category": "ACADEMIC",
+        "role": "Editor",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "YoungArts Honorable Mention (Film)",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "USC overall ~10%, EA ~7%。Film @ USC SCA 是 USC 最选择性的 major (~3-5%)。即使 industry consensus 5-20%，强 film spike profile 在 reach tier。",
+    "sources": [
+      {
+        "name": "USC CDS 2024-25",
+        "evidence": "Overall admit rate 9.81%; EA admit rate 7.2%; SCA Film acceptance ~3-5%"
+      },
+      {
+        "name": "USC SCA Statistics 2024",
+        "evidence": "Film program admit rate explicitly published lower than university overall"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t30-private", "arts-film", "early-action", "domestic", "unhooked"]
+}

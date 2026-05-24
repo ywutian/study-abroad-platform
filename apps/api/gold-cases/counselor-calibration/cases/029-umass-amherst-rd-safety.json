@@ -1,0 +1,65 @@
+{
+  "kind": "standalone",
+  "id": "029-umass-amherst-rd-safety",
+  "scenarioGroup": "SAFETY_RD_STRONG",
+  "schoolName": "University of Massachusetts Amherst",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "Mathematics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1420 }],
+    "activities": [
+      {
+        "name": "Math Club",
+        "category": "ACADEMIC",
+        "role": "President",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Tutor",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "AMC 12 Honor Roll", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.65, 0.92],
+  "expectedTier": "safety",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UMass Amherst overall ~60%, MA in-state preference 让 strong in-state profile 接近 safety (75-90%)。",
+    "sources": [
+      {
+        "name": "UMass Amherst CDS 2024-25",
+        "evidence": "Overall admit rate 59.89%; in-state slightly higher"
+      },
+      {
+        "name": "UMass admissions data 2024",
+        "evidence": "MA residents 60%+ of class; in-state strong profiles see 80-90% admit"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t60-public",
+    "stem",
+    "regular-decision",
+    "domestic-instate",
+    "safety"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "kind": "comparative",
+  "id": "030-nyu-intl-vs-domestic-penalty",
+  "scenarioGroup": "INTL_PENALTY",
+  "schoolName": "New York University",
+  "comparedDimension": "international",
+  "baseProfile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "targetMajor": "Business",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1470 },
+      { "type": "TOEFL", "score": 108 }
+    ],
+    "activities": [
+      {
+        "name": "DECA",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "Member",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "DECA State Champion", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "caseA": {
+    "label": "domestic",
+    "applicationRound": "RD",
+    "profileOverride": { "isInternational": false, "nationality": "US" }
+  },
+  "caseB": {
+    "label": "intl-CN",
+    "applicationRound": "RD",
+    "profileOverride": {
+      "isInternational": true,
+      "nationality": "CN",
+      "currentSchoolType": "INTERNATIONAL"
+    }
+  },
+  "expectedMinDelta": 0.02,
+  "expectedMaxDelta": 0.12,
+  "rationale": {
+    "intuition": "NYU overall ~9% admit but intl rate ~7-8% (less penalty than HYPSM since NYU has 30%+ intl class)。Delta 应 2-6pp，小于 Cornell 的 ~10pp。",
+    "sources": [
+      {
+        "name": "NYU CDS 2024-25",
+        "evidence": "Overall admit rate 9.23%; intl student percentage 25-30%; intl admit rate ~7%"
+      },
+      {
+        "name": "NYU Admissions International Brief 2024",
+        "evidence": "NYU explicitly desires intl diversity; need-aware but moderate penalty vs HYPSM"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t30-private",
+    "business",
+    "intl-penalty-moderate",
+    "regression-check"
+  ]
+}

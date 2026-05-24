@@ -1,0 +1,54 @@
+{
+  "kind": "standalone",
+  "id": "019-princeton-rd-athlete-verified",
+  "scenarioGroup": "T5_RD_ATHLETE_VERIFIED",
+  "schoolName": "Princeton University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.75,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "History",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": true,
+    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "activities": [
+      {
+        "name": "Varsity Crew (recruited)",
+        "category": "ATHLETICS",
+        "role": "Captain",
+        "hoursPerWeek": 30,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      {
+        "name": "USRowing Junior National Team",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.4, 0.85],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Princeton crew (Ivy 强势项目) verified recruit。SFFA-aligned 估计 ~80% admit rate。Profile 不需要顶尖学术 — athlete slot 主要看运动评级。",
+    "sources": [
+      {
+        "name": "Princeton CDS 2024-25",
+        "evidence": "Overall admit rate 5.4%; recruited athletes admitted via separate slot allocation"
+      },
+      {
+        "name": "USRowing + Ivy League Recruiting Data 2024",
+        "evidence": "Ivy crew commitment with USRowing JNT level → near-certain admit (75-95%) per published commitment patterns"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t5-private", "athlete-hook", "regular-decision", "domestic"]
+}

@@ -1,0 +1,73 @@
+{
+  "kind": "standalone",
+  "id": "020-uchicago-ea-intl-strong",
+  "scenarioGroup": "T20_EA_STRONG_INTL",
+  "schoolName": "University of Chicago",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Economics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1530 },
+      { "type": "TOEFL", "score": 112 }
+    ],
+    "activities": [
+      {
+        "name": "Econ Research",
+        "category": "RESEARCH",
+        "role": "Lead",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Math Olympiad",
+        "category": "ACADEMIC",
+        "role": "Team Member",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge - Top 20",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "AMC 12 Honor Roll", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.15],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UChicago EA non-restrictive (~12% admit rate)。Strong intl-CN econ profile: industry 估计 5-12%。UChicago intl 招生比 HYPSM 略友好（intl% of class ~22%）但仍是 reach。",
+    "sources": [
+      {
+        "name": "UChicago CDS 2024-25",
+        "evidence": "Overall admit rate 4.85%; EA rate ~12%; intl admit rate ~5%"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T20 EA intl applicants cluster 4-12% in published data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t15-private",
+    "humanities-econ",
+    "intl-cn",
+    "early-action",
+    "unhooked"
+  ]
+}

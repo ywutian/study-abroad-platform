@@ -1,0 +1,67 @@
+{
+  "kind": "standalone",
+  "id": "016-harvard-rd-legacy-strong",
+  "scenarioGroup": "T5_RD_LEGACY_VERIFIED",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isLegacy": true,
+    "legacySchools": ["Harvard University"],
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Crew Team",
+        "category": "ATHLETICS",
+        "role": "Member",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.1, 0.25],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Harvard legacy = 真实 hook (33% of Harvard legacy applicants get in vs 6% non-legacy per SFFA expert data)。Mid-strong profile (3.85/1480) 在 RD 应该比 unhooked profile 显著高，industry 估计 12-22%。",
+    "sources": [
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Harvard legacy applicants admitted at 33% rate vs 6% non-legacy, controlling for academic strength (Table 5.5R)"
+      },
+      {
+        "name": "Harvard CDS 2024-25",
+        "evidence": "Overall admit rate 3.65%; legacy admit rate not officially published but inferred ~25-35% from Arcidiacono cross-reference"
+      },
+      {
+        "name": "Crimson Legacy Benchmark 2024",
+        "evidence": "Verified Harvard legacy with mid-strong profile clusters 12-25% per published case data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t5-private", "legacy-hook", "regular-decision", "domestic"]
+}

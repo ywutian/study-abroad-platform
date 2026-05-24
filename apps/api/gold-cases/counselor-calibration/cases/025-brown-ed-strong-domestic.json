@@ -1,0 +1,63 @@
+{
+  "kind": "standalone",
+  "id": "025-brown-ed-strong-domestic",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Brown University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1520 }],
+    "activities": [
+      {
+        "name": "Robotics Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Coding Bootcamp Founder",
+        "category": "LEADERSHIP",
+        "role": "Founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "USACO Gold", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "Regional Science Fair First Place",
+        "level": "STATE",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.1, 0.3],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Brown ED ~14% vs overall ~5%。Strong CS profile unhooked + ED 应在 12-28%。",
+    "sources": [
+      {
+        "name": "Brown CDS 2024-25",
+        "evidence": "Overall admit rate 5.06%; ED admit rate 14.4%"
+      },
+      {
+        "name": "Crimson Brown Profile 2024",
+        "evidence": "Strong unhooked ED CS clusters 12-25%"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t10-private", "stem-cs", "early-decision", "domestic", "unhooked"]
+}

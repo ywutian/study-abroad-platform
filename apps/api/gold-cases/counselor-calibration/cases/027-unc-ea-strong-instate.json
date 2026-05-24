@@ -1,0 +1,59 @@
+{
+  "kind": "standalone",
+  "id": "027-unc-ea-strong-instate",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "University of North Carolina at Chapel Hill",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.88,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NC",
+    "targetMajor": "Biology",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1470 }],
+    "activities": [
+      {
+        "name": "Lab Volunteer",
+        "category": "RESEARCH",
+        "role": "Assistant",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 20,
+        "yearsActive": 2
+      },
+      {
+        "name": "Biology Club",
+        "category": "ACADEMIC",
+        "role": "President",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.4, 0.75],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UNC NC in-state 申请者享受显著 in-state preference (in-state ~40-50% vs OOS ~10%)。Strong in-state EA = solid match。",
+    "sources": [
+      {
+        "name": "UNC CDS 2024-25",
+        "evidence": "Overall admit rate 15.34%; in-state ~40-50%, OOS ~9%; EA admit rate 15.34% overall"
+      },
+      {
+        "name": "UNC Admissions 2024",
+        "evidence": "NC residents constitute ~82% of enrolled class; explicit in-state preference per UNC policy"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t25-public", "stem-bio", "early-action", "domestic-instate"]
+}

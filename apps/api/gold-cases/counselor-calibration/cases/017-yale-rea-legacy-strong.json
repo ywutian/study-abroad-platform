@@ -1,0 +1,67 @@
+{
+  "kind": "standalone",
+  "id": "017-yale-rea-legacy-strong",
+  "scenarioGroup": "T5_RD_LEGACY_VERIFIED",
+  "schoolName": "Yale University",
+  "applicationRound": "REA",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Political Science",
+    "isLegacy": true,
+    "legacySchools": ["Yale University"],
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1510 }],
+    "activities": [
+      {
+        "name": "Debate",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Student Government",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Debate Tournament Quarterfinalist",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.12, 0.3],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale REA + legacy = stack 两个 hook。Yale REA rate (~9%) × legacy multiplier (~3-4×) → 25-35% theoretical max。Strong but not perfect profile lands 12-30% industry estimate。",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall admit rate 3.65%; REA admit rate ~9%"
+      },
+      {
+        "name": "Arcidiacono SFFA Report 2018",
+        "evidence": "Legacy hook gives 3-5× admit lift at Ivies after controlling for academic profile"
+      },
+      {
+        "name": "Crimson Education Yale Profile 2024",
+        "evidence": "REA legacy with mid-strong profile 15-30% in published cases"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t5-private", "legacy-hook", "early-round", "domestic"]
+}
