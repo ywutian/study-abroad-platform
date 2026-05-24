@@ -1,0 +1,64 @@
+{
+  "kind": "comparative",
+  "id": "046-washu-intl-vs-domestic-penalty",
+  "scenarioGroup": "INTL_PENALTY",
+  "schoolName": "Washington University in St. Louis",
+  "comparedDimension": "international",
+  "baseProfile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "targetMajor": "Biology",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1520 },
+      { "type": "TOEFL", "score": 112 }
+    ],
+    "activities": [
+      {
+        "name": "Hospital Research Volunteer",
+        "category": "RESEARCH",
+        "role": "Assistant",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "USABO Open Qualifier", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "caseA": {
+    "label": "domestic",
+    "applicationRound": "RD",
+    "profileOverride": { "isInternational": false, "nationality": "US" }
+  },
+  "caseB": {
+    "label": "intl-CN",
+    "applicationRound": "RD",
+    "profileOverride": {
+      "isInternational": true,
+      "nationality": "CN",
+      "currentSchoolType": "INTERNATIONAL"
+    }
+  },
+  "expectedMinDelta": 0.03,
+  "expectedMaxDelta": 0.18,
+  "rationale": {
+    "intuition": "WashU intl admit rate ~7% vs overall ~12% = 0.58× ratio。WashU need-aware for intl，penalty 比 Cornell 略小但 visible (3-15pp)。Pre-med 在 intl pool 高竞争。",
+    "sources": [
+      {
+        "name": "WashU CDS 2024-25",
+        "evidence": "Overall admit rate 12%; intl ~13% of class; intl admit rate inferred ~7%"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T20 privates need-aware show intl admit rate 0.4-0.7× domestic"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t20-private", "stem-bio", "intl-penalty", "regression-check"]
+}

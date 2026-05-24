@@ -1,0 +1,64 @@
+{
+  "kind": "standalone",
+  "id": "050-cmu-ed-firstgen-stem-stack",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "Carnegie Mellon University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "PA",
+    "targetMajor": "Computer Science",
+    "isLegacy": false,
+    "isFirstGen": true,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1530 }],
+    "activities": [
+      {
+        "name": "Open-source ML Library Contributor",
+        "category": "RESEARCH",
+        "role": "Top Contributor",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 40,
+        "yearsActive": 2
+      },
+      {
+        "name": "Robotics Team",
+        "category": "ACADEMIC",
+        "role": "Software Lead",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [{ "name": "USACO Platinum", "level": "NATIONAL", "year": 2025 }]
+  },
+  "expectedProbabilityRange": [0.1, 0.4],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "CMU SCS overall admit rate ~6% (CS-specific much harder than overall ~11%)。ED CS admit ~15-20%。First-gen + USACO Platinum stack industry 估计 12-30%。CMU 高度技术导向，USACO Platinum 是显著 differentiator。",
+    "sources": [
+      {
+        "name": "CMU CDS 2024-25",
+        "evidence": "Overall admit rate 11.3%; SCS-specific admit rate ~6%; ED admit rate ~20-25%"
+      },
+      {
+        "name": "Crimson Hook Stacking Report 2024",
+        "evidence": "T20 first-gen + STEM spike + ED cluster 15-35% admit rate per published cases"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-private",
+    "stem-cs",
+    "early-decision",
+    "domestic",
+    "first-gen-hook",
+    "multi-hook-stack"
+  ]
+}

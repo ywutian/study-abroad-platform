@@ -1,0 +1,70 @@
+{
+  "kind": "standalone",
+  "id": "048-harvard-rd-strong-domestic-exeter",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.96,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NH",
+    "targetMajor": "Economics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1550 }],
+    "activities": [
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Economics Research with Faculty",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 24,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge Semi-finalist",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.02, 0.15],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Harvard overall admit rate ~3.7%; RD ~3%。Strong unhooked domestic profile (3.96/1550 + research + national award) industry 估计 3-10%。Phillips Exeter (NH) 等顶尖美高 historical Harvard feeder rate 10-15%, 但 engine 当前不识别 feeder school — profile 本身已经 stack admit pool middle 50。",
+    "sources": [
+      {
+        "name": "Harvard CDS 2024-25",
+        "evidence": "Overall admit rate 3.65%; RD admit rate ~3%"
+      },
+      {
+        "name": "Phillips Exeter College Counseling 2023 Report",
+        "evidence": "Exeter→Harvard matriculation ~8-12% historically; engine does not yet model feeder school identity"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-econ",
+    "regular-decision",
+    "domestic",
+    "us-boarding-feeder",
+    "engine-gap-feeder"
+  ]
+}

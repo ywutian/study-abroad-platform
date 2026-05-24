@@ -1,0 +1,71 @@
+{
+  "kind": "standalone",
+  "id": "049-stanford-rd-firstgen-stem-stack",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "TX",
+    "targetMajor": "Computer Science",
+    "isLegacy": false,
+    "isFirstGen": true,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [
+      {
+        "name": "AI Research at University Lab",
+        "category": "RESEARCH",
+        "role": "Lead Student Researcher",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      },
+      {
+        "name": "Free Coding Bootcamp for Underserved Youth",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder & Lead Instructor",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "USACO Gold", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "Regeneron STS Scholar (Top 300)",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.3],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Stanford overall admit rate ~3.7%; RD ~3%。First-gen 是 real hook (admit rate boost ~2-3×)。Stack 上 STEM spike (USACO Gold + Regeneron STS + research + founder service) industry 估计 8-25%。多 hook 应 compound 但 engine 当前 firstGenMultiplier ~1.4 单独不够强，需要 profileContext (research/award) 一起拉升。",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall admit rate 3.68%; first-gen ~17% of class; first-gen admit rate inferred ~7-9%"
+      },
+      {
+        "name": "Crimson Hook Stacking Report 2024",
+        "evidence": "T5 first-gen + STEM spike combo cluster 10-25% admit rate per published cases"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "regular-decision",
+    "domestic",
+    "first-gen-hook",
+    "multi-hook-stack"
+  ]
+}

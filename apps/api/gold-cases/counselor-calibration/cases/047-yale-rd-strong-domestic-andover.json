@@ -1,0 +1,66 @@
+{
+  "kind": "standalone",
+  "id": "047-yale-rd-strong-domestic-andover",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Yale University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.94,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "Political Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1530 }],
+    "activities": [
+      {
+        "name": "Philomathean Society (Debate)",
+        "category": "ACADEMIC",
+        "role": "President",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "School Newspaper",
+        "category": "LEADERSHIP",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "NSDA National Qualifier", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.03, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale overall admit rate ~4.4%; RD ~3-4%。Strong unhooked domestic profile industry 估计 4-12%。Andover/Exeter/Choate 等顶尖美高 feeder context 通常 lift slightly via better LOR/counselor context — 但 engine 当前不识别 feeder school identity, 所以 range 偏宽。Profile 本身 (GPA 3.94 + SAT 1530 + leadership + national award) 已经在 admit pool middle 50。",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall admit rate 4.46%; RD admit rate ~3.5%"
+      },
+      {
+        "name": "Yale Admissions Office (anecdotal)",
+        "evidence": "Top boarding schools (Andover/Exeter) feed Yale at 8-15% rate per published feeder data; engine does not yet model this"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-polisci",
+    "regular-decision",
+    "domestic",
+    "us-boarding-feeder",
+    "engine-gap-feeder"
+  ]
+}
