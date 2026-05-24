@@ -48,7 +48,9 @@ describe('counselor modifiers launch guards', () => {
       );
 
       expect(result.label).toContain('school-published');
-      expect(result.multiplier).toBeCloseTo(0.4 + 0.7 * (0.054 + 0.946 / 2), 3);
+      // 2026-05-24 curve recalibration: was 0.4 + 0.7 * pct (median maps to
+      // 0.75, a hidden penalty); now 0.5 + pct so median = 1.0 neutral.
+      expect(result.multiplier).toBeCloseTo(0.5 + (0.054 + 0.946 / 2), 3);
     });
 
     it('falls back to GPA-to-SAT logic when distribution sum is invalid', () => {
@@ -493,8 +495,11 @@ describe('counselor modifiers launch guards', () => {
       );
 
       expect(result.components.activityStrength.multiplier).toBeGreaterThan(1);
+      // 2026-05-24 calibration: was capped at 1.06 (effectively noise). High-
+      // tier + leadership + 200h+ activities now allowed up to 1.18 to match
+      // consultant-estimated 1.15-1.25× lift.
       expect(result.components.activityStrength.multiplier).toBeLessThanOrEqual(
-        1.06,
+        1.18,
       );
       expect(result.profileSignals.usedInProbability).toContain(
         'activityStrength',
@@ -516,7 +521,10 @@ describe('counselor modifiers launch guards', () => {
         baseSchool(),
       );
 
-      expect(result.components.awardStrength.multiplier).toBe(1.07);
+      // 2026-05-24 calibration: was 1.07 — far below NACAC/Crimson estimates
+      // of 1.3-1.6× admit lift for national/international competition winners.
+      // Raised to 1.22 (still conservative vs literature).
+      expect(result.components.awardStrength.multiplier).toBe(1.22);
       expect(result.profileSignals.usedInProbability).toContain(
         'awardStrength',
       );
@@ -648,7 +656,9 @@ describe('counselor modifiers launch guards', () => {
         baseSchool({ acceptanceRate: 0.04, sat25: 1510, sat75: 1560 }),
       );
 
-      expect(result.multiplier).toBeLessThanOrEqual(1.08);
+      // 2026-05-24 calibration: outer cap was [0.95, 1.08] — too tight to
+      // ever surface strong-EC + strong-award profiles. New cap [0.85, 1.25].
+      expect(result.multiplier).toBeLessThanOrEqual(1.25);
       expect(result.multiplier).toBeGreaterThan(1);
     });
   });

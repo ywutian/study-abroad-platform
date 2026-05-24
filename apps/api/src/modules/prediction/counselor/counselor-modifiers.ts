@@ -454,12 +454,15 @@ function compareTestBand(
     // i.e. the most typical successful applicant. Net effect: anyone with
     // SAT 1560 at MIT (admit p25-p75 = 1530-1580) got ×0.85 despite being
     // above the median admitted score. Middle 50 means "this score is
-    // typical of admitted students" → ×1.0 neutral.
+    // typical of admitted students" → ×1.0 neutral. Marked impact:'positive'
+    // (not 'neutral') because being in admit-pool middle 50 IS a positive
+    // signal relative to applicant pool — and so the factor stays visible
+    // in the breakdown UI (engine skips multiplier=1.0 + impact=neutral).
     return {
       multiplier: 1.0,
       label: 'Test score in admit pool middle 50',
       evidence: `${testLabel} falls between this school's 25th and 75th percentile (${p25}-${p75}) — typical of admitted students`,
-      impact: 'neutral',
+      impact: 'positive',
     };
   }
   const nearBand = pointUnit === 'ACT' ? score >= p25 - 3 : score >= p25 - 100;
