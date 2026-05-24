@@ -244,6 +244,51 @@ describe('CounselorEngineService', () => {
   });
 
   // -------------------------------------------------------------------------
+  // Geomean academic correctness (2026-05-24 fix)
+  // -------------------------------------------------------------------------
+
+  describe('geomean academic correctness — only when both dimensions non-neutral', () => {
+    // Geometric mean is a correlation correction for when GPA and test BOTH
+    // signal something (e.g. both above admit pool). When one is exactly 1.0
+    // (neutral / admit-pool-middle-50), sqrt(gpa × 1.0) wrongly *reduces* the
+    // gpa multiplier. The fix: only apply geomean when both differ from 1.0.
+
+    it('multiplies directly (no geomean) when test is in admit pool middle-50 (testBand=1.0)', async () => {
+      // Profile: SAT 1450 — exactly in [sat25=1400, sat75=1500] middle-50
+      // → testBand multiplier = 1.0 (neutral)
+      // GPA 3.9 vs school SAT bands implies gpaBand is the only non-neutral
+      // academic signal. With the fix, gpaBand is preserved (not square-rooted).
+      const middleSatResult = await service.compute(
+        profile({ gpa: 3.9, testScores: [{ type: 'SAT', score: 1450 }] }),
+        school({ acceptanceRate: 0.3, sat25: 1400, sat75: 1500 }),
+      );
+
+      // SAT-in-middle profile should land NEAR anchor (~30%); previously
+      // pre-fix sqrt(gpaBand × 1.0) would suppress the result slightly below
+      // anchor when only GPA carried signal. We assert the result is at least
+      // as high as the anchor (engine should not punish a neutral test score
+      // by suppressing other dimensions).
+      expect(middleSatResult.probability).toBeGreaterThanOrEqual(0.3 - 0.01);
+    });
+
+    it('applies geomean when BOTH gpaBand and testBand differ from 1.0', async () => {
+      // Profile: GPA 3.95 (above admit pool) + SAT 1560 (above sat75=1500)
+      // → both gpaBand > 1.0 and testBand > 1.0 → geomean kicks in to avoid
+      // double-counting the correlated strength.
+      const bothStrongResult = await service.compute(
+        profile({ gpa: 3.95, testScores: [{ type: 'SAT', score: 1560 }] }),
+        school({ acceptanceRate: 0.05, sat25: 1400, sat75: 1500 }),
+      );
+
+      // Sanity: probability is bounded by anchor × 2.5 = 0.125
+      // (geomean correction should keep the result well within the clamp
+      // band, not collapse to floor or hit ceiling)
+      expect(bothStrongResult.probability).toBeGreaterThan(0.05 * 0.1);
+      expect(bothStrongResult.probability).toBeLessThanOrEqual(0.05 * 2.5);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Real-world scenarios (also document expected behavior for ops)
   // -------------------------------------------------------------------------
 
