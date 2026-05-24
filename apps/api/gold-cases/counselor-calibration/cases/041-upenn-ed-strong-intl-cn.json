@@ -1,0 +1,72 @@
+{
+  "kind": "standalone",
+  "id": "041-upenn-ed-strong-intl-cn",
+  "scenarioGroup": "T20_ED_STRONG_INTL",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.93,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Economics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1530 },
+      { "type": "TOEFL", "score": 113 }
+    ],
+    "activities": [
+      {
+        "name": "Economics Independent Research",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      },
+      {
+        "name": "Business Society",
+        "category": "LEADERSHIP",
+        "role": "Founder & President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge Top 10",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Penn ED admit rate ~15%, intl pool 比 RD 更紧 (intl% of ED admits ~14%)。Strong intl-CN Wharton-track profile industry 估计 6-15%。ED 显著 boost 但 intl penalty 拉低，净效应 RD intl 5-8% → ED intl 7-15%。",
+    "sources": [
+      {
+        "name": "Penn CDS 2024-25",
+        "evidence": "Overall admit rate 5.9%; ED admit rate 15.27%; intl admit rate inferred ~3% RD, ~8-12% ED"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T20 ED intl-CN strong profiles cluster 6-15% per published data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "humanities-econ",
+    "intl-cn",
+    "early-decision",
+    "unhooked"
+  ]
+}

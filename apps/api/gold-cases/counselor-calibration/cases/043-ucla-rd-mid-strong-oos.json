@@ -1,0 +1,63 @@
+{
+  "kind": "standalone",
+  "id": "043-ucla-rd-mid-strong-oos",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "University of California, Los Angeles",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "TX",
+    "targetMajor": "Psychology",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "activities": [
+      {
+        "name": "Psychology Club",
+        "category": "ACADEMIC",
+        "role": "Vice President",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Hospital Mental Health Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 40,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.03, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UCLA overall admit rate ~9%, OOS rate ~6% (UCLA OOS cap 严格)。Mid-strong OOS profile (3.85/1450) industry 估计 6-15%。UC 系统 OOS 偏 selective。Psych 不属 STEM hot major 略减压。",
+    "sources": [
+      {
+        "name": "UCLA CDS 2024-25",
+        "evidence": "Overall admit rate 8.8%; OOS admit rate ~6%, in-state ~14%"
+      },
+      {
+        "name": "UC System Statistics 2024",
+        "evidence": "UCLA OOS cap drives lower OOS admit rate; mid-strong profile 在 OOS pool 是 borderline"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t30-public", "humanities-psych", "regular-decision", "domestic-oos"]
+}

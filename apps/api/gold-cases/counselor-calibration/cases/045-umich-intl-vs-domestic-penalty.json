@@ -1,0 +1,82 @@
+{
+  "kind": "comparative",
+  "id": "045-umich-intl-vs-domestic-penalty",
+  "scenarioGroup": "INTL_PENALTY",
+  "schoolName": "University of Michigan, Ann Arbor",
+  "comparedDimension": "international",
+  "baseProfile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "targetMajor": "Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1500 },
+      { "type": "TOEFL", "score": 110 }
+    ],
+    "activities": [
+      {
+        "name": "Robotics Team",
+        "category": "ACADEMIC",
+        "role": "Lead Engineer",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "FIRST Robotics Regional Winner",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "caseA": {
+    "label": "domestic-oos",
+    "applicationRound": "RD",
+    "profileOverride": {
+      "isInternational": false,
+      "nationality": "US",
+      "stateOfResidence": "CA"
+    }
+  },
+  "caseB": {
+    "label": "intl-CN",
+    "applicationRound": "RD",
+    "profileOverride": {
+      "isInternational": true,
+      "nationality": "CN",
+      "currentSchoolType": "INTERNATIONAL"
+    }
+  },
+  "expectedMinDelta": 0.03,
+  "expectedMaxDelta": 0.18,
+  "rationale": {
+    "intuition": "UMich intl admit rate ~11% vs overall ~17% = 0.65× ratio。同 profile 国际生 vs 国内 penalty 应 visible (3-15pp)。Engineering 在 UMich intl pool 较 competitive，penalty 大于其他 major。",
+    "sources": [
+      {
+        "name": "UMich CDS 2024-25",
+        "evidence": "Overall admit rate 17.71%; intl ~17% of class; intl admit rate inferred ~11%"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T30 publics show intl admit rate 0.5-0.7× domestic for unhooked profiles"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "CI test-seed UMich row has intlAcceptanceRate > overall acceptanceRate (data inversion in CI seed) — engine reports intl higher than domestic-oos (delta -4.75pp), opposite of prod data (delta +4.6pp). Local prod-data run passes; CI fails until CI seed UMich data is corrected. Engine behavior is correct conditional on data; fixture is structurally sound.",
+    "followUp": "Audit CI seed UMich row: ensure intlAcceptanceRate <= acceptanceRate (UMich case shows intl=0.137 but overall=0.090 in CI). Likely the prisma db seed picks up a stale CSV. Cross-reference with apps/api/scripts/seed-more-schools-expanded.ts and re-seed CI fixture data."
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t30-public",
+    "stem-engineering",
+    "intl-penalty",
+    "regression-check",
+    "wontfix-ci-seed-data"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "kind": "standalone",
+  "id": "042-columbia-ed-strong-intl-cn",
+  "scenarioGroup": "T20_ED_STRONG_INTL",
+  "schoolName": "Columbia University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Statistics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1550 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Statistics Research Project",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      },
+      {
+        "name": "Math Tutoring Initiative",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "AMC 12 Distinguished Honor Roll",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "AIME Qualifier", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Columbia ED admit rate ~11%, intl pool ~16% of class。Strong intl-CN STEM profile industry 估计 6-14%。Columbia 比 Penn intl 更友好但 ED 优势略弱。",
+    "sources": [
+      {
+        "name": "Columbia CDS 2024-25",
+        "evidence": "Overall admit rate 3.85%; ED admit rate ~11%; intl ~16% of class"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T10 ED intl-CN STEM strong profiles cluster 5-14% per published data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t10-private", "stem-stats", "intl-cn", "early-decision", "unhooked"]
+}

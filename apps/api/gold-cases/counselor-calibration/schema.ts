@@ -18,6 +18,7 @@ export type ScenarioGroup =
   | 'T5_RD_LEGACY_VERIFIED'
   | 'T5_RD_ATHLETE_VERIFIED'
   | 'T20_ED_STRONG_UNHOOKED'
+  | 'T20_ED_STRONG_INTL'
   | 'T20_EA_STRONG_INTL'
   | 'T30_EA_MID_STRONG'
   | 'MATCH_RD_MID_PROFILE'
@@ -29,7 +30,9 @@ export type ScenarioGroup =
   | 'TEST_OPTIONAL'
   | 'LOW_GPA_HIGH_TEST'
   | 'HIGH_GPA_LOW_TEST'
-  | 'FIRST_GEN_T20';
+  | 'FIRST_GEN_T20'
+  | 'LAC_RD_STRONG_DOMESTIC'
+  | 'MULTI_HOOK_STACK';
 
 export interface RationaleSource {
   /** Human-readable label, e.g. "MIT CDS 2024-25", "NACAC State of Admission 2024" */

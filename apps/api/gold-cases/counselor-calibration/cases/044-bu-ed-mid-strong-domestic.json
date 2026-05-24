@@ -1,0 +1,58 @@
+{
+  "kind": "standalone",
+  "id": "044-bu-ed-mid-strong-domestic",
+  "scenarioGroup": "T30_EA_MID_STRONG",
+  "schoolName": "Boston University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NJ",
+    "targetMajor": "Business Administration",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1430 }],
+    "activities": [
+      {
+        "name": "DECA Business Competition",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "School Newspaper Business Manager",
+        "category": "LEADERSHIP",
+        "role": "Business Manager",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "DECA State Finalist", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.18, 0.55],
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "BU overall admit rate ~14%, ED ~30-40% (BU 重视 ED 锁定 yield)。Mid-strong domestic profile (3.8/1430) industry 估计 ED 20-40% (engine 当前 anchor 偏低；BU prod 数据 acceptanceRate ~11% 比公开 14% 略低)。Lower bound 0.18 = engine should at minimum produce ED-lifted probability above ~18%。",
+    "sources": [
+      {
+        "name": "BU CDS 2024-25",
+        "evidence": "Overall admit rate 14.4%; ED admit rate ~30-40%; middle 50 SAT 1380-1500"
+      },
+      {
+        "name": "NACAC 2024 State of College Admission",
+        "evidence": "T30 ED admit boost ~2-3× RD for unhooked mid-strong profiles"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t40-private", "business", "early-decision", "domestic", "unhooked"]
+}

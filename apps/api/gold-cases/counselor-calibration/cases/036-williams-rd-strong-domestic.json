@@ -1,0 +1,69 @@
+{
+  "kind": "standalone",
+  "id": "036-williams-rd-strong-domestic",
+  "scenarioGroup": "LAC_RD_STRONG_DOMESTIC",
+  "schoolName": "Williams College",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "English",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1510 }],
+    "activities": [
+      {
+        "name": "Literary Magazine",
+        "category": "LEADERSHIP",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Debate Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Writing Gold Key (Regional)",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.06, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Williams 是 T1 LAC，整体 admit rate ~8.5%; RD 比 ED 更低 (~6-7%)。Strong unhooked humanities profile 在 industry 估计 6-15%。LAC 选 fit > stats，profile 看着 generic 时浮动空间小。",
+    "sources": [
+      {
+        "name": "Williams CDS 2024-25",
+        "evidence": "Overall admit rate 8.5%; ED admit rate ~24%, RD ~6%"
+      },
+      {
+        "name": "NACAC 2024 State of College Admission",
+        "evidence": "T10 LACs cluster 5-12% RD admit for unhooked strong domestic profiles"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-lac",
+    "humanities-english",
+    "regular-decision",
+    "domestic",
+    "unhooked"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "kind": "standalone",
+  "id": "040-yale-rd-strong-intl-cn",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_INTL",
+  "schoolName": "Yale University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "History",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1540 },
+      { "type": "TOEFL", "score": 114 }
+    ],
+    "activities": [
+      {
+        "name": "Independent History Research (East Asia)",
+        "category": "RESEARCH",
+        "role": "Researcher",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Concord Review Publication",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.02, 0.1],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale overall admit rate ~4.4%; intl admit rate ~3% (Yale 比 HM 略友好 intl pool ~12%)。Strong intl-CN humanities profile (Concord Review published) industry 估计 3-9%。Yale 文科 spike 在 intl pool 较稀缺，比 CS profile 略受欢迎但仍 reach。",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall admit rate 4.46%; intl ~12% of class, intl admit rate inferred ~3%"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T5 RD intl-CN humanities strong profiles cluster 2-8% per published data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-history",
+    "intl-cn",
+    "regular-decision",
+    "unhooked"
+  ]
+}

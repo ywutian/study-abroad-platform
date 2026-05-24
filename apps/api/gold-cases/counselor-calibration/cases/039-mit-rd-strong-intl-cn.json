@@ -1,0 +1,63 @@
+{
+  "kind": "standalone",
+  "id": "039-mit-rd-strong-intl-cn",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_INTL",
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Computer Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1560 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Quantum Computing Research at University Lab",
+        "category": "RESEARCH",
+        "role": "Independent Researcher",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 40,
+        "yearsActive": 2
+      },
+      {
+        "name": "Math Olympiad Team",
+        "category": "ACADEMIC",
+        "role": "Team Member",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      { "name": "USACO Platinum", "level": "INTERNATIONAL", "year": 2025 },
+      { "name": "AMC 12 AIME Qualifier", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.01, 0.1],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "MIT overall admit rate ~4%; intl admit rate ~2-3% (intl% of class ~10-12%, intl applicant pool 比 domestic 大很多)。Strong intl-CN CS profile (USACO Platinum) industry 估计 2-8%。MIT 高度重视技术 spike，profile 看着 competitive 但 intl pool 整体压低概率。",
+    "sources": [
+      {
+        "name": "MIT CDS 2024-25",
+        "evidence": "Overall admit rate 4.52%; intl ~10% of class, intl pool ~15% of total applicants → intl admit rate inferred ~3%"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T5 RD intl-CN STEM strong profiles cluster 2-8% per published data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t5-private", "stem-cs", "intl-cn", "regular-decision", "unhooked"]
+}

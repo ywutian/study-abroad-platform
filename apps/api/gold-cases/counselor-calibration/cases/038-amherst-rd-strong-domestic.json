@@ -1,0 +1,65 @@
+{
+  "kind": "standalone",
+  "id": "038-amherst-rd-strong-domestic",
+  "scenarioGroup": "LAC_RD_STRONG_DOMESTIC",
+  "schoolName": "Amherst College",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "targetMajor": "Political Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1500 }],
+    "activities": [
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "Secretary General",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Local Political Campaign Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Field Organizer",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 12,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "NSDA National Qualifier", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.2],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Amherst T5 LAC, admit rate ~7%; RD ~5-6%。Strong unhooked humanities profile industry 估计 6-15%。LAC 国际生 cap 较紧，domestic 反而是优势。",
+    "sources": [
+      {
+        "name": "Amherst CDS 2024-25",
+        "evidence": "Overall admit rate 7.4%; ED admit rate ~33%, RD ~6%"
+      },
+      {
+        "name": "NACAC 2024 State of College Admission",
+        "evidence": "T10 LACs RD unhooked strong domestic cluster 5-15% per published case data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-lac",
+    "humanities-polisci",
+    "regular-decision",
+    "domestic",
+    "unhooked"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "kind": "standalone",
+  "id": "037-pomona-rd-strong-domestic",
+  "scenarioGroup": "LAC_RD_STRONG_DOMESTIC",
+  "schoolName": "Pomona College",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Computer Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1530 }],
+    "activities": [
+      {
+        "name": "Open-source AI project",
+        "category": "RESEARCH",
+        "role": "Lead Contributor",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 40,
+        "yearsActive": 2
+      },
+      {
+        "name": "Math Tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Tutor",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "AMC 12 Distinguished Honor Roll",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.03, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Pomona T5 LAC, admit rate ~7%; RD ~5-6%。Strong unhooked CS profile (3.95/1530 + AMC) industry 估计 4-15%。LAC CS 选课较少，但 CS 在 LAC pool 也 selective; engine 抑制看上去 generic 的 profile，3-4% 可接受。",
+    "sources": [
+      {
+        "name": "Pomona CDS 2024-25",
+        "evidence": "Overall admit rate 6.96%; ED admit rate ~16%, RD ~6%"
+      },
+      {
+        "name": "Crimson LAC Benchmark 2024",
+        "evidence": "T10 LACs RD unhooked strong domestic cluster 5-15%"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t10-lac", "stem-cs", "regular-decision", "domestic", "unhooked"]
+}
