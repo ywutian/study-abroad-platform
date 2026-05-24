@@ -1,0 +1,69 @@
+{
+  "kind": "standalone",
+  "id": "032-ucb-rd-mid-strong-instate",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "University of California, Berkeley",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Economics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "DECA",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Volunteer tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Tutor",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.2, 0.55],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UC Berkeley CA in-state RD ~17% (overall 11% × in-state lift)。Mid-strong profile + in-state 应 reach-high/match-low 区间 15-35%。Berkeley 有 Tier 1 CDS bands。",
+    "sources": [
+      {
+        "name": "UC Berkeley CDS 2024-25",
+        "evidence": "Overall admit rate 11.04%; CA in-state rate ~17%, OOS ~10%"
+      },
+      {
+        "name": "UC System Statistics 2024",
+        "evidence": "Berkeley admits mostly in-state (84%); strong CA applicants face less penalty than OOS"
+      },
+      {
+        "name": "SchoolCdsAdmitBand",
+        "evidence": "Berkeley has 1 CDS band in DB (Tier 1 anchor)"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t15-public",
+    "humanities-econ",
+    "regular-decision",
+    "domestic-instate",
+    "uc-tier1-cds-band"
+  ]
+}

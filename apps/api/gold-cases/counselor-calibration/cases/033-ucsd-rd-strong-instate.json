@@ -1,25 +1,25 @@
 {
   "kind": "standalone",
-  "id": "028-ucsd-rd-mid-strong-oos",
+  "id": "033-ucsd-rd-strong-instate",
   "scenarioGroup": "MATCH_RD_MID_PROFILE",
   "schoolName": "University of California, San Diego",
   "applicationRound": "RD",
   "profile": {
-    "gpa": 3.82,
+    "gpa": 3.92,
     "gpaScale": 4.0,
     "isInternational": false,
     "nationality": "US",
-    "stateOfResidence": "TX",
-    "targetMajor": "Bioengineering",
+    "stateOfResidence": "CA",
+    "targetMajor": "Biology",
     "isLegacy": false,
     "isFirstGen": false,
     "recruitedAthlete": false,
-    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "testScores": [{ "type": "SAT", "score": 1500 }],
     "activities": [
       {
-        "name": "Science Olympiad",
+        "name": "Biology Olympiad",
         "category": "ACADEMIC",
-        "role": "Captain",
+        "role": "Member",
         "hoursPerWeek": 8,
         "weeksPerYear": 30,
         "yearsActive": 3
@@ -34,26 +34,36 @@
       }
     ],
     "awards": [
-      { "name": "State Science Fair 3rd Place", "level": "STATE", "year": 2025 }
+      {
+        "name": "USABO Open Round Qualifier",
+        "level": "NATIONAL",
+        "year": 2025
+      }
     ]
   },
-  "expectedProbabilityRange": [0.1, 0.4],
-  "expectedTier": "reach",
+  "expectedProbabilityRange": [0.3, 0.65],
+  "expectedTier": "match",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "UCSD overall ~27%, OOS rate ~30% (UCSD 主要在意 OOS 多收钱)。Strong OOS profile + bioengineering 应在 match 35-55%。",
+    "intuition": "UCSD CA in-state RD admit rate >30%; strong CA profile + bio 应 solid match 35-60%。UCSD 有 5 个 CDS bands。",
     "sources": [
       {
         "name": "UCSD CDS 2024-25",
-        "evidence": "Overall admit rate 26.77%; OOS rate higher than overall due to nonresident enrollment cap"
+        "evidence": "Overall admit rate 26.77%; CA in-state ~33%, OOS ~22%"
       },
       {
-        "name": "UC System Statistics 2024",
-        "evidence": "UCSD bioengineering selective but profile matches admit pool middle 50"
+        "name": "SchoolCdsAdmitBand",
+        "evidence": "UCSD has 5 CDS band cells in DB (Tier 1 anchor)"
       }
     ]
   },
   "lastReviewedAt": "2026-05-24",
   "reviewedBy": "yitian@",
-  "tags": ["t30-public", "stem-bioe", "regular-decision", "domestic-oos"]
+  "tags": [
+    "t30-public",
+    "stem-bio",
+    "regular-decision",
+    "domestic-instate",
+    "uc-tier1-cds-band"
+  ]
 }

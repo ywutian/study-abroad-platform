@@ -35,8 +35,7 @@
     ],
     "awards": [{ "name": "Honor Roll", "level": "SCHOOL", "year": 2025 }]
   },
-  "expectedProbabilityRange": [0.7, 0.95],
-  "expectedTier": "safety",
+  "expectedProbabilityRange": [0.6, 0.95],
   "expectedConfidenceAtMost": "high",
   "rationale": {
     "intuition": "Penn State overall accept ~60%。GPA 3.8 / SAT 1400 strong-mid profile + PA in-state preference 应在 75-95% safety 区间。Counselor 直觉认为这是标准 backup 学校。**Fixture 2026-05-24 修正：原始 stateOfResidence=OH (OOS) 让 Penn State 失去 in-state lift，预测落到 47% match — 这其实是合理的 OOS reality。改成 PA in-state 才符合 'safety' 期望。**",

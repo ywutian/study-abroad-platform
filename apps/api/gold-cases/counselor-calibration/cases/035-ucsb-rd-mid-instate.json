@@ -1,0 +1,63 @@
+{
+  "kind": "standalone",
+  "id": "035-ucsb-rd-mid-instate",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "University of California, Santa Barbara",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.78,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Environmental Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1400 }],
+    "activities": [
+      {
+        "name": "Environmental Club",
+        "category": "LEADERSHIP",
+        "role": "Co-founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Beach cleanup organizer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 24,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [{ "name": "Honor Roll", "level": "SCHOOL", "year": 2025 }]
+  },
+  "expectedProbabilityRange": [0.5, 0.85],
+  "expectedTier": "safety",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UCSB CA in-state overall ~38% (UCSB 整体 38%)，中等 profile 应 match 35-60%。UCSB 有 5 个 CDS bands。",
+    "sources": [
+      {
+        "name": "UCSB CDS 2024-25",
+        "evidence": "Overall admit rate 38.2%; CA in-state slightly higher"
+      },
+      {
+        "name": "SchoolCdsAdmitBand",
+        "evidence": "UCSB has 5 CDS band cells in DB (Tier 1 anchor)"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t35-public",
+    "stem-environment",
+    "regular-decision",
+    "domestic-instate",
+    "uc-tier1-cds-band"
+  ]
+}

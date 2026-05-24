@@ -62,8 +62,8 @@
     ]
   },
   "wontFix": {
-    "reason": "Engine produces 3.29% (essentially flat to anchor 3.4%) for strong Harvard legacy — legacyHookMultiplier lift is offset by other modifiers at lowest-anchor schools, so even +legacy + GPA 3.95/SAT 1540 fails to lift above the school anchor. Companion fixture 017 (Yale REA legacy, anchor 4.6%) DOES lift to 8.02% (1.74×), confirming legacy hook works at slightly higher anchors. The Harvard-specific flatness suggests engine has a calibration issue at the absolute bottom of the anchor range where multiplicative modifiers compound oddly. Documented gap preserved in spec; engine investigation queued.",
-    "followUp": "Investigate why Harvard (anchor 3.4%) legacy lift is < 1.0× while Yale (anchor 4.6%) legacy lift is 1.7×. Likely either (a) geoMultiplier/profileContext at Harvard with this profile is suppressing, or (b) Harvard's specific gpaDistribution puts a 3.95 GPA at the lower end of admit middle 50, dragging down. Trace via scripts/compare-counselor-vs-m3.ts with this exact profile."
+    "reason": "Engine intentionally treats self-reported legacy as ×1.0 neutral (counselor-modifiers.ts:850 'Legacy preference for X is not applied until school-specific evidence is verified'). Same evidence-required policy as athleteMultiplier — see fixtures 018/019. Traced via scripts/debug-harvard-legacy.ts: legacyHook is ×1.000 regardless of isLegacy flag. Lift in this fixture (3.65% → 3.88%, observed locally) comes only from gpaBand(1.027) × profileContext(1.05), not from legacy itself. Spec range [5%, 25%] reflects industry intuition for VERIFIED legacy; will pass automatically once verification flow lands.",
+    "followUp": "Same evidence-required engine work as 018/019 athlete: build verified-hook flow (parent/sibling attended verified via family info / interview / counselor co-sign) → flip legacyHookMultiplier from ×1.0 neutral to ~×3-5 for verified legacy (Arcidiacono SFFA-anchored)."
   },
   "lastReviewedAt": "2026-05-24",
   "reviewedBy": "yitian@",

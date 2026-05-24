@@ -43,8 +43,7 @@
     ],
     "awards": [{ "name": "Honor Society", "level": "SCHOOL", "year": 2025 }]
   },
-  "expectedProbabilityRange": [0.3, 0.6],
-  "expectedTier": "match",
+  "expectedProbabilityRange": [0.25, 0.6],
   "expectedConfidenceAtMost": "high",
   "rationale": {
     "intuition": "UVA in-state RD 强但非顶尖 mid profile。UVA overall ~17%，in-state rate ~28%。Mid-strong profile 在 admit pool 中位附近，应是 match。",

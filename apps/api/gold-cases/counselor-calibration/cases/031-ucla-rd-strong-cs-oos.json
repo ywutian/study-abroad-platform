@@ -1,0 +1,67 @@
+{
+  "kind": "standalone",
+  "id": "031-ucla-rd-strong-cs-oos",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "University of California, Los Angeles",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "TX",
+    "targetMajor": "Computer Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1520 }],
+    "activities": [
+      {
+        "name": "Robotics",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "CS Tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Lead",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [{ "name": "USACO Gold", "level": "NATIONAL", "year": 2025 }]
+  },
+  "expectedProbabilityRange": [0.04, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UCLA OOS RD ~6-8% admit。Strong CS profile OOS：UCLA CS is selective program. UC has Tier 1 CDS bands so engine uses (GPA × SAT) cell directly. Industry estimate 5-15%。",
+    "sources": [
+      {
+        "name": "UCLA CDS 2024-25",
+        "evidence": "Overall admit rate 8.97%; OOS ~6%; CS impacted major at UCLA"
+      },
+      {
+        "name": "UC System Statistics 2024",
+        "evidence": "OOS admit rate consistently lower than in-state at UC; UCLA most selective UC for OOS"
+      },
+      {
+        "name": "SchoolCdsAdmitBand (in our DB)",
+        "evidence": "UCLA has 5 CDS band cells (Tier 1 anchor source). Engine should use band cell rate directly rather than scorecard fallback."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-public",
+    "stem-cs",
+    "regular-decision",
+    "domestic-oos",
+    "uc-tier1-cds-band"
+  ]
+}
