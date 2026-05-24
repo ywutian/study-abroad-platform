@@ -1,0 +1,77 @@
+{
+  "kind": "standalone",
+  "id": "002-stanford-rd-strong-unhooked-domestic",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.98,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1570 }],
+    "activities": [
+      {
+        "name": "Startup",
+        "category": "LEADERSHIP",
+        "role": "Founder",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 50,
+        "yearsActive": 2
+      },
+      {
+        "name": "Science Olympiad",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Hospital Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "Intel ISEF Finalist", "level": "INTERNATIONAL", "year": 2025 },
+      { "name": "National Merit Scholar", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.03, 0.12],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Stanford RD 是最难的 round （RD admit ~3-4%）。即便是 ISEF Finalist + 创业 + GPA 3.98/SAT 1570 unhooked domestic 也保持 reach；无 REA boost。",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall acceptance rate 3.7% (Section C); REA admit rate similar to RD due to mostly hooked early pool"
+      },
+      {
+        "name": "Crimson Education Stanford Profile 2024",
+        "evidence": "Unhooked strong profiles cluster at 4-12% in RD"
+      },
+      {
+        "name": "A2C Aggregate 2024",
+        "evidence": "ISEF Finalists at Stanford see ~2-4× lift but base is already <4%"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-spike",
+    "unhooked",
+    "regular-decision",
+    "domestic"
+  ]
+}

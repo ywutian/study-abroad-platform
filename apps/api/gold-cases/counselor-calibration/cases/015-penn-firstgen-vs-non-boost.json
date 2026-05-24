@@ -1,0 +1,68 @@
+{
+  "kind": "comparative",
+  "id": "015-penn-firstgen-vs-non-boost",
+  "scenarioGroup": "FIRST_GEN_T20",
+  "schoolName": "University of Pennsylvania",
+  "comparedDimension": "hook",
+  "baseProfile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Sociology",
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "Community Organizing",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "School Newspaper",
+        "category": "ACADEMIC",
+        "role": "Editor",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [{ "name": "Honor Roll", "level": "SCHOOL", "year": 2025 }]
+  },
+  "caseA": {
+    "label": "first-gen=true",
+    "applicationRound": "RD",
+    "profileOverride": { "isFirstGen": true }
+  },
+  "caseB": {
+    "label": "first-gen=false (control)",
+    "applicationRound": "RD",
+    "profileOverride": { "isFirstGen": false }
+  },
+  "expectedMinDelta": 0.015,
+  "expectedMaxDelta": 0.12,
+  "rationale": {
+    "intuition": "First-gen status 是 T20 need-blind 学校的真实 hook（NACAC 2024 + Arcidiacono SFFA: ~1.5-1.8× admit lift）。Engine 应 reflect 至少 1.5pp 提升。Counselor 的 firstGenMultiplier=1.4 在 Penn RD anchor 5.8% 上应给出 ~2-3pp 净增益。",
+    "sources": [
+      {
+        "name": "NACAC State of College Admission 2024 §5.3",
+        "evidence": "First-generation status is rated 'considerable importance' by 30%+ of admissions officers at private nonprofit institutions"
+      },
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "First-gen applicants at Harvard see 1.5-1.8× the baseline admit rate, controlling for academic profile"
+      },
+      {
+        "name": "Penn Common App Data 2024",
+        "evidence": "First-gen admit rate ~9% vs overall 5.8% (1.55× lift)"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t10-private", "first-gen", "hook-boost", "regression-check"]
+}

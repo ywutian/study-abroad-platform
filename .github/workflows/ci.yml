@@ -631,6 +631,24 @@ jobs:
           path: apps/api/gold-cases/counselor/reports/
           retention-days: 14
 
+      - name: Run counselor calibration spec (Layer 3)
+        # Industry-anchored calibration check. Each fixture has an expected
+        # probability band derived from NACAC / Crimson / CDS (NOT from current
+        # engine math). Fails fast if the engine drifts away from industry
+        # intuition. See docs/PREDICTION_CALIBRATION_METHODOLOGY.md.
+        working-directory: apps/api
+        run: pnpm calibration:counselor
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      - name: Upload counselor calibration spec report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: counselor-calibration-spec-report
+          path: apps/api/gold-cases/counselor-calibration/reports/
+          retention-days: 14
+
       - name: Run prediction gate
         run: pnpm exec tsx scripts/prediction-gate.ts --days 365 --min-verified 200 --school-query Wisconsin --round EA --base-url http://localhost:4101/api/v1
         env:

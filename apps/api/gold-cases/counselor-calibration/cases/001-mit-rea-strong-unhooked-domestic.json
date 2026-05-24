@@ -1,0 +1,72 @@
+{
+  "kind": "standalone",
+  "id": "001-mit-rea-strong-unhooked-domestic",
+  "scenarioGroup": "T5_REA_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1580 }],
+    "activities": [
+      {
+        "name": "Research",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "Robotics",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USAMO Qualifier", "level": "NATIONAL", "year": 2025 },
+      { "name": "AIME Score 12+", "level": "NATIONAL", "year": 2025 },
+      { "name": "Regional Science Fair Winner", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "顶级 unhooked STEM domestic 申请者在 MIT 早申 (EA)。MIT EA admit rate ~4.55%，强 profile + EA 早申仍是 reach tier；industry consensus 5-15% 区间。",
+    "sources": [
+      {
+        "name": "MIT CDS 2024-25",
+        "evidence": "EA admit rate 4.55% (Section C21); overall RD admit rate 3.7%"
+      },
+      {
+        "name": "Crimson Education T20 STEM Benchmark 2024",
+        "evidence": "Top unhooked STEM applicants at MIT EA cluster at 8-15% in published case data"
+      },
+      {
+        "name": "NACAC State of College Admission 2024 §4.2",
+        "evidence": "Unhooked applicants at T10 institutions see 1.5-2.0× lift over base rate via early decision/action timing alone"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t5-private", "stem-spike", "unhooked", "early-round", "domestic"]
+}

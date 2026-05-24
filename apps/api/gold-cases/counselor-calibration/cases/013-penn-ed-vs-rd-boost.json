@@ -1,0 +1,63 @@
+{
+  "kind": "comparative",
+  "id": "013-penn-ed-vs-rd-boost",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "University of Pennsylvania",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1500 }],
+    "activities": [
+      {
+        "name": "Debate",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "Officer",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge Regional Winner",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "caseA": { "label": "ED", "applicationRound": "ED" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": 0.05,
+  "expectedMaxDelta": 0.25,
+  "rationale": {
+    "intuition": "Penn ED admit rate (14.3%) vs RD admit rate (5.8%) → ~2.5× lift。Engine 必须 reflect 这个 round signal。Strong unhooked profile 在 ED 至少比 RD 高 5pp。",
+    "sources": [
+      {
+        "name": "Penn CDS 2024-25 Section C21",
+        "evidence": "ED admit rate 14.3% vs overall 5.8%; lift = 14.3 / 5.8 = 2.47×"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "ED yield commitment gives 2-3× lift at T20; effect dampens for already-hooked applicants"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t10-private", "ed-boost", "regression-check"]
+}

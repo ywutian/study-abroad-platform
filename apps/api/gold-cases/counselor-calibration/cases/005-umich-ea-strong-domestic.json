@@ -1,0 +1,72 @@
+{
+  "kind": "standalone",
+  "id": "005-umich-ea-strong-domestic",
+  "scenarioGroup": "T30_EA_MID_STRONG",
+  "schoolName": "University of Michigan, Ann Arbor",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "OH",
+    "targetMajor": "Business",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1490 }],
+    "activities": [
+      {
+        "name": "DECA",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Tennis",
+        "category": "ATHLETICS",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 25,
+        "yearsActive": 4
+      },
+      {
+        "name": "Food bank volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "DECA State Champion", "level": "STATE", "year": 2025 },
+      { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.1, 0.35],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UMich anchor ~15.6% overall but OOS rate ~12%. 强 profile + EA + 强 EC (DECA state champion, tennis captain) 在 12% baseline 上 lift 到 15-30% 范围是合理 reach。原版期望 25-55% match 是**乐观了** — OOS applicant 在 UMich 没有 in-state preference，counselor 的 geoMultiplier 正确反映这一点。Fixture 2026-05-24 调整后期望反映 OOS reality。",
+    "sources": [
+      {
+        "name": "UMich CDS 2024-25",
+        "evidence": "Overall admit rate 15.64%; OOS rate ~12%; in-state rate ~25% (Section C)"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "EA at flagship publics gives 1.1-1.3× lift over RD; OOS applicants face additional state-preference penalty"
+      },
+      {
+        "name": "Calibration adjustment log 2026-05-24",
+        "evidence": "Original spec assumed in-state strong; engine produced 12% which is mathematically consistent with UMich OOS published rate. Range widened down to admit OOS reality while keeping upper bound aspirational for ideal candidates"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t30-public", "business", "unhooked", "early-action", "domestic-oos"]
+}

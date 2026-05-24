@@ -1,0 +1,55 @@
+{
+  "kind": "standalone",
+  "id": "008-harvard-rd-weak-extreme",
+  "scenarioGroup": "EXTREME_BOUND_WEAK_AT_T5",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.2,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1250 }],
+    "activities": [
+      {
+        "name": "Chess Club",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.001, 0.04],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "弱 profile 在 Harvard RD。GPA 3.2 / SAT 1250 远低于 admit pool 25th percentile。但引擎仍应给 >0% (Harvard 偶尔录非传统强势申请者) 且 ≤5%。Anchor × 0.1 floor 防止 0%，profile 显著 below admit pool 拉低。",
+    "sources": [
+      {
+        "name": "Harvard CDS 2024-25",
+        "evidence": "SAT 25th percentile 1500; GPA 25th percentile ~3.85. Applicant well below both — but Harvard still admits non-traditional <2% of below-25th applicants per published interview data"
+      },
+      {
+        "name": "Counselor Engine Floor",
+        "evidence": "anchor × 0.1 floor = 0.365%; engine should land somewhere between floor and ~5% reflecting genuine but very low probability"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "weak-profile",
+    "unhooked",
+    "regular-decision",
+    "domestic",
+    "extreme-low"
+  ]
+}
