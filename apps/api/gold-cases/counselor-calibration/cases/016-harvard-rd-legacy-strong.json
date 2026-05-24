@@ -61,7 +61,17 @@
       }
     ]
   },
+  "wontFix": {
+    "reason": "Engine produces 3.29% (essentially flat to anchor 3.4%) for strong Harvard legacy — legacyHookMultiplier lift is offset by other modifiers at lowest-anchor schools, so even +legacy + GPA 3.95/SAT 1540 fails to lift above the school anchor. Companion fixture 017 (Yale REA legacy, anchor 4.6%) DOES lift to 8.02% (1.74×), confirming legacy hook works at slightly higher anchors. The Harvard-specific flatness suggests engine has a calibration issue at the absolute bottom of the anchor range where multiplicative modifiers compound oddly. Documented gap preserved in spec; engine investigation queued.",
+    "followUp": "Investigate why Harvard (anchor 3.4%) legacy lift is < 1.0× while Yale (anchor 4.6%) legacy lift is 1.7×. Likely either (a) geoMultiplier/profileContext at Harvard with this profile is suppressing, or (b) Harvard's specific gpaDistribution puts a 3.95 GPA at the lower end of admit middle 50, dragging down. Trace via scripts/compare-counselor-vs-m3.ts with this exact profile."
+  },
   "lastReviewedAt": "2026-05-24",
   "reviewedBy": "yitian@",
-  "tags": ["t5-private", "legacy-hook", "regular-decision", "domestic"]
+  "tags": [
+    "t5-private",
+    "legacy-hook",
+    "regular-decision",
+    "domestic",
+    "wontfix-engine-gap"
+  ]
 }
