@@ -1,0 +1,72 @@
+{
+  "kind": "standalone",
+  "id": "005-umich-ea-strong-domestic",
+  "scenarioGroup": "T30_EA_MID_STRONG",
+  "schoolName": "University of Michigan, Ann Arbor",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "OH",
+    "targetMajor": "Business",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1490 }],
+    "activities": [
+      {
+        "name": "DECA",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Tennis",
+        "category": "ATHLETICS",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 25,
+        "yearsActive": 4
+      },
+      {
+        "name": "Food bank volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "DECA State Champion", "level": "STATE", "year": 2025 },
+      { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.25, 0.55],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UMich anchor ~15.6%。OOS 强 profile 在 EA 通常被认为 match。Industry intuition 25-50%。",
+    "sources": [
+      {
+        "name": "UMich CDS 2024-25",
+        "evidence": "Overall admit rate 15.64%; OOS rate lower (~12%); EA pool sees moderate lift"
+      },
+      {
+        "name": "Crimson Education Big Ten Benchmark 2024",
+        "evidence": "Strong OOS profiles at UMich Ross/LSA cluster 30-50%"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "EA at high-yield publics gives 1.2-1.5× lift"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t30-public", "business", "unhooked", "early-action", "domestic-oos"]
+}

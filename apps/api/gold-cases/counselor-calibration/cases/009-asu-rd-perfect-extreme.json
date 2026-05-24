@@ -1,0 +1,67 @@
+{
+  "kind": "standalone",
+  "id": "009-asu-rd-perfect-extreme",
+  "scenarioGroup": "EXTREME_BOUND_PERFECT_AT_SAFETY",
+  "schoolName": "Arizona State University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "AZ",
+    "targetMajor": "Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1600 }],
+    "activities": [
+      {
+        "name": "Robotics",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Math Team",
+        "category": "ACADEMIC",
+        "role": "President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USAMO Qualifier", "level": "NATIONAL", "year": 2025 },
+      { "name": "Intel ISEF Finalist", "level": "INTERNATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.85, 0.98],
+  "expectedTier": "safety",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "完美 profile (4.0/1600/USAMO/ISEF) 在 ASU (~90% accept overall)。In-state + 强 academic = 几乎确定录取。Counselor 给出 ≥85% safety。",
+    "sources": [
+      {
+        "name": "ASU CDS 2024-25",
+        "evidence": "Overall admit rate 89.89%; SAT 75th percentile 1390 (applicant SAT 1600 well above)"
+      },
+      {
+        "name": "Counselor Engine Cap",
+        "evidence": "anchor × 2.5 cap = 90% × 2.5 = >100% (clamped to ~98% upper); applicant clearly hits upper bound"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t100-public",
+    "stem",
+    "unhooked",
+    "regular-decision",
+    "domestic-instate",
+    "extreme-high"
+  ]
+}

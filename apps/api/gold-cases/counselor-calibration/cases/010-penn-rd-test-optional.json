@@ -1,0 +1,73 @@
+{
+  "kind": "standalone",
+  "id": "010-penn-rd-test-optional",
+  "scenarioGroup": "TEST_OPTIONAL",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "English",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "applyingTestOptional": true,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "Literary Magazine",
+        "category": "ACADEMIC",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Library Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Scholastic Writing Award",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.02, 0.12],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Test-optional 在 T20 显著 penalty (Common App data: highly-selective test-optional admit no-score 比 test-submitter 低 5-10pp)。Engine 应给 ~0.85× test penalty + reach tier。Confidence ≤ medium 反映 test signal 缺失。",
+    "sources": [
+      {
+        "name": "Common App Test-Optional Report 2024",
+        "evidence": "T20 schools admit no-score applicants at 60-75% of test-submitter rate (5-10pp absolute gap)"
+      },
+      {
+        "name": "Penn CDS 2024-25",
+        "evidence": "Test-optional accepted but published admit rate gap for no-score ~7pp"
+      },
+      {
+        "name": "Counselor Engine testBandMultiplier",
+        "evidence": "applyingTestOptional=true at <20% accept schools gets ×0.85 modifier"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "humanities",
+    "test-optional",
+    "unhooked",
+    "regular-decision"
+  ]
+}

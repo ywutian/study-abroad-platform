@@ -1,0 +1,85 @@
+{
+  "kind": "standalone",
+  "id": "003-harvard-rd-strong-intl-cn",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_INTL",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1560 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Econ Research",
+        "category": "RESEARCH",
+        "role": "Lead",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Debate Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Financial Literacy Outreach",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge - Top 10",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "Provincial Debate Champion", "level": "STATE", "year": 2024 }
+    ]
+  },
+  "expectedProbabilityRange": [0.015, 0.07],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "International (CN) 在 Harvard 受到显著 penalty。Harvard intl admit rate 是 overall 的 ~50-55%。即使是顶级 humanities profile (强 award + leadership) 也是 deep reach。Industry consensus 2-7%。",
+    "sources": [
+      {
+        "name": "Harvard CDS 2024-25",
+        "evidence": "Overall admit rate 3.65%; international applicants face need-blind treatment but admit rate ratio ~0.5 (Crimson cross-reference)"
+      },
+      {
+        "name": "Crimson Education Asia Acceptance 2024",
+        "evidence": "Chinese applicants at Harvard cluster at 1.5-5% in published RD case data; humanities slightly lower than STEM"
+      },
+      {
+        "name": "Common App International Report 2024",
+        "evidence": "T5 intl admit rate 0.4-0.6× overall depending on need-blind status"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "intl-cn",
+    "humanities",
+    "unhooked",
+    "regular-decision"
+  ]
+}

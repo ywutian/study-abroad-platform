@@ -1,0 +1,56 @@
+{
+  "kind": "standalone",
+  "id": "012-umich-rd-high-gpa-low-test",
+  "scenarioGroup": "HIGH_GPA_LOW_TEST",
+  "schoolName": "University of Michigan, Ann Arbor",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Mathematics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1350 }],
+    "activities": [
+      {
+        "name": "Tutoring",
+        "category": "ACADEMIC",
+        "role": "Tutor",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [{ "name": "Honor Society", "level": "SCHOOL", "year": 2025 }]
+  },
+  "expectedProbabilityRange": [0.05, 0.2],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "High GPA + Low SAT 的不一致档案。UMich admit SAT 中位 ~1450，1350 低于 25th。Strong GPA 帮助但不抵消 test gap。比 011 case 略略好（GPA 长期信号更稳定），但仍 reach。",
+    "sources": [
+      {
+        "name": "UMich CDS 2024-25",
+        "evidence": "SAT 25th percentile 1360; applicant SAT 1350 just below — triggers 'just below 25th' band (×0.7 in counselor-modifiers.ts post-fix)"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "High-GPA-low-test profiles get partial credit but test gap is a flag for many T30 admissions committees"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t30-public",
+    "stem",
+    "unhooked",
+    "regular-decision",
+    "domestic-oos",
+    "asymmetric-profile"
+  ]
+}

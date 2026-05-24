@@ -1,0 +1,85 @@
+{
+  "kind": "standalone",
+  "id": "004-penn-ed-strong-unhooked",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1520 }],
+    "activities": [
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Local nonprofit",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Director",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge - Regional Winner",
+        "level": "STATE",
+        "year": 2025
+      },
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.15, 0.35],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Penn ED 有显著 boost (~2-2.5×)。强但非顶尖 unhooked domestic 在 Penn ED 通常 15-30%。Penn overall ~6%，ED ~14%。",
+    "sources": [
+      {
+        "name": "Penn CDS 2024-25",
+        "evidence": "Overall admit rate 5.8%; ED admit rate 14.3% (~2.5× lift)"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "ED applicants at T20 see 2-3× admit rate lift vs RD pool; effect strongest for unhooked applicants who use ED as commitment signal"
+      },
+      {
+        "name": "Crimson Education Ivy ED Benchmark 2024",
+        "evidence": "Strong unhooked profiles in ED at Penn cluster 18-30%"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "humanities-econ",
+    "unhooked",
+    "early-decision",
+    "domestic"
+  ]
+}

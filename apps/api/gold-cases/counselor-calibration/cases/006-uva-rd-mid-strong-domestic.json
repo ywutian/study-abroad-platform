@@ -1,0 +1,71 @@
+{
+  "kind": "standalone",
+  "id": "006-uva-rd-mid-strong-domestic",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "University of Virginia",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "VA",
+    "targetMajor": "Political Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "activities": [
+      {
+        "name": "Student Government",
+        "category": "LEADERSHIP",
+        "role": "Vice President",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Newspaper",
+        "category": "ACADEMIC",
+        "role": "Editor",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Mock Trial",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [{ "name": "Honor Society", "level": "SCHOOL", "year": 2025 }]
+  },
+  "expectedProbabilityRange": [0.3, 0.6],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "UVA in-state RD 强但非顶尖 mid profile。UVA overall ~17%，in-state rate ~28%。Mid-strong profile 在 admit pool 中位附近，应是 match。",
+    "sources": [
+      {
+        "name": "UVA CDS 2024-25",
+        "evidence": "Overall admit rate 16.81%; in-state ~28% (Section C); SAT middle 50 1410-1520, applicant at 1450 in admit pool middle"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "In-state preference at flagships averages 1.5-2× OOS admit rate"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t25-public",
+    "humanities",
+    "unhooked",
+    "regular-decision",
+    "domestic-instate"
+  ]
+}

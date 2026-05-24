@@ -1,0 +1,68 @@
+{
+  "kind": "comparative",
+  "id": "014-cornell-intl-vs-domestic-penalty",
+  "scenarioGroup": "INTL_PENALTY",
+  "schoolName": "Cornell University",
+  "comparedDimension": "international",
+  "baseProfile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "targetMajor": "Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1500 },
+      { "type": "TOEFL", "score": 110 }
+    ],
+    "activities": [
+      {
+        "name": "Robotics",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "State Science Olympiad Winner",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "caseA": {
+    "label": "domestic",
+    "applicationRound": "RD",
+    "profileOverride": { "isInternational": false, "nationality": "US" }
+  },
+  "caseB": {
+    "label": "intl-CN",
+    "applicationRound": "RD",
+    "profileOverride": {
+      "isInternational": true,
+      "nationality": "CN",
+      "currentSchoolType": "INTERNATIONAL"
+    }
+  },
+  "expectedMinDelta": 0.04,
+  "expectedMaxDelta": 0.2,
+  "rationale": {
+    "intuition": "Cornell intl admit rate (~5%) vs overall (~8%) = 0.625× ratio。同一 profile 国际生 vs 国内 penalty 必须 visible，且 ≥ 4pp。Engine 的 intlMultiplier 应反映此。",
+    "sources": [
+      {
+        "name": "Cornell CDS 2024-25",
+        "evidence": "Overall admit rate 8.4%; international students 28% of admitted class — implies intl admit rate ~5% per Crimson cross-reference"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T20 schools show intl admit rate 0.4-0.7× domestic; Cornell specifically need-aware, falls in lower half of band"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t15-private", "stem", "intl-penalty", "regression-check"]
+}
