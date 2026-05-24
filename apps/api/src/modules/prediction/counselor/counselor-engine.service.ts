@@ -227,16 +227,31 @@ export class CounselorEngineService {
     // ---- Step 3: combine + clip -----------------------------------------
     // GPA and test scores are correlated in admissions; treating them as
     // independent multipliers double-penalizes consistent profiles. When both
-    // modifiers are active (no Tier 1 encoding), we replace the gpa×test
-    // product with their geometric mean: a 3.90 GPA + 1560 SAT applicant gets
-    // ~×0.65 instead of ×0.42 at MIT, which prevents top-school predictions
-    // from collapsing to the floor for a typical-strong applicant.
+    // modifiers are active (no Tier 1 encoding) AND both express a non-neutral
+    // signal, we replace the gpa×test product with their geometric mean: a
+    // 3.90 GPA + 1560 SAT applicant gets ~×0.65 instead of ×0.42 at MIT,
+    // which prevents top-school predictions from collapsing to the floor for
+    // a typical-strong applicant.
+    //
+    // **2026-05-24 correctness fix**: previously the geomean was applied
+    // whenever neither dimension was Tier 1 encoded, even if one of them was
+    // exactly 1.0 (e.g. admit-pool-middle-50 test band). In that case the
+    // geomean wrongly *lowered* the other multiplier (e.g. gpaBand 1.027 →
+    // sqrt(1.027 × 1.0) = 1.013), penalizing symmetric profiles. The
+    // geometric mean only makes sense as a correlation correction when BOTH
+    // dimensions are non-neutral; if one is 1.0, multiplying directly is
+    // already the identity.
     //
     // When one dimension is encoded (Tier 1 cell already accounts for GPA or
-    // test), the suppressed multiplier is 1.0 anyway, so geometric mean has
-    // no effect — we still multiply normally.
+    // test), the suppressed multiplier is 1.0 anyway, so multiplying directly
+    // is correct.
+    const bothNonNeutral =
+      modifierResults.gpaBand.multiplier !== 1.0 &&
+      modifierResults.testBand.multiplier !== 1.0;
     const bothAcademicActive =
-      !encodedDimensions.has('gpa') && !encodedDimensions.has('test');
+      !encodedDimensions.has('gpa') &&
+      !encodedDimensions.has('test') &&
+      bothNonNeutral;
     const academicProduct = bothAcademicActive
       ? Math.sqrt(
           modifierResults.gpaBand.multiplier *
