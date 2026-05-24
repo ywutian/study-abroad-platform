@@ -1,0 +1,81 @@
+{
+  "kind": "standalone",
+  "id": "023-yale-rd-humanities-strong",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Yale University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.96,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "English",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [
+      {
+        "name": "Literary Magazine",
+        "category": "ACADEMIC",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Independent Novel Writing",
+        "category": "ARTS",
+        "role": "Author (published)",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 50,
+        "yearsActive": 2
+      },
+      {
+        "name": "Debate",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Scholastic Writing Award - Gold Medal",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "YoungArts Finalist (Writing)",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.03, 0.1],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale RD 是最难的轮次（RD ~3-4%）。Strong humanities spike + national-level writing awards 但 unhooked domestic。Industry 估计 3-9% — 仅略高于 anchor。",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall admit rate 3.65%; RD slightly below overall as REA pool absorbs ~50% of admits"
+      },
+      {
+        "name": "Crimson Yale Profile 2024",
+        "evidence": "Humanities spike unhooked domestic clusters 4-10% in RD per published cases"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-spike",
+    "regular-decision",
+    "domestic",
+    "unhooked"
+  ]
+}

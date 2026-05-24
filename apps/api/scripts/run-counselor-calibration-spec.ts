@@ -325,10 +325,14 @@ async function main() {
   const schoolByNameNorm = new Map(schoolRows.map((s) => [s.nameNorm, s]));
 
   const results: FixtureResult[] = [];
+  const wontFixIds = new Set<string>();
   for (const raw of fixtures) {
     const fixture = raw as any;
     // Discriminator: top-level `kind` field ('standalone' vs 'comparative')
     const isComparative = fixture.kind === 'comparative';
+    if (fixture.wontFix) {
+      wontFixIds.add(fixture.id);
+    }
     const schoolNameNorm = normalizeSchoolName(fixture.schoolName);
     const school = schoolByNameNorm.get(schoolNameNorm);
     if (!school) {
@@ -369,26 +373,39 @@ async function main() {
     }
   }
 
-  // Print to console
-  const passed = results.filter((r) => r.passed).length;
+  // Partition results: gated (counts toward CI) vs wontFix (documented gaps,
+  // shown but don't block merge).
+  const gatedResults = results.filter((r) => !wontFixIds.has(r.fixtureId));
+  const wontFixResults = results.filter((r) => wontFixIds.has(r.fixtureId));
+  const passed = gatedResults.filter((r) => r.passed).length;
+
   const groups = new Set(results.map((r) => r.scenarioGroup));
   for (const group of groups) {
     const items = results.filter((r) => r.scenarioGroup === group);
-    const groupPass = items.filter((i) => i.passed).length;
-    console.log(`━━━ ${group} (${groupPass}/${items.length}) ━━━`);
+    const groupGated = items.filter((i) => !wontFixIds.has(i.fixtureId));
+    const groupPass = groupGated.filter((i) => i.passed).length;
+    console.log(`━━━ ${group} (${groupPass}/${groupGated.length} gated) ━━━`);
     for (const r of items) {
-      const icon = r.passed ? '✅' : '❌';
-      console.log(`  ${icon} ${r.fixtureId.padEnd(45)} ${r.details}`);
-      for (const f of r.failures) console.log(`     FAIL: ${f}`);
+      const isWontFix = wontFixIds.has(r.fixtureId);
+      const icon = isWontFix ? '⚠️ ' : r.passed ? '✅' : '❌';
+      const suffix = isWontFix ? ' [wontFix — engine gap]' : '';
+      console.log(`  ${icon} ${r.fixtureId.padEnd(45)} ${r.details}${suffix}`);
+      for (const f of r.failures)
+        console.log(`     ${isWontFix ? 'NOTE' : 'FAIL'}: ${f}`);
     }
   }
-  console.log(`\n═══ OVERALL: ${passed}/${results.length} pass ═══`);
+  console.log(`\n═══ GATED: ${passed}/${gatedResults.length} pass ═══`);
+  if (wontFixResults.length > 0) {
+    console.log(
+      `═══ wontFix (engine gaps, documented): ${wontFixResults.length} fixture(s) — see fixture rationale for follow-up`,
+    );
+  }
 
   const totalMs = Date.now() - start;
   writeReport(results, totalMs);
 
   await app.close();
-  process.exit(passed === results.length ? 0 : 1);
+  process.exit(passed === gatedResults.length ? 0 : 1);
 }
 
 main().catch((err) => {

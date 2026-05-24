@@ -1,0 +1,67 @@
+{
+  "kind": "standalone",
+  "id": "021-jhu-ed-intl-stem",
+  "scenarioGroup": "T20_EA_STRONG_INTL",
+  "schoolName": "Johns Hopkins University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Biology",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1540 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Cancer Research Internship",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 10,
+        "yearsActive": 1
+      },
+      {
+        "name": "Biology Olympiad",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USABO Semifinalist", "level": "NATIONAL", "year": 2025 },
+      { "name": "iGEM Gold Medal", "level": "INTERNATIONAL", "year": 2024 }
+    ]
+  },
+  "expectedProbabilityRange": [0.06, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "JHU ED + 强 bio-research intl profile。JHU 整体 ~7%，ED ~25%。Intl-CN penalty 拉低，但 ED + 强 spike 拉高。Industry 估计 8-20%。",
+    "sources": [
+      {
+        "name": "JHU CDS 2024-25",
+        "evidence": "Overall admit rate 7.16%; ED admit rate 25.3% (~3.5× lift); intl admit rate ~3-5%"
+      },
+      {
+        "name": "Crimson JHU Profile 2024",
+        "evidence": "Strong intl STEM ED applicants cluster 10-20%"
+      },
+      {
+        "name": "NACAC 2024 §4.2",
+        "evidence": "ED at T20 gives 2-3× lift; intl pool sees compounding penalty"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": ["t10-private", "stem-bio", "intl-cn", "early-decision"]
+}

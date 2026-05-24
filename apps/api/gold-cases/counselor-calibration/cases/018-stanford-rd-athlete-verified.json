@@ -1,0 +1,72 @@
+{
+  "kind": "standalone",
+  "id": "018-stanford-rd-athlete-verified",
+  "scenarioGroup": "T5_RD_ATHLETE_VERIFIED",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.7,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Communication",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": true,
+    "testScores": [{ "type": "SAT", "score": 1410 }],
+    "activities": [
+      {
+        "name": "Varsity Soccer (recruited)",
+        "category": "ATHLETICS",
+        "role": "Captain",
+        "hoursPerWeek": 25,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      },
+      {
+        "name": "Athletic mentorship",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Mentor",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "All-State Soccer Team", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.4, 0.85],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Verified recruited athlete in D1 sport 是最强 hook。Stanford recruited athletes 大致 ~85-90% accept rate（per SFFA data）。但 profile 还要看运动 fit + 学术过 'admit slot' 门槛。低 GPA (3.7) 在 Stanford 通常被卡，但 athlete slot 让多数运动员避开常规标准。Industry 估计 40-85%。",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall admit rate 3.7%; athletic slot system not officially published but inferred high admit rate"
+      },
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Recruited athletes admitted at ~88% rate at Harvard; effect at Stanford expected similar magnitude"
+      },
+      {
+        "name": "NCAA Recruitment Survey 2024",
+        "evidence": "Verified D1 recruited athletes at T20 schools see 30-50× lift in admit rate over general applicants"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "counselor.athleteMultiplier intentionally returns ×1.0 for unverified self-reported athletes (per counselor-modifiers.ts line 868 'launch behavior: self-reported recruited-athlete status no longer changes served probability. A future evidence flow can re-enable this hook only after school-specific verification'). Until verified-athlete data model + flow ships, this fixture will fail by design.",
+    "followUp": "Build verified-athlete evidence flow (coach confirmation / NCAA roster lookup / counselor co-sign) then flip athleteMultiplier from neutral to ~×10 for verified recruits"
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "athlete-hook",
+    "regular-decision",
+    "domestic",
+    "wontfix-engine-gap"
+  ]
+}

@@ -68,6 +68,17 @@ export interface CalibrationFixture {
   expectedTier?: 'reach' | 'match' | 'safety';
   expectedConfidenceAtMost?: 'very-low' | 'low' | 'medium' | 'high';
   rationale: Rationale;
+  /**
+   * Mark a fixture as a known engine gap that should NOT block CI.
+   * The fixture still runs and reports its actual output, but is exempt
+   * from pass/fail counting. Use sparingly — only for documented engine
+   * limitations awaiting follow-up work (e.g. unverified athlete hook).
+   * Each wontFix should have a tracking link or follow-up PR/issue ref.
+   */
+  wontFix?: {
+    reason: string;
+    followUp?: string;
+  };
   lastReviewedAt: string;
   reviewedBy: string;
   tags: string[];
@@ -104,6 +115,11 @@ export interface ComparativeFixture {
   /** Optional upper bound on the delta (some hooks shouldn't go too crazy) */
   expectedMaxDelta?: number;
   rationale: Rationale;
+  /** See CalibrationFixture.wontFix */
+  wontFix?: {
+    reason: string;
+    followUp?: string;
+  };
   lastReviewedAt: string;
   reviewedBy: string;
   tags: string[];

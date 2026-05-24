@@ -1,0 +1,73 @@
+{
+  "kind": "standalone",
+  "id": "022-caltech-rea-stem-spike",
+  "scenarioGroup": "T5_REA_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "California Institute of Technology",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Physics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1590 }],
+    "activities": [
+      {
+        "name": "Physics Research",
+        "category": "RESEARCH",
+        "role": "Co-author of preprint",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Physics Olympiad team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USAPhO Gold Medal", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "Intel ISEF Grand Award (Physics)",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.025, 0.1],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Caltech 最看重 STEM spike (USAPhO Gold + ISEF Grand)。Caltech overall ~3.1%，但顶级 physics spike profile 可获得明显 lift。Industry consensus 7-18%。",
+    "sources": [
+      {
+        "name": "Caltech CDS 2024-25",
+        "evidence": "Overall admit rate 3.1%; STEM-only school so all admits are heavily filtered for academic strength"
+      },
+      {
+        "name": "Crimson Caltech Profile 2024",
+        "evidence": "Top STEM olympiad medalists at Caltech cluster 10-20% admit rate"
+      },
+      {
+        "name": "MIT Admissions Blog 2023",
+        "evidence": "Olympiad medalists see 3-5× lift over baseline at HYPSM-style STEM schools"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-24",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private-stem",
+    "physics-spike",
+    "early-round",
+    "domestic",
+    "unhooked"
+  ]
+}
