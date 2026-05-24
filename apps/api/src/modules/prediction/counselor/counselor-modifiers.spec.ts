@@ -495,11 +495,11 @@ describe('counselor modifiers launch guards', () => {
       );
 
       expect(result.components.activityStrength.multiplier).toBeGreaterThan(1);
-      // 2026-05-24 calibration: was capped at 1.06 (effectively noise). High-
-      // tier + leadership + 200h+ activities now allowed up to 1.18 to match
-      // consultant-estimated 1.15-1.25× lift.
+      // 2026-05-24 calibration: was capped at 1.06 (effectively noise).
+      // Raised to 1.12 to give visible reward while staying within the
+      // prediction-gate regression bounds on profile-signal delta.
       expect(result.components.activityStrength.multiplier).toBeLessThanOrEqual(
-        1.18,
+        1.12,
       );
       expect(result.profileSignals.usedInProbability).toContain(
         'activityStrength',
@@ -522,9 +522,10 @@ describe('counselor modifiers launch guards', () => {
       );
 
       // 2026-05-24 calibration: was 1.07 — far below NACAC/Crimson estimates
-      // of 1.3-1.6× admit lift for national/international competition winners.
-      // Raised to 1.22 (still conservative vs literature).
-      expect(result.components.awardStrength.multiplier).toBe(1.22);
+      // of 1.3-1.6× admit lift for national/international winners. Raised
+      // to 1.13 (modest, bounded by outer profileContext cap so the
+      // prediction-gate p95/max delta gates still pass).
+      expect(result.components.awardStrength.multiplier).toBe(1.13);
       expect(result.profileSignals.usedInProbability).toContain(
         'awardStrength',
       );
@@ -656,9 +657,10 @@ describe('counselor modifiers launch guards', () => {
         baseSchool({ acceptanceRate: 0.04, sat25: 1510, sat75: 1560 }),
       );
 
-      // 2026-05-24 calibration: outer cap was [0.95, 1.08] — too tight to
-      // ever surface strong-EC + strong-award profiles. New cap [0.85, 1.25].
-      expect(result.multiplier).toBeLessThanOrEqual(1.25);
+      // 2026-05-24 calibration: outer cap was [0.95, 1.08] — too tight.
+      // New cap [0.90, 1.13] balances rewarding strong profiles with the
+      // prediction-gate regression bounds.
+      expect(result.multiplier).toBeLessThanOrEqual(1.13);
       expect(result.multiplier).toBeGreaterThan(1);
     });
   });
