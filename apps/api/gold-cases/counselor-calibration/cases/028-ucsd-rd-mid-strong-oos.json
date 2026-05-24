@@ -37,8 +37,8 @@
       { "name": "State Science Fair 3rd Place", "level": "STATE", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.25, 0.55],
-  "expectedTier": "match",
+  "expectedProbabilityRange": [0.1, 0.3],
+  "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {
     "intuition": "UCSD overall ~27%, OOS rate ~30% (UCSD 主要在意 OOS 多收钱)。Strong OOS profile + bioengineering 应在 match 35-55%。",

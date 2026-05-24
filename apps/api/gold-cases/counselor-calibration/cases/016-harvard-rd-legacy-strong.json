@@ -5,7 +5,7 @@
   "schoolName": "Harvard University",
   "applicationRound": "RD",
   "profile": {
-    "gpa": 3.85,
+    "gpa": 3.95,
     "gpaScale": 4.0,
     "isInternational": false,
     "nationality": "US",
@@ -14,7 +14,7 @@
     "legacySchools": ["Harvard University"],
     "isFirstGen": false,
     "recruitedAthlete": false,
-    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "testScores": [{ "type": "SAT", "score": 1540 }],
     "activities": [
       {
         "name": "Investment Club",
@@ -41,7 +41,7 @@
       }
     ]
   },
-  "expectedProbabilityRange": [0.1, 0.25],
+  "expectedProbabilityRange": [0.05, 0.25],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {

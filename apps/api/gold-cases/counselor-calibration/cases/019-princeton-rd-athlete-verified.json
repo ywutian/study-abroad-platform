@@ -48,7 +48,17 @@
       }
     ]
   },
+  "wontFix": {
+    "reason": "Same as 018: counselor.athleteMultiplier=1.0 for unverified self-reports. Layer 3 spec preserves the industry-intuition target for when the verification flow lands.",
+    "followUp": "Same follow-up as 018: build verified-athlete evidence flow"
+  },
   "lastReviewedAt": "2026-05-24",
   "reviewedBy": "yitian@",
-  "tags": ["t5-private", "athlete-hook", "regular-decision", "domestic"]
+  "tags": [
+    "t5-private",
+    "athlete-hook",
+    "regular-decision",
+    "domestic",
+    "wontfix-engine-gap"
+  ]
 }

@@ -56,7 +56,17 @@
       }
     ]
   },
+  "wontFix": {
+    "reason": "counselor.athleteMultiplier intentionally returns ×1.0 for unverified self-reported athletes (per counselor-modifiers.ts line 868 'launch behavior: self-reported recruited-athlete status no longer changes served probability. A future evidence flow can re-enable this hook only after school-specific verification'). Until verified-athlete data model + flow ships, this fixture will fail by design.",
+    "followUp": "Build verified-athlete evidence flow (coach confirmation / NCAA roster lookup / counselor co-sign) then flip athleteMultiplier from neutral to ~×10 for verified recruits"
+  },
   "lastReviewedAt": "2026-05-24",
   "reviewedBy": "yitian@",
-  "tags": ["t5-private", "athlete-hook", "regular-decision", "domestic"]
+  "tags": [
+    "t5-private",
+    "athlete-hook",
+    "regular-decision",
+    "domestic",
+    "wontfix-engine-gap"
+  ]
 }
