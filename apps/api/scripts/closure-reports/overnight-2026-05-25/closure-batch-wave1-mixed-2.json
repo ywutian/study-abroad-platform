@@ -1,0 +1,294 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrfw5n02gu3lem4x1mecix",
+      "schoolId": "cml87jseg000khv3fxisbt4cs",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 76.81,
+        "3.50-3.74": 13.16,
+        "3.25-3.49": 6.08,
+        "3.00-3.24": 2.88,
+        "<3.00": 1.08
+      },
+      "sourceUrl": "https://uvmd10.drup2.uvm.edu/d10-files/documents/2024-07/2023-2024_Common_Data_Set.pdf",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "UVM CDS 2023-24 Section C11 — collapsed 9-band to 5-band"
+    },
+    {
+      "targetId": "cmpdrg055033w3lemidguk45a",
+      "schoolId": "cmks30arv000y9viieexusysq",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 81.0,
+        "3.50-3.74": 15.2,
+        "3.25-3.49": 3.5,
+        "3.00-3.24": 0.0,
+        "<3.00": 0.3
+      },
+      "sourceUrl": "https://www.reed.edu/ir/cds/cds2324/CDS_secC_202324.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Reed CDS 2023-24 Section C11"
+    },
+    {
+      "targetId": "cmpdrfz8e02yu3lem4axrzl0q",
+      "schoolId": "cmks30a92000s9viin1yd9gku",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 79.2,
+        "3.50-3.74": 17.5,
+        "3.25-3.49": 2.0,
+        "3.00-3.24": 0.4,
+        "<3.00": 0.8
+      },
+      "sourceUrl": "https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2023_2024.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Macalester CDS 2023-24 Section C11"
+    },
+    {
+      "targetId": "cmpdrg40503o03lemsmokqo6w",
+      "schoolId": "cmks30bjb00179viiwwflr6fp",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 52.8,
+        "3.50-3.74": 20.9,
+        "3.25-3.49": 13.6,
+        "3.00-3.24": 8.8,
+        "<3.00": 4.0
+      },
+      "sourceUrl": "https://www.whitman.edu/documents/offices/Institutional-Research/2024/whitman-college-cds-2023-24.pdf",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "Whitman CDS 2023-24 Section C11"
+    },
+    {
+      "targetId": "cmpdrflvb00xg3lemqp05mtwq",
+      "schoolId": "cml87kths0006u4zsge4s2303",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 49,
+        "3.50-3.74": 27,
+        "3.25-3.49": 15,
+        "3.00-3.24": 9,
+        "<3.00": 1
+      },
+      "sourceUrl": "https://www.shu.edu/documents/2022-23_Data_Trends.pdf",
+      "confidence": 0.75,
+      "tier": "SCRAPED",
+      "note": "Seton Hall 2022-23 Data Trends; not 2023-24 CDS"
+    },
+
+    {
+      "targetId": "cmpdrfnge016l3lemyjxcdqt7",
+      "schoolId": "cmks30ev600269viis2ymp096",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 26.13,
+      "sourceUrl": "https://www.collegetuitioncompare.com/edu/219000/augustana-university/admission/",
+      "confidence": 0.8,
+      "tier": "SCRAPED",
+      "note": "Augustana University (SD) — CTC aggregator"
+    },
+    {
+      "targetId": "cmpdrfr0x01qp3leml067ir7i",
+      "schoolId": "cmks308uy000d9viio4skawgr",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 20.8,
+      "sourceUrl": "https://ir.baruch.cuny.edu/common-data-sets/",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "Baruch (CUNY) CDS overall yield"
+    },
+    {
+      "targetId": "cmpdrfz0w02xw3lemh5tpapap",
+      "schoolId": "cmkrnd5mp0016crkndya1t1cw",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 12.0,
+      "sourceUrl": "https://collegeiq.com/colleges/idaho-state-university/admissions",
+      "confidence": 0.7,
+      "tier": "SCRAPED",
+      "note": "Idaho State open-admission — aggregator data"
+    },
+    {
+      "targetId": "cmpdrfz5t02ym3lem9rsyh80m",
+      "schoolId": "cmks30a92000s9viin1yd9gku",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 22.7,
+      "sourceUrl": "https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2023_2024.pdf",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "Macalester CDS 2023-24"
+    },
+    {
+      "targetId": "cmpdrfqfa01nv3lemdl4droej",
+      "schoolId": "cmks30elz00239vii3wiqinsg",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 14.12,
+      "sourceUrl": "https://www.collegetuitioncompare.com/edu/236230/pacific-lutheran-university/admission/",
+      "confidence": 0.8,
+      "tier": "SCRAPED",
+      "note": "Pacific Lutheran University — CTC aggregator"
+    },
+    {
+      "targetId": "cmpdrfu3i02523lemy94ti1m2",
+      "schoolId": "cmks30aia000v9viipegrh03n",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 35.84,
+      "sourceUrl": "https://www.collegetuitioncompare.com/edu/121257/pitzer-college/admission/",
+      "confidence": 0.8,
+      "tier": "SCRAPED",
+      "note": "Pitzer 2024-25 yield"
+    },
+    {
+      "targetId": "cmpdrg02c033o3lemvx089qsv",
+      "schoolId": "cmks30arv000y9viieexusysq",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 13.1,
+      "sourceUrl": "https://www.reed.edu/ir/cds/cds2425/CDS_secC_202425.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Reed CDS 2024-25"
+    },
+    {
+      "targetId": "cmpdrg1bq03au3lemic873xpg",
+      "schoolId": "cmks30b1e00119viibc9y6vf5",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 17.1,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2023_2024_tc.pdf",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "UMN Twin Cities 2024-25 yield"
+    },
+    {
+      "targetId": "cmpdrg3lx03n23lemz9sa23ym",
+      "schoolId": "cmks30ecd00209viixi0w23je",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 15.6,
+      "sourceUrl": "https://www.collegetuitioncompare.com/trends/wheaton-college/admission/",
+      "confidence": 0.8,
+      "tier": "SCRAPED",
+      "note": "Wheaton College MA 2023"
+    },
+    {
+      "targetId": "cmpdrg3xb03ns3lemhbs78nt7",
+      "schoolId": "cmks30bjb00179viiwwflr6fp",
+      "field": "yieldRate",
+      "status": "CLOSED",
+      "value": 14.12,
+      "sourceUrl": "https://www.whitman.edu/documents/offices/institutional-research/2024/whitman-cds-2024-2025.pdf",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "Whitman CDS 2024-25"
+    },
+
+    {
+      "targetId": "cmpdrfnid016u3lemxpqto81s",
+      "schoolId": "cmks30ev600269viis2ymp096",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://www.augie.edu/admission-aid/financial-aid-costs-scholarships/comprehensive-costs/international-student-costs",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "Augustana SD: need-aware for international"
+    },
+    {
+      "targetId": "cmpdrfr4101qy3lemjysklfcg",
+      "schoolId": "cmks308uy000d9viio4skawgr",
+      "field": "needBlindInternational",
+      "status": "UNAVAILABLE",
+      "reason": "Baruch (CUNY) does not publish need-blind/need-aware policy for international; F-1 intl students not eligible for federal aid; no explicit policy",
+      "sourceUrl": "https://enrollmentmanagement.baruch.cuny.edu/undergraduate-admissions/international-students/"
+    },
+    {
+      "targetId": "cmpdrfz8q02yv3lem1hnizn75",
+      "schoolId": "cmks30a92000s9viin1yd9gku",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://www.macalester.edu/financial-aid/apply/international/",
+      "confidence": 0.92,
+      "tier": "OFFICIAL",
+      "note": "Macalester: need-aware for international"
+    },
+    {
+      "targetId": "cmpdrfqha01o43lemqi1jd6x2",
+      "schoolId": "cmks30elz00239vii3wiqinsg",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://www.plu.edu/financial-services/students/international-students/",
+      "confidence": 0.7,
+      "tier": "DERIVED",
+      "note": "PLU: limited aid for intl, merit only; not need-blind"
+    },
+    {
+      "targetId": "cmpdrfu71025b3lemefwi39u9",
+      "schoolId": "cmks30aia000v9viipegrh03n",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://www.pitzer.edu/admission-aid/how-apply/international-applicants",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Pitzer: need-aware for international"
+    },
+    {
+      "targetId": "cmpdrg05k033x3lemu4j4ray1",
+      "schoolId": "cmks30arv000y9viieexusysq",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://www.reed.edu/admission-aid/costs-and-financial-aid/financial-aid/international-applicants/faqs.html",
+      "confidence": 0.98,
+      "tier": "OFFICIAL",
+      "note": "Reed: explicitly 'need-sensitive, not need-blind for international'"
+    },
+    {
+      "targetId": "cmpdrg1j403b33lemwnftnd2s",
+      "schoolId": "cmks30b1e00119viibc9y6vf5",
+      "field": "needBlindInternational",
+      "status": "UNAVAILABLE",
+      "reason": "UMN Twin Cities does not offer aid to F-1 intl undergrads; need-blind statement applies only to DACA/undocumented; distinction not applicable",
+      "sourceUrl": "https://admissions.tc.umn.edu/cost-aid/cost-aid-scholarships/costs-scholarships-and-visas-international-students"
+    },
+    {
+      "targetId": "cmpdrg3pz03nb3lem2srnica8",
+      "schoolId": "cmks30ecd00209viixi0w23je",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://wheatoncollege.edu/about-wheaton-college/offices-services/student-financial-services/financing-options/information-for-international-students/",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "Wheaton MA: limited need-based aid for intl, not need-blind"
+    },
+    {
+      "targetId": "cmpdrg40j03o13leml03d533e",
+      "schoolId": "cmks30bjb00179viiwwflr6fp",
+      "field": "needBlindInternational",
+      "status": "CLOSED",
+      "value": false,
+      "sourceUrl": "https://www.whitman.edu/admission-and-aid/applying-to-whitman/international-students/financial-aid",
+      "confidence": 0.98,
+      "tier": "OFFICIAL",
+      "note": "Whitman: 'highly need-aware for international'"
+    }
+  ]
+}
