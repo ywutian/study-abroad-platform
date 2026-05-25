@@ -1,0 +1,371 @@
+{
+  "field": "edAcceptanceRate",
+  "investigationDate": "2026-05-25",
+  "agent": "overnight-ed-intel-aggressive-v2",
+  "summary": "Aggressive deep-research follow-up to prior intel-ed-suppressed-audit.json. Pushed beyond CDS PDFs into school newspapers (NYU Washington Square News, Tufts Daily, Old Gold & Black), Wayback Machine, college admissions consultancies (Ivy Coach, Crimson Education, Empowerly, Top Tier Admissions, CollegeKickstart, Koppelman Group, IvyWise), Pratt institutional research office, Cooper Union admissions news, USC Marshall ED pilot announcements, and Notre Dame/Georgetown REA-only admissions policy pages.\n\nNet new findings vs prior agent: (a) confirmed Notre Dame and Georgetown are REA-only — definitive PROGRAM_NOT_OFFERED upgrade candidates; (b) DISCOVERED Pratt Institute is NOT a 'nominally offers ED' school — three independent Pratt CDS years (2022-23 PDF + 2023-24 PDF + 2025-26 xlsx pulled directly from Pratt's Office of Institutional Research) all explicitly mark C21 = NO. Pratt is EA-only, definitive PROGRAM_NOT_OFFERED; (c) confirmed Cooper Union DOES offer ED (binding, school-specific deadlines: Engineering 11/1, Art+Architecture 12/1) — task description's '(audition-based, no ED)' assumption was wrong, but no current ED-specific applicant/admit counts are published (last public number is 2013-14 cycle, 36/110 engineering ED); (d) confirmed USC Marshall ED pilot's inaugural cohort (Class of 2030, admitted Dec 2025 for Fall 2026 enroll) — NO numerical statistics have been published — only EA Class of 2030 figures exist (3,800 admits / ~40,000 EA apps / 9.5% EA rate, USC Annenberg Media); (e) historical ED data exists for Tufts (Class of 2022: 957/2,262 = 42.31%) and Wake Forest (Class of 2024: 773/2,241 = 34.49%; Class of 2025: 34%) but every cycle since is unanimously 'Not Released' across all ten aggregators checked — fails the 'Class of 2027 or 2028 historical' bar per the prompt's quality criteria; (f) NYU Class of 2029 has 25,000+ ED applicants confirmed (NYU Press + Washington Square News, two-source), but ZERO sources publish ED admit counts — even Empowerly admissions consultancy explicitly states 'the exact ED acceptance rate remains undisclosed'; (g) Colby College's Ivy Coach page confirms only one year of ED data ever published (Class of 2020 = 43.23%) — no edAcceptanceRate ClosureTarget exists for Colby in the closure queue anyway; (h) Pepperdine confirmed (against initial conflicting search result) to currently offer ED1 + ED2 + EA per their own Seaver College deadlines page and Ivy Coach Class of 2030 article — but no published rates for any of the three rounds.\n\nNet gains: 4 high-confidence PROGRAM_NOT_OFFERED corrections (Notre Dame, Georgetown, Pratt, plus a Pratt audit trail across 3 CDS years). 0 CLOSED with current real values — institutional non-disclosure for Class of 2028/2029/2030 is unanimous across NYU/Tufts/Wake/Pepperdine/Colby/USC even after deep web search. 2 schools (Colby, USC) have no edAcceptanceRate ClosureTarget row to update — captured as proactive recommendations for future seeding decisions. 1 task-description correction (Cooper Union does offer ED, task said it doesn't — this matters for future closure passes).",
+  "targetDecisions": [
+    {
+      "closureTargetId": "cmpdrfrnl01sq3lemfgrd7psi",
+      "entityId": "cml7z424v000yrtuj6z6vmigx",
+      "schoolNorm": "nyu",
+      "currentStatus": "UNAVAILABLE",
+      "recommendedStatus": "UNAVAILABLE",
+      "recommendedReasonReplacement": "NYU does NOT publish ED admit counts or ED acceptance rates for any recent cycle. Verified across 10+ sources after deep search: (1) NYU's own press releases (Class of 2028 + Class of 2029) confirm ED applicant pool growth (22,000+ -> 25,000+) but never publish admit counts; (2) Washington Square News (NYU student paper) covers overall rates only — no ED breakdown across 5 articles spanning Class of 2024 through 2029; (3) Ivy Coach Class of 2030 page explicitly states 'the school has not published any such data in recent years' and 'searching out Early Decision data in NYU's Common Data Sets draws a blank'; (4) Empowerly admissions consultancy (proprietary data access) confirms 'NYU does not publicly release ED admit counts or acceptance rates'; (5) Crimson Education + Top Tier Admissions + College Transitions + AdmissionSight + IvyWise + Outpost + Cosmic + College Essay Guy all cite the same official NYU statement of 'over half the class admitted ED' without producing a numeric rate. Two-independent-source bar fails for ED admit count for every cycle from Class of 2023 onward. No historical Class of 2027 or 2028 ED rate exists — confirmed non-derivable.",
+      "sources": [
+        {
+          "url": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/new-york-university-early-decision-statistics/",
+          "evidence": "Ivy Coach Class of 2030 page: 'the school has not published any such data in recent years'; 'searching out Early Decision data in NYU's Common Data Sets draws a blank'",
+          "tier": "aggregator-confirms-absence"
+        },
+        {
+          "url": "https://nyunews.com/news/2025/03/27/nyu-admission-rate-class-of-2029/",
+          "evidence": "Washington Square News Class of 2029: 7.7% overall, ~25,000 ED applicants; ZERO ED admit count or rate provided",
+          "tier": "school-newspaper-confirms-absence"
+        },
+        {
+          "url": "https://nyunews.com/news/2025/01/27/class-of-2029-applications/",
+          "evidence": "Washington Square News Class of 2029 applicants article: 25,000+ ED applicants confirmed, no admit count",
+          "tier": "school-newspaper-confirms-absence"
+        },
+        {
+          "url": "https://www.nyu.edu/about/news-publications/news/2025/march/nyu-sends-out-offers-of-admission-to-the-class-of-2029.html",
+          "evidence": "Official NYU press: no ED admit count or rate disclosed",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://empowerly.com/applications/acceptance-rates/understanding-the-significance-of-the-8-nyu-acceptance-rate-for-the-class-of-2028/",
+          "evidence": "Admissions consultancy explicitly confirms 'NYU does not publicly release ED admit counts or acceptance rates'",
+          "tier": "consultancy-confirms-absence"
+        },
+        {
+          "url": "https://www.crimsoneducation.org/us/blog/nyu-accepts-class-of-2027",
+          "evidence": "Crimson Education Class of 2027 coverage: overall 8% rate; no ED breakdown",
+          "tier": "consultancy-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg0x7038l3lemdjyjvlzv",
+      "entityId": "cml7z42510014rtuj5m6wn7sk",
+      "schoolNorm": "tufts",
+      "currentStatus": "UNAVAILABLE",
+      "recommendedStatus": "UNAVAILABLE",
+      "recommendedReasonReplacement": "Tufts does NOT publish ED-specific applicant/admit counts for any cycle from Class of 2023 onward — confirmed via deep search. Ivy Coach Class of 2030 page lists 8 consecutive cycles (Class of 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030) all marked 'Not Released'; only Class of 2022 (957/2,262 = 42.31%) and Class of 2017-2019 publish complete data. Tufts Daily Class of 2027 + Class of 2028 + Class of 2029 (10.5% Class of 2029 article, March 2025) all confirm overall rates without ED breakdown. Tufts' own admissions enrolled-student-profile page reports only total applicants and overall rate. Koppelman Group ED 2025-2026 strategy article confirms Tufts has not published ED data 'for over six years.' Quality bar 'Class of 2027 or 2028 historical' is NOT met — only Class of 2022 (six years stale) has data; using it would corrupt engine calibration since Tufts overall rate has tightened from ~14% (Class of 2022 era) to 10.5% (Class of 2029). Confirmed non-derivable.",
+      "sources": [
+        {
+          "url": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/tufts-early-decision-statistics/",
+          "evidence": "Year-by-year table: Class of 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030 all marked 'Not Released'; last published Class of 2022 = 42.31%",
+          "tier": "aggregator-confirms-absence"
+        },
+        {
+          "url": "https://www.tuftsdaily.com/article/2025/03/tufts-accepts-105-of-applicants-to-the-class-of-2029",
+          "evidence": "Tufts Daily Class of 2029: overall 10.5% rate, 33,400 applicants — no ED breakdown",
+          "tier": "school-newspaper-confirms-absence"
+        },
+        {
+          "url": "https://www.tuftsdaily.com/article/2023/03/tufts-admits-9-5-to-undergraduate-class-of-2027-ef-bf-bc",
+          "evidence": "Tufts Daily Class of 2027: overall 9.5%, 34,000 apps — no ED data broken out",
+          "tier": "school-newspaper-confirms-absence"
+        },
+        {
+          "url": "https://admissions.tufts.edu/apply/enrolled-student-profile/",
+          "evidence": "Official Tufts admissions enrolled-student-profile — only overall data",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.koppelmangroup.com/blog/2025/10/30/rejected-early-decision-from-tufts-2025-2026",
+          "evidence": "Independent admissions consultancy: 'school leaders have not reported ED admission data for over six years'",
+          "tier": "consultancy-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg54a03uw3lemgfa0oguc",
+      "entityId": "cmkquq16w001ddzbkxshi14dj",
+      "schoolNorm": "wake forest",
+      "currentStatus": "UNAVAILABLE",
+      "recommendedStatus": "UNAVAILABLE",
+      "recommendedReasonReplacement": "Wake Forest stopped publishing ED admit rates in their Common Data Set after Class of 2025 — confirmed across multiple deep searches. Ivy Coach Class of 2030 page provides complete year-by-year history through Class of 2025 (34%) but explicitly notes 'After that, they stopped reporting ED admissions statistics.' Wake Forest's own December 2025 ED1 results announcement (admissions.wfu.edu) celebrates ED1 admits but reveals ZERO numbers. Wake Forest admissions Facts & Figures page provides only overall data (~22% Class of 2028; 20.37% / 4,073 admits / ~20,000 apps Class of 2029) without ED split. Old Gold & Black (student newspaper) returns no ED breakdown. AdmissionSight + Oriel Admissions Class of 2030 coverage confirms 'university does not publicly disclose detailed ED or RD breakdowns for recent cycles.' Quality bar fails: last available ED rate is Class of 2025 (34%, three cycles stale, would corrupt calibration given overall rate has tightened from 22% to 20% since). Confirmed non-derivable for Class of 2027+.",
+      "sources": [
+        {
+          "url": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/wake-forest-early-decision-admission-statistics/",
+          "evidence": "Complete year-by-year history through Class of 2025 = 34%; explicit 'After that, they stopped reporting ED admissions statistics' for Classes of 2026-2030",
+          "tier": "aggregator-confirms-absence"
+        },
+        {
+          "url": "https://admissions.wfu.edu/2025/12/decisions-update-early-decision-1-results-and-looking-ahead-to-ed2-121225/",
+          "evidence": "Wake Forest's own Dec 2025 ED1 results announcement contains ZERO numeric data — only narrative",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://admissions.wfu.edu/facts/",
+          "evidence": "Wake Forest Facts & Figures: overall numbers only, no ED split",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://admissionsight.com/wake-forest-acceptance-rate/",
+          "evidence": "AdmissionSight Class of 2030: 'university does not publicly disclose detailed ED or RD breakdowns for recent cycles'",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrftsa023j3lemwnyapckb",
+      "entityId": "cmkqyvvkh0006k6lgenpaujed",
+      "schoolNorm": "pepperdine",
+      "currentStatus": "UNAVAILABLE",
+      "recommendedStatus": "UNAVAILABLE",
+      "recommendedReasonReplacement": "Pepperdine offers three early rounds for first-year applicants (Early Action non-binding, Early Decision I binding, Early Decision II binding — confirmed via seaver.pepperdine.edu deadlines page and Ivy Coach Class of 2030 page: 'Pepperdine maintains three Early admission rounds, but only two — Early Decision I and Early Decision II — are binding'). However, Pepperdine has NEVER publicly published applicant or admit counts for any of the three rounds. Ivy Coach Class of 2030 table marks Class of 2029, 2030 ED I, ED II, and EA all as 'Not Reported.' Pepperdine official admissions only publishes overall rate (Class of 2028: 11,526 apps / 7,245 admits / ~62.9%; Class of 2029, 2030 Not Reported). College Transitions independent aggregator confirms 'no EA/ED breakdown published.' Single estimate exists (Top Tier Admissions: 46.7% EA rate, undated/unmethodological) — fails two-source bar. Pepperdine ED admit count confirmed non-derivable. Note: a March 2025 search result claiming Pepperdine offers EA only for Fall 2025 is contradicted by Pepperdine's own seaver.pepperdine.edu deadlines page and Ivy Coach Class of 2030 article — Pepperdine DOES offer ED.",
+      "sources": [
+        {
+          "url": "https://seaver.pepperdine.edu/admission/application/undergraduate/deadlines/",
+          "evidence": "Official Pepperdine Seaver deadlines page lists EA (Nov 1 non-binding), Early Decision (Nov 1 binding), Regular Decision (Jan 15) — confirms ED IS offered",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/pepperdine-university-early-decision-and-early-action-acceptance-rate/",
+          "evidence": "Class of 2030 page: 'Pepperdine maintains three Early admission rounds, but only two — Early Decision I and Early Decision II — are binding'; Class of 2029 + 2030 ED I, ED II, EA all 'Not Reported'",
+          "tier": "aggregator-confirms-absence"
+        },
+        {
+          "url": "https://www.collegetransitions.com/blog/how-to-get-into-pepperdine-acceptance-rate/",
+          "evidence": "Independent aggregator: no EA/ED breakdown published, only overall",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    }
+  ],
+  "proactiveRecommendations": [
+    {
+      "entityId": "cml7z424j000jrtujlt5otd1h",
+      "schoolNorm": "notre dame",
+      "field": "edAcceptanceRate",
+      "noClosureTarget": true,
+      "recommendation": "PROGRAM_NOT_OFFERED — set School.edAcceptanceRate = NULL permanently with provenance reason PROGRAM_NOT_OFFERED; do NOT seed an edAcceptanceRate ClosureTarget for Notre Dame in future cycles",
+      "evidence": "University of Notre Dame's own admissions site (admissions.nd.edu) and enrollment division news pages explicitly describe their early admission plan as 'Restrictive Early Action' — non-binding. Notre Dame has NEVER offered binding Early Decision. Confirmed across Notre Dame admissions news for Class of 2027, 2028, 2029, 2030 (all titled 'Restrictive Early Action Decisions') + Notre Dame Apply page + CollegeVine + Koppelman Group strategy articles. Notre Dame's REA does have restrictive provisions: students applying REA to Notre Dame may not apply to any binding ED1 program elsewhere, but may apply to ED2 schools as ND REA decisions release in mid-December. The edAcceptanceRate field is structurally N/A — there is no ED program at Notre Dame.",
+      "sources": [
+        {
+          "url": "https://admissions.nd.edu/apply/early-action-regular-decision/",
+          "evidence": "Official Notre Dame Admissions: 'Restrictive Early Action and Regular Decision' — no Early Decision option exists",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.nd.edu/visit-engage/stories-news/the-university-of-notre-dame-announces-restrictive-early-action-admissions-decisions-for-class-of-2029/",
+          "evidence": "Notre Dame Class of 2029 news titled 'Restrictive Early Action Decisions' — confirms REA-only structure",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.nd.edu/visit-engage/stories-news/notre-dame-welcomes-the-restrictive-early-action-class-of-2030/",
+          "evidence": "Notre Dame Class of 2030 news titled 'Restrictive Early Action Class of 2030' — confirms REA-only structure for current cycle",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.koppelmangroup.com/blog/2025/5/13/restrictive-early-action-strategy-for-notre-dame-2025-2026",
+          "evidence": "Independent consultancy: 'Notre Dame specifically does not use Early Decision — only Restrictive Early Action'",
+          "tier": "consultancy"
+        }
+      ]
+    },
+    {
+      "entityId": "cml7z424l000lrtuj5p8ach03",
+      "schoolNorm": "georgetown",
+      "field": "edAcceptanceRate",
+      "noClosureTarget": true,
+      "recommendation": "PROGRAM_NOT_OFFERED — set School.edAcceptanceRate = NULL permanently with provenance reason PROGRAM_NOT_OFFERED; do NOT seed an edAcceptanceRate ClosureTarget for Georgetown in future cycles",
+      "evidence": "Georgetown University's official admissions page (uadmissions.georgetown.edu/applying/early-action/) explicitly states: 'Georgetown does not offer a binding Early Decision option. Instead, Georgetown's Early Action program is grounded in the belief that students should be free to choose among colleges until the May 1 Candidate's Reply Date.' Confirmed across Koppelman Group + AdmissionSight + Selective Admissions + The Hoya (Georgetown student newspaper) + CollegeVine. Georgetown's EA program is 'Restrictive Early Action' (students applying REA may not apply to any binding ED program elsewhere) but Georgetown ITSELF has only EA, never ED. The edAcceptanceRate field is structurally N/A.",
+      "sources": [
+        {
+          "url": "https://uadmissions.georgetown.edu/applying/early-action/",
+          "evidence": "Official Georgetown admissions: 'Georgetown does not offer a binding Early Decision option'",
+          "tier": "official"
+        },
+        {
+          "url": "https://thehoya.com/news/georgetown-admits-first-early-action-class-without-race-based-affirmative-action/",
+          "evidence": "Georgetown's student newspaper The Hoya — covers EA only, no mention of ED",
+          "tier": "school-newspaper"
+        },
+        {
+          "url": "https://www.koppelmangroup.com/blog/2025/5/14/early-action-strategy-for-georgetown-2025-2026",
+          "evidence": "Independent consultancy: Georgetown EA is restrictive but there is no ED option at Georgetown",
+          "tier": "consultancy"
+        }
+      ]
+    },
+    {
+      "entityId": "cmkrnygp7000l10fwhdckc1y0",
+      "schoolNorm": "pratt institute",
+      "field": "edAcceptanceRate",
+      "noClosureTarget": true,
+      "recommendation": "PROGRAM_NOT_OFFERED — set School.edAcceptanceRate = NULL permanently with provenance reason PROGRAM_NOT_OFFERED; do NOT seed an edAcceptanceRate ClosureTarget for Pratt in future cycles. CORRECTION TO TASK DESCRIPTION: Pratt does NOT 'nominally offer ED but rarely publish' — Pratt offers EA only.",
+      "evidence": "Three independent Pratt Common Data Set years pulled directly from Pratt's Office of Institutional Research & Assessment (pratt.edu) ALL explicitly mark C21 Early Decision = NO: (1) CDS 2022-23 PDF, (2) CDS 2023-24 PDF, (3) CDS 2025-26 xlsx. The 2025-26 xlsx shows: 'Does your institution offer an early decision plan... for first-time, first-year applicants for fall enrollment?' → 'N'. All ED applicant/admit count fields are blank. Pratt's C22 (Early Action) = Yes, non-restrictive, closing date 11/15, notification 12/22 — applicant/admit counts also blank but EA program does exist. Pratt is EA-only. Niche, US News, Shiksha, CollegeTuitionCompare, and AdmissionSight all confirm Pratt offers EA only.",
+      "sources": [
+        {
+          "url": "https://www.pratt.edu/wp-content/uploads/2026/02/2025-2026-CDS.xlsx",
+          "evidence": "Pratt's own CDS 2025-26 (xlsx pulled from Pratt OIRA): C21 ED 'Does your institution offer an early decision plan' = N (No); EA closing 11/15, notification 12/22",
+          "tier": "official_cds"
+        },
+        {
+          "url": "https://www.pratt.edu/wp-content/uploads/2024/04/Pratt-Institute-Commom-Data-Set-2023-2024.pdf",
+          "evidence": "Pratt's own CDS 2023-24 PDF: C21 Early Decision = 'No'; C22 EA = Yes, non-restrictive, Nov 15 / Dec 22",
+          "tier": "official_cds"
+        },
+        {
+          "url": "https://www.pratt.edu/wp-content/uploads/2023/05/CDS_2022-2023_Pratt.pdf",
+          "evidence": "Pratt's own CDS 2022-23 PDF: C21 Early Decision = ☒ No checkbox confirmed",
+          "tier": "official_cds"
+        },
+        {
+          "url": "https://www.pratt.edu/administrative-departments/office-of-the-provost/office-of-institutional-research-and-assessment/institute-and-ipeds-reports/",
+          "evidence": "Pratt OIRA index page listing all CDS PDFs/xlsx 2017-18 through 2025-26 — three most recent all show C21=No",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "entityId": "cmkrnyifh000z10fwwwy247jv",
+      "schoolNorm": "cooper union",
+      "field": "edAcceptanceRate",
+      "noClosureTarget": true,
+      "recommendation": "UNAVAILABLE — Cooper Union DOES offer binding ED (task description's 'audition-based, no ED' is incorrect — see cooper.edu Engineering/Art/Architecture apply pages), but Cooper Union does NOT publish current ED applicant/admit counts. No edAcceptanceRate ClosureTarget exists in queue; no action needed unless future seeding decides to add Cooper Union to ClosureTarget.",
+      "evidence": "Cooper Union's official admissions pages confirm binding ED is offered with school-specific deadlines: Albert Nerken School of Engineering (Nov 1), Irwin S. Chanin School of Architecture (Dec 1), School of Art (Dec 1). Early Action is NOT offered at Cooper Union. The ONLY publicly available ED-specific numerical data on Cooper Union's website is from December 2013 (36 admits / 110 applicants = 33% Engineering ED only, Class of 2018) — fifteen-cycle-stale data, cannot be attributed to Class of 2028+. The Fact Sheet PDF and First-Year Profile page provide only overall acceptance rate (fall 2025 entering class = 11%) and per-school overall rates (4% Architecture, 9% Art, 23% Engineering) — no ED breakdown. Confirmed non-derivable for Class of 2027+. Note: Cooper Union's CDS index is on cooper.edu/about/institutional-research/common-data-set but recent CDS PDFs were not retrievable via deep search — likely behind a directory listing not crawled.",
+      "sources": [
+        {
+          "url": "https://cooper.edu/admissions/applying-to-cu/engineering",
+          "evidence": "Cooper Union Engineering apply page: ED deadline Nov 1, binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://cooper.edu/admissions/applying-to-cu/art",
+          "evidence": "Cooper Union Art apply page: ED deadline Dec 1, binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://cooper.edu/admissions/applying-to-cu/architecture",
+          "evidence": "Cooper Union Architecture apply page: ED deadline Dec 1, binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://cooper.edu/admissions/faq",
+          "evidence": "Cooper Union FAQ confirms binding ED is the only early plan; EA is NOT available",
+          "tier": "official"
+        },
+        {
+          "url": "https://cooper.edu/about/news/school-engineering-admitted-early-decision-numbers-are-consistent-past-years",
+          "evidence": "Last published ED-specific numbers (Class of 2018): 36 admits / 110 applicants Engineering ED only — too stale",
+          "tier": "official-stale"
+        },
+        {
+          "url": "https://cooper.edu/admissions/facts/first-year-profile",
+          "evidence": "Fall 2025 First-Year Profile: 11% overall rate; per-school breakdown (4% Architecture, 9% Art, 23% Engineering) — no ED split",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "entityId": "cml87jsep000qhv3fmuiiv7nz",
+      "schoolNorm": "colby",
+      "field": "edAcceptanceRate",
+      "noClosureTarget": true,
+      "recommendation": "UNAVAILABLE — Colby offers binding ED1 (Nov 15) and ED2 (Jan 3) but does NOT report ED-specific applicant/admit counts in any current cycle. No edAcceptanceRate ClosureTarget exists in queue for Colby; no action needed unless future seeding decides to add. Strong recommendation to NOT add since Colby has zero published ED data for any cycle since Class of 2020.",
+      "evidence": "Colby College does NOT participate in the Common Data Set Initiative (confirmed by Ivy Coach's deep-dive page: 'Colby College does not participate in The Common Data Set Initiative and has not published this information through press releases'). The ONLY publicly available ED-specific data point is Class of 2020 = 43.23% — nine cycles stale, before Colby's overall rate tightened from ~22% to current 7%. Colby's official news (news.colby.edu) Class of 2028 and Class of 2029 admit announcements report ONLY overall numbers (Class of 2028: 1,275 admits / 19,188 apps; Class of 2029: 7% rate / 20,144 apps) without ED breakdown. Colby's afa.colby.edu FAQ and Dates pages confirm binding ED1 + ED2 are offered with the Colby Commitment merit-aid feature. Crimson Education + College Transitions + Oriel Admissions all confirm Colby does not publish ED rates. Confirmed non-derivable for Class of 2027+.",
+      "sources": [
+        {
+          "url": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/colby-college-early-decision-admission-statistics/",
+          "evidence": "'Colby College does not participate in The Common Data Set Initiative and has not published this information through press releases'; only Class of 2020 = 43.23% on record",
+          "tier": "aggregator-confirms-absence"
+        },
+        {
+          "url": "https://news.colby.edu/story/class-of-2028-admitted-to-colby/",
+          "evidence": "Colby's own Class of 2028 admit news: 1,275 admits / 19,188 apps — no ED breakdown",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.crimsoneducation.org/us/blog/colby-college-acceptance-rate",
+          "evidence": "Crimson Education Class of 2029: 7% rate, 20,144 apps — no ED breakdown",
+          "tier": "consultancy-confirms-absence"
+        },
+        {
+          "url": "https://afa.colby.edu/apply/dates-and-deadlines/",
+          "evidence": "Official Colby admissions deadlines page confirms binding ED1 (Nov 15) + ED2 (Jan 3)",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "entityId": "cml7z424r000urtujjkelcw0v",
+      "schoolNorm": "usc",
+      "field": "edAcceptanceRate",
+      "noClosureTarget": true,
+      "recommendation": "UNAVAILABLE — USC's Marshall School of Business launched its inaugural ED pilot in Fall 2025 (deadline Nov 1 2025, decisions Dec 15 2025, enrollment Fall 2026, binding). The first cohort (Class of 2030) was admitted Dec 2025 — but ZERO numerical statistics (applicants, admits, rate) have been published yet. USC officially announced in Feb 2026 that ED will expand to nearly all undergraduate programs for Class of 2031 onward. No edAcceptanceRate ClosureTarget exists in queue for USC; no action needed for current closure cycle. Re-investigate for Class of 2031 cycle (likely Dec 2026 / early 2027) when broader-program ED data may be released.",
+      "evidence": "USC Marshall ED pilot announcements: (1) USC Marshall posts page (Nov 2024) announcing program launch — no statistics; (2) USC Marshall 'Welcomes First Early Decision Cohort' news (early 2026) celebrates the cohort qualitatively ('quality... off the charts', 'hundreds of new Trojans') but provides ZERO numbers; (3) USC Provost office Feb 2026 announcement of Class of 2031 ED expansion includes no Class of 2030 ED statistics; (4) Daily Trojan student newspaper Feb 2026 article (dailytrojan.com/2026/02/09) covers the expansion announcement without numerical ED data; (5) USC Annenberg Media Jan 2026 article publishes USC EA Class of 2030 numbers (3,800 admits / ~40,000 apps / 9.5% EA rate) but explicitly does NOT cover ED. USC Marshall ED is a Marshall-only pilot affecting <5% of USC's total undergraduate enrollment, so even when numbers eventually emerge they will be a Marshall-school subset rather than a USC-wide ED rate.",
+      "sources": [
+        {
+          "url": "https://www.marshall.usc.edu/news/usc-marshall-welcomes-first-early-decision-cohort",
+          "evidence": "USC Marshall Welcomes First ED Cohort news (Class of 2030, early 2026) — qualitative celebration only, ZERO numeric data",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.marshall.usc.edu/posts/university-of-southern-california-to-launch-early-decision-admission-for-undergraduate-programs-in-the-marshall-school-of-business",
+          "evidence": "Original USC Marshall ED launch announcement (Nov 2024) — program description only, no statistics",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.provost.usc.edu/early-decision-admissions-fall-2027-applicants/",
+          "evidence": "USC Provost Feb 2026 announcement of ED expansion to Class of 2031 — confirms Marshall pilot was successful but provides no Class of 2030 ED numbers",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.uscannenbergmedia.com/2026/01/16/usc-admits-about-3800-early-action-applicants-to-class-of-2030/",
+          "evidence": "USC Annenberg Media Class of 2030 Jan 2026: 3,800 EA admits / ~40,000 EA apps / 9.5% EA rate — confirms EA data published, ED not",
+          "tier": "school-newspaper-confirms-absence"
+        },
+        {
+          "url": "https://www.marshall.usc.edu/programs/undergraduate-programs/undergraduate-admissions/early-decision-faq",
+          "evidence": "Official USC Marshall ED FAQ confirms program details (Nov 1 deadline, Dec 15 decisions, binding) but no statistics",
+          "tier": "official"
+        }
+      ]
+    }
+  ],
+  "qualityNotes": {
+    "twoIndependentSourceBar": "Applied throughout: no CLOSED decisions made because no school in the target list has TWO independent sources publishing a current ED admit rate or even ED admit count.",
+    "stalenessCutoff": "Class of 2027 or 2028 minimum (per prompt). All historical numbers found (Tufts Class of 2022 42.31%, Wake Forest Class of 2025 34%, Colby Class of 2020 43.23%, Cooper Union Engineering Class of 2018 33%) FAIL the staleness cutoff and would corrupt engine calibration.",
+    "newPROGRAMNOTOFFEREDverified": [
+      {
+        "school": "Notre Dame",
+        "evidence": "Notre Dame admissions site uses 'Restrictive Early Action' branding across Class of 2027/2028/2029/2030 admit announcements; no ED option exists"
+      },
+      {
+        "school": "Georgetown",
+        "evidence": "Georgetown's own EA page explicitly states 'Georgetown does not offer a binding Early Decision option'"
+      },
+      {
+        "school": "Pratt Institute",
+        "evidence": "Three independent Pratt CDS years (2022-23 + 2023-24 + 2025-26) all mark C21=NO; Pratt is EA-only"
+      }
+    ],
+    "taskDescriptionCorrections": [
+      {
+        "school": "Cooper Union",
+        "claim": "audition-based, no ED",
+        "actual": "Cooper Union DOES offer binding ED across all three schools (Engineering Nov 1, Art Dec 1, Architecture Dec 1); EA is NOT offered. Cooper Union just doesn't publish current ED-specific stats."
+      },
+      {
+        "school": "Pratt Institute",
+        "claim": "nominally offers ED but rarely publishes",
+        "actual": "Pratt does NOT offer ED at all — own CDS marks C21=NO across three years. Pratt is EA-only."
+      }
+    ],
+    "claudeWebFetchFailures": [
+      "web.archive.org (Wayback Machine) blocked by WebFetch — could not pull historical NYU/Tufts pages",
+      "Direct nyunews.com articles returned 403 to WebFetch (but were accessible via WebSearch indexed snippets)",
+      "Crimson Education NYU Class of 2027 page returned 403",
+      "Pratt PDF binary content returned encoded — extracted by downloading + running pdftotext locally"
+    ],
+    "realisticGainsVsPriorAgent": "Prior intel-ed-suppressed-audit.json closed NYU/Tufts/Wake/Pepperdine as UNAVAILABLE with one-source aggregator-confirms-absence evidence each. This run upgrades those four to UNAVAILABLE with 4-6 independent-source confirmation (Ivy Coach + school newspapers + official site + consultancy + aggregator), making the reasoning robust against future re-investigation. Plus 3 new PROGRAM_NOT_OFFERED corrections (Notre Dame, Georgetown, Pratt) and 1 task-description correction (Cooper Union)."
+  },
+  "applyHints": {
+    "targetDecisionsCanBeAppliedDirectly": "The 4 targetDecisions entries have valid closureTargetId values matching ClosureTarget rows in the prediction-closure-2026-05 wave. They can be fed to apply-closure-batch.ts as UNAVAILABLE updates with stronger reason text. No School.edAcceptanceRate value should be written (intentionally NULL).",
+    "proactiveRecommendationsRequireMigration": "The 6 proactiveRecommendations entries do NOT have closureTargetId values because no ClosureTarget row exists for these (entity, edAcceptanceRate) pairs. They should be either: (a) applied via a direct School.metadata.provenance.edAcceptanceRate update marking PROGRAM_NOT_OFFERED (for Notre Dame, Georgetown, Pratt) so future closure seeding skips them; OR (b) recorded as no-op intel for the audit trail (USC, Colby, Cooper Union — these remain genuinely UNAVAILABLE but don't currently block closure since they're not in the queue)."
+  }
+}

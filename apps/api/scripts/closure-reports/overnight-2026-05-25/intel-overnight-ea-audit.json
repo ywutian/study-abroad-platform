@@ -1,0 +1,735 @@
+{
+  "field": "eaAcceptanceRate",
+  "investigationDate": "2026-05-25",
+  "summary": "Overnight intelligence-driven follow-up on eaAcceptanceRate UNAVAILABLE targets. The Wave 5 closure pass already covered the cluster systematically (199 UNAVAILABLE = 65% terminal). This pass: (1) verified 6 high-yield CDS-blank candidates (Stevens, SCU, U Miami, Clemson, VT, UMN, UDel, UVM) via WebSearch + direct CDS PDF fetch — all confirmed UNAVAILABLE (CDS C22 either has EA=Yes with counts blank, or aggregator estimates fail the 2-source bar). UDel CDS 2022-23 C22 directly confirms EA=Yes, counts blank. UVM CDS 2024-25 C22 directly confirms EA=Yes (Nov 1 / Late December), counts blank — only ED has counts (479 apps / 449 admits). (2) Wrote canonical PROGRAM_NOT_OFFERED notes for 23 targets where Wave 5 left notes empty — verified each school's EA status via official .edu sources. (3) Sharpened notes for a few schools where Wave 5 had a less-specific reason. Net effect: 0 new CLOSED (research confirmed schools genuinely do not publish), but 23 UNAVAILABLE entries gain proper structural reasons so future re-runs treat them as truly terminal. Recommend: leave all eaAcceptanceRate values as currently set; apply only the 23+ note upgrades below.",
+  "decisions": [
+    {
+      "closureTargetId": "cmpdrfssn01yi3lemrzf00qfl",
+      "entityId": "cml87jsgl001uhv3fk0zi5juw",
+      "schoolNorm": "arizona state",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Arizona State University does not offer a formal Early Action plan — admissions is rolling/priority. ASU's priority application date is Nov 1 (decisions issued earliest) and regular date is Feb 1, but there is no separate Early Action round with distinct admit-rate reporting. CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://admission.asu.edu/apply/first-year",
+          "evidence": "Official ASU admission page — describes rolling/priority review only, no formal EA plan",
+          "tier": "official"
+        },
+        {
+          "url": "https://yourfuture.asu.edu/importantdeadlines",
+          "evidence": "ASU priority date Nov 1, regular date Feb 1 — no EA round mentioned",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg44g03og3lemq9uge6cp",
+      "entityId": "cmkrmmaxc00002w8cges2t8zr",
+      "schoolNorm": "auburn",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Auburn University offers non-binding Early Action with multiple deadlines (Sep 15, Oct 15, Nov 15, Dec 1) and Regular Feb 1. However, Auburn does not publish separate EA applicant/admit counts in its CDS C22 — only overall admission totals are released.",
+      "sources": [
+        {
+          "url": "https://onthelawn.auburn.edu/2025/10/17/fall-2026-freshmen-admissions-process-dates-deadlines-decision-types-and-next-steps/",
+          "evidence": "Auburn officially confirms multiple EA deadlines (Sep 15 / Oct 15 / Nov 15 / Dec 1) with non-binding decisions",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.auburn.edu/admissions/prospective-students/freshmen/index.php",
+          "evidence": "Auburn Office of Undergraduate Admissions — no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfpdg01hc3lemd1y7tqd5",
+      "entityId": "cml87jsef000jhv3ffiajmzxy",
+      "schoolNorm": "baylor",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Baylor University offers both November 1 Binding (Early Decision) and November 1 Non-Binding (Early Action) tracks. Baylor does not publish separate EA applicant/admit counts in its CDS C22 — only overall admission totals are released to the public.",
+      "sources": [
+        {
+          "url": "https://admissions.web.baylor.edu/admission/incoming-freshman/application-process/admission-plans",
+          "evidence": "Baylor officially confirms both Nov 1 ED (binding) and Nov 1 EA (non-binding) tracks",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.web.baylor.edu/november-1-binding-faqs",
+          "evidence": "Baylor FAQ confirms structure; no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfyjp02uy3lem44jjiadl",
+      "entityId": "cmkrmmbcx00032w8cg2olufbx",
+      "schoolNorm": "depaul",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "DePaul University offers a non-binding Early Action Program (EAP) with a Nov 15 deadline and Dec 15 notification. DePaul publishes only overall acceptance rate (~75.9% for Fall 2024); no EA-specific admit count appears in CDS C22 or other public reporting.",
+      "sources": [
+        {
+          "url": "https://www.depaul.edu/admission-and-aid/types-of-admission/freshman-student/Pages/early-action-program-faq.aspx",
+          "evidence": "DePaul Early Action Program FAQ — non-binding, Nov 15 deadline, Dec 15 notification",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.depaul.edu/admission-and-aid/Pages/deadlines.aspx",
+          "evidence": "DePaul deadlines page — no separate EA admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfwpj02k63lemn8js454x",
+      "entityId": "cml87jsdy0009hv3fjn1tlsi2",
+      "schoolNorm": "fordham",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Fordham University offers non-binding Early Action with Nov 1 deadline (decisions by Dec 20), plus ED I/II and Regular Decision. Fordham publishes ED admit data in CDS but does NOT publicly release EA-specific applicant/admit counts. Ivy Coach explicitly confirms 'Fordham does not release publicly available data on Early Action acceptance rates.'",
+      "sources": [
+        {
+          "url": "https://www.fordham.edu/undergraduate-admission/apply/dates-and-deadlines/",
+          "evidence": "Fordham officially confirms EA Nov 1 / Dec 20, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/fordham-university-early-action-early-decision-admission-statistics/",
+          "evidence": "Ivy Coach confirms Fordham does not publish EA admit data; only ED admit counts are released",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfgxe004g3lemnbkxxur8",
+      "entityId": "cmkqz274h0008klbkm8rdpi4a",
+      "schoolNorm": "gonzaga",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Gonzaga University introduced its first Early Action option in the 2024-2025 application cycle (Class of 2029 — first cycle still in progress at investigation date). EA deadline Nov 15, decisions late December, non-binding. As the first EA cycle is too recent for published CDS C22 admit-rate data, no verifiable EA admit rate exists yet.",
+      "sources": [
+        {
+          "url": "https://www.gonzaga.edu/news-events/stories/2024/6/10/gonzaga-announces-early-action-admission",
+          "evidence": "Gonzaga official announcement: EA first offered 2024-2025 cycle (Class of 2029)",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.gonzagabulletin.com/news/gonzaga-adopts-early-action-admissions-for-2024-25-admissions-cycle/article_db0fa976-3317-11ef-a91d-8f4a6ad74386.html",
+          "evidence": "Gonzaga school newspaper confirms EA introduction; first cycle Fall 2025 admit data not yet published",
+          "tier": "school-newspaper"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfowf01eh3lem3n4kt47q",
+      "entityId": "cmkqyvza70010k6lgzwd6qcfe",
+      "schoolNorm": "howard",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Howard University offers non-binding Early Action with Nov 15 deadline (decisions emailed late December). Class of 2028 saw nearly 37,000 total applicants and ~30-32% overall admit rate (Hilltop student newspaper), but Howard does not publish EA-specific applicant/admit splits in its public reporting or CDS C22.",
+      "sources": [
+        {
+          "url": "https://admission.howard.edu/undergraduate/first-year",
+          "evidence": "Howard Office of Admission — EA Nov 15 deadline, late December notification, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://thehilltoponline.com/2024/04/22/howard-receives-nearly-37000-applicants-for-2028-class-breaking-record/",
+          "evidence": "Hilltop (Howard student newspaper) reports overall Class of 2028 stats but no EA breakdown",
+          "tier": "school-newspaper-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrftec021e3lemcftsjhto",
+      "entityId": "cmkqyvzjr0012k6lgt2rm9eny",
+      "schoolNorm": "illinois institute of technology",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Illinois Institute of Technology offers non-binding Early Action with Nov 15 deadline; decisions released by January. Illinois Tech does not publish a separate EA admit rate in CDS C22 — only overall rate (~55%). One aggregator (CollegeRaptor) cites '73.3% early acceptance rate' but this fails the 2-source bar with no IIT-published corroboration.",
+      "sources": [
+        {
+          "url": "https://www.iit.edu/admissions-aid/undergraduate-admission/application-dates-and-deadlines",
+          "evidence": "Illinois Tech officially confirms EA Nov 15 / January decision, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.iit.edu/admissions-aid/undergraduate-admission/first-year-students",
+          "evidence": "IIT first-year admission page — no EA-specific admit rate disclosed",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfptj01k83lemtscfkwwq",
+      "entityId": "cml87jsee000ihv3fjaepsngh",
+      "schoolNorm": "indiana university bloomington",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Indiana University Bloomington offers non-binding Early Action with Nov 1 deadline (decisions by Jan 15) and Regular Decision Feb 1. IU Bloomington publishes overall admit stats only (~78% for Class of 2028) and does not break out EA-specific applicant/admit counts in CDS C22.",
+      "sources": [
+        {
+          "url": "https://admissions.indiana.edu/apply/deadlines.html",
+          "evidence": "IU Bloomington Office of Admissions — EA Nov 1, non-binding, Jan 15 decision",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.indiana.edu/apply/freshman/index.html",
+          "evidence": "IU Bloomington admissions — no separate EA admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfphm01i23lemoz0tstnt",
+      "entityId": "cmkqz26hn0003klbk44ikdh32",
+      "schoolNorm": "loyola marymount",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Loyola Marymount University offers non-binding Early Action with Nov 1 deadline and mid-December notification. LMU's published CDS does not list EA applicant/admit counts separately in C22; the published EA admit data point of 46.7% widely cited online is unsourced and fails the 2-independent-source bar.",
+      "sources": [
+        {
+          "url": "https://admission.lmu.edu/learnmore/prospectivestudents/first-yearapplicants/",
+          "evidence": "LMU Office of Admissions — EA Nov 1, non-binding, mid-December decision",
+          "tier": "official"
+        },
+        {
+          "url": "https://bulletin.lmu.edu/admission/",
+          "evidence": "LMU academic bulletin admission policy — no separate EA admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfiqi00f93lem1mcdsfpt",
+      "entityId": "cml87ktkh000eu4zskwu708nj",
+      "schoolNorm": "marquette",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Marquette University offers non-binding Early Action with Nov 15 deadline (decisions late December) and Regular Decision Feb 1. Marquette does not publish separate EA applicant/admit counts in CDS C22 — only overall admit rate is publicly released.",
+      "sources": [
+        {
+          "url": "https://www.marquette.edu/admissions/undergraduate/first-year-application.php",
+          "evidence": "Marquette Office of Admission — EA Nov 15 deadline, late December decision, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.marquette.edu/apply/apply.php",
+          "evidence": "Marquette application page — no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfm2700ym3lemhd3bpoit",
+      "entityId": "cml87jsdj0004hv3f2np9nf4s",
+      "schoolNorm": "rochester institute of technology",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Rochester Institute of Technology offers all three early plans: Early Action (Nov 1, non-binding), Early Decision I (Nov 1, binding), Early Decision II. RIT does not publish a separate EA applicant/admit count in CDS C22 — only overall and ED-combined stats are public.",
+      "sources": [
+        {
+          "url": "https://www.rit.edu/admissions/first-year-application",
+          "evidence": "RIT first-year application page — confirms EA, ED I, ED II offered; EA Nov 1, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.rit.edu/admissions/first-year/early-decision",
+          "evidence": "RIT early decision details — ED-only admit stats; no EA-specific breakdown",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg2wp03ip3lem0k048y6t",
+      "entityId": "cmkqz26d80002klbk6vf73ddv",
+      "schoolNorm": "saint louis university",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Saint Louis University (SLU) offers four plans: ED I (Nov 3, binding), Early Action (Dec 1, non-binding, decisions by Feb 1), ED II (Jan 16, binding), Regular Decision. SLU does not publish a separate EA applicant/admit count in CDS C22 — only overall admit rate (~75%) is publicly released.",
+      "sources": [
+        {
+          "url": "https://www.slu.edu/admission/freshman/deadlines.php",
+          "evidence": "SLU official admissions deadlines — EA Dec 1 deadline, non-binding, Feb 1 notification",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.slu.edu/admission/freshman/instructions.php",
+          "evidence": "SLU application instructions — no EA-specific admit rate disclosed",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrft2p01zy3lemb9jnfp0n",
+      "entityId": "cml87jsf70011hv3f96edxyw2",
+      "schoolNorm": "syracuse",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Syracuse University offers three plans: Early Decision (binding, Nov 15 ED I / Jan 5 ED II) and Regular Decision (Jan 1). Syracuse offers a non-binding Early Action variant for select programs only (Nov 15). Syracuse has opted out of public CDS publishing in recent cycles, and the EA admit count is not published. Wave 5 verified Syracuse CDS access is gated.",
+      "sources": [
+        {
+          "url": "https://www.syracuse.edu/admissions-aid/application-process/undergraduate/enrollment-options/",
+          "evidence": "Syracuse enrollment options page — confirms ED I/II binding + Regular; no broad EA admit data published",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.syracuse.edu/admissions-aid/application-process/apply/dates-deadlines/",
+          "evidence": "Syracuse official deadlines page — no EA-specific admit rate publicly disclosed",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfnaa015t3lem0sbtod1o",
+      "entityId": "cml87jsed000hhv3fd2vd5ced",
+      "schoolNorm": "university at buffalo",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University at Buffalo (SUNY) offers non-binding Early Action with Nov 1 deadline (priority scholarship consideration) and Regular Decision Feb 1. UB does not publish a separate EA admit rate in CDS C22 — only overall rate (~74%) is reported. One aggregator cites '84.2% early acceptance rate' but this is unsourced and fails the 2-source bar.",
+      "sources": [
+        {
+          "url": "https://www.buffalo.edu/admissions/apply/first-year.html",
+          "evidence": "UB Office of Admissions — EA Nov 1, non-binding, priority scholarship consideration",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.buffalo.edu/admissions/apply/deadlines.html",
+          "evidence": "UB deadlines page — no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfrw201u73lemy13dpnci",
+      "entityId": "cml87jsej000lhv3fol35rgjm",
+      "schoolNorm": "uc merced",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "UC Merced uses the unified UC application with a single November 30 deadline — no Early Action or Early Decision plan is offered. CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-first-year/dates-and-deadlines.html",
+          "evidence": "Official UC system admission policy — single application deadline, no EA/ED across all UC campuses",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.ucmerced.edu/first-year/apply",
+          "evidence": "UC Merced Office of Undergraduate Admissions confirms single UC application path",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfizt00gp3lem01vpqgl4",
+      "entityId": "cml87ktn0000ku4zsk5k82fec",
+      "schoolNorm": "uc riverside",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "UC Riverside uses the unified UC application with a single November 30 deadline — no Early Action or Early Decision plan is offered. CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-first-year/dates-and-deadlines.html",
+          "evidence": "Official UC system admission policy — single application deadline, no EA/ED across all UC campuses",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg0lv036i3lem7aays3ly",
+      "entityId": "cml87jsel000nhv3fzitbqhc1",
+      "schoolNorm": "uc santa cruz",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "UC Santa Cruz uses the unified UC application with a single November 30 deadline — no Early Action or Early Decision plan is offered. CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-first-year/dates-and-deadlines.html",
+          "evidence": "Official UC system admission policy — single application deadline, no EA/ED across all UC campuses",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg5sv03z93lemg4z5dwsd",
+      "entityId": "cml87jsgn001vhv3f48nb58ss",
+      "schoolNorm": "university of iowa",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Iowa offers non-binding Early Action with Nov 3 deadline (priority Nov 1) and Regular Decision Feb 2. Iowa does not publish a separate EA applicant/admit count in its CDS C22 — only overall admit rate is publicly released.",
+      "sources": [
+        {
+          "url": "https://admissions.uiowa.edu/apply/how-apply/first-year-admissions",
+          "evidence": "U Iowa Office of Admissions — EA Nov 3 deadline, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.uiowa.edu/apply/admission-decisions",
+          "evidence": "U Iowa admission decisions page — no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg31703jf3lemrgjgvt8u",
+      "entityId": "cml87jsgw0020hv3fl7y20dcx",
+      "schoolNorm": "university of oregon",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Oregon offers non-binding Early Action with Nov 1 deadline (late December decision) and Regular Decision Jan 15. UO does not publish a separate EA applicant/admit count in CDS C22 — only overall admit rate is publicly released. Wave 5 noted CDS access is login-gated.",
+      "sources": [
+        {
+          "url": "https://admissions.uoregon.edu/freshmen/deadlines",
+          "evidence": "UO Admissions — EA Nov 1, late December decision, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.uoregon.edu/freshmen/checklist",
+          "evidence": "UO freshman checklist — no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg39503ku3lemtmlt3i3q",
+      "entityId": "cml87ktk5000du4zse0sxtavs",
+      "schoolNorm": "university of san diego",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of San Diego (USD) offers both Early Decision (binding, Nov 1) and Early Action (non-binding, Nov 1) with Regular Decision Jan 15. USD does not publish a separate EA applicant/admit count in CDS C22 — only overall admit rate is publicly released.",
+      "sources": [
+        {
+          "url": "https://www.sandiego.edu/admission-and-aid/undergraduate/apply/admission-timeline.php",
+          "evidence": "USD Office of Undergraduate Admission — EA Nov 1, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.sandiego.edu/admission-and-aid/undergraduate/apply/decision-faq.php",
+          "evidence": "USD admission FAQ — no separate EA admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfm6a00zc3lemhkkvcx69",
+      "entityId": "cmkrmmb4200012w8cj6za23lq",
+      "schoolNorm": "university of south carolina",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of South Carolina offers non-binding Early Action with Oct 15 deadline (mid-December decision), an Honors-eligible Nov 15 deadline, and a Dec 1 deadline for mid-March decisions. South Carolina does not publish a separate EA applicant/admit count in CDS C22 — only overall admit rate is publicly released.",
+      "sources": [
+        {
+          "url": "https://www.sc.edu/about/offices_and_divisions/undergraduate_admissions/apply/for_freshmen/index.php",
+          "evidence": "USC Columbia Office of Undergraduate Admissions — EA Oct 15, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://sc.edu/about/offices_and_divisions/undergraduate_admissions/deadlines/index.php",
+          "evidence": "USC Columbia deadlines page — no EA-specific admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg6rw04513lembxebnexx",
+      "entityId": "cmkrnyjk7001810fwshru1tsy",
+      "schoolNorm": "university of south florida",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of South Florida offers non-binding Early Action with Nov 1 deadline (materials by Nov 15), Regular Decision (Dec 15 / Jan 15 materials), and Rolling (Mar 1). USF does not publish a separate EA applicant/admit count in CDS C22 — only overall admit rate is publicly released.",
+      "sources": [
+        {
+          "url": "https://www.usf.edu/admissions/freshmen/admission-information/dates-deadlines.aspx",
+          "evidence": "USF official freshman deadlines — EA Nov 1 (materials Nov 15), non-binding priority",
+          "tier": "official"
+        },
+        {
+          "url": "https://admissions.usf.edu/blog/priority-deadlines-to-early-decision-your-guide-to-college-admission-types",
+          "evidence": "USF admissions blog confirms EA structure but no separate admit rate published",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfg7100053lemb4y4eivy",
+      "entityId": "cmkrnyhoy000t10fweu0ubf7k",
+      "schoolNorm": "berklee",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Berklee College of Music offers non-binding Early Action (Nov 1 deadline, Jan 31 notification) but does not publish a separate EA applicant/admit count. Admissions is audition-driven, so admit rate is highly dependent on portfolio/audition; aggregator estimates that 'RD rate mirrors overall ~43-44%' are not anchored in Berklee-published EA-split data. CDS C22 EA numerical fields are blank.",
+      "sources": [
+        {
+          "url": "https://college.berklee.edu/admissions/undergraduate/deadlines",
+          "evidence": "Berklee official admission deadlines — EA Nov 1 deadline, Jan 31 notification, non-binding",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.usnews.com/best-colleges/berklee-college-of-music-2126/applying",
+          "evidence": "US News Berklee profile — no separate EA admit rate published",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfljk00vq3lemnbpe5mt9",
+      "entityId": "cmkrnyifh000z10fwwwy247jv",
+      "schoolNorm": "cooper union",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Cooper Union does not offer any Early Action plan — only binding Early Decision (Engineering Nov 1, Architecture/Art Dec 1) and Regular Decision. Cooper Union's official FAQ explicitly states 'Cooper Union does not accept Early Action applications.' CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://cooper.edu/admissions/faq",
+          "evidence": "Cooper Union official admissions FAQ — explicitly confirms no EA option offered",
+          "tier": "official"
+        },
+        {
+          "url": "https://cooper.edu/admissions/applying-to-cu",
+          "evidence": "Cooper Union applying page — confirms only ED and RD plans",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg9bd04ip3lemmyeidvmf",
+      "entityId": "cml87ktji000bu4zshf5svt1x",
+      "schoolNorm": "olin",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Olin College of Engineering does not offer Early Action or Early Decision — Olin uses a single Candidates' Weekend evaluation process for all applicants. Olin's official blog explicitly states 'Olin does not offer these programs (Early Decision or Early Action).' CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://www.olin.edu/blogs/reason-you-cant-apply-early-olin",
+          "evidence": "Olin official blog: 'Olin does not offer these programs (Early Decision or Early Action)' — single Candidates' Weekend process",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.olin.edu/admission/apply",
+          "evidence": "Olin admissions apply page — confirms single application path",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfn0d014e3lem02ytmots",
+      "entityId": "cmkrnygkh000k10fw2p42vz4z",
+      "schoolNorm": "risd",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Rhode Island School of Design (RISD) offers only Early Decision (binding, Nov 14) and Regular Decision (Jan 20) — no Early Action plan. RISD's official application process page lists no EA option. CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://www.risd.edu/admissions/first-year/apply-risd",
+          "evidence": "RISD First-Year Application Process — confirms only ED (Nov 14) and RD (Jan 20)",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.risd.edu/admissions/first-year",
+          "evidence": "RISD First-Year Admissions overview — confirms no EA option",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrgann04p63lemgohakntd",
+      "entityId": "cmkrnyhth000u10fwldalmre2",
+      "schoolNorm": "curtis",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Curtis Institute of Music has a single December 10 application deadline with audition-based admission — no Early Action plan. Admission is highly selective and tied to performance audition rather than rolling EA/RD rounds. CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://www.curtis.edu/admissions/",
+          "evidence": "Curtis Institute official admissions page — single December 10 deadline, audition-based",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.usnews.com/best-colleges/curtis-institute-of-music-3251/applying",
+          "evidence": "US News Curtis profile — confirms no EA option",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfut7028m3lem4gqxu0yn",
+      "entityId": "cml7z424g000ertujhhzxewdi",
+      "schoolNorm": "uc berkeley",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "UC Berkeley uses the unified UC application with a single November 30 deadline — no Early Action or Early Decision plan is offered (existing note retained; correct).",
+      "sources": [
+        {
+          "url": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-first-year/dates-and-deadlines.html",
+          "evidence": "Official UC system policy — single Nov 30 deadline, no EA/ED for any UC campus",
+          "tier": "official"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfhn1008r3lemzt77g8j5",
+      "entityId": "cml7z42520015rtujxkqlz02g",
+      "schoolNorm": "university of washington",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Washington does not offer Early Action or Early Decision — single application cycle with decisions issued March 1-15. UW admissions explicitly confirms 'University of Washington does not participate in early decision or early action.' CDS C22 = N/A for EA.",
+      "sources": [
+        {
+          "url": "https://admit.washington.edu/apply/",
+          "evidence": "UW Office of Admissions — confirms single round, no EA/ED",
+          "tier": "official"
+        },
+        {
+          "url": "https://www.crimsoneducation.org/us/blog/uw-acceptance-rate-class-of-2028",
+          "evidence": "Crimson Education confirms 'UW does not participate in early decision or early action'",
+          "tier": "aggregator-confirms"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg24e03do3lems8pzpvji",
+      "entityId": "cmkqyvx1v000ik6lgc6w7ul85",
+      "schoolNorm": "udelaware",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Delaware 2022-2023 CDS Section C22 directly verified: EA = Yes (Nov 1 deadline, Jan 31 notification, non-restrictive). However, the EA applicant/admit/enrolled numerical fields in C22 are BLANK in the official CDS. ED = No (UDel does not offer ED). One aggregator (Clastify, CollegeDroid) claims '70.0% EA admit rate' but this is an unsourced calculation that fails the 2-independent-source bar (no UDel-published number matches, and the aggregator number is suspiciously identical year-over-year).",
+      "sources": [
+        {
+          "url": "https://bpb-us-w2.wpmucdn.com/sites.udel.edu/dist/e/2019/files/2024/06/CDS2223_UDelaware.pdf",
+          "evidence": "UDel CDS 2022-2023 (official PDF) — C22 marks EA = Yes (Nov 1 / Jan 31, non-restrictive); applicant/admit numerical fields LEFT BLANK",
+          "tier": "official-cds"
+        },
+        {
+          "url": "https://www.clastify.com/blog/acceptance-rates/university-of-delaware/ea",
+          "evidence": "Clastify reports 70.0% EA admit rate (10,553/15,076) — methodology undisclosed, identical 2023/2024 figures suggest scraping/estimation, not UDel-sourced",
+          "tier": "aggregator-single"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfw4202gk3lem5mo2ci0h",
+      "entityId": "cml87jseg000khv3fxisbt4cs",
+      "schoolNorm": "university of vermont",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Vermont 2024-2025 CDS Section C22 directly verified: EA = Yes (Nov 1 deadline, late December notification, non-restrictive). However, the EA applicant/admit/enrolled numerical fields in C22 are BLANK in the official CDS — only ED has counts (479 apps, 449 admits = 93.7% ED rate). UVM's overall C1 stats: 27,138 applicants, 17,722 admitted (~65%). One aggregator (Niche) claims '72.6% EA admit rate' but this is an unsourced estimate that conflicts with UVM CDS C22's blank cells and fails the 2-independent-source bar.",
+      "sources": [
+        {
+          "url": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+          "evidence": "UVM CDS 2024-2025 (official PDF) — C22 marks EA = Yes (Nov 1 / Late December, non-restrictive); applicant/admit numerical fields LEFT BLANK; only ED has 479 apps / 449 admits",
+          "tier": "official-cds"
+        },
+        {
+          "url": "https://www.niche.com/colleges/university-of-vermont/admissions/",
+          "evidence": "Niche claims 72.6% EA admit rate — unsourced, conflicts with UVM CDS C22 blank cells",
+          "tier": "aggregator-conflicts"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfufu026g3lem44dcpnfl",
+      "entityId": "cml87jsgi001rhv3fm2eol5k5",
+      "schoolNorm": "stevens institute of technology",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Stevens Institute of Technology 2023-2024 CDS Section C22 indicates EA = Yes (closing 11/1, notify 2/1) but EA applicant/admit/enrolled numerical fields are blank. Aggregator sources conflict — Niche shows '72.7% early acceptance rate' which one source (acceptancerate.com) describes as Stevens Early Decision (not Early Action), while another aggregator cites '56% EA acceptance rate'. The 16.7pp spread between two unsourced aggregators indicates Stevens does not publish a verifiable EA-specific number; the 72.7% likely conflates ED with EA.",
+      "sources": [
+        {
+          "url": "https://www.stevens.edu/discover-stevens/stevens-by-the-numbers/facts-statistics",
+          "evidence": "Stevens official Facts & Statistics — overall admit rate only, no EA-specific breakdown",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.acceptancerate.com/schools/stevens-institute-of-technology",
+          "evidence": "Aggregator notes Stevens '72.7%' early figure likely refers to Early Decision, not Early Action — sources contradict on which round",
+          "tier": "aggregator-contradicts"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg5od03yj3lemokd3uahx",
+      "entityId": "cml87jsga001mhv3fzbqj1vtw",
+      "schoolNorm": "santa clara",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Santa Clara University 2023-2024 CDS Section C22 indicates EA plan exists but EA applicant/admit/enrolled numerical fields are blank. SCU's December 2023 and March 2024 press releases describe Class of 2028 receiving 18,970 applications with 48% overall admit, but explicitly aggregate ED + EA + RD without separating EA. SCU public admissions data confirms 'University doesn't publicly release a specific early action acceptance rate, so does not disclose separate statistics exclusively for Early Action applicants for the Class of 2028.'",
+      "sources": [
+        {
+          "url": "https://www.scu.edu/news-and-events/press-releases/2024/march-2024/admission-decisions-sent-out-to-the-class-of-2028.html",
+          "evidence": "SCU March 2024 press release — Class of 2028 overall stats, no EA/ED split",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.scu.edu/news-and-events/press-releases/2023/december-2023/santa-clara-university-welcomes-early-members-of-the-class-of-2028.html",
+          "evidence": "SCU Dec 2023 EA press release — confirms EA cycle but no separate admit count",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfmef010s3lemmkczwb94",
+      "entityId": "cml87jsf50010hv3faau4e9m6",
+      "schoolNorm": "miami fl",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Miami 2023-2024 CDS Section C22 indicates EA = Yes (closing 11/1, notify 1/31) but EA applicant/admit numerical fields are blank. UMiami publishes ED data (Class of 2028 ED admit rate 47%) but explicitly does not break out EA-specific admit rate. The Miami Hurricane (student newspaper, Jan 2026) covers ED rate drops but contains no EA-specific data. Confirmed non-derivable.",
+      "sources": [
+        {
+          "url": "https://admissions.miami.edu/undergraduate/about/class-profile/index.html",
+          "evidence": "UMiami Class Profile page — overall and ED stats only, no EA-specific admit rate",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://themiamihurricane.com/2026/01/21/ums-early-decision-acceptance-rate-drops-for-fall-2025-admissions-cycle/",
+          "evidence": "Miami Hurricane student newspaper Jan 2026 — covers ED stats only, no EA breakdown",
+          "tier": "school-newspaper-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfw8a02ha3lemlkepskzd",
+      "entityId": "cml87jsgb001nhv3f8zubk7rk",
+      "schoolNorm": "clemson",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Clemson University 2023-2024 CDS Section C22 indicates EA = Yes (closing 10/15, notify 12/15) but EA applicant/admit numerical fields are blank. Class of 2028 overall: 61,517 apps, 23,586 admits (38% overall). Aggregators estimate Clemson EA rate 50-55% but explicitly state 'Clemson does not release specific acceptance rates for Early Action vs Regular Decision' — these are estimates, not Clemson-published numbers. Fails 2-source verification.",
+      "sources": [
+        {
+          "url": "https://www.clemson.edu/admissions/applying-to-clemson/early-action.html",
+          "evidence": "Clemson official EA application FAQ — no separate EA admit rate disclosed",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://admissionsight.com/clemson-acceptance-rate/",
+          "evidence": "AdmissionSight confirms Clemson does not release EA-specific rates publicly",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfldy00v03lemhl4kfqjn",
+      "entityId": "cmkqyvvfu0005k6lgfyeqsk5g",
+      "schoolNorm": "virginia tech",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Virginia Tech 2023-2024 CDS Section C22 indicates Early Action = Yes (closing 12/1, notify 2/22) but EA applicant/admit/enrolled numerical fields are blank. Virginia Tech moved to EA-only (eliminated ED). Class of 2028 overall: 52,296 apps, 28,758 admits (55%). VT does not publish a separate EA admit rate in its CDS or in news releases. (Existing Wave 5 note retained as already accurate.)",
+      "sources": [
+        {
+          "url": "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf",
+          "evidence": "Virginia Tech CDS 2023-2024 (official PDF) — C22 marks EA = Yes; numerical fields blank",
+          "tier": "official-cds"
+        },
+        {
+          "url": "https://news.vt.edu/articles/2024/02/em-cm-admissions-2024.html",
+          "evidence": "Virginia Tech News Feb 2024 — overall stats for Class of 2028, no EA breakdown",
+          "tier": "official-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrfo1h019f3lemsx1d57mi",
+      "entityId": "cml87jseu000thv3f1vab2qhu",
+      "schoolNorm": "umn",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "University of Minnesota Twin Cities 2023-2024 CDS Section C22 indicates EA = Yes (closing 11/01, notify 01/31) but EA applicant/admit/enrolled numerical fields are blank. Class of 2028 overall: 41,496 apps, 33,091 admits (79.7%). UMN does not publish a separate EA admit rate in CDS or in admissions reports. (Existing Wave 5 note retained — already accurate.)",
+      "sources": [
+        {
+          "url": "https://admissions.tc.umn.edu/competitive-admission",
+          "evidence": "UMN Twin Cities Office of Admissions — overall admit rate published; no EA-specific breakdown",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.collegetransitions.com/blog/how-to-get-into-university-of-minnesota-twin-cities/",
+          "evidence": "College Transitions confirms UMN does not break out EA admit rate",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    },
+    {
+      "closureTargetId": "cmpdrg2s003hz3lem2wvgjzx6",
+      "entityId": "cmkqyvwst000gk6lgyv7uq4xg",
+      "schoolNorm": "michigan state",
+      "status": "UNAVAILABLE",
+      "noteUpdate": "Michigan State University 2023-2024 CDS Section C22 indicates Early Action = Yes (closing 11/01, notify 1/15) but EA applicant/admit/enrolled numerical fields are blank. Class of 2028 overall: 84.8% admit rate. MSU does not publish a separate EA admit rate in CDS or in admissions reports. (Existing Wave 5 note retained — already accurate.)",
+      "sources": [
+        {
+          "url": "https://admissions.msu.edu/apply/first-year/dates-and-deadlines",
+          "evidence": "MSU Office of Admissions — EA Nov 1 confirmed; no EA-specific admit rate disclosed",
+          "tier": "official-confirms-absence"
+        },
+        {
+          "url": "https://www.clastify.com/blog/acceptance-rates/michigan-state-university/ea",
+          "evidence": "Clastify confirms MSU EA acceptance rates are 'currently unavailable for recent application years'",
+          "tier": "aggregator-confirms-absence"
+        }
+      ]
+    }
+  ],
+  "additionalNotes": "Targets where existing Wave 5 notes are accurate and require no update: All 41 'school does not offer EA — ED-only' targets verified during Wave 5 (Pomona, Swarthmore, Williams, Amherst-style LACs; Brown/Cornell/Columbia/Dartmouth/Penn/Duke/Vanderbilt/JHU/WUStL/Northwestern/Lehigh/CMU/Emory/Brandeis/RPI/Stevens-already-covered; T20 LACs Bowdoin/Middlebury/Carleton/Davidson/Hamilton/Vassar/Smith/Bates/Colby/Colgate/Wellesley/Barnard; etc.). Also: UT Austin (new EA Fall 2025), Caltech REA (no counts), University of Pittsburgh (rolling, no EA), UConn (CDS marks EA=No), Pepperdine (Ivy Coach explicitly says no EA data), Tufts (EA=No, ED-only), NYU (EA=No), Wake Forest (CDS stopped reporting). The closure pipeline already correctly handles all of these.",
+  "noNewClosures": "0 new CLOSED targets in this overnight pass. Rationale: every promising aggregator-reported EA admit rate (Stevens 72.7%, UVM 72.6%, UDel 70.0%, Clemson 50-55%, U Miami) fails the 2-independent-source verification bar when checked against the school's official CDS or admissions reporting. The data is genuinely suppressed: schools that offer EA but don't publish counts have made a deliberate institutional choice not to disclose. Fabricating a value would violate ADR-0020 and the no-fabrication rule. EA closure ceiling remains structurally bounded: the field will plateau at ~65-70% terminal until enough schools either (a) start publishing EA admit data in CDS C22, or (b) we accept aggregator-tier DERIVED data with appropriate confidence floor (engineering change, not a closure-pass change)."
+}
