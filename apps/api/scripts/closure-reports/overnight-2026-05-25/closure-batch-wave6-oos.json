@@ -1,0 +1,345 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrfwcd02hz3lemixemaxs8",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "BGSU does not publish a static CDS PDF — only a Tableau dashboard embed at the CDS page. Residency-by-admission breakdown not extractable from public sources.",
+      "sourceUrl": "https://www.bgsu.edu/institutional-research/CDS.html"
+    },
+    {
+      "targetId": "cmpdrfxrj02ql3lemsdvy70d4",
+      "schoolId": "cmkrnd3f9000pcrknxoxp2epw",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 80.65,
+      "sourceUrl": "https://www.fullerton.edu/data/_resources/pdfs/facts/cds/CDS_2023_2024.xlsx",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "CSUF CDS 2023-24, Section C1 residency breakdown: OOS applied=2088, OOS admitted=1684. CSUF OOS pool small relative to massive in-state pool (46,060 in-state applied)."
+    },
+    {
+      "targetId": "cmpdrfjg800jj3lemcsfq5qs2",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "South Dakota State University latest publicly accessible CDS (2021-2022) does not populate C1 residency breakdown. Newer CDS not posted at sdstate.edu as public PDF.",
+      "sourceUrl": "https://www.sdstate.edu/office-institutional-research-assessment/institutional-data"
+    },
+    {
+      "targetId": "cmpdrfzwj032v3lemcxcx5t1n",
+      "schoolId": "cmkrnd3um000scrkn1kavwuk8",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 95.67,
+      "sourceUrl": "https://www.ndsu.edu/sites/default/files/fileadmin/oira/Common_Data_Set/NDSU_CDS_2024-2025.xlsx",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "NDSU CDS 2024-25, Section C1 residency breakdown: OOS applied=5058, OOS admitted=4839. NDSU is heavily OOS-attended (Minnesota reciprocity)."
+    },
+    {
+      "targetId": "cmpdrfvqs02ed3lemwps0ja8l",
+      "schoolId": "cml87jse1000bhv3fphme0vd6",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 77.4,
+      "sourceUrl": "https://web.uri.edu/ir/wp-content/uploads/sites/276/URI_CDS_2023-2024Final20250211-PTFNumbersUpdated.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "URI CDS 2023-24, Section C1 residency breakdown: OOS applied=20,634, OOS admitted=15,971. URI is OOS-majority public university (Rhode Island small in-state pool)."
+    },
+    {
+      "targetId": "cmpdrfjsk00lp3lemqt0q44k1",
+      "schoolId": "cmkrnd48m000vcrkncenccbqp",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 96.87,
+      "sourceUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2023-2024.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "U Toledo CDS 2023-24, Section C1 residency breakdown: OOS applied=2685, OOS admitted=2601. Open admission policy reflected."
+    },
+    {
+      "targetId": "cmpdrg1qn03bh3lem6uu9cd1u",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Akron CDS PDFs are blocked by CloudFront (403). Latest accessible attempt was the 2022-2023 main campus CDS, but server rejects automated fetch.",
+      "sourceUrl": "https://www.uakron.edu/ir/common-data-set.dot"
+    },
+    {
+      "targetId": "cmpdrfkfc00pa3lemjdhma5eh",
+      "schoolId": "cmkrnd4dc000wcrknv9q9trbw",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 66.91,
+      "sourceUrl": "https://irda.wayne.edu/common-data-set/2024-2025-cds-final.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Wayne State CDS 2024-25, Section C1 residency breakdown: OOS applied=1242, OOS admitted=831. Small OOS pool consistent with Detroit-centric school."
+    },
+    {
+      "targetId": "cmpdrfv9v02bh3lem2l19a0pu",
+      "schoolId": "cmkrnd4hu000xcrkn82jk4epr",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 85.89,
+      "sourceUrl": "https://www.uml.edu/docs/CDS_2023-2024_UMass_Lowell_(4-12-24)_tcm18-383430.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "UMass Lowell CDS 2023-24, Section C1 residency breakdown: OOS applied=2318, OOS admitted=1991."
+    },
+    {
+      "targetId": "cmpdrg8k204f23leml8s19jyh",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "CSU Northridge CDS xlsx file (most recent available is CDSAY202223) does not populate residency breakdown in Section C1 — only total applicants/admits by gender.",
+      "sourceUrl": "https://www.csun.edu/institutional-research/explore-csun-data/common-data-set"
+    },
+    {
+      "targetId": "cmpdrg9la04k43lem9wmv7r6x",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "NMSU does not publish a recent CDS publicly. Only 2018-2019 archive available; OIA hosts Quick Facts/Factbook only with no admission residency breakdown.",
+      "sourceUrl": "https://oia.nmsu.edu/"
+    },
+    {
+      "targetId": "cmpdrg5k103xs3lemn9l3glij",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Oklahoma State CDS PDFs at ira.okstate.edu return tiny HTML error responses to direct fetches; full PDF inaccessible via automated retrieval. WebFetch blocked.",
+      "sourceUrl": "https://ira.okstate.edu/cds"
+    },
+    {
+      "targetId": "cmpdrfkwo00s53lemdc551z2e",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "USM CDS 2024-25 Section C1 residency table populated only for 'enrolled' row (1147/384/200). Applied and admitted rows are zero/blank — institution suppressed at source.",
+      "sourceUrl": "https://www.usm.edu/institutional-research/cds_2024_2025_final.pdf"
+    },
+    {
+      "targetId": "cmpdrfk5z00nv3lemmtp011md",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "NIU does not publish a static CDS PDF; institutional research uses Tableau dashboards. No public residency-by-admission breakdown.",
+      "sourceUrl": "https://www.niu.edu/effectiveness/institutional-research/index.shtml"
+    },
+    {
+      "targetId": "cmpdrfs9401vm3leman7jmfw9",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Eastern Michigan University CDS PDF at emich.edu returns small (5.6 KB) error page on automated fetch. Direct download blocked.",
+      "sourceUrl": "https://www.emich.edu/irim/institutional-data/common-data-sets/index.php"
+    },
+    {
+      "targetId": "cmpdrfi8g00cc3lemepwkgm3j",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UW-Milwaukee CDS 2023-24 Section C1 does not provide residency breakdown for applicants/admits — only reports 'percent who are from out of state' (~11%) for enrolled students.",
+      "sourceUrl": "https://uwm.edu/institutional-research/wp-content/uploads/sites/268/2024/03/CDS23_24_public.pdf"
+    },
+    {
+      "targetId": "cmpdrfkjo00q03lem3mlgfi7l",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Western Michigan CDS 2024-25 Section C1 does not provide residency breakdown for applicants/admits — only reports 'percent who are from out of state' (~21%) for enrolled FT freshmen.",
+      "sourceUrl": "https://files.wmich.edu/s3fs-public/2025-02/wmu_cds_2024-25_0.pdf"
+    },
+    {
+      "targetId": "cmpdrfns6017y3lem35uvwhn2",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UT Arlington CDS PDFs not accessible via direct URL patterns; analytics portal contains dashboards but no static CDS document with residency breakdown of admissions.",
+      "sourceUrl": "https://www.uta.edu/administration/analytics/reports"
+    },
+    {
+      "targetId": "cmpdrfoah01au3lemwkrv946b",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Memphis CDS 2023-24 Section C1 residency table marks all applicant/admit cells with 'C or t' (confidential or too small) suppression.",
+      "sourceUrl": "https://www.memphis.edu/oir/oirweb/WebReports/ProfilesAndFactbooks/CDS2023_2024.pdf"
+    },
+    {
+      "targetId": "cmpdrfyzy02xt3lem0fx586ug",
+      "schoolId": "cmkrnd5mp0016crkndya1t1cw",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 97.83,
+      "sourceUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/Academic-Year-2024-2025.pdf",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "Idaho State CDS 2024-25, Section C1 residency breakdown: OOS applied=831, OOS admitted=813. Note: in-state shows 6280 applied vs 6506 admitted (admits exceed applied — likely an institutional reporting artifact / includes returning students). OOS figures self-consistent."
+    },
+    {
+      "targetId": "cmpdrga2c04m93lemii74v3f2",
+      "schoolId": "cmkrnd60g0019crkndt3sr98g",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 72.55,
+      "sourceUrl": "https://www.utsa.edu/ir/docs/resources/commonDataSet/CDS_2024-2025.xlsx",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "UTSA CDS 2024-25 (xlsx), Section C1 residency breakdown: OOS applied=1093, OOS admitted=793. Small OOS pool typical of Texas regional public."
+    },
+    {
+      "targetId": "cmpdrfppd01jh3lempc426g4v",
+      "schoolId": "cmkrnd6ab001bcrkn8ie66wj4",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 27.15,
+      "sourceUrl": "https://aim.fiu.edu/cds/CDS2024.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "FIU CDS 2024-25, Section C1 residency breakdown: OOS applied=8032, OOS admitted=2181. Strikingly more selective for OOS than in-state (74% in-state admit rate vs 27% OOS) — typical FL public pattern."
+    },
+    {
+      "targetId": "cmpdrg7uz04bg3lembl6t4400",
+      "schoolId": "cmkrnd6l9001dcrkni303b5bd",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 87.11,
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/CDS-PDF-23-24.pdf",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "UMass Boston CDS 2023-24, Section C1 residency breakdown: OOS applied=6279, OOS admitted=5470."
+    },
+    {
+      "targetId": "cmpdrfmvg013n3lemh4i6bg4j",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cleveland State University CDS is published only in xlsx hosted on SharePoint requiring sign-in; no public PDF available with extractable residency breakdown.",
+      "sourceUrl": "https://www.csuohio.edu/dair/csu-common-data-sets-cds"
+    },
+    {
+      "targetId": "cmpdrfxik02p63lemtm05ox13",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Central Michigan University CDS 2024-25 Section C1 residency breakdown table is published but all values are zero/blank — institution did not report the breakdown.",
+      "sourceUrl": "https://www.cmich.edu/docs/default-source/academic-affairs-division/academic-administration/academic-planning-analysis/reports-(public)/common-data-sets/cds-2024-2025.pdf"
+    },
+    {
+      "targetId": "cmpdrfihj00ds3lemflqbyhs5",
+      "schoolId": "cmkrnd6pr001ecrknsnm93stw",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 81.14,
+      "sourceUrl": "https://www.odu.edu/sites/default/files/2025/documents/common-data-set-2024-2025.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Old Dominion CDS 2024-25, Section C1 residency breakdown: OOS applied=3765, OOS admitted=3055."
+    },
+    {
+      "targetId": "cmpdrg4vr03tg3lemy4ac3857",
+      "schoolId": "cmkrnd6uj001fcrknoaoxnr3n",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 95.75,
+      "sourceUrl": "https://www.wright.edu/sites/www.wright.edu/files/page/attachments/CDS_2024-2025_Dayton.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Wright State Dayton Campus CDS 2024-25, Section C1 residency breakdown: OOS applied=871, OOS admitted=834. Note: targetId is for the main Dayton campus (not Lake)."
+    },
+    {
+      "targetId": "cmpdrfuog027v3lem823q54dt",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "IUPUI ceased to exist as of July 1, 2024 (split into IU Indianapolis and Purdue Indianapolis). The IU Indianapolis CDS for 2024-25 is hosted at iuia.iu.edu/apps/cds/ but specific PDF for the Indianapolis campus is not accessible via direct URL patterns; the only accessible IU CDS PDF is for Bloomington.",
+      "sourceUrl": "https://iuia.iu.edu/apps/cds/"
+    },
+    {
+      "targetId": "cmpdrfxw802rb3lemb1onvsfv",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "JMU CDS 2023-24 Section C1 residency breakdown table is published but every cell marked 'C or t' (confidential or too small) — institution suppresses this data at source.",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds_2023-2024.pdf"
+    },
+    {
+      "targetId": "cmpdrfp0b01f63lem8pim7as6",
+      "schoolId": "cml87ktk0000cu4zsnfz0revi",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 79.44,
+      "sourceUrl": "https://www.towson.edu/ir/documents/cds_all_2425.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Towson CDS 2024-25, Section C1 residency breakdown: OOS applied=4748, OOS admitted=3772."
+    },
+    {
+      "targetId": "cmpdrfve602c73lem7649kw9r",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Maine latest accessible CDS (2022-23) does not populate Section C1 residency breakdown. UMaine OIRA hosts only 2024-25 PDF that's not publicly downloadable.",
+      "sourceUrl": "https://umaine.edu/oira/common-data-set/"
+    },
+    {
+      "targetId": "cmpdrfgoc002z3lem1vswwizh",
+      "schoolId": "cmkrnyio9001110fwwuxu8rzz",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 93.95,
+      "sourceUrl": "https://analytics.appstate.edu/info_inst_res",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Appalachian State CDS 2024-25 (via Google Drive on analytics.appstate.edu), Section C1 residency breakdown: OOS applied=7185, OOS admitted=6750."
+    },
+    {
+      "targetId": "cmpdrfzco02z93lem1c7dlu7v",
+      "schoolId": "cml87jse3000chv3fjm5ay0gv",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 77.61,
+      "sourceUrl": "https://www2.sjsu.edu/irsa/docs/cds/20250411_CDS_2024-2025%20FINAL.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "SJSU CDS 2024-25, Section C1 residency breakdown: OOS applied=1197, OOS admitted=929. Small OOS pool typical of Cal State (admit rate higher than impacted in-state)."
+    },
+    {
+      "targetId": "cmpdrfoem01bk3lemc5prdoac",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Grand Valley State University does not publish a static CDS PDF — Office of Institutional Analysis only provides Excel table generator tools. No direct OOS admission breakdown available.",
+      "sourceUrl": "https://www.gvsu.edu/ia/common-data-set-71.htm"
+    },
+    {
+      "targetId": "cmpdrg7zl04c63lemssdoiw84",
+      "schoolId": "cmkrnyixb001310fwgv0sd6ep",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 41.26,
+      "sourceUrl": "https://uncw.edu/media/pdf/irp/cds-2024-2025.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "UNCW CDS 2024-25, Section C1 residency breakdown: OOS applied=8093, OOS admitted=3339. North Carolina caps OOS undergraduate enrollment, hence lower OOS admit rate."
+    },
+    {
+      "targetId": "cmpdrfswd01z73lem4baveqiw",
+      "schoolId": "cmkrnyjb9001610fwcljpwhlz",
+      "field": "oosAcceptanceRate",
+      "status": "CLOSED",
+      "value": 88.13,
+      "sourceUrl": "https://www.csus.edu/information-resources-technology/institutional-research/common-data-set/cds_2024-2025-final.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "CSU Sacramento CDS 2024-25, Section C1 residency breakdown: OOS applied=1289, OOS admitted=1136. Small OOS pool typical of Cal State campus."
+    },
+    {
+      "targetId": "cmpdrgac704np3lemeqew9u4y",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wichita State University latest publicly accessible CDS (2019-2020) does not populate Section C1 residency breakdown. Newer CDS not directly downloadable.",
+      "sourceUrl": "https://www.wichita.edu/services/planning_and_analysis/ERD_Explanation.php"
+    },
+    {
+      "targetId": "cmpdrfmmu01273lemu4gxsbbx",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UNT CDS 2024-25 does not provide residency breakdown for applicants/admits in C1 — only reports overall 'percent who are from out of state' (~4%) for enrolled FT freshmen.",
+      "sourceUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf"
+    },
+    {
+      "targetId": "cmpdrfti602233lemzf1brmxb",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Georgia State University CDS files are hosted only in Dropbox folders requiring authentication; no direct public PDF with extractable residency breakdown.",
+      "sourceUrl": "https://oie.gsu.edu/data-reporting-systems/common-data-set/"
+    }
+  ]
+}
