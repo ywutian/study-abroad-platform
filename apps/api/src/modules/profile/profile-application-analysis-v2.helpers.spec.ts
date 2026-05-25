@@ -68,7 +68,7 @@ function makeDeadlineEvidence(
     updatedAt: new Date('2026-08-02T00:00:00Z'),
     metadata: null,
     ...overrides,
-  } as ApprovedPolicyEvidence;
+  };
 }
 
 describe('buildPolicyCard', () => {
@@ -136,7 +136,19 @@ describe('buildPolicyCard', () => {
     expect(card.policySourceQuality).toBe('DERIVED');
   });
 
-  it('does not treat raw school policy fields as reviewed external policy evidence', () => {
+  it('uses raw school policy fields as a DERIVED-tier fallback (not as REVIEWED evidence)', () => {
+    // Per docs/APPLICATION_ANALYSIS_WORKFLOW_SOP.md, the policy resolution order
+    // is: (1) APPROVED SchoolPolicyEvidence -> 'REVIEWED', (2) backend-derived
+    // from raw school fields -> 'DERIVED', (3) nothing -> 'UNKNOWN'.
+    //
+    // Before 2026-05-25, only roundContext implemented the DERIVED tier — both
+    // testingPolicy and intlAidPolicy short-circuited to UNKNOWN whenever no
+    // APPROVED evidence was found. That left 30/50 application-analysis gold
+    // cases failing the governance gate. This test now verifies the corrected
+    // behaviour: raw school fields produce DERIVED-tier values (NOT 'REVIEWED'
+    // source quality, so downstream consumers can still distinguish reviewed
+    // evidence from data-team-derived defaults), and `sources` / `evidenceIds`
+    // remain empty.
     const item = makeSchoolListItem({
       school: {
         ...makeSchoolListItem().school,
@@ -154,13 +166,15 @@ describe('buildPolicyCard', () => {
       }),
     );
 
-    expect(card.testingPolicy).toBe('UNKNOWN');
-    expect(card.intlAidPolicy).toBe('UNKNOWN');
+    expect(card.testingPolicy).toBe('OPTIONAL');
+    expect(card.intlAidPolicy).toBe('NEED_BLIND');
     expect(card.roundContext).toBe('RD');
+    // Critical invariant: raw school fields must NOT count as REVIEWED evidence.
     expect(card.sources).toEqual([]);
     expect(card.evidenceIds).toEqual([]);
     expect(card.policySourceQuality).toBe('DERIVED');
-    expect(card.unknowns).toEqual(
+    // Values were derived, so they are NOT in the `unknowns` audit list.
+    expect(card.unknowns).not.toEqual(
       expect.arrayContaining(['testingPolicy', 'intlAidPolicy']),
     );
   });

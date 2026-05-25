@@ -1,4 +1,5 @@
 import { Prisma, SchoolPolicyDimension, SchoolTier } from '@prisma/client';
+import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 import type {
   AnalysisActionPlan,
   AnalysisApplicantType,
@@ -341,10 +342,32 @@ export function buildPolicyCard(
   const roundEvidence = evidence?.ROUND;
   const deadlineEvidence = evidence?.OTHER;
 
-  const testingPolicy =
-    resolveEvidenceTestingPolicy(testingEvidence?.policyValue) ?? 'UNKNOWN';
-  const intlAidPolicy =
-    resolveEvidenceIntlAidPolicy(intlAidEvidence?.policyValue) ?? 'UNKNOWN';
+  // 3-tier policy fallback (per docs/APPLICATION_ANALYSIS_WORKFLOW_SOP.md):
+  //   1. APPROVED SchoolPolicyEvidence -> policySourceQuality = 'REVIEWED'
+  //   2. Backend-derived from raw school fields -> 'DERIVED'
+  //   3. Nothing -> 'UNKNOWN'
+  //
+  // `roundContext` already implemented tier 2 via `resolveFirstPartyRoundContext`.
+  // `testingPolicy` and `intlAidPolicy` were missing the DERIVED tier — they
+  // defaulted straight to UNKNOWN whenever no APPROVED evidence existed. This
+  // left 30/50 application-analysis gold cases failing (governance gate) since
+  // they ship `school.testingPolicy=BLIND/OPTIONAL/REQUIRED` but no separate
+  // TESTING-dimension evidence rows. `policySourceQuality` correctly degrades
+  // to 'DERIVED' (not 'REVIEWED') so consumers still see this isn't reviewed
+  // evidence — see the test "uses raw school policy fields as a DERIVED-tier
+  // fallback".
+  const testingPolicy: SchoolTestingPolicy =
+    resolveEvidenceTestingPolicy(testingEvidence?.policyValue) ??
+    resolveSchoolTestingPolicyValue({
+      testingPolicy:
+        (item.school as { testingPolicy?: SchoolTestingPolicy | null })
+          .testingPolicy ?? null,
+      testOptional:
+        (item.school as { testOptional?: boolean | null }).testOptional ?? null,
+    });
+  const intlAidPolicy: SchoolIntlAidPolicy =
+    resolveEvidenceIntlAidPolicy(intlAidEvidence?.policyValue) ??
+    deriveIntlAidPolicyFromSchool(item.school);
   const roundContext =
     resolveEvidenceRoundContext(roundEvidence?.policyValue) ??
     resolveFirstPartyRoundContext(item, profile);
@@ -786,6 +809,23 @@ function resolveEvidenceIntlAidPolicy(
     default:
       return null;
   }
+}
+
+/**
+ * DERIVED-tier fallback for intlAidPolicy when no APPROVED evidence row exists.
+ * Reads School.needBlindInternational (Boolean | null):
+ *   true  -> 'NEED_BLIND'
+ *   false -> 'NEED_AWARE'
+ *   null  -> 'UNKNOWN'
+ * Mirrors how `resolveFirstPartyRoundContext` provides a DERIVED-tier fallback
+ * for roundContext from the school list item.
+ */
+function deriveIntlAidPolicyFromSchool(school: {
+  needBlindInternational?: boolean | null;
+}): SchoolIntlAidPolicy {
+  if (school.needBlindInternational === true) return 'NEED_BLIND';
+  if (school.needBlindInternational === false) return 'NEED_AWARE';
+  return 'UNKNOWN';
 }
 
 function resolveEvidenceRoundContext(
