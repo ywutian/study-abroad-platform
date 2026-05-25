@@ -449,6 +449,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis?schema=public
 
+      # First build of shared package: needed by prisma seed script which imports
+      # from @study-abroad/shared/dist/utils via require() (CJS resolution).
+      - name: Build shared package (initial — for seed script)
+        run: pnpm --filter @study-abroad/shared build
+
       # Seed DB BEFORE gold:fixtures so runSnapshot can look up testingPolicy
       # (and other school fields) from real seeded School rows. If DB is empty
       # the analysis service defaults every policy to UNKNOWN, leaving the
@@ -473,13 +478,14 @@ jobs:
           JWT_EXPIRES_IN: 15m
           JWT_REFRESH_EXPIRES_IN: 7d
 
-      # Build shared AFTER gold:fixtures so the dist/ output includes the
-      # regenerated fixture data. Otherwise Next.js (web app) resolves @study-abroad/shared
-      # to the fresh .ts source via package.json `import` field while Playwright's
-      # raw-Node ESM loader can't read .ts and falls back to the stale dist/*.js
-      # — both sides see different fixture data and the data-policy DOM
-      # comparison fails (Expected BLIND from dist vs Received UNKNOWN from source).
-      - name: Build shared package
+      # Re-build shared AFTER gold:fixtures so the dist/ output includes the
+      # regenerated fixture data. Otherwise Next.js (web app) resolves
+      # @study-abroad/shared to the fresh .ts source via package.json `import`
+      # field while Playwright's raw-Node ESM loader can't read .ts and falls
+      # back to the stale dist/*.js — both sides see different fixture data
+      # and the data-policy DOM comparison fails (Expected BLIND from dist
+      # vs Received UNKNOWN from source).
+      - name: Re-build shared package (after fixture regen)
         run: pnpm --filter @study-abroad/shared build
 
       - name: Run governance gate
