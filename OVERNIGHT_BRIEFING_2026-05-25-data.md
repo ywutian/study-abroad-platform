@@ -1,9 +1,9 @@
 # Overnight Data Backfill — Morning Briefing (2026-05-25)
 
 **Branch**: `chore/overnight-closure-2026-05-25`
-**Commits ahead of main**: 3 (so far — more in progress)
-**Closure state**: 6691/7424 = **90.1%** terminal (was 86.1% baseline)
-**Status**: still running — 4 agents in flight, results streaming in
+**Commits ahead of main**: 5
+**Closure state**: 6947/7424 = **93.6%** terminal (was 86.1% baseline → +7.5pp)
+**Status**: complete — ready for review + admin-merge if CI green
 
 ---
 
@@ -24,20 +24,23 @@ so future re-runs don't re-queue them.
 
 ## Closure stats (baseline → current)
 
-| Field                  | Baseline              | Current               | Δ                     |
-| ---------------------- | --------------------- | --------------------- | --------------------- |
-| **Overall**            | **86.1%** (6391/7424) | **90.1%** (6691/7424) | **+4.0pp**            |
-| acceptanceRate         | 96.3%                 | 96.3%                 | —                     |
-| edAcceptanceRate       | 30.9%                 | 55.6%                 | +24.7pp               |
-| eaAcceptanceRate       | 11.5%                 | 36.2%                 | +24.7pp               |
-| ed2AcceptanceRate      | 0%                    | 12.3%                 | +12.3pp (first touch) |
-| intlAcceptanceRate     | 77.4%                 | 89.7%                 | +12.3pp               |
-| oosAcceptanceRate      | 68.4%                 | 82.3%                 | +13.9pp               |
-| gpaDistribution        | 73.3%                 | 87.7%                 | +14.4pp               |
-| yieldRate              | 95.9%                 | 100%                  | +4.1pp                |
-| needBlindInternational | 96.3%                 | 100%                  | +3.7pp                |
+| Field                  | Baseline              | Current               | Δ          |
+| ---------------------- | --------------------- | --------------------- | ---------- |
+| **Overall**            | **86.1%** (6391/7424) | **93.6%** (6947/7424) | **+7.5pp** |
+| acceptanceRate         | 96.3%                 | 96.3%                 | —          |
+| edAcceptanceRate       | 30.9%                 | 80.2%                 | +49.3pp    |
+| eaAcceptanceRate       | 11.5%                 | 61.3%                 | +49.8pp    |
+| ed2AcceptanceRate      | 0%                    | 45.3%                 | +45.3pp    |
+| intlAcceptanceRate     | 77.4%                 | **100%**              | +22.6pp    |
+| oosAcceptanceRate      | 68.4%                 | 82.3%                 | +13.9pp    |
+| gpaDistribution        | 73.3%                 | **100%**              | +26.7pp    |
+| yieldRate              | 95.9%                 | **100%**              | +4.1pp     |
+| needBlindInternational | 96.3%                 | **100%**              | +3.7pp     |
 
-(table will update with more waves before merge)
+Five fields fully closed (100%): `gpaDistribution`, `intlAcceptanceRate`,
+`yieldRate`, `needBlindInternational`, and the existing 100% set (HighSchool
+fields: tier, recognition, academicRigor, placementRecord, studentQuality,
+resources).
 
 ## What got committed
 
