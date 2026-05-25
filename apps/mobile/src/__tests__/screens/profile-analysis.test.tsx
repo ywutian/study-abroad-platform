@@ -70,13 +70,19 @@ describe('ProfileAnalysisScreen', () => {
           screen.queryByText(fixture.analysis.schoolCards[0]?.schoolName ?? '__missing__')
         ).toBeNull();
       } else {
+        // School names are unique per fixture, so getByText still works for them.
+        // Testing-policy labels CAN repeat (e.g. two schools both UNKNOWN), so
+        // count expected occurrences per policy and assert the page surfaces at
+        // least that many — getByText would throw "Found multiple elements" on
+        // duplicates (regression seen with fixture 008-berkeley-columbia-balanced).
+        const policyCounts = new Map<string, number>();
         for (const school of fixture.analysis.schoolCards) {
           expect(screen.getByText(school.schoolName)).toBeTruthy();
-          expect(
-            screen.getByText(
-              `applicationAnalysis.policy.testing.${school.policyCard.testingPolicy}`
-            )
-          ).toBeTruthy();
+          const policyKey = `applicationAnalysis.policy.testing.${school.policyCard.testingPolicy}`;
+          policyCounts.set(policyKey, (policyCounts.get(policyKey) ?? 0) + 1);
+        }
+        for (const [policyKey, expectedCount] of policyCounts) {
+          expect(screen.getAllByText(policyKey).length).toBeGreaterThanOrEqual(expectedCount);
         }
       }
 
