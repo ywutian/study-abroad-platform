@@ -56,6 +56,22 @@ resources).
    - 0 CLOSED + 90 UNAVAILABLE — all structural (public flagships
      no-ED, ED-only T20s no-EA, REA-only T5s no-ED2)
    - Prediction matrix re-run shows mild positive recalibration
+4. **`faa39abd` — Wave 4**: gpaDistribution 100% + ed/ea/ed2 batch 3
+   - 10 CLOSED (incl. Pitt 84%, Pitzer 79.2%, Baruch CUNY, OSU EA
+     60.43%, NCSU EA 40.21%, SMU EA 81.11%, Clarkson, U Maine, PLU,
+     Augustana SD) + 110 UNAVAILABLE
+   - **gpaDistribution field hit 100%** — first multi-band field complete
+5. **Wave 5** (this commit): intlAcceptanceRate 100% + ed/ea/ed2 batch 4
+   - 21 CLOSED (incl. Reed intl 4.51%, CMU intl 52.8%, Temple EA 93.18%,
+     U Denver EA 86.52%, WPI EA 66.74%, Drexel EA 96.38%) + 114 UNAVAILABLE
+   - **intlAcceptanceRate field hit 100%** — second admit-rate field complete
+
+## In-flight work
+
+None — all overnight waves are complete and committed. The 514 still-PENDING
+ClosureTarget rows that remain are lower-priority (mostly small regional schools
+and mid-tier publics) where the same structural patterns apply — diminishing
+returns; deferred to future runs.
 
 ## Important discoveries / corrections
 
