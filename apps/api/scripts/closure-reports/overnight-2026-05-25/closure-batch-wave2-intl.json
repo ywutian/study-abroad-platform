@@ -1,0 +1,289 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrflhq00vm3lem9zusr8kb",
+      "schoolId": "cmkrnyifh000z10fwwwy247jv",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cooper Union is a portfolio/audition-style admissions program (Architecture/Art/Engineering) and does not publish a separate international acceptance rate; school-level acceptance is reported only in aggregate per school.",
+      "sourceUrl": "https://cooper.edu/admissions/facts/first-year-profile"
+    },
+    {
+      "targetId": "cmpdrg1ug03c43lem6tv2swb8",
+      "schoolId": "cml87jsdp0007hv3fyrdrinz1",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 11.0,
+      "sourceUrl": "https://prepmaven.com/blog/researching-schools/swarthmore-acceptance-rates/",
+      "confidence": 0.6,
+      "tier": "SCRAPED",
+      "note": "Swarthmore international acceptance rate reported at ~11% (above overall ~7.5%); CDS PDF unreadable. Need-aware for intl; intl ~13% of student body. NEEDS_REVIEW because intl_rate > overall_rate is unusual for elite LACs."
+    },
+    {
+      "targetId": "cmpdrfzjq030m3lem2sqoi8f0",
+      "schoolId": "cmkrnyetm000610fwwdm1i5z3",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 10.0,
+      "sourceUrl": "https://www.collegetransitions.com/blog/how-to-get-into-middlebury-college/",
+      "confidence": 0.6,
+      "tier": "SCRAPED",
+      "note": "Middlebury intl admit ~10% (need-aware), close to overall ~10.7%. CDS PDF binary; cross-checked via College Transitions + Middlebury Campus."
+    },
+    {
+      "targetId": "cmpdrfx9n02no3lemda5xp0k1",
+      "schoolId": "cml87jses000shv3f30bi2dq7",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Grinnell does not publish a separate international acceptance rate; reports only aggregate overall rate (~9-13%) and intl share of admitted class (~17%). Need-aware admissions for intl.",
+      "sourceUrl": "https://www.grinnell.edu/admission/apply/international"
+    },
+    {
+      "targetId": "cmpdrgbcu04tc3lem5rx5h0r2",
+      "schoolId": "cml87jsfp0019hv3fbqs2o96y",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Barnard reports overall acceptance only (~7-9%) and intl share of admitted class (~12%); no separate intl admit rate published.",
+      "sourceUrl": "https://barnard.edu/first-year-class-profile"
+    },
+    {
+      "targetId": "cmpdrg4jg03r73lemp19s8eiu",
+      "schoolId": "cml87jsep000qhv3fmuiiv7nz",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Colby College does not publish a Common Data Set and does not publish a separate international acceptance rate; reports only aggregate overall rate (~7%) and intl share of class (~11-13%).",
+      "sourceUrl": "https://afa.colby.edu/apply/college-profile/"
+    },
+    {
+      "targetId": "cmpdrfxe002oe3lemuz368wpr",
+      "schoolId": "cml7z424m000nrtujaqxhn6lp",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 6.0,
+      "sourceUrl": "https://www.cmu.edu/oie/about/statistics.html",
+      "confidence": 0.65,
+      "tier": "DERIVED",
+      "note": "Carnegie Mellon intl admit ~5-7% per multiple sources (CMU OIE statistics + Empowerly analysis); intl ~23% of UG body. Substantially lower than overall ~11%."
+    },
+    {
+      "targetId": "cmpdrfl9500u73lem3ps19rmx",
+      "schoolId": "cml7z424r000urtujjkelcw0v",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "USC does not publish a separate international undergraduate acceptance rate per their Office of Admission; only overall rate (~11%) and intl share of admitted (~17%) reported.",
+      "sourceUrl": "https://admission.usc.edu/prospective-students/how-to-apply/international-students/"
+    },
+    {
+      "targetId": "cmpdrfrn301so3lembj6biqca",
+      "schoolId": "cml7z424v000yrtuj6z6vmigx",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "NYU does not publish a separate international acceptance rate; only overall rate (~7.7-8%) reported. Intl ~25% of student body.",
+      "sourceUrl": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/CDS_2024-2025_Final%20for%20Release_wo%20PART%20H%20(check%20back%20for%20for%20PART%20H).pdf"
+    },
+    {
+      "targetId": "cmpdrfrj001rz3lem8hyikbgk",
+      "schoolId": "cml7z42530016rtuj0qb5qxbo",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 7.5,
+      "sourceUrl": "https://admitstudio.com/undergraduate-articles/acceptance-rate-analysis-boston-university-2025/",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "Boston University intl admit estimated ~7-8% (significantly more selective than overall ~12.83%); intl ~21% of class. Estimated based on observed pool selectivity, not official CDS breakdown."
+    },
+    {
+      "targetId": "cmpdrg2mx03h53lemcmggfcqn",
+      "schoolId": "cml7z42560019rtujuchxe1ps",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 45.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-maryland/acceptance-rate",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "UMD College Park intl acceptance approximately 45%, consistent with overall ~45%. Large public; intl pool not separated in published CDS."
+    },
+    {
+      "targetId": "cmpdrg53j03ut3lemwa2gbshn",
+      "schoolId": "cmkquq16w001ddzbkxshi14dj",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wake Forest does not publish a separate international acceptance rate in their CDS; only overall rate (~21.67%) and intl share of class (~7-9%) available.",
+      "sourceUrl": "https://ir.wfu.edu/common-data-set/"
+    },
+    {
+      "targetId": "cmpdrfvud02f03lem6bkppnwz",
+      "schoolId": "cml87jsf1000xhv3ffzt4yf4r",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 69.1,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-connecticut/acceptance-rate",
+      "confidence": 0.6,
+      "tier": "SCRAPED",
+      "note": "UConn intl acceptance ~69.11% for app year 2023 (3,405 of 4,927). Higher than overall ~52% — plausible for large public seeking intl revenue."
+    },
+    {
+      "targetId": "cmpdrftrf023g3lemlpo5fwbq",
+      "schoolId": "cmkqyvvkh0006k6lgenpaujed",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 10.0,
+      "sourceUrl": "https://seaver.pepperdine.edu/admission/fast-facts/",
+      "confidence": 0.5,
+      "tier": "SCRAPED",
+      "note": "Pepperdine intl acceptance ~10% per Seaver College external analysis (significantly more selective than overall ~42-67%). Need-aware; intl ~8-11% of body. NEEDS_REVIEW due to large gap vs overall rate."
+    },
+    {
+      "targetId": "cmpdrg8do04e93lem3oheimbm",
+      "schoolId": "cml87jsfc0012hv3fwj0suxio",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 16.8,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-pittsburgh/acceptance-rate",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "Pitt intl acceptance ~16.8% (significantly lower than overall ~58%). Cross-source consistency; specific to international UG pool."
+    },
+    {
+      "targetId": "cmpdrg6zm046d3lemskx8mqrt",
+      "schoolId": "cmkqyvxav000kk6lgnhjo1epe",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Yeshiva University does not publicly disclose a separate international acceptance rate; applies same standards to all applicants per official admissions site.",
+      "sourceUrl": "https://www.yu.edu/admissions/apply/intl"
+    },
+    {
+      "targetId": "cmpdrft1801zu3lemfbsnakjl",
+      "schoolId": "cml87jsf70011hv3f96edxyw2",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 57.2,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/syracuse-university/acceptance-rate",
+      "confidence": 0.6,
+      "tier": "SCRAPED",
+      "note": "Syracuse intl admit Fall 2023: 2,445 of 4,268 (57.2%). Higher than overall ~41.7% — typical for large privates with active intl recruitment."
+    },
+    {
+      "targetId": "cmpdrg2v903il3lemrlrkl3sh",
+      "schoolId": "cmkqz26d80002klbk6vf73ddv",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 81.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/saint-louis-university/acceptance-rate",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "Saint Louis University intl acceptance ~81%, consistent with overall ~75-85%. Welcoming admissions across pools."
+    },
+    {
+      "targetId": "cmpdrfrv601u33lemg4tw9iwr",
+      "schoolId": "cml87jsej000lhv3fol35rgjm",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Merced does not publish a separate international acceptance rate distinct from overall UC system reporting (~89.5% overall); intl ~10% of student body but no admit-rate breakdown.",
+      "sourceUrl": "https://admissions.ucmerced.edu/international/requirements"
+    },
+    {
+      "targetId": "cmpdrg2zz03jb3lem1q6j23to",
+      "schoolId": "cml87jsgw0020hv3fl7y20dcx",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 70.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-oregon/acceptance-rate",
+      "confidence": 0.5,
+      "tier": "SCRAPED",
+      "note": "University of Oregon intl admit ~70% (vs overall ~88%). Lower than overall due to F-1 visa/English requirements adding filtering."
+    },
+    {
+      "targetId": "cmpdrg9vo04lg3lemfpdzt5g8",
+      "schoolId": "cml87ktsx000ou4zsseajxo0i",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 47.3,
+      "sourceUrl": "https://edurank.org/uni/colorado-school-of-mines/",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "Colorado School of Mines intl acceptance: 2022 - 223 of 471 admitted = 47.3%. Tracks roughly with overall ~40-60%."
+    },
+    {
+      "targetId": "cmpdrg43b03oc3lem76mkqdy2",
+      "schoolId": "cmkrmmaxc00002w8cges2t8zr",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 44.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/auburn-university/acceptance-rate",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "Auburn intl acceptance ~44%, slightly lower than overall ~50%. Cross-source consistency (Shiksha, Turito)."
+    },
+    {
+      "targetId": "cmpdrfyif02uu3lemuq8twpsk",
+      "schoolId": "cmkrmmbcx00032w8cg2olufbx",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 74.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/depaul-university/acceptance-rate",
+      "confidence": 0.5,
+      "tier": "SCRAPED",
+      "note": "DePaul intl acceptance ~74%, matching overall rate. University reports overall only; no distinct intl filter applied per public sources."
+    },
+    {
+      "targetId": "cmpdrfh0r00523lemcxjx45qs",
+      "schoolId": "cmkrmmcch000b2w8cqpaqovsu",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "The New School (incl. Parsons) is portfolio-based for many programs; does not publish a separate international acceptance rate. Overall ~52-65%; intl ~30% of body.",
+      "sourceUrl": "https://www.newschool.edu/parsons/international-students/"
+    },
+    {
+      "targetId": "cmpdrg8y504h53lemrhyzimqf",
+      "schoolId": "cmkrmmcvo000f2w8c9gbx2ymy",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Missouri does not separately publish international acceptance rate; reports only aggregate (~78%) per CDS.",
+      "sourceUrl": "https://admissions.missouri.edu/apply/international/"
+    },
+    {
+      "targetId": "cmpdrfo4z01a13lemddg4ks8z",
+      "schoolId": "cml87ktl5000gu4zsui6925ry",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of San Francisco does not publish a separate international acceptance rate; only overall rate (~62-70%) and intl share of body (~9-13%) available.",
+      "sourceUrl": "https://www.usfca.edu/admission/undergraduate/international"
+    },
+    {
+      "targetId": "cmpdrg47t03p23lem69idydcj",
+      "schoolId": "cml87ktse000nu4zs3fbmzyo6",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Houston does not separately publish international acceptance rate; reports only overall (~74-75%) per CDS.",
+      "sourceUrl": "https://www.uh.edu/undergraduate-admissions/apply/international/"
+    },
+    {
+      "targetId": "cmpdrg74704733lemnj099mao",
+      "schoolId": "cmkrmmeh6000s2w8cxyhqvdmm",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Arkansas does not publish a separate international acceptance rate; reports admission statistics without distinguishing intl from domestic. Overall ~79%.",
+      "sourceUrl": "https://international-students.uark.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfy5o02so3lem11v3nw8q",
+      "schoolId": "cmkrmmelr000t2w8c3lkl9jpa",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Hawaii at Manoa does not publicly separate international acceptance rate from overall (~86.6%); intl ~6% of body.",
+      "sourceUrl": "https://manoa.hawaii.edu/admissions/international/"
+    },
+    {
+      "targetId": "cmpdrg78l047t3lem4uuovkud",
+      "schoolId": "cmkrnd0uf0005crknh7u96xu9",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 75.0,
+      "sourceUrl": "https://unischolars.com/blog/adelphi-university-acceptance-rate/",
+      "confidence": 0.5,
+      "tier": "SCRAPED",
+      "note": "Adelphi intl acceptance ~75%, slightly above overall ~66-73%. Welcoming admissions across pools."
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrfn0d014e3lem02ytmots",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "RISD offers Early Decision (binding) and Regular Decision only — no Early Action plan",
+      "sourceUrl": "https://www.risd.edu/admissions/first-year/apply-risd"
+    },
+    {
+      "targetId": "cmpdrfxnw02pw3lemv3ry9ex4",
+      "field": "eaAcceptanceRate",
+      "status": "CLOSED",
+      "value": 15.82,
+      "sourceUrl": "https://www.commondatasets.fyi/princeton",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "Princeton CDS 2023-24: 5,000 SCEA applicants, 791 admitted = 15.82%. Note: Princeton has not released round-by-round data publicly since Class of 2025; the 5,000/791 figures appear in the most recent CDS aggregator capture but Princeton's own admissions page does not publish them. Treat as historical CDS figure."
+    },
+    {
+      "targetId": "cmpdrgain04og3lemktw595bo",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Williams College offers Early Decision (binding) only — no Early Action plan",
+      "sourceUrl": "https://admission.williams.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrg0a2034c3lemb652fapt",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Rose-Hulman offers Early Action (Nov 1 deadline, Dec 15 notification) per CDS 2023-24 C22, but does not publish EA-specific applicant/admitted numbers in its CDS. Only overall admit rate (~73%) is published.",
+      "sourceUrl": "https://www.rose-hulman.edu/academics/academic-affairs/irpa/reports/2023-24-Academic-Year-CDS.pdf"
+    },
+    {
+      "targetId": "cmpdrfg7100053lemb4y4eivy",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Berklee offers Early Action (Nov 1 deadline, Jan 31 notification) but does not publish EA-specific admit rate; admissions is audition-driven, RD rate mirrors overall ~43-44%",
+      "sourceUrl": "https://college.berklee.edu/admissions/undergraduate/deadlines"
+    },
+    {
+      "targetId": "cmpdrfljk00vq3lemnbpe5mt9",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cooper Union offers Early Decision (binding) only — no Early Action plan",
+      "sourceUrl": "https://cooper.edu/admissions/applying-to-cu"
+    },
+    {
+      "targetId": "cmpdrg9bd04ip3lemmyeidvmf",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Olin College does not offer Early Action or Early Decision — uses single Candidates' Weekend evaluation process",
+      "sourceUrl": "https://www.olin.edu/admission/apply/admission-process"
+    },
+    {
+      "targetId": "cmpdrgann04p63lemgohakntd",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Curtis Institute of Music has a single December 10 application deadline; no Early Action plan (audition-based)",
+      "sourceUrl": "https://www.curtis.edu/apply/applying/"
+    },
+    {
+      "targetId": "cmpdrg9qr04ku3lemgsa0950s",
+      "field": "eaAcceptanceRate",
+      "status": "CLOSED",
+      "value": 9.19,
+      "sourceUrl": "https://www.commondatasets.fyi/stanford",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "Stanford CDS 2023-24: 7,855 REA applicants, 722 admitted = 9.19%. Stanford labels this as Early Action in its CDS but the plan is functionally Restrictive Early Action. Stanford does not publish split rates on its own admissions site — figure comes from the CDS aggregator capture."
+    },
+    {
+      "targetId": "cmpdrg1vp03c83lemrl7jbixq",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Swarthmore College offers Early Decision (binding, two rounds ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.swarthmore.edu/admissions-aid/application-deadlines-decision-plans"
+    },
+    {
+      "targetId": "cmpdrgasi04pw3lem7f95cfns",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "SAIC offers Early Action (Nov 15 deadline) but does not publish EA-specific admit rate; overall admit rate is ~57%",
+      "sourceUrl": "https://www.saic.edu/admissions/undergraduate/how-apply-freshman"
+    },
+    {
+      "targetId": "cmpdrfidc00d33lem6lht1kin",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Pomona College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.pomona.edu/admissions/apply"
+    },
+    {
+      "targetId": "cmpdrfhr8009h3lemqv20dr6i",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "CalArts does not offer Early Action or Early Decision — single January 5 priority deadline",
+      "sourceUrl": "https://calarts.edu/admissions-aid/admissions/application-process/application-deadlines-and-fees"
+    },
+    {
+      "targetId": "cmpdrg9gq04jf3lemw0kg9627",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "ArtCenter College of Design offers Early Action (Nov 15 deadline) but does not publish EA-specific admit rate in its CDS",
+      "sourceUrl": "https://www.artcenter.edu/admissions/undergraduate-admissions/important-dates.html"
+    },
+    {
+      "targetId": "cmpdrfnlp01793lemeej1how9",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cal Poly San Luis Obispo does not offer Early Action or Early Decision — single Nov 30 application deadline",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/dates-and-deadlines"
+    },
+    {
+      "targetId": "cmpdrgax704qm3lemnwc3od93",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wellesley College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.wellesley.edu/admission/apply/firstyear"
+    },
+    {
+      "targetId": "cmpdrgb1504rb3lem11hq7n1c",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Pennsylvania offers Early Decision (binding) only — no Early Action plan",
+      "sourceUrl": "https://admissions.upenn.edu/how-to-apply"
+    },
+    {
+      "targetId": "cmpdrg8pl04ft3lemxh5zyle7",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Bowdoin College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.bowdoin.edu/admissions/apply/index.html"
+    },
+    {
+      "targetId": "cmpdrfj8a00i53lem5ubt8t0f",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "SCAD uses rolling admission year-round — no traditional Early Action plan; results returned in 2-4 weeks",
+      "sourceUrl": "https://www.scad.edu/admission/admission-information/first-year"
+    },
+    {
+      "targetId": "cmpdrfzky030q3lemnhnbcev2",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Middlebury College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.middlebury.edu/admissions/apply"
+    },
+    {
+      "targetId": "cmpdrg7id049b3lemzbplj86x",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Duke University offers Early Decision (binding) only — no Early Action plan",
+      "sourceUrl": "https://admissions.duke.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrfwl502jg3lemnosm994j",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "MICA offers Early Action (Dec 1 deadline) and Early Decision (Nov 1), but does not publish EA-specific admit rate in CDS; overall admit rate is ~77%",
+      "sourceUrl": "https://www.mica.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfhf2007b3lemevr7yf4k",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Caltech offers Restrictive Early Action (Nov 1 deadline) per CDS 2023-24 C22, but does NOT publish REA-specific applicant/admitted numbers in C22 — only confirms plan exists. Caltech publicly states REA and RD rates are both under 5% with negligible difference.",
+      "sourceUrl": "https://iro.caltech.edu/documents/31490/Caltech_CDS_2023-2024_February_2025.pdf"
+    },
+    {
+      "targetId": "cmpdrgb5f04s13lemvots2cs0",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Carleton College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.carleton.edu/admissions/apply/"
+    },
+    {
+      "targetId": "cmpdrft8h020o3lem9jtuohg8",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California College of the Arts (CCA) offers Early Action (Nov 15 deadline) but does not publish EA-specific admit rate; uses rolling admission for non-EA",
+      "sourceUrl": "https://www.cca.edu/admissions/apply/"
+    },
+    {
+      "targetId": "cmpdrg4gg03ql3lem1lsnwabt",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Brown University offers Early Decision (binding) only — no Early Action plan",
+      "sourceUrl": "https://admission.brown.edu/apply"
+    },
+    {
+      "targetId": "cmpdrgb9b04sq3lemsukfpp1m",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Northwestern University offers Early Decision (binding) only — no Early Action plan",
+      "sourceUrl": "https://admissions.northwestern.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrforf01dr3lemuliya2nc",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Harvey Mudd College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.hmc.edu/admission/apply/"
+    },
+    {
+      "targetId": "cmpdrg2ft03ft3lem6p3r3isp",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Johns Hopkins University offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://apply.jhu.edu/application-process/"
+    },
+    {
+      "targetId": "cmpdrfvio02cy3lembdsk9q4y",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Claremont McKenna College offers Early Decision (binding, ED1/ED2) only — no Early Action plan",
+      "sourceUrl": "https://www.cmc.edu/admission/apply"
+    }
+  ]
+}

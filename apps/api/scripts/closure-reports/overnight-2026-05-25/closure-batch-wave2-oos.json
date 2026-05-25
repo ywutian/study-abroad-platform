@@ -1,0 +1,214 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrg612040m3lemahzdg0sj",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.rochester.edu/about/"
+    },
+    {
+      "targetId": "cmpdrg53v03uu3lemyy3l2qok",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.wfu.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfv12029z3lem2j4z9dn5",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://case.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfq5901ma3lem4nu584hb",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.northeastern.edu/about/"
+    },
+    {
+      "targetId": "cmpdrftrr023h3lem34g2d4m6",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.pepperdine.edu/about/"
+    },
+    {
+      "targetId": "cmpdrflnp00wd3lemgkh1dmls",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.brandeis.edu/about/"
+    },
+    {
+      "targetId": "cmpdrg5ns03yg3lemuiudyan7",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.scu.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfmqo012v3lemogxol3g4",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.rpi.edu/about"
+    },
+    {
+      "targetId": "cmpdrg8ts04gg3lembnasvur1",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www1.villanova.edu/university/about-villanova.html"
+    },
+    {
+      "targetId": "cmpdrfiun00fw3lemjzr7mlmh",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.gwu.edu/about"
+    },
+    {
+      "targetId": "cmpdrg8ee04ea3lem8zxrx5qv",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Pittsburgh is a state-related public institution, but does not publish residency breakdown for first-time first-year admissions in Sections C1/C2 of Common Data Set 2022-23, 2023-24, 2024-25, or 2025-26 (all residency table cells left blank). No public OOS admit rate disclosed by institution.",
+      "sourceUrl": "https://www.ir.pitt.edu/sites/default/files/2026-02/CDS_2025-2026_PGH-UA_0.pdf"
+    },
+    {
+      "targetId": "cmpdrfmds010p3lemvwpk6fq0",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://welcome.miami.edu/about/"
+    },
+    {
+      "targetId": "cmpdrg7m1049y3lem9zy6igc8",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.american.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfilg00eg3lemrv8wbra2",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://tulane.edu/about"
+    },
+    {
+      "targetId": "cmpdrflxj00xt3lempisflo1h",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.smu.edu/about"
+    },
+    {
+      "targetId": "cmpdrg701046e3lemk5s27yh0",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.yu.edu/about"
+    },
+    {
+      "targetId": "cmpdrfuf7026d3lem2ra9wac4",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.stevens.edu/about-stevens"
+    },
+    {
+      "targetId": "cmpdrfgwj004d3lem16xj0ua1",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.gonzaga.edu/about"
+    },
+    {
+      "targetId": "cmpdrfph201hz3lems4rr1tjs",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.lmu.edu/about/"
+    },
+    {
+      "targetId": "cmpdrft1r01zv3lemhyyzd2zo",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.syracuse.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfipm00f63lemsq5q7qff",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.marquette.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfwox02k33lemkc8lirut",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.fordham.edu/about/"
+    },
+    {
+      "targetId": "cmpdrg58203vk3lemz3nupo3j",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.du.edu/about"
+    },
+    {
+      "targetId": "cmpdrg83l04cu3lempo67yjjf",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.wpi.edu/about"
+    },
+    {
+      "targetId": "cmpdrg38b03kr3lemtaael4sh",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.sandiego.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfpcw01h93lemzowz03e3",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.baylor.edu/about/"
+    },
+    {
+      "targetId": "cmpdrftdj021b3lemvcd04yz2",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.iit.edu/about"
+    },
+    {
+      "targetId": "cmpdrfovu01ee3lemxgka8x8u",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private (federally-chartered) university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://howard.edu/about"
+    },
+    {
+      "targetId": "cmpdrg2vn03im3lemhbz9djoq",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://www.slu.edu/about/"
+    },
+    {
+      "targetId": "cmpdrfj3i00hc3lemys8tjf5f",
+      "field": "oosAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Private university — no in-state/OOS distinction; admission policy is geographically neutral",
+      "sourceUrl": "https://drexel.edu/about/"
+    }
+  ]
+}
