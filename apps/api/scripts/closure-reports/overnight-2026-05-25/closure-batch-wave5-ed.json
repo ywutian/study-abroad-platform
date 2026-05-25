@@ -1,0 +1,244 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrfma301013lemc3a39q6e",
+      "schoolId": "cmkrmmeyx000w2w8cqboik780",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.k-state.edu/admissions/apply/freshman/dates-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrg6jp043k3lemrinzitw5",
+      "schoolId": "cmkrmmf3a000x2w8cl2gpy70x",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.mst.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg95e04hy3lemy1cevefy",
+      "schoolId": "cmkrmmf7o000y2w8coxuy5z5g",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admission.wsu.edu/apply/dates-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfujv02753lemvzc75oi3",
+      "schoolId": "cmkrnd0l00003crknoqtyppjt",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Hofstra University does not offer Early Decision; uses Early Action (non-binding) and Regular Decision only",
+      "sourceUrl": "https://www.hofstra.edu/admission/apply/"
+    },
+    {
+      "targetId": "cmpdrfsj401x23lemct1nskho",
+      "schoolId": "cmkrnd0gk0002crkneyhgi28f",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://illinoisstate.edu/admissions/freshman/dates/"
+    },
+    {
+      "targetId": "cmpdrfpl701ir3lema22x6116",
+      "schoolId": "cmkrnd13l0007crknr5kpgik5",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.msstate.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfgjh00293lem9kbcfeo5",
+      "schoolId": "cmkrnd17v0008crkna3qmr03t",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.ohio.edu/admissions/apply/dates-deadlines"
+    },
+    {
+      "targetId": "cmpdrg79o047w3lemiffpdac0",
+      "schoolId": "cmkrnd0uf0005crknh7u96xu9",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Adelphi University does not offer Early Decision; uses Early Action (non-binding) and Rolling Admissions only",
+      "sourceUrl": "https://www.adelphi.edu/admissions/first-year/apply/"
+    },
+    {
+      "targetId": "cmpdrg4cm03pv3lem91anp81o",
+      "schoolId": "cmkrnd1ce0009crkngpx8kc6n",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.kent.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfyag02th3lemc2fslfsf",
+      "schoolId": "cmkrnd1q8000ccrkncumttzjd",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.uwyo.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfv5i02ar3lemsrwp2ne7",
+      "schoolId": "cml87jsh00023hv3f95ocivgx",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admissions.ku.edu/apply/freshmen"
+    },
+    {
+      "targetId": "cmpdrg5g403x23lem0usbsb7b",
+      "schoolId": "cmkrnd1ls000bcrknw7bklde5",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.bsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfq9601n23lem8ldcaj22",
+      "schoolId": "cmkrnd1h6000acrknrorvkg7a",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admissions.unm.edu/apply/index.html"
+    },
+    {
+      "targetId": "cmpdrg665041e3lemj38a0ben",
+      "schoolId": "cml87kthv0007u4zs5h5t3rlc",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.ucf.edu/admissions/undergraduate/dates-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfpy701kx3lem90kuym0p",
+      "schoolId": "cml87kthm0005u4zseiux6c9u",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admissions.ua.edu/apply/dates-and-deadlines/"
+    },
+    {
+      "targetId": "cmpdrflt300x53lemup9tx5cz",
+      "schoolId": "cml87kths0006u4zsge4s2303",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Seton Hall University does not offer Early Decision; uses Early Action (non-binding) and Regular Decision only",
+      "sourceUrl": "https://www.shu.edu/undergraduate-admissions/applying.html"
+    },
+    {
+      "targetId": "cmpdrg0pj03773lem2h7drq2a",
+      "schoolId": "cml87ktnn000lu4zs0dhd0kzk",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://rowan.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrftxb02493lembmswfpj0",
+      "schoolId": "cml87kth50001u4zsel9uj6zo",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admissions.colostate.edu/apply/dates-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfk0t00n53lemzk17tkgc",
+      "schoolId": "cml87jser000rhv3filzkpog7",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admissions.sdsu.edu/apply/dates_deadlines"
+    },
+    {
+      "targetId": "cmpdrg2bx03f33lemu1d32d6i",
+      "schoolId": "cml87jsgv001zhv3fj49zj1oe",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://admissions.gmu.edu/freshman/dates"
+    },
+    {
+      "targetId": "cmpdrfmij011h3lem89gpgrrb",
+      "schoolId": "cmkrnd1ut000dcrkn6cknv8bj",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.wvu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfha4006l3lemndqyki3r",
+      "schoolId": "cmkrnd28x000gcrknqkn5e9gu",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.montana.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfs1z01uw3lem9udjxk4y",
+      "schoolId": "cmkrnd206000ecrknyg8wuu9a",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://und.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfhvo00a63lem5prrrtuc",
+      "schoolId": "cmkrnd2dg000hcrknjzcg1vlj",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.unr.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfhif00803lem827w6bme",
+      "schoolId": "cmkrnd24k000fcrkn6mi6hmze",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.usd.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg89704dm3lemlcsmeixq",
+      "schoolId": "cmkrnd2n6000jcrkn620sv4mb",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.ttu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg6vu045q3lemoox16nwu",
+      "schoolId": "cmkrnd2hv000icrknghsj7j2v",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.pdx.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfx5y02n13lemvj93dn9x",
+      "schoolId": "cmkrnd31f000mcrknqawa9lky",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.unlv.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg7ql04aq3lemhxjs2ssm",
+      "schoolId": "cmkrnd2s9000kcrknyogbfhya",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.uidaho.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg14w03a13lempslyq7dz",
+      "schoolId": "cmkrnd3lj000qcrkn5a2e7siw",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; uses Regular/Priority deadlines only",
+      "sourceUrl": "https://www.csulb.edu/admissions"
+    }
+  ]
+}

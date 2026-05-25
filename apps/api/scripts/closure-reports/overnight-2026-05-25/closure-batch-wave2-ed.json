@@ -1,0 +1,214 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrg09q034b3lemrsfu02q9",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Rose-Hulman offers Early Action (non-binding) only — no Early Decision plan per CDS 2024-25",
+      "sourceUrl": "https://www.rose-hulman.edu/academics/academic-affairs/irpa/reports/2024-25-Academic-Year-CDS.pdf"
+    },
+    {
+      "targetId": "cmpdrfoit01ca3lemhxcer47x",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "The Juilliard School — music conservatory with audition-based single-deadline admissions; no Early Decision plan",
+      "sourceUrl": "https://www.juilliard.edu/apply-audition"
+    },
+    {
+      "targetId": "cmpdrfgbb000t3lemyqvchbtl",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "MIT does not offer Early Decision — Early Action (non-restrictive) only",
+      "sourceUrl": "https://mitadmissions.org/apply/firstyear/"
+    },
+    {
+      "targetId": "cmpdrg0dn03513lemh6xu0jf1",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Pratt Institute offers Early Action (non-binding) only — no Early Decision; EA-specific stats not published",
+      "sourceUrl": "https://www.pratt.edu/admissions/undergraduate-admissions/apply/"
+    },
+    {
+      "targetId": "cmpdrflj200vp3lemmuff0ahx",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cooper Union offers Early Decision but does not publish separate ED admit rate; not in public CDS or first-year profile",
+      "sourceUrl": "https://cooper.edu/admissions/facts/first-year-profile"
+    },
+    {
+      "targetId": "cmpdrfg6600043lem8ftr3ybk",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Berklee College of Music offers Early Action (non-binding) only — no Early Decision plan",
+      "sourceUrl": "https://www.berklee.edu/institutional-assessment/common-data-set"
+    },
+    {
+      "targetId": "cmpdrganb04p53lembycus4lu",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Curtis Institute of Music — audition-based conservatory admissions; Early Decision/Early Action data listed as unavailable",
+      "sourceUrl": "https://www.curtis.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrgas604pv3lemznhi9q2p",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "School of the Art Institute of Chicago (SAIC) offers Early Action only — no Early Decision plan",
+      "sourceUrl": "https://www.saic.edu/admissions/undergraduate/how-apply-freshman"
+    },
+    {
+      "targetId": "cmpdrg9b004io3lemehf5e4et",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Olin College does not offer Early Decision or Early Action — Candidates' Weekend requires single uniform application timeline",
+      "sourceUrl": "https://www.olin.edu/blogs/reason-you-cant-apply-early-olin"
+    },
+    {
+      "targetId": "cmpdrfx1y02mb3lemeu06cfge",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "New England Conservatory does not offer Early Decision or Early Action — audition-based conservatory admissions",
+      "sourceUrl": "https://necmusic.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfhqw009g3lem6kbdta4k",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California Institute of the Arts (CalArts) does not publish separate Early Decision admit rate; portfolio/audition-based",
+      "sourceUrl": "https://calarts.edu/admissions-aid/admissions/application-process"
+    },
+    {
+      "targetId": "cmpdrfnlc01783lemppx1l1ze",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California Polytechnic State University, San Luis Obispo — California public, no Early Decision plan",
+      "sourceUrl": "https://admissions.calpoly.edu/applicants/freshman/index.html"
+    },
+    {
+      "targetId": "cmpdrg9ga04je3lemcpmplzv9",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "ArtCenter College of Design offers Early Action and rolling admissions — no Early Decision plan",
+      "sourceUrl": "https://www.artcenter.edu/admissions/undergraduate-admissions/important-dates.html"
+    },
+    {
+      "targetId": "cmpdrfj7x00i43lemv8nucgcy",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Savannah College of Art and Design (SCAD) uses rolling admission with Early Action only — no Early Decision plan",
+      "sourceUrl": "https://www.scad.edu/admission/admission-information"
+    },
+    {
+      "targetId": "cmpdrfwkt02jf3lem6qzmpuea",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Maryland Institute College of Art (MICA) offers Early Action only — no Early Decision plan",
+      "sourceUrl": "https://www.mica.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrft82020n3lemly8t9dpe",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California College of the Arts (CCA) does not offer Early Decision or Early Action",
+      "sourceUrl": "https://www.cca.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfjk600k93lem7wyjyu9d",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UCLA — UC system uses single application deadline (Nov 30), no Early Decision or Early Action plan",
+      "sourceUrl": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-freshman/key-dates-and-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrfuss028l3lemqg8nrmo5",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Berkeley — UC system uses single application deadline, no Early Decision or Early Action plan",
+      "sourceUrl": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-freshman/key-dates-and-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrg4k903ra3lemhz8nkas8",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Colby College offers ED I and ED II but does not participate in Common Data Set initiative; recent ED-specific admit rates are not publicly disclosed",
+      "sourceUrl": "https://afa.colby.edu/apply/dates-and-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfkrv00rf3lemxzo1eudd",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Michigan offers Early Action only — no Early Decision plan",
+      "sourceUrl": "https://admissions.umich.edu/apply/first-year-applicants/application-dates-deadlines"
+    },
+    {
+      "targetId": "cmpdrfgt0003p3lem01pugdtq",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UNC Chapel Hill offers Early Action only — no Early Decision plan",
+      "sourceUrl": "https://admissions.unc.edu/how-to-apply/first-year/"
+    },
+    {
+      "targetId": "cmpdrfl9o00u93leme6i4k1dd",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "USC offered only Early Action for 2024-25 (non-restrictive, non-binding); new Early Decision pilot launched Fall 2026 cycle for Marshall School of Business only, no prior ED data",
+      "sourceUrl": "https://www.provost.usc.edu/early-decision-admissions-fall-2027-applicants/"
+    },
+    {
+      "targetId": "cmpdrfqki01oi3lemgyshjyjp",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC San Diego — UC system uses single application deadline, no Early Decision or Early Action plan",
+      "sourceUrl": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-freshman/key-dates-and-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrfh66005v3lemux9py4c7",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Davis — UC system uses single application deadline, no Early Decision or Early Action plan",
+      "sourceUrl": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-freshman/key-dates-and-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrfub3025p3lemdz5a4bf4",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Florida uses standard application with priority deadline (Nov 1) — no Early Decision plan",
+      "sourceUrl": "https://admissions.ufl.edu/apply/freshman/"
+    },
+    {
+      "targetId": "cmpdrfi4200bm3lemy53xeqaf",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UT Austin uses priority deadline (Nov 1) for all applicants — no Early Decision plan",
+      "sourceUrl": "https://admissions.utexas.edu/apply/deadlines/"
+    },
+    {
+      "targetId": "cmpdrfyng02vn3lemsine4upw",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Irvine — UC system uses single application deadline, no Early Decision or Early Action plan",
+      "sourceUrl": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-freshman/key-dates-and-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrfyet02u73lemw7lax9cx",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Georgia Tech offers Early Action (EA1/EA2) only — no Early Decision plan",
+      "sourceUrl": "https://admission.gatech.edu/first-year/deadlines-and-decisions"
+    },
+    {
+      "targetId": "cmpdrfvmg02dn3lem3rvnsfzf",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Santa Barbara — UC system uses single application deadline, no Early Decision or Early Action plan",
+      "sourceUrl": "https://admission.universityofcalifornia.edu/how-to-apply/applying-as-a-freshman/key-dates-and-deadlines.html"
+    },
+    {
+      "targetId": "cmpdrg4zy03u63lemkkbhxp2s",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Wisconsin-Madison offers Early Action only — no Early Decision plan",
+      "sourceUrl": "https://admissions.wisc.edu/apply/dates-and-deadlines/"
+    }
+  ]
+}

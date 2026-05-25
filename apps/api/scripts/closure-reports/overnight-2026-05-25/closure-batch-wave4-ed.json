@@ -1,0 +1,244 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrg6rk04503lem5m5giy99",
+      "schoolId": "cmkrnyjk7001810fwshru1tsy",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision; admission plans are Priority/Regular only",
+      "sourceUrl": "https://www.usf.edu/admissions/freshmen/apply/index.aspx"
+    },
+    {
+      "targetId": "cmpdrg5sg03z83lemuk7k63c6",
+      "schoolId": "cml87jsgn001vhv3f48nb58ss",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — does not offer Early Decision (rolling/priority admissions only)",
+      "sourceUrl": "https://admissions.uiowa.edu/apply"
+    },
+    {
+      "targetId": "cmpdrfuwu029b3lemwd1ijo1z",
+      "schoolId": "cmkqyvyru000wk6lgrvy717x4",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Temple offers Early Action only (Nov 1 deadline, non-binding) — no Early Decision plan",
+      "sourceUrl": "https://admissions.temple.edu/apply/first-year-students"
+    },
+    {
+      "targetId": "cmpdrg38t03kt3lem6bmttxrz",
+      "schoolId": "cml87ktk5000du4zse0sxtavs",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "USD added Early Decision starting Fall 2024 entering class (CDS 2024-25 C21 = Yes, closing 11/1, notification 12/15) but ED applications/admitted counts left blank in the published CDS. No public numeric source available yet to compute admit rate.",
+      "sourceUrl": "https://www.sandiego.edu/facts/documents/cds/cds_2024-25.pdf"
+    },
+    {
+      "targetId": "cmpdrg2wd03io3lemo11lu1te",
+      "schoolId": "cmkqz26d80002klbk6vf73ddv",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "SLU offers binding Early Decision (Nov 1 closing, Dec 1 notification, beginning Fall 2022 entering class) but SLU does not publish its Common Data Set publicly online — Section C ED applied/admitted numbers not retrievable from public web sources.",
+      "sourceUrl": "https://www.slu.edu/admission/freshman/deadlines.php"
+    },
+    {
+      "targetId": "cmpdrfrvr01u63lemd9e1lkuk",
+      "schoolId": "cml87jsej000lhv3fol35rgjm",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public University of California campus — UC system does not offer Early Decision; single Nov 1–30 application window for all applicants",
+      "sourceUrl": "https://admissions.ucmerced.edu/apply"
+    },
+    {
+      "targetId": "cmpdrfgfe001j3lem8clqhs6e",
+      "schoolId": "cml87jsgp001whv3fcyhnz32p",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — CU Boulder offers Early Action only (Nov 15, non-binding), no Early Decision plan",
+      "sourceUrl": "https://www.colorado.edu/admissions/apply/freshman-application-deadlines-checklist"
+    },
+    {
+      "targetId": "cmpdrg9x404lj3lem0yjxxui5",
+      "schoolId": "cml87ktsx000ou4zsseajxo0i",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — Colorado School of Mines offers Early Action only (Nov 1), no Early Decision plan",
+      "sourceUrl": "https://admissions.mines.edu/how-to-apply/"
+    },
+    {
+      "targetId": "cmpdrg30v03je3lem1ga4pf16",
+      "schoolId": "cml87jsgw0020hv3fl7y20dcx",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Oregon offers Early Action only (Nov 1), no Early Decision plan",
+      "sourceUrl": "https://admissions.uoregon.edu/freshmen/apply"
+    },
+    {
+      "targetId": "cmpdrg44303of3lempc6dj1qk",
+      "schoolId": "cmkrmmaxc00002w8cges2t8zr",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — Auburn does not offer Early Decision (priority deadlines/rolling only)",
+      "sourceUrl": "https://www.auburn.edu/admissions/freshman/freshman-apply/"
+    },
+    {
+      "targetId": "cmpdrfm5z00zb3lemblri1vo5",
+      "schoolId": "cmkrmmb4200012w8cj6za23lq",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — South Carolina offers Early Action only (Oct 15), no Early Decision plan",
+      "sourceUrl": "https://sc.edu/about/offices_and_divisions/undergraduate_admissions/apply/index.php"
+    },
+    {
+      "targetId": "cmpdrfyjb02ux3lemhpovsuha",
+      "schoolId": "cmkrmmbcx00032w8cg2olufbx",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "DePaul offers Early Action only (Nov 15, non-binding) per U.S. News and DePaul deadlines page — no Early Decision plan",
+      "sourceUrl": "https://www.depaul.edu/admission-and-aid/types-of-admission/freshman-student/Pages/early-action-program-faq.aspx"
+    },
+    {
+      "targetId": "cmpdrfvzo02ft3lemom5qz7yr",
+      "schoolId": "cml87jsgy0022hv3fwr74y6hv",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Arizona uses rolling admissions, no Early Decision plan",
+      "sourceUrl": "https://admissions.arizona.edu/how-apply/freshman"
+    },
+    {
+      "targetId": "cmpdrfss201yh3lemc1ak2s46",
+      "schoolId": "cml87jsgl001uhv3fk0zi5juw",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — ASU uses priority/rolling admissions, no Early Decision plan",
+      "sourceUrl": "https://admission.asu.edu/freshman"
+    },
+    {
+      "targetId": "cmpdrfh1j00553lemr4eretlf",
+      "schoolId": "cmkrmmcch000b2w8cqpaqovsu",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "The New School (incl. Parsons) offers binding Early Decision (Nov 15 deadline) but does not publish Common Data Set publicly via Office of Institutional Research website — Section C ED applied/admitted numbers not retrievable from public sources.",
+      "sourceUrl": "https://www.newschool.edu/admission/prospective-undergraduate-students/early-application-options/"
+    },
+    {
+      "targetId": "cmpdrg6b504243lemu3ibebbc",
+      "schoolId": "cml87ktlv000ju4zsjs6bu5q1",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university (UT System) — UT Dallas does not offer Early Decision; uses Priority/Regular deadlines",
+      "sourceUrl": "https://www.utdallas.edu/enroll/freshman/dates/"
+    },
+    {
+      "targetId": "cmpdrfrri01tg3lemtn2j3xdc",
+      "schoolId": "cml87ktku000fu4zsmvoem287",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Tennessee offers Early Action only (Nov 1), no Early Decision plan",
+      "sourceUrl": "https://admissions.utk.edu/apply/freshman/"
+    },
+    {
+      "targetId": "cmpdrfyrq02wd3lempm0vpmll",
+      "schoolId": "cmkrmmd07000g2w8ceaz0l4i4",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Loyola University Chicago offers Early Action / rolling admissions only (Nov 1), no binding Early Decision plan",
+      "sourceUrl": "https://www.luc.edu/undergrad/apply/freshman/deadlines/"
+    },
+    {
+      "targetId": "cmpdrg110039b3lem6q7z296f",
+      "schoolId": "cml87jsg4001ihv3fnshsbqxy",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Utah uses priority/regular admissions, no Early Decision plan",
+      "sourceUrl": "https://admissions.utah.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrg8zm04h83lemv9ykn8jw",
+      "schoolId": "cmkrmmcvo000f2w8c9gbx2ymy",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Missouri uses rolling/priority admissions, no Early Decision plan",
+      "sourceUrl": "https://admissions.missouri.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrg27w03ed3lemzfylbqdg",
+      "schoolId": "cmkrmmdqx000m2w8cwd4t7shf",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Cincinnati uses priority/rolling admissions, no Early Decision plan",
+      "sourceUrl": "https://admissions.uc.edu/apply.html"
+    },
+    {
+      "targetId": "cmpdrg5wq03zy3lem23ozl8tl",
+      "schoolId": "cml87jsgx0021hv3f7t8ue6ig",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — Iowa State uses priority/rolling admissions, no Early Decision plan",
+      "sourceUrl": "https://www.admissions.iastate.edu/apply/dates"
+    },
+    {
+      "targetId": "cmpdrg48o03p53lemd53or4hs",
+      "schoolId": "cml87ktse000nu4zs3fbmzyo6",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Houston uses priority/regular admissions, no Early Decision plan",
+      "sourceUrl": "https://uh.edu/admissions/apply/freshmen/"
+    },
+    {
+      "targetId": "cmpdrfl4s00tk3lemv3n950k1",
+      "schoolId": "cml87jsd60000hv3fjhdgqtuo",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Oklahoma uses priority/regular admissions, no Early Decision plan",
+      "sourceUrl": "https://www.ou.edu/admissions/apply"
+    },
+    {
+      "targetId": "cmpdrg6fn042u3lembyjv3zi0",
+      "schoolId": "cmkrmme8f000q2w8cxv48cxt4",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — LSU uses Early Action/Regular deadlines, no Early Decision plan",
+      "sourceUrl": "https://www.lsu.edu/admissions/apply/freshman.php"
+    },
+    {
+      "targetId": "cmpdrg74t04763lemloplv3qx",
+      "schoolId": "cmkrmmeh6000s2w8cxyhqvdmm",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Arkansas uses priority/regular deadlines, no Early Decision plan",
+      "sourceUrl": "https://admissions.uark.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrfy6k02sr3lemj24xecc7",
+      "schoolId": "cmkrmmelr000t2w8c3lkl9jpa",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Hawaii at Manoa uses priority/regular admissions, no Early Decision plan",
+      "sourceUrl": "https://manoa.hawaii.edu/admissions/undergrad/"
+    },
+    {
+      "targetId": "cmpdrg4rz03sq3lemqucp13ru",
+      "schoolId": "cml87jsh10024hv3ffef54ojo",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Kentucky uses priority/rolling admissions, no Early Decision plan",
+      "sourceUrl": "https://www.uky.edu/admissions/apply"
+    },
+    {
+      "targetId": "cmpdrfwt602kv3lemkxz8l26z",
+      "schoolId": "cml87kti60008u4zshs7rhz7q",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of New Hampshire offers Early Action only (Nov 15), no Early Decision plan",
+      "sourceUrl": "https://admissions.unh.edu/apply/dates-deadlines"
+    },
+    {
+      "targetId": "cmpdrfyvm02x33lemim2rb3fc",
+      "schoolId": "cml87ktgv0000u4zsdrnz9oct",
+      "field": "edAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Public state university — University of Nebraska–Lincoln uses priority/regular admissions, no Early Decision plan",
+      "sourceUrl": "https://admissions.unl.edu/apply/"
+    }
+  ]
+}

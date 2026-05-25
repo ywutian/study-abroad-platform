@@ -1,0 +1,260 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrfpxf01ku3lem0iwsb3jo",
+      "schoolId": "cml87kthm0005u4zseiux6c9u",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 80.0,
+      "sourceUrl": "https://www.collegevine.com/faq/28967/university-of-alabama-international-student-acceptance-rate",
+      "confidence": 0.6,
+      "tier": "SCRAPED",
+      "note": "University of Alabama; aggregator-reported intl admit rate ~80% (CollegeVine/Yocket consensus). UA CDS Section B does not separately break out intl applied/admitted; institution reports admissions without distinguishing intl. Value matches overall admit rate range (~76-80%) which is the established proxy for non-restrictive state R1 with high intl yield."
+    },
+    {
+      "targetId": "cmpdrftwd02463lemamdje18d",
+      "schoolId": "cml87kth50001u4zsel9uj6zo",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 89.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/colorado-state-university/admissions",
+      "confidence": 0.65,
+      "tier": "SCRAPED",
+      "note": "Colorado State University; Shiksha reports 89% intl acceptance rate, consistent with overall ~88.6% admit rate (38,520 applied / 34,118 admitted, 2024). CSU does not publish separate intl admit rate in CDS; aggregator number aligns with broad open-admit state R1 pattern."
+    },
+    {
+      "targetId": "cmpdrfls000x23lemhsefub8d",
+      "schoolId": "cml87kths0006u4zsge4s2303",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://waf.collegedata.com/college-search/seton-hall-university/admission",
+      "note": "Seton Hall University; no separately reported intl admit rate in CDS or .edu sources. Falling back to overall admit rate (~73% for 2024-25; 2% intl on campus). Class of 2029 saw 28,000 applicants → 1,625 enrolled showing increased selectivity. DERIVED tier — institution does not publish intl-specific number.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrg2bc03f03lemrdzj2z7b",
+      "schoolId": "cml87jsgv001zhv3fj49zj1oe",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 88.8,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/george-mason-university/acceptance-rate",
+      "confidence": 0.7,
+      "tier": "SCRAPED",
+      "note": "George Mason University; Shiksha+GyanDhan corroborate intl acceptance rate 88.8% Fall 2023 (down from 91.2% Fall 2021). Mason has 3,962 intl students from 130 countries; overall ~89% admit. Plausible and consistent."
+    },
+    {
+      "targetId": "cmpdrfs0701ut3lembbx0iji6",
+      "schoolId": "cmkrnd206000ecrknyg8wuu9a",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-north-dakota/acceptance-rate",
+      "note": "University of North Dakota; UND does not publish separate intl admit rate. Falling back to overall ~77.09% admit rate (Fall 2023). ~863 intl students from 96+ countries. DERIVED tier — institution does not differentiate.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrfwbi02hw3lemxfywsl2p",
+      "schoolId": "cmkrnd3am000ocrknsidhhfhs",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 81.0,
+      "sourceUrl": "https://yocket.com/universities/bowling-green-state-university-2667",
+      "confidence": 0.5,
+      "tier": "SCRAPED",
+      "note": "Bowling Green State University; aggregator-reported intl acceptance rate ~81%, equals overall acceptance rate. BGSU has 892 intl students (5.07%); does not publish CDS breakdown for intl. SCRAPED tier."
+    },
+    {
+      "targetId": "cmpdrfjff00jg3lem36p634tr",
+      "schoolId": "cmkrnd3z8000tcrkng8rfwn2k",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 75.0,
+      "sourceUrl": "https://www.upgrad.com/study-abroad/university/usa/south-dakota-state-university-294/acceptance-rate/",
+      "confidence": 0.5,
+      "tier": "SCRAPED",
+      "note": "South Dakota State University; Upgrad-reported 75% intl admit rate. SDSU does not publish CDS breakdown for intl. Overall Fall 2023: 86% (~11,505 admits including 702 intl). SCRAPED tier — third-party tracker number."
+    },
+    {
+      "targetId": "cmpdrg8j204ez3lemymd7xgw2",
+      "schoolId": "cmkrnd4vf0010crknyo9d5c1c",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/california-state-university-northridge/acceptance-rate",
+      "note": "California State University, Northridge; no separate intl admit rate published. Overall 92.4% admit (33,300 apps → 30,800 admits, Class of 2028); intl undergraduate enrollments 950-1,024 (Fall 2024). DERIVED, using overall admit as proxy minus slight adjustment for selectivity layer.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrfkvs00s23lem4lmu73i5",
+      "schoolId": "cmkrnd4zo0011crkn2vxe4hg2",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 98.5,
+      "sourceUrl": "https://www.gotouniversity.com/university/university-of-southern-mississippi/acceptance-rate",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "University of Southern Mississippi; aggregator-reported intl acceptance rate 98.5%, consistent with overall ~99.12% (2024-25). USM is essentially open-admit. SCRAPED tier."
+    },
+    {
+      "targetId": "cmpdrfo9n01ar3lem8hxnxqrw",
+      "schoolId": "cmkrnd5vw0018crkno5qz5pu8",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://waf.collegedata.com/college-search/university-of-memphis/admission",
+      "note": "University of Memphis; conflicting aggregator data (85% intl vs 6.8% claim — the 6.8% is intl-share-of-admits not admit rate). Falling back to overall ~72% admit (Fall 2024: 15,083 applied / 10,864 admitted). 2,000+ intl from 100+ countries. DERIVED tier given source conflict.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrfnr4017v3lemt1jm4d1j",
+      "schoolId": "cmkrnd5ra0017crknaxh3zr8b",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 80.0,
+      "sourceUrl": "https://www.gyandhan.com/study-abroad/usa/universities/university-of-texas-arlington/acceptance-rate",
+      "confidence": 0.4,
+      "tier": "DERIVED",
+      "note": "University of Texas at Arlington; UTA does not officially publish separate intl admit rate. Overall ~80-81% admit. 5,000+ intl enrolled; intl comprise 15% of admits. DERIVED — institution does not differentiate."
+    },
+    {
+      "targetId": "cmpdrfyz602xq3lemd5hx53wp",
+      "schoolId": "cmkrnd5mp0016crkndya1t1cw",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://edurank.org/uni/idaho-state-university/",
+      "note": "Idaho State University; ISU does not separately report intl admit rate. Overall 96.7% (2023: 7,712 applied / 7,460 admitted). Effectively open-admit; 367 intl enrolled (2.81%). DERIVED — overall as proxy.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrfunk027s3lemarkviwfe",
+      "schoolId": "cmkrnd73b001hcrknlz15z6ei",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://www.collegetuitioncompare.com/edu/151111/indiana-university-purdue-university-indianapolis/admission/",
+      "note": "Indiana University-Purdue University Indianapolis (now IU Indianapolis post-2024 split); IUPUI does not publish separate intl admit rate. Overall ~76.37% (2024-25: 15,643 applied / 11,947 admitted). IU-system intl rate ~70.6% (Fall 2023) but that's system-wide. DERIVED — using campus-overall as proxy.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrfxht02p33lem36gkut12",
+      "schoolId": "cmkrnd6z0001gcrknue7lfd65",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 52.8,
+      "sourceUrl": "https://www.cmich.edu/international-admissions/undergraduate/apply-international-freshman",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "Central Michigan University; official .edu page states intl undergraduate freshman acceptance rate was 52.8% Fall Semester 2023 (transfer 58.1%). Notably more selective than overall ~77% admit rate. OFFICIAL tier from institution's own international admissions page."
+    },
+    {
+      "targetId": "cmpdrfxvn02r83lem1rickprh",
+      "schoolId": "cmkrnyiss001210fwfdipaqnk",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 86.3,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/james-madison-university",
+      "confidence": 0.55,
+      "tier": "SCRAPED",
+      "note": "James Madison University; aggregator-reported 86.3% intl acceptance rate. Overall 71.5% (2024: 38,426 applied / 27,480 admitted); intl 1% of student body so fewer apply but high admit rate is plausible for VA state R2. SCRAPED tier."
+    },
+    {
+      "targetId": "cmpdrg7yu04c33lemb92yt3yu",
+      "schoolId": "cmkrnyixb001310fwgv0sd6ep",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://www.acceptancerate.com/schools/university-of-north-carolina-wilmington",
+      "note": "University of North Carolina Wilmington; UNCW does not separately report intl admit rate. Overall ~64.24% (2024-25: 20,393 applied / 13,101 admitted). 322 intl out of 18,030 total. DERIVED — overall as proxy.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrfz3t02yg3lem8oj1x2av",
+      "schoolId": "cmks30a92000s9viin1yd9gku",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 9.0,
+      "sourceUrl": "https://www.macalester.edu/admissions/international/faq/",
+      "confidence": 0.65,
+      "tier": "SCRAPED",
+      "note": "Macalester College; per .edu intl FAQ + ISP statistics, intl admit rate has ranged 6-11% in recent years (need-aware admissions for intl). International students were 23% of admitted Class of 2028. Using midpoint 9%. Overall admit 28.5% (8,968 → 2,558 in 2024) — intl substantially more selective as expected for elite LAC."
+    },
+    {
+      "targetId": "cmpdrg009033i3lem7oj4djwh",
+      "schoolId": "cmks30arv000y9viieexusysq",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 4.51,
+      "sourceUrl": "https://www.reed.edu/ir/cds/cds2425/CDS_secC_202425.pdf",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "Reed College; intl acceptance rate 4.51% for 2024 application year (190 admits from 4,213 intl applicants), down from 5.64% (2023: 218/3,867). Numbers reported via Reed Institutional Research CDS Section C. OFFICIAL tier — elite LAC with restrictive aid for intl."
+    },
+    {
+      "targetId": "cmpdrg19g03ao3lemugbfs1jg",
+      "schoolId": "cmks30b1e00119viibc9y6vf5",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 82.0,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-minnesota-twin-cities/acceptance-rate",
+      "confidence": 0.6,
+      "tier": "SCRAPED",
+      "note": "University of Minnesota Twin Cities; Shiksha reports ~82% intl admit (Fall 2024: ~1,300 intl applied, ~1,000+ admitted). Overall 79.7% Class of 2028. CDS shows 1,975 intl among 31,855 undergrads. Plausible — slightly above overall, consistent with desirable intl pipeline. SCRAPED."
+    },
+    {
+      "targetId": "cmpdrfqd401np3lemlh8de5mr",
+      "schoolId": "cmks30elz00239vii3wiqinsg",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "sourceUrl": "https://waf.collegedata.com/college-search/pacific-lutheran-university/admission",
+      "note": "Pacific Lutheran University; PLU does not separately report intl admit rate. Overall 78% admit. ~4% intl from 21 countries. DERIVED — overall used as proxy for small LAC with welcoming intl admissions.",
+      "reason": "School does not separately publish international admit rate; CDS Section B uses unified totals. Engine will fall back to overall admit rate path."
+    },
+    {
+      "targetId": "cmpdrg3jx03mw3lemc3xo23o1",
+      "schoolId": "cmks30ecd00209viixi0w23je",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 68.0,
+      "sourceUrl": "https://waf.collegedata.com/college-search/wheaton-college-massachusetts/admission",
+      "confidence": 0.4,
+      "tier": "DERIVED",
+      "note": "Wheaton College Massachusetts; no separate intl admit rate published. Overall 67.73% (5,835 applied / 3,952 admitted, 2024-25). ~7% intl student body. DERIVED — institution does not differentiate."
+    },
+    {
+      "targetId": "cmpdrg3v203nm3lemrzjx622s",
+      "schoolId": "cmks30bjb00179viiwwflr6fp",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 7.6,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/whitman-college/international",
+      "confidence": 0.65,
+      "tier": "SCRAPED",
+      "note": "Whitman College; intl acceptance rate 7.6% for 2024 (vs 63.8% domestic). Elite LAC, need-aware for intl. Aggregator references Whitman CDS. SCRAPED tier — number is plausible and matches need-aware LAC pattern (cf. Reed 4.51%, Macalester ~9%)."
+    },
+    {
+      "targetId": "cmpdrfne3016f3lemdzvur9n8",
+      "schoolId": "cmks30ev600269viis2ymp096",
+      "field": "intlAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Augustana University (Sioux Falls, SD) does not publish separate intl admit rate in CDS; aggregator searches returned only enrollment percentages (~8% intl from 40 countries, ~70 new intl in recent class) but no applied/admitted breakdown for international applicants. Small institution with rolling admissions; no third-party tracker reports an intl-specific rate.",
+      "sourceUrl": "https://www.augustana.edu/academics/institutional-research/common-data-set"
+    },
+    {
+      "targetId": "cmpdrfu1b024w3lemf48vs8zu",
+      "schoolId": "cmks30aia000v9viipegrh03n",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 13.0,
+      "sourceUrl": "https://www.pitzer.edu/offices/institutional-research/common-data-sets",
+      "confidence": 0.45,
+      "tier": "DERIVED",
+      "note": "Pitzer College; no separately published intl admit rate. Overall acceptance rate 17-25% across recent cycles; intl students ~10% of undergrads (105/1,242 in 2025). As an elite LAC and Claremont Consortium need-aware for intl, intl admit rate typically slightly below overall. Estimating ~13% as conservative midpoint. DERIVED."
+    },
+    {
+      "targetId": "cmpdrfqyo01qj3lemsrxrkcrn",
+      "schoolId": "cmks308uy000d9viio4skawgr",
+      "field": "intlAcceptanceRate",
+      "status": "CLOSED",
+      "value": 40.0,
+      "sourceUrl": "https://www.academicjobs.com/employers/baruch-college-cuny/4203/acceptance-rate",
+      "confidence": 0.4,
+      "tier": "DERIVED",
+      "note": "Baruch College (CUNY); one aggregator notes intl 'face tougher odds around 40%' vs overall ~47.52%. Baruch has 1,736 intl (8.64% — 1,031 UG / 705 grad). CUNY system requires strong TOEFL/IELTS. DERIVED — slight discount to overall, plausible for selective CUNY business school where intl pool is competitive."
+    }
+  ]
+}

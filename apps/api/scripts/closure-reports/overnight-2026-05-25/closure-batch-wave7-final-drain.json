@@ -1,0 +1,1340 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrgdsg05au3lemgrikhsa1",
+      "field": "curriculumSystem",
+      "status": "UNAVAILABLE",
+      "reason": "Shanghai Huading Academy (上海华顶书院) — no public-facing curriculum information available via web search; school's curriculum system cannot be verified from open sources",
+      "sourceUrl": "https://www.google.com/search?q=%E4%B8%8A%E6%B5%B7%E5%8D%8E%E9%A1%B6%E4%B9%A6%E9%99%A2"
+    },
+
+    {
+      "targetId": "cmpdrg7a0047x3lemv3ro783f",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Adelphi University — EA admit rate not separately published in publicly accessible Common Data Set; CDS C21/C22 not directly accessible online",
+      "sourceUrl": "https://www.adelphi.edu/admissions/first-year/apply/"
+    },
+    {
+      "targetId": "cmpdrfgop00303lem1s3dp36p",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Appalachian State University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.appstate.edu/"
+    },
+    {
+      "targetId": "cmpdrg5gf03x33lem2js77lpu",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Ball State University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.bsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfwcq02i03lemm3x0w2r7",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Bowling Green State University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.bgsu.edu/admissions.html"
+    },
+    {
+      "targetId": "cmpdrfxry02qm3lemgwrqk7nb",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Fullerton — Cal State system uses rolling priority application, no separate EA plan with reported admit rate",
+      "sourceUrl": "https://www.fullerton.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg15803a23lemkszwhz1s",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Long Beach — Cal State system uses rolling priority application, no separate EA plan with reported admit rate",
+      "sourceUrl": "https://www.csulb.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg8kg04f33lemaxsp84jp",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Northridge — Cal State system uses rolling priority application, no separate EA plan with reported admit rate",
+      "sourceUrl": "https://www.csun.edu/admissions-records"
+    },
+    {
+      "targetId": "cmpdrfsws01z83lemp1p6w6zr",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Sacramento — Cal State system uses rolling priority application, no separate EA plan with reported admit rate",
+      "sourceUrl": "https://www.csus.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfxiw02p73lemfibffkhe",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Central Michigan University — public state university; rolling admission, no separate EA admit rate published",
+      "sourceUrl": "https://www.cmich.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfwxu02lm3lemuiobknee",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Clarkson University — EA admit rate not separately published in publicly accessible CDS",
+      "sourceUrl": "https://www.clarkson.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfmwh013o3lemn7lcs6mb",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cleveland State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.csuohio.edu/admissions/admissions"
+    },
+    {
+      "targetId": "cmpdrfs9f01vn3lem411go826",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Eastern Michigan University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.emich.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfppq01ji3lemx56lb1ad",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Florida International University — public state university; no separate Early Action plan with reported admit rate",
+      "sourceUrl": "https://admissions.fiu.edu/"
+    },
+    {
+      "targetId": "cmpdrg2c803f43lemkvagaekv",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "George Mason University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.gmu.edu/"
+    },
+    {
+      "targetId": "cmpdrftim02243lem7a9ey2vw",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Georgia State University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.gsu.edu/"
+    },
+    {
+      "targetId": "cmpdrfoey01bl3lemqusbr62c",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Grand Valley State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.gvsu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfuk802763lemsu5lf5um",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Hofstra University — EA admit rate not separately verified in CDS C21/C22 from accessible public sources",
+      "sourceUrl": "https://www.hofstra.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfz0902xu3lemdno0fb8j",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Idaho State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.isu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfsjp01x33lemrwjsgwt8",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Illinois State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://illinoisstate.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfuot027w3lemt1i7ol51",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Indiana University-Purdue University Indianapolis — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.iu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg5x503zz3lem7zfk7it3",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Iowa State University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.admissions.iastate.edu/"
+    },
+    {
+      "targetId": "cmpdrfxwk02rc3lemfxjxk7y9",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "James Madison University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.jmu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfmaf01023leml2mdjq4k",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Kansas State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.k-state.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg4cx03pw3lem6cva8epa",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Kent State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.kent.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg6g0042v3lemnwo11lcr",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Louisiana State University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.lsu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfys302we3lemdt8saff6",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Loyola University Chicago — EA admit rate not directly verified in publicly accessible CDS source",
+      "sourceUrl": "https://www.luc.edu/undergrad/admissions/"
+    },
+    {
+      "targetId": "cmpdrfplk01is3lemgpl9sid7",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Mississippi State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.msstate.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg6k1043l3lemtg1qxm20",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Missouri University of Science and Technology — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://futurestudents.mst.edu/"
+    },
+    {
+      "targetId": "cmpdrfhb0006m3lemfaw2s0qc",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Montana State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.montana.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg9lo04k53lemv8qyxm3z",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "New Mexico State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://admissions.nmsu.edu/"
+    },
+    {
+      "targetId": "cmpdrfzww032w3lemw9taouhd",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "North Dakota State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.ndsu.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfk6d00nw3lem4jbd43qv",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Northern Illinois University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.niu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfgjy002a3lemmxdbg7my",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Ohio University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.ohio.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg5kd03xt3lem1o4itnfk",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Oklahoma State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://go.okstate.edu/"
+    },
+    {
+      "targetId": "cmpdrfihv00dt3lemos1y7h90",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Old Dominion University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.odu.edu/admission"
+    },
+    {
+      "targetId": "cmpdrg6w7045r3lemxg7rqog4",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Portland State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.pdx.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg0pv03783lemh4dj6633",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Rowan University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://sites.rowan.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfk1b00n63lemc6qscn16",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "San Diego State University — Cal State system uses rolling priority application, no separate EA admit rate",
+      "sourceUrl": "https://www.sdsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfzcz02za3lem6kdi98kt",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "San Jose State University — Cal State system uses rolling priority application, no separate EA admit rate",
+      "sourceUrl": "https://www.sjsu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfltf00x63lemx4h3u9ah",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Seton Hall University — EA admit rate not separately verified in publicly accessible CDS source",
+      "sourceUrl": "https://www.shu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfjgk00jk3lemf1q2eqx4",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "South Dakota State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.sdstate.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg89l04dn3lemo8ipxi9d",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Texas Tech University — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.depts.ttu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfh1v00563lemrr6am2ct",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "The New School — portfolio-based admission for Parsons; EA admit rate not separately reported in CDS",
+      "sourceUrl": "https://www.newschool.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfp0n01f73lemow2l10m1",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Towson University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.towson.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg1qy03bi3lem5sd61w9j",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Akron — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.uakron.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfpyj01ky3lemvol0t3ng",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Alabama — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://gobama.ua.edu/"
+    },
+    {
+      "targetId": "cmpdrfw0a02fu3lemn2tgdhkc",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Arizona — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://admissions.arizona.edu/"
+    },
+    {
+      "targetId": "cmpdrg66k041f3lem7gkzl204",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Central Florida — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.ucf.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg28803ee3lemplm7apmv",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Cincinnati — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.uc.edu/"
+    },
+    {
+      "targetId": "cmpdrfy6w02ss3lem6f4earrw",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Hawaii at Manoa — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://manoa.hawaii.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg49103p63lemnmpzbbby",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Houston — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.uh.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg7qy04ar3lem8p438k0s",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Idaho — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.uidaho.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfv5v02as3lemogwfxze4",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Kansas — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.ku.edu/"
+    },
+    {
+      "targetId": "cmpdrg4sa03sr3lem7hkx28z9",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Kentucky — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.uky.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfvei02c83lem2wdggq5g",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Maine — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://umaine.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg7vb04bh3lemqe49vu99",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Massachusetts Boston — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.umb.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfva702bi3lemxg6y94sp",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Massachusetts Lowell — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.uml.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfoat01av3lemtld4qm0u",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Memphis — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.memphis.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg90904h93lemo3thnlzw",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Missouri — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://admissions.missouri.edu/"
+    },
+    {
+      "targetId": "cmpdrfyvz02x43lemdmnqdfrt",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Nebraska-Lincoln — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.unl.edu/"
+    },
+    {
+      "targetId": "cmpdrfx6a02n23lemjdq627u6",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Nevada, Las Vegas — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.unlv.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfhvz00a73lem7zfp10jz",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Nevada, Reno — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.unr.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfwtk02kw3lemqbezk9dr",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of New Hampshire — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.unh.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfq9j01n33lemekhjq0b3",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of New Mexico — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://admissions.unm.edu/"
+    },
+    {
+      "targetId": "cmpdrg7zy04c73lemyhonu8y3",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Carolina Wilmington — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://uncw.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfs3001ux3lemsfa2ey8a",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Dakota — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://und.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfmn901283lemlhvl4k4z",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Texas — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.unt.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfl5500tl3lemnqh9kz9b",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Oklahoma — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.ou.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfvr502ee3lemf3yoc27z",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Rhode Island — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://web.uri.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfo5y01a53lem3eoubhy1",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of San Francisco — EA admit rate not directly verified in publicly accessible CDS source",
+      "sourceUrl": "https://www.usfca.edu/admission"
+    },
+    {
+      "targetId": "cmpdrfhiq00813lemzmc0bunw",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of South Dakota — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.usd.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfkx000s63lemd289pglk",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Southern Mississippi — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.usm.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfrrt01th3lemith78a9k",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Tennessee — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.utk.edu/"
+    },
+    {
+      "targetId": "cmpdrfnsj017z3lemg9p1wzw4",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at Arlington — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.uta.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg6bl04253lem5gawlhxv",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at Dallas — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.utdallas.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrga2r04ma3lemvhjkg6oa",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at San Antonio — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.utsa.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg11c039c3lemakis2w1a",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Utah — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://admissions.utah.edu/"
+    },
+    {
+      "targetId": "cmpdrfw4202gk3lem5mo2ci0h",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Vermont — public state university; EA admit rate not separately reported in published CDS",
+      "sourceUrl": "https://www.uvm.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfi8t00cd3lemms4mi8aq",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Wisconsin-Milwaukee — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://uwm.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfyas02ti3lemp8wcfid4",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Wyoming — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.uwyo.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg96604hz3lemg3sqsvir",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Washington State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://admission.wsu.edu/"
+    },
+    {
+      "targetId": "cmpdrfkfo00pb3lemj887vmjk",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wayne State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://wayne.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfmiw011i3lemssj3vntv",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "West Virginia University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://admissions.wvu.edu/"
+    },
+    {
+      "targetId": "cmpdrgaco04nq3lemy83ws2gl",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wichita State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.wichita.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg4w403th3lem7wviec2h",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wright State University — public state university; rolling admission, no separate EA admit rate",
+      "sourceUrl": "https://www.wright.edu/admissions"
+    },
+
+    {
+      "targetId": "cmpdrg7af047y3lems1ht3r8v",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Adelphi University does not offer Early Decision II; only ED1 and EA plans available",
+      "sourceUrl": "https://www.adelphi.edu/admissions/first-year/apply/"
+    },
+    {
+      "targetId": "cmpdrfgp200313lemwt4g4b8w",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Appalachian State University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.appstate.edu/"
+    },
+    {
+      "targetId": "cmpdrg5gr03x43leme2pb1ww4",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Ball State University does not offer Early Decision II",
+      "sourceUrl": "https://www.bsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfwd102i13lembu8phjm6",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Bowling Green State University does not offer Early Decision II",
+      "sourceUrl": "https://www.bgsu.edu/admissions.html"
+    },
+    {
+      "targetId": "cmpdrfxsa02qn3lemhg1r0wgh",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Fullerton does not offer Early Decision II — Cal State system uses rolling priority applications",
+      "sourceUrl": "https://www.fullerton.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg15k03a33lemcpsufd8i",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Long Beach does not offer Early Decision II — Cal State system uses rolling priority applications",
+      "sourceUrl": "https://www.csulb.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg8ku04f43lembwjuvwgt",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Northridge does not offer Early Decision II — Cal State system uses rolling priority applications",
+      "sourceUrl": "https://www.csun.edu/admissions-records"
+    },
+    {
+      "targetId": "cmpdrfsx501z93lemep5r9yj9",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Sacramento does not offer Early Decision II — Cal State system uses rolling priority applications",
+      "sourceUrl": "https://www.csus.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfxj902p83lem0hrzfizt",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Central Michigan University does not offer Early Decision II",
+      "sourceUrl": "https://www.cmich.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfmwx013p3lemekhvvb57",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cleveland State University does not offer Early Decision II",
+      "sourceUrl": "https://www.csuohio.edu/admissions/admissions"
+    },
+    {
+      "targetId": "cmpdrfty1024b3lems5vob08b",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Colorado State University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.colostate.edu/"
+    },
+    {
+      "targetId": "cmpdrfs9s01vo3lemu0q0wi8v",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Eastern Michigan University does not offer Early Decision II",
+      "sourceUrl": "https://www.emich.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfpq301jj3lemidpqspn2",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Florida International University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.fiu.edu/"
+    },
+    {
+      "targetId": "cmpdrg2cj03f53lem9tzd93de",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "George Mason University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.gmu.edu/"
+    },
+    {
+      "targetId": "cmpdrftj002253lem23alld7t",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Georgia State University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.gsu.edu/"
+    },
+    {
+      "targetId": "cmpdrfofa01bm3lem00xttrdq",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Grand Valley State University does not offer Early Decision II",
+      "sourceUrl": "https://www.gvsu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfukl02773lemcefwfurg",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Hofstra University does not offer Early Decision II",
+      "sourceUrl": "https://www.hofstra.edu/admission/apply/"
+    },
+    {
+      "targetId": "cmpdrfz0l02xv3lemcejy1ly5",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Idaho State University does not offer Early Decision II",
+      "sourceUrl": "https://www.isu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfsk901x43lem7yqkk38d",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Illinois State University does not offer Early Decision II",
+      "sourceUrl": "https://illinoisstate.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfup6027x3lemfso59g5e",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Indiana University-Purdue University Indianapolis does not offer Early Decision II",
+      "sourceUrl": "https://www.iu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfxww02rd3lemydkbjiv1",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "James Madison University does not offer Early Decision II",
+      "sourceUrl": "https://www.jmu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfmar01033lemkufjuimv",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Kansas State University does not offer Early Decision II",
+      "sourceUrl": "https://www.k-state.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg4da03px3lemg2icdnyt",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Kent State University does not offer Early Decision II",
+      "sourceUrl": "https://www.kent.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfplw01it3lemqw7z6w6q",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Mississippi State University does not offer Early Decision II",
+      "sourceUrl": "https://www.msstate.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg6ke043m3lemdhqw9upe",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Missouri University of Science and Technology does not offer Early Decision II",
+      "sourceUrl": "https://futurestudents.mst.edu/"
+    },
+    {
+      "targetId": "cmpdrfhbd006n3lemmnkwcn68",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Montana State University does not offer Early Decision II",
+      "sourceUrl": "https://www.montana.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg9m604k63lem8ubblvbu",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "New Mexico State University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.nmsu.edu/"
+    },
+    {
+      "targetId": "cmpdrfzx9032x3lemmwk4tz40",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "North Dakota State University does not offer Early Decision II",
+      "sourceUrl": "https://www.ndsu.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfk6r00nx3lem01jcpvew",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Northern Illinois University does not offer Early Decision II",
+      "sourceUrl": "https://www.niu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfgki002b3lembvptl853",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Ohio University does not offer Early Decision II",
+      "sourceUrl": "https://www.ohio.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg5kp03xu3lem77kxdtk6",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Oklahoma State University does not offer Early Decision II",
+      "sourceUrl": "https://go.okstate.edu/"
+    },
+    {
+      "targetId": "cmpdrfii700du3lemqdoklup9",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Old Dominion University does not offer Early Decision II",
+      "sourceUrl": "https://www.odu.edu/admission"
+    },
+    {
+      "targetId": "cmpdrg6wl045s3lempv5eyjno",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Portland State University does not offer Early Decision II",
+      "sourceUrl": "https://www.pdx.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg0q703793lem7kdaho09",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Rowan University does not offer Early Decision II",
+      "sourceUrl": "https://sites.rowan.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfk1q00n73lemp0g7zaxf",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "San Diego State University does not offer Early Decision II — Cal State system uses rolling priority applications",
+      "sourceUrl": "https://www.sdsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfzdb02zb3lemjdbcyi7v",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "San Jose State University does not offer Early Decision II — Cal State system uses rolling priority applications",
+      "sourceUrl": "https://www.sjsu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrflts00x73lem2sw4la64",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Seton Hall University does not offer Early Decision II",
+      "sourceUrl": "https://www.shu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfjgx00jl3lemz9cprqrm",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "South Dakota State University does not offer Early Decision II",
+      "sourceUrl": "https://www.sdstate.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg89y04do3lemgzccz14h",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Texas Tech University does not offer Early Decision II",
+      "sourceUrl": "https://www.depts.ttu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfp0z01f83lemdvbq108d",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Towson University does not offer Early Decision II",
+      "sourceUrl": "https://www.towson.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg1re03bj3lembrvsiw3d",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Akron does not offer Early Decision II",
+      "sourceUrl": "https://www.uakron.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfpyu01kz3lem7dxwiv7i",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Alabama does not offer Early Decision II",
+      "sourceUrl": "https://gobama.ua.edu/"
+    },
+    {
+      "targetId": "cmpdrg671041g3lemmb4m1ko6",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Central Florida does not offer Early Decision II",
+      "sourceUrl": "https://www.ucf.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfy7a02st3lem9la0ls7d",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Hawaii at Manoa does not offer Early Decision II",
+      "sourceUrl": "https://manoa.hawaii.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg7rc04as3lems7gizvt7",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Idaho does not offer Early Decision II",
+      "sourceUrl": "https://www.uidaho.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfv6802at3lemsy5tzive",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Kansas does not offer Early Decision II",
+      "sourceUrl": "https://admissions.ku.edu/"
+    },
+    {
+      "targetId": "cmpdrg4sl03ss3lemcsyg0ifh",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Kentucky does not offer Early Decision II",
+      "sourceUrl": "https://www.uky.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfvev02c93lemfu3umnuw",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Maine does not offer Early Decision II",
+      "sourceUrl": "https://umaine.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg7vp04bi3lemlxbi982o",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Massachusetts Boston does not offer Early Decision II",
+      "sourceUrl": "https://www.umb.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfvam02bj3lemlmzmxrkj",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Massachusetts Lowell does not offer Early Decision II",
+      "sourceUrl": "https://www.uml.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfob401aw3leml180zej0",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Memphis does not offer Early Decision II",
+      "sourceUrl": "https://www.memphis.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfywb02x53lem9233zqu4",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Nebraska-Lincoln does not offer Early Decision II",
+      "sourceUrl": "https://admissions.unl.edu/"
+    },
+    {
+      "targetId": "cmpdrfx6n02n33lemn96ji2hf",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Nevada, Las Vegas does not offer Early Decision II",
+      "sourceUrl": "https://www.unlv.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfhwa00a83lemvor29t3b",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Nevada, Reno does not offer Early Decision II",
+      "sourceUrl": "https://www.unr.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfwtx02kx3lemrfs4ycaw",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of New Hampshire does not offer Early Decision II",
+      "sourceUrl": "https://www.unh.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfq9v01n43lemp9iddptk",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of New Mexico does not offer Early Decision II",
+      "sourceUrl": "https://admissions.unm.edu/"
+    },
+    {
+      "targetId": "cmpdrg80d04c83lem4dlduntq",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Carolina Wilmington does not offer Early Decision II",
+      "sourceUrl": "https://uncw.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfs3n01uy3lemvtli64zy",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Dakota does not offer Early Decision II",
+      "sourceUrl": "https://und.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfmnk01293lem431z2e69",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Texas does not offer Early Decision II",
+      "sourceUrl": "https://www.unt.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfvrg02ef3lemznask24i",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Rhode Island does not offer Early Decision II",
+      "sourceUrl": "https://web.uri.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfhj200823lemefhj8zdf",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of South Dakota does not offer Early Decision II",
+      "sourceUrl": "https://www.usd.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfkxd00s73lemptmwz52t",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Southern Mississippi does not offer Early Decision II",
+      "sourceUrl": "https://www.usm.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfnsw01803lemb2ky8jja",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at Arlington does not offer Early Decision II",
+      "sourceUrl": "https://www.uta.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrga3804mb3lem2sk8hqll",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at San Antonio does not offer Early Decision II",
+      "sourceUrl": "https://www.utsa.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfjt300lr3lemum4k43rb",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Toledo does not offer Early Decision II",
+      "sourceUrl": "https://www.utoledo.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfw4e02gl3lem6bhe99u7",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Vermont does not offer Early Decision II",
+      "sourceUrl": "https://www.uvm.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfi9500ce3lemgb3jwrfh",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Wisconsin-Milwaukee does not offer Early Decision II",
+      "sourceUrl": "https://uwm.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfybb02tj3lemo34xuwot",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Wyoming does not offer Early Decision II",
+      "sourceUrl": "https://www.uwyo.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg96l04i03lemp1wcwhg4",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Washington State University does not offer Early Decision II",
+      "sourceUrl": "https://admission.wsu.edu/"
+    },
+    {
+      "targetId": "cmpdrfkg100pc3lemnjyvm1vw",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wayne State University does not offer Early Decision II",
+      "sourceUrl": "https://wayne.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfkk400q23lemcjdg0i08",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Western Michigan University does not offer Early Decision II",
+      "sourceUrl": "https://wmich.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfmj7011j3lemjunqlr7a",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "West Virginia University does not offer Early Decision II",
+      "sourceUrl": "https://admissions.wvu.edu/"
+    },
+    {
+      "targetId": "cmpdrgad204nr3lemku41ib63",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wichita State University does not offer Early Decision II",
+      "sourceUrl": "https://www.wichita.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg4wh03ti3lemq46ymgh4",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wright State University does not offer Early Decision II",
+      "sourceUrl": "https://www.wright.edu/admissions"
+    },
+
+    {
+      "targetId": "cmpdrg9jd04jt3lemnl05luva",
+      "field": "percentNeedMet",
+      "status": "UNAVAILABLE",
+      "reason": "ArtCenter College of Design — average percent of need met listed as 'Not reported' in CollegeData 2024-25 financial aid profile; statistic not published in school's CDS or financial aid disclosures",
+      "sourceUrl": "https://waf.collegedata.com/college-search/art-center-college-of-design/money-matters"
+    },
+    {
+      "targetId": "cmpdrgauz04qa3lema30bpu7j",
+      "field": "percentNeedMet",
+      "status": "UNAVAILABLE",
+      "reason": "School of the Art Institute of Chicago — average percent of need met listed as 'Not reported' in CollegeData; SAIC does not publish this statistic publicly",
+      "sourceUrl": "https://waf.collegedata.com/college-search/school-of-the-art-institute-of-chicago/money-matters"
+    },
+    {
+      "targetId": "cmpdrflw200xk3lem2bwnja7j",
+      "field": "percentNeedMet",
+      "status": "UNAVAILABLE",
+      "reason": "Seton Hall University — average percent of need met listed as 'Not reported' in CollegeData 2024-25 financial aid profile",
+      "sourceUrl": "https://waf.collegedata.com/college-search/seton-hall-university/money-matters"
+    },
+
+    {
+      "targetId": "cmpdrfxsx02qq3lema419gyev",
+      "field": "sat25",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Fullerton — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.fullerton.edu/admissions/freshman/index.php"
+    },
+    {
+      "targetId": "cmpdrg16503a63lemodqael1c",
+      "field": "sat25",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Long Beach — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.csulb.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg8ln04f73lemzulop8ag",
+      "field": "sat25",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Northridge — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.csun.edu/admissions-records"
+    },
+    {
+      "targetId": "cmpdrfk2d00na3lemh80f25ge",
+      "field": "sat25",
+      "status": "UNAVAILABLE",
+      "reason": "San Diego State University — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.sdsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfh2r005a3lemry9bulmn",
+      "field": "sat25",
+      "status": "UNAVAILABLE",
+      "reason": "The New School — portfolio-based admission policy; SAT scores not required and not reported in CDS",
+      "sourceUrl": "https://www.newschool.edu/admission/"
+    },
+
+    {
+      "targetId": "cmpdrfxta02qr3lemh4lg3d35",
+      "field": "sat75",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Fullerton — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.fullerton.edu/admissions/freshman/index.php"
+    },
+    {
+      "targetId": "cmpdrg16g03a73lemefgpucjp",
+      "field": "sat75",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Long Beach — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.csulb.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg8m004f83lem6f5e1h3v",
+      "field": "sat75",
+      "status": "UNAVAILABLE",
+      "reason": "California State University, Northridge — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.csun.edu/admissions-records"
+    },
+    {
+      "targetId": "cmpdrfk2q00nb3lem9d1qpajh",
+      "field": "sat75",
+      "status": "UNAVAILABLE",
+      "reason": "San Diego State University — Cal State system adopted test-blind admission policy effective Fall 2022; SAT scores no longer collected or reported",
+      "sourceUrl": "https://www.sdsu.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfh33005b3lemerkwc0oc",
+      "field": "sat75",
+      "status": "UNAVAILABLE",
+      "reason": "The New School — portfolio-based admission policy; SAT scores not required and not reported in CDS",
+      "sourceUrl": "https://www.newschool.edu/admission/"
+    },
+
+    {
+      "targetId": "cmpdrg79c047v3lemwoo18w6y",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Adelphi University — transfer acceptance rate not separately published in publicly accessible CDS Section D",
+      "sourceUrl": "https://www.adelphi.edu/admissions/transfer/"
+    },
+    {
+      "targetId": "cmpdrft7m020m3lemrkydv4m3",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California College of the Arts — portfolio-based art school admission; transfer admit rate not separately published in CDS",
+      "sourceUrl": "https://www.cca.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfhqj009f3lemnu5ahz2z",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "California Institute of the Arts (CalArts) — portfolio-based art school admission; transfer admit rate not separately published in CDS",
+      "sourceUrl": "https://calarts.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrfmuz013m3lemqg36qu0r",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cleveland State University — transfer admit rate not separately published in publicly accessible CDS Section D",
+      "sourceUrl": "https://www.csuohio.edu/admissions/admissions"
+    },
+    {
+      "targetId": "cmpdrflij00vo3lem92zbmexc",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Cooper Union — portfolio-based art/architecture/engineering school admission; transfer admit rate not separately published in CDS",
+      "sourceUrl": "https://cooper.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrgamx04p43lembx6daqwq",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Curtis Institute of Music — audition-based conservatory admission; transfer admit rate not separately published",
+      "sourceUrl": "https://www.curtis.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfzga02zy3lemenwjd1xt",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Manhattan School of Music — audition-based conservatory admission; transfer admit rate not separately published",
+      "sourceUrl": "https://www.msmnyc.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfwkh02je3lem8pr4h9go",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Maryland Institute College of Art (MICA) — portfolio-based art school admission; transfer admit rate not separately published in CDS",
+      "sourceUrl": "https://www.mica.edu/admission/"
+    },
+    {
+      "targetId": "cmpdrfk5l00nu3lem6gpjczrd",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Northern Illinois University — transfer admit rate not separately published in publicly accessible CDS Section D",
+      "sourceUrl": "https://www.niu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg2w003in3lem1l5zrtls",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Saint Louis University — transfer admit rate not separately published in current publicly accessible CDS Section D",
+      "sourceUrl": "https://www.slu.edu/admission/transfer/index.php"
+    },
+    {
+      "targetId": "cmpdrgaru04pu3lem4e4yjd3v",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "School of the Art Institute of Chicago (SAIC) — portfolio-based art school admission; transfer admit rate not separately published in CDS",
+      "sourceUrl": "https://www.saic.edu/admissions/undergraduate"
+    },
+    {
+      "targetId": "cmpdrflsr00x43lemy27c89pq",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Seton Hall University — transfer admit rate not separately published in publicly accessible CDS Section D",
+      "sourceUrl": "https://www.shu.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfoie01c93leme5vwxi65",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "The Juilliard School — audition-based conservatory admission; transfer admit rate not separately published",
+      "sourceUrl": "https://www.juilliard.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg1ac03aq3lemvug06rr8",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UMN — duplicate record; transfer acceptance rate data tracked on cml87jseu000thv3f1vab2qhu (canonical University of Minnesota record)",
+      "sourceUrl": "https://admissions.tc.umn.edu/"
+    },
+    {
+      "targetId": "cmpdrfvdu02c63lem1zgbj4zz",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Maine — transfer admit rate not separately published in current publicly accessible CDS Section D",
+      "sourceUrl": "https://umaine.edu/admissions/transfer/"
+    },
+    {
+      "targetId": "cmpdrfs0y01uv3lem8ts06m7p",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of North Dakota — transfer admit rate not separately published in publicly accessible CDS Section D",
+      "sourceUrl": "https://und.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfnrt017x3lem8kj8w8x9",
+      "field": "transferAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at Arlington — transfer admit rate not separately published in publicly accessible CDS Section D",
+      "sourceUrl": "https://www.uta.edu/admissions/transfer"
+    }
+  ]
+}

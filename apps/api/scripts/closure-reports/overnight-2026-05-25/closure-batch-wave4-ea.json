@@ -1,0 +1,226 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrfhn1008r3lemzt77g8j5",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Washington 2023-2024 CDS Section C22 marks Early Action = No. UW does not offer EA (only an early-notification Honors deadline and standard priority deadline). No EA applicant/admit numbers reported.",
+      "sourceUrl": "https://uw-s3-cdn.s3.us-west-2.amazonaws.com/wp-content/uploads/sites/162/2024/03/01124227/CDS_Seattle_2023_2024.xlsx"
+    },
+    {
+      "targetId": "cmpdrg0xj038m3lemjvlcugqk",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Tufts offers only Early Decision (ED1+ED2), no Early Action plan.",
+      "sourceUrl": "https://admissions.tufts.edu/apply/first-year-applicants/application-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfnwz018p3lem3oddwzgn",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Rutgers-New Brunswick uses a priority application deadline (Nov 1) for scholarship/honors consideration; this is not a Common Data Set Early Action plan and no EA applicant/admit counts are published.",
+      "sourceUrl": "https://admissions.rutgers.edu/apply/application-deadlines"
+    },
+    {
+      "targetId": "cmpdrfrjz01s23lemavlwr63w",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Boston University offers only Early Decision (ED1+ED2), no Early Action.",
+      "sourceUrl": "https://www.bu.edu/admissions/apply-now/first-year/application-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfsdn01wd3lemeujz8kxv",
+      "schoolId": "cml7z42540017rtujp3yxplbu",
+      "field": "eaAcceptanceRate",
+      "status": "CLOSED",
+      "value": 60.43,
+      "sourceUrl": "https://irp.osu.edu/sites/default/files/documents/2025/07/CDS-2023-2024-The%20Ohio%20State%20University-Columbus.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "Ohio State CDS 2023-2024 Section C22: 29,573 admitted / 48,937 EA applications = 60.43% for Fall 2023."
+    },
+    {
+      "targetId": "cmpdrg2jm03gj3lemx4bg6w20",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Purdue 2023-2024 CDS does not report EA applicant/admit counts in Section C22 (offers EA but suppresses split-out data).",
+      "sourceUrl": "https://www.purdue.edu/idata/wp-content/uploads/2026/04/CDS_2023_2024.xlsx"
+    },
+    {
+      "targetId": "cmpdrg54n03ux3lemc6h94y82",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Wake Forest 2023-2024 CDS Section C22 marks Early Action = No. WFU offers only Early Decision (ED1+ED2) in this cycle.",
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/02/CDS_2023-2024_2025-02-07.pdf"
+    },
+    {
+      "targetId": "cmpdrg61p040p3lempp1viz8h",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Rochester offers only Early Decision (ED1+ED2), no Early Action.",
+      "sourceUrl": "https://enrollment.rochester.edu/apply/first-year/deadlines/"
+    },
+    {
+      "targetId": "cmpdrfp9801gm3lemtlh5yv8s",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Texas A&M 2023-2024 CDS Section C22 marks Early Action = No. TAMU uses priority application deadline (not EA).",
+      "sourceUrl": "https://abpa.tamu.edu/getattachment/f8ad929c-e6d4-4cec-a438-96019fdc0433/Texas-A-M_CommonDataSet_2023_2024updated.pdf"
+    },
+    {
+      "targetId": "cmpdrfn5k01533lemw91gnxhb",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Lehigh offers only Early Decision (ED1+ED2), no Early Action plan.",
+      "sourceUrl": "https://admissions.lehigh.edu/apply/first-year-students/application-deadlines"
+    },
+    {
+      "targetId": "cmpdrfo1h019f3lemsx1d57mi",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Minnesota Twin Cities 2023-2024 CDS Section C22 indicates Early Action = Yes (closing 11/01, notify 01/31) but the EA applicant/admit/enrolled numerical fields are left blank in the published CDS.",
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2023_2024_tc.pdf"
+    },
+    {
+      "targetId": "cmpdrg6ny044b3lem4nhv4i4z",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "FSU 2023-2024 CDS published as section-split downloads; the CDS-C Section C22 EA numbers were not directly accessible from the public ir.fsu.edu site. FSU publicly reports rounded EA estimates (~32.7k applied, ~12.9k admitted) but the CDS does not contain official EA applied/admitted split numbers in a verifiable form.",
+      "sourceUrl": "https://ir.fsu.edu/commondataset.aspx"
+    },
+    {
+      "targetId": "cmpdrfldy00v03lemhl4kfqjn",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Virginia Tech 2023-2024 CDS Section C22 indicates Early Action = Yes (closing 12/1, notify 2/22) but the EA applicant/admit/enrolled numerical fields are blank in the CDS. Virginia Tech does not publicly publish EA-split admission counts.",
+      "sourceUrl": "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf"
+    },
+    {
+      "targetId": "cmpdrfvv402f43lem4mqfk2rd",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UConn 2023-2024 CDS Section C22 marks Early Action = No. UConn did not offer EA in this cycle.",
+      "sourceUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2024/08/UConn_CDS_2023_2024.pdf"
+    },
+    {
+      "targetId": "cmpdrftsr023k3lemjwq6z2dc",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Pepperdine offers Early Action / Early Decision only via specific tracks; the 2023-2024 CDS does not show an active EA plan with reported numbers in C22. Application path is primarily ED + RD.",
+      "sourceUrl": "https://www.pepperdine.edu/admission/seaver/deadlines.htm"
+    },
+    {
+      "targetId": "cmpdrfloe00wg3lemj51n3zru",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Brandeis 2023-2024 CDS Section C22 marks Early Action = No. Brandeis offers only Early Decision (ED1+ED2).",
+      "sourceUrl": "https://www.brandeis.edu/institutional-research/docs/cds-2023-24.pdf"
+    },
+    {
+      "targetId": "cmpdrfmra012y3lem29kg0lsm",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "RPI offers Early Decision and Regular Decision only; no Early Action plan.",
+      "sourceUrl": "https://admissions.rpi.edu/apply/first-year-applicants/dates-deadlines"
+    },
+    {
+      "targetId": "cmpdrg5od03yj3lemokd3uahx",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Santa Clara University 2023-2024 CDS Section C22 indicates EA plan exists but the EA applicant/admit/enrolled numerical fields are blank in the published CDS.",
+      "sourceUrl": "https://scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2023-2024---corrected---05302024.pdf"
+    },
+    {
+      "targetId": "cmpdrg2s003hz3lem2wvgjzx6",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Michigan State University 2023-2024 CDS Section C22 indicates Early Action = Yes (closing 11/01, notify 1/15) but the EA applicant/admit/enrolled numerical fields are blank in the published CDS.",
+      "sourceUrl": "https://ir.msu.edu/-/media/assets/ir/docs/cds/cds-2023-2024.pdf"
+    },
+    {
+      "targetId": "cmpdrfivc00fz3lem05neg40j",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "George Washington University 2023-2024 CDS Section C22 marks Early Action = No. GW offers only Early Decision (ED1+ED2).",
+      "sourceUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2024-05/cds_2023-2024_0.pdf"
+    },
+    {
+      "targetId": "cmpdrfzpb031g3lemva8pfs3u",
+      "schoolId": "cml87jsgq001xhv3fr1crkoar",
+      "field": "eaAcceptanceRate",
+      "status": "CLOSED",
+      "value": 40.21,
+      "sourceUrl": "https://report.isa.ncsu.edu/ir/cds/pdfs/CDS_2023-24.v2.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "NC State CDS 2023-2024 Section C22: 11,718 admitted / 29,143 EA applications = 40.21% for Fall 2023."
+    },
+    {
+      "targetId": "cmpdrfmef010s3lemmkczwb94",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Miami 2023-2024 CDS Section C22 indicates EA = Yes (closing 11/1, notify 1/31) but the EA applicant/admit numerical fields are blank in the published CDS.",
+      "sourceUrl": "https://irsa.miami.edu/facts-and-information/common-data-set/cds2324.pdf"
+    },
+    {
+      "targetId": "cmpdrg8fd04ed3lemblz0kpcy",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Pittsburgh 2023-2024 CDS Section C22 marks Early Action = No. Pitt uses rolling admission, not Early Action.",
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2023-2024%20Common%20Data%20Set%20Pgh%20Campus_7.pdf"
+    },
+    {
+      "targetId": "cmpdrg7mo04a13lem2fyldfvw",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "American University did not offer an Early Action plan for the 2023-2024 cycle (EA was introduced for the 2024-2025 cycle). Only Early Decision in 2023-2024 CDS.",
+      "sourceUrl": "https://www.american.edu/provost/oira/common-data-set.cfm"
+    },
+    {
+      "targetId": "cmpdrg70n046h3leml06vogwo",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Yeshiva University 2023-2024 CDS does not report EA applicant/admit numerical breakdown in Section C22.",
+      "sourceUrl": "https://www.yu.edu/sites/default/files/inline-files/CDS_2023_2024.xlsx"
+    },
+    {
+      "targetId": "cmpdrfly400xw3lemds7xnzgv",
+      "schoolId": "cmkqz26m90004klbksu3bug4t",
+      "field": "eaAcceptanceRate",
+      "status": "CLOSED",
+      "value": 81.11,
+      "sourceUrl": "https://www.smu.edu/-/media/site/ir/commondatasets/2023/cds_2023-2024-part-c-first-time-freshman.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "SMU CDS 2023-2024 Section C22: 6,202 admitted / 7,646 EA applications = 81.11% for Fall 2023."
+    },
+    {
+      "targetId": "cmpdrg24e03do3lems8pzpvji",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Delaware 2023-2024 CDS does not publish EA applicant/admit split. UD uses an Early Action plan but the CDS C22 numerical fields are not publicly reported in a verifiable form (2023-24 CDS PDF not directly accessible from public IRE pages, only via dropdown selector).",
+      "sourceUrl": "https://ire.udel.edu/common-data-set/"
+    },
+    {
+      "targetId": "cmpdrfufu026g3lem44dcpnfl",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Stevens Institute of Technology 2023-2024 CDS Section C22 indicates EA = Yes (closing 11/1, notify 2/1) but the EA applicant/admit/enrolled numerical fields are blank in the published CDS.",
+      "sourceUrl": "https://assets.stevens.edu/mviowpldu823/SYVRZ7OfZYOUm5hNrz7Qz/720500f10bed5fcd5fb905c3aa2143d1/CDS_2023-2024__Stevens_Institute_of_Technology.pdf"
+    },
+    {
+      "targetId": "cmpdrfw8a02ha3lemlkepskzd",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Clemson University 2023-2024 CDS Section C22 indicates EA = Yes (closing 10/15, notify 12/15) but the EA applicant/admit/enrolled numerical fields are blank in the published CDS.",
+      "sourceUrl": "https://open.clemson.edu/cgi/viewcontent.cgi?article=1015&context=cds"
+    },
+    {
+      "targetId": "cmpdrfone01d13lemsb7bsupc",
+      "field": "eaAcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Stony Brook University offers a non-binding Early Action option (Nov 1 deadline) but the 2023-2024 CDS PDF is not publicly accessible from the IRPE site (server returns generic HTML error page), and no official EA applicant/admit split is publicly reported by SBU.",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/"
+    }
+  ]
+}

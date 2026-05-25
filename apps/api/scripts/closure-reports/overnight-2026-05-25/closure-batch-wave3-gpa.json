@@ -1,0 +1,344 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-25T07:15:00Z",
+    "field": "gpaDistribution",
+    "method": "WebSearch + WebFetch CDS PDFs + pdftotext extraction, fallback to gradgpt/road2college aggregators",
+    "cycleLabel": "2023-24 preferred, 2024-25 fallback, 2022-23 fallback for officially-blank current cycles",
+    "scannedSchools": 30
+  },
+  "decisions": [
+    {
+      "targetId": "cmpdrg4m903rl3lemd1kazjyw",
+      "schoolId": "cml87jsep000qhv3fmuiiv7nz",
+      "schoolName": "Colby College",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Colby College institutional research publishes CDS through 2015-16; no public 2023-24 or 2024-25 CDS PDF on colby.edu. Returns 403 from afa.colby.edu profile. As a highly selective LAC with no current public CDS C11.",
+      "sourceUrl": "https://www.colby.edu/institutionalresearch/dataset/"
+    },
+    {
+      "targetId": "cmpdrfp6f01g63lemrfgzjbz9",
+      "schoolId": "cml7z424j000jrtujlt5otd1h",
+      "schoolName": "University of Notre Dame",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Notre Dame CDS explicitly does not publish C11 GPA distribution — they only report class rank (C9/C10). Notre Dame's Common Data Set lists rigor and GPA as 'Very Important' but does not publish an average GPA or distribution in the CDS. Direct PDF URLs at www3.nd.edu return 404; iris.nd.edu redirects to a Google Drive folder with class-rank-only data.",
+      "sourceUrl": "https://iris.nd.edu/institutional-research/common-data-set-cds/common-data-set/"
+    },
+    {
+      "targetId": "cmpdrfsps01y23lem5vj19m0i",
+      "schoolId": "cml7z424l000lrtuj5p8ach03",
+      "schoolName": "Georgetown University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Georgetown CDS hosted on georgetown.app.box.com is accessible only as Box viewer (not extractable via WebFetch). Georgetown historically does not publish C11 GPA distribution — they emphasize class rank instead. CDS aggregator road2college also reports no C11 GPA data for Georgetown.",
+      "sourceUrl": "https://oads.georgetown.edu/commondataset/"
+    },
+    {
+      "targetId": "cmpdrfi6800bx3lemtvgin1kx",
+      "schoolId": "cml7z424s000vrtujihux70t2",
+      "schoolName": "University of Texas at Austin",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UT Austin CDS hosted on utexas.app.box.com is not extractable via WebFetch (Box viewer); prior closure-data audit (cds-gpa-terminal-v4-2026-04-30.json) marked UT Austin OFFICIAL_BLANK_SECTION — the CDS does not expose usable C11 GPA distribution values. UT-Austin uses Top 10% auto-admit so class-rank dominates over GPA distribution.",
+      "sourceUrl": "https://utexas.app.box.com/s/pt3l6ddqhi3ao8mr6ij7698dnx33otyf"
+    },
+    {
+      "targetId": "cmpdrfypj02vy3lemv1uq1u8q",
+      "schoolId": "cml7z424u000xrtujwgz5h0a3",
+      "schoolName": "University of California, Irvine",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UC Irvine official CDS 2024-25 Section C11 has all cells reported as 0.00% / 0.00% / 0.00% (Total = 0.0) — the section is published but the GPA distribution is not reported. Consistent with UC system practice of reporting capped UC GPA (not unweighted 4.0-scale C11 bands).",
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    },
+    {
+      "targetId": "cmpdrfkcf00ov3lemm5ie60pj",
+      "schoolId": "cml7z424y0012rtujhrf1j6nf",
+      "schoolName": "Boston College",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Boston College official CDS 2022-23, 2023-24, and 2024-25 all leave Section C11 cells blank — totals row reads 0.0% / 0.0% / 0.0%. Already confirmed OFFICIAL_BLANK_SECTION in prior closure-data audit (cds-gpa-terminal-v4-2026-04-30.json).",
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf"
+    },
+    {
+      "targetId": "cmpdrfnys018z3lemwjvd8w6p",
+      "schoolId": "cml7z42500013rtujdh65br5y",
+      "schoolName": "Rutgers University-New Brunswick",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Rutgers-NB official 2023-24 CDS Section C11 lists GPA bands but all data cells are blank — no percentage values reported. Rutgers uses 'Index Score' based on SAT/ACT + rank/GPA for admission but does not publish C11 distribution.",
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "targetId": "cmpdrg56903v73lemansut9p1",
+      "schoolId": "cmkquq16w001ddzbkxshi14dj",
+      "schoolName": "Wake Forest University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Wake Forest official CDS 2023-24 and 2024-25 both leave Section C11 cells blank — totals row reads 0.0% / 0.0% / 0.0%. Wake Forest, as a test-optional school with holistic review emphasis, declines to publish GPA distribution.",
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/02/CDS_2023-2024_2025-02-07.pdf"
+    },
+    {
+      "targetId": "cmpdrfn7o015d3lem60yhvjl1",
+      "schoolId": "cml7z4257001artujp329fxls",
+      "schoolName": "Lehigh University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Lehigh official CDS 2023-24 (Revised 7.12.2024) and 2024-25 (Revised 4.18.2025) both leave Section C11 cells blank — totals row reads 0.0% / 0.0% / 0.0%. Lehigh publishes class rank (61.26% top decile) but not GPA distribution.",
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/Final_CDS_2023-2024_Revised_7.12.2024.pdf"
+    },
+    {
+      "targetId": "cmpdrfpb301gw3lemsfnulo6w",
+      "schoolId": "cml7z4257001brtuj7a141n1w",
+      "schoolName": "Texas A&M University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Texas A&M abpa.tamu.edu link 'Texas-A-M_CommonDataSet_2023_2024updated.pdf' returns AWS S3 403 NoSuchKey; the 2024-25 URL pattern is similar and also unstable. TAMU CDS prior cycles consistently leave C11 blank (Top 10% auto-admit dominates over GPA reporting in Texas public flagships).",
+      "sourceUrl": "https://abpa.tamu.edu/getattachment/f8ad929c-e6d4-4cec-a438-96019fdc0433/Texas-A-M_CommonDataSet_2023_2024updated.pdf"
+    },
+    {
+      "targetId": "cmpdrfvx102fe3lem4ye1aodl",
+      "schoolId": "cml87jsf1000xhv3ffzt4yf4r",
+      "schoolName": "University of Connecticut",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UConn official 2023-24 CDS Section C11 lists all bands but the values are blank — totals row reads 0.00% / 0.00% / 0.00% (and C12 reads 'N/A'). UConn explicitly does not collect/publish high school GPA distribution.",
+      "sourceUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2024/08/UConn_CDS_2023_2024.pdf"
+    },
+    {
+      "targetId": "cmpdrg8h804en3lemn46caqlc",
+      "schoolId": "cml87jsfc0012hv3fwj0suxio",
+      "schoolName": "University of Pittsburgh",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 84.0,
+        "3.50-3.74": 10.0,
+        "3.25-3.49": 4.0,
+        "3.00-3.24": 1.0,
+        "<3.00": 1.0
+      },
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/2023-2024_Common_Data_Set_Pgh_Campus.pdf",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "CDS 2023-24 Section C11 'Percent of all enrolled students' column: 4.0=67%, 3.75-3.99=17%, 3.50-3.74=10%, 3.25-3.49=4%, 3.00-3.24=1%, 2.50-2.99=1%, 2.0-2.49=0%, 1.0-1.99=0%, below 1.0=0%. Collapsed 9-band → 5-band. Total = 100%. Avg HS GPA = 4.13 (weighted)."
+    },
+    {
+      "targetId": "cmpdrg7oi04ab3lemucynm1l3",
+      "schoolId": "cml87jsdd0001hv3foiqk5h6g",
+      "schoolName": "American University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "American University official CDS 2024-25 Section C11 lists all 9 GPA bands but all data cells are blank — totals row reads 0.00 / 0.00 / 0.00 across all three columns. AU explicitly does not publish C11 GPA distribution.",
+      "sourceUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf"
+    },
+    {
+      "targetId": "cmpdrfh41005g3lemmouvb3y6",
+      "schoolId": "cmkrmmcch000b2w8cqpaqovsu",
+      "schoolName": "The New School",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "The New School Institutional Research & Decision Support page (newschool.edu/provost/institutional-research) does not list any public CDS PDF; only an archived 2008-2009 CDS exists in The New School Archives. No current/recent (2022-23, 2023-24, 2024-25) public CDS available with C11 GPA distribution.",
+      "sourceUrl": "https://www.newschool.edu/provost/institutional-research/"
+    },
+    {
+      "targetId": "cmpdrg92h04hj3lemem80dx17",
+      "schoolId": "cmkrmmcvo000f2w8c9gbx2ymy",
+      "schoolName": "University of Missouri",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "University of Missouri (Mizzou / MU-Columbia) CDS 2023-24 is hosted on SharePoint (mailmissouri.sharepoint.com) which requires authentication — the SharePoint URL returned HTML 56KB (auth challenge) not a PDF. UDAIR's public CDS page only shows the SharePoint-protected link. No public extractable C11 data.",
+      "sourceUrl": "https://udair.missouri.edu/mu-data/common-data-set/"
+    },
+    {
+      "targetId": "cmpdrfwzl02lw3lemhzsm7u10",
+      "schoolId": "cml87ktle000hu4zsedof6ipp",
+      "schoolName": "Clarkson University",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 56.6,
+        "3.50-3.74": 23.1,
+        "3.25-3.49": 6.9,
+        "3.00-3.24": 3.6,
+        "<3.00": 9.9
+      },
+      "sourceUrl": "https://drive.google.com/file/d/1IEHKZRtfuCt_wvR-dO0VwwLOnSKTiDnN/view",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "CDS 2023-24 Section C11 'Percent of all enrolled' column: 4.0=15.9%, 3.75-3.99=40.7%, 3.50-3.74=23.1%, 3.25-3.49=6.9%, 3.00-3.24=3.6%, 2.50-2.99=1.9%, 2.0-2.49=0.2%, 1.0-1.99=blank, below 1.0=7.8%. Note: 7.8% below-1.0 is anomalous but is what the official CDS reports. Avg HS GPA = 3.8. Sum = 100.1%."
+    },
+    {
+      "targetId": "cmpdrfs5401v73lems1zphhia",
+      "schoolId": "cmkrnd206000ecrknyg8wuu9a",
+      "schoolName": "University of North Dakota",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UND Analytics & Planning page (und.edu/analytics-and-planning/data-and-reports/common-data-set.html) lists only the 2020-21 CDS as the most recent public PDF — the page notes 'Updated reports will be available soon' but no 2022-23, 2023-24, or 2024-25 CDS PDF is publicly posted. 3+ year stale data is excluded per drift rule.",
+      "sourceUrl": "https://und.edu/analytics-and-planning/data-and-reports/common-data-set.html"
+    },
+    {
+      "targetId": "cmpdrfwec02ia3lem14b2nqh0",
+      "schoolId": "cmkrnd3am000ocrknsidhhfhs",
+      "schoolName": "Bowling Green State University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "BGSU Office of Institutional Research CDS page (bgsu.edu/institutional-research/CDS.html) does not provide a direct PDF link in the rendered HTML; no public BGSU CDS PDF found via web search for 2022-23, 2023-24, or 2024-25 cycles.",
+      "sourceUrl": "https://www.bgsu.edu/institutional-research/CDS.html"
+    },
+    {
+      "targetId": "cmpdrg9ny04kf3lemv40dioer",
+      "schoolId": "cmkrnd4qz000zcrknab0eejih",
+      "schoolName": "New Mexico State University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "NMSU Office of Institutional Analysis (oia.nmsu.edu/nmsudata) publishes Quick Facts (QuickFacts_23_24_ADA.pdf) and Factbooks but does not publish a Common Data Set with a C11 GPA distribution. No public NMSU CDS PDF found.",
+      "sourceUrl": "https://oia.nmsu.edu/nmsudata/index.html"
+    },
+    {
+      "targetId": "cmpdrfsb301vx3lem2uqr6wz7",
+      "schoolId": "cmkrnd5950013crkndxw8i2ce",
+      "schoolName": "Eastern Michigan University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "EMU IRIM 2024-25 CDS PDF (emich.edu/irim/documents/common-data-sets/cds2024v3.pdf) is Cloudflare-protected (HTTP 403). The 2021-22 fallback (irim.emich.edu/datafiles/pdf/cds2021.pdf) also returned 5KB HTML, not a PDF. No accessible C11 data.",
+      "sourceUrl": "https://www.emich.edu/irim/institutional-data/common-data-sets/index.php"
+    },
+    {
+      "targetId": "cmpdrga5204mk3lem5ohvnsvh",
+      "schoolId": "cmkrnd60g0019crkndt3sr98g",
+      "schoolName": "University of Texas at San Antonio",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UTSA official 2023-24 CDS (xlsx) Section C11 lists all 9 GPA bands but every data cell is empty — only the section header is present. UTSA, like UT Austin and TAMU, uses Top-10%/auto-admit for Texas residents and does not publish C11 GPA distribution.",
+      "sourceUrl": "https://www.utsa.edu/ir/docs/resources/commonDataSet/CDS_2023-2024.xlsx"
+    },
+    {
+      "targetId": "cmpdrfnub01893lemxd6wli7g",
+      "schoolId": "cmkrnd5ra0017crknaxh3zr8b",
+      "schoolName": "University of Texas at Arlington",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UT Arlington Office of Institutional Effectiveness and Reporting (uta.edu/administration/analytics/reports) shows only Statistical Handbook 2017-2021 and 2014-2018 as published institutional reports; no public Common Data Set with C11 GPA found.",
+      "sourceUrl": "https://www.uta.edu/administration/analytics/reports"
+    },
+    {
+      "targetId": "cmpdrfxyj02rm3lemu6bekxh3",
+      "schoolId": "cmkrnyiss001210fwfdipaqnk",
+      "schoolName": "James Madison University",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "JMU CDS explicitly states: 'NOTE: From 2013-14 forward James Madison University will no longer report GPA data (C11 and C12).' The 2023-24 and 2024-25 CDS both show 'C or t' (Cannot report / trace) in every C11 cell. This is an explicit institutional policy of non-publication.",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds_2023-2024.pdf"
+    },
+    {
+      "targetId": "cmpdrfvg502ci3lemdr3rn6bv",
+      "schoolId": "cml87ktpy000mu4zskf6626kl",
+      "schoolName": "University of Maine",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 37.93,
+        "3.50-3.74": 14.36,
+        "3.25-3.49": 12.01,
+        "3.00-3.24": 18.67,
+        "<3.00": 17.03
+      },
+      "sourceUrl": "https://umaine.edu/oira/wp-content/uploads/sites/502/2023/06/UMaine-CDS_2022-2023-6.26.23.pdf",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "CDS 2022-23 Section C11 (single 'Percent' column, all enrolled): 4.0=29.09%, 3.75-3.99=8.84%, 3.50-3.74=14.36%, 3.25-3.49=12.01%, 3.00-3.24=18.67%, 2.50-2.99=9.39%, 2.0-2.49=7.59%, 1.0-1.99=0.05%, below 1.0=blank. Avg HS GPA = 3.42. UMaine OIRA notes 2023-24 and 2024-25 are 'available upon request' — the 2022-23 is the most recent public C11. Total = 100%."
+    },
+    {
+      "targetId": "cmpdrfu6p025a3lembbce0f3d",
+      "schoolId": "cmks30aia000v9viipegrh03n",
+      "schoolName": "Pitzer College",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 79.2,
+        "3.50-3.74": 17.5,
+        "3.25-3.49": 2.0,
+        "3.00-3.24": 0.4,
+        "<3.00": 0.8
+      },
+      "sourceUrl": "https://www.pitzer.edu/documents/2023-2024-pitzer-common-data-set",
+      "confidence": 0.95,
+      "tier": "OFFICIAL",
+      "note": "CDS 2023-24 Section C11 'Percent of all enrolled' column: 4.0=45.5%, 3.75-3.99=33.7%, 3.50-3.74=17.5%, 3.25-3.49=2.0%, 3.00-3.24=0.4%, 2.50-2.99=0.8%, 2.0-2.49=0%, 1.0-1.99=0%, below 1.0=0%. Avg HS GPA = 3.99. Collapsed 9-band → 5-band. Sum = 99.9%."
+    },
+    {
+      "targetId": "cmpdrfr3p01qx3lemqrs5joc5",
+      "schoolId": "cmks308uy000d9viio4skawgr",
+      "schoolName": "Baruch College",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 30.85,
+        "3.50-3.74": 57.55,
+        "3.25-3.49": 9.61,
+        "3.00-3.24": 1.86,
+        "<3.00": 0.13
+      },
+      "sourceUrl": "https://ir.baruch.cuny.edu/wp-content/uploads/sites/23/2025/07/CDS-2024-2025-FINAL-Jun-12.pdf",
+      "confidence": 0.85,
+      "tier": "OFFICIAL",
+      "note": "CDS 2024-25 Section C11 'Percent (All enrolled students)' column: 4.0=0.26%, 3.75-3.99=30.59%, 3.50-3.74=57.55%, 3.25-3.49=9.61%, 3.00-3.24=1.86%, 2.50-2.99=blank, 2.0-2.49=blank, 1.0-1.99=0%, below 1.0=0.13%. Avg HS GPA = 3.66. CUNY systems use unweighted GPA which suppresses the 4.0 band relative to other schools using weighted scales. Sum = 100.00%."
+    },
+    {
+      "targetId": "cmpdrfqgx01o33lem7xkxp30v",
+      "schoolId": "cmks30elz00239vii3wiqinsg",
+      "schoolName": "Pacific Lutheran University",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 43.6,
+        "3.50-3.74": 26.2,
+        "3.25-3.49": 20.4,
+        "3.00-3.24": 8.6,
+        "<3.00": 1.2
+      },
+      "sourceUrl": "https://drive.google.com/file/d/18l4mJnRPd5HQCKkzpFNVt7VllR0nMpTQ/view",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "CDS 2023-24 Section C11 'Percent of all enrolled' column: 4.0=16.4%, 3.75-3.99=27.2%, 3.50-3.74=26.2%, 3.25-3.49=20.4%, 3.00-3.24=8.6%, 2.50-2.99=1.2%, 2.0-2.49=0%, 1.0-1.99=0%, below 1.0=0%. Avg HS GPA = 3.7. Sum = 100.0%."
+    },
+    {
+      "targetId": "cmpdrg3pa03na3lemap3bpkti",
+      "schoolId": "cmks30ecd00209viixi0w23je",
+      "schoolName": "Wheaton College Massachusetts",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "Wheaton MA Institutional Research CDS page lists only 2020-21 (CDS-A) as the most recent public PDF — no 2021-22, 2022-23, 2023-24, or 2024-25 CDS published. The 2020-21 data is too stale (per drift rule: >3yr cutoff for post-COVID test-optional cycles).",
+      "sourceUrl": "https://wheatoncollege.edu/about-wheaton-college/offices-services/institutional-research/cds/"
+    },
+    {
+      "targetId": "cmpdrfni0016t3lemh6gh614x",
+      "schoolId": "cmks30ev600269viis2ymp096",
+      "schoolName": "Augustana University",
+      "field": "gpaDistribution",
+      "status": "CLOSED",
+      "value": {
+        "3.75-4.00": 55.9,
+        "3.50-3.74": 19.7,
+        "3.25-3.49": 8.7,
+        "3.00-3.24": 7.0,
+        "<3.00": 8.7
+      },
+      "sourceUrl": "https://www.augie.edu/sites/default/files/documents/2025-01/CDS_2023_2024%20%283%29.xlsx",
+      "confidence": 0.9,
+      "tier": "OFFICIAL",
+      "note": "Augustana University (Sioux Falls, SD) CDS 2023-24 xlsx Section C11 'Percent of all enrolled students' column: 4.0=24.6%, 3.75-3.99=31.3%, 3.50-3.74=19.7%, 3.25-3.49=8.7%, 3.00-3.24=7.0%, 2.50-2.99=6.0%, 2.0-2.49=2.7%, 1.0-1.99=0%, below 1.0=0%. Sum = 100.0%."
+    },
+    {
+      "targetId": "cmpdrg1ij03b23lem8byk9fn1",
+      "schoolId": "cmks30b1e00119viibc9y6vf5",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "field": "gpaDistribution",
+      "status": "UNAVAILABLE",
+      "reason": "UMN Twin Cities official 2023-24 CDS Section C11 marks every data cell as 'C or t' (Cannot report / Treat as cell). UMN explicitly suppresses C11 GPA distribution. Already confirmed OFFICIAL_BLANK_SECTION in prior closure-data audit (cds-gpa-terminal-v4-2026-04-30.json).",
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2023_2024_tc.pdf"
+    }
+  ]
+}

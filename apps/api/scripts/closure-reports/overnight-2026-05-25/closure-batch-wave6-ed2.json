@@ -1,0 +1,354 @@
+{
+  "decisions": [
+    {
+      "targetId": "cmpdrg710046i3lemjdpzwvkh",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Yeshiva University does not offer Early Decision II. Per official admissions deadlines page, only Early Decision Honors (Nov 2) and Regular Decision (Feb 2) are available — no ED2 round.",
+      "sourceUrl": "https://apply.yu.edu/deadlines"
+    },
+    {
+      "targetId": "cmpdrflyg00xx3lemn7zfr3i1",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "SMU offers Early Decision II (Jan 15 deadline) per third-party sources, but does not publish a separate ED2 acceptance rate in its Common Data Set. CDS Section C21 combines ED1+ED2 into a single Early Decision line per standard CDS reporting practice.",
+      "sourceUrl": "https://blog.collegevine.com/early-decision-ii-schools"
+    },
+    {
+      "targetId": "cmpdrfugb026h3lemscu52al1",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Stevens Institute of Technology offers Early Decision II (Jan 5 deadline) per official admissions timeline, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.stevens.edu/admission-aid/undergraduate-admissions/admissions-timeline"
+    },
+    {
+      "targetId": "cmpdrfonu01d23lem5x3c66yr",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Stony Brook University is a public SUNY institution and does not offer Early Decision (ED1 or ED2). It uses rolling/Early Action admission only.",
+      "sourceUrl": "https://www.stonybrook.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfw8m02hb3lemi3hkx9zk",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Clemson University is a public institution and does not offer Early Decision II. Its admission plans are Early Action and Regular Decision only.",
+      "sourceUrl": "https://www.clemson.edu/admissions/undergraduate/"
+    },
+    {
+      "targetId": "cmpdrg3gt03mb3lemlzjzd5sc",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "SUNY Binghamton (Binghamton University) is a public SUNY institution and does not offer Early Decision II. Its admission plans are Early Action and Regular Decision only.",
+      "sourceUrl": "https://www.binghamton.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfgxr004h3lemyvcbjtfb",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Gonzaga University does not offer Early Decision at all (no ED1 or ED2). It offers Early Action and Regular Decision only.",
+      "sourceUrl": "https://www.collegedata.com/college/Gonzaga-University"
+    },
+    {
+      "targetId": "cmpdrfphx01i33lemds5m3zga",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Loyola Marymount University offers Early Decision II (Jan 8 deadline) per official admissions, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.lmu.edu/apply/"
+    },
+    {
+      "targetId": "cmpdrfpty01k93lemq2q9xq3e",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Indiana University Bloomington does not offer Early Decision (per CollegeData 'Early Decision Offered: No'). Only Early Action and Regular Decision are available.",
+      "sourceUrl": "https://www.collegedata.com/college/Indiana-University-Bloomington"
+    },
+    {
+      "targetId": "cmpdrfj0900gq3lempiu6fw2k",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Riverside is a public University of California campus. The UC system does not offer Early Decision at all (no ED1 or ED2) — it uses a single November application window only.",
+      "sourceUrl": "https://admissions.universityofcalifornia.edu/"
+    },
+    {
+      "targetId": "cmpdrg0m7036j3lemrxsbich8",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Santa Cruz is a public University of California campus. The UC system does not offer Early Decision at all (no ED1 or ED2) — it uses a single November application window only.",
+      "sourceUrl": "https://admissions.universityofcalifornia.edu/"
+    },
+    {
+      "targetId": "cmpdrfnam015u3lem8y334k9t",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University at Buffalo is a public SUNY institution and does not offer Early Decision II. It uses rolling and Early Action admission.",
+      "sourceUrl": "https://www.buffalo.edu/admissions.html"
+    },
+    {
+      "targetId": "cmpdrg5t903za3lemyk5s9y8y",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Iowa is a public institution and does not offer Early Decision II. It uses rolling admission.",
+      "sourceUrl": "https://admissions.uiowa.edu/"
+    },
+    {
+      "targetId": "cmpdrfiqz00fa3lemnelfpuch",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Marquette University does not offer Early Decision (per CollegeData 'Early Decision Offered: No'). Only Early Action and Regular Decision are available, with Feb 1 deadline.",
+      "sourceUrl": "https://www.collegedata.com/college/Marquette-University"
+    },
+    {
+      "targetId": "cmpdrg6s804523lemp2gjgblb",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of South Florida is a public institution and does not offer Early Decision II. It uses rolling/Early Action admission only.",
+      "sourceUrl": "https://www.usf.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrft3801zz3lemgtj0bwta",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Syracuse University offers Early Decision II (Jan 5 deadline) per official admissions, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.syracuse.edu/admissions-aid/application-process/apply/dates-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfwpx02k73lemuqm5yosy",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Fordham University does not appear in any comprehensive ED2 school list (CollegeVine, College Transitions). Fordham offers Early Action and Early Decision (single round) per CollegeData; no separate ED2 round confirmed.",
+      "sourceUrl": "https://www.collegedata.com/college/Fordham-University"
+    },
+    {
+      "targetId": "cmpdrfuxk029d3lemxtlkc5ra",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Temple University does not offer Early Decision at all (per CollegeData 'Early Decision Offered: No'). Only Early Action and Regular Decision are available.",
+      "sourceUrl": "https://www.collegedata.com/college/Temple-University"
+    },
+    {
+      "targetId": "cmpdrg58z03vo3lem0np23r7d",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Denver offers Early Decision II (Jan 15 deadline) per third-party sources, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://blog.collegevine.com/early-decision-ii-schools"
+    },
+    {
+      "targetId": "cmpdrg84j04cy3lemri4tz12n",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "WPI offers Early Decision II (Jan 5 deadline) per official admissions timeline, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.wpi.edu/admissions/undergraduate/apply/college-application-timeline"
+    },
+    {
+      "targetId": "cmpdrfpdr01hd3lemmh2fmbkh",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Baylor University does not appear in comprehensive ED2 school lists (CollegeVine, College Transitions). Per CollegeData, Baylor offers Early Decision (single round) with Feb 1 Regular deadline; no separate ED2 round confirmed.",
+      "sourceUrl": "https://www.collegedata.com/college/Baylor-University"
+    },
+    {
+      "targetId": "cmpdrg39k03kv3lem8bljlsm9",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of San Diego does not offer Early Decision II. Per official admissions, only Early Action, Early Decision (single round, Nov 1), and Regular Decision are offered.",
+      "sourceUrl": "https://www.sandiego.edu/admissions/undergraduate/apply/deadlines.php"
+    },
+    {
+      "targetId": "cmpdrg2x203iq3lempnez579q",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Saint Louis University offers Early Decision II (Jan 16 deadline) per official admissions, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.slu.edu/admission/freshman/deadlines.php"
+    },
+    {
+      "targetId": "cmpdrfowr01ei3lemroiuw4f2",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Howard University does not appear in comprehensive ED2 school lists (CollegeVine, College Transitions). Per CollegeData, Howard offers Early Action and Early Decision (single round); no separate ED2 round confirmed.",
+      "sourceUrl": "https://www.collegedata.com/college/Howard-University"
+    },
+    {
+      "targetId": "cmpdrfteq021f3lemm8joyhyx",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Illinois Institute of Technology does not appear in comprehensive ED2 school lists (CollegeVine, College Transitions). Per CollegeData, IIT offers Early Action and Early Decision (single round); no separate ED2 round confirmed.",
+      "sourceUrl": "https://www.collegedata.com/college/Illinois-Institute-of-Technology"
+    },
+    {
+      "targetId": "cmpdrfrwe01u83lem0b4gk1h4",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "UC Merced is a public University of California campus. The UC system does not offer Early Decision at all (no ED1 or ED2) — it uses a single November application window only.",
+      "sourceUrl": "https://admissions.universityofcalifornia.edu/"
+    },
+    {
+      "targetId": "cmpdrfgg5001l3lemm5ih1fgr",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Colorado Boulder is a public institution and does not offer Early Decision II. It uses Early Action and Regular Decision only.",
+      "sourceUrl": "https://www.colorado.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrg9y604ll3lemb8s19tzd",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Colorado School of Mines is a public institution and does not offer Early Decision II. It uses Early Action and Regular Decision only.",
+      "sourceUrl": "https://www.mines.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfj4m00hg3lem7rn6pgc8",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Drexel University does not offer Early Decision II. Per official first-year application deadlines page, only Early Decision (Nov 15), Early Action (Nov 15), Regular Decision (Jan 15), and Winter Entry (Oct 1) are offered.",
+      "sourceUrl": "https://drexel.edu/admissions/apply/undergrad-instructions/first-year-instructions/application-deadlines/"
+    },
+    {
+      "targetId": "cmpdrfm2k00yn3lemxc2qw3li",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "RIT offers Early Decision II (Jan 1 deadline) per official admissions, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.rit.edu/admissions/first-year-application"
+    },
+    {
+      "targetId": "cmpdrg31j03jg3lemjs446vt2",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Oregon is a public institution and does not offer Early Decision II. It uses Early Action and Regular Decision only.",
+      "sourceUrl": "https://admissions.uoregon.edu/"
+    },
+    {
+      "targetId": "cmpdrg44s03oh3lemq4667b83",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Auburn University is a public institution and does not offer Early Decision II. It uses rolling/Early Action admission only.",
+      "sourceUrl": "https://www.auburn.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfm6n00zd3lemjhuoafbq",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of South Carolina is a public institution and does not offer Early Decision II. It uses Early Action and rolling/Regular Decision only.",
+      "sourceUrl": "https://sc.edu/about/offices_and_divisions/undergraduate_admissions/"
+    },
+    {
+      "targetId": "cmpdrfst001yj3lemkntllgn8",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Arizona State University is a public institution and does not offer Early Decision II. It uses rolling admission only.",
+      "sourceUrl": "https://admission.asu.edu/"
+    },
+    {
+      "targetId": "cmpdrfw0m02fv3lemlys3qcva",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Arizona is a public institution and does not offer Early Decision II. It uses rolling admission only.",
+      "sourceUrl": "https://admissions.arizona.edu/"
+    },
+    {
+      "targetId": "cmpdrfyk402uz3lemuafjn1dq",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "DePaul University does not offer Early Decision at all (per CollegeData 'Early Decision Offered: No'). Only Early Action and Regular Decision are available, with Feb 1 deadline.",
+      "sourceUrl": "https://www.collegedata.com/college/DePaul-University"
+    },
+    {
+      "targetId": "cmpdrfh2600573lemk5c5fzb6",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "The New School does not offer Early Decision II. Per official admissions, only Early Decision (Nov 15) and Early Action (Nov 10) and Regular Decision are offered.",
+      "sourceUrl": "https://www.newschool.edu/admission/prospective-undergraduate-students/early-application-options/"
+    },
+    {
+      "targetId": "cmpdrfrs501ti3lemc1temrfg",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Tennessee is a public institution and does not offer Early Decision II. It uses Early Action and Regular Decision only.",
+      "sourceUrl": "https://admissions.utk.edu/"
+    },
+    {
+      "targetId": "cmpdrg90t04ha3lemuhs9qhfa",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Missouri is a public institution and does not offer Early Decision II. It uses rolling admission only.",
+      "sourceUrl": "https://admissions.missouri.edu/"
+    },
+    {
+      "targetId": "cmpdrg6bz04263lemo9dpepka",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Texas at Dallas is a public institution and does not offer Early Decision II. It uses standard application deadlines only.",
+      "sourceUrl": "https://www.utdallas.edu/enroll/undergraduate/"
+    },
+    {
+      "targetId": "cmpdrfysf02wf3lemmnq1601b",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Loyola University Chicago does not offer Early Decision at all (per CollegeData 'Early Decision Offered: No'). It uses rolling admission.",
+      "sourceUrl": "https://www.collegedata.com/college/Loyola-University-Chicago"
+    },
+    {
+      "targetId": "cmpdrfo6b01a63lemg85r4llf",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of San Francisco offers Early Decision II (Jan 15 deadline) per official admissions, but does not publish a separate ED2 acceptance rate. CDS Section C21 combines ED1+ED2 into a single Early Decision line.",
+      "sourceUrl": "https://www.usfca.edu/admission/undergraduate/dates-deadlines"
+    },
+    {
+      "targetId": "cmpdrg11p039d3lem1sut5h2s",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Utah is a public institution and does not offer Early Decision II. It uses Early Action and Regular Decision only.",
+      "sourceUrl": "https://admissions.utah.edu/"
+    },
+    {
+      "targetId": "cmpdrg28m03ef3lemndmeoecd",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Cincinnati is a public institution and does not offer Early Decision II. It uses rolling/Early Action admission only.",
+      "sourceUrl": "https://admissions.uc.edu/"
+    },
+    {
+      "targetId": "cmpdrg49d03p73lemydsfgxsi",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Houston is a public institution and does not offer Early Decision II. It uses rolling/priority deadline admission only.",
+      "sourceUrl": "https://uh.edu/admissions/"
+    },
+    {
+      "targetId": "cmpdrfwy602ln3lemh0zw7tpm",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Clarkson University does not appear in comprehensive ED2 school lists (CollegeVine, College Transitions). Per CollegeData, no separate ED2 round confirmed.",
+      "sourceUrl": "https://www.collegedata.com/college/Clarkson-University"
+    },
+    {
+      "targetId": "cmpdrg5xj04003lemkzh449ts",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Iowa State University is a public institution and does not offer Early Decision II. It uses rolling/priority deadline admission only.",
+      "sourceUrl": "https://www.admissions.iastate.edu/"
+    },
+    {
+      "targetId": "cmpdrfl5k00tm3lem6bmddhci",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Oklahoma is a public institution and does not offer Early Decision II. It uses Early Action and Regular Decision only.",
+      "sourceUrl": "https://www.ou.edu/admissions"
+    },
+    {
+      "targetId": "cmpdrg75k04783lem71vfmil6",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "University of Arkansas is a public institution and does not offer Early Decision II. It uses rolling/priority deadline admission only.",
+      "sourceUrl": "https://admissions.uark.edu/"
+    },
+    {
+      "targetId": "cmpdrg6ge042w3lemo7eclyy9",
+      "field": "ed2AcceptanceRate",
+      "status": "UNAVAILABLE",
+      "reason": "Louisiana State University (LSU) is a public institution and does not offer Early Decision II. It uses rolling/priority deadline admission only.",
+      "sourceUrl": "https://www.lsu.edu/admissions/"
+    }
+  ]
+}
