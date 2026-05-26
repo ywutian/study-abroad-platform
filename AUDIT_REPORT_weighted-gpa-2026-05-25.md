@@ -83,11 +83,73 @@ For Stanford applicant with **3.6 unweighted**:
 
 The 3.6 unweighted at Stanford gets penalized to 0.52× even though such a candidate could plausibly be a strong hook (athlete, URM, etc.) — engine's data-driven path is too brittle when distribution is weighted.
 
-## Recommended actions (TIER B — for morning review)
+## 🛑 UPDATE 2026-05-25 late: Multi-agent investigation REJECTED Option A
 
-Three options ranked by safety:
+5 parallel agents (data-model-reviewer, architect, test-engineer, study-abroad-expert, ai-prompt-engineer) analyzed this problem. Empirical counterfactual (test-engineer) found **Option A makes predictions WORSE**, not better.
 
-### Option A — engine-level detection (recommended)
+### Counterfactual results (5 schools × 3 applicants)
+
+| Applicant @ Stanford | Current | Option A | Δ             |
+| -------------------- | ------- | -------- | ------------- |
+| Perfect 4.00/1560    | 2.28%   | 2.08%    | **−0.20pp** ↓ |
+| Strong 3.85/1500     | 2.11%   | 1.03%    | **−1.08pp** ↓ |
+| Below 3.60/1430      | 1.25%   | 0.67%    | **−0.58pp** ↓ |
+
+Similar pattern at MIT (all 3 applicants DOWN). UCLA unchanged (Tier-1 cell suppression). Smith Perfect/Strong went up but Smith BelowMed dropped 3.64pp.
+
+### Why the audit premise was wrong
+
+The audit assumed strong unweighted applicants were being penalized at Stanford due to weighted-data contamination. But empirically:
+
+- Current data-driven path is **under-discriminating** — Perfect/Strong/Below 3.60 all get similar ~1.0× multipliers at Stanford because the 95% top-band swallows everyone in 3.75-4.00 input range (percentile = (4% + 95%/2) ≈ 51%, multiplier ≈ ×1.02 regardless)
+- SAT-fallback path is **more punitive at SEVERE schools** — equivSat 1490 (from 3.85 unweighted) sits below Stanford's sat50 1550, triggering ×0.50
+
+So nulling the weighted distribution removes the bland-but-tolerable percentile signal and substitutes a harsh SAT-based signal that penalizes strong unweighted applicants MORE.
+
+### Architect risk also confirmed
+
+Test-optional applicants at SEVERE schools would lose GPA signal entirely with Option A (`usableSatBand` returns null → multiplier ×1.0). This compounds the problem.
+
+## Revised recommendation (TIER B — defer)
+
+**Do not implement Option A.** Engine current behavior, while imperfect, is empirically better-calibrated than the proposed fix.
+
+Alternatives ranked by feasibility:
+
+### Option B — scaleType metadata + band remap (deferred future work)
+
+1. Write `metadata.provenance.gpaDistribution.scaleType: "likely_weighted"` on the 22 SEVERE schools (no migration; existing JSONB pattern)
+2. In `normalizeGpaDistribution()`, when scaleType is "likely_weighted", **remap bands**: shift the distribution down by ~0.5 GPA points (weighted 4.0 ≈ unweighted 3.5; weighted 3.75 ≈ unweighted 3.25, etc.)
+3. Re-run calibration spec to verify direction
+4. Requires significantly more design + testing than Option A
+
+### Option C — null out + tweak SAT-fallback (also deferred)
+
+Null the 22 SEVERE distributions PLUS add a coarse GPA-only mini-table in the SAT-fallback path for test-optional applicants:
+
+```typescript
+if (sat25Band == null && gpa4 != null) {
+  return gpa4 >= 3.9 ? ×1.05 : gpa4 >= 3.7 ? ×0.95 : ×0.7;
+}
+```
+
+This addresses Architect's TO blind spot but still has the punitive equivSat penalty for strong-with-SAT applicants.
+
+### Option D — leave as-is, document, monitor
+
+Accept that the current weighted-data + percentile-calc combination is **accidentally tolerable** (under-discriminating but not actively harmful), and:
+
+1. Write metadata flags for the 22 SEVERE schools (audit-trail purposes)
+2. Add telemetry to count predictions at SEVERE schools (so we can see drift)
+3. Wait for new data sources (e.g., Crimson's unweighted distributions, schools publishing better C11) before changing engine behavior
+
+**Recommended: Option D (do nothing + monitor)** until we have either (a) verified unweighted distributions to swap in, or (b) a remap function (Option B) that's been validated against calibration fixtures.
+
+The original Option A analysis below is retained for historical context but **superseded by this update**.
+
+---
+
+## Original Option A proposal (now REJECTED — kept for context)
 
 Add to `normalizeGpaDistribution()`:
 
