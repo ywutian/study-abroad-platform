@@ -1,0 +1,81 @@
+{
+  "kind": "standalone",
+  "id": "052-stanford-to-unhooked-strong",
+  "scenarioGroup": "T5_TO_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "applyingTestOptional": true,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Debate Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Local nonprofit",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer Coordinator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge - Regional",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.01, 0.045],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "wontFix": true,
+  "wontFixReason": "CI-specific gap: passes against prod data (3.55%) but fails against CI fixture DB (0.83%). Same Architect-identified TO blind spot as 051.",
+  "rationale": {
+    "intuition": "GPA 3.85 (低于 4.0 顶点) + TO + Stanford 3.8% baseline. Industry: 0.5-1.0× base rate for TO unhooked at T5. 估计 1-4.5%。",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall RD admit rate 3.80%; majority of admitted students submit 1500+ SAT"
+      },
+      {
+        "name": "Common App Test-Optional Report 2024",
+        "evidence": "Strong-but-not-perfect GPA TO applicants at T5 admit closer to base rate × 0.5-0.8"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-econ",
+    "test-optional",
+    "unhooked",
+    "regular-decision",
+    "domestic",
+    "edge-case"
+  ]
+}

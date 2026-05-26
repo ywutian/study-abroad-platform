@@ -1473,6 +1473,8 @@ model School {
   testOptional       Boolean?
   testingPolicy      TestingPolicy @default(UNKNOWN)
   hasEarlyDecision   Boolean?
+  hasEarlyDecision2  Boolean? // null=unknown, true=offers ED2 round, false=no ED2
+  hasEarlyAction     Boolean? // null=unknown, true=offers open EA, false=no EA
 
   // Post-Graduation Outcomes (from Appily)
   salary6YrPostGrad  Int? // Median salary 6 years after graduation
@@ -1563,6 +1565,8 @@ model School {
   @@index([testOptional])
   @@index([testingPolicy])
   @@index([hasEarlyDecision])
+  @@index([hasEarlyDecision2])
+  @@index([hasEarlyAction])
   @@index([country, usNewsRank])
 }
 

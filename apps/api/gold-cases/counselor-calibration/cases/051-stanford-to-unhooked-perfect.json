@@ -1,0 +1,82 @@
+{
+  "kind": "standalone",
+  "id": "051-stanford-to-unhooked-perfect",
+  "scenarioGroup": "T5_TO_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "applyingTestOptional": true,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "AI Research at University Lab",
+        "category": "RESEARCH",
+        "role": "Independent Researcher",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "Robotics Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Coding Club for Underserved Youth",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USACO Gold", "level": "NATIONAL", "year": 2025 },
+      { "name": "Regional Science Fair Winner", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.015, 0.06],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "wontFix": true,
+  "wontFixReason": "CI-specific gap: passes against prod-equivalent data (3.72%) but fails against CI's bare-minimum fixture DB (1.13%). Engine's SAT-fallback path is too punitive when school's gpaDistribution/intlAcceptanceRate are not populated. Architect-identified TO blind spot. Fixture preserved to detect when CI data parity improves.",
+  "rationale": {
+    "intuition": "Stanford overall ~3.8% RD. Test-optional 在 T5 unhooked 通常显著 penalty (Common App data: no-score admit at 60-75% of test-submitter rate at T20). Perfect GPA + strong ECs 部分弥补，但缺乏 SAT 在 Stanford 这种高分校尤其 penalize。Industry 区间 2-6%。Confidence ≤ medium 反映 test signal 缺失。",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall RD admit rate 3.80%; ~70% submit test scores, suggesting TO pool is self-selected (often hooked or unique)"
+      },
+      {
+        "name": "Common App Test-Optional Report 2024",
+        "evidence": "T20 schools admit no-score applicants at 60-75% of test-submitter rate (5-10pp absolute gap)"
+      },
+      {
+        "name": "Counselor Engine testBandMultiplier",
+        "evidence": "applyingTestOptional=true at <5% accept schools gets ×0.85 modifier"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "test-optional",
+    "unhooked",
+    "regular-decision",
+    "domestic",
+    "edge-case"
+  ]
+}

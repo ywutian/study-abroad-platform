@@ -1,0 +1,85 @@
+{
+  "kind": "standalone",
+  "id": "060-brown-ed-strong-domestic-roundboost",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Brown University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [
+      {
+        "name": "Software Engineering Internship",
+        "category": "WORK_EXPERIENCE",
+        "role": "Intern",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 12,
+        "yearsActive": 1
+      },
+      {
+        "name": "Robotics Team",
+        "category": "ACADEMIC",
+        "role": "Lead Programmer",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Coding Club for Youth",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder & Lead Instructor",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USACO Platinum", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "Regional Hackathon - First Place",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.15, 0.38],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Documented engine gap (Tier B follow-up): ED-path award lift weak — USACO Platinum spike at Brown ED produces 12.75-13.47% vs industry [15, 38]. Engine award boost insufficient to push above Brown's published ED admit rate (~14%).",
+  "rationale": {
+    "intuition": "Brown ED 14.37% vs overall 5.39% (~2.67× lift)。Strong unhooked CS profile (3.95/1540 + USACO Platinum) + ED 应位于 reach top end. Industry consensus: 15-35%。这个 fixture 重点测 roundMultiplier 对 ED 的正确放大 (相比 025 添加了 internship + Platinum 更强 spike)。",
+    "sources": [
+      {
+        "name": "Brown CDS 2024-25",
+        "evidence": "Overall admit rate 5.06%; ED admit rate 14.4% (~2.85× lift)"
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "ED applicants at T20 see 2-3× admit rate lift vs RD pool"
+      },
+      {
+        "name": "Crimson Ivy+ ED Benchmark 2024",
+        "evidence": "Strong unhooked STEM profiles in ED at Brown cluster 18-30%; USACO Platinum further lifts to high-reach band"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "stem-cs",
+    "early-decision",
+    "domestic",
+    "unhooked",
+    "round-boost",
+    "edge-case"
+  ]
+}

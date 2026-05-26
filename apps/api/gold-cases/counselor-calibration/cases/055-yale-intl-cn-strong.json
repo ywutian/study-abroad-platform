@@ -1,0 +1,86 @@
+{
+  "kind": "standalone",
+  "id": "055-yale-intl-cn-strong",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_INTL",
+  "schoolName": "Yale University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1550 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Economics Research at University",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      },
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "Chair",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Tutoring Rural Students Online",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Co-founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "AMC 12 Honor Roll", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "National Economics Competition - Top 50",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.015, 0.085],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale intl admit rate 11% (DB) — 但这个数字偏高，可能反映 yield 而非纯 admit rate。Industry consensus: T5 RD intl-CN strong unhooked clusters 2-8%。Yale RD overall 4.75%, intl 池 admit 通常 ≤ overall。GPA 3.85 + SAT 1550 = strong but not exceptional; profile 没有 hook + 经济专业 highly competitive intl。",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall RD admit rate 4.75%; intl ~11% of enrolled class"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T5 RD intl-CN strong (GPA 3.8+, SAT 1500+) unhooked profiles cluster 2-7%"
+      },
+      {
+        "name": "Counselor Engine v3 (current)",
+        "evidence": "Uses intlAcceptanceRate when available; intl-CN penalty stacked via profileContext"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-econ",
+    "intl-cn",
+    "regular-decision",
+    "unhooked",
+    "edge-case"
+  ]
+}

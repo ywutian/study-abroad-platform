@@ -1,0 +1,87 @@
+{
+  "kind": "standalone",
+  "id": "057-upenn-legacy-hook",
+  "scenarioGroup": "T5_RD_LEGACY_VERIFIED",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Finance",
+    "isFirstGen": false,
+    "isLegacy": true,
+    "legacySchools": ["University of Pennsylvania"],
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "DECA Business Competition",
+        "category": "LEADERSHIP",
+        "role": "Chapter President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Investment Club",
+        "category": "ACADEMIC",
+        "role": "Treasurer",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Financial Literacy Outreach",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Co-founder",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "DECA State Championship - Top 5",
+        "level": "STATE",
+        "year": 2025
+      },
+      { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.1, 0.32],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Penn legacy admit rate ~33% historical (similar to Harvard SFFA data, multiple investigative reports). Mid-strong profile (3.85/1480) + legacy 应在 12-28%。Penn overall 5.4%, ED 14.2%, RD 4%。",
+    "sources": [
+      {
+        "name": "Penn CDS 2024-25",
+        "evidence": "Overall admit rate 5.38%; legacy admit rate not officially published; 14% of class are legacies (Daily Pennsylvanian 2023)"
+      },
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Harvard legacy admitted at 33% rate vs 6% non-legacy; Penn legacy lift estimated similar magnitude"
+      },
+      {
+        "name": "Crimson Legacy Benchmark 2024",
+        "evidence": "Verified T5 legacy with mid-strong profile clusters 12-30%"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine intentionally treats self-reported legacy as ×1.0 neutral (counselor-modifiers.ts:850). Same evidence-required policy as fixtures 016/017. Spec range reflects industry intuition for VERIFIED legacy; will pass once verification flow lands.",
+    "followUp": "Same evidence-required engine work as 016/017: build verified-hook flow → flip legacyHookMultiplier from ×1.0 to ~×3-5 for verified legacy."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "legacy-hook",
+    "regular-decision",
+    "domestic",
+    "wontfix-engine-gap",
+    "edge-case"
+  ]
+}
