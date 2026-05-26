@@ -75,6 +75,15 @@ run_seed "ranking-lists-backfill" ./prisma/seeds/backfill-school-ranking-lists.j
 # 12. Assessment question banks — MBTI / HOLLAND / STRENGTH (Assessment).
 run_seed "assessment-banks" ./prisma/seed-assessment.js
 
+# 13. M3 Bayesian engine priors — per-school hook % (legacy/athlete/first-gen)
+#     on School table. Idempotent updateMany. Used by dimLegacy / dimAthlete.
+run_seed "m3-hook-stats" ./prisma/seed-hook-stats.js
+
+# 14. M3 Bayesian engine global baselines — GlobalAdmitBaseline table
+#     (P(category | apply) priors used as Bayesian denominators).
+#     Idempotent upsert on unique metric column.
+run_seed "m3-global-baselines" ./prisma/seed-global-admit-baselines.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------
