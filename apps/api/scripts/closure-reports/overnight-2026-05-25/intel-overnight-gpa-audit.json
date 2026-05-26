@@ -1,0 +1,198 @@
+{
+  "decisions": [],
+  "investigation_summary": {
+    "approach": "Intelligence-driven angle: searched admissions class-profile microsites, blog roundups, third-party aggregators (Compass Prep, College Transitions, PrepScholar, CollegeVine, testbook.com), and downloaded each school's most recent Common Data Set (2024-25 where available) to inspect Section C11 directly.",
+    "strict_quality_bar": "Per task spec, only CLOSED if (1) source EXPLICITLY says unweighted, (2) data has 3+ band partitions, (3) two independent sources confirm. Rejected weighted GPA, mean+SD, single-threshold figures, and CDS C11 data that doesn't specify weighted vs unweighted.",
+    "schools_checked": 47,
+    "closed": 0,
+    "still_unavailable": 47,
+    "key_finding": "Virtually no school in this dataset publishes the 5-band unweighted GPA distribution our engine needs. Elite LACs (Williams, Amherst, Swarthmore, Pomona, Wellesley, etc.) publish class rank in lieu of GPA. Selective privates (Notre Dame, Georgetown, Rice, Wake Forest, BC, Lehigh, American) leave CDS C11 blank or report only mid-50% range. Public flagships (Rutgers NB, UC Irvine, Texas A&M, UTSA, UMN, JMU, UConn, U Missouri) also leave C11 blank or mark 'C or t' (cannot/not reported). Specialty/art schools (RISD, SAIC, SCAD, Berklee, Juilliard, MICA, CalArts, Curtis, New England Conservatory, Cooper Union, ArtCenter, CCA) report only averages — portfolio-driven admissions de-emphasize formal GPA reporting.",
+    "candidate_data_points_evaluated_and_rejected": [
+      {
+        "school": "Davidson College",
+        "candidate": "CDS 2024-25 C11 shows: 4.0=40.91%/35.42%, 3.75-3.99=34.30%/31.60%, 3.50-3.74=23.14%/26.39%, 3.25-3.49=1.65%/4.86%, 3.00-3.24=0%/1.73% (test-submitter / non-submitter)",
+        "rejection_reason": "CDS does not specify weighted vs unweighted, and ~38% perfect 4.0 strongly indicates weighted GPA. Davidson's own admissions site characterizes typical competitive applicant as 'unweighted 3.85+' — inconsistent with 38% being perfect 4.0 unweighted. Per strict quality bar, REJECT.",
+        "source_url": "https://www.davidson.edu/media/9718/download"
+      },
+      {
+        "school": "Smith College",
+        "candidate": "CDS 2024-25 C11 all-enrolled: 4.0=82%, 3.75-3.99=15%, 3.50-3.74=3%, 3.25-3.49=1%",
+        "rejection_reason": "CDS does not specify weighted vs unweighted. 82% with perfect 4.0 is implausible as unweighted — strongly indicates weighted (consistent with HS reporting to college). Per strict bar, REJECT.",
+        "source_url": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf"
+      },
+      {
+        "school": "SCAD",
+        "candidate": "testbook.com claims '40% had GPA 3.75+, 30% in 3.50-3.74, 20% in 3.25-3.49, 10% below 3.25'",
+        "rejection_reason": "Single third-party source (testbook.com), unsourced/uncited, doesn't specify weighted vs unweighted. SCAD.edu does not publish this. Per strict bar (2 independent sources, must say unweighted), REJECT.",
+        "source_url": "https://testbook.com/en-us/college/scad-university-admissions"
+      },
+      {
+        "school": "Vassar College",
+        "candidate": "Class of '28 page: 'mean GPA 3.9 on a 4.0 unweighted scale'",
+        "rejection_reason": "Mean only, no distribution bands. Cannot back-out to 5-band format. Per task spec, REJECT averages.",
+        "source_url": "https://www.vassar.edu/admission/quick-facts/class-profile/"
+      },
+      {
+        "school": "UC Irvine",
+        "candidate": "UC Admissions: median unweighted 3.95, 25th-75th 3.84-4.00",
+        "rejection_reason": "Median + IQR only. No band breakdown. Per task spec, REJECT.",
+        "source_url": "https://admission.universityofcalifornia.edu/campuses-majors/irvine/freshman-admission-profile.html"
+      },
+      {
+        "school": "UTSA",
+        "candidate": "An AI search summary alleged '74.40% had 3.50-3.74' from CDS 2023-24",
+        "rejection_reason": "Direct download and verification of UTSA's CDS xlsx shows Section C11 is completely empty (all band values 0, Total=0). The earlier search result was fabricated. REJECT.",
+        "source_url": "https://www.utsa.edu/ir/docs/resources/commonDataSet/CDS_2023-2024.xlsx"
+      }
+    ],
+    "schools_with_cds_c11_verified_blank": [
+      { "school": "Williams College", "url": "n/a — no public CDS C11 data" },
+      {
+        "school": "Amherst College",
+        "url": "https://www.amherst.edu (class profile shows rank, no GPA bands)"
+      },
+      { "school": "Swarthmore", "url": "n/a" },
+      { "school": "Pomona College", "url": "n/a" },
+      { "school": "Wellesley", "url": "n/a" },
+      {
+        "school": "Bowdoin",
+        "url": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf — C11 blank"
+      },
+      { "school": "Middlebury", "url": "n/a — CDS not filled for C11" },
+      {
+        "school": "Carleton",
+        "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf — C11 blank"
+      },
+      { "school": "Harvey Mudd", "url": "n/a" },
+      {
+        "school": "Bates",
+        "url": "n/a — bigfuture indicates no GPA range published"
+      },
+      { "school": "Hamilton", "url": "n/a — only mean/IQR via third parties" },
+      {
+        "school": "Haverford",
+        "url": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf — 403 access"
+      },
+      {
+        "school": "Washington and Lee",
+        "url": "https://my.wlu.edu/document/2024-common-data-set — C11 blank (all zeros)"
+      },
+      { "school": "Grinnell", "url": "n/a — only third-party estimates" },
+      { "school": "Claremont McKenna", "url": "n/a" },
+      {
+        "school": "Vassar",
+        "url": "Vassar publishes mean 3.9 unweighted, no bands"
+      },
+      {
+        "school": "Davidson",
+        "url": "https://www.davidson.edu/media/9718/download — C11 populated but weighted/unweighted unspecified, profile inconsistent with unweighted"
+      },
+      {
+        "school": "Smith",
+        "url": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf — C11 populated but appears weighted"
+      },
+      { "school": "Colgate", "url": "n/a" },
+      {
+        "school": "Colby",
+        "url": "Colby does not participate in CDS Initiative"
+      },
+      {
+        "school": "Notre Dame",
+        "url": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf — exists but only class rank published, not C11"
+      },
+      { "school": "Georgetown", "url": "n/a — only weighted GPA published" },
+      {
+        "school": "Rice",
+        "url": "https://admission.rice.edu/apply/class-profile — no GPA data in profile"
+      },
+      {
+        "school": "Lehigh",
+        "url": "https://www2.lehigh.edu/admissions/admission-statistics — no GPA data"
+      },
+      {
+        "school": "Boston College",
+        "url": "https://www.bc.edu/bc-web/admission/apply/admission-statistics.html — no GPA data; BC failed to report GPA for Class of 2028"
+      },
+      {
+        "school": "Rutgers New Brunswick",
+        "url": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf — C11 blank"
+      },
+      {
+        "school": "Wake Forest",
+        "url": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf — C11 blank (zeros)"
+      },
+      {
+        "school": "Texas A&M",
+        "url": "https://abpa.tamu.edu — CDS download 404"
+      },
+      {
+        "school": "American University",
+        "url": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf — C11 all zeros"
+      },
+      { "school": "ArtCenter College of Design", "url": "n/a" },
+      { "school": "Berklee", "url": "n/a — average GPA reported, no bands" },
+      { "school": "Bowling Green State", "url": "n/a" },
+      { "school": "California College of the Arts", "url": "n/a" },
+      { "school": "California Institute of the Arts", "url": "n/a" },
+      {
+        "school": "Cooper Union",
+        "url": "https://cooper.edu/admissions/facts/first-year-profile — no GPA data"
+      },
+      {
+        "school": "Curtis Institute of Music",
+        "url": "n/a — audition-driven, no formal GPA reporting"
+      },
+      {
+        "school": "Eastern Michigan",
+        "url": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf — 403"
+      },
+      {
+        "school": "James Madison",
+        "url": "https://www.jmu.edu/pair/ir/common-data-set/ — no GPA data on JMU fast facts"
+      },
+      { "school": "Maryland Institute College of Art", "url": "n/a" },
+      { "school": "New England Conservatory", "url": "n/a — audition-driven" },
+      { "school": "New Mexico State", "url": "n/a" },
+      {
+        "school": "Rhode Island School of Design",
+        "url": "n/a — only average GPA via third parties"
+      },
+      {
+        "school": "Savannah College of Art and Design",
+        "url": "Only unsourced testbook claim, rejected"
+      },
+      { "school": "Juilliard", "url": "n/a — audition-driven" },
+      { "school": "The New School", "url": "n/a" },
+      {
+        "school": "University of Minnesota Twin Cities",
+        "url": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2023_2024_tc.pdf — C11 marked 'C or t' (not reported)"
+      },
+      { "school": "UC Irvine", "url": "Only median+IQR, no bands" },
+      {
+        "school": "University of Connecticut",
+        "url": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf — UConn has not reported GPA in CDS for past 9 years"
+      },
+      {
+        "school": "University of Missouri",
+        "url": "n/a — only college freshman GPA reported, not HS"
+      },
+      {
+        "school": "University of North Dakota",
+        "url": "https://und.edu/analytics-and-planning/data-and-reports/common-data-set.html — not verified populated"
+      },
+      {
+        "school": "University of Notre Dame",
+        "url": "Only class rank published, no GPA bands"
+      },
+      { "school": "University of Texas at Arlington", "url": "n/a" },
+      {
+        "school": "University of Texas at San Antonio",
+        "url": "Verified C11 empty in xlsx"
+      },
+      { "school": "School of the Art Institute of Chicago", "url": "n/a" },
+      { "school": "Wheaton College Massachusetts", "url": "n/a" },
+      { "school": "Williams College", "url": "n/a" }
+    ],
+    "strengthened_unavailable_reason": "After cross-referencing class-profile microsites, admissions blog roundups, Compass/College Transitions/PrepScholar aggregators, and the school's own Common Data Set Section C11 (downloaded and parsed where accessible), no source publishes a 5-band UNWEIGHTED GPA distribution that meets the strict quality bar. Schools that fill CDS C11 (Davidson, Smith) report unspecified-scale data inconsistent with our unweighted-4.0 engine. Elite LACs (Williams, Amherst, Swarthmore, Pomona, Wellesley, Bowdoin, Middlebury, Carleton, Harvey Mudd) report class rank percentile in lieu of GPA. Selective privates (Notre Dame, Georgetown, Rice, Wake Forest, BC, Lehigh, American) leave C11 blank. Public flagships and regional publics (Rutgers, UCI, Texas A&M, UTSA, UMN, JMU, UConn, U Missouri, U North Dakota, NMSU, UTA) leave C11 blank or report only mid-50%. Portfolio/audition-driven specialty schools (RISD, SAIC, SCAD, Berklee, Juilliard, Curtis, MICA, NEC, CalArts, ArtCenter, CCA, Cooper Union, New School) prioritize portfolio review and do not publish formal GPA distributions."
+  }
+}
