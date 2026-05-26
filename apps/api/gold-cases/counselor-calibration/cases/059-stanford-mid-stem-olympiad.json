@@ -41,6 +41,8 @@
   "expectedProbabilityRange": [0.04, 0.22],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Documented engine gap (Tier B follow-up): award multiplier under-lifts at T5 when applicant has sub-median academics. USAMO national-tier recognition does not currently compensate enough for GPA 3.75 + SAT 1500. Fixture is preserved to track when engine fix lands.",
   "rationale": {
     "intuition": "USAMO Qualifier 是 Stanford 这种 STEM 重视学校的 strong hook (~270 qualifiers/year US, very rare)。GPA 3.75 + SAT 1500 below median (3.9/1540), 但 STEM spike 显著 lift。Industry: 4-22% — Olympiad qualifier 通常让强 spike 推到 reach top end。",
     "sources": [

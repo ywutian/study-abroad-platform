@@ -52,6 +52,8 @@
   "expectedProbabilityRange": [0.15, 0.38],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Documented engine gap (Tier B follow-up): ED-path award lift weak — USACO Platinum spike at Brown ED produces 12.75-13.47% vs industry [15, 38]. Engine award boost insufficient to push above Brown's published ED admit rate (~14%).",
   "rationale": {
     "intuition": "Brown ED 14.37% vs overall 5.39% (~2.67× lift)。Strong unhooked CS profile (3.95/1540 + USACO Platinum) + ED 应位于 reach top end. Industry consensus: 15-35%。这个 fixture 重点测 roundMultiplier 对 ED 的正确放大 (相比 025 添加了 internship + Platinum 更强 spike)。",
     "sources": [

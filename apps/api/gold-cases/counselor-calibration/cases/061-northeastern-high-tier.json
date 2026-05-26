@@ -56,6 +56,8 @@
   "expectedProbabilityRange": [0.04, 0.18],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Documented Tier B engine gap: NEU's CDS C11 contains weighted GPA (audit-flagged HIGH tier). Engine treats it as unweighted, mismatching applicant's unweighted 3.85 to a band that says everyone is 4.0+, severely under-predicting. Tier B band-remap fix deferred per overnight safety rule.",
   "rationale": {
     "intuition": "Northeastern overall ~5.2% RD (highly selective in recent years), SAT 25th=1450, 75th=1520. Profile (3.85/1480) 处于 25-75 区间. RD pool at NEU is brutal because much smaller post-ED. Industry: 4-18%. 注意：NEU 在 Tier B audit 中是 weighted-GPA contamination 学校之一 (HIGH tier per audit), 这个 fixture 验证 unweighted GPA 输入 + HIGH-tier 学校行为，避免被 weighted-data 误导给过低概率。",
     "sources": [

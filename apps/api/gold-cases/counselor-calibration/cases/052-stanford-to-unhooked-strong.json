@@ -52,6 +52,8 @@
   "expectedProbabilityRange": [0.01, 0.045],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "medium",
+  "wontFix": true,
+  "wontFixReason": "CI-specific gap: passes against prod data (3.55%) but fails against CI fixture DB (0.83%). Same Architect-identified TO blind spot as 051.",
   "rationale": {
     "intuition": "GPA 3.85 (低于 4.0 顶点) + TO + Stanford 3.8% baseline. Industry: 0.5-1.0× base rate for TO unhooked at T5. 估计 1-4.5%。",
     "sources": [

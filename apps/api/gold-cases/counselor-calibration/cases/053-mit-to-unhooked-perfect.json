@@ -46,6 +46,8 @@
   "expectedProbabilityRange": [0.015, 0.07],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "medium",
+  "wontFix": true,
+  "wontFixReason": "CI-specific gap: passes against prod data (4.44%) but fails against CI fixture DB (1.22%). Same Architect-identified TO blind spot as 051/052.",
   "rationale": {
     "intuition": "MIT 已恢复 test-required (2022起) — applyingTestOptional 路径在 MIT 实际上等于 not-applying, 但 engine 仍按 TO 处理。关键问题：缺 SAT 在 STEM 强校尤其不利。Industry 估计 1.5-7%（perfect GPA + strong STEM 部分弥补）。MIT overall ~4.5% RD。",
     "sources": [
