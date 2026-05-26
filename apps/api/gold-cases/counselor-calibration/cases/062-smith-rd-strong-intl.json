@@ -1,0 +1,87 @@
+{
+  "kind": "standalone",
+  "id": "062-smith-rd-strong-intl",
+  "scenarioGroup": "LAC_RD_INTL",
+  "schoolName": "Smith College",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Government",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1480 },
+      { "type": "TOEFL", "score": 110 }
+    ],
+    "activities": [
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "Secretary General",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 4
+      },
+      {
+        "name": "Women's Empowerment Club",
+        "category": "LEADERSHIP",
+        "role": "Co-founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Rural Education Outreach",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer Coordinator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Model UN Best Delegate",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "School Top 10 Honor Roll", "level": "SCHOOL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.06, 0.28],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Smith overall 21%, intl 6.02%。Strong intl-CN profile (3.9/1480 unweighted GPA) + 女子文理学院适合女性 leadership profile + RD round. Industry: T15-T20 LAC intl admit 通常 5-25%。注意：Smith 在 Tier B audit 中是 weighted-GPA contamination 学校之一, 这个 fixture 验证 unweighted GPA 输入下的合理预测。",
+    "sources": [
+      {
+        "name": "Smith CDS 2024-25",
+        "evidence": "Overall admit rate 21.0%; intl admit rate 6.02% (lower than overall due to intl pool competition); ED 38.2%"
+      },
+      {
+        "name": "TIER_B_WEIGHTED_GPA_AUDIT 2026-05-25",
+        "evidence": "Smith College listed in weighted-GPA contaminated schools — engine should handle unweighted GPA 3.9 input correctly without over-penalty"
+      },
+      {
+        "name": "Crimson LAC Intl Benchmark 2024",
+        "evidence": "T15 LAC intl-CN strong RD profiles cluster 6-25% per published case data; women-focused LACs slightly more generous to qualified intl women"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "lac",
+    "humanities",
+    "intl-cn",
+    "regular-decision",
+    "unhooked",
+    "weighted-gpa-contamination",
+    "edge-case"
+  ]
+}

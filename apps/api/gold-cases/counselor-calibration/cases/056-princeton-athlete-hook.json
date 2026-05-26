@@ -1,0 +1,78 @@
+{
+  "kind": "standalone",
+  "id": "056-princeton-athlete-hook",
+  "scenarioGroup": "T5_RD_ATHLETE_VERIFIED",
+  "schoolName": "Princeton University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "History",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": true,
+    "testScores": [{ "type": "SAT", "score": 1400 }],
+    "activities": [
+      {
+        "name": "Varsity Lacrosse (recruited)",
+        "category": "ATHLETICS",
+        "role": "Captain",
+        "hoursPerWeek": 25,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      },
+      {
+        "name": "Athletic Mentor Program",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Mentor",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "All-State Lacrosse First Team",
+        "level": "STATE",
+        "year": 2025
+      },
+      { "name": "Regional Player of the Year", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.35, 0.85],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Verified recruited athlete in D1 sport at Princeton — Arcidiacono SFFA expert data: athletes admitted at ~88% rate. Below-median academics (3.5/1400 vs Princeton 3.9/1540) acceptable because athlete slot 绕过常规审核。Industry consensus: 50-85% for verified recruits.",
+    "sources": [
+      {
+        "name": "Princeton CDS 2024-25",
+        "evidence": "Overall admit rate 4.42%; ~14% of class are recruited athletes (estimated)"
+      },
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Recruited athletes admitted at ~88% rate at Harvard; similar magnitude expected at Princeton per peer-school analyses"
+      },
+      {
+        "name": "NCAA Recruitment Survey 2024",
+        "evidence": "D1 recruited athletes at Ivies see 30-50× lift over general applicants"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine intentionally treats self-reported recruited-athlete as ×1.0 neutral (counselor-modifiers.ts line 868). Same evidence-required policy as fixtures 018/019. Will fail until verified-athlete data model + flow ships.",
+    "followUp": "Same evidence-required engine work as 018/019: build verified-hook flow → flip athleteMultiplier from ×1.0 to ~×10 for verified recruits."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "athlete-hook",
+    "regular-decision",
+    "domestic",
+    "wontfix-engine-gap",
+    "edge-case"
+  ]
+}

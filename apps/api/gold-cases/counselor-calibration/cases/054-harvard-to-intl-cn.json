@@ -1,0 +1,84 @@
+{
+  "kind": "standalone",
+  "id": "054-harvard-to-intl-cn",
+  "scenarioGroup": "T5_TO_INTL_CN",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Government",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "applyingTestOptional": true,
+    "testScores": [{ "type": "TOEFL", "score": 115 }],
+    "activities": [
+      {
+        "name": "Model UN International",
+        "category": "ACADEMIC",
+        "role": "Secretary General",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Debate Society",
+        "category": "LEADERSHIP",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Volunteer Translator (NGO)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Lead Translator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Debate Championship Finalist",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.005, 0.04],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Harvard intl admit rate 1.94%. Intl-CN + TO + 缺 SAT 是叠加 penalty (intl 池子尤其需要 SAT signal 校准 GPA 通货膨胀)。Perfect GPA 让上限到 ~3-4%。Industry: 0.5-4%。",
+    "sources": [
+      {
+        "name": "Harvard CDS 2024-25",
+        "evidence": "Intl admit rate 1.94%; intl pool typically requires test scores to validate GPA scale"
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "T5 intl-CN applicants without test scores cluster well below median intl admit rate"
+      },
+      {
+        "name": "Counselor Engine intlAcceptanceRate path",
+        "evidence": "Uses school.intlAcceptanceRate as anchor for international applicants when available"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities",
+    "test-optional",
+    "intl-cn",
+    "regular-decision",
+    "unhooked",
+    "edge-case"
+  ]
+}

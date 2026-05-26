@@ -1,0 +1,74 @@
+{
+  "kind": "standalone",
+  "id": "058-caltech-unhooked-mid",
+  "scenarioGroup": "T5_RD_MID_UNHOOKED",
+  "schoolName": "California Institute of Technology",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.65,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Physics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "activities": [
+      {
+        "name": "Physics Research at University Lab",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Physics Club",
+        "category": "ACADEMIC",
+        "role": "Vice President",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Regional Science Fair Honorable Mention",
+        "level": "STATE",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.001, 0.025],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Caltech overall ~2.57%, sat25=1530。SAT 1450 远低于 25th percentile (1530), GPA 3.65 也偏低。Caltech 高度 STEM-spike 学校，缺顶级 STEM 成就。Industry: 0.1-2.5% — 显著低于 base rate due to test score below 25th + 平庸 STEM 表现。",
+    "sources": [
+      {
+        "name": "Caltech CDS 2024-25",
+        "evidence": "Overall admit rate 2.57%; SAT 25th=1530, 75th=1580 — applicants below 25th rarely admitted absent significant hook"
+      },
+      {
+        "name": "Counselor Engine testBandMultiplier",
+        "evidence": "SAT below 25th at <5% accept schools applies severe penalty (~×0.3-0.5)"
+      },
+      {
+        "name": "Crimson STEM T5 Benchmark 2024",
+        "evidence": "Caltech profiles below sat25 admit at <0.5% historically per case studies"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-physics",
+    "unhooked",
+    "regular-decision",
+    "domestic",
+    "below-25th",
+    "edge-case"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "kind": "standalone",
+  "id": "053-mit-to-unhooked-perfect",
+  "scenarioGroup": "T5_TO_UNHOOKED_DOMESTIC",
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Mathematics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "applyingTestOptional": true,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "Math Research",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "Math Olympiad Coaching",
+        "category": "ACADEMIC",
+        "role": "Head Coach",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Tutoring Program",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [{ "name": "AIME Score 10+", "level": "NATIONAL", "year": 2025 }]
+  },
+  "expectedProbabilityRange": [0.015, 0.07],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "MIT 已恢复 test-required (2022起) — applyingTestOptional 路径在 MIT 实际上等于 not-applying, 但 engine 仍按 TO 处理。关键问题：缺 SAT 在 STEM 强校尤其不利。Industry 估计 1.5-7%（perfect GPA + strong STEM 部分弥补）。MIT overall ~4.5% RD。",
+    "sources": [
+      {
+        "name": "MIT CDS 2024-25",
+        "evidence": "Overall RD admit rate 4.55%; test required since 2022 — TO is effectively a non-standard signal"
+      },
+      {
+        "name": "MIT Admissions Blog (Schmill 2022)",
+        "evidence": "MIT reinstated SAT/ACT requirement citing predictive value of standardized testing at MIT specifically"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-math",
+    "test-optional",
+    "unhooked",
+    "regular-decision",
+    "domestic",
+    "edge-case"
+  ]
+}

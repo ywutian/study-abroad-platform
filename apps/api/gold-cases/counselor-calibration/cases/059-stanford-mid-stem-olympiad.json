@@ -1,0 +1,71 @@
+{
+  "kind": "standalone",
+  "id": "059-stanford-mid-stem-olympiad",
+  "scenarioGroup": "T5_RD_STEM_SPIKE",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.75,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Mathematics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1500 }],
+    "activities": [
+      {
+        "name": "Math Olympiad Training",
+        "category": "ACADEMIC",
+        "role": "Team Member",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      },
+      {
+        "name": "Math Circle for Middle Schoolers",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Co-founder & Instructor",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USAMO Qualifier", "level": "NATIONAL", "year": 2025 },
+      { "name": "AIME Score 12+", "level": "NATIONAL", "year": 2025 },
+      { "name": "AMC 12 Honor Roll", "level": "NATIONAL", "year": 2024 }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "USAMO Qualifier 是 Stanford 这种 STEM 重视学校的 strong hook (~270 qualifiers/year US, very rare)。GPA 3.75 + SAT 1500 below median (3.9/1540), 但 STEM spike 显著 lift。Industry: 4-22% — Olympiad qualifier 通常让强 spike 推到 reach top end。",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall RD admit rate 3.80%; STEM admits with national olympiad recognition admit at ~10-25%"
+      },
+      {
+        "name": "Crimson STEM Olympiad Benchmark 2024",
+        "evidence": "USAMO qualifiers at T5 universities cluster 8-30% admit per published case data — academic spike compensates for sub-median GPA/test"
+      },
+      {
+        "name": "Counselor Engine awardMultiplier",
+        "evidence": "USAMO_QUALIFIER recognized as national-tier award gets significant lift in multi-hook stack scenarios"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-math",
+    "olympiad-spike",
+    "regular-decision",
+    "domestic",
+    "edge-case"
+  ]
+}

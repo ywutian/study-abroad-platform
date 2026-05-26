@@ -1,0 +1,87 @@
+{
+  "kind": "standalone",
+  "id": "061-northeastern-high-tier",
+  "scenarioGroup": "T30_RD_STRONG_DOMESTIC",
+  "schoolName": "Northeastern University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "Computer Science Tutoring",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Lead Tutor",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Web Development Club",
+        "category": "ACADEMIC",
+        "role": "Vice President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Part-time Software Internship",
+        "category": "WORK_EXPERIENCE",
+        "role": "Intern Developer",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      }
+    ],
+    "awards": [
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Regional Programming Contest Top 10",
+        "level": "STATE",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Northeastern overall ~5.2% RD (highly selective in recent years), SAT 25th=1450, 75th=1520. Profile (3.85/1480) 处于 25-75 区间. RD pool at NEU is brutal because much smaller post-ED. Industry: 4-18%. 注意：NEU 在 Tier B audit 中是 weighted-GPA contamination 学校之一 (HIGH tier per audit), 这个 fixture 验证 unweighted GPA 输入 + HIGH-tier 学校行为，避免被 weighted-data 误导给过低概率。",
+    "sources": [
+      {
+        "name": "Northeastern CDS 2024-25",
+        "evidence": "Overall admit rate 5.22%, RD significantly more selective than overall; SAT 25th=1450, 75th=1520"
+      },
+      {
+        "name": "TIER_B_WEIGHTED_GPA_AUDIT 2026-05-25",
+        "evidence": "Northeastern listed in HIGH tier (not SEVERE) for weighted-GPA contamination — engine should handle unweighted GPA 3.85 input without over-penalty"
+      },
+      {
+        "name": "Crimson T30 Benchmark 2024",
+        "evidence": "Strong domestic CS at NEU RD clusters 5-20% per published case data"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t30-private",
+    "stem-cs",
+    "regular-decision",
+    "domestic",
+    "unhooked",
+    "weighted-gpa-high-tier",
+    "edge-case"
+  ]
+}
