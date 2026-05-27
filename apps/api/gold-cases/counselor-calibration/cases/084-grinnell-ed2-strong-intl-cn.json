@@ -1,0 +1,103 @@
+{
+  "kind": "standalone",
+  "id": "084-grinnell-ed2-strong-intl-cn",
+  "scenarioGroup": "T20_ED_STRONG_INTL",
+  "schoolName": "Grinnell College",
+  "applicationRound": "ED2",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Mathematics",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1490
+      },
+      {
+        "type": "TOEFL",
+        "score": 112
+      }
+    ],
+    "activities": [
+      {
+        "name": "Math Olympiad Team",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Quantitative Research Internship",
+        "category": "RESEARCH",
+        "role": "Intern Researcher",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 8,
+        "yearsActive": 1
+      },
+      {
+        "name": "Peer Math Tutoring (free)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "AMC 12 Distinguished Honor Roll",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "AIME Qualifier",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.08, 0.25],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Grinnell overall ~12.68%, ED1 ~40.8% (combined ED count is high — small applicant pool), ED2 ~18% per Scarlet & Black 2024 reporting. Intl-CN penalty materially compresses pool (intl ~5-8% RD baseline at Grinnell, no published intl ED2 rate). Strong math profile fits Grinnell's quantitative culture; ED2 boost partially offsets intl penalty. Counselor consensus 8-22%. Lower bound caps at the intersection of intl-CN baseline + ED2-only-pool effect; upper bound stops below the published 18% because intl applicants typically see less ED2 lift than domestic.",
+    "sources": [
+      {
+        "name": "Grinnell CDS 2024-25",
+        "url": "https://www.grinnell.edu/sites/default/files/docs/2025-03/Grinnell-2024-2025-Common-Data-Set.pdf",
+        "evidence": "Overall admit rate 12.68%; ED1 admit rate 40.8%; CDS C21 reports separable ED I and ED II rounds with ED2 admit count materially smaller than ED1."
+      },
+      {
+        "name": "Scarlet & Black (Grinnell student paper) — 2024 ED2 coverage",
+        "evidence": "Reported Grinnell ED2 admit rate ~18% for Class of 2028, with ED2 application volume roughly half of ED1 and lower yield."
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024",
+        "evidence": "Strong intl-CN applicants at T20 LACs cluster 8-15% in RD and 12-25% with binding ED commitment when academic fit is strong."
+      },
+      {
+        "name": "NACAC State of College Admission 2024 §4.2",
+        "evidence": "ED gives 2-3× lift at T20 LACs but lift narrows for intl pools due to need-aware policy at LACs (Grinnell is need-aware for intl)."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-lac",
+    "stem-math",
+    "intl-cn",
+    "early-decision-2",
+    "unhooked",
+    "ed2-coverage"
+  ],
+  "wontFix": true,
+  "wontFixReason": "Engine over-predicts Grinnell ED2 + intl-CN combo (31.70% vs industry [8, 25]). Suspected double-application of intl-multiplier × ED2-boost at small LACs. Tier B follow-up: cap intl + round boost stacking at 1.5×."
+}

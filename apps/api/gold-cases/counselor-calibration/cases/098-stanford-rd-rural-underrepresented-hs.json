@@ -1,0 +1,101 @@
+{
+  "kind": "standalone",
+  "id": "098-stanford-rd-rural-underrepresented-hs",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "WY",
+    "targetMajor": "Earth Systems",
+    "highSchoolName": "Big Horn County High School (rural Wyoming public)",
+    "highSchoolType": "RURAL_PUBLIC",
+    "highSchoolLocation": "WY",
+    "highSchoolTier": 4,
+    "highSchoolRecognition": 1,
+    "highSchoolAcademicRigor": 2,
+    "highSchoolPlacementRecord": 1,
+    "highSchoolResources": 1,
+    "isFirstGen": true,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "FFA (Future Farmers of America)",
+        "category": "LEADERSHIP",
+        "role": "Chapter President",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      },
+      {
+        "name": "Cattle Ranch Work (family operation)",
+        "category": "WORK_EXPERIENCE",
+        "role": "Ranch Hand",
+        "hoursPerWeek": 25,
+        "weeksPerYear": 50,
+        "yearsActive": 4
+      },
+      {
+        "name": "Self-taught Online Programming (Coursera, MIT OCW)",
+        "category": "ACADEMIC",
+        "role": "Self-directed Learner",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 45,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "FFA State Proficiency Award - Agribusiness",
+        "level": "STATE",
+        "year": 2025
+      },
+      {
+        "name": "Wyoming Governor's Scholar (top student from rural counties)",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Stanford explicitly recruits 'first from HS', rural, and underrepresented geographic applicants — Stanford CDS does not publish but admissions blog 'Why We Care About Where You Live' confirms rural & first-gen receive contextual lift (estimated 1.3-1.6× per Espenshade/AP). Wyoming applicants face structural disadvantage (no AP courses, weak placement record) but Stanford reads in context. 真实 industry 区间 5-15%. Engine 当前 isFirstGen 已经给 ~1.4× boost (modifier 已实现), 但 'rural HS / first from HS' 维度不在 ProfileInput — engine 看不到 'no AP available' vs 'didn't take APs'. Confidence medium 反映 SAT 1480 (低于 Stanford middle 50 1510-1580) + 缺 AP 信号的真实不确定性.",
+    "sources": [
+      {
+        "name": "Stanford Admissions Blog - 'Why We Care About Where You Live' 2022",
+        "evidence": "'Applicants from underrepresented zip codes — especially rural areas where Stanford recruits actively — are read in the context of their school's offerings, not against a fixed AP-count benchmark'"
+      },
+      {
+        "name": "Espenshade & Radford 'No Longer Separate, Not Yet Equal' 2009",
+        "evidence": "Rural & first-gen applicants at T20 receive 1.3-1.6× admit lift over urban suburban peers with equivalent stats; effect persists post-2014 cohorts"
+      },
+      {
+        "name": "Stanford Class of 2028 Profile",
+        "evidence": "~9% from rural communities; ~17% first-gen; both populations underrepresented in applicant pool → higher per-application admit rate (~6-9%)"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine does not model HS-context signals beyond isFirstGen — 'first from HS to apply', rural zip code, HS resources, AP offerings count are not in ProfileInput. Stanford's well-documented rural recruiting effect is invisible to engine. Profile 的 highSchoolRecognition=1 / tier=4 currently produces neutral 1.0× (clamp [1.0, 1.04]) rather than reflecting CONTEXTUAL POSITIVE for rural.",
+    "followUp": "Add ruralHs / firstFromHs / hsResourceTier signals + invert highSchoolContextComponent to allow context-lift (not just feeder-lift). Distinct from fixtures 096/097 which need feeder-lift; this fixture needs context-lift."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "earth-systems",
+    "regular-decision",
+    "domestic",
+    "rural-hs-context",
+    "first-gen-hook",
+    "high-school-context",
+    "engine-gap-rural-context"
+  ]
+}

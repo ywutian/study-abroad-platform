@@ -1,0 +1,83 @@
+{
+  "kind": "standalone",
+  "id": "082-cooper-union-engineering",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Cooper Union",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Electrical Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [
+      {
+        "name": "USACO + Competitive Programming",
+        "category": "ACADEMIC",
+        "role": "Self-taught Programmer",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 45,
+        "yearsActive": 3
+      },
+      {
+        "name": "FRC Robotics — Electrical Subteam",
+        "category": "ACADEMIC",
+        "role": "Electrical Lead",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Independent FPGA Project",
+        "category": "ACADEMIC",
+        "role": "Solo Builder",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      { "name": "USACO Gold", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "FRC Regional Excellence in Engineering Award",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.15, 0.4],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Cooper Union Engineering admit rate ~16-18% (slightly higher than Architecture's ~9%); SAT mid-50% 1350-1530. Strong STEM profile + USACO Gold + FPGA project + ED is well-aligned. Cooper requires Engineering Question Set (essay-based interview-style submission) but no Hometest like Architecture — academic profile is closer to a normal STEM-school evaluation. Industry: 20-40% for top-quartile stats + STEM-strong activities + ED. Engine treats as SPECIALTY — normal path; should produce meaningful prediction unlike the Architecture case (078).",
+    "sources": [
+      {
+        "name": "Cooper Union School of Engineering Admissions 2023-24",
+        "evidence": "Engineering admit rate ~17% (vs. Architecture ~9%, Art ~14%); SAT mid-50% 1350-1530; Engineering uses Engineering Question Set (text-based) instead of Hometest"
+      },
+      {
+        "name": "Counselor Engine SPECIALTY type",
+        "evidence": "Cooper Union → SPECIALTY institutionType (per ranking-catalog ENGINEERING_NO_PHD mapping). Engineering applicant evaluation closer to traditional CDS-style stats review; engine should produce a meaningful number here."
+      },
+      {
+        "name": "Crimson Engineering Specialty Outcomes 2024",
+        "evidence": "Cooper Union Engineering ED applicants with USACO Gold + top-quartile stats cluster 20-35% admit rate"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "specialty-school",
+    "engineering-no-phd",
+    "stem-electrical",
+    "early-decision",
+    "domestic",
+    "above-median-stats",
+    "ed-binding"
+  ]
+}

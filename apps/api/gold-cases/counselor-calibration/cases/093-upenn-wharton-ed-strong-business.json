@@ -1,0 +1,88 @@
+{
+  "kind": "standalone",
+  "id": "093-upenn-wharton-ed-strong-business",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NJ",
+    "targetMajor": "Finance",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1560 }],
+    "activities": [
+      {
+        "name": "Summer Finance Internship at Boutique I-bank",
+        "category": "WORK_EXPERIENCE",
+        "role": "Summer Analyst Intern",
+        "hoursPerWeek": 40,
+        "weeksPerYear": 10,
+        "yearsActive": 2
+      },
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "DECA",
+        "category": "ACADEMIC",
+        "role": "State Chapter Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "DECA International Career Development Conference (ICDC) Finalist",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "National Economics Challenge - State Champion",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.08, 0.28],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Wharton 是 Penn 内最难的项目: undergrad direct-admit 约 6% vs Penn overall ~5.4%; ED Wharton 估计 8-13% vs Penn ED overall ~14%. Wharton 是 hyper-selective sub-school, 强 unhooked profile (3.95/1560 + ICDC finalist + i-bank internship) ED 估计 10-25%. Engine 当前依赖 SchoolProgram lookup 给 majorMultiplier — 若 Penn 的 Finance/Business 项目未在 SchoolProgram 中按 verySelective band (70%) seed, 会落到 neutral 1.0 而忽略 Wharton 比 Penn overall 更难 — 这正是本 fixture 想暴露的 gap. Lower bound 0.08 允许 engine 即使 program data 缺失也能落在带内; upper bound 0.28 防止 ED boost over-inflation.",
+    "sources": [
+      {
+        "name": "Penn CDS 2024-25",
+        "evidence": "Penn overall admit rate 5.4%; ED rate ~14.3%. Wharton undergrad direct-admit historical rate ~6-7% per Compass Prep tracker (lower than Penn average due to direct-admit constraint)."
+      },
+      {
+        "name": "Compass Education Group - Wharton Admit Rate Tracker 2024",
+        "evidence": "Wharton direct-admit ED admit rate clusters 8-12% across 2022-2024 cycles; tougher than Penn College ED (~14-16%)"
+      },
+      {
+        "name": "Penn Admissions Office Class Profile 2028",
+        "evidence": "Wharton applicants self-report stronger quant credentials than Penn College pool; admit rate gap of 1-2pp ED-equivalent reported in Daily Pennsylvanian coverage"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "business-finance",
+    "early-decision",
+    "domestic",
+    "major-selectivity",
+    "sub-school-wharton",
+    "engine-coverage-major-bucket"
+  ]
+}

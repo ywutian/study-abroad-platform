@@ -1,0 +1,95 @@
+{
+  "kind": "standalone",
+  "id": "089-yale-rd-first-gen-intl-china",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "Yale University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Economics",
+    "isLegacy": false,
+    "isFirstGen": true,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1530 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Microeconomics Independent Research",
+        "category": "RESEARCH",
+        "role": "Lead Student Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      },
+      {
+        "name": "Rural-Urban Education Inequality Documentary",
+        "category": "PERSONAL_PROJECT",
+        "role": "Director & Producer",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 26,
+        "yearsActive": 2
+      },
+      {
+        "name": "Free Tutoring for Migrant-Worker Children",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge Top 10",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "China Documentary Film Festival - Silver",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.13],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale overall ~4.46%, RD ~3.5%, intl admit rate ~3% RD. First-gen intl is a rare profile — Yale need-blind for intl since 2025 cycle removes the financial-aid penalty. Hook stack: first-gen lifts ~1.5-1.8× (NACAC + SFFA) AND intl penalty (~0.6×) partially offsets. Industry consensus 4-12% for first-gen-intl-CN with strong narrative-coded socioeconomic story. Lower bound floors at intl-CN baseline; upper bound caps at first-gen contextual lift over baseline.",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall admit rate 4.46%; intl admit rate 3-4% in RD; first-gen ~18% of class with admit rate inferred ~6-8% per Yale Daily News 2024."
+      },
+      {
+        "name": "Yale Need-Blind Intl Policy Announcement 2024",
+        "url": "https://admissions.yale.edu/financial-aid",
+        "evidence": "Yale extended need-blind admission to international applicants starting Class of 2029 — eliminates the historical aid-aware penalty for first-gen-intl pool."
+      },
+      {
+        "name": "NACAC State of College Admission 2024 §5.3",
+        "evidence": "First-gen status is rated 'considerable importance' by 30%+ of admissions officers; effect amplified for intl pools where first-gen signals socioeconomic context."
+      },
+      {
+        "name": "Crimson Asia First-Gen Report 2024",
+        "evidence": "First-gen intl-CN at T5 cluster 5-12% admit rate per published cases — narrower band than domestic first-gen because intl pool is already self-selected, but contextual lift remains real."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-econ",
+    "intl-cn",
+    "regular-decision",
+    "first-gen-hook",
+    "multi-hook-stack"
+  ]
+}

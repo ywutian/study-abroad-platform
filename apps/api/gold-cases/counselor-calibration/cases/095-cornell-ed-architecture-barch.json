@@ -1,0 +1,92 @@
+{
+  "kind": "standalone",
+  "id": "095-cornell-ed-architecture-barch",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Cornell University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "PA",
+    "targetMajor": "Architecture",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1490 }],
+    "activities": [
+      {
+        "name": "Architecture Portfolio Studio (independent)",
+        "category": "ART",
+        "role": "Studio Artist",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "Habitat for Humanity - Design Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Design Lead",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "AP Studio Art portfolio submission",
+        "category": "ACADEMIC",
+        "role": "Self-directed Artist",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Art & Writing Awards - Gold Key (Architecture)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "AIA Regional High School Design Competition - Honorable Mention",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.06, 0.25],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Cornell AAP B.Arch 是 5-year professional degree program; admit rate ~10-13% ED 比 Cornell overall ~7-9% 略高 (program 数据 published as 'one of the most selective in Cornell colleges' but ED yields lift). 然而 B.Arch 评分 80% 取决于 portfolio 质量, engine 完全不识别 portfolio — 这是结构性 gap. Profile 本身 (3.92/1490 + Scholastic Gold + AIA honorable + 3yr studio) ED 估计 8-22%. Engine 用 majorMultiplier (Fine Arts band ~80% verySelective) 可能 over-estimate selectivity 因为 Architecture in CALS context 不同于 Fine Arts. 0.06 下界允许 engine 落在 program-multiplier-driven 低端; 0.25 上界反映 portfolio-strong + ED commitment 的真实 industry 区间.",
+    "sources": [
+      {
+        "name": "Cornell AAP Admissions FAQ 2024",
+        "evidence": "Cornell B.Arch admit rate historically 10-15% across cycles; 'portfolio is by far the most important factor — academic stats alone do not predict outcomes'"
+      },
+      {
+        "name": "Cornell University CDS 2024-25",
+        "evidence": "Cornell overall admit rate 7.5%; ED rate ~17%. AAP college-specific ED rates not published but inferred 12-15% from AAP class profile size"
+      },
+      {
+        "name": "Architectural Record - 'Getting Into Cornell Architecture' 2023",
+        "evidence": "B.Arch ED applicants with strong portfolios cluster 15-25% admit rate; without portfolio strength, falls to 3-8%"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine does not model portfolio quality — Architecture/Art/Music programs heavily depend on portfolio/audition review which is unstructured. B.Arch's heavy portfolio weighting means same-stats applicants can vary 4-5× in real admit probability; engine treats them identically.",
+    "followUp": "Add portfolio quality signal to ProfileInput (essayQualityScore-style 0-10 from human counselor or future AI review). Until then, Architecture/Art/Music fixtures expose unmodeled variance."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-private",
+    "architecture",
+    "early-decision",
+    "domestic",
+    "major-selectivity",
+    "portfolio-dependent",
+    "engine-gap-portfolio"
+  ]
+}

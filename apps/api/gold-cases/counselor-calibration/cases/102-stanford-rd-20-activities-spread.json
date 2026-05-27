@@ -1,0 +1,220 @@
+{
+  "kind": "standalone",
+  "id": "102-stanford-rd-20-activities-spread",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.93,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "WA",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [
+      {
+        "name": "Coding Club",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Math Club",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Robotics Club",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Chess Club",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 18,
+        "yearsActive": 1
+      },
+      {
+        "name": "Debate",
+        "category": "ACADEMIC",
+        "role": "Novice",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Model UN",
+        "category": "ACADEMIC",
+        "role": "Delegate",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 18,
+        "yearsActive": 1
+      },
+      {
+        "name": "Tennis",
+        "category": "ATHLETICS",
+        "role": "JV Member",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 16,
+        "yearsActive": 2
+      },
+      {
+        "name": "Cross Country",
+        "category": "ATHLETICS",
+        "role": "JV Member",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 14,
+        "yearsActive": 2
+      },
+      {
+        "name": "Track",
+        "category": "ATHLETICS",
+        "role": "JV Member",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 14,
+        "yearsActive": 1
+      },
+      {
+        "name": "Soup Kitchen Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 20,
+        "yearsActive": 2
+      },
+      {
+        "name": "Animal Shelter Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 15,
+        "yearsActive": 1
+      },
+      {
+        "name": "Hospital Candystriper",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 12,
+        "yearsActive": 1
+      },
+      {
+        "name": "Tutoring (local elementary school)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Tutor",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 24,
+        "yearsActive": 2
+      },
+      {
+        "name": "Yearbook Committee",
+        "category": "LEADERSHIP",
+        "role": "Photographer",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Drama Club",
+        "category": "ART",
+        "role": "Cast Member",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 12,
+        "yearsActive": 1
+      },
+      {
+        "name": "Marching Band",
+        "category": "ART",
+        "role": "Trumpet",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 16,
+        "yearsActive": 2
+      },
+      {
+        "name": "Student Council",
+        "category": "LEADERSHIP",
+        "role": "Class Representative",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 30,
+        "yearsActive": 1
+      },
+      {
+        "name": "National Honor Society",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 1,
+        "weeksPerYear": 30,
+        "yearsActive": 1
+      },
+      {
+        "name": "Spanish Club",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 1,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Environmental Club",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Member",
+        "hoursPerWeek": 2,
+        "weeksPerYear": 15,
+        "yearsActive": 1
+      }
+    ],
+    "awards": [
+      { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.005, 0.04],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Stanford holistic review explicitly favors 'depth over breadth': 20 activities all 1-2 yrs with no leadership / no awards reads as 'resume padding' rather than sustained engagement. Compare against fixture 002 (same stats, 3 deep activities + national awards) — that profile clusters 3-10% admit. This profile should read LOWER due to lack of depth signal, despite identical academic stats. 真实 industry 区间 1-4% (resume-spread reads weaker than focused profile). Engine 当前 activityStrengthComponent 通过 calculateActivityScore(activityCount: 20, ...) 可能 over-credit 数量, 因为 activity count 是其中一个 input — 20 activities 触发 'too many' 但 yearsActive 平均 ~1.3 应触发 depth penalty. Whether engine has explicit depth penalty 是 fixture 想 probe 的 gap.",
+    "sources": [
+      {
+        "name": "Stanford Admissions Blog 'Things We Look For' 2023",
+        "evidence": "'We are far more impressed by sustained, deep engagement in a few activities than by a long list of brief involvements. Quality over quantity.'"
+      },
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Stanford overall RD admit rate ~3.7%; 'depth of involvement' is rated 'very important' factor in Section C7"
+      },
+      {
+        "name": "Crimson Education 'Activity Depth Analysis' 2024",
+        "evidence": "Profiles with 15+ activities all <2 years duration admitted at T5 schools at 0.3× the rate of profiles with 5-7 activities of 3-4 years; depth signal materially predicts outcomes"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine activityStrengthComponent passes activityCount + activityDetails to calculateActivityScore; whether 'average yearsActive' is computed and used to penalize spread-thin profiles depends on calculateActivityScore implementation. Currently spike coherence (computeSpikeCoherence) clamps to [0.95, 1.10] which is too narrow to express 'this profile is 3× weaker than focused equivalent'. Depth-vs-breadth penalty is the textbook gap exposed by this fixture.",
+    "followUp": "Add explicit depth-penalty in activityStrengthComponent: if activities.length > 12 AND median yearsActive < 2, apply ~0.7× multiplier. Or extend computeSpikeCoherence to include depth dimension (not just category coherence). Track via 'activity depth' PR."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "regular-decision",
+    "domestic",
+    "edge-case",
+    "activity-depth",
+    "resume-padding",
+    "engine-gap-activity-depth"
+  ]
+}

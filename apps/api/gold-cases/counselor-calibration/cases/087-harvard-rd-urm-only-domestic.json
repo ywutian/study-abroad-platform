@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "087-harvard-rd-urm-only-domestic",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "GA",
+    "targetMajor": "Political Science",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "urmStatus": "BLACK",
+    "testScores": [{ "type": "SAT", "score": 1490 }],
+    "activities": [
+      {
+        "name": "Student Government",
+        "category": "LEADERSHIP",
+        "role": "Student Body President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      },
+      {
+        "name": "Youth Voter Registration Drive",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder & Lead Organizer",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Mock Trial",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Bank of America Student Leader Award",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "State Mock Trial Champion", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Harvard overall RD admit ~3.4% (SCEA goes earlier, this applicant did not apply early). Pre-SFFA Harvard URM admit rate ~8-12% per Arcidiacono SFFA data. Post-SFFA (2024+) Harvard cannot consider race directly, but contextual review (essays, geographic origin from GA, leadership in voter-registration work) still legally permits indirect URM signal. Industry consensus 5-15% for strong unhooked URM-coded applicant; counselor consensus 5-18%. Lower bound floors at the overall pool; upper bound caps at pre-SFFA URM rate.",
+    "sources": [
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Pre-SFFA Harvard admitted Black applicants at ~10.4% rate vs Asian-American ~12.7% (controlling for academic index); race conferred 2.5-3× lift over baseline."
+      },
+      {
+        "name": "Harvard CDS 2024-25",
+        "evidence": "Overall admit rate 3.41% (Class of 2028); RD admit rate ~3.0%; race no longer reported in admissions data post-SFFA."
+      },
+      {
+        "name": "Common App Year-Over-Year Report 2024",
+        "evidence": "Harvard URM enrollment dropped ~4pp Class of 2028 vs 2027 (first SFFA cycle); industry estimates URM admit rate now 6-10% absent direct consideration."
+      },
+      {
+        "name": "Crimson Post-SFFA Strategy Guide 2024",
+        "evidence": "Strong domestic URM applicants with contextual-review signal (geographic, essay-narrated) cluster 7-15% at T5 post-SFFA — narrower band than pre-SFFA but still above unhooked baseline."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine intentionally treats urmStatus as ×1.0 neutral (counselor-modifiers.ts line 909-928: 'This opt-in demographic field is recorded for future analysis but does not affect served predictions pending compliance review'). Same launch-policy intent as athlete/legacy modifiers. Spec range reflects industry intuition for the indirect-signal URM applicant; engine will produce a probability near the overall RD baseline (~3-4%) until compliance review enables the modifier.",
+    "followUp": "Compliance review of urmMultiplier — confirm whether contextual-review signal (essay + geographic origin) can be inferred without direct urmStatus read, OR finalize the legal review that allows urmStatus to influence served prediction (post-SFFA, indirect via essays only)."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-polisci",
+    "domestic",
+    "regular-decision",
+    "urm-hook",
+    "post-sffa",
+    "wontfix-engine-gap"
+  ]
+}

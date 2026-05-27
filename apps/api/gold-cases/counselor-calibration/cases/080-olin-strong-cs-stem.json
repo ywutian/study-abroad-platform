@@ -1,0 +1,83 @@
+{
+  "kind": "standalone",
+  "id": "080-olin-strong-cs-stem",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Olin College of Engineering",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1500 }],
+    "activities": [
+      {
+        "name": "Robotics Team (FRC)",
+        "category": "ACADEMIC",
+        "role": "Software Lead",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Maker Space Workshop Founder",
+        "category": "LEADERSHIP",
+        "role": "Founder",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Independent Hardware/Software Project (Open-source)",
+        "category": "ACADEMIC",
+        "role": "Maintainer",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "FRC Engineering Inspiration Award (Regional)",
+        "level": "REGIONAL",
+        "year": 2025
+      },
+      { "name": "USACO Silver", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.1, 0.3],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Olin overall admit ~17% (~360 applicants per ~85 enrolled). Olin uses a unique Candidates' Weekend (invitation-only) where finalists do collaborative engineering projects with current students — this is binding-like behavioral selection, not portfolio. Pure stats matter less than collaborative/maker temperament + 'engineering mindset' demonstrated through hands-on builds. Strong STEM profile + maker-space leadership + open-source maintenance is well-aligned. Industry: 15-30% for stats-strong + hands-on-builder profile; lower for pure paper-credential applicants. Engine treats as SPECIALTY (ENGINEERING_NO_PHD) — normal path, but no CDS bands and no signal for 'maker temperament'.",
+    "sources": [
+      {
+        "name": "Olin College Admissions Profile 2023-24",
+        "evidence": "Overall admit rate 17%; Candidates' Weekend invitation is the de facto admit pool (~3x normal admit rate among invitees); SAT mid-50% 1470-1560"
+      },
+      {
+        "name": "Olin College Admissions Blog 2024",
+        "evidence": "Olin's own admissions team explicitly notes 'we are looking for collaborative builders and tinkerers, not test scores' — maker-portfolio (independent projects, hands-on engineering, open-source) is weighted heavily"
+      },
+      {
+        "name": "Counselor Engine SPECIALTY type",
+        "evidence": "Olin → ENGINEERING_NO_PHD → SPECIALTY institutionType per ranking-catalog. Does NOT trigger audition short-circuit; normal CDS path applies but no bands seeded. Engine likely falls back to overallAcceptanceRate × profile multipliers."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "specialty-school",
+    "engineering-no-phd",
+    "stem-cs",
+    "early-action",
+    "domestic",
+    "maker-temperament",
+    "candidates-weekend"
+  ]
+}

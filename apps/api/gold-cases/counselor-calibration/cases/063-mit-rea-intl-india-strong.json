@@ -1,0 +1,91 @@
+{
+  "kind": "standalone",
+  "id": "063-mit-rea-intl-india-strong",
+  "scenarioGroup": "T5_EA_STRONG_UNHOOKED_INTL_NON_CN",
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "IN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1560 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Math Olympiad - IIT-Prep Track",
+        "category": "ACADEMIC",
+        "role": "Lead Coordinator",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      },
+      {
+        "name": "Independent CS Research at IIT Bombay",
+        "category": "RESEARCH",
+        "role": "Research Intern",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 20,
+        "yearsActive": 2
+      },
+      {
+        "name": "Open-Source Contributions (Python ML libs)",
+        "category": "ACADEMIC",
+        "role": "Maintainer",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Indian National Math Olympiad (INMO) - Top 30",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Regional Mathematical Olympiad - Gold",
+        "level": "STATE",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.01, 0.08],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Indian applicants face the deepest international penalty at MIT — the Indian intl pool is the largest and most over-represented STEM cohort. MIT EA admit rate is ~5% overall; Indian intl admit cluster 1-4% per published case data. Even with INMO top-30 + IIT lab research, profile sits in a saturated bucket. EA at MIT is non-restrictive (no boost vs RD for intl). Industry consensus: 1.5-7%.",
+    "sources": [
+      {
+        "name": "MIT CDS 2024-25",
+        "evidence": "Overall admit 4.52%; intl ~10% of class, intl applicant pool dominated by India + China. Inferred Indian intl admit ~2-3%."
+      },
+      {
+        "name": "Crimson Education India Acceptance Report 2024",
+        "evidence": "Indian applicants at MIT cluster at 1.5-5% across published RD/EA case data; STEM-spike Indian applicants face Asian over-representation penalty."
+      },
+      {
+        "name": "IIE Open Doors 2024",
+        "evidence": "India is now the #1 country of origin for US international students (~330K); concentration in STEM amplifies bucket competition."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "intl-india",
+    "early-action",
+    "unhooked",
+    "non-cn-intl",
+    "diversity-coverage"
+  ]
+}

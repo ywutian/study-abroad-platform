@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "069-georgetown-rea-intl-germany-abitur",
+  "scenarioGroup": "T20_REA_STRONG_UNHOOKED_INTL_ABITUR",
+  "schoolName": "Georgetown University",
+  "applicationRound": "REA",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "DE",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "International Relations (SFS)",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1510 },
+      { "type": "TOEFL", "score": 115 }
+    ],
+    "activities": [
+      {
+        "name": "Bundestag Youth Parliament (Jugend Debattiert)",
+        "category": "LEADERSHIP",
+        "role": "Regional Delegate",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Internship: German Foreign Office (Auswärtiges Amt)",
+        "category": "RESEARCH",
+        "role": "Summer Intern",
+        "hoursPerWeek": 35,
+        "weeksPerYear": 6,
+        "yearsActive": 1
+      },
+      {
+        "name": "Model UN (European Circuit)",
+        "category": "ACADEMIC",
+        "role": "Head Delegate",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 28,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      {
+        "name": "Abitur 1.0 (top ~1% of German Gymnasium cohort) - LK Politik, Geschichte, Englisch",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Jugend Debattiert National Finalist",
+        "level": "NATIONAL",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.06, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Georgetown REA (restrictive but non-binding) overall EA 10.3%; intl admit 7.75% (RD). SFS (School of Foreign Service) is Georgetown's flagship and strong fit for German diplomatic/policy profile. Abitur 1.0 = top ~1% of German cohort, maps to ~4.0 unweighted in AO conversion. Georgetown is need-blind for intl — favorable. European intl penalty lighter than Asian. Industry: T20 REA strong European IR profile cluster 6-25%.",
+    "sources": [
+      {
+        "name": "Georgetown CDS 2024-25",
+        "evidence": "Overall admit 12.92%; EA 10.3% (restrictive); intl admit 7.75%. Need-blind for intl applicants."
+      },
+      {
+        "name": "Georgetown SFS International Briefing 2024",
+        "evidence": "Abitur 1.0-1.3 accepted as top-tier credential; LK (Leistungskurs) treated as AP-equivalent. SFS prioritizes language proficiency + international experience."
+      },
+      {
+        "name": "Ivy Coach European Applicants 2024",
+        "evidence": "German Abitur 1.0 + IR-aligned profile at Georgetown REA cluster 8-22% per published case data; SFS-specific yield-protect considerations apply."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-private",
+    "humanities-ir",
+    "intl-germany",
+    "restrictive-early-action",
+    "unhooked",
+    "non-cn-intl",
+    "abitur-transcript",
+    "non-traditional-transcript",
+    "diversity-coverage"
+  ]
+}

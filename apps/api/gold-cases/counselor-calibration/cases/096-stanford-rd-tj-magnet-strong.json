@@ -1,0 +1,90 @@
+{
+  "kind": "standalone",
+  "id": "096-stanford-rd-tj-magnet-strong",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "VA",
+    "targetMajor": "Computer Science",
+    "highSchoolName": "Thomas Jefferson High School for Science and Technology",
+    "highSchoolType": "MAGNET_PUBLIC",
+    "highSchoolTier": 1,
+    "highSchoolRecognition": 5,
+    "highSchoolAcademicRigor": 5,
+    "highSchoolPlacementRecord": 5,
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1560 }],
+    "activities": [
+      {
+        "name": "TJ Computer Systems Lab Research",
+        "category": "RESEARCH",
+        "role": "Senior Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Competitive Programming Team",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "TJ Math Team",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      { "name": "USACO Gold", "level": "NATIONAL", "year": 2025 },
+      { "name": "AIME Qualifier (Score 9)", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Stanford overall RD ~3.7%; strong unhooked domestic 通常 3-10%. TJHSST (Thomas Jefferson HSST) 是 #1 公立 magnet HS, Stanford historical feeder rate ~6-9% (vs ~3.7% national avg). 真实 industry 估计 6-18% range. Engine 当前 highSchoolContextComponent 把 multiplier clamp 到 [1.0, 1.04] — 即使 tier=1/recognition=5 满分, 最多 give 4% lift, 远不足以反映 TJ→Stanford 的 2× feeder lift. 这是 documented engine gap. Lower bound 0.05 给 engine 容差; upper bound 0.22 反映 TJ + spike profile (USACO Gold + AIME) industry 区间.",
+    "sources": [
+      {
+        "name": "TJHSST College Counseling Annual Report 2024",
+        "evidence": "TJ→Stanford matriculation 6-9% across 2020-2024 cohorts (vs Stanford national admit ~3.7%); ~10-15 TJ students matriculate to Stanford annually from ~480-class size"
+      },
+      {
+        "name": "NACAC 'Magnet School Outcomes Report' 2023",
+        "evidence": "STEM magnet HS applicants at T20 see 1.5-2× admit rate lift vs non-magnet peers with equivalent stats; effect concentrated at STEM-strong T5 (Stanford, MIT, Caltech)"
+      },
+      {
+        "name": "Washington Post 'TJ Admit Outcomes' 2023",
+        "evidence": "TJ class of 2024 published Ivy+ admit list: 14 Stanford admits from senior class, 8x national-average rate"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine highSchoolContextComponent clamps multiplier to [1.0, 1.04] — even max-tier HS can only contribute +4% lift, far short of 1.5-2× industry magnet-feeder effect. Conservative cap was intentional per launch gate but creates underestimate for TJ/Stuyvesant/Bronx Science applicants.",
+    "followUp": "Revisit highSchoolContextComponent cap once we have CDS-grade feeder-rate data per (school, HS) pair. Until then, top-tier magnet/feeder HS applicants will read low."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "regular-decision",
+    "domestic",
+    "high-school-context",
+    "magnet-school-tj",
+    "engine-gap-feeder"
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "067-columbia-rd-ib-diploma-43",
+  "scenarioGroup": "T10_RD_STRONG_UNHOOKED_INTL_IB",
+  "schoolName": "Columbia University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CH",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Anthropology",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1520 },
+      { "type": "TOEFL", "score": 114 }
+    ],
+    "activities": [
+      {
+        "name": "Ethnographic Fieldwork - Alpine Village Cultural Documentation",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 28,
+        "yearsActive": 2
+      },
+      {
+        "name": "Model UN International Geneva",
+        "category": "ACADEMIC",
+        "role": "Secretary General",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 32,
+        "yearsActive": 4
+      },
+      {
+        "name": "Refugee Tutoring Program (Swiss Red Cross)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Coordinator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "IB Diploma Predicted 43/45 (HL: English A, History, Anthropology; SL: French B, Math AA, Biology)",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "IB Extended Essay - Grade A (Anthropology)",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.02, 0.1],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Columbia RD intl admit 2.46% — among the lowest of T10. IB 43/45 places student in top ~3% of IB diploma cohort globally, normalized to ~3.95 unweighted 4.0 (43→3.95 per IBO→GPA conversion tables). Swiss nationality and humanities/social science profile differentiates from Asian STEM bucket. Columbia is not need-blind for intl, adding affordability pressure. SAT 1520 below 25th-percentile (1510) → marginal. Industry: T10 RD IB strong intl cluster 3-10%.",
+    "sources": [
+      {
+        "name": "Columbia CDS 2024-25",
+        "evidence": "Overall admit 3.86%; intl admit 2.46%. Not need-blind for intl applicants."
+      },
+      {
+        "name": "IBO Statistical Bulletin May 2024 + IIE Open Doors",
+        "evidence": "IB 43/45 corresponds to ~top 3% of diploma cohort (mean ~30, SD ~5); standard AO conversion: 42-45 → 3.9-4.0 unweighted equivalent."
+      },
+      {
+        "name": "Crimson Education IB Benchmark 2024",
+        "evidence": "IB diploma students (40+) at T10 RD cluster 3-12% admit; humanities/social science profiles benefit from differentiation outside saturated Asian STEM bucket."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "humanities-social-science",
+    "intl-europe",
+    "regular-decision",
+    "unhooked",
+    "non-cn-intl",
+    "ib-diploma",
+    "non-traditional-transcript",
+    "diversity-coverage"
+  ]
+}

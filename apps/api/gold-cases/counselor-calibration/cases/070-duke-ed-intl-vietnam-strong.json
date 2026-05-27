@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "070-duke-ed-intl-vietnam-strong",
+  "scenarioGroup": "T15_ED_STRONG_UNHOOKED_INTL_SEA",
+  "schoolName": "Duke University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "VN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Public Policy",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1480 },
+      { "type": "TOEFL", "score": 110 }
+    ],
+    "activities": [
+      {
+        "name": "Hanoi Youth Climate Coalition",
+        "category": "LEADERSHIP",
+        "role": "Co-founder",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Vietnam National Debate Championship Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Rural Education Outreach (Northern Highlands)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Project Lead",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 24,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "Vietnam National Debate Championship - Top 8",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "ASEAN Youth Climate Summit Delegate",
+        "level": "INTERNATIONAL",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Duke ED 17.33%; intl admit 3.86% (RD). Vietnamese intl pool is much smaller than CN/IN/KR, with less saturation — Duke specifically values geographic diversity from underrepresented sending countries (SEA pool). SAT 1480 below 25th-percentile (1500) → marginal. Public Policy (Sanford) is competitive but humanities differentiation helps. ED boost for SEA intl can be 2-3x RD intl rate. Industry: Duke ED SEA underrepresented strong cluster 5-22% per Crimson + Compass data — wider uncertainty band reflects smaller published sample.",
+    "sources": [
+      {
+        "name": "Duke CDS 2024-25",
+        "evidence": "Overall admit 5.71%; ED 17.33%; intl admit 3.86%. Geographic-diversity weight applies to underrepresented sending countries."
+      },
+      {
+        "name": "Crimson Southeast Asia Acceptance Report 2024",
+        "evidence": "Vietnamese applicants at T15 ED cluster 5-20% in published case data; smaller pool yields higher per-applicant odds than saturated CN/IN bucket."
+      },
+      {
+        "name": "NACAC State of College Admission 2024 — International Diversity",
+        "evidence": "T15 schools explicitly weight underrepresented sending countries (SEA, Africa, Latin America); per-country quota effects."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t15-private",
+    "humanities-policy",
+    "intl-southeast-asia",
+    "early-decision",
+    "unhooked",
+    "non-cn-intl",
+    "underrepresented-region",
+    "diversity-coverage",
+    "wider-uncertainty"
+  ]
+}

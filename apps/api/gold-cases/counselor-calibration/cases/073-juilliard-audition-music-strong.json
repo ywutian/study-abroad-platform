@@ -1,0 +1,91 @@
+{
+  "kind": "standalone",
+  "id": "073-juilliard-audition-music-strong",
+  "scenarioGroup": "EXTREME_BOUND_WEAK_AT_T5",
+  "schoolName": "The Juilliard School",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.7,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Music Performance",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "Pre-College Conservatory Violin Program",
+        "category": "ACADEMIC",
+        "role": "Principal Second Violin",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 40,
+        "yearsActive": 4
+      },
+      {
+        "name": "Youth Symphony Orchestra",
+        "category": "ACADEMIC",
+        "role": "Concertmaster",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Private Studio Performance",
+        "category": "ACADEMIC",
+        "role": "Solo Recitalist",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 50,
+        "yearsActive": 6
+      }
+    ],
+    "awards": [
+      {
+        "name": "National YoungArts Finalist (Classical Music)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "State Music Teachers Association Solo Competition Winner",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.05, 0.25],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "Juilliard 录取 ~8.6% (instrumental violin pre-college pipeline ~5-15%) 完全基于 audition + repertoire + faculty fit; SAT/GPA 几乎不参与决策。Strong pre-college pipeline + YoungArts Finalist 是 industry-recognized signal of audition-readiness. Engine 当前会触发 audition_or_portfolio_admission 分支返回 probability=0 + insufficientData (anchor=0, tier=4)。这个 fixture 故意 expose engine 在 audition-first 学校的 sentinel 行为 — 锚定 industry consensus 范围而非 engine output, 标 wontFix 让其报告 actual 但不 block CI。",
+    "sources": [
+      {
+        "name": "Juilliard Admissions Statistics 2024",
+        "evidence": "Pre-college dance/drama/music overall admit ~8.6% — entirely audition-driven; admissions FAQ explicitly states SAT/GPA are reviewed only for academic eligibility, not weighted vs audition"
+      },
+      {
+        "name": "NACAC Conservatory Admissions Whitepaper 2023",
+        "evidence": "Audition-first institutions: academic credentials function as eligibility threshold (typically B average / no minimum SAT), faculty audition score is 80-90% of decision weight"
+      },
+      {
+        "name": "Counselor Engine isAuditionOrPortfolioSchool",
+        "evidence": "Engine detects institutionType=MUSIC_CONSERVATORY and returns probability=0 with insufficientData reason — sentinel behavior; this fixture documents the gap between engine declining to predict and industry's realistic 5-25% range for pipeline-strong applicants"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine intentionally declines to predict for audition-first schools (anchor=0, tier=4, insufficientData). Industry has a real probability band but engine math cannot estimate it from academic stats alone. Fixture documents this gap.",
+    "followUp": "Possible future work: incorporate portfolio/audition strength signal (e.g. competition tier, pre-college affiliation) as an explicit anchor source for conservatories."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "music-conservatory",
+    "audition-only",
+    "specialty-school",
+    "regular-decision",
+    "domestic",
+    "engine-gap",
+    "insufficient-data"
+  ]
+}

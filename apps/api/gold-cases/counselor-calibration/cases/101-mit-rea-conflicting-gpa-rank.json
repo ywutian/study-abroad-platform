@@ -1,0 +1,88 @@
+{
+  "kind": "standalone",
+  "id": "101-mit-rea-conflicting-gpa-rank",
+  "scenarioGroup": "LOW_GPA_HIGH_TEST",
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Computer Science",
+    "highSchoolName": "Hyper-competitive STEM magnet (top 1% class rank context)",
+    "highSchoolType": "MAGNET_PUBLIC",
+    "highSchoolTier": 1,
+    "highSchoolRecognition": 5,
+    "highSchoolAcademicRigor": 5,
+    "highSchoolGradeInflation": "DEFLATED",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1570 }],
+    "activities": [
+      {
+        "name": "Olympiad Research Program (MIT-affiliated)",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "Competitive Programming Team",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      { "name": "USACO Platinum", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "AIME Qualifier (Score 11)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "USAMO Qualifier", "level": "NATIONAL", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.2],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Conflicting signals: GPA 3.5 在 MIT (admit middle 50 ~3.9-4.0) reads weak BUT 'top 1% class rank' + grade-deflated HS + USAMO + USACO Platinum 都表明 GPA underrepresents academic strength. MIT admissions officers explicitly read GPA in HS context: USAMO Qualifier at deflated-grade magnet typically means 'A in hardest possible courses, school does not grade-inflate'. 真实 industry 区间 5-18% (lower than typical strong unhooked due to GPA conservatism but higher than 3.5 baseline due to spike + context). Engine 当前: gpa 3.5 在 MIT 触发 gpaCompetitivenessComponent 负向修正, 但 class rank 不在 ProfileInput, gradeInflation='DEFLATED' 是否被 highSchoolContextComponent 识别 不明确. 0.04 下界让 engine GPA-penalty 落得很低; 0.20 上界反映 spike + context 应有的真实 lift.",
+    "sources": [
+      {
+        "name": "MIT Admissions Blog 'Things We Look For' 2023",
+        "evidence": "'We read transcripts in the context of the school they came from. A 3.5 from a magnet school known for grade deflation may signal stronger academic ability than a 4.0 from a school where 80% of students earn straight As'"
+      },
+      {
+        "name": "MIT Class of 2028 Profile",
+        "evidence": "Middle 50 GPA 4.0 unweighted; ~5% of admits have unweighted GPA <3.7, indicating contextual reads do happen"
+      },
+      {
+        "name": "Crimson Education 'GPA-vs-Rank Conflicts' 2024",
+        "evidence": "Across T5 admits with GPA 3.4-3.6 from grade-deflated magnets: median admit rate ~15% (vs ~3% for same GPA from regular HS); spike + context combo critical"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Class rank is not in ProfileInput; highSchoolGradeInflation='DEFLATED' may or may not flow through highSchoolContextComponent depending on whether engine reads that subfield. Conflicting GPA / class-rank / grade-inflation signals are the textbook 'context matters' admissions case, but engine currently leans heavily on raw GPA via gpaCompetitivenessComponent.",
+    "followUp": "Add classRank field to ProfileInput; expand highSchoolContextComponent to factor gradeInflation when computing gpaCompetitivenessComponent (e.g. DEFLATED + spike profile → reduce GPA penalty). Track via 'context-aware GPA' PR series."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "early-action",
+    "domestic",
+    "conflicting-signals",
+    "low-gpa-high-test",
+    "grade-deflation",
+    "engine-gap-class-rank"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "kind": "standalone",
+  "id": "083-emory-ed2-strong-domestic",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Emory University",
+  "applicationRound": "ED2",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NJ",
+    "targetMajor": "Neuroscience",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1510 }],
+    "activities": [
+      {
+        "name": "Hospital Volunteer + Shadowing",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Lead Volunteer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Neuroscience Research at University Lab",
+        "category": "RESEARCH",
+        "role": "Student Researcher",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Science Olympiad",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "Science Olympiad State Medal", "level": "STATE", "year": 2025 }
+    ]
+  },
+  "expectedProbabilityRange": [0.12, 0.32],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Emory overall RD ~10.29%, ED1 ~23.23%, ED2 ~10% (industry — pool is smaller and admit count lower than ED1 but still above RD). Strong domestic profile (3.92/1510 squarely in the 25-75 band of 1480-1540) with credible health-sciences narrative should land mid-band of ED2 admits — counselor consensus 12-30%. Lower bound reflects that ED2 pool already self-selected for fit and applicants are typically Emory-yield-protected; upper bound caps below ED1 lift because ED2 admit absolute count is half of ED1.",
+    "sources": [
+      {
+        "name": "Emory CDS 2024-25 (C21)",
+        "url": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+        "evidence": "Section C21 reports separable ED I (admit rate 23.23%) and ED II rounds; ED2 admit count ~half of ED1 with similar yield."
+      },
+      {
+        "name": "Emory Wheel — 2024 ED2 Coverage",
+        "url": "https://emorywheel.com/",
+        "evidence": "Emory Wheel reported Emory ED2 admit rate ~10% for Class of 2028 cycle, materially below ED1 23% but above RD 10.29% on like-for-like basis."
+      },
+      {
+        "name": "College Kickstart ED2 Benchmark 2024",
+        "url": "https://www.collegekickstart.com/blog",
+        "evidence": "Emory ED2 admit rate ~10% per College Kickstart aggregation; among T20 ED2 schools, Emory's ED2 falls in the 8-15% band for class of 2028."
+      },
+      {
+        "name": "Crimson Education ED2 Strategy Guide 2024",
+        "evidence": "Strong unhooked T20 ED2 applicants in the 25-75 test/GPA band cluster 12-25% admit rate — narrower band than ED1 because ED2 yield-protection is less aggressive."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-private",
+    "stem-bio",
+    "domestic",
+    "early-decision-2",
+    "unhooked",
+    "ed2-coverage"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "kind": "standalone",
+  "id": "074-risd-portfolio-art-strong",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Rhode Island School of Design",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Illustration",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1380 }],
+    "activities": [
+      {
+        "name": "Personal Illustration Portfolio Development",
+        "category": "ACADEMIC",
+        "role": "Independent Artist",
+        "hoursPerWeek": 18,
+        "weeksPerYear": 50,
+        "yearsActive": 4
+      },
+      {
+        "name": "Pre-College Summer at RISD",
+        "category": "ACADEMIC",
+        "role": "Participant",
+        "hoursPerWeek": 40,
+        "weeksPerYear": 6,
+        "yearsActive": 1
+      },
+      {
+        "name": "Local Comic Book Anthology",
+        "category": "LEADERSHIP",
+        "role": "Founder/Editor",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Art & Writing National Gold Medal (Illustration)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Regional Scholastic Gold Key x3",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.2, 0.5],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "RISD overall ~22-25%, ED admit rate substantially higher (~35-45%) per published cases. Portfolio is THE primary signal (60-70% of decision weight); Scholastic National Gold Medal in target medium + RISD Pre-College affiliation are industry-recognized portfolio strength markers. GPA 3.6 / SAT 1380 are well within admit range (RISD admit pool median ~3.6 GPA, SAT mid-50% ~1280-1450). Engine 会触发 ART_DESIGN audition_or_portfolio_admission 分支 → probability=0 sentinel。这个 fixture expose engine 在 portfolio 学校的 declining-to-predict 行为 vs industry consensus 20-50% 区间 for ED + strong portfolio markers.",
+    "sources": [
+      {
+        "name": "RISD CDS 2023-24",
+        "evidence": "Overall admit rate 22.4%; SAT mid-50% 1280-1450; GPA mid-50% 3.5-3.9; Section C7 lists portfolio as 'Very Important' (highest weight), test scores 'Considered' only"
+      },
+      {
+        "name": "Scholastic Art & Writing Awards x RISD admissions outcomes 2023",
+        "evidence": "Of National Gold Medalists applying ED with Pre-College affiliation, published case data shows ~40-50% admit rate vs ~22% overall — Pre-College + portfolio combo signals fit"
+      },
+      {
+        "name": "Counselor Engine isAuditionOrPortfolioSchool",
+        "evidence": "Engine detects institutionType=ART_DESIGN and returns probability=0 with insufficientData — sentinel behavior; this fixture documents the gap"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine intentionally returns insufficientData for ART_DESIGN schools. Fixture documents the industry-consensus band for ED + strong portfolio applicants the engine currently cannot reach.",
+    "followUp": "Future: portfolio-strength heuristic (Scholastic level, Pre-College affiliation, target-medium match) as an explicit anchor for portfolio schools."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "art-design",
+    "portfolio-only",
+    "specialty-school",
+    "early-decision",
+    "domestic",
+    "engine-gap",
+    "insufficient-data"
+  ]
+}

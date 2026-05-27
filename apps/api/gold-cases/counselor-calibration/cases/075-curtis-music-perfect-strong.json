@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "075-curtis-music-perfect-strong",
+  "scenarioGroup": "EXTREME_BOUND_WEAK_AT_T5",
+  "schoolName": "Curtis Institute of Music",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Violin Performance",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "International Solo Violin Competitions",
+        "category": "ACADEMIC",
+        "role": "First Prize Winner (Junior Division)",
+        "hoursPerWeek": 25,
+        "weeksPerYear": 50,
+        "yearsActive": 5
+      },
+      {
+        "name": "Tanglewood Music Festival Young Artists Program",
+        "category": "ACADEMIC",
+        "role": "Selected Fellow",
+        "hoursPerWeek": 50,
+        "weeksPerYear": 8,
+        "yearsActive": 1
+      },
+      {
+        "name": "Private Studio with Curtis-affiliated Faculty",
+        "category": "ACADEMIC",
+        "role": "Lead Student",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 50,
+        "yearsActive": 4
+      }
+    ],
+    "awards": [
+      {
+        "name": "Menuhin Competition Junior Semifinalist",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "National YoungArts Winner (Classical Music)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      { "name": "Tanglewood Fellowship", "level": "NATIONAL", "year": 2024 }
+    ]
+  },
+  "expectedProbabilityRange": [0.03, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "Curtis admit rate is among the lowest in higher ed at ~4-6% (~160 students enrolled total, tuition-free, instrument-quota driven). Selection is 100% audition-by-faculty-panel; SAT/GPA are not collected for decisions. Even a Menuhin-tier candidate with Tanglewood fellowship faces high variance — Curtis's instrument-slot system means an exceptional violinist might face zero openings in a given year. Industry consensus: top-tier pipeline candidates 5-15%, average pipeline applicants <2%. Engine triggers MUSIC_CONSERVATORY sentinel (probability=0, insufficientData).",
+    "sources": [
+      {
+        "name": "Curtis Institute Admissions FAQ 2024",
+        "evidence": "Total enrollment ~160; admits decided exclusively via live audition by performance faculty; the institute admits to instrument-specific openings (some years zero violin slots open in a studio)"
+      },
+      {
+        "name": "League of American Orchestras Conservatory Outcomes Report 2023",
+        "evidence": "Curtis, Juilliard pre-college, NEC top-tier candidates cluster 8-20% admit at Curtis; below pipeline-tier candidates effectively 0%"
+      },
+      {
+        "name": "Counselor Engine isAuditionOrPortfolioSchool",
+        "evidence": "institutionType=MUSIC_CONSERVATORY triggers anchor=0 / insufficientData. Fixture documents industry consensus the engine cannot reach."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine returns sentinel insufficientData for conservatories. Curtis is the canonical example of a school where pure audition-driven selection cannot be approximated from academic stats.",
+    "followUp": "Long-term: conservatory-specific anchor based on competition tier, festival fellowships, faculty-affiliation signals."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "music-conservatory",
+    "audition-only",
+    "specialty-school",
+    "regular-decision",
+    "domestic",
+    "extreme-low",
+    "engine-gap",
+    "insufficient-data"
+  ]
+}
