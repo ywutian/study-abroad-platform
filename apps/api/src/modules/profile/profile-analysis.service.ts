@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { PredictionBlocker } from '@study-abroad/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProfileCrudService } from './profile-crud.service';
+import {
+  evaluatePredictionEligibility,
+  hasGpaSignal,
+} from './prediction-eligibility.util';
 
 /**
  * Handles profile grade calculation and analysis.
@@ -153,10 +158,29 @@ export class ProfileAnalysisService {
       string,
       { score: number; maxScore: number; missing: string[] }
     >;
+    /** Whether the profile may run an admission prediction (SSOT predicate). */
+    canRunPrediction: boolean;
+    /** Specific reasons `canRunPrediction` is false; empty when eligible. */
+    predictionBlockers: PredictionBlocker[];
   }> {
-    const profile = await this.prisma.profile.findUnique({
-      where: { userId },
-      include: { testScores: true, activities: true },
+    const [profile, schoolListCount] = await Promise.all([
+      this.prisma.profile.findUnique({
+        where: { userId },
+        include: {
+          testScores: true,
+          activities: true,
+          semesterGpas: { select: { id: true } },
+        },
+      }),
+      this.prisma.schoolListItem.count({ where: { userId } }),
+    ]);
+
+    // Prediction eligibility — shared SSOT predicate, also used by
+    // `/profiles/me/readiness` and the `POST /predictions` 412 backstop.
+    const eligibility = evaluatePredictionEligibility({
+      hasGpa: hasGpaSignal(profile),
+      hasBasicInfo: !!(profile?.targetMajor || profile?.grade),
+      schoolListCount,
     });
 
     const sections: Record<
@@ -176,7 +200,12 @@ export class ProfileAnalysisService {
       for (const s of Object.values(sections)) {
         s.missing.push('Profile not created');
       }
-      return { score: 0, sections };
+      return {
+        score: 0,
+        sections,
+        canRunPrediction: eligibility.canRunPrediction,
+        predictionBlockers: eligibility.blockers,
+      };
     }
 
     // Basics (20 pts)
@@ -264,6 +293,11 @@ export class ProfileAnalysisService {
       0,
     );
 
-    return { score: totalScore, sections };
+    return {
+      score: totalScore,
+      sections,
+      canRunPrediction: eligibility.canRunPrediction,
+      predictionBlockers: eligibility.blockers,
+    };
   }
 }

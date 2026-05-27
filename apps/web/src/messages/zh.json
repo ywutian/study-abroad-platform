@@ -2481,6 +2481,14 @@
     "lowDataWarning": "你的档案缺少关键数据（GPA、考试成绩），预测可能不够准确。完善档案可提高预测质量。",
     "dataChecklistTitle": "现在可以先运行预测，但补全这些信息会更准确。",
     "dataChecklistDesc": "缺失项之后再补也可以；下面的结果可作为第一版参考。",
+    "dataChecklistBlockedTitle": "档案信息不足，暂时无法运行录取预测。",
+    "dataChecklistBlockedDesc": "录取预测需要 GPA 和目标院校作为依据。补全以下关键信息后即可开始测算。",
+    "profileInsufficientHint": "需先完善 GPA 与目标院校等关键信息才能测算",
+    "predictionBlocker": {
+      "MISSING_GPA": "填写 GPA",
+      "MISSING_BASIC_INFO": "完善基本信息（目标专业或年级）",
+      "NO_TARGET_SCHOOLS": "至少添加 1 所目标院校"
+    },
     "dataChecklist": {
       "gpa": "GPA",
       "testScores": "标化成绩或免标化",

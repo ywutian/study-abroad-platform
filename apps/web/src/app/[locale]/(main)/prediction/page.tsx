@@ -167,6 +167,11 @@ export default function PredictionPage() {
           (profileChecklist.filter((item) => item.complete).length / profileChecklist.length) * 100
         )
       : undefined);
+  // Prediction eligibility — authoritative from `/profiles/me/readiness`.
+  // While `readiness` is still loading it is undefined → treated as allowed;
+  // the 412 backstop covers that brief window.
+  const profileBlocksPrediction = readiness?.overall?.canRunPrediction === false;
+  const predictionBlockers = readiness?.overall?.predictionBlockers ?? [];
   const selectedIds = useMemo(
     () => new Set(selectedSchools.map((school) => school.id)),
     [selectedSchools]
@@ -214,6 +219,10 @@ export default function PredictionPage() {
     }
     if (selectedSchools.length === 0) {
       toast.error(t('prediction.selectSchoolsFirst'));
+      return;
+    }
+    if (profileBlocksPrediction) {
+      toast.error(t('prediction.profileInsufficientHint'));
       return;
     }
     const selectedIds = selectedSchools.map((s) => s.id);
@@ -266,6 +275,7 @@ export default function PredictionPage() {
   }, [
     callbackPath,
     canFetchProtectedData,
+    profileBlocksPrediction,
     router,
     selectedSchools,
     ucIdsData?.schoolIds,
@@ -358,6 +368,8 @@ export default function PredictionPage() {
     if (searchParams.get('autorun') !== '1') return;
     if (!hasPreFilled || selectedSchools.length === 0 || predictMutation.isPending || ucIdsLoading)
       return;
+    // Don't auto-run a prediction the profile is not yet eligible for.
+    if (profileBlocksPrediction) return;
     hasAutoRun.current = true;
     handlePredict();
   }, [
@@ -365,6 +377,7 @@ export default function PredictionPage() {
     canFetchProtectedData,
     hasPreFilled,
     predictMutation.isPending,
+    profileBlocksPrediction,
     searchParams,
     selectedSchools.length,
     ucIdsLoading,
@@ -435,6 +448,7 @@ export default function PredictionPage() {
                 onRemove={handleRemoveSchool}
                 onPredict={handlePredict}
                 isPredicting={predictMutation.isPending}
+                profileBlocked={profileBlocksPrediction}
                 predictionTiers={predictionTierBySchoolId}
                 hasPredictions={formalPredictedCount > 0}
                 compact
@@ -443,36 +457,48 @@ export default function PredictionPage() {
             </div>
 
             <div className="min-w-0 space-y-4">
-              {/* Data completeness checklist for sparse profiles */}
-              {profileData && hasProfileGaps && (
+              {/* Data completeness checklist for sparse profiles.
+                  When the profile is below the prediction-eligibility bar the
+                  card switches to a "blocked" variant that lists the exact
+                  blockers (GPA / basic info / target schools) instead of the
+                  softer "run now, refine later" copy. */}
+              {profileData && (hasProfileGaps || profileBlocksPrediction) && (
                 <div className="rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 p-3">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground">
-                        {t('prediction.dataChecklistTitle')}
+                        {profileBlocksPrediction
+                          ? t('prediction.dataChecklistBlockedTitle')
+                          : t('prediction.dataChecklistTitle')}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {t('prediction.dataChecklistDesc')}
+                        {profileBlocksPrediction
+                          ? t('prediction.dataChecklistBlockedDesc')
+                          : t('prediction.dataChecklistDesc')}
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {profileChecklist
-                          .filter((item) => !item.complete)
-                          .map((item) => (
-                            <div
-                              key={item.key}
-                              className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
-                            >
-                              <CheckCircle2
-                                className={
-                                  item.complete
-                                    ? 'h-3.5 w-3.5 text-success'
-                                    : 'h-3.5 w-3.5 text-muted-foreground'
-                                }
-                              />
-                              <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
-                            </div>
-                          ))}
+                        {profileBlocksPrediction
+                          ? predictionBlockers.map((blocker) => (
+                              <div
+                                key={blocker}
+                                className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border border-warning/35 bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
+                              >
+                                <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                                <span>{t(`prediction.predictionBlocker.${blocker}`)}</span>
+                              </div>
+                            ))
+                          : profileChecklist
+                              .filter((item) => !item.complete)
+                              .map((item) => (
+                                <div
+                                  key={item.key}
+                                  className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
+                                </div>
+                              ))}
                       </div>
                     </div>
                     <Button

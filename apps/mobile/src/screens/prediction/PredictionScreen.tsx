@@ -142,6 +142,13 @@ interface PredictionProfileSummary {
 
 interface PredictionProfileCompleteness {
   score: number;
+  /**
+   * Whether the profile is eligible to run an admission prediction
+   * (GPA + basic info + ≥1 target school). Returned by
+   * `/profiles/me/completeness` — see the shared prediction-eligibility
+   * predicate. Optional for backward compatibility with cached responses.
+   */
+  canRunPrediction?: boolean;
 }
 
 function getTimeAgo(isoString: string): string {
@@ -334,9 +341,11 @@ export default function PredictionScreen() {
               color="#fff"
               trackColor="rgba(255,255,255,0.3)"
             />
-            {(profileCompleteness?.score || 0) < 80 && (
+            {profileCompleteness?.canRunPrediction === false ? (
+              <Text style={styles.progressHint}>{t('prediction.predictionBlockedHint')}</Text>
+            ) : (profileCompleteness?.score || 0) < 80 ? (
               <Text style={styles.progressHint}>{t('prediction.completeProfileHint')}</Text>
-            )}
+            ) : null}
           </View>
         </LinearGradient>
       </Animated.View>

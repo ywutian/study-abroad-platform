@@ -8,6 +8,7 @@ import type {
   SchoolFieldSources,
   SchoolProvenance,
 } from './school-provenance';
+import type { PredictionBlocker } from './prediction';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -169,6 +170,12 @@ export interface ProfileReadinessV1 {
     warnings: string[];
     nextActions: ProfileReadinessAction[];
     canRunPrediction: boolean;
+    /**
+     * Specific reasons `canRunPrediction` is false. Empty when the user is
+     * eligible. Lets the UI tell the user exactly what to fix instead of a
+     * generic message. See `PredictionBlocker`.
+     */
+    predictionBlockers: PredictionBlocker[];
     canGenerateRecommendation: boolean;
     canRunApplicationAnalysis: boolean;
   };

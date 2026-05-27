@@ -1,17 +1,17 @@
 /**
  * Profile completeness algorithm — single source of truth.
  *
- * Used by:
- * - `apps/api/src/modules/user/dashboard.service.ts` (dashboard readiness)
- * - `apps/api/src/modules/prediction/prediction.service.ts` (Phase 1 Bug 2:
- *   precondition check that user has at least 40% completeness before
- *   running a prediction — see docs/architecture/dashboard-invariants.md)
+ * Used by `apps/api/src/modules/user/dashboard.service.ts` (dashboard
+ * readiness percentage).
  *
  * 2026-05: Extracted from dashboard.service.ts as part of the Phase 1
- * data-integrity fix. The two callers must NOT diverge — if one starts
- * computing differently, prediction precondition and dashboard readiness
- * become inconsistent again (the same drift class PR #178/#179 fixed
- * for types).
+ * data-integrity fix.
+ *
+ * NOTE: prediction *eligibility* (whether a prediction may run at all) is a
+ * SEPARATE, field-explicit concern — see `prediction-eligibility.util.ts`
+ * (`evaluatePredictionEligibility`). This util only produces the displayed
+ * completeness percentage; it must not be reused as a prediction gate (a
+ * pure score threshold can pass a profile that has no GPA).
  */
 
 export interface ProfileCompletenessInput {
@@ -121,13 +121,3 @@ export function calculateProfileCompleteness(
 
   return { completeness: Math.min(100, score), profileGaps: gaps };
 }
-
-/**
- * Minimum completeness required to run an admission prediction.
- * Below this threshold, predict() throws 412
- * `PRECONDITION_PROFILE_INSUFFICIENT`.
- *
- * Rationale: with < 40% profile data, the prediction model's signals
- * are too sparse and produce misleadingly confident probabilities.
- */
-export const PREDICTION_MIN_COMPLETENESS = 40;

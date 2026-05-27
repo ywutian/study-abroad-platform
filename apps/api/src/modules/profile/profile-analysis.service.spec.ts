@@ -11,6 +11,9 @@ describe('ProfileAnalysisService', () => {
     profile: {
       findUnique: jest.fn(),
     },
+    schoolListItem: {
+      count: jest.fn().mockResolvedValue(0),
+    },
   };
 
   const mockCrudService = {

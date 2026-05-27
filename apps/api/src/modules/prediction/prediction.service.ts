@@ -17,9 +17,10 @@ import { RedisService } from '../../common/redis/redis.service';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import { fireAndForget } from '../../common/utils/async.util';
 import {
-  calculateProfileCompleteness,
-  PREDICTION_MIN_COMPLETENESS,
-} from '../profile/profile-completeness.util';
+  evaluatePredictionEligibility,
+  buildPredictionEligibilityMessage,
+  hasGpaSignal,
+} from '../profile/prediction-eligibility.util';
 import {
   toPublicSchoolMediaAsset,
   type PublicSchoolMediaAssetInput,
@@ -1219,7 +1220,8 @@ export class PredictionService {
     chargePoints: boolean,
     /**
      * 2026-05 (Phase 1 Bug 1+2): when true, enforce user-facing invariants:
-     *   - Profile.completeness >= 40 (PreconditionFailedException 412)
+     *   - Profile is prediction-eligible per `evaluatePredictionEligibility`
+     *     (GPA + basic info + ≥1 target school) — else PreconditionFailedException 412
      *   - Every schoolId belongs to the user's SchoolListItem (BadRequestException 400)
      * Set false for internal callers (e.g., predictForApplicationAnalysis)
      * that trust the upstream pipeline.
@@ -1250,13 +1252,14 @@ export class PredictionService {
         where: { id: profileId },
         select: {
           userId: true,
-          applyingTestOptional: true,
           targetMajor: true,
           grade: true,
           gpa: true,
-          testScores: { select: { id: true } },
-          activities: { select: { id: true } },
-          awards: { select: { id: true } },
+          gpa9: true,
+          gpa10: true,
+          gpa11: true,
+          gpa12: true,
+          semesterGpas: { select: { id: true } },
         },
       });
 
@@ -1264,22 +1267,29 @@ export class PredictionService {
         throw new BadRequestException('PREDICTION_PROFILE_NOT_FOUND');
       }
 
-      // Invariant: predictionsCount > 0 ⟹ completeness ≥ 40%
-      // Uses the same algorithm as dashboard.service.ts (shared util) so
-      // dashboard readiness and prediction precondition stay in lockstep.
+      // Invariant: predictionsCount > 0 ⟹ profile is prediction-eligible.
+      // Uses the shared `evaluatePredictionEligibility` predicate (the single
+      // source of truth) so this 412 backstop and `/profiles/me/readiness`
+      // (`overall.canRunPrediction`) can never disagree.
+      // See docs/architecture/dashboard-invariants.md.
       const schoolListCount = await this.prisma.schoolListItem.count({
         where: { userId: profileForValidation.userId },
       });
-      const { completeness } = calculateProfileCompleteness(
-        profileForValidation,
+      const eligibility = evaluatePredictionEligibility({
+        hasGpa: hasGpaSignal(profileForValidation),
+        hasBasicInfo: !!(
+          profileForValidation.targetMajor || profileForValidation.grade
+        ),
         schoolListCount,
-      );
-      if (completeness < PREDICTION_MIN_COMPLETENESS) {
+      });
+      if (!eligibility.canRunPrediction) {
         throw new PreconditionFailedException({
           code: 'PREDICTION_PROFILE_INSUFFICIENT',
-          message: '需要先完善至少 40% 的档案才能运行录取预测',
-          completeness,
-          required: PREDICTION_MIN_COMPLETENESS,
+          message: buildPredictionEligibilityMessage(
+            eligibility.blockers,
+            locale,
+          ),
+          details: { blockers: eligibility.blockers },
         });
       }
 

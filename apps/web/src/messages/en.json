@@ -2497,6 +2497,14 @@
     "lowDataWarning": "Your profile is missing key data (GPA, test scores). Predictions may be less accurate. Complete your profile for better results.",
     "dataChecklistTitle": "Predictions can run now, but these details improve accuracy.",
     "dataChecklistDesc": "Fill the missing items when you can; the result below will still be usable as a first read.",
+    "dataChecklistBlockedTitle": "Your profile isn't ready to run an admission prediction yet.",
+    "dataChecklistBlockedDesc": "A prediction needs your GPA and target schools to anchor on. Add the key details below to unlock it.",
+    "profileInsufficientHint": "Add your GPA and target schools to run a prediction",
+    "predictionBlocker": {
+      "MISSING_GPA": "Add your GPA",
+      "MISSING_BASIC_INFO": "Complete basic info (target major or grade)",
+      "NO_TARGET_SCHOOLS": "Add at least 1 target school"
+    },
     "dataChecklist": {
       "gpa": "GPA",
       "testScores": "Tests or test optional",
