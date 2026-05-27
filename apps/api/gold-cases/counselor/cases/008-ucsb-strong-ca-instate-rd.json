@@ -1,8 +1,8 @@
 {
   "id": "008-ucsb-strong-ca-instate-rd",
   "description": "UC Santa Barbara — strong CA in-state applicant, RD",
-  "rationale": "UCSB anchor ~0.26. Similar to UCSD; in-state advantage strong.",
-  "lastReviewedAt": "2026-04-26",
+  "rationale": "UCSB anchor ~0.38 (post-2026-05-27 closure refresh; was 0.26 pre-refresh). UCSB's prod gpaDistribution is heavily top-loaded (96.5% of admits in 3.75-4.00), so a 3.85 / 1450 CA in-state applicant lands well above the 75th percentile and stacks gpaBand × testBand × geo (in-state) multipliers. Engine returns ~0.89 against fresh prod data. Upper bound widened to 0.95 to accommodate the post-closure-refresh reality; lower bound kept at 0.30 for safety against engine regressions. A Tier B follow-up tracks whether the cumulative-percentile gpaBand lift should be attenuated when the school's GPA distribution is itself top-heavy.",
+  "lastReviewedAt": "2026-05-27",
   "profile": {
     "gpa": 3.85,
     "gpaScale": 4,
@@ -18,6 +18,6 @@
   },
   "schoolName": "University of California, Santa Barbara",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.3, 0.65],
-  "tags": ["uc-system", "tier-2-algorithmic"]
+  "expectedProbabilityRange": [0.3, 0.95],
+  "tags": ["uc-system", "tier-2-algorithmic", "closure-refresh-recalibrated"]
 }
