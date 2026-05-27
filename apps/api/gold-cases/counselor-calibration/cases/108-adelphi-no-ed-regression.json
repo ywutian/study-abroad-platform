@@ -1,0 +1,66 @@
+{
+  "kind": "comparative",
+  "id": "108-adelphi-no-ed-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "Adelphi University",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.6,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "targetMajor": "Psychology",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1240 }],
+    "activities": [
+      {
+        "name": "Peer Counseling Club",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Officer",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      }
+    ],
+    "awards": []
+  },
+  "caseA": { "label": "ED", "applicationRound": "ED" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.05,
+  "expectedMaxDelta": 0.05,
+  "rationale": {
+    "intuition": "Regression lock for PR #292 / #293 PROGRAM_NOT_OFFERED verification: Adelphi University does not offer Early Decision. The school runs non-binding Early Action plus rolling Regular Decision (own CDS C21 marks ED=NO). Pre-fix engine behavior: with edAcceptanceRate=null and yieldRate=10.34% in seed, the yield-informed ED fallback (counselor-modifiers.ts:751) fires and applies ~3.2× to a non-existent ED round. An applicant told 'your ED probability at Adelphi is 3× your RD probability' would be receiving fabricated guidance.\n\nThis fixture asserts ED ≈ RD (within ±5pp) at Adelphi. The fixture is intentionally placed at a low-selectivity school (overall ~66%) where a 3.2× boost would catastrophically inflate the predicted probability (66% × 3.2 hits the upper clamp of 2.5× anchor = 98%). If the delta is large, the engine is producing fabricated ED data for a school that has no ED round.",
+    "sources": [
+      {
+        "name": "Adelphi Undergraduate Admissions — Deadlines",
+        "url": "https://www.adelphi.edu/admissions/undergraduate-application/",
+        "evidence": "Non-binding Early Action (Dec 1) + rolling admission. No binding Early Decision plan offered."
+      },
+      {
+        "name": "PR #292 — PROGRAM_NOT_OFFERED corrections (commit bc1183c5)",
+        "evidence": "Adelphi enumerated as a regional private where Wave 5-6 had assumed ED based on aggregator hints; agent verified via Adelphi's own admissions page that no ED plan exists."
+      },
+      {
+        "name": "apps/api/prisma/seeds/backfill-has-ea-ed2.ts HAS_EA_TRUE",
+        "evidence": "Adelphi appears in the hasEarlyAction=true list (line 83) — confirming the school offers EA but not ED. ED case must short-circuit when hasEarlyDecision is properly backfilled to false."
+      },
+      {
+        "name": "Adelphi CDS 2024-25 Section C21",
+        "evidence": "C21 row 'Does your institution offer an Early Decision plan?' = NO. Same for ED II."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "regional-private",
+    "no-early-decision",
+    "program-not-offered",
+    "regression-check",
+    "bug-9-pr-292-293",
+    "yield-fallback-misfire"
+  ]
+}

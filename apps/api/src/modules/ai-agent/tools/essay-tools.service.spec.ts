@@ -71,13 +71,13 @@ describe('EssayToolsService', () => {
   });
 
   it('should return no-essay message when profile has no essays', async () => {
-    (prisma as any).profile.findUnique.mockResolvedValue(null);
+    prisma.profile.findUnique.mockResolvedValue(null);
     const result = await service.getEssays('user-1', 'en');
     expect(result).toHaveProperty('message');
   });
 
   it('should return essays when profile has them', async () => {
-    (prisma as any).profile.findUnique.mockResolvedValue({
+    prisma.profile.findUnique.mockResolvedValue({
       essays: [
         {
           id: 'e1',

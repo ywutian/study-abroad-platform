@@ -1,0 +1,54 @@
+{
+  "kind": "standalone",
+  "id": "106-harvard-anchor-floor-regression",
+  "scenarioGroup": "EXTREME_BOUND_WEAK_AT_T5",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.2,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1300 }],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.002, 0.018],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Regression lock for PR #267 anchor×0.1 floor: a very weak unhooked applicant at Harvard (GPA 3.2 / SAT 1300, no activities, no awards) should ALWAYS produce a probability below the pre-fix absolute floor of 2.0% AND above the new relative floor of anchor×0.1 (Harvard anchor=3.65% → floor=0.365%).\n\nThe range [0.2%, 1.8%] is *deliberately* set below 2.0% to assert the absolute floor of 0.02 is no longer in effect. If this fixture starts returning ≥ 2.0%, the absolute floor has been reintroduced — symptom of someone reverting prediction-counselor-fix or adding a Math.max(0.02, ...) clamp downstream.\n\nThe lower bound 0.2% is well below the relative floor (0.365%) to detect the opposite regression: if the relative floor was raised too high or the modifier product was capped, the prob would inflate above the floor.",
+    "sources": [
+      {
+        "name": "PR #267 — counselor floor anchor×0.1",
+        "evidence": "Replaced absolute floor Math.max(0.02, anchor*0.3) with relative floor anchor*0.1. Rationale (from counselor-engine.service.ts:270-280): old absolute floor flattened EVERY intl/weak profile at HYPSM-class schools to identical 2.0%, making predictions profile-blind."
+      },
+      {
+        "name": "counselor-engine.service.ts (line 281)",
+        "evidence": "const lowerBound = anchor * 0.1; — engine source-of-truth for the floor formula. Harvard anchor=0.0365, floor=0.00365 (0.365%)."
+      },
+      {
+        "name": "Harvard CDS 2024-25 Section C9",
+        "evidence": "GPA 25th percentile ≈3.85; SAT 25th ≈1510. An applicant with 3.2 GPA / 1300 SAT is at the bottom 1% of the applicant pool — well below admit pool. Counselor consensus: <2% admit probability."
+      },
+      {
+        "name": "NACAC State of College Admission 2024 §4.1",
+        "evidence": "HYPSM admits a small number of well-below-25th applicants each year (typically <5% of admit class) through hooks or extraordinary context. For an unhooked applicant with no hooks, the probability is genuinely below 2% but not zero."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "weak-profile",
+    "extreme-low",
+    "regression-check",
+    "bug-8-pr-267",
+    "anchor-floor"
+  ]
+}

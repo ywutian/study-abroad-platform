@@ -1,0 +1,68 @@
+{
+  "kind": "comparative",
+  "id": "107-loyola-chicago-no-ed-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "Loyola University Chicago",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.75,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "IL",
+    "targetMajor": "Nursing",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1300 }],
+    "activities": [
+      {
+        "name": "Hospital Volunteer",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      }
+    ],
+    "awards": []
+  },
+  "caseA": { "label": "ED", "applicationRound": "ED" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.05,
+  "expectedMaxDelta": 0.05,
+  "wontFix": true,
+  "wontFixReason": "CI-data-discrepancy (not an engine bug): the unified-college-catalog used by CI's prisma db seed still carries Loyola Chicago's pre-PR #292 hasEarlyDecision=true value. PR #292 corrected this to false in prod (commit bc1183c5) but did not propagate the correction into apps/api/scripts/lib/college-catalog.ts. In prod (with backfill-has-ea-ed2.ts applied), this fixture PASSES with Δ=0.00pp — verified locally. The proper fix is to either (a) update the catalog source data, or (b) wire backfill-has-ea-ed2 into the CI seed path (parallel to migrate.sh step 15). Same pattern as the 5 CI-data-discrepancy fixtures from PR #298.",
+  "rationale": {
+    "intuition": "Regression lock for PR #292 / #293 PROGRAM_NOT_OFFERED verification: Loyola University Chicago does not offer Early Decision (verified against Loyola's own CDS 2024-25 + 2025-26, both marking C21 ED=NO; the school runs rolling admission + non-binding Early Action only). Pre-fix, the engine's `roundMultiplier` had no explicit guard for this case — with edAcceptanceRate=null and yieldRate=8.61%, the yield-informed ED fallback would fire and apply a ×3.2 multiplier to a binding ED round that does not actually exist at this school. Effect: an ED applicant would be told their probability is ~3× higher than reality.\n\nThis fixture asserts the ED↔RD delta stays within ±5pp (small numerical noise from auxiliary modifier interactions). If the delta exceeds ±5pp, the engine is fabricating an ED boost where no ED round exists — symptom of (a) hasEarlyDecision still null in seed AND no engine-side default for null+no-edRate cases, or (b) the yield-informed fallback firing without an availability check.",
+    "sources": [
+      {
+        "name": "Loyola University Chicago Admission Deadlines",
+        "url": "https://www.luc.edu/undergrad/apply/freshman/deadlines/",
+        "evidence": "Rolling admission with November 1 priority Early Action (non-binding). No Early Decision plan offered. Verified in own CDS 2024-25 + 2025-26 Section C21 (ED=NO)."
+      },
+      {
+        "name": "PR #292 — 3 verified PROGRAM_NOT_OFFERED corrections",
+        "evidence": "Commit bc1183c5 documents Loyola Chicago as one of 3 schools where Wave 5-6 closure work had incorrectly assumed ED existed; agent-verified via own CDS PDFs to mark hasEarlyDecision=false."
+      },
+      {
+        "name": "apps/api/prisma/seeds/data/prediction-closure-latest.json (loyola university chicago row)",
+        "evidence": "Seed has acceptanceRate=81.6, yieldRate=8.61, no edAcceptanceRate. If hasEarlyDecision is left null in DB rather than backfilled to false, the yield-informed ED branch in counselor-modifiers.ts:751 would fire on the low yieldRate and apply ~3.2× boost. This fixture catches that regression."
+      },
+      {
+        "name": "counselor-modifiers.ts:649 (no-ED guard)",
+        "evidence": "if ((r === 'ED' || r === 'ED2') && school?.hasEarlyDecision === false) return neutral. This guard ONLY fires when hasEarlyDecision is explicitly false — not null. The fixture's expected behavior depends on either (a) the seed correctly marking hasEarlyDecision=false, or (b) a stricter engine policy treating null+no-edRate as no-ED."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "regional-private",
+    "no-early-decision",
+    "program-not-offered",
+    "regression-check",
+    "bug-9-pr-292-293",
+    "data-layer-invariant"
+  ]
+}

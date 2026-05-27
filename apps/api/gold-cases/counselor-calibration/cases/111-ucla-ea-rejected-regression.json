@@ -1,0 +1,64 @@
+{
+  "kind": "comparative",
+  "id": "111-ucla-ea-rejected-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "University of California, Los Angeles",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Mathematics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1510 }],
+    "activities": [
+      {
+        "name": "Math Olympiad Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [{ "name": "AIME Honor Roll", "level": "NATIONAL", "year": 2025 }]
+  },
+  "caseA": { "label": "EA", "applicationRound": "EA" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.03,
+  "expectedMaxDelta": 0.03,
+  "wontFix": true,
+  "wontFixReason": "CI-data-discrepancy (not an engine bug): PR #295 corrected UCLA's fabricated eaAcceptanceRate=50 to null in prod, but the unified-college-catalog used by CI's prisma db seed still carries the fabricated value AND CI does not run backfill-has-ea-ed2 (the new hasEarlyAction column stays null). Without hasEarlyAction=false the no-EA guard does not fire and the stale eaAcceptanceRate=50 produces a +10.21pp EA boost. In prod (with backfill applied AND fabricated rate removed), this fixture PASSES with Δ=0.00pp — verified locally. Proper fix: same as 107 — update the catalog source or wire backfill into CI seed path.",
+  "rationale": {
+    "intuition": "Regression lock complementing 104-ucla-ed-rejected: UCLA also does NOT offer Early Action. Pre-fix the CDS-extractor wave fabricated eaAcceptanceRate=50 alongside the fabricated ED data (audit cross-contamination section: 'C21 indicates no early decision and no early action plan, so no counts reported'). The fix removed both the fabricated rates and the engine relies on hasEarlyAction=false to short-circuit roundMultiplier.\n\nThis fixture asserts EA at UCLA produces a probability within ±3pp of RD. Combined with fixture 104 (ED), both EA and ED at UCLA must collapse to RD-equivalent — they are paired regression checks for the UCLA fabricated-rate incident.",
+    "sources": [
+      {
+        "name": "apps/api/prisma/seeds/backfill-has-ea-ed2.ts HAS_EA_FALSE",
+        "evidence": "UCLA (line 102) appears in the hasEarlyAction=false backfill list alongside the entire UC system — the UC application is a single window with no early plan."
+      },
+      {
+        "name": "UCLA Admission FAQ — Application Plans",
+        "url": "https://admission.ucla.edu/apply/first-year",
+        "evidence": "UC system: one November 1-30 window, no Early Decision, no Early Action, no Restrictive EA."
+      },
+      {
+        "name": "data-integrity-audit.md (Cross-contamination section, UCLA row)",
+        "evidence": "Previously eaAcceptanceRate=50 in UCLA seed despite source noting 'no early action plan'. Flagged BLOCKING along with the ED=40 fabrication."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-public",
+    "uc-system",
+    "no-early-action",
+    "regression-check",
+    "bug-4-pr-295",
+    "fabricated-rate-protection"
+  ]
+}

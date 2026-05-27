@@ -84,6 +84,14 @@ run_seed "m3-hook-stats" ./prisma/seed-hook-stats.js
 #     Idempotent upsert on unique metric column.
 run_seed "m3-global-baselines" ./prisma/seed-global-admit-baselines.js
 
+# 15. hasEarlyAction / hasEarlyDecision2 boolean backfill — fills the schema
+#     columns added in migration 20260526000000_add_has_ea_ed2 (PR #295).
+#     Without this, fresh DB / restored backups leave both columns NULL,
+#     which the engine reads as falsy → ED-offering schools silently return
+#     ED ≡ RD (Layer 3 fixtures 105/107/108/109 + 111 break). Script is
+#     idempotent (skips if value already set), so safe to re-run.
+run_seed "ea-ed2-backfill" ./prisma/seeds/backfill-has-ea-ed2.js --apply
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------

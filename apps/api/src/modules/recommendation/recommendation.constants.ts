@@ -157,11 +157,11 @@ export function getRecommendationFieldSource(
   field: string,
 ): SchoolFieldSource | null {
   const provenance = normalizeSchoolProvenance(
-    ((school.metadata as Record<string, unknown> | null | undefined)
-      ?.provenance ?? {}) as Record<string, unknown>,
+    (school.metadata as Record<string, unknown> | null | undefined)
+      ?.provenance ?? {},
   );
   const source = provenance[field]
-    ? toSchoolFieldSource(provenance[field]!)
+    ? toSchoolFieldSource(provenance[field])
     : null;
   if (!source) return null;
   if (!source.predictionEligible) return null;

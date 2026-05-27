@@ -1,0 +1,70 @@
+{
+  "kind": "comparative",
+  "id": "104-ucla-ed-rejected-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "University of California, Los Angeles",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1520 }],
+    "activities": [
+      {
+        "name": "Robotics Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "AI Research Internship",
+        "category": "RESEARCH",
+        "role": "Intern",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 12,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [{ "name": "USACO Gold", "level": "NATIONAL", "year": 2025 }]
+  },
+  "caseA": { "label": "ED", "applicationRound": "ED" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.03,
+  "expectedMaxDelta": 0.03,
+  "rationale": {
+    "intuition": "Regression lock for PR #295 + audit 'cross-contamination' finding: UCLA does NOT offer Early Decision. The entire UC system uses a single November 30 application window with no early round. A previous CDS-extractor wave wrote edAcceptanceRate=40, eaAcceptanceRate=50 to UCLA's row despite the source PDF literally stating 'no early decision and no early action plan' (data-integrity-audit.md → Cross-contamination section, severity BLOCKING). The fix corrected the seed (edAcceptanceRate=null) and the engine's roundMultiplier was already wired to detect hasEarlyDecision=false and return neutral.\n\nThis fixture asserts that an ED attempt at UCLA produces a probability essentially identical to RD (within ±3 percentage points). If the delta ever exceeds ±3pp, suspect (a) the fabricated edAcceptanceRate returned to the seed, (b) hasEarlyDecision flipped back to true on UCLA's row, or (c) the engine's no-ED guard was removed.",
+    "sources": [
+      {
+        "name": "UCLA Undergraduate Admission — Application Plans",
+        "url": "https://admission.ucla.edu/apply/first-year",
+        "evidence": "UC system uses one application window (Nov 1-30); no Early Decision, no Early Action, no Restrictive EA. UCLA admissions office explicitly confirms in its FAQ."
+      },
+      {
+        "name": "apps/api/scripts/closure-reports/overnight-2026-05-25/data-integrity-audit.md (Cross-contamination section, UCLA row)",
+        "evidence": "Previously UCLA had edAcceptanceRate=40, eaAcceptanceRate=50 in seed despite the linked CDS PDF noting 'C21 indicates no early decision and no early action plan, so no counts reported.' Flagged BLOCKING and corrected in PR #295."
+      },
+      {
+        "name": "PR #295 — schema drift + UCLA ED removal",
+        "evidence": "Removed fabricated ED/EA rates from UCLA; relies on engine's `hasEarlyDecision === false` and `hasEarlyAction === false` flags to short-circuit roundMultiplier to neutral."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-public",
+    "uc-system",
+    "no-early-decision",
+    "regression-check",
+    "bug-4-pr-295",
+    "fabricated-rate-protection"
+  ]
+}

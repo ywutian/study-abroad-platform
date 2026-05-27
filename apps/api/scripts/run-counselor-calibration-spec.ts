@@ -102,6 +102,9 @@ function buildSchoolInput(school: any): SchoolInput & {
     edAcceptanceRate: school.edAcceptanceRate
       ? Number(school.edAcceptanceRate)
       : undefined,
+    ed2AcceptanceRate: school.ed2AcceptanceRate
+      ? Number(school.ed2AcceptanceRate)
+      : undefined,
     eaAcceptanceRate: school.eaAcceptanceRate
       ? Number(school.eaAcceptanceRate)
       : undefined,
@@ -111,6 +114,7 @@ function buildSchoolInput(school: any): SchoolInput & {
     testingPolicy: school.testingPolicy ?? undefined,
     testOptional: school.testOptional ?? undefined,
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
+    hasEarlyDecision2: school.hasEarlyDecision2 ?? undefined,
     hasEarlyAction: school.hasEarlyAction ?? undefined,
     hasRestrictiveEa: school.hasRestrictiveEa ?? undefined,
   };

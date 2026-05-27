@@ -1,0 +1,62 @@
+{
+  "kind": "comparative",
+  "id": "112-adelphi-ea-boost-preserved-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "Adelphi University",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.6,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "targetMajor": "Psychology",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1240 }],
+    "activities": [
+      {
+        "name": "Peer Counseling Club",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Officer",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      }
+    ],
+    "awards": []
+  },
+  "caseA": { "label": "EA", "applicationRound": "EA" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.02,
+  "expectedMaxDelta": 0.25,
+  "rationale": {
+    "intuition": "Asymmetric regression check — complementary to fixture 108 (Adelphi ED). Adelphi DOES offer non-binding Early Action; the hasEarlyAction=false guard in roundMultiplier must NOT incorrectly fire here. If the PR #292/#293 PROGRAM_NOT_OFFERED data fix over-corrected by marking Adelphi hasEarlyAction=false, this fixture catches the over-fire: an EA applicant would get no boost (delta ~0) when in fact EA should provide a modest 5-25pp lift via either (a) school-published eaAcceptanceRate if scrapped, or (b) the heuristic ×1.30 EA fallback (which hits the anchor×2.5 upper clamp at high-acceptance schools like Adelphi 66%).\n\nBoundary semantics:\n- expectedMinDelta=-0.02 — EA must not be SIGNIFICANTLY lower than RD (no perverse anti-EA penalty).\n- expectedMaxDelta=+0.25 — EA at a 66%-accept school × heuristic 1.3 caps via the anchor×2.5 clamp (98%) vs RD 77.6%, producing up to ~+20pp legitimate delta. Slack of 5pp absorbs minor float drift.\n\nPair with fixture 108: 108 asserts ED collapses to RD (no fabricated ED boost); 112 asserts EA preserves its legitimate boost. Together they verify the data-layer fix didn't over-correct.",
+    "sources": [
+      {
+        "name": "apps/api/prisma/seeds/backfill-has-ea-ed2.ts HAS_EA_TRUE",
+        "evidence": "Adelphi listed at line 83 in the hasEarlyAction=true list. The school's Dec 1 non-binding EA round is a real offering, distinct from the (nonexistent) ED round addressed in fixture 108."
+      },
+      {
+        "name": "Adelphi Admissions — Application Deadlines",
+        "url": "https://www.adelphi.edu/admissions/undergraduate-application/",
+        "evidence": "Non-binding Early Action deadline December 1, plus rolling Regular Decision. EA offering verified by school's own admissions page."
+      },
+      {
+        "name": "counselor-modifiers.ts roundMultiplier EA fallback",
+        "evidence": "When hasEarlyAction is true (or null) and no eaAcceptanceRate is published, line 798 applies the heuristic ×1.30 EA boost. This fixture verifies the fallback fires at Adelphi."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "regional-private",
+    "early-action",
+    "regression-check",
+    "bug-9-pr-292-293",
+    "asymmetric-guard",
+    "no-over-correction"
+  ]
+}
