@@ -578,6 +578,29 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
+      # Closure-v2 prediction-input overlay. Mirrors migrate.sh step 1 in prod:
+      # applies prediction-closure-latest.json (regenerated from prod via
+      # build-prediction-closure-payload.ts) on top of the static catalog so
+      # closure corrections (acceptanceRate, gpaDistribution, hasEarlyAction,
+      # hasEarlyDecision2, etc.) actually reach CI. Without this step, every
+      # closure correction silently diverges between prod and CI and Layer 3
+      # regression fixtures flip pass/fail along the drift.
+      - name: Apply prediction-closure overlay
+        working-directory: apps/api
+        run: pnpm exec tsx prisma/seeds/seed-prediction-closure.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      # Backfill hasEarlyAction / hasEarlyDecision2 booleans. Mirrors
+      # migrate.sh step 15 — these columns were added in PR #295 but the
+      # closure payload only carries them for schools that explicitly recorded
+      # a value, so the static fallback list is still needed for full coverage.
+      - name: Backfill EA / ED2 booleans
+        working-directory: apps/api
+        run: pnpm exec tsx prisma/seeds/backfill-has-ea-ed2.ts --apply
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
       - name: Verify prediction launch reports
         run: |
           pnpm --filter api verify:counselor-coverage
