@@ -13,15 +13,15 @@
     "@study-abroad/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.40",
-    "@types/node": "^20.19.39",
+    "@types/chrome": "^0.1.42",
+    "@types/node": "^20.19.41",
     "css-loader": "^6.10.0",
     "mini-css-extract-plugin": "^2.10.2",
     "rimraf": "^5.0.5",
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.7",
     "typescript": "^5.3.3",
-    "webpack": "^5.106.2",
+    "webpack": "^5.107.2",
     "webpack-cli": "^5.1.4"
   }
 }
