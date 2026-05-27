@@ -8,6 +8,7 @@ import {
   RateDebateTurnResponseDto,
 } from './dto';
 import { DebateTurnDto } from './dto/debate-turn-response.dto';
+import { pickPriorCommentary } from './debate-prior-commentary.util';
 
 /**
  * Phase 2 V1 PR3 — Day-6 blind-eval data layer.
@@ -67,6 +68,12 @@ export class DebateBlindEvalService {
           select: {
             essayContent: true,
             essayPrompt: true,
+            // PR9: surface aiAnalysisCache so the queue can render prior
+            // commentary alongside the AI turn — fixes the PR8 v3 Sarah
+            // blind-source UX gap (she couldn't verify `source:
+            // prior_commentary` quotes because the queue didn't expose
+            // the cache).
+            aiAnalysisCache: true,
             school: { select: { name: true, nameZh: true } },
           },
         },
@@ -83,6 +90,7 @@ export class DebateBlindEvalService {
       essayText: string;
       paragraphIndex?: number;
       schoolName?: string;
+      priorCommentary?: ReturnType<typeof pickPriorCommentary>;
     }> = [];
 
     for (const session of allSessions) {
@@ -119,6 +127,14 @@ export class DebateBlindEvalService {
       const essayText =
         session.admissionCase?.essayContent ?? session.essay?.content ?? '';
       const schoolName = session.admissionCase?.school?.name ?? undefined;
+      // PR9: pick the prior-commentary paragraph matching this session's
+      // paragraphIndex. Locale defaults to 'zh' to match the prompt-builder
+      // default (PR2). Null when no cache, or wrong locale.
+      const priorCommentary = pickPriorCommentary(
+        session.admissionCase?.aiAnalysisCache ?? null,
+        'zh',
+        session.paragraphIndex,
+      );
 
       for (let i = 0; i < turns.length; i++) {
         const t = turns[i];
@@ -134,6 +150,7 @@ export class DebateBlindEvalService {
           essayText,
           paragraphIndex: session.paragraphIndex ?? undefined,
           schoolName,
+          priorCommentary,
         });
       }
     }
@@ -169,6 +186,7 @@ export class DebateBlindEvalService {
       essayText: next.essayText,
       paragraphIndex: next.paragraphIndex,
       schoolName: next.schoolName,
+      priorCommentary: next.priorCommentary ?? null,
     };
 
     return {
