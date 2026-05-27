@@ -41,7 +41,7 @@
       }
     ]
   },
-  "expectedProbabilityRange": [0.02, 0.12],
+  "expectedProbabilityRange": [0.015, 0.12],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "medium",
   "rationale": {
