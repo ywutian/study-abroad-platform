@@ -532,10 +532,7 @@ export class PredictionTransformerService {
         'hasEarlyDecision2',
         school.hasEarlyDecision2,
       ),
-      hasEarlyAction: captureField(
-        'hasEarlyAction',
-        school.hasEarlyAction,
-      ),
+      hasEarlyAction: captureField('hasEarlyAction', school.hasEarlyAction),
       hasRestrictiveEa: captureField(
         'hasRestrictiveEa',
         (school as any).hasRestrictiveEa,
