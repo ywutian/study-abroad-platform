@@ -1,0 +1,65 @@
+{
+  "kind": "standalone",
+  "id": "110-stanford-weighted-gpa-bounded-regression",
+  "scenarioGroup": "EXTREME_BOUND_WEAK_AT_T5",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "activities": [
+      {
+        "name": "Debate Club",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.003, 0.025],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Regression lock for PR #294 Option D (do-nothing on weighted-GPA contamination): Stanford's seeded gpaDistribution clusters 95% of admitted students in the 3.75-4.00 band (a SEVERE-tier weighted-GPA contamination case per the Tier B audit — CDS C11 likely reports weighted GPA from feeder high schools). An applicant with 3.6 UNWEIGHTED GPA falls into the 3.50-3.74 band → cumulative-from-bottom percentile ≈ 2.5% → data-driven gpaBand multiplier ≈ 0.525. Combined with a sub-25th SAT (1450 vs Stanford sat25=1520) and the anchor×0.1 floor, the empirical prediction lands in 0.4-2.5%.\n\nPR #294 considered nulling out gpaDistribution at SEVERE schools (Option A) but empirically rejected it because (a) the contamination is bland-but-tolerable in the engine's multiplier chain, (b) Option A would silently lose GPA signal at test-optional schools. This fixture documents the post-Option-D behavioral envelope: the prediction is correctly LOW (reach tier for an under-qualified applicant) but does not collapse to zero, and does not over-credit the 95% top-band cluster.\n\nIf this fixture starts returning > 2.5%, suspect over-crediting (the engine is treating the 3.6 GPA as 'somewhere in the bulk' rather than 'in the 3.50-3.74 minority band'). If it returns < 0.3%, suspect the floor or the multiplier curve was hardened too aggressively (regression on Option D decision).",
+    "sources": [
+      {
+        "name": "PR #294 — Tier B weighted-GPA contamination audit",
+        "evidence": "43 schools (22 SEVERE) have gpaDistribution top-band implausibly high relative to their admit rate, suggesting CDS C11 reports weighted GPA. Stanford classified SEVERE (top 95% / admit 3.8%). Decided Option D = do-nothing after multi-agent debate found Option A (null distributions) would harm test-optional applicants."
+      },
+      {
+        "name": "counselor-modifiers.ts gpaPercentileFromDistribution",
+        "evidence": "Cumulative-from-bottom percentile placement for GPA 3.6 in Stanford's distribution: pct ≈ 0.025 → multiplier 0.5+0.025 = 0.525. Bounded result, not catastrophic."
+      },
+      {
+        "name": "Stanford CDS 2024-25 Section C11",
+        "evidence": "Admitted-student GPA distribution: <3.0: 0%, 3.0-3.24: 0%, 3.25-3.49: 0%, 3.50-3.74: 5%, 3.75-4.00: 95%. Almost certainly weighted-GPA-contaminated from feeder schools."
+      },
+      {
+        "name": "Crimson T5 RD Benchmark — Under-qualified Applicants",
+        "evidence": "An unhooked 3.6/1450 applicant at Stanford is well below admit pool 25th percentile on both axes. Counselor consensus: <2% RD probability, not zero (Stanford admits ~2% of below-25th applicants per published case data, often hooked or extraordinary)."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "weak-profile",
+    "weighted-gpa-contamination",
+    "regression-check",
+    "bug-10-pr-294",
+    "option-d-do-nothing",
+    "regular-decision",
+    "domestic"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "kind": "comparative",
+  "id": "105-pomona-ea-equals-rd-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "Pomona College",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "English",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1520 }],
+    "activities": [
+      {
+        "name": "Literary Magazine",
+        "category": "ACADEMIC",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 7,
+        "weeksPerYear": 34,
+        "yearsActive": 3
+      },
+      {
+        "name": "Debate Team",
+        "category": "ACADEMIC",
+        "role": "Officer",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Writing Gold Key",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "caseA": { "label": "EA", "applicationRound": "EA" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.03,
+  "expectedMaxDelta": 0.03,
+  "rationale": {
+    "intuition": "Regression lock for PR #295 hasEarlyAction schema drift: Pomona College is ED-only (ED1 + ED2). It does NOT offer Early Action. Pre-fix, the engine fell through to the heuristic EA branch (×1.30) when a user picked EA at Pomona, silently inflating the prediction by 30% with no underlying CDS data to support the boost. The fix added `hasEarlyAction === false` short-circuit in roundMultiplier (returns neutral, treated as RD).\n\nThis fixture asserts EA at Pomona produces a probability within ±3 percentage points of RD. If the delta jumps to ~+5pp or more, the bug has regressed — either the hasEarlyAction guard was removed, or Pomona's row got hasEarlyAction=true (incorrectly).",
+    "sources": [
+      {
+        "name": "Pomona Admissions — Paths to Apply",
+        "url": "https://www.pomona.edu/admissions/paths-apply",
+        "evidence": "Pomona offers Early Decision I (Nov 15) and Early Decision II (Jan 8) — both binding — plus Regular Decision. No non-binding Early Action plan exists."
+      },
+      {
+        "name": "apps/api/prisma/seeds/backfill-has-ea-ed2.ts HAS_EA_FALSE list",
+        "evidence": "Pomona is explicitly enumerated in the hasEarlyAction=false backfill list alongside the other ED-only T20 LACs (Williams, Swarthmore, Amherst, Bowdoin, Wellesley, Middlebury, etc.)."
+      },
+      {
+        "name": "PR #295 — hasEarlyAction schema drift fix",
+        "evidence": "Pre-fix: EA at Pomona returned ×1.30 boost using the flat EA heuristic, equivalent to fabricating a ~9% EA admit rate. Post-fix: roundMultiplier early-exits to neutral when hasEarlyAction === false."
+      },
+      {
+        "name": "Pomona CDS 2024-25 Section C21",
+        "evidence": "Combined ED admit rate ~16% reported; no EA section because no EA plan exists."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-lac",
+    "ed-only-school",
+    "no-early-action",
+    "regression-check",
+    "bug-5-pr-295",
+    "has-early-action-guard"
+  ]
+}

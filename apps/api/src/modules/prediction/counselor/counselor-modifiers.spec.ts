@@ -701,4 +701,227 @@ describe('counselor modifiers launch guards', () => {
       ).toBe(1.0);
     });
   });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Regression tests locking in past bug fixes.
+  // Each test cites the original PR / audit that motivated the fix; the test
+  // exists so the bug cannot silently come back. Removing one of these tests
+  // requires re-reading the linked audit and confirming the underlying data /
+  // schema invariant still holds.
+  // ───────────────────────────────────────────────────────────────────────────
+  describe('regression: past bug fixes', () => {
+    // Bug #1 — SMU gpaDistribution bands summed to 110% (PR #295).
+    // The fix lives in `normalizeGpaDistribution`: distributions whose
+    // normalised total falls outside [0.95, 1.05] must be REJECTED so the
+    // engine falls back to the heuristic equivSat path. If we silently used a
+    // 110% distribution, percentile math overshoots 1.0 and the band
+    // multiplier becomes unbounded.
+    // Source: apps/api/scripts/closure-reports/overnight-2026-05-25/data-integrity-audit.md (Check 4)
+    it('Bug #1 (PR #295): rejects gpaDistribution that sums to ~1.10 (SMU-style)', () => {
+      // Synthetic distribution that totals 1.20 — engine must NOT use the
+      // data-driven percentile path. With a 4.0 GPA and an SAT band of
+      // 1340-1480, the heuristic fallback yields ×1.3 (above 75th pct).
+      const result = gpaBandMultiplier(
+        baseProfile({ gpa: 4.0 }),
+        baseSchool({
+          sat25: 1340,
+          sat75: 1480,
+          gpaDistribution: {
+            '<3.00': 0.05,
+            '3.00-3.24': 0.06,
+            '3.25-3.49': 0.13,
+            '3.50-3.74': 0.26,
+            '3.75-4.00': 0.7, // sum = 1.20
+          },
+        }),
+      );
+
+      // Must fall back to heuristic, not data-driven percentile.
+      expect(result.label).not.toContain('school-published');
+      expect(result.label).toContain('GPA above 75th percentile');
+      expect(result.multiplier).toBe(1.3);
+    });
+
+    it('Bug #1 (PR #295): rejects gpaDistribution that sums to ~0.80 (under-spec)', () => {
+      const result = gpaBandMultiplier(
+        baseProfile({ gpa: 3.85 }),
+        baseSchool({
+          sat25: 1340,
+          sat75: 1480,
+          gpaDistribution: {
+            '<3.00': 0.05,
+            '3.00-3.24': 0.05,
+            '3.25-3.49': 0.1,
+            '3.50-3.74': 0.2,
+            '3.75-4.00': 0.4, // sum = 0.80
+          },
+        }),
+      );
+      expect(result.label).not.toContain('school-published');
+    });
+
+    // Bug #3 — UChicago edAcceptanceRate=0.16 stored as fraction not percent (PR #295).
+    // Engine's `normalizeRate` must treat 0.16 (fraction) and 16 (percentage)
+    // identically. If we read 0.16 as 0.16% (raw) the ED ratio becomes
+    // 0.0016 / 0.05 = 0.03 → "data anomaly" instead of a real ED boost.
+    // Source: apps/api/scripts/closure-reports/overnight-2026-05-25/data-integrity-audit.md (Check 3b)
+    it('Bug #3 (PR #295): roundMultiplier normalizes fractional and percentage rates identically', () => {
+      const fractional = roundMultiplier(
+        'ED',
+        baseSchool({
+          acceptanceRate: 0.05, // 5% as fraction
+          edAcceptanceRate: 0.18, // 18% as fraction
+        }),
+      );
+      const percentage = roundMultiplier(
+        'ED',
+        baseSchool({
+          acceptanceRate: 5, // 5% as percent
+          edAcceptanceRate: 18, // 18% as percent
+        }),
+      );
+      expect(fractional.multiplier).toBeCloseTo(percentage.multiplier, 4);
+      expect(fractional.label).toContain('school-published');
+      expect(percentage.label).toContain('school-published');
+      // ratio = 18/5 = 3.6 → clamped to 3.5
+      expect(fractional.multiplier).toBeCloseTo(3.5, 4);
+    });
+
+    it('Bug #3 (PR #295): mixed-convention inputs (fraction vs percent) still normalise', () => {
+      // Overall stored as percent (5), ED stored as fraction (0.18) — the
+      // engine MUST detect each independently. Pre-fix this produced ratio
+      // 0.18/5 = 0.036 → "data anomaly" branch.
+      const mixed = roundMultiplier(
+        'ED',
+        baseSchool({
+          acceptanceRate: 5, // percent
+          edAcceptanceRate: 0.18, // fraction
+        }),
+      );
+      // Both normalise to 0.05 and 0.18, ratio = 3.6 → clamped 3.5
+      expect(mixed.multiplier).toBeCloseTo(3.5, 4);
+      expect(mixed.label).toContain('school-published');
+    });
+
+    // Bug #6 — Pomona ED2 + hasEarlyDecision2=false must NOT use ED1 rate (PR #295).
+    // When a school offers ED1 only (hasEarlyDecision2=false), an ED2 attempt
+    // must short-circuit to neutral — never re-use the ED1 admit rate as
+    // an ED2 boost. Before the fix, the engine silently fell through to the
+    // ED branch and applied the ED1 rate ratio to an applicant who could
+    // not, in reality, even submit an ED2 application.
+    // Source: PR #295 (closure-v2 hasEarlyDecision2 schema drift fix).
+    it('Bug #6 (PR #295): ED2 round at hasEarlyDecision2=false school returns neutral', () => {
+      const result = roundMultiplier(
+        'ED2',
+        baseSchool({
+          acceptanceRate: 0.07,
+          edAcceptanceRate: 0.16, // ED1 rate published
+          hasEarlyDecision: true,
+          hasEarlyDecision2: false,
+        }),
+      );
+      // Must NOT apply ED1 rate as ED2 multiplier; explicit neutral guard.
+      expect(result.multiplier).toBe(1.0);
+      expect(result.label).toContain('Early Decision 2');
+      expect(result.evidence).toMatch(/no ED2|treating as RD/i);
+    });
+
+    it('Bug #6 (PR #295): ED1 round at hasEarlyDecision=false school returns neutral', () => {
+      const result = roundMultiplier(
+        'ED',
+        baseSchool({
+          acceptanceRate: 0.07,
+          edAcceptanceRate: 0.16, // value present but flag says no ED
+          hasEarlyDecision: false,
+        }),
+      );
+      expect(result.multiplier).toBe(1.0);
+      expect(result.label).toContain('does not offer Early Decision');
+    });
+
+    // Bug #7 — gpaDistribution stored as percentage (e.g. 79.2) vs fraction (0.792) (PR #295).
+    // `normalizeGpaDistribution` detects raw totals > 2 and divides by 100.
+    // Same applicant, same school, same bands stored in either convention
+    // must yield the identical multiplier.
+    // Source: apps/api/scripts/closure-reports/overnight-2026-05-25/data-integrity-audit.md (Check 4b)
+    it('Bug #7 (PR #295): identical multiplier whether gpaDistribution is fraction or percent', () => {
+      const distroFraction = {
+        '<3.00': 0.02,
+        '3.00-3.24': 0.05,
+        '3.25-3.49': 0.1,
+        '3.50-3.74': 0.2,
+        '3.75-4.00': 0.63,
+      };
+      // Same shape, percentage convention (numbers ×100).
+      const distroPercent = {
+        '<3.00': 2,
+        '3.00-3.24': 5,
+        '3.25-3.49': 10,
+        '3.50-3.74': 20,
+        '3.75-4.00': 63,
+      };
+      const asFraction = gpaBandMultiplier(
+        baseProfile({ gpa: 3.85 }),
+        baseSchool({ gpaDistribution: distroFraction }),
+      );
+      const asPercent = gpaBandMultiplier(
+        baseProfile({ gpa: 3.85 }),
+        baseSchool({ gpaDistribution: distroPercent }),
+      );
+
+      // Both must use the data-driven path (label contains "school-published")
+      expect(asFraction.label).toContain('school-published');
+      expect(asPercent.label).toContain('school-published');
+      // Multipliers should be identical to within float tolerance.
+      expect(asFraction.multiplier).toBeCloseTo(asPercent.multiplier, 6);
+    });
+
+    // Bug #2 — UMich oosAcceptanceRate=18 > acceptanceRate=15.64 invariant (PR #290).
+    // When the published OOS rate is higher than the overall rate (a data
+    // quirk for CSU campuses, SUNY, and some flagships), the ratio must
+    // still be clamped to ≤ 1.3 so an out-of-state applicant never gets an
+    // *unbounded* geographic boost relative to the school baseline. The
+    // clamp keeps the modifier defensible even when the source row is
+    // counter-intuitive.
+    // Source: apps/api/scripts/closure-reports/overnight-2026-05-25/data-integrity-audit.md (Check 5a)
+    it('Bug #2 (PR #290): geoMultiplier clamps ratios ≤ 1.3 even when oos > overall', () => {
+      const result = geoMultiplier(
+        baseProfile({
+          isInternational: false,
+          stateOfResidence: 'NY', // out-of-state for UMich (MI)
+        }),
+        {
+          ...baseSchool({
+            isPrivate: false,
+            state: 'MI',
+            acceptanceRate: 15.64,
+          }),
+          oosAcceptanceRate: 18, // > overall
+        } as any,
+      );
+      expect(result.label).toContain('Out-of-state');
+      expect(result.multiplier).toBeLessThanOrEqual(1.3);
+      // ratio = 18/15.64 ≈ 1.15 — within clamp
+      expect(result.multiplier).toBeCloseTo(18 / 15.64, 2);
+    });
+
+    it('Bug #2 (PR #290): geoMultiplier clamps extreme oos/overall ratios too', () => {
+      // Hypothetical edge case: oos=80 vs overall=30 (ratio=2.67) → clamp 1.3
+      const result = geoMultiplier(
+        baseProfile({
+          isInternational: false,
+          stateOfResidence: 'NY',
+        }),
+        {
+          ...baseSchool({
+            isPrivate: false,
+            state: 'CA',
+            acceptanceRate: 30,
+          }),
+          oosAcceptanceRate: 80,
+        } as any,
+      );
+      expect(result.multiplier).toBe(1.3);
+    });
+  });
 });

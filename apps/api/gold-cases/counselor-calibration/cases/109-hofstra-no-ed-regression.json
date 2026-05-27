@@ -1,0 +1,66 @@
+{
+  "kind": "comparative",
+  "id": "109-hofstra-no-ed-regression",
+  "scenarioGroup": "ED_BOOST",
+  "schoolName": "Hofstra University",
+  "comparedDimension": "round",
+  "baseProfile": {
+    "gpa": 3.7,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "targetMajor": "Business",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1280 }],
+    "activities": [
+      {
+        "name": "DECA",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": []
+  },
+  "caseA": { "label": "ED", "applicationRound": "ED" },
+  "caseB": { "label": "RD", "applicationRound": "RD" },
+  "expectedMinDelta": -0.05,
+  "expectedMaxDelta": 0.05,
+  "rationale": {
+    "intuition": "Regression lock for PR #292 / #293 PROGRAM_NOT_OFFERED verification: Hofstra University does not offer Early Decision. The school runs two non-binding Early Action rounds (EA I 11/15, EA II 12/15) plus rolling admission — verified in Hofstra's own admissions deadlines page and own CDS Section C21. Pre-fix engine behavior at Hofstra (overall 68.08%, yieldRate=10.3%, no edAcceptanceRate): yield-informed ED fallback fires with a low yield → ~3.2× multiplier, taking the prediction to the 2.5× anchor clamp (~98%) for an applicant who literally cannot submit an ED application here.\n\nFixture asserts ED ≈ RD (delta within ±5pp). Failure means either (a) the data layer fix (hasEarlyDecision=false backfill for Hofstra) never landed and the seed still leaves the field null, or (b) the engine reintroduced an unconditional ED boost path that ignores hasEarlyDecision=false.",
+    "sources": [
+      {
+        "name": "Hofstra Undergraduate Admissions — Deadlines",
+        "url": "https://www.hofstra.edu/admission/apply/undergraduate-apply.html",
+        "evidence": "Two non-binding Early Action deadlines + rolling admission. No Early Decision plan, no Restrictive EA. Documented in seed provenance.hasRestrictiveEa.note."
+      },
+      {
+        "name": "PR #292 — PROGRAM_NOT_OFFERED corrections (commit bc1183c5)",
+        "evidence": "Hofstra is one of 3 schools where Wave 5-6 closure work had incorrectly inferred ED from aggregator data; agent verified absence via own CDS PDFs."
+      },
+      {
+        "name": "apps/api/prisma/seeds/backfill-has-ea-ed2.ts HAS_EA_TRUE",
+        "evidence": "Hofstra appears in the hasEarlyAction=true list (line 82) confirming EA-only status. ED applications must short-circuit to neutral once hasEarlyDecision=false is backfilled."
+      },
+      {
+        "name": "counselor-modifiers.ts roundMultiplier early exits",
+        "evidence": "Lines 649-680 — the engine returns neutral for ED/ED2/EA/REA when the corresponding hasXxx flag is explicitly false. This fixture verifies the guard fires for ED at Hofstra."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "regional-private",
+    "no-early-decision",
+    "ea-only-school",
+    "program-not-offered",
+    "regression-check",
+    "bug-9-pr-292-293"
+  ]
+}
