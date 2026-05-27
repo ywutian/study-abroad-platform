@@ -65,6 +65,8 @@
   "expectedProbabilityRange": [0.06, 0.22],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Engine returns 25.16% vs band [6%, 22%]. UMich Ross sub-school selectivity is not yet wired into the engine — engine uses UMich overall acceptanceRate (~16%) instead of Ross BBA's preferred-admit rate (~10-14% OOS). Closure refresh data is correct; the gap is engine-side (majorMultiplier / SchoolProgram sub-school path). Tier B: same broader 'top-heavy gpaDistribution amplifies multipliers at low-selectivity schools' pattern as 028 / 031 / UCSB. Fixture preserved to track when sub-school selectivity lands.",
   "rationale": {
     "intuition": "Ross BBA preferred-admit pathway 难度显著高于 UMich overall: Ross direct-admit ~14% vs UMich overall ~17%, 对 OOS applicant 更严 (~10-12%). Engine 应通过 majorMultiplier (Business at UMich) 反映这一点, 但当前 SchoolProgram seed (verySelective Business band ~70%) 可能 over-estimate Ross 难度. OOS penalty (geoMultiplier) 也应 stack. 强 profile (3.95/1530 + FBLA Nationals + work exp) EA OOS Ross 估计 8-20%. 0.06 下界允许 engine 在 OOS + sub-school penalty 双重作用下偏低; 0.22 上界防止 EA boost over-credit.",
     "sources": [

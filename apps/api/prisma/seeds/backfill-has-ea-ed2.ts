@@ -230,6 +230,82 @@ const HAS_ED2_TRUE: string[] = [
   'bucknell university',
 ];
 
+/**
+ * Schools confirmed to NOT offer Early Decision at all (no ED1, no ED2).
+ *
+ * The closure-v2 payload (prediction-closure-latest.json) does not always
+ * carry an explicit `hasEarlyDecision=false` for these — PR #292 / #293
+ * verified them as PROGRAM_NOT_OFFERED via ClosureTarget status, not by
+ * writing the boolean directly. Without this list the schools land with
+ * `hasEarlyDecision=null`, the engine's no-ED guard does not fire (it
+ * requires explicit `=== false`), and any ED probe falls through to the
+ * yield-informed ED fallback — producing a fabricated ED boost on schools
+ * that don't actually offer ED.
+ *
+ * Layer 3 fixtures 107 (Loyola Chicago) / 108 (Adelphi) / 109 (Hofstra)
+ * are the regression locks for this list.
+ */
+const HAS_ED_FALSE: string[] = [
+  // PR #292 / #293 PROGRAM_NOT_OFFERED verifications (own CDS confirmed).
+  'loyola university chicago',
+  'adelphi university',
+  'hofstra university',
+  // Other rolling-admission / no-ED publics & privates already in HAS_ED2_FALSE
+  // for reference. Many of these (UCs, large publics) have hasEarlyDecision
+  // implicitly false; listing here makes the engine guard fire reliably.
+  'university of california, berkeley',
+  'university of california, los angeles',
+  'university of california, san diego',
+  'university of california, davis',
+  'university of california, irvine',
+  'university of california, santa barbara',
+  'university of california, santa cruz',
+  'university of california, riverside',
+  'university of california, merced',
+  'university of michigan, ann arbor',
+  'university of north carolina at chapel hill',
+  'university of virginia',
+  'university of florida',
+  'university of texas at austin',
+  'university of wisconsin-madison',
+  'university of illinois urbana-champaign',
+  'university of washington',
+  'ohio state university',
+  'purdue university',
+  'university of maryland, college park',
+  'university of georgia',
+  'texas a&m university',
+  'university of minnesota, twin cities',
+  'florida state university',
+  'virginia tech',
+  'university of connecticut',
+  'university of pittsburgh',
+  'pennsylvania state university',
+  'michigan state university',
+  'university of massachusetts amherst',
+  'north carolina state university',
+  'university of delaware',
+  'clemson university',
+  'indiana university bloomington',
+  'stony brook university',
+  // Portfolio / single-deadline arts and conservatories (no ED).
+  'school of the art institute of chicago',
+  'maryland institute college of art',
+  'california college of the arts',
+  'california institute of the arts',
+  'rhode island school of design',
+  'savannah college of art and design',
+  'art center college of design',
+  'the juilliard school',
+  'curtis institute of music',
+  'new england conservatory',
+  'manhattan school of music',
+  'berklee college of music',
+  'cooper union',
+  'olin college of engineering',
+  'california polytechnic state university, san luis obispo',
+];
+
 /** Schools confirmed to NOT offer ED2. */
 const HAS_ED2_FALSE: string[] = [
   // REA/SCEA T5 — no ED at all
@@ -415,6 +491,31 @@ async function main() {
   }
   console.log(
     `hasEarlyDecision2 FALSE: ${ed2False} ${apply ? 'updated' : 'would update'} of ${HAS_ED2_FALSE.length} (${ed2FalseNotFound} not found)`,
+  );
+
+  // hasEarlyDecision FALSE (schools that don't offer ED at all).
+  let edFalse = 0,
+    edFalseNotFound = 0;
+  for (const norm of HAS_ED_FALSE) {
+    const school = await prisma.school.findUnique({
+      where: { nameNorm: norm },
+      select: { id: true, name: true, hasEarlyDecision: true },
+    });
+    if (!school) {
+      edFalseNotFound++;
+      continue;
+    }
+    if (school.hasEarlyDecision === false) continue;
+    if (apply) {
+      await prisma.school.update({
+        where: { id: school.id },
+        data: { hasEarlyDecision: false },
+      });
+    }
+    edFalse++;
+  }
+  console.log(
+    `hasEarlyDecision FALSE: ${edFalse} ${apply ? 'updated' : 'would update'} of ${HAS_ED_FALSE.length} (${edFalseNotFound} not found)`,
   );
 
   await prisma.$disconnect();

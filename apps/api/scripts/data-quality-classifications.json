@@ -1,8 +1,8 @@
 {
   "$schema": "Manual classifications for verify-counselor-data-quality manualReview entries.",
   "version": 1,
-  "lastUpdated": "2026-05-14",
-  "lastReviewedBy": "launch-gate",
+  "lastUpdated": "2026-05-27",
+  "lastReviewedBy": "closure-loop-fix",
   "valid_classifications": [
     "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
     "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
@@ -454,6 +454,69 @@
       "reason": "sat_act_placeholder_1080_1320",
       "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
       "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolName": "Case Western Reserve University",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "Case Western ED 37.06% vs overall 37.78% (ratio 0.98). CWR runs ED1 + ED2 with consistently strong applicant pools; the published ED rate is the binding-pool rate, which is normally below the overall rate that mixes RD volume. Real."
+    },
+    {
+      "schoolName": "Clarkson University",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "Clarkson ED 75.74% vs overall 82.5% (ratio 0.92). Niche STEM school where overall AR is buoyed by self-selecting STEM applicants in RD; ED pool is small and similar in quality. Real."
+    },
+    {
+      "schoolName": "Fordham University",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "Fordham ED 51.6% vs overall 59% (ratio 0.87). Fordham's ED has historically been more selective than RD because the ED pool is dominated by FCRH applicants with stricter academic bars. Real."
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "NCSU EA 40.21% vs overall 41.33% (ratio 0.97). Public flagship EA pool is roughly the same quality bar as RD; EA serves mainly as deadline preference, not boost. Same pattern as Auburn / Ohio State EA."
+    },
+    {
+      "schoolName": "Northeastern University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Northeastern EA 4.7% vs overall 5.22% (ratio 0.90). Highly selective school where EA pool is at or above RD's bar because EA applicants are mostly the strongest candidates self-selecting. Real."
+    },
+    {
+      "schoolName": "Ohio State University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Ohio State EA 60.43% vs overall 60.57% (ratio 1.00). Public flagship — EA is essentially the same admit bar as RD. Real."
+    },
+    {
+      "schoolName": "Princeton University",
+      "round": "EA",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Princeton SCEA 15.82% vs overall 4.42% (ratio 3.58). Real and expected — SCEA pool at T5 is significantly self-selected with stronger profiles. Same pattern as Yale / Harvard SCEA."
+    },
+    {
+      "schoolName": "University of Denver",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "Denver ED 76.77% vs overall 77.29% (ratio 0.99). Essentially the same — Denver's overall AR is high and ED pool quality matches. Real."
+    },
+    {
+      "schoolName": "University of San Francisco",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "USF ED 49.41% vs overall 61.71% (ratio 0.80). Niche Jesuit private — overall AR includes broad RD pool; ED pool is more rigorous (similar to Fordham pattern)."
     }
   ]
 }

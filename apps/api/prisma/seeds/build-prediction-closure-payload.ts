@@ -30,6 +30,15 @@ const SCHOOL_FIELDS = [
   'ed2AcceptanceRate',
   'yieldRate',
   'hasRestrictiveEa',
+  // Round-availability booleans. Without these in the payload, every closure
+  // correction that flips a school's ED / EA / ED2 offering (e.g. PR #292's
+  // Loyola Chicago / Adelphi / Hofstra no-ED corrections, PR #295's UCLA
+  // hasEarlyAction=false fix) never reaches CI — the engine then silently
+  // returns ED ≠ RD for schools that don't actually offer ED. Layer 3
+  // regression fixtures 105/107-109/111-112 depend on these.
+  'hasEarlyDecision',
+  'hasEarlyAction',
+  'hasEarlyDecision2',
   'sat25',
   'sat75',
   'satAvg',

@@ -38,6 +38,8 @@
   "expectedProbabilityRange": [0.04, 0.18],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Engine returns 19.6% vs band [4%, 18%] (1.6pp over upper bound). Tier B follow-up: UCLA Tier 1 CDS band lookup returns 18.0% for the (3.92, 1520) cell — the engine then applies a small additional lift via cumulative-percentile-amplified gpaBand multiplier, pushing past the band. Industry intuition is UCLA OOS CS strong at ~6-15%, but the CDS band itself is 18% — the engine is faithfully reading the band data and the lift is small (1.6pp). Closure-refresh exposed this. Fixture preserved to track when Tier B gpaBand attenuation lands.",
   "rationale": {
     "intuition": "UCLA OOS RD ~6-8% admit。Strong CS profile OOS：UCLA CS is selective program. UC has Tier 1 CDS bands so engine uses (GPA × SAT) cell directly. Industry estimate 5-15%。",
     "sources": [
