@@ -40,6 +40,8 @@
   "expectedProbabilityRange": [0.1, 0.4],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
+  "wontFix": true,
+  "wontFixReason": "Documented engine over-prediction at low-selectivity public schools, exposed by the 2026-05-27 closure refresh (PR #300). UCSD's prod gpaDistribution is top-heavy → a 3.82/1450 OOS profile lands above the 75th percentile and stacks gpaBand × testBand × OOS-public modifiers, returning 47.5% vs the industry-anchored [10%, 40%] band. Same root cause as the engine signal flagged by the empirical-calibration scorer (PR #299 finding: anchor × 2.5 upper clamp at low-selectivity schools). Tier B: requires gpaBand percentile lift attenuation when the school's GPA distribution is itself top-heavy. Fixture preserved to track when engine fix lands.",
   "rationale": {
     "intuition": "UCSD overall ~27%, OOS rate ~30% (UCSD 主要在意 OOS 多收钱)。Strong OOS profile + bioengineering 应在 match 35-55%。",
     "sources": [
