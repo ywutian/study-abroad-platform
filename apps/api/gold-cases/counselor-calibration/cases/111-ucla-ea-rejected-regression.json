@@ -33,6 +33,7 @@
   "expectedMaxDelta": 0.03,
   "wontFix": true,
   "wontFixReason": "CI-data-discrepancy (not an engine bug): PR #295 corrected UCLA's fabricated eaAcceptanceRate=50 to null in prod, but the unified-college-catalog used by CI's prisma db seed still carries the fabricated value AND CI does not run backfill-has-ea-ed2 (the new hasEarlyAction column stays null). Without hasEarlyAction=false the no-EA guard does not fire and the stale eaAcceptanceRate=50 produces a +10.21pp EA boost. In prod (with backfill applied AND fabricated rate removed), this fixture PASSES with Δ=0.00pp — verified locally. Proper fix: same as 107 — update the catalog source or wire backfill into CI seed path.",
+  "rationale": {
     "intuition": "Regression lock complementing 104-ucla-ed-rejected: UCLA also does NOT offer Early Action. Pre-fix the CDS-extractor wave fabricated eaAcceptanceRate=50 alongside the fabricated ED data (audit cross-contamination section: 'C21 indicates no early decision and no early action plan, so no counts reported'). The fix removed both the fabricated rates and the engine relies on hasEarlyAction=false to short-circuit roundMultiplier.\n\nThis fixture asserts EA at UCLA produces a probability within ±3pp of RD. Combined with fixture 104 (ED), both EA and ED at UCLA must collapse to RD-equivalent — they are paired regression checks for the UCLA fabricated-rate incident.",
     "sources": [
       {
