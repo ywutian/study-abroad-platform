@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "068-upenn-ed-intl-china-gaokao",
+  "scenarioGroup": "T10_ED_STRONG_UNHOOKED_INTL_GAOKAO",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "PUBLIC_CN",
+    "targetMajor": "Finance (Wharton)",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1500 },
+      { "type": "TOEFL", "score": 112 }
+    ],
+    "activities": [
+      {
+        "name": "High School Student Council",
+        "category": "LEADERSHIP",
+        "role": "Vice President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      },
+      {
+        "name": "Financial Literacy Outreach to Migrant Workers' Children",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 28,
+        "yearsActive": 2
+      },
+      {
+        "name": "School Math Olympiad Team",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Gaokao 高考 720/750 (top ~0.05% nationally)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Provincial Math Olympiad - Silver",
+        "level": "STATE",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.02, 0.1],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Penn ED 14.22% overall; intl admit 2.79% (RD). Public-CN HS gaokao path is a rare profile at Wharton — gaokao 720/750 ≈ top 0.05% nationally normalizes to ~3.9-4.0 unweighted. Major concerns: (1) Wharton is the most competitive Penn school for intl, (2) lack of US-style activities/leadership common in 国际部 applicants, (3) ED boost still applies but capped by Wharton's intl quota. Industry: Public-CN gaokao applicants at Wharton ED are rare (~30-50/year), 3-10% admit per Crimson case data.",
+    "sources": [
+      {
+        "name": "UPenn CDS 2024-25",
+        "evidence": "Overall admit 5.38%; ED 14.22%; intl admit 2.79%. Wharton sub-school admit ~50-60% of overall Penn rate."
+      },
+      {
+        "name": "Crimson Education Wharton Intl Benchmark 2024",
+        "evidence": "Chinese gaokao-path applicants (vs 国际部) at Wharton ED cluster 3-8% in published case data; gaokao 700+ treated as exceptional academic signal but limited activity differentiation."
+      },
+      {
+        "name": "Common App Gaokao Pathway Report 2024",
+        "evidence": "Common App accepts gaokao scores as supplementary academic record; AO conversion: 700/750 → ~3.9-4.0 unweighted equivalent (top decile)."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "business-wharton",
+    "intl-cn",
+    "early-decision",
+    "unhooked",
+    "gaokao-transcript",
+    "non-traditional-transcript",
+    "public-cn-hs",
+    "diversity-coverage"
+  ]
+}

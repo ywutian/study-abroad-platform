@@ -1,0 +1,92 @@
+{
+  "kind": "standalone",
+  "id": "079-pratt-ed-art-strong",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Pratt Institute",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Fashion Design",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1380 }],
+    "activities": [
+      {
+        "name": "Fashion Portfolio Development (Sewing + Pattern Drafting)",
+        "category": "ACADEMIC",
+        "role": "Independent Designer",
+        "hoursPerWeek": 20,
+        "weeksPerYear": 50,
+        "yearsActive": 4
+      },
+      {
+        "name": "Pratt Pre-College Saturday Art School",
+        "category": "ACADEMIC",
+        "role": "Student",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 24,
+        "yearsActive": 2
+      },
+      {
+        "name": "Local Boutique Internship",
+        "category": "WORK",
+        "role": "Design Assistant",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 16,
+        "yearsActive": 1
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Art National Gold Medal (Fashion)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "YMA Fashion Scholarship Fund Recognition",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.5, 0.85],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "Pratt overall admit rate ~62-67%. Fashion Design portfolio with Scholastic National Gold + YMA recognition + Pratt Pre-College affiliation is the bullseye target. ED is non-binding-soft (Pratt offers ED with deposit). Industry: 65-85% admit for strong target-major portfolio + Pre-College affiliation + ED commitment signal. Engine triggers ART_DESIGN sentinel — same gap as SAIC/MICA.",
+    "sources": [
+      {
+        "name": "Pratt Institute Common Data Set 2023-24",
+        "evidence": "Overall admit rate 64.5%; portfolio rated 'Very Important'; SAT mid-50% 1240-1430; the Fashion BFA program admits at slightly lower rate (~55%) due to demand but Scholastic National Gold + Pre-College alignment lifts to ~70-80%"
+      },
+      {
+        "name": "Business of Fashion Education Outcomes 2024",
+        "evidence": "Top fashion-design BFA programs (Pratt, Parsons, FIT, RISD Apparel) report ED applicants with national-tier awards admit at 70-85%"
+      },
+      {
+        "name": "Counselor Engine isAuditionOrPortfolioSchool",
+        "evidence": "ART_DESIGN short-circuit returns insufficientData. Same gap as SAIC (076) / MICA (077) — high-admit portfolio schools cannot be predicted."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine's ART_DESIGN handler is binary and cannot use the school's high overall admit rate. Pratt at ~65% is treated identically to RISD at ~22%.",
+    "followUp": "Tier-aware audition handler — see #076 / #077 follow-up."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "art-design",
+    "portfolio-school",
+    "specialty-school",
+    "early-decision",
+    "domestic",
+    "fashion-design",
+    "engine-gap",
+    "insufficient-data"
+  ]
+}

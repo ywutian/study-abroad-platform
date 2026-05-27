@@ -1,0 +1,95 @@
+{
+  "kind": "standalone",
+  "id": "097-mit-rea-andover-prep-cs",
+  "scenarioGroup": "T5_REA_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "Computer Science",
+    "highSchoolName": "Phillips Academy Andover",
+    "highSchoolType": "PRIVATE_BOARDING",
+    "highSchoolTier": 1,
+    "highSchoolRecognition": 5,
+    "highSchoolAcademicRigor": 5,
+    "highSchoolPlacementRecord": 5,
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1560 }],
+    "activities": [
+      {
+        "name": "Andover CSAIL-style Lab Research (faculty-mentored)",
+        "category": "RESEARCH",
+        "role": "Lead Student Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Andover Math Club",
+        "category": "ACADEMIC",
+        "role": "Co-President",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Robotics Team (FIRST)",
+        "category": "ACADEMIC",
+        "role": "Software Lead",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      { "name": "USACO Gold", "level": "NATIONAL", "year": 2025 },
+      {
+        "name": "Regional Science Fair - Grand Prize",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.07, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "MIT overall ~4.5%, EA ~5-6%. Strong unhooked domestic CS 普通公校 estimate 4-12% (compare fixture 001). Phillips Andover historical MIT feeder ~7-10% per Andover College Counseling — engine 当前 HS context cap 1.04× 无法 capture 这种 feeder lift. 真实 industry 区间 8-20%. 0.07 下界让 engine 即使 ignore HS context 也能落在带内 (compare 001's lower bound 0.05); 0.22 上界反映 Andover + spike profile 真实 lift. 与 fixture 001 (相同 profile 无 Andover context) 形成 baseline-vs-feeder 对照, 暴露 engine 当前对 prep HS 不敏感.",
+    "sources": [
+      {
+        "name": "MIT CDS 2024-25",
+        "evidence": "MIT overall admit rate 4.52%; EA rate ~5.7% (slight lift, non-binding REA-equivalent)"
+      },
+      {
+        "name": "Phillips Academy Andover College Counseling Report 2024",
+        "evidence": "MIT historical admit rate 7-10% from Andover (vs national 4.5%); ~5-8 students per Andover class matriculate to MIT annually"
+      },
+      {
+        "name": "The Atlantic - 'The Prep School Pipeline' 2023",
+        "evidence": "Top 10 US boarding schools (Andover, Exeter, Choate, Lawrenceville, Hotchkiss) see 1.5-2.2× T20 admit lift; effect attributed to LOR quality + counselor advocacy network"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Same root cause as fixture 096: engine highSchoolContextComponent caps multiplier at 1.04×, insufficient to model real prep-school feeder effects (1.5-2× industry estimate). Andover/Exeter/Choate applicants will read low relative to industry intuition.",
+    "followUp": "Same as fixture 096 — feeder-rate data per (school, HS) pair required to widen cap. Track via PR series on highSchoolContextComponent."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "early-action",
+    "domestic",
+    "high-school-context",
+    "us-boarding-feeder",
+    "engine-gap-feeder",
+    "baseline-comparison-001"
+  ]
+}

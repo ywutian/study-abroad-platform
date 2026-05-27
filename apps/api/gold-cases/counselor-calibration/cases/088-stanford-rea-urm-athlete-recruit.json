@@ -1,0 +1,98 @@
+{
+  "kind": "standalone",
+  "id": "088-stanford-rea-urm-athlete-recruit",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "Stanford University",
+  "applicationRound": "REA",
+  "profile": {
+    "gpa": 3.7,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "TX",
+    "targetMajor": "Sociology",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": true,
+    "urmStatus": "HISPANIC",
+    "testScores": [{ "type": "SAT", "score": 1380 }],
+    "activities": [
+      {
+        "name": "Varsity Track & Field (recruited)",
+        "category": "ATHLETICS",
+        "role": "Captain",
+        "hoursPerWeek": 25,
+        "weeksPerYear": 42,
+        "yearsActive": 4
+      },
+      {
+        "name": "Latino Student Union",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      },
+      {
+        "name": "Bilingual Tutoring at Title-I Elementary",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Lead Tutor",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "All-State Track Champion (400m)",
+        "level": "STATE",
+        "year": 2025
+      },
+      {
+        "name": "National Latino Honor Society Member",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.5, 0.9],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Recruited athlete is dominant hook at Stanford — Arcidiacono SFFA data shows recruited athletes at Harvard admitted at ~88%; Stanford expected similar magnitude. URM contextual signal stacks on top (post-SFFA, narrative-coded). REA round adds modest yield-protection lift. Below-25th-percentile academics (3.7/1380 vs Stanford 3.95/1530) acceptable because athletic slot system bypasses regular review. Counselor consensus 50-90% for verified athlete + URM-coded REA combo.",
+    "sources": [
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Recruited athletes admitted at ~88% rate at Harvard; URM applicants at ~10.4%; multi-hook stacks NOT additive — athlete dominates."
+      },
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall admit rate 3.7%; athletic slot system absorbs ~14% of class; verified recruits estimated 80-90% admit rate."
+      },
+      {
+        "name": "NCAA Recruitment Survey 2024",
+        "evidence": "D1 recruited athletes at T20 see 30-50× lift in admit rate; URM signal adds modest contextual lift in post-SFFA holistic review."
+      },
+      {
+        "name": "Crimson Multi-Hook Stack Report 2024",
+        "evidence": "Recruited athlete + URM contextual signal at T5 schools admit 60-90% per published case data — athlete remains dominant, URM is rounding factor."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "BOTH stacked hooks are currently neutral in engine: athleteMultiplier ×1.0 (line 868, awaiting verified-athlete flow) and urmMultiplier ×1.0 (line 909, awaiting compliance review). Below-25th SAT (1380) + GPA (3.7) at Stanford REA will produce a probability materially below baseline ~5% — engine will under-predict by ~50pp vs counselor band. Spec range reflects what counselors say for verified-recruit-athlete + URM-narrative REA stack; engine will pass once BOTH hook flows ship.",
+    "followUp": "Compounding wontFix on fixtures 056/018/019 (athlete) + 087 (URM): build verified-athlete flow + finalize URM compliance review. Both must land before this fixture passes."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities-sociology",
+    "domestic",
+    "restrictive-ea",
+    "athlete-hook",
+    "urm-hook",
+    "multi-hook-stack",
+    "wontfix-engine-gap"
+  ]
+}

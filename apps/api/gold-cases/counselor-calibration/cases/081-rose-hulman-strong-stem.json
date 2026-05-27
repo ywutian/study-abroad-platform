@@ -1,0 +1,79 @@
+{
+  "kind": "standalone",
+  "id": "081-rose-hulman-strong-stem",
+  "scenarioGroup": "SAFETY_RD_STRONG",
+  "schoolName": "Rose-Hulman Institute of Technology",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Mechanical Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1490 }],
+    "activities": [
+      {
+        "name": "FIRST Robotics Competition",
+        "category": "ACADEMIC",
+        "role": "Mechanical Subteam Lead",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "School Math Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Eagle Scout Project",
+        "category": "LEADERSHIP",
+        "role": "Project Lead",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      }
+    ],
+    "awards": [
+      { "name": "AIME Qualifier", "level": "NATIONAL", "year": 2025 },
+      { "name": "Eagle Scout", "level": "NATIONAL", "year": 2024 }
+    ]
+  },
+  "expectedProbabilityRange": [0.65, 0.9],
+  "expectedTier": "safety",
+  "expectedConfidenceAtMost": "medium",
+  "rationale": {
+    "intuition": "Rose-Hulman overall admit rate ~74%. SAT mid-50% 1290-1460; this applicant at 1490 is at/above upper 50%. GPA 3.9 well within admit pool. Strong STEM profile (FRC + Eagle + AIME) aligns with Rose-Hulman's engineering-focused mission. Industry: 75-90% for above-median stats + STEM focus. Engine treats as SPECIALTY institutionType — normal path. With overallAcceptanceRate 0.74 as anchor + GPA boost + test boost + EA boost, engine should land in mid-high band.",
+    "sources": [
+      {
+        "name": "Rose-Hulman Common Data Set 2023-24",
+        "evidence": "Overall admit rate 74%; SAT mid-50% 1290-1460; GPA mid-50% 3.65-3.95; test-required (one of few schools still requiring SAT/ACT for 2024 cycle)"
+      },
+      {
+        "name": "ASEE Engineering College Outcomes 2024",
+        "evidence": "Top engineering-focused institutions (Rose-Hulman, WPI, Lafayette) admit above-median STEM applicants at 75-90% rates"
+      },
+      {
+        "name": "Counselor Engine SPECIALTY type",
+        "evidence": "Rose-Hulman → ENGINEERING_NO_PHD → SPECIALTY. Normal CDS path; engine has overallAcceptanceRate available. Should produce a meaningful prediction here — fixture validates the SPECIALTY non-portfolio path."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "specialty-school",
+    "engineering-no-phd",
+    "stem-mechanical",
+    "early-action",
+    "domestic",
+    "above-median-stats",
+    "match-tier"
+  ]
+}

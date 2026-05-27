@@ -1,0 +1,92 @@
+{
+  "kind": "standalone",
+  "id": "071-emory-ed2-intl-china-strong",
+  "scenarioGroup": "T20_ED2_STRONG_UNHOOKED_INTL_CN",
+  "schoolName": "Emory University",
+  "applicationRound": "ED2",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Biology",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1520 },
+      { "type": "TOEFL", "score": 113 }
+    ],
+    "activities": [
+      {
+        "name": "Wet-Lab Research at Local University (Cancer Cell Lines)",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 24,
+        "yearsActive": 2
+      },
+      {
+        "name": "Biology Olympiad School Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Public Health Awareness Campaign (Rural Communities)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 28,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "USA Biology Olympiad (USABO) - Semifinalist",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Provincial Chemistry Olympiad - Silver",
+        "level": "STATE",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Emory ED2 ~10% per real Emory CDS 2024-25 data (validated via PR #292 — see TIER_B notes). Overall admit 10.29%; ED1 23.23%; intl admit 6.33%. ED2 is materially weaker than ED1 (~half the boost) but still 1.5-2x RD intl. Pre-med biology profile (USABO semifinalist) aligns with Emory's pre-health strength. Industry: T20 ED2 intl-CN strong pre-med profile cluster 4-18%. This fixture validates ED2 path handling for intl pool (separate from ED1 boost calibration).",
+    "sources": [
+      {
+        "name": "Emory CDS 2024-25",
+        "evidence": "Overall admit 10.29%; ED 23.23% (ED1+ED2 combined per CDS C21); intl admit 6.33%. Emory was a key data point in PR #292 ED2 schema update (hasEarlyDecision2 = true)."
+      },
+      {
+        "name": "PR #292 ED2 Validation Notes (2026-05-22)",
+        "evidence": "Emory confirmed as offering ED2; ED2 boost approximated at 50-70% of ED1 boost; intl admit rate for ED2 ~12-15% (vs ED1 ~20%) per public CDS extrapolation."
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024 — Emory",
+        "evidence": "Intl-CN ED2 strong pre-med profiles at Emory cluster 5-18% in published case data; lighter saturation than HYPSM bucket."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t20-private",
+    "stem-biology",
+    "intl-cn",
+    "early-decision-2",
+    "ed2",
+    "unhooked",
+    "pre-med",
+    "diversity-coverage"
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "kind": "standalone",
+  "id": "085-pomona-ed2-strong-unhooked",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Pomona College",
+  "applicationRound": "ED2",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "English",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1530 }],
+    "activities": [
+      {
+        "name": "Literary Magazine",
+        "category": "ACADEMIC",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Independent Creative Writing Portfolio",
+        "category": "PERSONAL_PROJECT",
+        "role": "Writer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      },
+      {
+        "name": "Writing Center Peer Tutor",
+        "category": "ACADEMIC",
+        "role": "Lead Tutor",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Art & Writing Gold Key",
+        "level": "REGIONAL",
+        "year": 2025
+      },
+      {
+        "name": "National YoungArts Finalist - Writing",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.13, 0.32],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Pomona publishes COMBINED ED admit rate (~16% per CDS) but does not separately report ED1 vs ED2 numbers, even though it offers both rounds. Industry inference: ED1 ~17-19%, ED2 ~10-15% (slightly weaker than ED1 because admit count tapers). Strong unhooked domestic humanities profile with national writing recognition fits Pomona's holistic culture; counselor consensus 13-30%. Engine will likely use school.acceptanceRate (~7%) because ed2AcceptanceRate is null for Pomona — this fixture exists to verify the engine does NOT crash on null ed2AcceptanceRate AND documents the data gap.",
+    "sources": [
+      {
+        "name": "Pomona CDS 2024-25",
+        "evidence": "Pomona reports combined ED admit rate ~16% in CDS C21; does not publish separable ED I vs ED II numbers despite offering both."
+      },
+      {
+        "name": "College Kickstart Pomona ED2 Analysis 2024",
+        "url": "https://www.collegekickstart.com/blog",
+        "evidence": "Pomona offers ED2 but combines reporting; College Kickstart estimates ED2 admit rate ~10-15% based on yield modeling."
+      },
+      {
+        "name": "Crimson T10 LAC Strategy Guide 2024",
+        "evidence": "Strong unhooked humanities applicants with national-level recognition at T10 LACs cluster 15-30% in ED rounds (combined or separable)."
+      },
+      {
+        "name": "NACAC State of College Admission 2024",
+        "evidence": "LAC ED yield runs 50-60%; ED2 admit rates trail ED1 by 3-5pp at most T10 LACs that report separately."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Pomona publishes combined ED rate (not separable ED1/ED2), so `school.ed2AcceptanceRate` is null in our seed. PredictionHookModifiersService.getBaseRate() will fall through the ED2 branch (line 166-167 requires ed2AcceptanceRate != null) and use school.acceptanceRate (~7%) as base, producing a prediction materially below the industry ED2 band. The expected range here reflects what counselors would say for a strong ED2 applicant — engine will under-predict until either (a) Pomona publishes separable ED2 rates, or (b) we add a fallback that uses edAcceptanceRate × 0.7 when ed2AcceptanceRate is null but hasEarlyDecision2 is true.",
+    "followUp": "Add ed2-fallback heuristic in PredictionHookModifiersService.getBaseRate() — when round=ED2 and ed2AcceptanceRate is null but hasEarlyDecision2 is true, use edAcceptanceRate * 0.7 as a defensible proxy (per College Kickstart aggregation)."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-lac",
+    "humanities-english",
+    "domestic",
+    "early-decision-2",
+    "unhooked",
+    "ed2-coverage",
+    "wontfix-data-gap"
+  ]
+}

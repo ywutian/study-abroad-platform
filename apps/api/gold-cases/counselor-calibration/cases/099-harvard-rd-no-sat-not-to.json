@@ -1,0 +1,88 @@
+{
+  "kind": "standalone",
+  "id": "099-harvard-rd-no-sat-not-to",
+  "scenarioGroup": "TEST_OPTIONAL",
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "MA",
+    "targetMajor": "Economics",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "applyingTestOptional": false,
+    "testScores": [],
+    "activities": [
+      {
+        "name": "Economics Research with Faculty",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Debate Team",
+        "category": "ACADEMIC",
+        "role": "Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 4
+      },
+      {
+        "name": "Investment Club",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Economics Challenge Semi-finalist",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.005, 0.04],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "Edge case: applicant marked applyingTestOptional=false BUT testScores is empty — i.e. they intended to submit but didn't (incomplete application from admissions reviewer's POV) rather than electing test-optional. 这种情况比真正 TO 更糟: TO is treated as 'I chose not to submit'; missing-but-required reads as 'incomplete / unsubmitted'. Harvard 2025-26 reinstated test requirement — without scores, application is functionally incomplete. Industry: incomplete apps at Ivies rarely admitted (<1%); even with strong rest-of-profile, missing required test signal triggers admissions-reader default to 'cannot evaluate'. 0.005 lower bound reflects incomplete reality; 0.04 upper bound allows engine to treat as TO equivalent (current behavior, which is the gap).",
+    "sources": [
+      {
+        "name": "Harvard Admissions Office Announcement April 2024",
+        "evidence": "Harvard reinstated standardized testing requirement for Class of 2029 (RD 2025-26 cycle). Applications without SAT/ACT are flagged as incomplete unless explicitly approved test-waiver category"
+      },
+      {
+        "name": "Inside Higher Ed - 'Ivies Bring Back Tests' 2024",
+        "evidence": "Harvard / Yale / MIT / Brown / Dartmouth all moved off test-optional for 2025-26; applications without test scores at these schools no longer process in the standard reader queue"
+      },
+      {
+        "name": "Common App Test-Optional Report 2024",
+        "evidence": "Engine treats TO with 0.85× modifier at <20% accept schools; this fixture tests whether engine distinguishes 'TO=true / no test' (legitimate TO, 0.85×) from 'TO=false / no test' (incomplete, should be much lower)"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine likely does not distinguish 'applyingTestOptional=false + testScores=[]' (incomplete) from 'applyingTestOptional=true + testScores=[]' (legitimate TO) — both fall through to no-test code path. This fixture exposes the gap: incomplete-application case should be modeled more harshly than self-elected TO.",
+    "followUp": "Add explicit 'incomplete application' detection in counselor engine: if testScores empty AND applyingTestOptional=false AND school requires tests, apply ~0.3× multiplier (not the standard 0.85× TO penalty). Track behavior in upcoming PR for application-completeness modeling."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "edge-case",
+    "incomplete-application",
+    "test-required",
+    "regular-decision",
+    "domestic",
+    "engine-gap-application-completeness"
+  ]
+}

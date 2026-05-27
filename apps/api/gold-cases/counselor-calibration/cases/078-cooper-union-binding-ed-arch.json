@@ -1,0 +1,87 @@
+{
+  "kind": "standalone",
+  "id": "078-cooper-union-binding-ed-arch",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Cooper Union",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Architecture",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1450 }],
+    "activities": [
+      {
+        "name": "Architectural Portfolio + Hometest Submissions",
+        "category": "ACADEMIC",
+        "role": "Independent Designer",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 45,
+        "yearsActive": 3
+      },
+      {
+        "name": "AP Studio Art (3D Design)",
+        "category": "ACADEMIC",
+        "role": "Student",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 36,
+        "yearsActive": 1
+      },
+      {
+        "name": "Architecture Firm Internship",
+        "category": "WORK",
+        "role": "Drafting Intern",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 12,
+        "yearsActive": 1
+      }
+    ],
+    "awards": [
+      {
+        "name": "AIA High School Design Award",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Scholastic Art Regional Gold Key (Architecture)",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.08, 0.3],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "Cooper Union Architecture overall admit ~11-14% (Architecture program is the most selective of Cooper's 3 schools at ~8-10%). Admissions requires the unique 'Hometest' — a multi-week creative test specific to Architecture — alongside portfolio. Stats matter as eligibility threshold but Hometest + portfolio dominate. ED is binding. Engine treats Cooper as institutionType=SPECIALTY (ENGINEERING_NO_PHD bucket per ranking-catalog mapping), NOT ART_DESIGN — so it WILL run the normal CDS-band path. But Cooper has no CDS bands seeded, so it'll fall to overallAcceptanceRate × modifiers. ED boost (~1.4x) + strong stats may overshoot. Industry: 10-25% for strong portfolio + stats + ED.",
+    "sources": [
+      {
+        "name": "Cooper Union Admissions Statistics 2023-24",
+        "evidence": "Overall admit ~13%; School of Architecture ~9%; required Hometest is unique multi-week design exercise that is the dominant signal; SAT mid-50% 1350-1500"
+      },
+      {
+        "name": "Architectural Record HS Outcomes Survey 2023",
+        "evidence": "Cooper Architecture ED applicants with AIA award + portfolio show ~20-30% admit rate per anonymous survey; binding ED is required path for serious candidates"
+      },
+      {
+        "name": "Counselor Engine institutionType=SPECIALTY",
+        "evidence": "Per ranking-catalog mapping, Cooper Union → ENGINEERING_NO_PHD → SPECIALTY institutionType. Does NOT trigger audition_or_portfolio_admission short-circuit. Engine will attempt normal path but lacks CDS bands and lacks any portfolio/Hometest signal."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "specialty-school",
+    "architecture",
+    "early-decision",
+    "domestic",
+    "portfolio-required",
+    "hometest-required",
+    "unhooked"
+  ]
+}

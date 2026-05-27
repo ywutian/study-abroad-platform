@@ -1,0 +1,92 @@
+{
+  "kind": "standalone",
+  "id": "077-mica-portfolio-illustration",
+  "scenarioGroup": "T30_EA_MID_STRONG",
+  "schoolName": "Maryland Institute College of Art",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.7,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Illustration",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1340 }],
+    "activities": [
+      {
+        "name": "Illustration Portfolio Development",
+        "category": "ACADEMIC",
+        "role": "Independent Artist",
+        "hoursPerWeek": 15,
+        "weeksPerYear": 50,
+        "yearsActive": 4
+      },
+      {
+        "name": "School Yearbook Lead Illustrator",
+        "category": "LEADERSHIP",
+        "role": "Lead Illustrator",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Freelance Children's Book Illustration",
+        "category": "WORK",
+        "role": "Illustrator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Art Regional Gold Key (Illustration) x2",
+        "level": "REGIONAL",
+        "year": 2025
+      },
+      {
+        "name": "MICA Pre-College Merit Scholarship",
+        "level": "SCHOOL",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.5, 0.8],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "MICA overall admit rate ~70-78%. Strong portfolio with target-medium alignment (illustration applicant w/ illustration body of work) + Pre-College merit affiliation + freelance illustration credits is the bullseye portfolio for MICA Illustration. Industry: 60-85% for this profile. Engine triggers ART_DESIGN sentinel (probability=0) — same gap as 076 SAIC. Fixture confirms gap applies across the high-admit-rate end of portfolio schools.",
+    "sources": [
+      {
+        "name": "MICA Admissions Profile 2024",
+        "evidence": "Overall admit rate ~72%; SAT mid-50% 1170-1370; portfolio is primary academic signal but the wide admit pool means strong target-medium applicants admit at 65-85% rates per published cases"
+      },
+      {
+        "name": "Crimson Art School Outcomes Benchmark 2024",
+        "evidence": "MICA Illustration applicants with Pre-College affiliation + Scholastic Regional Gold cluster 60-80% admit"
+      },
+      {
+        "name": "Counselor Engine isAuditionOrPortfolioSchool",
+        "evidence": "ART_DESIGN short-circuit returns insufficientData regardless of MICA's high admit rate"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Same engine gap as SAIC fixture — binary ART_DESIGN handler treats high-admit MICA the same as much-more-selective RISD.",
+    "followUp": "Tier-aware audition handler should use overallAcceptanceRate when school admit rate > 30%."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "art-design",
+    "portfolio-school",
+    "specialty-school",
+    "regular-decision",
+    "domestic",
+    "mid-tier-selectivity",
+    "engine-gap",
+    "insufficient-data"
+  ]
+}

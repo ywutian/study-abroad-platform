@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "072-cmu-rd-intl-china-international-school-cs",
+  "scenarioGroup": "T15_RD_STRONG_UNHOOKED_INTL_CN_GUO_JI_BU",
+  "schoolName": "Carnegie Mellon University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "CN",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Computer Science (SCS)",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1530 },
+      { "type": "TOEFL", "score": 114 }
+    ],
+    "activities": [
+      {
+        "name": "Independent ML Research (Vision Transformers, mentored by university PhD)",
+        "category": "RESEARCH",
+        "role": "Independent Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      },
+      {
+        "name": "School Coding Club (国际部)",
+        "category": "ACADEMIC",
+        "role": "President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "USACO Training + Competitions",
+        "category": "ACADEMIC",
+        "role": "Team Member",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 40,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "AP Heavy: 8 APs taken (CS A: 5, Calc BC: 5, Physics C Mech: 5, Stats: 5, +4 more 4-5 scores)",
+        "level": "INTERNATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "USACO Gold Division",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.015, 0.08],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "CMU SCS (School of Computer Science) is the single most competitive intl CS admission in the US — overall CMU 11.66% but SCS direct admit ~6-8%; intl SCS estimated 2-4%. 国际部 (Chinese international division) AP-heavy profile is the largest CMU CS bucket and most saturated. USACO Gold (not Platinum) is below the typical CMU SCS admitted-student bar. RD has no early boost. Industry: CMU SCS intl-CN 国际部 strong cluster 1.5-7% per Crimson + CollegeVine data.",
+    "sources": [
+      {
+        "name": "CMU CDS 2024-25 + SCS Admit Bulletin",
+        "evidence": "Overall admit 11.66%; ED 13.84%. SCS direct-admit is materially lower (~6-8% per CMU internal disclosure); intl SCS pool dominated by 国际部 CN applicants."
+      },
+      {
+        "name": "Crimson China CS Benchmark 2024 — CMU SCS",
+        "evidence": "国际部 AP-heavy applicants at CMU SCS RD with USACO Gold cluster 2-7% per published case data; USACO Platinum + research publication needed for >10% odds."
+      },
+      {
+        "name": "CollegeVine CMU SCS Profile Database 2024",
+        "evidence": "Admitted intl CS profiles cluster at SAT 1560+, USACO Platinum, multi-year published research; profiles below this bar cluster at 1-5% admit."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t15-private",
+    "stem-cs",
+    "intl-cn",
+    "regular-decision",
+    "unhooked",
+    "international-division-hs",
+    "ap-heavy-curriculum",
+    "saturated-bucket",
+    "diversity-coverage"
+  ]
+}

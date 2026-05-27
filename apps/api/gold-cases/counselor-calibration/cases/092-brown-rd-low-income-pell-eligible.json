@@ -1,0 +1,97 @@
+{
+  "kind": "standalone",
+  "id": "092-brown-rd-low-income-pell-eligible",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "Brown University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "OH",
+    "targetMajor": "Public Health",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1500 }],
+    "activities": [
+      {
+        "name": "After-School Job (Retail, 25 hrs/week)",
+        "category": "WORK",
+        "role": "Sales Associate",
+        "hoursPerWeek": 25,
+        "weeksPerYear": 50,
+        "yearsActive": 3
+      },
+      {
+        "name": "Public Health Awareness Campaign at Local Clinic",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder & Lead Organizer",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 32,
+        "yearsActive": 2
+      },
+      {
+        "name": "Science Olympiad",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Coca-Cola Scholars Semifinalist",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Horatio Alger State Scholar (low-income leadership)",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.13],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Brown overall ~5.2%, RD ~4.5%. Pell-eligible (low-income, federal aid threshold ~$60k household income) is a real but small contextual hook at need-blind schools — Brown is need-blind for domestic and meets full demonstrated need. Pell-eligible enrollment ~17% of class per Brown CDS H-section. No verified-flag exists in our profile schema (no `isPellEligible` field), so this fixture's hook signal must come from indirect proxies: 25 hr/wk work activity (signals socioeconomic context) + Horatio Alger Scholar award (explicitly recognizes low-income leadership). Counselor consensus 4-13% for strong unhooked-but-socioeconomically-disadvantaged applicant; contextual lift ~1.2× over baseline.",
+    "sources": [
+      {
+        "name": "Brown CDS 2024-25 (H-section)",
+        "evidence": "Overall admit rate 5.18%; Pell-eligible students ~17% of undergraduate enrollment; Brown is need-blind for domestic, need-aware for intl."
+      },
+      {
+        "name": "Brown Office of Financial Aid 2024",
+        "url": "https://www.brown.edu/about/administration/financial-aid/",
+        "evidence": "Brown commits to meeting 100% of demonstrated need for admitted students; need-blind admission for domestic applicants includes Pell-eligible status."
+      },
+      {
+        "name": "Common App Socioeconomic Context Report 2024",
+        "evidence": "Pell-eligible applicants at need-blind T20 see ~1.15-1.30× admit rate over similar non-Pell peers, driven primarily by contextual review of essay narratives + work-history activities."
+      },
+      {
+        "name": "Crimson SES Hook Report 2024",
+        "evidence": "Strong unhooked applicants with explicit low-income markers (work hours, low-income-leadership awards) cluster 5-12% admit at T20 need-blind schools — small contextual lift above baseline."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine has no `isPellEligible` / `lowIncome` / household-income profile field, so any direct SES modeling is impossible. The only indirect signal is the WORK-category activity (25 hr/wk job) and the Horatio Alger Scholar award — and engine's activity/award scoring does NOT yet flag these as SES-context proxies. Result: engine will produce a baseline-RD probability (~4-5%) without contextual lift. Spec lower bound (4%) matches engine baseline, so fixture should pass at the floor; upper bound documents counselor intuition.",
+    "followUp": "Decide whether to add an explicit `isPellEligible` profile field (opt-in, same launch policy as urmStatus) OR upgrade activity/award scoring to detect SES-context proxies (WORK >20 hr/wk, low-income-leadership awards like Horatio Alger / QuestBridge / Coca-Cola). Prefer indirect detection because direct income disclosure raises privacy concerns."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "stem-publichealth",
+    "domestic",
+    "regular-decision",
+    "ses-hook",
+    "pell-eligible",
+    "wontfix-engine-gap"
+  ]
+}

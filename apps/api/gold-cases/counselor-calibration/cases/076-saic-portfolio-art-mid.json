@@ -1,0 +1,87 @@
+{
+  "kind": "standalone",
+  "id": "076-saic-portfolio-art-mid",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "School of the Art Institute of Chicago",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "Fine Arts",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1280 }],
+    "activities": [
+      {
+        "name": "Personal Studio Practice",
+        "category": "ACADEMIC",
+        "role": "Independent Artist",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 45,
+        "yearsActive": 3
+      },
+      {
+        "name": "High School Art Honor Society",
+        "category": "ACADEMIC",
+        "role": "Member",
+        "hoursPerWeek": 3,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Local Art Gallery Internship",
+        "category": "WORK",
+        "role": "Curatorial Assistant",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      }
+    ],
+    "awards": [
+      {
+        "name": "Scholastic Art Regional Silver Key",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.4, 0.75],
+  "expectedTier": "match",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "SAIC overall admit rate ~65-72% (notably high; SAIC casts a wide net and is mission-driven to recruit). Mid-tier portfolio + 3.5 GPA + 1280 SAT comfortably within admit pool. Industry: solid portfolio applicants at SAIC consistently cluster 50-75% — this is one of the most accessible BFA-track art schools. Engine triggers ART_DESIGN sentinel (probability=0, insufficientData) even though SAIC's high admit rate suggests engine COULD anchor to overallAcceptanceRate if the audition-school short-circuit were tier-aware.",
+    "sources": [
+      {
+        "name": "SAIC Admissions Facts 2024",
+        "evidence": "Overall admit rate ~67%; portfolio is required but SAIC's holistic review philosophy weights essays, recommendations, and demonstrated artistic curiosity alongside the portfolio"
+      },
+      {
+        "name": "NACAC Art School Admit Pool Benchmarks 2023",
+        "evidence": "SAIC, MICA, Pratt fall in the 50-72% admit range for moderately-qualified portfolios; below MidEastern art-design selectivity tier"
+      },
+      {
+        "name": "Counselor Engine isAuditionOrPortfolioSchool",
+        "evidence": "institutionType=ART_DESIGN unconditionally triggers insufficientData regardless of school's underlying selectivity. This fixture exposes that the short-circuit fails to discriminate between Curtis-tier (~5%) and SAIC-tier (~67%) art schools."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine's ART_DESIGN short-circuit is binary — does not account for the wide selectivity range within portfolio schools. SAIC at 67% admit and CalArts at 24% are treated identically (both decline to predict).",
+    "followUp": "Improve audition/portfolio handler to fall back to overallAcceptanceRate × profileContext when school has a high published admit rate."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "art-design",
+    "portfolio-school",
+    "specialty-school",
+    "regular-decision",
+    "domestic",
+    "mid-tier-selectivity",
+    "engine-gap",
+    "insufficient-data"
+  ]
+}

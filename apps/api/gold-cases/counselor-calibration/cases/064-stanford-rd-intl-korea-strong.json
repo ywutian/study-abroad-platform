@@ -1,0 +1,92 @@
+{
+  "kind": "standalone",
+  "id": "064-stanford-rd-intl-korea-strong",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_INTL_NON_CN",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "KR",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Electrical Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1550 },
+      { "type": "TOEFL", "score": 117 }
+    ],
+    "activities": [
+      {
+        "name": "KAIST Summer Research Program (Semiconductors)",
+        "category": "RESEARCH",
+        "role": "Research Assistant",
+        "hoursPerWeek": 30,
+        "weeksPerYear": 8,
+        "yearsActive": 1
+      },
+      {
+        "name": "School Robotics Team (Korean HS National Champion)",
+        "category": "ACADEMIC",
+        "role": "Lead Engineer",
+        "hoursPerWeek": 10,
+        "weeksPerYear": 32,
+        "yearsActive": 4
+      },
+      {
+        "name": "STEM Tutoring for Underserved Students",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Founder",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "Korean Physics Olympiad - Silver",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "National Robotics Competition Champion",
+        "level": "NATIONAL",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.015, 0.07],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Korean applicants face significant intl penalty at Stanford. Stanford overall admit ~3.8%; intl admit ~8% per CDS but Korean cohort competes against very strong Korean STEM applicants (KMO/KPhO medalists, KAIST-track). GPA noted as Korean HS scale normalized to ~3.95 unweighted 4.0 (Korean HS uses internal 9-band system; top decile maps to ~3.9-4.0). Strong EE profile but RD (no early boost). Industry consensus: 2-7%.",
+    "sources": [
+      {
+        "name": "Stanford CDS 2024-25",
+        "evidence": "Overall admit 3.8%; intl ~12% of class. Korea is top-3 sending country alongside China/India."
+      },
+      {
+        "name": "Crimson Korea Acceptance Report 2024",
+        "evidence": "Korean STEM applicants at Stanford RD cluster 2-6% in published case data; Korean HS GPA normalization handled at AO level."
+      },
+      {
+        "name": "Compass Education Asia 2024 Benchmarks",
+        "evidence": "Korean applicants benefit slightly from KAIST research credibility but penalized by saturated Asian STEM bucket; RD has no early-round lift."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-ee",
+    "intl-korea",
+    "regular-decision",
+    "unhooked",
+    "non-cn-intl",
+    "diversity-coverage",
+    "non-traditional-transcript"
+  ]
+}

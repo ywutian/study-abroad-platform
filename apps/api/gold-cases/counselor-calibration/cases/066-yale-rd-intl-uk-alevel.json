@@ -1,0 +1,93 @@
+{
+  "kind": "standalone",
+  "id": "066-yale-rd-intl-uk-alevel",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_INTL_ALEVEL",
+  "schoolName": "Yale University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 4.0,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "GB",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "English",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      { "type": "SAT", "score": 1540 },
+      { "type": "TOEFL", "score": 118 }
+    ],
+    "activities": [
+      {
+        "name": "School Literary Magazine",
+        "category": "ACADEMIC",
+        "role": "Editor-in-Chief",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Model UN (Oxford/Cambridge Circuit)",
+        "category": "ACADEMIC",
+        "role": "Head Delegate",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 4
+      },
+      {
+        "name": "Independent Research: Postcolonial Literature",
+        "category": "RESEARCH",
+        "role": "Independent Author (published in school journal + 1 essay competition)",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "UK A-Levels: A*A*A* in English Literature, History, French",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Cambridge Re-Cognition Essay Prize - Highly Commended",
+        "level": "NATIONAL",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.025, 0.12],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Yale RD intl admit 11% (CDS) — UK applicants benefit from cultural/linguistic fit and AO familiarity with A-Levels. A*A*A* maps to ~3.95-4.0 unweighted in AO normalization (top 5-7% of UK cohort). Humanities profile aligns with Yale's strength. SAT 1540 in 50th-percentile range. UK applicants face lighter penalty than Asian intl pools (~0.6-0.8x overall vs 0.4-0.5x for CN/IN). Industry: T5 RD UK humanities strong cluster 4-12%.",
+    "sources": [
+      {
+        "name": "Yale CDS 2024-25",
+        "evidence": "Overall admit 4.75%; intl admit 11%. UK is among most-represented European sending countries."
+      },
+      {
+        "name": "Yale International Admissions Briefing 2024",
+        "evidence": "A-Levels accepted as primary credential for UK applicants; A* grades treated as top-tier with no further conversion needed."
+      },
+      {
+        "name": "Ivy Coach UK Applicants Benchmark 2024",
+        "evidence": "UK humanities applicants at Yale RD cluster 4-12% per published case data; lighter Asian-bucket competition."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "humanities",
+    "intl-uk",
+    "regular-decision",
+    "unhooked",
+    "non-cn-intl",
+    "a-level-transcript",
+    "non-traditional-transcript",
+    "diversity-coverage"
+  ]
+}

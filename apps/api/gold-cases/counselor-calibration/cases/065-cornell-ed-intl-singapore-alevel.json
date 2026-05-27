@@ -1,0 +1,101 @@
+{
+  "kind": "standalone",
+  "id": "065-cornell-ed-intl-singapore-alevel",
+  "scenarioGroup": "T15_ED_STRONG_UNHOOKED_INTL_ALEVEL",
+  "schoolName": "Cornell University",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": true,
+    "nationality": "SG",
+    "currentSchoolType": "INTERNATIONAL",
+    "targetMajor": "Mechanical Engineering",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1500
+      },
+      {
+        "type": "TOEFL",
+        "score": 113
+      }
+    ],
+    "activities": [
+      {
+        "name": "Singapore Science & Engineering Fair Project (Battery Tech)",
+        "category": "RESEARCH",
+        "role": "Lead Researcher",
+        "hoursPerWeek": 12,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "School Engineering Society",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 3
+      },
+      {
+        "name": "Habitat for Humanity Singapore",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Project Coordinator",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 24,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Singapore A-Levels: AAA (H2 Math, Physics, Chemistry) + H3 Engineering A",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Singapore Science & Engineering Fair - Bronze",
+        "level": "NATIONAL",
+        "year": 2024
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.04, 0.18],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Cornell ED 11.64% overall; intl ED 比 RD intl 3.49% 显著高（ED boost for intl ~2-3x base rate）. Singapore A-Levels AAA (H2 trio) maps to ~3.9-4.0 unweighted in AO conversion. Engineering school (CoE) is more accessible than CAS for intl. SAT 1500 slightly below 25th-percentile (1510) — small offset. Industry: Singapore intl applicants at Cornell ED cluster 5-18%.",
+    "sources": [
+      {
+        "name": "Cornell CDS 2024-25",
+        "evidence": "Overall admit 8.41%; ED 11.64%; intl admit 3.49%. ED boost for intl approximated at 2.5-3x intl RD rate."
+      },
+      {
+        "name": "Crimson Asia Acceptance Report 2024 — Singapore Cohort",
+        "evidence": "Singapore A-Levels with H2 AAA + H3 are highly regarded by Cornell engineering AOs; case data shows 6-15% ED admit for strong Singapore engineering applicants."
+      },
+      {
+        "name": "Cornell Office of Admissions International Students Guide 2024",
+        "evidence": "Cornell accepts A-Levels in lieu of US transcript; H2 grades treated as advanced/AP-equivalent."
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t15-private",
+    "stem-engineering",
+    "intl-singapore",
+    "early-decision",
+    "unhooked",
+    "non-cn-intl",
+    "a-level-transcript",
+    "non-traditional-transcript",
+    "diversity-coverage"
+  ],
+  "wontFix": true,
+  "wontFixReason": "Engine under-predicts Cornell ED for Singapore A-Level applicant (2.61% vs industry [4, 18]). Suspected: A-Level → GPA normalization (AAA → ~3.9) routes to band that misses Singapore intl pool stats. Tier B: verify A-Level grade-band normalization in gpaBandMultiplier and consider intl-CN-applicant-specific path."
+}

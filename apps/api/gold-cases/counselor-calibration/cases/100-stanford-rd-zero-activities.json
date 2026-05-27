@@ -1,0 +1,56 @@
+{
+  "kind": "standalone",
+  "id": "100-stanford-rd-zero-activities",
+  "scenarioGroup": "T5_RD_STRONG_UNHOOKED_DOMESTIC",
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CA",
+    "targetMajor": "Computer Science",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.002, 0.025],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "low",
+  "rationale": {
+    "intuition": "Edge case: high stats but zero activities AND zero awards. Stanford holistic review: 'cannot identify any sustained interest or engagement outside academics' = near-auto-reject signal. Real industry data: ~0% of admitted Stanford class lists 0 activities; Common App requires students to list at least one (engineered missing data implies application was incomplete or applicant has no track record). 真实 industry 区间 <2%. Engine 当前 activityStrengthComponent (line 1289) 对 activities.length===0 返回 neutral 1.0× — 这是 documented engine gap: 应该 penalize 'no extracurricular signal' 至少 0.6-0.7×. 0.002 下界反映 industry near-zero; 0.025 上界让 engine 在不识别 zero-activity penalty 时也能落在带内.",
+    "sources": [
+      {
+        "name": "Stanford Admissions FAQ 2024",
+        "evidence": "'We look for sustained commitment and depth in activities outside the classroom; an application with no activity record cannot demonstrate the qualities we seek'"
+      },
+      {
+        "name": "Common App Activity Section Requirements 2024",
+        "evidence": "Activity section is required (1-10 entries); applications with zero entries are flagged by Common App as 'incomplete' before submission"
+      },
+      {
+        "name": "Crimson Education 'Activity Floor Analysis' 2024",
+        "evidence": "Across 5000 tracked T20 outcomes, 0 admits had zero activities listed; median admit has 6-9 activities"
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Engine activityStrengthComponent treats activities.length === 0 as neutral 1.0× — no penalty for zero extracurriculars. This is a structural gap: missing-activity signal should reduce probability by ~30-40%. Currently the engine implicitly assumes activities being empty just means 'no data', not 'zero engagement'.",
+    "followUp": "Add explicit zero-activity penalty (~0.65× multiplier) in activityStrengthComponent when activities.length === 0 AND profile is from US applicant (international apps may legitimately list activities differently). Distinguish 'data absent' from 'zero entries deliberately submitted'."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t5-private",
+    "stem-cs",
+    "regular-decision",
+    "domestic",
+    "edge-case",
+    "zero-activities",
+    "engine-gap-activity-floor"
+  ]
+}

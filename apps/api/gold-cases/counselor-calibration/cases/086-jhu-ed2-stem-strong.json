@@ -1,0 +1,97 @@
+{
+  "kind": "standalone",
+  "id": "086-jhu-ed2-stem-strong",
+  "scenarioGroup": "T20_ED_STRONG_UNHOOKED",
+  "schoolName": "Johns Hopkins University",
+  "applicationRound": "ED2",
+  "profile": {
+    "gpa": 3.92,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "VA",
+    "targetMajor": "Biomedical Engineering",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1540 }],
+    "activities": [
+      {
+        "name": "Cancer Biology Research at NIH-affiliated lab",
+        "category": "RESEARCH",
+        "role": "Lead Student Researcher",
+        "hoursPerWeek": 18,
+        "weeksPerYear": 36,
+        "yearsActive": 2
+      },
+      {
+        "name": "Biomedical Engineering Club",
+        "category": "ACADEMIC",
+        "role": "Founder & President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      },
+      {
+        "name": "Hospital Volunteer (Pediatric Oncology)",
+        "category": "COMMUNITY_SERVICE",
+        "role": "Volunteer",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "Regeneron STS Scholar (Top 300)",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "Siemens Competition Regional Finalist",
+        "level": "REGIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.1, 0.28],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "JHU overall ~6.44%, ED1 ~11.74% (CDS C21), ED2 admit count published as 242 admits but denominator (ED2 applications) NOT published — so ed2AcceptanceRate is unknown in our seed. Industry inference: JHU ED2 admit rate ~8-15% (admit count tapers from ED1, applicant pool is more self-selected). Strong unhooked STEM with BME alignment and national research credentials fits JHU's signature program; counselor consensus 10-25%. Engine will fall through ED2 branch (null ed2AcceptanceRate) and use overall 6.44% — under-predicting industry band.",
+    "sources": [
+      {
+        "name": "JHU CDS 2024-25 (C21)",
+        "evidence": "Overall admit rate 6.44%, ED1 admit rate 11.74%; ED2 admits 242 reported but ED2 application denominator not published → ed2AcceptanceRate unknown."
+      },
+      {
+        "name": "JHU Hub Admissions Coverage 2024",
+        "url": "https://hub.jhu.edu/",
+        "evidence": "JHU admissions has confirmed ED2 round exists with 'similar selectivity but smaller cohort than ED1'; specific ED2 rate not officially released."
+      },
+      {
+        "name": "Crimson Education JHU Strategy Guide 2024",
+        "evidence": "Strong BME-aligned STEM applicants in 25-75 SAT band cluster 10-22% in ED2 rounds — slightly below ED1 11.74% adjusted for stronger applicant pool self-selection."
+      },
+      {
+        "name": "NACAC ED2 Benchmark 2024",
+        "evidence": "T20 schools that publish ED2 separately (Vanderbilt, NYU, Tufts) show ED2 rates 60-75% of their ED1 rates. Applying to JHU's ED1 11.74% → ED2 ~7-9%, plus signature-program boost → 10-15%."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "JHU's CDS C21 publishes ED2 admit count (242) but NOT the ED2 application denominator, so `school.ed2AcceptanceRate` cannot be filled from official data. PredictionHookModifiersService.getBaseRate() falls through the ED2 branch (line 166-167) and uses school.acceptanceRate ~6.44% as base, under-predicting the industry ED2 band. Same root cause as fixture 085 (Pomona) — reporting-convention gap, not engine bug. Will be resolved by the same ed2-fallback heuristic.",
+    "followUp": "Same as fixture 085: add ed2-fallback heuristic when ed2AcceptanceRate is null but hasEarlyDecision2 is true. Alternative: closure agent infers ed2AcceptanceRate from yield × class-size × ED2-admit-count when those three are published."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "stem-bme",
+    "domestic",
+    "early-decision-2",
+    "unhooked",
+    "ed2-coverage",
+    "wontfix-data-gap"
+  ]
+}

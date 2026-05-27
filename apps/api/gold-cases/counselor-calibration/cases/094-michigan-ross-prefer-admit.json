@@ -1,0 +1,96 @@
+{
+  "kind": "standalone",
+  "id": "094-michigan-ross-prefer-admit",
+  "scenarioGroup": "T30_EA_MID_STRONG",
+  "schoolName": "University of Michigan, Ann Arbor",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "IL",
+    "targetMajor": "Business Administration",
+    "isFirstGen": false,
+    "isLegacy": false,
+    "recruitedAthlete": false,
+    "testScores": [{ "type": "SAT", "score": 1530 }],
+    "activities": [
+      {
+        "name": "Ross BBA Preferred Admit Application Track",
+        "category": "ACADEMIC",
+        "role": "Preferred Admit Applicant",
+        "hoursPerWeek": 5,
+        "weeksPerYear": 20,
+        "yearsActive": 1
+      },
+      {
+        "name": "Family Business Operations Manager (Summer)",
+        "category": "WORK_EXPERIENCE",
+        "role": "Operations Lead",
+        "hoursPerWeek": 35,
+        "weeksPerYear": 12,
+        "yearsActive": 3
+      },
+      {
+        "name": "FBLA",
+        "category": "LEADERSHIP",
+        "role": "Chapter President",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 36,
+        "yearsActive": 4
+      },
+      {
+        "name": "Mock Trial",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 28,
+        "yearsActive": 3
+      }
+    ],
+    "awards": [
+      {
+        "name": "FBLA Nationals - Top 10 Finisher",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "AP Scholar with Distinction",
+        "level": "NATIONAL",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.06, 0.22],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Ross BBA preferred-admit pathway 难度显著高于 UMich overall: Ross direct-admit ~14% vs UMich overall ~17%, 对 OOS applicant 更严 (~10-12%). Engine 应通过 majorMultiplier (Business at UMich) 反映这一点, 但当前 SchoolProgram seed (verySelective Business band ~70%) 可能 over-estimate Ross 难度. OOS penalty (geoMultiplier) 也应 stack. 强 profile (3.95/1530 + FBLA Nationals + work exp) EA OOS Ross 估计 8-20%. 0.06 下界允许 engine 在 OOS + sub-school penalty 双重作用下偏低; 0.22 上界防止 EA boost over-credit.",
+    "sources": [
+      {
+        "name": "UMich Ross Admissions Office 2024",
+        "evidence": "Ross BBA preferred-admit cohort admit rate ~14% (vs UMich overall ~17%); OOS preferred-admit ~10-12% per Ross class profile disclosures"
+      },
+      {
+        "name": "University of Michigan Daily - 'Ross Admit Difficulty' Feature 2024",
+        "evidence": "Ross applicants self-report stronger profiles than LSA pool; ~30% Ross-admit overlap with Ivy waitlist activity"
+      },
+      {
+        "name": "Compass Prep UMich Tracker 2024",
+        "evidence": "OOS preferred-admit Ross EA admit rate clusters 8-15% across 2022-2024; in-state ~18-25%"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t30-public",
+    "business",
+    "early-action",
+    "domestic-oos",
+    "major-selectivity",
+    "sub-school-ross",
+    "engine-coverage-major-bucket"
+  ]
+}

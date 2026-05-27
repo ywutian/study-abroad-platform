@@ -1,0 +1,101 @@
+{
+  "kind": "standalone",
+  "id": "091-upenn-ed-legacy-urm-stack",
+  "scenarioGroup": "MULTI_HOOK_STACK",
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "ED",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4.0,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "PA",
+    "targetMajor": "History",
+    "isLegacy": true,
+    "legacySchools": ["University of Pennsylvania"],
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "urmStatus": "HISPANIC",
+    "testScores": [{ "type": "SAT", "score": 1480 }],
+    "activities": [
+      {
+        "name": "Latino History Oral History Project",
+        "category": "RESEARCH",
+        "role": "Founder & Lead Interviewer",
+        "hoursPerWeek": 8,
+        "weeksPerYear": 32,
+        "yearsActive": 3
+      },
+      {
+        "name": "Mock Trial",
+        "category": "ACADEMIC",
+        "role": "Team Captain",
+        "hoursPerWeek": 6,
+        "weeksPerYear": 30,
+        "yearsActive": 3
+      },
+      {
+        "name": "Latino Student Union",
+        "category": "LEADERSHIP",
+        "role": "President",
+        "hoursPerWeek": 4,
+        "weeksPerYear": 30,
+        "yearsActive": 2
+      }
+    ],
+    "awards": [
+      {
+        "name": "National Spanish Exam Gold Medal",
+        "level": "NATIONAL",
+        "year": 2025
+      },
+      {
+        "name": "State Mock Trial Semifinalist",
+        "level": "STATE",
+        "year": 2025
+      }
+    ]
+  },
+  "expectedProbabilityRange": [0.15, 0.4],
+  "expectedTier": "reach",
+  "expectedConfidenceAtMost": "high",
+  "rationale": {
+    "intuition": "Penn overall ~5.4%, ED admit ~14.2%. GPA 3.80 is below Penn's 25th-percentile (Penn typical mid-50% GPA 3.91-4.0) — weak academic axis. BUT legacy + ED is a documented stacking case at Penn (Daily Pennsylvanian 2023 reported legacy admit ~33%; ED legacy admit even higher). URM contextual signal stacks on top. Counselor consensus 15-40% for legacy + URM-coded + ED applicant even with sub-25th GPA. Lower bound floors near Penn ED baseline (14%); upper bound caps at historical legacy ED admit rate (~40%).",
+    "sources": [
+      {
+        "name": "Penn CDS 2024-25",
+        "evidence": "Overall admit rate 5.38%; ED admit rate 14.17%; legacy admit rate not officially published; ~14% of class are legacies per Daily Pennsylvanian 2023."
+      },
+      {
+        "name": "Arcidiacono SFFA Expert Witness Report 2018",
+        "evidence": "Legacy at Harvard admitted at 33% rate vs 6% non-legacy (5.5× lift); Penn legacy lift estimated similar magnitude per peer-school analyses."
+      },
+      {
+        "name": "Daily Pennsylvanian Legacy Investigation 2023",
+        "url": "https://www.thedp.com/",
+        "evidence": "Reported Penn legacy applicants admitted at ~33% rate over recent cycles, materially above the 5.4% overall rate."
+      },
+      {
+        "name": "Crimson Multi-Hook Stack Report 2024",
+        "evidence": "Legacy + URM contextual + ED at T10 cluster 20-45% admit rate per published cases — legacy dominates, URM rounds up, ED is independent multiplicative lift."
+      }
+    ]
+  },
+  "wontFix": {
+    "reason": "Two stacked hooks are neutral in engine: legacyHookMultiplier ×1.0 (counselor-modifiers.ts line ~850, awaiting verified-legacy flow) and urmMultiplier ×1.0 (line 909, awaiting compliance review). Only ED round bonus (~×1.25 → +0.22 log-odds) will fire. Below-25th GPA will drag academic-fit modifier down further. Engine will under-predict by ~20pp vs counselor band. Same root cause as fixtures 016/017/057 (legacy) + 087 (URM).",
+    "followUp": "Compounding wontFix on legacy + URM flows. Both must land before this fixture passes."
+  },
+  "lastReviewedAt": "2026-05-26",
+  "reviewedBy": "yitian@",
+  "tags": [
+    "t10-private",
+    "humanities-history",
+    "domestic",
+    "early-decision",
+    "legacy-hook",
+    "urm-hook",
+    "multi-hook-stack",
+    "below-25th-academic",
+    "wontfix-engine-gap"
+  ]
+}
