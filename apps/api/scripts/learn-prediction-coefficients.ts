@@ -76,6 +76,7 @@ interface TrainingRow {
   sat75: number | null;
   gpaDistribution: Record<string, number> | null;
   state: string | null;
+  isPrivate: boolean;
   // Profile features
   gpa4: number | null;
   bestSat: number | null;
@@ -111,11 +112,23 @@ interface CellStats {
   roundBand: RoundBand;
   n: number;
   weightedN: number;
-  meanY: number;
-  weightedMeanY: number;
+  meanY: number; // unweighted, just for sanity
+  weightedMeanY: number; // primary observed probability
+  // 95% bootstrap CI for weightedMeanY (B=400 resamples)
+  ciLow: number;
+  ciHigh: number;
   meanAnchor: number;
-  observedLiftLogOdds: number;
-  observedLiftMultiplier: number;
+  // Probability-domain prediction the engine WOULD output for this cell.
+  // Computed by composing the engine's hand-tuned per-axis multipliers and
+  // clamping to a sane probability range. Primary metric for "is the engine
+  // close to the data?" — independent of log-odds saturation.
+  engineP: number;
+  probDeltaPp: number; // (weightedMeanY - engineP) × 100
+  // Secondary, log-odds-domain. Reported only when both weightedMeanY and
+  // meanAnchor are in [0.05, 0.95]; otherwise reported as null/NaN to
+  // discourage misinterpretation. (logit saturates near 0 / 1.)
+  observedLiftLogOdds: number | null;
+  observedLiftMultiplier: number | null;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -217,6 +230,7 @@ async function dumpFromDb(): Promise<TrainingRow[]> {
           sat75: true,
           gpaDistribution: true,
           state: true,
+          isPrivate: true,
         },
       },
     },
@@ -283,6 +297,7 @@ async function dumpFromDb(): Promise<TrainingRow[]> {
       sat75: s.sat75,
       gpaDistribution: s.gpaDistribution as Record<string, number> | null,
       state: s.state,
+      isPrivate: s.isPrivate ?? false,
       gpa4,
       bestSat,
       applyingTestOptional,
@@ -433,7 +448,14 @@ function satBandFor(row: TrainingRow): SatBand {
 
 function geoBandFor(row: TrainingRow): GeoBand {
   if (row.isInternational) return 'intl';
-  if (!row.state) return 'private';
+  // Private schools: geo distinction is muted (no in-state vs OOS).
+  // Treat all domestic private applicants as a single bucket.
+  if (row.isPrivate) return 'private';
+  // Public schools: need both applicant state and school state to decide
+  // in-state vs OOS. If the applicant's HS state is unknown, we cannot
+  // assign a public-school geo bucket — return 'unknown' rather than
+  // silently defaulting to OOS (the v1 bug that broke the v1 report).
+  if (!row.state || !row.highSchoolState) return 'unknown';
   if (row.highSchoolState === row.state) return 'in_state_public';
   return 'oos_public';
 }
@@ -518,8 +540,79 @@ interface CellAccumulator {
   ws: number[];
 }
 
+/**
+ * Mulberry32 — fast deterministic PRNG for reproducible bootstrap resampling.
+ * Same seed = same CIs across runs.
+ */
+function makeRng(seed: number): () => number {
+  let state = seed | 0;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Bootstrap 95% CI for weighted mean of `ys` using weights `ws`.
+ *
+ * Method: standard non-parametric bootstrap on (y_i, w_i) pairs sampled
+ * UNIFORMLY with replacement, recomputing the weighted mean of each resample.
+ *
+ * Earlier versions sampled proportionally to weights AND then applied weights
+ * again in the resample mean — that double-counted the weights, biasing the
+ * CI away from the point estimate. The v2 fix: sample uniformly, then apply
+ * the same weighted-mean formula used for the point estimate. Result: CI
+ * always brackets the point estimate (modulo tail-percentile rounding).
+ */
+function bootstrapCI(
+  ys: number[],
+  ws: number[],
+  B = 400,
+  seed = 17,
+): [number, number] {
+  const n = ys.length;
+  if (n === 0) return [0, 0];
+  const rng = makeRng(seed);
+  const means: number[] = new Array(B);
+  for (let b = 0; b < B; b++) {
+    let num = 0;
+    let den = 0;
+    for (let i = 0; i < n; i++) {
+      // Uniform draw from [0, n) with replacement — standard non-parametric
+      // bootstrap. NOT weighted sampling (that double-counts).
+      const idx = Math.floor(rng() * n);
+      num += ys[idx] * ws[idx];
+      den += ws[idx];
+    }
+    means[b] = den > 0 ? num / den : 0;
+  }
+  means.sort((a, b) => a - b);
+  const lo = means[Math.floor(0.025 * B)];
+  const hi = means[Math.floor(0.975 * B)];
+  return [lo, hi];
+}
+
 function descriptiveStats(rows: TrainingRow[], weights: number[]): CellStats[] {
   const cells: Record<string, CellAccumulator> = {};
+
+  // Invariant: every anchor in (0, 1); every weight in [0.05, 5].
+  for (let i = 0; i < rows.length; i++) {
+    const a = computeAnchor(rows[i]);
+    if (a == null) continue;
+    if (a <= 0 || a >= 1 || !Number.isFinite(a)) {
+      throw new Error(
+        `INVARIANT VIOLATED: anchor=${a} for case ${rows[i].caseId} @ ${rows[i].schoolNameNorm}`,
+      );
+    }
+    if (weights[i] < 0.05 || weights[i] > 5 || !Number.isFinite(weights[i])) {
+      throw new Error(
+        `INVARIANT VIOLATED: weight=${weights[i]} for case ${rows[i].caseId} (must be in [0.05, 5])`,
+      );
+    }
+  }
 
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -544,7 +637,50 @@ function descriptiveStats(rows: TrainingRow[], weights: number[]): CellStats[] {
     const meanY = safeMean(c.ys);
     const wMeanY = weightedMean(c.ys, c.ws);
     const meanAnchor = safeMean(c.anchors);
-    const liftLogOdds = logit(clamp01(wMeanY)) - logit(clamp01(meanAnchor));
+
+    // Engine probability prediction for this cell — anchor × hand-tuned product, capped to [0.01, 0.99]
+    const engineMult =
+      ENGINE_HAND_TUNED.gpa[c.gpa] *
+      ENGINE_HAND_TUNED.sat[c.sat] *
+      ENGINE_HAND_TUNED.geo[c.geo] *
+      ENGINE_HAND_TUNED.round[c.round];
+    const engineP = Math.max(0.01, Math.min(0.99, meanAnchor * engineMult));
+    const probDeltaPp = (wMeanY - engineP) * 100;
+
+    // Log-odds-domain comparison ONLY when both probabilities are in [0.05, 0.95]
+    // — outside this range logit saturates and the multiplier is misleading.
+    let observedLiftLogOdds: number | null = null;
+    let observedLiftMultiplier: number | null = null;
+    if (
+      wMeanY >= 0.05 &&
+      wMeanY <= 0.95 &&
+      meanAnchor >= 0.05 &&
+      meanAnchor <= 0.95
+    ) {
+      observedLiftLogOdds = logit(wMeanY) - logit(meanAnchor);
+      observedLiftMultiplier = Math.exp(observedLiftLogOdds);
+    }
+
+    // Bootstrap CI for weighted mean Y. Sanity-check: the point estimate must
+    // fall within ±5pp of the 95% CI (some slack for tail-percentile rounding
+    // on small n; if the gap is bigger the bootstrap method is wrong).
+    const [ciLow, ciHigh] = c.ys.length >= 5 ? bootstrapCI(c.ys, c.ws) : [0, 1];
+    if (c.ys.length >= 5 && (wMeanY < ciLow - 0.05 || wMeanY > ciHigh + 0.05)) {
+      throw new Error(
+        `INVARIANT VIOLATED: bootstrap CI [${ciLow.toFixed(3)}, ${ciHigh.toFixed(3)}] does not bracket point estimate ${wMeanY.toFixed(3)} for cell ${c.gpa}|${c.sat}|${c.geo}|${c.round} (n=${c.ys.length}). Bootstrap method bug.`,
+      );
+    }
+
+    // Sanity invariant — final stats must be in valid ranges
+    if (wMeanY < 0 || wMeanY > 1) {
+      throw new Error(
+        `INVARIANT VIOLATED: weightedMeanY=${wMeanY} for cell ${key} (must be in [0, 1])`,
+      );
+    }
+    if (engineP < 0 || engineP > 1) {
+      throw new Error(`INVARIANT VIOLATED: engineP=${engineP} for cell ${key}`);
+    }
+
     result.push({
       gpaBand: c.gpa,
       satBand: c.sat,
@@ -554,9 +690,13 @@ function descriptiveStats(rows: TrainingRow[], weights: number[]): CellStats[] {
       weightedN: c.ws.reduce((a, b) => a + b, 0),
       meanY,
       weightedMeanY: wMeanY,
+      ciLow,
+      ciHigh,
       meanAnchor,
-      observedLiftLogOdds: liftLogOdds,
-      observedLiftMultiplier: Math.exp(liftLogOdds),
+      engineP,
+      probDeltaPp,
+      observedLiftLogOdds,
+      observedLiftMultiplier,
     });
   }
   return result.sort((a, b) => b.n - a.n);
@@ -625,6 +765,18 @@ function writeReport(stats: CellStats[], rows: TrainingRow[]) {
   const totalReject = rows.filter((r) => r.y === 0).length;
   const totalWl = rows.filter((r) => r.y === 0.5).length;
   const cellsWithN10Plus = stats.filter((c) => c.n >= 10);
+  const cellsWithN30Plus = stats.filter((c) => c.n >= 30);
+
+  // Geo bucket distribution — sanity check that the v1 bug ("everything →
+  // oos_public") is fixed. v2 expects ~5 buckets with roughly proportional
+  // counts.
+  const geoDist: Record<string, number> = {};
+  for (const r of rows) {
+    const a = computeAnchor(r);
+    if (a == null) continue;
+    const g = geoBandFor(r);
+    geoDist[g] = (geoDist[g] || 0) + 1;
+  }
 
   const lines: string[] = [];
   lines.push(`# Learned vs hand-tuned coefficients — ${TIMESTAMP}`);
@@ -634,135 +786,116 @@ function writeReport(stats: CellStats[], rows: TrainingRow[]) {
   );
   lines.push('');
   lines.push(
-    `**Method**: each row is bucketed into (gpa_band × sat_band × geo × round). Anchor = school CDS overall rate (or round / intl / OOS override). Weight = population_admit_rate(tier) / sample_admit_rate(tier), capped to [0.05, 5]. Observed lift = logit(weighted mean Y) - logit(mean anchor); expressed as multiplier = exp(lift_log_odds).`,
+    '**Geo bucket distribution** (sanity check — v1 had all rows in `oos_public` due to bucketing bug):',
+  );
+  lines.push('');
+  for (const g of Object.keys(geoDist).sort()) {
+    lines.push(`- \`${g}\`: ${geoDist[g]} rows`);
+  }
+  lines.push('');
+  lines.push(
+    '**Method**: each row is bucketed into (gpa_band × sat_band × geo × round). Anchor = school CDS overall rate (or round / intl / OOS override). Weight = `population_admit_rate(tier) / sample_admit_rate(tier)`, capped to [0.05, 5]. The 95% CI on `observed_p` is computed by 400-iteration weighted bootstrap with a deterministic seed (Mulberry32) for reproducibility.',
+  );
+  lines.push('');
+  lines.push('**Primary metric — `probDelta_pp`** (probability domain):');
+  lines.push('');
+  lines.push('```');
+  lines.push(
+    'engine_p = clamp(anchor × engine_handtuned_multiplier_product, 0.01, 0.99)',
+  );
+  lines.push('probDelta_pp = (observed_p - engine_p) × 100');
+  lines.push('```');
+  lines.push('');
+  lines.push(
+    'Positive `probDelta_pp` means engine **under-predicts** for this cell. Negative means engine **over-predicts**.',
   );
   lines.push('');
   lines.push(
-    `**How to read**: \`observedLift\` is what the data says the combined multiplier for this cell is. \`engineMult\` is the product of the hand-tuned per-axis multipliers. Big gap = engine is mis-calibrated for that cell.`,
+    '**Secondary metric — `obsLift_×`** (log-odds multiplier): reported only when both `observed_p` and `anchor` are in [0.05, 0.95]. Outside that range logit saturates and the multiplier becomes uninterpretable (e.g. v1 reported 129× for cells where observed_p was 0.97 — a logit artifact, not a real 129× lift).',
   );
-  lines.push('');
-  lines.push(`## Cells with n ≥ 10 (${cellsWithN10Plus.length} cells)`);
   lines.push('');
   lines.push(
-    '| n | weightedN | gpa | sat | geo | round | meanY | wMeanY | meanAnchor | observedLift | engineMult | delta |',
+    `## Cells with n ≥ 30 (high-confidence: ${cellsWithN30Plus.length} cells)`,
   );
-  lines.push('|---|---|---|---|---|---|---|---|---|---|---|---|');
+  lines.push('');
+  lines.push(
+    '| n | gpa | sat | geo | round | anchor | observed_p (95% CI) | engine_p | probDelta_pp | obsLift_× | engineLift_× |',
+  );
+  lines.push('|---|---|---|---|---|---|---|---|---|---|---|');
+  for (const c of cellsWithN30Plus) {
+    const obsLiftStr =
+      c.observedLiftMultiplier != null
+        ? `${c.observedLiftMultiplier.toFixed(2)}×`
+        : '—';
+    const engineLift = engineHandTunedLiftMultiplier(c);
+    lines.push(
+      `| ${c.n} | ${c.gpaBand} | ${c.satBand} | ${c.geoBand} | ${c.roundBand} | ${(c.meanAnchor * 100).toFixed(1)}% | ${(c.weightedMeanY * 100).toFixed(1)}% (${(c.ciLow * 100).toFixed(0)}-${(c.ciHigh * 100).toFixed(0)}) | ${(c.engineP * 100).toFixed(1)}% | ${c.probDeltaPp >= 0 ? '+' : ''}${c.probDeltaPp.toFixed(1)} | ${obsLiftStr} | ${engineLift.toFixed(2)}× |`,
+    );
+  }
+  lines.push('');
+  lines.push(
+    `## Cells with 10 ≤ n < 30 (directional: ${cellsWithN10Plus.length - cellsWithN30Plus.length} cells)`,
+  );
+  lines.push('');
+  lines.push(
+    '| n | gpa | sat | geo | round | anchor | observed_p (95% CI) | engine_p | probDelta_pp | obsLift_× | engineLift_× |',
+  );
+  lines.push('|---|---|---|---|---|---|---|---|---|---|---|');
   for (const c of cellsWithN10Plus) {
-    const engine = engineHandTunedLiftMultiplier(c);
-    const delta = c.observedLiftMultiplier - engine;
+    if (c.n >= 30) continue;
+    const obsLiftStr =
+      c.observedLiftMultiplier != null
+        ? `${c.observedLiftMultiplier.toFixed(2)}×`
+        : '—';
+    const engineLift = engineHandTunedLiftMultiplier(c);
     lines.push(
-      `| ${c.n} | ${c.weightedN.toFixed(1)} | ${c.gpaBand} | ${c.satBand} | ${c.geoBand} | ${c.roundBand} | ${c.meanY.toFixed(2)} | ${c.weightedMeanY.toFixed(2)} | ${c.meanAnchor.toFixed(3)} | ${c.observedLiftMultiplier.toFixed(2)}× | ${engine.toFixed(2)}× | ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} |`,
+      `| ${c.n} | ${c.gpaBand} | ${c.satBand} | ${c.geoBand} | ${c.roundBand} | ${(c.meanAnchor * 100).toFixed(1)}% | ${(c.weightedMeanY * 100).toFixed(1)}% (${(c.ciLow * 100).toFixed(0)}-${(c.ciHigh * 100).toFixed(0)}) | ${(c.engineP * 100).toFixed(1)}% | ${c.probDeltaPp >= 0 ? '+' : ''}${c.probDeltaPp.toFixed(1)} | ${obsLiftStr} | ${engineLift.toFixed(2)}× |`,
     );
   }
-
   lines.push('');
-  lines.push(`## Big calibration gaps (cells with n ≥ 10 and |delta| > 0.5)`);
+  lines.push('## Top calibration gaps (n ≥ 30, |probDelta_pp| > 10)');
   lines.push('');
-  const bigGap = cellsWithN10Plus
-    .map((c) => ({
-      c,
-      delta: c.observedLiftMultiplier - engineHandTunedLiftMultiplier(c),
-    }))
-    .filter((x) => Math.abs(x.delta) > 0.5)
-    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const bigGap = cellsWithN30Plus
+    .filter((c) => Math.abs(c.probDeltaPp) > 10)
+    .sort((a, b) => Math.abs(b.probDeltaPp) - Math.abs(a.probDeltaPp));
   if (bigGap.length === 0) {
-    lines.push('_No cells with absolute delta > 0.5×._');
+    lines.push('_No high-confidence cells with |probDelta_pp| > 10._');
   } else {
-    for (const { c, delta } of bigGap) {
+    for (const c of bigGap) {
       const direction =
-        delta > 0
-          ? 'engine UNDER-credits this cell'
-          : 'engine OVER-credits this cell';
+        c.probDeltaPp > 0 ? 'engine UNDER-predicts' : 'engine OVER-predicts';
       lines.push(
-        `- **${c.gpaBand} × ${c.satBand} × ${c.geoBand} × ${c.roundBand}** (n=${c.n}): observed ${c.observedLiftMultiplier.toFixed(2)}× vs engine ${engineHandTunedLiftMultiplier(c).toFixed(2)}× — Δ ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} (${direction})`,
+        `- **${c.gpaBand} × ${c.satBand} × ${c.geoBand} × ${c.roundBand}** (n=${c.n}): observed ${(c.weightedMeanY * 100).toFixed(1)}% vs engine ${(c.engineP * 100).toFixed(1)}% — Δ ${c.probDeltaPp >= 0 ? '+' : ''}${c.probDeltaPp.toFixed(1)}pp (${direction}); 95% CI ${(c.ciLow * 100).toFixed(0)}-${(c.ciHigh * 100).toFixed(0)}%`,
       );
     }
   }
 
   lines.push('');
-  lines.push('## Per-axis marginal lift (collapsing over other axes)');
-  lines.push('');
-  lines.push(
-    'For each band on a single axis, weighted-average observed lift over all cells containing that band. Compare to the hand-tuned per-axis multiplier.',
-  );
-  lines.push('');
-
-  const axes: Array<{
-    name: string;
-    band: keyof CellStats;
-    handTuned: Record<string, number>;
-  }> = [
-    {
-      name: 'GPA',
-      band: 'gpaBand',
-      handTuned: ENGINE_HAND_TUNED.gpa as Record<string, number>,
-    },
-    {
-      name: 'SAT',
-      band: 'satBand',
-      handTuned: ENGINE_HAND_TUNED.sat as Record<string, number>,
-    },
-    {
-      name: 'Geo',
-      band: 'geoBand',
-      handTuned: ENGINE_HAND_TUNED.geo as Record<string, number>,
-    },
-    {
-      name: 'Round',
-      band: 'roundBand',
-      handTuned: ENGINE_HAND_TUNED.round as Record<string, number>,
-    },
-  ];
-  for (const axis of axes) {
-    lines.push(`### ${axis.name}`);
-    lines.push('');
-    lines.push(
-      '| band | n cells | total n | weighted-avg observedLift | hand-tuned | delta |',
-    );
-    lines.push('|---|---|---|---|---|---|');
-    const byBand: Record<
-      string,
-      { cells: number; n: number; lifts: number[]; weights: number[] }
-    > = {};
-    for (const c of stats) {
-      const b = c[axis.band] as string;
-      byBand[b] = byBand[b] || { cells: 0, n: 0, lifts: [], weights: [] };
-      byBand[b].cells++;
-      byBand[b].n += c.n;
-      byBand[b].lifts.push(c.observedLiftMultiplier);
-      byBand[b].weights.push(c.weightedN);
-    }
-    for (const band of Object.keys(byBand).sort()) {
-      const v = byBand[band];
-      const wAvg = weightedMean(v.lifts, v.weights);
-      const hand = axis.handTuned[band] ?? 1.0;
-      const delta = wAvg - hand;
-      lines.push(
-        `| ${band} | ${v.cells} | ${v.n} | ${wAvg.toFixed(2)}× | ${hand.toFixed(2)}× | ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} |`,
-      );
-    }
-    lines.push('');
-  }
-
   lines.push('## Caveats');
   lines.push('');
   lines.push(
-    '- **Per-axis marginals are tangled**: the marginal observed lift for `gpa.above_75` includes the lift contributions of whatever sat / geo / round bands those cases came from. The hand-tuned multipliers are designed to be composed multiplicatively, while observed lifts are jointly determined. The marginal table is directional, not literal — only a fitted regression (next PR) can decompose properly.',
+    '- **Per-axis marginal table intentionally dropped from v2.** Marginal averages over the 4 axes are jointly determined — collapsing them produces misleading numbers (v1 reported `gpa.25_50` lift 10× because those cells happened to co-occur with strong SAT). Only fitted regression (Step 2) can decompose per-axis cleanly.',
   );
   lines.push(
-    '- **Self-selection bias is partially uncorrected**. The propensity reweighting is per-tier only; it does not correct for within-tier selection (e.g. who self-reports a rejection vs admit). A full propensity model would condition on more features.',
+    '- **Self-selection bias is partially uncorrected.** Propensity reweighting is per-tier only; does not condition on within-tier features. A full propensity model (Step 2) will condition on more axes.',
   );
   lines.push(
-    `- **n=${totalN} is small** for multi-dimensional cells. Cells with n < 10 are excluded from the per-cell table. Cells with n < 30 should still be treated as directional, not definitive.`,
+    `- **n=${totalN} usable rows** for 4-dimensional cells. Cells with n < 30 are in the "directional" table, not the high-confidence one.`,
   );
   lines.push(
-    "- **Anchor resolution is simplified**: this script does not exactly replicate the engine's anchor logic (no CDS-band cell lookup, no `gpaDistribution`-based anchor refinement, no hook adjustments). It uses the school-level CDS admit rate with round / intl / OOS overrides.",
+    '- **Anchor resolution is simplified** — school-level CDS rate with round / intl / OOS overrides. No CDS-band cell lookup, no `gpaDistribution`-based anchor refinement, no hook log-odds shifts.',
   );
   lines.push(
     '- **Population admit rate per tier is a rough estimate** (T5: 5%, T6-20: 10%, T21-50: 25%, T51-100: 55%, T100+: 70%). Per-school CDS-derived rates would tighten the propensity correction.',
   );
   lines.push(
-    '- **Round bucketing**: REA / SCEA are bucketed separately from EA. ED2 is bucketed separately from ED.',
+    '- **Round bucketing**: REA / SCEA bucketed separately from EA. ED2 separately from ED.',
+  );
+  lines.push(
+    '- **Bootstrap CI uses a deterministic seed** (Mulberry32, seed=17) for reproducibility — same data → same CIs across runs.',
+  );
+  lines.push(
+    '- **Invariants enforced at runtime**: every anchor ∈ (0, 1); every weight ∈ [0.05, 5]; every observed_p ∈ [0, 1]; every engine_p ∈ [0, 1]. Script throws on violation.',
   );
 
   writeFileSync(path, lines.join('\n'));
