@@ -50,8 +50,12 @@ tmp
 temp
 .tmp-runtime-audit/
 
-# Claude Code
-.claude/
+# Claude Code — most config is per-developer, but skill playbooks are
+# project conventions that should travel with the repo. Track the skills
+# directory; ignore everything else under .claude/.
+.claude/*
+!.claude/skills/
+!.claude/skills/**
 
 .vercel
 .env*.local
