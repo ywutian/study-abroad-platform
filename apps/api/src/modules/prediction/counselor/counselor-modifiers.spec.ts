@@ -897,7 +897,7 @@ describe('counselor modifiers launch guards', () => {
             acceptanceRate: 15.64,
           }),
           oosAcceptanceRate: 18, // > overall
-        } as any,
+        },
       );
       expect(result.label).toContain('Out-of-state');
       expect(result.multiplier).toBeLessThanOrEqual(1.3);
@@ -919,7 +919,7 @@ describe('counselor modifiers launch guards', () => {
             acceptanceRate: 30,
           }),
           oosAcceptanceRate: 80,
-        } as any,
+        },
       );
       expect(result.multiplier).toBe(1.3);
     });
