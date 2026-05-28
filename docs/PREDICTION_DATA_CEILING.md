@@ -7,6 +7,17 @@
 > findings. Until federal ACTS lands (2027+) or we acquire a commercial data
 > source, the engine's hand-tuned multipliers ARE the ceiling for non-UC
 > schools.
+>
+> **2026-05-28 update — case-gathering attempt**: dispatched 4 parallel agents
+> across Chinese forums (一亩三分地 / 知乎 / 小红书), English forums (Reddit
+> r/A2C / College Confidential), and consultancy / boarding / journalist
+> sources. Net yield: **84 structured cases + 8 aggregate-rate cells**, far
+> below the "10K-100K Chinese-source" hope. The volume that would move the
+> needle lives behind login walls (知乎 403, 1point3acres score-walls),
+> JS-SPA databases (Offer多多), and crawler blocks (Reddit) that WebSearch /
+> WebFetch cannot penetrate. Reachable only via authenticated headless-browser
+> automation, which raises ToS questions. The pipeline to ingest such data is
+> built (`merge-external-admit-cases.ts`) and ready when/if the volume arrives.
 
 ## Why this doc exists
 

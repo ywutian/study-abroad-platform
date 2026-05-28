@@ -79,6 +79,12 @@ apps/api/gold-cases/counselor-calibration/reports/
 # (caseId only, no userId, no name) but kept out of git as a safety belt.
 apps/api/scripts/training-data/
 
+# Externally-gathered admit cases (forum / social self-reports). Raw agent
+# dumps stay OUT of git for ToS / provenance reasons — only the merge script
+# is committed; re-run it locally to regenerate the corpus.
+apps/api/scripts/external-cases-raw/*
+!apps/api/scripts/external-cases-raw/.gitkeep
+
 # Generated outputs (large binary/asset dumps, not source)
 outputs/
 
