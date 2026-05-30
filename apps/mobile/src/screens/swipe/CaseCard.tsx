@@ -8,7 +8,16 @@ import { useTranslation } from 'react-i18next';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  shadows,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { RankingBadge } from '@/components/ui';
 
 import { SwipeCaseDto, CARD_HEIGHT, getTierBgColor } from './types';
@@ -60,7 +69,12 @@ export default function CaseCard({
         <View style={styles.metaRow}>
           {caseData.year > 0 && (
             <View style={[styles.metaChip, { backgroundColor: c.muted }]}>
-              <Text style={[styles.metaText, { color: c.foregroundSecondary }]}>
+              <Text
+                style={[
+                  styles.metaText,
+                  { color: c.foregroundSecondary, fontFamily: fontFamily.mono },
+                ]}
+              >
                 {caseData.year}
               </Text>
             </View>
@@ -136,7 +150,10 @@ export default function CaseCard({
         {caseData.activityHighlights && caseData.activityHighlights.length > 0 && (
           <View style={styles.chipsRow}>
             {caseData.activityHighlights.slice(0, 3).map((hl, i) => (
-              <View key={i} style={[styles.chip, { backgroundColor: c.primary + '12' }]}>
+              <View
+                key={i}
+                style={[styles.chip, { backgroundColor: withOpacity(c.primary, 0.07) }]}
+              >
                 <Text style={[styles.chipText, { color: c.primary }]} numberOfLines={1}>
                   {hl}
                 </Text>
@@ -173,7 +190,7 @@ export default function CaseCard({
           <Animated.View
             style={[
               styles.directionOverlay,
-              { backgroundColor: c.success + '15' },
+              { backgroundColor: withOpacity(c.success, 0.082) },
               admitOverlayStyle,
             ]}
             pointerEvents="none"
@@ -187,7 +204,7 @@ export default function CaseCard({
           <Animated.View
             style={[
               styles.directionOverlay,
-              { backgroundColor: c.error + '15' },
+              { backgroundColor: withOpacity(c.error, 0.082) },
               rejectOverlayStyle,
             ]}
             pointerEvents="none"
@@ -201,7 +218,7 @@ export default function CaseCard({
           <Animated.View
             style={[
               styles.directionOverlay,
-              { backgroundColor: c.warning + '15' },
+              { backgroundColor: withOpacity(c.warning, 0.082) },
               waitlistOverlayStyle,
             ]}
             pointerEvents="none"
@@ -292,6 +309,7 @@ const styles = StyleSheet.create({
   gridValue: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   summarySection: {
     paddingHorizontal: spacing.lg,

@@ -5,7 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { Clipboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { Loading } from '@/components/ui';
 import { StatsRow } from '@/components/ui/StatsRow';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -61,6 +69,7 @@ export default function ReferralScreen() {
               style={[styles.copyButton, { backgroundColor: withOpacity(colors.primary, 0.1) }]}
               accessibilityRole="button"
               accessibilityLabel={t('referral.copy')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons name="copy-outline" size={18} color={colors.primary} />
               <Text style={[styles.copyText, { color: colors.primary }]}>{t('referral.copy')}</Text>
@@ -90,7 +99,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: fontWeight.bold,
     letterSpacing: 4,
-    fontFamily: 'monospace',
+    fontFamily: fontFamily.mono,
     marginBottom: spacing.lg,
   },
   copyButton: {

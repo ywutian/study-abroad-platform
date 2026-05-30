@@ -35,7 +35,15 @@ import { useToast } from '@/components/ui/Toast';
 import { useDebouncedSearch } from '@/hooks/api';
 import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
 import type { School, PaginatedResponse } from '@/types';
 
@@ -314,6 +322,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
 // ============== Helpers ==============
 
 function formatTuition(tuition: number): string {
+  if (tuition == null || !Number.isFinite(tuition)) return '—';
   if (tuition >= 1000) {
     return `$${(tuition / 1000).toFixed(0)}k`;
   }
@@ -629,7 +638,7 @@ export default function FindCollegePage() {
                   {item.media?.campusCover?.url ? (
                     <Image
                       source={{ uri: item.media.campusCover.url }}
-                      style={styles.coverThumb}
+                      style={[styles.coverThumb, { backgroundColor: colors.muted }]}
                       resizeMode="cover"
                     />
                   ) : null}
@@ -672,6 +681,11 @@ export default function FindCollegePage() {
                   disabled={isMutating}
                   style={styles.heartButton}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isInList ? t('findCollege.removedFromList') : t('findCollege.addedToList')
+                  }
+                  accessibilityState={{ selected: isInList }}
                 >
                   <Ionicons
                     name={isInList ? 'heart' : 'heart-outline'}
@@ -788,11 +802,21 @@ export default function FindCollegePage() {
           <TouchableOpacity
             onPress={() => setFilterModalVisible(true)}
             style={[styles.filterButton, { backgroundColor: colors.muted }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('findCollege.filters.title')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Ionicons name="options" size={20} color={colors.foreground} />
             {activeFilterCount > 0 && (
               <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+                <Text
+                  style={[
+                    styles.filterBadgeText,
+                    { color: colors.primaryForeground, fontFamily: fontFamily.mono },
+                  ]}
+                >
+                  {activeFilterCount}
+                </Text>
               </View>
             )}
           </TouchableOpacity>
@@ -811,10 +835,13 @@ export default function FindCollegePage() {
               <TouchableOpacity
                 key={chip.key}
                 onPress={() => setFilterModalVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel={chip.label}
+                accessibilityState={{ selected: active }}
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: active ? colors.primary + '15' : colors.muted,
+                    backgroundColor: active ? withOpacity(colors.primary, 0.08) : colors.muted,
                     borderColor: active ? colors.primary : 'transparent',
                   },
                 ]}
@@ -847,11 +874,14 @@ export default function FindCollegePage() {
               <TouchableOpacity
                 key={tag.key}
                 onPress={() => removeFilterTag(tag.key)}
+                accessibilityRole="button"
+                accessibilityLabel={tag.label}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                 style={[
                   styles.tag,
                   {
-                    backgroundColor: colors.primary + '10',
-                    borderColor: colors.primary + '30',
+                    backgroundColor: withOpacity(colors.primary, 0.0625),
+                    borderColor: withOpacity(colors.primary, 0.19),
                   },
                 ]}
               >
@@ -949,7 +979,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterBadgeText: {
-    color: '#fff9ef',
     fontSize: 10,
     fontWeight: fontWeight.bold,
   },
@@ -1037,7 +1066,6 @@ const styles = StyleSheet.create({
     width: 92,
     height: 64,
     borderRadius: borderRadius.md,
-    backgroundColor: '#e5e7eb',
   },
   logoOverlay: {
     position: 'absolute',

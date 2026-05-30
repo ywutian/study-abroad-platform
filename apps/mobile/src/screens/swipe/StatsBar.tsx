@@ -14,7 +14,15 @@ import * as Haptics from 'expo-haptics';
 
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  shadows,
+  fontFamily,
+} from '@/utils/theme';
 
 import { SwipeStatsDto } from './types';
 
@@ -38,7 +46,7 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
       style={[styles.statsBar, { backgroundColor: c.card, borderColor: c.border }]}
     >
       <View style={styles.statItem}>
-        <Text style={[styles.statValue, { color: c.primary }]}>
+        <Text style={[styles.statValue, { color: c.primary, fontFamily: fontFamily.mono }]}>
           {stats ? `${Math.round(stats.accuracy)}%` : '--'}
         </Text>
         <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>{t('swipe.accuracy')}</Text>
@@ -47,7 +55,7 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
       <View style={[styles.statDivider, { backgroundColor: c.border }]} />
 
       <View style={styles.statItem}>
-        <Text style={[styles.statValue, { color: c.foreground }]}>
+        <Text style={[styles.statValue, { color: c.foreground, fontFamily: fontFamily.mono }]}>
           {stats ? `${stats.correctCount}/${stats.totalSwipes}` : '--'}
         </Text>
         <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>
@@ -61,6 +69,9 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
           onShowStats();
         }}
         style={[styles.statsToggle, { backgroundColor: c.muted }]}
+        accessibilityRole="button"
+        accessibilityLabel={t('swipe.statsTitle')}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Ionicons name="bar-chart-outline" size={18} color={c.foreground} />
       </TouchableOpacity>

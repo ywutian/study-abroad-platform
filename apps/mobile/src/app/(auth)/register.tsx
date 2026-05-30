@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -179,7 +172,11 @@ export default function RegisterScreen() {
           <Text style={[styles.footerText, { color: colors.foregroundMuted }]}>
             {t('auth.register.hasAccount')}
           </Text>
-          <Link href="/(auth)/login">
+          <Link
+            href="/(auth)/login"
+            accessibilityRole="link"
+            accessibilityLabel={t('auth.register.signIn')}
+          >
             <Text style={[styles.footerLink, { color: colors.primary }]}>
               {t('auth.register.signIn')}
             </Text>

@@ -23,11 +23,11 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Avatar, Loading } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
+import { chatRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useChatSocket } from '@/hooks/useChatSocket';
-import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, borderRadius, fontFamily } from '@/utils/theme';
 import type { Conversation, Message } from '@/types';
 
 // Date separator helper
@@ -111,6 +111,7 @@ const MessageBubble = memo(function MessageBubble({
                   styles.messageTime,
                   {
                     color: isMe ? colors.onGradientMuted : colors.foregroundMuted,
+                    fontFamily: fontFamily.mono,
                   },
                 ]}
               >
@@ -405,7 +406,12 @@ export default function ChatScreen() {
                   ]}
                 />
               )}
-              <TouchableOpacity style={styles.headerButton}>
+              <TouchableOpacity
+                style={styles.headerButton}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.more')}
+              >
                 <Ionicons name="ellipsis-vertical" size={20} color={colors.foreground} />
               </TouchableOpacity>
             </View>
@@ -451,9 +457,15 @@ export default function ChatScreen() {
           <Animated.View entering={FadeInDown.duration(200)} style={styles.scrollBottomContainer}>
             <TouchableOpacity
               onPress={scrollToBottom}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
               style={[
                 styles.scrollBottomButton,
-                { backgroundColor: colors.card, borderColor: colors.border },
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  shadowColor: colors.shadow,
+                },
               ]}
             >
               <Ionicons name="chevron-down" size={20} color={colors.primary} />
@@ -465,9 +477,16 @@ export default function ChatScreen() {
         {isOtherTyping && (
           <View style={[styles.typingContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.typingText, { color: colors.foregroundMuted }]}>
-              {isGroupConversation
-                ? `${conversation?.participantCount || conversation?.participants.length || 0} ${t('chat.typing')}`
-                : t('chat.typing')}
+              {isGroupConversation ? (
+                <>
+                  <Text style={{ fontFamily: fontFamily.mono }}>
+                    {conversation?.participantCount || conversation?.participants.length || 0}
+                  </Text>
+                  {` ${t('chat.typing')}`}
+                </>
+              ) : (
+                t('chat.typing')
+              )}
             </Text>
           </View>
         )}
@@ -497,6 +516,10 @@ export default function ChatScreen() {
             <TouchableOpacity
               onPress={handleSend}
               disabled={!input.trim() || isSending}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('chat.send')}
+              accessibilityState={{ disabled: !input.trim() || isSending }}
               style={[
                 styles.sendButton,
                 {
@@ -663,7 +686,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     shadowOpacity: 0.1,

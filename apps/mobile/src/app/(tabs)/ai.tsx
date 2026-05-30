@@ -21,7 +21,7 @@ import { Segment } from '@/components/ui/Tabs';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import type { AiChatMessage } from '@/types';
 
 type AgentMode = 'auto' | 'essay' | 'school' | 'profile' | 'timeline';
@@ -346,7 +346,7 @@ export default function AIScreen() {
       {/* Messages */}
       {messages.length === 0 ? (
         <ScrollView style={styles.emptyContainer} contentContainerStyle={styles.emptyContent}>
-          <View style={[styles.welcomeIcon, { backgroundColor: colors.primary + '20' }]}>
+          <View style={[styles.welcomeIcon, { backgroundColor: withOpacity(colors.primary, 0.2) }]}>
             <Ionicons name="sparkles" size={48} color={colors.primary} />
           </View>
           <Text style={[styles.welcomeTitle, { color: colors.foreground }]}>

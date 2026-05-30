@@ -33,7 +33,15 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  withOpacity,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+} from '@/utils/theme';
 import { forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
@@ -297,7 +305,7 @@ export default function ForumPostDetailPage() {
             width: size,
             height: size,
             borderRadius: size / 2,
-            backgroundColor: c.primary + '20',
+            backgroundColor: withOpacity(c.primary, 0.125),
           },
         ]}
       >
@@ -331,11 +339,20 @@ export default function ForumPostDetailPage() {
               <TouchableOpacity
                 onPress={() => setDeleteDialogVisible(true)}
                 style={styles.headerActionBtn}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('forum.deletePostTitle')}
               >
                 <Ionicons name="trash-outline" size={20} color={c.error} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={handleReport} style={styles.headerActionBtn}>
+            <TouchableOpacity
+              onPress={handleReport}
+              style={styles.headerActionBtn}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('forum.reportTitle')}
+            >
               <Ionicons name="flag-outline" size={20} color={c.foregroundMuted} />
             </TouchableOpacity>
           </View>
@@ -347,7 +364,9 @@ export default function ForumPostDetailPage() {
             <Badge
               variant="secondary"
               style={
-                post.category.color ? { backgroundColor: post.category.color + '20' } : undefined
+                post.category.color
+                  ? { backgroundColor: withOpacity(post.category.color, 0.125) }
+                  : undefined
               }
             >
               {post.category.icon ? `${post.category.icon} ` : ''}
@@ -403,13 +422,20 @@ export default function ForumPostDetailPage() {
             onPress={() => likeMutation.mutate()}
             disabled={likeMutation.isPending}
             style={styles.likeButton}
+            accessibilityRole="button"
+            accessibilityState={{ selected: post.isLiked }}
           >
             <Ionicons
               name={post.isLiked ? 'heart' : 'heart-outline'}
               size={22}
               color={post.isLiked ? c.error : c.foregroundMuted}
             />
-            <Text style={[styles.likeCount, { color: post.isLiked ? c.error : c.foregroundMuted }]}>
+            <Text
+              style={[
+                styles.likeCount,
+                { color: post.isLiked ? c.error : c.foregroundMuted, fontFamily: fontFamily.mono },
+              ]}
+            >
               {post.likeCount}
             </Text>
           </TouchableOpacity>
@@ -417,13 +443,23 @@ export default function ForumPostDetailPage() {
           <View style={styles.statsBarRight}>
             <View style={styles.statIconRow}>
               <Ionicons name="chatbubble-outline" size={18} color={c.foregroundMuted} />
-              <Text style={[styles.statBarText, { color: c.foregroundMuted }]}>
+              <Text
+                style={[
+                  styles.statBarText,
+                  { color: c.foregroundMuted, fontFamily: fontFamily.mono },
+                ]}
+              >
                 {post.commentCount}
               </Text>
             </View>
             <View style={styles.statIconRow}>
               <Ionicons name="eye-outline" size={18} color={c.foregroundMuted} />
-              <Text style={[styles.statBarText, { color: c.foregroundMuted }]}>
+              <Text
+                style={[
+                  styles.statBarText,
+                  { color: c.foregroundMuted, fontFamily: fontFamily.mono },
+                ]}
+              >
                 {post.viewCount}
               </Text>
             </View>
@@ -460,7 +496,12 @@ export default function ForumPostDetailPage() {
                   <Text style={[styles.teamProgressText, { color: c.foregroundSecondary }]}>
                     {t('forum.teamMembers')}
                   </Text>
-                  <Text style={[styles.teamProgressValue, { color: c.foreground }]}>
+                  <Text
+                    style={[
+                      styles.teamProgressValue,
+                      { color: c.foreground, fontFamily: fontFamily.mono },
+                    ]}
+                  >
                     {post.currentSize ?? 0} / {post.teamSize}
                   </Text>
                 </View>
@@ -525,7 +566,12 @@ export default function ForumPostDetailPage() {
           <View style={styles.commentBody}>
             <View style={styles.commentMeta}>
               <Text style={[styles.commentAuthor, { color: c.foreground }]}>{authorName}</Text>
-              <Text style={[styles.commentTime, { color: c.foregroundMuted }]}>
+              <Text
+                style={[
+                  styles.commentTime,
+                  { color: c.foregroundMuted, fontFamily: fontFamily.mono },
+                ]}
+              >
                 {timeAgo(comment.createdAt)}
               </Text>
             </View>
@@ -537,6 +583,9 @@ export default function ForumPostDetailPage() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
                 style={styles.replyBtn}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={t('forum.replyingTo', { name: authorName })}
               >
                 <Ionicons name="arrow-undo-outline" size={14} color={c.primary} />
                 <Text style={[styles.replyBtnText, { color: c.primary }]}>{t('forum.reply')}</Text>
@@ -618,11 +667,18 @@ export default function ForumPostDetailPage() {
       >
         {/* Reply indicator */}
         {replyTo && (
-          <View style={[styles.replyIndicator, { backgroundColor: c.primary + '10' }]}>
+          <View
+            style={[styles.replyIndicator, { backgroundColor: withOpacity(c.primary, 0.0625) }]}
+          >
             <Text style={[styles.replyIndicatorText, { color: c.primary }]}>
               {t('forum.replyingTo', { name: replyTo.authorName })}
             </Text>
-            <TouchableOpacity onPress={() => setReplyTo(null)}>
+            <TouchableOpacity
+              onPress={() => setReplyTo(null)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('forum.cancel')}
+            >
               <Ionicons name="close-circle" size={18} color={c.primary} />
             </TouchableOpacity>
           </View>

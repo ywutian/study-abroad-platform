@@ -19,12 +19,12 @@ export default function ResumeScreen() {
   });
 
   return (
-    <PageContainer onRefresh={() => {}}>
+    <PageContainer onRefresh={() => {}} variant="tool">
       <PageHeader
         title={t('resume.title')}
         description={t('resume.description')}
         icon="document-text-outline"
-        color="#1d1813"
+        variant="tool"
       />
       {isLoading ? (
         <Loading />

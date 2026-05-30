@@ -3,7 +3,7 @@
  */
 import { Dimensions } from 'react-native';
 
-import { spacing } from '@/utils/theme';
+import { spacing, withOpacity } from '@/utils/theme';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -87,10 +87,10 @@ export function getTierColor(rank?: number): string {
 }
 
 export function getTierBgColor(rank?: number): string {
-  if (!rank) return '#1d1813' + '12';
-  if (rank <= 10) return '#6574ff' + '15';
-  if (rank <= 25) return '#3b82f6' + '12';
-  if (rank <= 50) return '#6f7b58' + '10';
-  if (rank <= 100) return '#f59e0b' + '10';
-  return '#64748b' + '10';
+  if (!rank) return withOpacity('#1d1813', 0.07);
+  if (rank <= 10) return withOpacity('#6574ff', 0.082);
+  if (rank <= 25) return withOpacity('#3b82f6', 0.07);
+  if (rank <= 50) return withOpacity('#6f7b58', 0.0625);
+  if (rank <= 100) return withOpacity('#f59e0b', 0.0625);
+  return withOpacity('#64748b', 0.0625);
 }

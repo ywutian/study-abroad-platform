@@ -8,9 +8,9 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AnimatedCard, Badge, RankingBadge } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import type { GalleryEssay } from './types';
-import { RESULT_COLORS, resultBadgeVariant } from './types';
+import { resultBadgeVariant, useResultColors } from './types';
 
 interface EssayCardProps {
   item: GalleryEssay;
@@ -21,7 +21,8 @@ interface EssayCardProps {
 export const EssayCard = React.memo(function EssayCard({ item, index, onPress }: EssayCardProps) {
   const { t } = useTranslation();
   const c = useColors();
-  const resultColor = RESULT_COLORS[item.result] || c.foregroundMuted;
+  const resultColors = useResultColors();
+  const resultColor = resultColors[item.result] || c.foregroundMuted;
 
   const typeLabel = useCallback(
     (type: string) => {
@@ -53,7 +54,11 @@ export const EssayCard = React.memo(function EssayCard({ item, index, onPress }:
 
   return (
     <Animated.View entering={FadeInUp.delay(index * 50).springify()}>
-      <AnimatedCard onPress={() => onPress(item.id)} style={S.essayCard}>
+      <AnimatedCard
+        onPress={() => onPress(item.id)}
+        style={S.essayCard}
+        accessibilityLabel={`${item.school?.name || t('essayGallery.unknownSchool')}, ${resultLabel(item.result)}, ${item.year}`}
+      >
         <View style={S.essayCardInner}>
           {/* Left color indicator bar */}
           <View style={[S.resultBar, { backgroundColor: resultColor }]} />
@@ -72,8 +77,8 @@ export const EssayCard = React.memo(function EssayCard({ item, index, onPress }:
               </View>
               {item.isVerified && (
                 <View style={S.verifiedBadge}>
-                  <Ionicons name="checkmark-circle" size={16} color={RESULT_COLORS.ADMITTED} />
-                  <Text style={[S.verifiedText, { color: RESULT_COLORS.ADMITTED }]}>
+                  <Ionicons name="checkmark-circle" size={16} color={resultColors.ADMITTED} />
+                  <Text style={[S.verifiedText, { color: resultColors.ADMITTED }]}>
                     {t('essayGallery.verified')}
                   </Text>
                 </View>
@@ -176,6 +181,7 @@ const S = StyleSheet.create({
   },
   yearText: {
     fontSize: fontSize.xs,
+    fontFamily: fontFamily.mono,
   },
   previewText: {
     fontSize: fontSize.sm,

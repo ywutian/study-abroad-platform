@@ -36,7 +36,15 @@ import {
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { API_ROUTES, forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
@@ -510,6 +518,7 @@ export default function ForumPage() {
             onPress={() => {
               router.push(`/forum/${item.id}`);
             }}
+            accessibilityLabel={`${item.title}, ${authorName}`}
             style={[
               styles.postCard,
               item.isPinned && { borderLeftWidth: 3, borderLeftColor: c.warning },
@@ -536,7 +545,7 @@ export default function ForumPage() {
                     variant="secondary"
                     style={
                       item.category?.color
-                        ? { backgroundColor: item.category.color + '20' }
+                        ? { backgroundColor: withOpacity(item.category.color, 0.125) }
                         : undefined
                     }
                   >
@@ -564,7 +573,9 @@ export default function ForumPage() {
 
               {/* Team info snippet */}
               {item.isTeamPost && item.teamSize && (
-                <View style={[styles.teamInfoRow, { backgroundColor: c.primary + '08' }]}>
+                <View
+                  style={[styles.teamInfoRow, { backgroundColor: withOpacity(c.primary, 0.03) }]}
+                >
                   <Ionicons name="people-outline" size={14} color={c.primary} />
                   <Text style={[styles.teamInfoText, { color: c.primary }]}>
                     {item.currentSize ?? 0}/{item.teamSize} {t('forum.members')}
@@ -581,7 +592,12 @@ export default function ForumPage() {
               {/* Footer: author, time, stats */}
               <View style={styles.postFooter}>
                 <View style={styles.authorRow}>
-                  <View style={[styles.avatarPlaceholder, { backgroundColor: c.primary + '20' }]}>
+                  <View
+                    style={[
+                      styles.avatarPlaceholder,
+                      { backgroundColor: withOpacity(c.primary, 0.125) },
+                    ]}
+                  >
                     <Text style={[styles.avatarInitial, { color: c.primary }]}>
                       {authorName.charAt(0).toUpperCase()}
                     </Text>
@@ -770,7 +786,7 @@ export default function ForumPage() {
               <TouchableOpacity
                 key={tag}
                 onPress={() => removeTag(tag)}
-                style={[styles.tagRemovable, { backgroundColor: c.primary + '15' }]}
+                style={[styles.tagRemovable, { backgroundColor: withOpacity(c.primary, 0.08) }]}
               >
                 <Text style={[styles.tagRemovableText, { color: c.primary }]}>#{tag}</Text>
                 <Ionicons name="close" size={14} color={c.primary} />
@@ -845,6 +861,7 @@ export default function ForumPage() {
               setCreateModalVisible(true);
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             }}
+            accessibilityLabel={t('forum.createPost')}
             style={[styles.fabInner, { backgroundColor: c.primary }]}
           >
             <Ionicons name="add" size={28} color={c.primaryForeground} />
@@ -889,6 +906,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   statLabel: {
     fontSize: fontSize.xs,
@@ -1035,6 +1053,7 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: fontSize.xs,
+    fontFamily: fontFamily.mono,
   },
 
   // FAB
@@ -1046,10 +1065,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    shadowOpacity: 0.2,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    shadowOpacity: 0.18,
+    elevation: 3,
   },
   fabInner: {
     width: 56,

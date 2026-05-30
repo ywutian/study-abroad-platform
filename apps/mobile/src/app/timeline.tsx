@@ -38,7 +38,15 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -409,7 +417,9 @@ export default function TimelinePage() {
                 { v: upcoming, l: t('timeline.overview.upcoming'), c: colors.warning },
               ].map((s) => (
                 <View key={s.l} style={styles.headerStat}>
-                  <Text style={[styles.headerStatVal, { color: s.c }]}>{s.v}</Text>
+                  <Text style={[styles.headerStatVal, { color: s.c, fontFamily: fontFamily.mono }]}>
+                    {s.v}
+                  </Text>
                   <Text style={[styles.headerStatLbl, { color: colors.foregroundMuted }]}>
                     {s.l}
                   </Text>
@@ -441,6 +451,7 @@ export default function TimelinePage() {
         <AnimatedCard
           style={[s.card, { borderLeftWidth: 3, borderLeftColor: statusColor(item.status) }]}
           onPress={() => toggle(item.id)}
+          accessibilityLabel={item.schoolName}
         >
           <CardContent>
             <View style={s.row}>
@@ -502,12 +513,14 @@ export default function TimelinePage() {
                 trackColor={colors.muted}
                 style={{ flex: 1 }}
               />
-              <Text style={[s.progTxt, { color: colors.foregroundMuted }]}>
+              <Text
+                style={[s.progTxt, { color: colors.foregroundMuted, fontFamily: fontFamily.mono }]}
+              >
                 {item.tasksCompleted}/{item.tasksTotal}
               </Text>
             </View>
             {open && (
-              <View style={s.expanded}>
+              <View style={[s.expanded, { borderTopColor: colors.border }]}>
                 <InlineTaskList
                   timelineId={item.id}
                   colors={colors}
@@ -591,7 +604,11 @@ export default function TimelinePage() {
             const total = ev.tasks?.length ?? 0;
             return (
               <Animated.View key={ev.id} entering={FadeInUp.delay(i * 60).springify()}>
-                <AnimatedCard style={s.card} onPress={() => toggleEvt(ev.id)}>
+                <AnimatedCard
+                  style={s.card}
+                  onPress={() => toggleEvt(ev.id)}
+                  accessibilityLabel={ev.title}
+                >
                   <CardContent>
                     <View
                       style={{
@@ -640,13 +657,18 @@ export default function TimelinePage() {
                           trackColor={colors.muted}
                           style={{ flex: 1 }}
                         />
-                        <Text style={[s.progTxt, { color: colors.foregroundMuted }]}>
+                        <Text
+                          style={[
+                            s.progTxt,
+                            { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+                          ]}
+                        >
                           {done}/{total}
                         </Text>
                       </View>
                     )}
                     {open && (
-                      <View style={s.expanded}>
+                      <View style={[s.expanded, { borderTopColor: colors.border }]}>
                         {ev.notes ? (
                           <Text
                             style={[
@@ -741,6 +763,7 @@ export default function TimelinePage() {
                           fontSize: fontSize.xl,
                           fontWeight: fontWeight.bold,
                           color: colors.foreground,
+                          fontFamily: fontFamily.mono,
                         }}
                       >
                         {new Date(ge.eventDate).getDate()}
@@ -831,7 +854,12 @@ export default function TimelinePage() {
                 <CardContent style={{ alignItems: 'center', gap: spacing.xs }}>
                   <Ionicons name={st.i} size={22} color={st.c} />
                   <Text
-                    style={{ fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: st.c }}
+                    style={{
+                      fontSize: fontSize['2xl'],
+                      fontWeight: fontWeight.bold,
+                      color: st.c,
+                      fontFamily: fontFamily.mono,
+                    }}
                   >
                     {st.v}
                   </Text>
@@ -922,8 +950,8 @@ export default function TimelinePage() {
                   padding: spacing.md,
                   borderRadius: borderRadius.md,
                   borderWidth: 1,
-                  borderColor: colors.error + '20',
-                  backgroundColor: colors.error + '08',
+                  borderColor: withOpacity(colors.error, 0.125),
+                  backgroundColor: withOpacity(colors.error, 0.03),
                   marginBottom: spacing.sm,
                 }}
               >
@@ -1176,7 +1204,6 @@ const s = StyleSheet.create({
   expanded: {
     marginTop: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
     paddingTop: spacing.md,
   },
   sectionHdr: {

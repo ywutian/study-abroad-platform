@@ -13,11 +13,12 @@ import { recommendationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import {
   useColors,
-  colors as themeColors,
+  withOpacity,
   spacing,
   fontSize,
   fontWeight,
   borderRadius,
+  fontFamily,
 } from '@/utils/theme';
 
 import { SchoolCard } from './SchoolCard';
@@ -175,12 +176,16 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
         <LinearGradient
           colors={
             profileComplete
-              ? [colors.success + '20', colors.success + '08']
-              : [colors.warning + '20', colors.warning + '08']
+              ? [withOpacity(colors.success, 0.125), withOpacity(colors.success, 0.03)]
+              : [withOpacity(colors.warning, 0.125), withOpacity(colors.warning, 0.03)]
           }
           style={[
             styles.profileBanner,
-            { borderColor: profileComplete ? colors.success + '40' : colors.warning + '40' },
+            {
+              borderColor: profileComplete
+                ? withOpacity(colors.success, 0.25)
+                : withOpacity(colors.warning, 0.25),
+            },
           ]}
         >
           <View style={styles.profileBannerHeader}>
@@ -194,37 +199,73 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                 ? t('recommendation.profileComplete')
                 : t('recommendation.profileIncomplete')}
             </Text>
-            <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '15' }]}>
+            <View
+              style={[styles.pointsBadge, { backgroundColor: withOpacity(colors.primary, 0.08) }]}
+            >
               <Ionicons name="diamond-outline" size={14} color={colors.primary} />
-              <Text style={[styles.pointsText, { color: colors.primary }]}>{points}</Text>
+              <Text
+                style={[styles.pointsText, { color: colors.primary, fontFamily: fontFamily.mono }]}
+              >
+                {points}
+              </Text>
             </View>
           </View>
 
           {profileSummary && (
             <View style={styles.profileSummaryRow}>
               {profileSummary.gpa != null && (
-                <View style={[styles.summaryChip, { backgroundColor: colors.card }]}>
+                <View
+                  style={[
+                    styles.summaryChip,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                  ]}
+                >
                   <Text style={[styles.summaryChipLabel, { color: colors.foregroundMuted }]}>
                     GPA
                   </Text>
-                  <Text style={[styles.summaryChipValue, { color: colors.foreground }]}>
-                    {profileSummary.gpa.toFixed(2)}
+                  <Text
+                    style={[
+                      styles.summaryChipValue,
+                      { color: colors.foreground, fontFamily: fontFamily.mono },
+                    ]}
+                  >
+                    {profileSummary.gpa != null ? profileSummary.gpa.toFixed(2) : '—'}
                   </Text>
                 </View>
               )}
-              <View style={[styles.summaryChip, { backgroundColor: colors.card }]}>
+              <View
+                style={[
+                  styles.summaryChip,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
                 <Text style={[styles.summaryChipLabel, { color: colors.foregroundMuted }]}>
                   {t('recommendation.tests')}
                 </Text>
-                <Text style={[styles.summaryChipValue, { color: colors.foreground }]}>
+                <Text
+                  style={[
+                    styles.summaryChipValue,
+                    { color: colors.foreground, fontFamily: fontFamily.mono },
+                  ]}
+                >
                   {profileSummary.testCount}
                 </Text>
               </View>
-              <View style={[styles.summaryChip, { backgroundColor: colors.card }]}>
+              <View
+                style={[
+                  styles.summaryChip,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
                 <Text style={[styles.summaryChipLabel, { color: colors.foregroundMuted }]}>
                   {t('recommendation.activities')}
                 </Text>
-                <Text style={[styles.summaryChipValue, { color: colors.foreground }]}>
+                <Text
+                  style={[
+                    styles.summaryChipValue,
+                    { color: colors.foreground, fontFamily: fontFamily.mono },
+                  ]}
+                >
                   {profileSummary.activityCount}
                 </Text>
               </View>
@@ -362,8 +403,15 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
           <Text style={[styles.formLabel, { color: colors.foreground }]}>
             {t('recommendation.schoolCount')}
           </Text>
-          <View style={[styles.countBadge, { backgroundColor: colors.primary + '15' }]}>
-            <Text style={[styles.countBadgeText, { color: colors.primary }]}>{schoolCount}</Text>
+          <View style={[styles.countBadge, { backgroundColor: withOpacity(colors.primary, 0.08) }]}>
+            <Text
+              style={[
+                styles.countBadgeText,
+                { color: colors.primary, fontFamily: fontFamily.mono },
+              ]}
+            >
+              {schoolCount}
+            </Text>
           </View>
         </View>
         <View style={styles.schoolCountRow}>
@@ -391,7 +439,10 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                 <Text
                   style={[
                     styles.countOptionText,
-                    { color: isSelected ? colors.primaryForeground : colors.foreground },
+                    {
+                      color: isSelected ? colors.primaryForeground : colors.foreground,
+                      fontFamily: fontFamily.mono,
+                    },
                   ]}
                 >
                   {count}
@@ -438,7 +489,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
   const renderLoadingState = () => (
     <Animated.View entering={FadeInUp.duration(400).springify()} style={styles.loadingContainer}>
       <LinearGradient
-        colors={[colors.primary + '10', colors.primary + '05']}
+        colors={[withOpacity(colors.primary, 0.0625), withOpacity(colors.primary, 0.03)]}
         style={[styles.loadingCard, { borderColor: colors.border }]}
       >
         <Ionicons name="sparkles" size={40} color={colors.primary} style={styles.loadingIcon} />
@@ -462,7 +513,9 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             color={colors.primary}
             trackColor={colors.muted}
           />
-          <Text style={[styles.loadingPercent, { color: colors.primary }]}>
+          <Text
+            style={[styles.loadingPercent, { color: colors.primary, fontFamily: fontFamily.mono }]}
+          >
             {Math.round(loadingProgress)}%
           </Text>
         </View>
@@ -484,34 +537,67 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
         {/* Summary Card */}
         <Animated.View entering={FadeInDown.duration(400).springify()}>
           <LinearGradient
-            colors={[colors.primary, colors.primary + 'dd']}
+            colors={[colors.primary, withOpacity(colors.primary, 0.87)]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.summaryCard}
           >
             <View style={styles.summaryHeader}>
               <Ionicons name="sparkles" size={24} color={colors.onGradient} />
-              <Text style={styles.summaryTitle}>{t('recommendation.resultSummary')}</Text>
+              <Text style={[styles.summaryTitle, { color: colors.onGradient }]}>
+                {t('recommendation.resultSummary')}
+              </Text>
             </View>
-            <Text style={styles.summaryText}>{result.summary}</Text>
-            <Text style={styles.summaryHint}>{t('recommendation.strategyDisclaimer')}</Text>
+            <Text style={[styles.summaryText, { color: colors.onGradientMuted }]}>
+              {result.summary}
+            </Text>
+            <Text style={[styles.summaryHint, { color: colors.onGradientMuted }]}>
+              {t('recommendation.strategyDisclaimer')}
+            </Text>
 
             {/* Tier Counts */}
             <View style={styles.tierCountsRow}>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.reach.color }]} />
-                <Text style={styles.tierCountLabel}>{t('recommendation.tierReach')}</Text>
-                <Text style={styles.tierCountValue}>{reachCount}</Text>
+                <Text style={[styles.tierCountLabel, { color: colors.onGradientMuted }]}>
+                  {t('recommendation.tierReach')}
+                </Text>
+                <Text
+                  style={[
+                    styles.tierCountValue,
+                    { color: colors.onGradient, fontFamily: fontFamily.mono },
+                  ]}
+                >
+                  {reachCount}
+                </Text>
               </View>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.match.color }]} />
-                <Text style={styles.tierCountLabel}>{t('recommendation.tierMatch')}</Text>
-                <Text style={styles.tierCountValue}>{matchCount}</Text>
+                <Text style={[styles.tierCountLabel, { color: colors.onGradientMuted }]}>
+                  {t('recommendation.tierMatch')}
+                </Text>
+                <Text
+                  style={[
+                    styles.tierCountValue,
+                    { color: colors.onGradient, fontFamily: fontFamily.mono },
+                  ]}
+                >
+                  {matchCount}
+                </Text>
               </View>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.safety.color }]} />
-                <Text style={styles.tierCountLabel}>{t('recommendation.tierSafety')}</Text>
-                <Text style={styles.tierCountValue}>{safetyCount}</Text>
+                <Text style={[styles.tierCountLabel, { color: colors.onGradientMuted }]}>
+                  {t('recommendation.tierSafety')}
+                </Text>
+                <Text
+                  style={[
+                    styles.tierCountValue,
+                    { color: colors.onGradient, fontFamily: fontFamily.mono },
+                  ]}
+                >
+                  {safetyCount}
+                </Text>
               </View>
             </View>
           </LinearGradient>
@@ -680,6 +766,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
     alignItems: 'center',
   },
   summaryChipLabel: {
@@ -849,17 +936,14 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
-    color: themeColors.light.onGradient,
   },
   summaryText: {
     fontSize: fontSize.sm,
-    color: themeColors.light.onGradientMuted,
     lineHeight: fontSize.sm * 1.6,
     marginBottom: spacing.lg,
   },
   summaryHint: {
     fontSize: fontSize.xs,
-    color: themeColors.light.onGradientMuted,
     lineHeight: fontSize.xs * 1.5,
     marginTop: -spacing.sm,
     marginBottom: spacing.md,
@@ -884,12 +968,10 @@ const styles = StyleSheet.create({
   },
   tierCountLabel: {
     fontSize: fontSize.xs,
-    color: themeColors.light.onGradientMuted,
   },
   tierCountValue: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
-    color: themeColors.light.onGradient,
   },
 
   // School List Section

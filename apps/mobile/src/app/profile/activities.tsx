@@ -18,7 +18,15 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { Profile, Activity } from '@/types';
 
 const ACTIVITY_CATEGORIES = [
@@ -223,7 +231,10 @@ export default function ActivitiesScreen() {
                       <View
                         style={[
                           styles.iconBadge,
-                          { backgroundColor: getCategoryColor(activity.role) + '20' },
+                          {
+                            backgroundColor: withOpacity(getCategoryColor(activity.role), 0.125),
+                            borderColor: withOpacity(getCategoryColor(activity.role), 0.25),
+                          },
                         ]}
                       >
                         <Ionicons
@@ -255,6 +266,8 @@ export default function ActivitiesScreen() {
                         onPress={() => openEditModal(activity)}
                         style={styles.actionButton}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${t('common.edit')} ${activity.name}`}
                       >
                         <Ionicons name="pencil-outline" size={18} color={colors.primary} />
                       </TouchableOpacity>
@@ -262,6 +275,8 @@ export default function ActivitiesScreen() {
                         onPress={() => setDeleteTarget(activity)}
                         style={styles.actionButton}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${t('common.delete')} ${activity.name}`}
                       >
                         <Ionicons name="trash-outline" size={18} color={colors.error} />
                       </TouchableOpacity>
@@ -276,15 +291,21 @@ export default function ActivitiesScreen() {
                     </Text>
                   )}
                   {(activity.hoursPerWeek || activity.weeksPerYear) && (
-                    <View style={styles.timeInfo}>
+                    <View style={[styles.timeInfo, { borderTopColor: colors.border }]}>
                       {activity.hoursPerWeek && (
                         <Text style={[styles.timeText, { color: colors.foregroundMuted }]}>
-                          {activity.hoursPerWeek} {t('profileEdit.hoursPerWeek')}
+                          <Text style={{ fontFamily: fontFamily.mono, color: colors.foreground }}>
+                            {activity.hoursPerWeek}
+                          </Text>{' '}
+                          {t('profileEdit.hoursPerWeek')}
                         </Text>
                       )}
                       {activity.weeksPerYear && (
                         <Text style={[styles.timeText, { color: colors.foregroundMuted }]}>
-                          {activity.weeksPerYear} {t('profileEdit.weeksPerYear')}
+                          <Text style={{ fontFamily: fontFamily.mono, color: colors.foreground }}>
+                            {activity.weeksPerYear}
+                          </Text>{' '}
+                          {t('profileEdit.weeksPerYear')}
                         </Text>
                       )}
                     </View>
@@ -299,9 +320,11 @@ export default function ActivitiesScreen() {
       {/* Floating Add Button */}
       {activities.length > 0 && (
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: colors.primary }]}
+          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
           onPress={openAddModal}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.addActivity')}
         >
           <Ionicons name="add" size={28} color={colors.primaryForeground} />
         </TouchableOpacity>
@@ -443,6 +466,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -476,7 +500,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(100, 116, 139, 0.2)',
   },
   timeText: {
     fontSize: fontSize.xs,
@@ -490,11 +513,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 6,
+    elevation: 3,
   },
   formContainer: {
     paddingBottom: spacing.md,

@@ -25,7 +25,7 @@ export default function PointsScreen() {
         title={t('points.title')}
         description={t('points.description')}
         icon="trophy-outline"
-        color="#f59e0b"
+        tone="warning"
       />
       {isLoading ? (
         <Loading />

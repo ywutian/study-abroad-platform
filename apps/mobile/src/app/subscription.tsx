@@ -42,7 +42,15 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { subscriptionRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -104,11 +112,21 @@ const PLAN_ICONS: Record<PlanKey, keyof typeof Ionicons.glyphMap> = {
   premium: 'diamond-outline',
 };
 
-const PLAN_ACCENT_COLORS: Record<PlanKey, string> = {
-  free: '#64748b',
-  pro: '#1d1813',
-  premium: '#f59e0b',
-};
+/**
+ * Plan accent colors are derived from the active theme so they render correctly
+ * in both light and dark mode (Nocturne: no hardcoded hex). `pro` uses the
+ * brand primary; `premium` uses the warm gold `warning`; `free` is muted.
+ */
+function getPlanAccent(planKey: PlanKey, colors: ReturnType<typeof useColors>): string {
+  switch (planKey) {
+    case 'pro':
+      return colors.primary;
+    case 'premium':
+      return colors.warning;
+    default:
+      return colors.foregroundMuted;
+  }
+}
 
 const YEARLY_DISCOUNT_MONTHS = 10; // pay 10 months, get 12
 
@@ -317,16 +335,18 @@ export default function SubscriptionPage() {
     if (!currentSub) return null;
 
     const statusBadge = getStatusBadge();
-    const accentColor = PLAN_ACCENT_COLORS[currentPlanKey];
+    const accentColor = getPlanAccent(currentPlanKey, colors);
 
     return (
       <Animated.View entering={FadeInDown.duration(400).springify()}>
         <LinearGradient
-          colors={[accentColor + '18', accentColor + '08']}
-          style={[styles.currentPlanBanner, { borderColor: accentColor + '40' }]}
+          colors={[withOpacity(accentColor, 0.094), withOpacity(accentColor, 0.031)]}
+          style={[styles.currentPlanBanner, { borderColor: withOpacity(accentColor, 0.25) }]}
         >
           <View style={styles.currentPlanHeader}>
-            <View style={[styles.currentPlanIcon, { backgroundColor: accentColor + '20' }]}>
+            <View
+              style={[styles.currentPlanIcon, { backgroundColor: withOpacity(accentColor, 0.125) }]}
+            >
               <Ionicons name={PLAN_ICONS[currentPlanKey]} size={24} color={accentColor} />
             </View>
             <View style={styles.currentPlanInfo}>
@@ -352,7 +372,12 @@ export default function SubscriptionPage() {
           )}
 
           {!isPaidPlan && (
-            <View style={[styles.upgradeBanner, { backgroundColor: colors.primary + '10' }]}>
+            <View
+              style={[
+                styles.upgradeBanner,
+                { backgroundColor: withOpacity(colors.primary, 0.0625) },
+              ]}
+            >
               <Ionicons name="sparkles" size={16} color={colors.primary} />
               <Text style={[styles.upgradeText, { color: colors.primary }]}>
                 {t('subscription.upgradePrompt')}
@@ -370,7 +395,7 @@ export default function SubscriptionPage() {
 
   const renderPlanCard = (plan: PlanDetails, index: number) => {
     const planKey = getPlanKey(plan.id);
-    const accentColor = PLAN_ACCENT_COLORS[planKey];
+    const accentColor = getPlanAccent(planKey, colors);
     const isCurrentPlan = currentPlanKey === planKey;
     const isPro = planKey === 'pro';
     const isPremium = planKey === 'premium';
@@ -427,7 +452,12 @@ export default function SubscriptionPage() {
 
             {/* Plan header */}
             <View style={styles.planHeader}>
-              <View style={[styles.planIconCircle, { backgroundColor: accentColor + '15' }]}>
+              <View
+                style={[
+                  styles.planIconCircle,
+                  { backgroundColor: withOpacity(accentColor, 0.094) },
+                ]}
+              >
                 <Ionicons name={PLAN_ICONS[planKey]} size={28} color={accentColor} />
               </View>
               <View style={styles.planTitleGroup}>
@@ -439,14 +469,24 @@ export default function SubscriptionPage() {
                     </Text>
                   ) : (
                     <>
-                      <Text style={[styles.planPrice, { color: accentColor }]}>
+                      <Text
+                        style={[
+                          styles.planPrice,
+                          { color: accentColor, fontFamily: fontFamily.mono },
+                        ]}
+                      >
                         {formatAmount(price, plan.currency)}
                       </Text>
                       <Text style={[styles.planPeriod, { color: colors.foregroundMuted }]}>
                         /{t('subscription.month')}
                       </Text>
                       {billingPeriod === 'yearly' && price < originalPrice && (
-                        <Text style={[styles.planOriginalPrice, { color: colors.foregroundMuted }]}>
+                        <Text
+                          style={[
+                            styles.planOriginalPrice,
+                            { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+                          ]}
+                        >
                           {formatAmount(originalPrice, plan.currency)}
                         </Text>
                       )}
@@ -500,7 +540,13 @@ export default function SubscriptionPage() {
                   onPress={() => handleSubscribe(planKey)}
                   loading={isSubscribing}
                   style={[styles.planButton, { backgroundColor: accentColor }]}
-                  leftIcon={<Ionicons name="arrow-up-circle-outline" size={20} color="#fff9ef" />}
+                  leftIcon={
+                    <Ionicons
+                      name="arrow-up-circle-outline"
+                      size={20}
+                      color={colors.primaryForeground}
+                    />
+                  }
                 >
                   {t('subscription.upgrade')}
                 </AnimatedButton>
@@ -531,10 +577,18 @@ export default function SubscriptionPage() {
       <TouchableOpacity
         onPress={toggleBillingHistory}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={t('subscription.billingHistory')}
+        accessibilityState={{ expanded: billingExpanded }}
         style={[styles.billingHeader, { borderColor: colors.border, backgroundColor: colors.card }]}
       >
         <View style={styles.billingHeaderLeft}>
-          <View style={[styles.billingIconCircle, { backgroundColor: colors.success + '15' }]}>
+          <View
+            style={[
+              styles.billingIconCircle,
+              { backgroundColor: withOpacity(colors.success, 0.094) },
+            ]}
+          >
             <Ionicons name="receipt-outline" size={20} color={colors.success} />
           </View>
           <View>
@@ -590,7 +644,12 @@ export default function SubscriptionPage() {
                     </Text>
                   </View>
                   <View style={styles.billingItemRight}>
-                    <Text style={[styles.billingItemAmount, { color: colors.foreground }]}>
+                    <Text
+                      style={[
+                        styles.billingItemAmount,
+                        { color: colors.foreground, fontFamily: fontFamily.mono },
+                      ]}
+                    >
                       {formatAmount(item.amount, item.currency)}
                     </Text>
                     <Badge variant={getBillingStatusVariant(item.status)}>{item.status}</Badge>
@@ -652,18 +711,22 @@ export default function SubscriptionPage() {
         {/* Hero */}
         <Animated.View entering={FadeInDown.duration(500).springify()}>
           <LinearGradient
-            colors={[colors.primary, colors.primary + 'cc']}
+            colors={[colors.primary, withOpacity(colors.primary, 0.8)]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.hero}
           >
             <View style={styles.heroContent}>
-              <View style={styles.heroIcon}>
-                <Ionicons name="card" size={28} color="#fff" />
+              <View style={[styles.heroIcon, { backgroundColor: colors.onGradientOverlay }]}>
+                <Ionicons name="card" size={28} color={colors.onGradient} />
               </View>
               <View style={styles.heroTextContainer}>
-                <Text style={styles.heroTitle}>{t('subscription.heroTitle')}</Text>
-                <Text style={styles.heroSubtitle}>{t('subscription.heroSubtitle')}</Text>
+                <Text style={[styles.heroTitle, { color: colors.onGradient }]}>
+                  {t('subscription.heroTitle')}
+                </Text>
+                <Text style={[styles.heroSubtitle, { color: colors.onGradientMuted }]}>
+                  {t('subscription.heroSubtitle')}
+                </Text>
               </View>
             </View>
           </LinearGradient>
@@ -694,7 +757,12 @@ export default function SubscriptionPage() {
                 }}
               />
               {billingPeriod === 'yearly' && (
-                <View style={[styles.discountBadge, { backgroundColor: colors.success + '15' }]}>
+                <View
+                  style={[
+                    styles.discountBadge,
+                    { backgroundColor: withOpacity(colors.success, 0.094) },
+                  ]}
+                >
                   <Ionicons name="pricetag" size={12} color={colors.success} />
                   <Text style={[styles.discountText, { color: colors.success }]}>
                     {t('subscription.yearlyDiscount')}
@@ -755,7 +823,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -766,12 +833,10 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: '#fff9ef',
     marginBottom: spacing.xs,
   },
   heroSubtitle: {
     fontSize: fontSize.sm,
-    color: 'rgba(255,255,255,0.85)',
     lineHeight: fontSize.sm * 1.4,
   },
 

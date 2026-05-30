@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Loading } from '@/components/ui';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 
 import { SwipeStatsDto, SCREEN_WIDTH } from './types';
 
@@ -51,6 +51,9 @@ export default function StatsView({ onBack }: StatsViewProps) {
             onBack();
           }}
           style={styles.backBtn}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Ionicons name="arrow-back" size={24} color={c.foreground} />
         </TouchableOpacity>
@@ -68,7 +71,12 @@ export default function StatsView({ onBack }: StatsViewProps) {
             style={[styles.calibrationHero, { backgroundColor: c.card, borderColor: c.border }]}
           >
             <Ionicons name="locate-outline" size={40} color={c.success} />
-            <Text style={[styles.calibrationValue, { color: c.foreground }]}>
+            <Text
+              style={[
+                styles.calibrationValue,
+                { color: c.foreground, fontFamily: fontFamily.mono },
+              ]}
+            >
               {Math.round(stats.accuracy)}%
             </Text>
             <Text style={[styles.calibrationLabel, { color: c.foregroundMuted }]}>
@@ -82,13 +90,19 @@ export default function StatsView({ onBack }: StatsViewProps) {
           {/* Stats grid */}
           <Animated.View entering={FadeInUp.delay(100).springify()} style={styles.statsCardGrid}>
             <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: c.primary }]}>{stats.totalSwipes}</Text>
+              <Text
+                style={[styles.statsCardValue, { color: c.primary, fontFamily: fontFamily.mono }]}
+              >
+                {stats.totalSwipes}
+              </Text>
               <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
                 {t('swipe.totalSwipes')}
               </Text>
             </View>
             <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: c.success }]}>
+              <Text
+                style={[styles.statsCardValue, { color: c.success, fontFamily: fontFamily.mono }]}
+              >
                 {stats.correctCount}
               </Text>
               <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>

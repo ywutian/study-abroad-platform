@@ -80,13 +80,6 @@ export type Colors = ReturnType<typeof useColors>;
 // Constants
 // ---------------------------------------------------------------------------
 
-export const PERCENTILE_COLORS = {
-  top10: '#6f7b58',
-  top25: '#3b82f6',
-  top50: '#f59e0b',
-  bottom: '#ef4444',
-};
-
 export const RANKING_FILTERS: RankingFilter[] = ['all', 'admitted', 'top20', 'ivy'];
 
 export const RESULT_BADGE_VARIANT: Record<string, 'success' | 'error' | 'warning' | 'secondary'> = {
@@ -100,9 +93,17 @@ export const RESULT_BADGE_VARIANT: Record<string, 'success' | 'error' | 'warning
 // Helpers
 // ---------------------------------------------------------------------------
 
-export function getPercentileColor(percentile: number): string {
-  if (percentile >= 90) return PERCENTILE_COLORS.top10;
-  if (percentile >= 75) return PERCENTILE_COLORS.top25;
-  if (percentile >= 50) return PERCENTILE_COLORS.top50;
-  return PERCENTILE_COLORS.bottom;
+/**
+ * Maps a percentile to a semantic theme color (resolved via useColors so the
+ * tier accent stays correct in dark mode — no hardcoded hex).
+ *   top decile  -> success   (>=90)
+ *   top quartile-> info      (>=75)
+ *   top half    -> warning   (>=50)
+ *   below       -> error
+ */
+export function getPercentileColor(percentile: number, c: Colors): string {
+  if (percentile >= 90) return c.success;
+  if (percentile >= 75) return c.info;
+  if (percentile >= 50) return c.warning;
+  return c.error;
 }

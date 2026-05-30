@@ -32,7 +32,15 @@ import {
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { AiChatMessage, StreamEvent } from '@/types';
 
 // ---------------------------------------------------------------------------
@@ -575,6 +583,8 @@ export default function UncommonAppScreen() {
             disabled={analysisMutation.isPending || !isAuthenticated}
             style={[styles.dashboardButton, { backgroundColor: colors.primary }]}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t('uncommonApp.dashboard.generateAnalysis')}
           >
             {analysisMutation.isPending ? (
               <Loading size="small" />
@@ -597,6 +607,8 @@ export default function UncommonAppScreen() {
               { borderColor: colors.border, backgroundColor: colors.background },
             ]}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={t('uncommonApp.dashboard.generateRecommendations')}
           >
             {recommendationMutation.isPending ? (
               <Loading size="small" />
@@ -639,6 +651,8 @@ export default function UncommonAppScreen() {
               onPress={() => router.push(task.href as Href)}
               style={styles.taskRow}
               activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel={task.text}
             >
               <Ionicons
                 name={task.done ? 'checkmark-circle' : 'ellipse-outline'}
@@ -671,6 +685,8 @@ export default function UncommonAppScreen() {
               onPress={() => clearMutation.mutate()}
               disabled={clearMutation.isPending}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('uncommonApp.chat.clearChat')}
             >
               <Ionicons name="trash-outline" size={20} color={colors.foregroundMuted} />
             </TouchableOpacity>
@@ -725,6 +741,9 @@ export default function UncommonAppScreen() {
                 },
               ]}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={chip.label}
+              accessibilityState={{ selected: isActive }}
             >
               <Ionicons
                 name={chip.icon}
@@ -761,9 +780,15 @@ export default function UncommonAppScreen() {
             key={action.agent}
             onPress={() => handleQuickAction(action)}
             style={[styles.quickActionCard, { borderColor: colors.border }]}
+            accessibilityLabel={t(action.titleKey)}
           >
             <CardContent style={styles.quickActionContent}>
-              <View style={[styles.quickActionIcon, { backgroundColor: action.color + '15' }]}>
+              <View
+                style={[
+                  styles.quickActionIcon,
+                  { backgroundColor: withOpacity(action.color, 0.08) },
+                ]}
+              >
                 <Ionicons name={action.icon} size={24} color={action.color} />
               </View>
               <Text
@@ -798,7 +823,7 @@ export default function UncommonAppScreen() {
 
       {/* Welcome message */}
       <Animated.View entering={FadeInDown.delay(400).duration(400)} style={styles.welcomeSection}>
-        <View style={[styles.welcomeIcon, { backgroundColor: colors.primary + '15' }]}>
+        <View style={[styles.welcomeIcon, { backgroundColor: withOpacity(colors.primary, 0.08) }]}>
           <Ionicons name="rocket" size={48} color={colors.primary} />
         </View>
         <Text style={[styles.welcomeTitle, { color: colors.foreground }]}>
@@ -957,6 +982,9 @@ export default function UncommonAppScreen() {
             },
           ]}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('chat.send')}
+          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
         >
           <Ionicons
             name="send"
@@ -1012,10 +1040,12 @@ function MetricTile({
 
   return (
     <View style={[styles.metricTile, { backgroundColor: colors.backgroundSecondary }]}>
-      <View style={[styles.metricIcon, { backgroundColor: color + '18' }]}>
+      <View style={[styles.metricIcon, { backgroundColor: withOpacity(color, 0.094) }]}>
         <Ionicons name={icon} size={16} color={color} />
       </View>
-      <Text style={[styles.metricValue, { color: colors.foreground }]}>{value}</Text>
+      <Text style={[styles.metricValue, { color: colors.foreground, fontFamily: fontFamily.mono }]}>
+        {value}
+      </Text>
       <Text style={[styles.metricLabel, { color: colors.foregroundMuted }]} numberOfLines={1}>
         {label}
       </Text>

@@ -19,7 +19,15 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { Profile, Award } from '@/types';
 
 const AWARD_LEVELS = [
@@ -215,7 +223,10 @@ export default function AwardsScreen() {
                     <View style={styles.itemHeader}>
                       <View style={styles.itemInfo}>
                         <View
-                          style={[styles.iconBadge, { backgroundColor: levelConfig.color + '20' }]}
+                          style={[
+                            styles.iconBadge,
+                            { backgroundColor: withOpacity(levelConfig.color, 0.125) },
+                          ]}
                         >
                           <Ionicons name={levelConfig.icon} size={18} color={levelConfig.color} />
                         </View>
@@ -230,7 +241,7 @@ export default function AwardsScreen() {
                             <View
                               style={[
                                 styles.levelBadge,
-                                { backgroundColor: levelConfig.color + '15' },
+                                { backgroundColor: withOpacity(levelConfig.color, 0.082) },
                               ]}
                             >
                               <Text style={[styles.levelText, { color: levelConfig.color }]}>
@@ -238,7 +249,12 @@ export default function AwardsScreen() {
                               </Text>
                             </View>
                             {award.date && (
-                              <Text style={[styles.dateText, { color: colors.foregroundMuted }]}>
+                              <Text
+                                style={[
+                                  styles.dateText,
+                                  { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+                                ]}
+                              >
                                 {award.date}
                               </Text>
                             )}
@@ -250,6 +266,8 @@ export default function AwardsScreen() {
                           onPress={() => openEditModal(award)}
                           style={styles.actionButton}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t('common.edit')} ${award.name}`}
                         >
                           <Ionicons name="pencil-outline" size={18} color={colors.primary} />
                         </TouchableOpacity>
@@ -257,6 +275,8 @@ export default function AwardsScreen() {
                           onPress={() => setDeleteTarget(award)}
                           style={styles.actionButton}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t('common.delete')} ${award.name}`}
                         >
                           <Ionicons name="trash-outline" size={18} color={colors.error} />
                         </TouchableOpacity>
@@ -284,6 +304,8 @@ export default function AwardsScreen() {
           style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
           onPress={openAddModal}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.addAward')}
         >
           <Ionicons name="add" size={28} color={colors.primaryForeground} />
         </TouchableOpacity>

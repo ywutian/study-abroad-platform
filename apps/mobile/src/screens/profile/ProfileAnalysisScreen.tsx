@@ -19,7 +19,15 @@ import {
 } from '@/components/ui';
 import { aiService } from '@/lib/api/services/ai';
 import { useAuthStore } from '@/stores';
-import { borderRadius, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
+import {
+  borderRadius,
+  fontFamily,
+  fontSize,
+  fontWeight,
+  spacing,
+  useColors,
+  withOpacity,
+} from '@/utils/theme';
 
 function getFreshnessVariant(status: AIAnalysisResult['status']) {
   switch (status) {
@@ -304,7 +312,10 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
           </Badge>
         </View>
         <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
-          {t('applicationAnalysis.schoolCards.probability')}: {probabilityLabel}
+          {t('applicationAnalysis.schoolCards.probability')}:{' '}
+          <Text style={[styles.helperNumeric, { color: colors.foreground }]}>
+            {probabilityLabel}
+          </Text>
           {school.prediction?.confidence
             ? `  •  ${t('applicationAnalysis.schoolCards.confidence')}: ${t(
                 `applicationAnalysis.confidence.${school.prediction.confidence}`
@@ -519,7 +530,11 @@ const styles = StyleSheet.create({
   },
   metricBlock: { flex: 1, gap: spacing.xs },
   metricLabel: { fontSize: fontSize.xs, textTransform: 'uppercase' },
-  metricValue: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  metricValue: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.mono,
+  },
   metricDivider: { width: 1, alignSelf: 'stretch', marginHorizontal: spacing.md },
   section: { gap: spacing.sm },
   sectionTitle: {
@@ -539,6 +554,7 @@ const styles = StyleSheet.create({
   infoValue: { fontSize: fontSize.base, fontWeight: fontWeight.medium },
   badgeWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   helperText: { fontSize: fontSize.sm, lineHeight: 20 },
+  helperNumeric: { fontFamily: fontFamily.mono, fontWeight: fontWeight.medium },
   sectionBody: { fontSize: fontSize.sm, lineHeight: 20 },
   schoolHeader: {
     flexDirection: 'row',

@@ -18,11 +18,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Badge, RankingBadge, Segment } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { EssayDetail } from './types';
-import { RESULT_COLORS, resultBadgeVariant } from './types';
+import { resultBadgeVariant, useResultColors } from './types';
 import { AnalysisSection } from './AnalysisSection';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -43,6 +43,7 @@ interface DetailSheetProps {
 export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
   const { t } = useTranslation();
   const c = useColors();
+  const resultColors = useResultColors();
   const insets = useSafeAreaInsets();
   const [detailTab, setDetailTab] = useState<'original' | 'analysis'>('original');
 
@@ -94,6 +95,8 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
       <TouchableOpacity
         activeOpacity={1}
         onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel={t('common.close')}
         style={[S.backdrop, { backgroundColor: c.overlay }]}
       />
       {/* Sheet */}
@@ -125,7 +128,12 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
                 <Text style={[S.detailSchoolName, { color: c.foreground }]} numberOfLines={2}>
                   {essayDetail.school?.name || t('essayGallery.unknownSchool')}
                 </Text>
-                <TouchableOpacity onPress={onClose}>
+                <TouchableOpacity
+                  onPress={onClose}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.close')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
                   <Ionicons name="close" size={24} color={c.foregroundMuted} />
                 </TouchableOpacity>
               </View>
@@ -140,8 +148,8 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
                 </Badge>
                 {essayDetail.isVerified && (
                   <View style={S.verifiedBadge}>
-                    <Ionicons name="checkmark-circle" size={14} color={RESULT_COLORS.ADMITTED} />
-                    <Text style={[S.verifiedText, { color: RESULT_COLORS.ADMITTED }]}>
+                    <Ionicons name="checkmark-circle" size={14} color={resultColors.ADMITTED} />
+                    <Text style={[S.verifiedText, { color: resultColors.ADMITTED }]}>
                       {t('essayGallery.verified')}
                     </Text>
                   </View>
@@ -154,7 +162,12 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
               {essayDetail.gpaRange && (
                 <View style={S.applicantStatItem}>
                   <Text style={[S.applicantStatLabel, { color: c.foregroundMuted }]}>GPA</Text>
-                  <Text style={[S.applicantStatValue, { color: c.foreground }]}>
+                  <Text
+                    style={[
+                      S.applicantStatValue,
+                      { color: c.foreground, fontFamily: fontFamily.mono },
+                    ]}
+                  >
                     {essayDetail.gpaRange}
                   </Text>
                 </View>
@@ -162,7 +175,12 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
               {essayDetail.satRange && (
                 <View style={S.applicantStatItem}>
                   <Text style={[S.applicantStatLabel, { color: c.foregroundMuted }]}>SAT</Text>
-                  <Text style={[S.applicantStatValue, { color: c.foreground }]}>
+                  <Text
+                    style={[
+                      S.applicantStatValue,
+                      { color: c.foreground, fontFamily: fontFamily.mono },
+                    ]}
+                  >
                     {essayDetail.satRange}
                   </Text>
                 </View>
@@ -171,7 +189,12 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
                 <Text style={[S.applicantStatLabel, { color: c.foregroundMuted }]}>
                   {t('essayGallery.words')}
                 </Text>
-                <Text style={[S.applicantStatValue, { color: c.foreground }]}>
+                <Text
+                  style={[
+                    S.applicantStatValue,
+                    { color: c.foreground, fontFamily: fontFamily.mono },
+                  ]}
+                >
                   {essayDetail.wordCount}
                 </Text>
               </View>

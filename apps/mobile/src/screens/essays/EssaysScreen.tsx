@@ -26,7 +26,16 @@ import {
   StatusBadge,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  type Colors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
@@ -236,7 +245,7 @@ export default function EssaysScreen() {
         <AnimatedButton
           onPress={() => router.push('/essay/new')}
           style={styles.fabButton}
-          leftIcon={<Ionicons name="add" size={24} color="#fff" />}
+          leftIcon={<Ionicons name="add" size={24} color={colors.primaryForeground} />}
         >
           {t('essays.newEssay')}
         </AnimatedButton>
@@ -279,10 +288,15 @@ function StatCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={`${label}, ${value}`}
       style={[
         styles.statCard,
-        { backgroundColor: active ? color + '20' : colors.card },
-        active && { borderColor: color, borderWidth: 2 },
+        {
+          backgroundColor: active ? withOpacity(color, 0.125) : colors.card,
+          borderColor: active ? color : colors.border,
+        },
       ]}
     >
       <Ionicons
@@ -319,10 +333,17 @@ function EssayCard({
 
   return (
     <AnimatedCard style={styles.essayCard}>
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${essay.title}, ${typeInfo?.label ?? ''}, ${statusInfo?.label ?? ''}`}
+      >
         <CardContent>
           <View style={styles.essayHeader}>
-            <View style={[styles.typeIcon, { backgroundColor: colors.primary + '15' }]}>
+            <View
+              style={[styles.typeIcon, { backgroundColor: withOpacity(colors.primary, 0.0625) }]}
+            >
               <Ionicons
                 name={(typeInfo?.icon || 'document') as ComponentProps<typeof Ionicons>['name']}
                 size={20}
@@ -354,7 +375,12 @@ function EssayCard({
                   ]}
                 />
               </View>
-              <Text style={[styles.wordCount, { color: colors.foregroundMuted }]}>
+              <Text
+                style={[
+                  styles.wordCount,
+                  { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+                ]}
+              >
                 {essay.wordCount} / {essay.wordLimit}
               </Text>
             </View>
@@ -364,7 +390,12 @@ function EssayCard({
           <View style={styles.actions}>
             <TouchableOpacity
               onPress={onAIReview}
-              style={[styles.actionButton, { backgroundColor: colors.primary + '15' }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('essays.aiReview')}
+              style={[
+                styles.actionButton,
+                { backgroundColor: withOpacity(colors.primary, 0.0625) },
+              ]}
             >
               <Ionicons name="sparkles" size={16} color={colors.primary} />
               <Text style={[styles.actionText, { color: colors.primary }]}>
@@ -373,7 +404,10 @@ function EssayCard({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onDelete}
-              style={[styles.actionButton, { backgroundColor: colors.error + '15' }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('essays.deleteDialog.title')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={[styles.actionButton, { backgroundColor: withOpacity(colors.error, 0.0625) }]}
             >
               <Ionicons name="trash-outline" size={16} color={colors.error} />
             </TouchableOpacity>
@@ -398,11 +432,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
+    borderWidth: 1,
     gap: spacing.xs,
   },
   statValue: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   statLabel: {
     fontSize: fontSize.xs,

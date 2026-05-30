@@ -33,7 +33,15 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES, assessmentRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -100,29 +108,6 @@ interface AssessmentResultDto {
 }
 
 // ── Constants ────────────────────────────────────────────
-const TYPE_COLORS: Record<string, string> = {
-  MBTI: '#6574ff',
-  HOLLAND: '#f59e0b',
-  MAJOR_MATCH: '#3b82f6',
-};
-const MBTI_DIM_COLORS: Record<string, string> = {
-  E: '#1d1813',
-  I: '#1d1813',
-  S: '#6f7b58',
-  N: '#6f7b58',
-  T: '#f59e0b',
-  F: '#f59e0b',
-  J: '#ef4444',
-  P: '#ef4444',
-};
-const HOLLAND_COLORS: Record<string, string> = {
-  R: '#ef4444',
-  I: '#3b82f6',
-  A: '#6574ff',
-  S: '#6f7b58',
-  E: '#f59e0b',
-  C: '#64748b',
-};
 const MBTI_DIMS: [string, string][] = [
   ['E', 'I'],
   ['S', 'N'],
@@ -145,6 +130,31 @@ export default function AssessmentPage() {
   const toast = useToast();
   const isZh = i18n.language === 'zh';
   const loc = useCallback((en: string, zh: string) => (isZh ? zh : en), [isZh]);
+
+  // Token-driven category colors (dark-mode safe — derived from theme).
+  const TYPE_COLORS: Record<string, string> = {
+    MBTI: colors.violet,
+    HOLLAND: colors.warning,
+    MAJOR_MATCH: colors.info,
+  };
+  const MBTI_DIM_COLORS: Record<string, string> = {
+    E: colors.foreground,
+    I: colors.foreground,
+    S: colors.success,
+    N: colors.success,
+    T: colors.warning,
+    F: colors.warning,
+    J: colors.error,
+    P: colors.error,
+  };
+  const HOLLAND_COLORS: Record<string, string> = {
+    R: colors.error,
+    I: colors.info,
+    A: colors.violet,
+    S: colors.success,
+    E: colors.warning,
+    C: colors.foregroundMuted,
+  };
 
   const [viewState, setViewState] = useState<ViewState>('select');
   const [selectedType, setSelectedType] = useState<AssessmentTypeEnum | null>(null);
@@ -282,10 +292,11 @@ export default function AssessmentPage() {
               <AnimatedCard
                 style={[S.typeCard, { borderLeftColor: c, borderLeftWidth: 4 }]}
                 onPress={() => handleSelectType(type)}
+                accessibilityLabel={t(`assessment.types.${type}.title`, type)}
               >
                 <CardContent>
                   <View style={S.typeRow}>
-                    <View style={[S.typeIcon, { backgroundColor: c + '18' }]}>
+                    <View style={[S.typeIcon, { backgroundColor: withOpacity(c, 0.1) }]}>
                       <Ionicons name={TYPE_ICONS[type]} size={28} color={c} />
                     </View>
                     <View style={S.typeInfo}>
@@ -342,10 +353,18 @@ export default function AssessmentPage() {
     return (
       <View>
         <View style={S.quizHeader}>
-          <TouchableOpacity onPress={goBack} style={S.iconBtn}>
+          <TouchableOpacity
+            onPress={goBack}
+            style={S.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          >
             <Ionicons name="close" size={24} color={colors.foreground} />
           </TouchableOpacity>
-          <Text style={[S.progText, { color: colors.foregroundMuted }]}>
+          <Text
+            style={[S.progText, { color: colors.foregroundMuted, fontFamily: fontFamily.mono }]}
+          >
             {t('assessment.questionOf', {
               current: currentIndex + 1,
               total: qs.length,
@@ -365,7 +384,9 @@ export default function AssessmentPage() {
           entering={Slide.duration(300).springify()}
           style={{ minHeight: 280 }}
         >
-          <Text style={[S.qNum, { color: tc }]}>Q{currentIndex + 1}</Text>
+          <Text style={[S.qNum, { color: tc, fontFamily: fontFamily.mono }]}>
+            Q{currentIndex + 1}
+          </Text>
           <Text style={[S.qText, { color: colors.foreground }]}>{loc(q.text, q.textZh)}</Text>
           <View style={{ gap: spacing.sm }}>
             {q.options.map((o, oi) => {
@@ -375,10 +396,13 @@ export default function AssessmentPage() {
                   <TouchableOpacity
                     onPress={() => handleAnswer(q.id, String(o.value))}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: sel }}
+                    accessibilityLabel={loc(o.text, o.textZh)}
                     style={[
                       S.opt,
                       {
-                        backgroundColor: sel ? tc + '15' : colors.card,
+                        backgroundColor: sel ? withOpacity(tc, 0.125) : colors.card,
                         borderColor: sel ? tc : colors.border,
                         borderWidth: sel ? 2 : 1,
                       },
@@ -393,7 +417,9 @@ export default function AssessmentPage() {
                         },
                       ]}
                     >
-                      {sel && <Ionicons name="checkmark" size={12} color="#fff" />}
+                      {sel && (
+                        <Ionicons name="checkmark" size={12} color={colors.primaryForeground} />
+                      )}
                     </View>
                     <Text
                       style={[
@@ -450,10 +476,12 @@ export default function AssessmentPage() {
     const tc = TYPE_COLORS.MBTI;
     return (
       <Animated.View entering={FadeInDown.duration(500).springify()}>
-        <View style={[S.hero, { backgroundColor: tc + '10' }]}>
+        <View
+          style={[S.hero, { backgroundColor: withOpacity(tc, 0.0625), borderColor: colors.border }]}
+        >
           <Animated.Text
             entering={FadeInDown.delay(200).springify()}
-            style={[S.mbtiType, { color: tc }]}
+            style={[S.mbtiType, { color: tc, fontFamily: fontFamily.mono }]}
           >
             {m.type}
           </Animated.Text>
@@ -480,10 +508,10 @@ export default function AssessmentPage() {
                 style={{ marginBottom: spacing.lg }}
               >
                 <View style={S.dimLabels}>
-                  <Text style={[S.dimLbl, { color: dc }]}>
+                  <Text style={[S.dimLbl, { color: dc, fontFamily: fontFamily.mono }]}>
                     {l} {lp}%
                   </Text>
-                  <Text style={[S.dimLbl, { color: dc }]}>
+                  <Text style={[S.dimLbl, { color: dc, fontFamily: fontFamily.mono }]}>
                     {rp}% {r}
                   </Text>
                 </View>
@@ -504,7 +532,7 @@ export default function AssessmentPage() {
                       S.dimFill,
                       {
                         width: `${rp}%`,
-                        backgroundColor: dc + '40',
+                        backgroundColor: withOpacity(dc, 0.25),
                         borderTopRightRadius: 4,
                         borderBottomRightRadius: 4,
                       },
@@ -540,10 +568,12 @@ export default function AssessmentPage() {
     const mx = Math.max(...Object.values(h.scores), 1);
     return (
       <Animated.View entering={FadeInDown.duration(500).springify()}>
-        <View style={[S.hero, { backgroundColor: tc + '10' }]}>
+        <View
+          style={[S.hero, { backgroundColor: withOpacity(tc, 0.0625), borderColor: colors.border }]}
+        >
           <Animated.Text
             entering={FadeInDown.delay(200).springify()}
-            style={[S.hollandCode, { color: tc }]}
+            style={[S.hollandCode, { color: tc, fontFamily: fontFamily.mono }]}
           >
             {h.codes}
           </Animated.Text>
@@ -566,7 +596,7 @@ export default function AssessmentPage() {
             return (
               <Animated.View key={k} entering={FadeInUp.delay(i * 80).springify()} style={S.hBar}>
                 <View style={[S.hKey, { backgroundColor: bc }]}>
-                  <Text style={S.hKeyTxt}>{k}</Text>
+                  <Text style={[S.hKeyTxt, { color: colors.primaryForeground }]}>{k}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Progress
@@ -578,7 +608,9 @@ export default function AssessmentPage() {
                     borderRadius={5}
                   />
                 </View>
-                <Text style={[S.hScore, { color: colors.foreground }]}>{sc}</Text>
+                <Text style={[S.hScore, { color: colors.foreground, fontFamily: fontFamily.mono }]}>
+                  {sc}
+                </Text>
               </Animated.View>
             );
           })}
@@ -597,7 +629,7 @@ export default function AssessmentPage() {
       <Text style={[S.secLabel, { color: colors.foreground }]}>{label}</Text>
       <View style={S.chips}>
         {items.map((item, i) => (
-          <View key={i} style={[S.chip, { backgroundColor: color + '15' }]}>
+          <View key={i} style={[S.chip, { backgroundColor: withOpacity(color, 0.125) }]}>
             <Text style={[S.chipTxt, { color }]}>{item}</Text>
           </View>
         ))}
@@ -611,7 +643,13 @@ export default function AssessmentPage() {
     return (
       <View>
         <View style={S.rHeader}>
-          <TouchableOpacity onPress={goBack} style={S.iconBtn}>
+          <TouchableOpacity
+            onPress={goBack}
+            style={S.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+          >
             <Ionicons name="arrow-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={[S.rHeaderTitle, { color: colors.foreground }]}>
@@ -622,7 +660,15 @@ export default function AssessmentPage() {
         {result.mbtiResult && renderMbti(result.mbtiResult)}
         {result.hollandResult && renderHolland(result.hollandResult)}
         {!result.mbtiResult && !result.hollandResult && (
-          <View style={[S.hero, { backgroundColor: TYPE_COLORS[result.type] + '10' }]}>
+          <View
+            style={[
+              S.hero,
+              {
+                backgroundColor: withOpacity(TYPE_COLORS[result.type], 0.0625),
+                borderColor: colors.border,
+              },
+            ]}
+          >
             <Ionicons name={TYPE_ICONS[result.type]} size={48} color={TYPE_COLORS[result.type]} />
             <Text style={[S.heroTitle, { color: colors.foreground, marginTop: spacing.md }]}>
               {t('assessment.result.title')}
@@ -663,7 +709,13 @@ export default function AssessmentPage() {
     return (
       <Animated.View entering={FadeInUp.duration(400).springify()}>
         <View style={S.histHeader}>
-          <TouchableOpacity onPress={goBack} style={S.iconBtn}>
+          <TouchableOpacity
+            onPress={goBack}
+            style={S.iconBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+          >
             <Ionicons name="arrow-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={[S.title, { color: colors.foreground }]}>
@@ -683,16 +735,19 @@ export default function AssessmentPage() {
                   setViewState('result');
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
+                accessibilityLabel={`${item.type} ${summary} ${fmtDate(item.completedAt)}`}
               >
                 <CardContent>
                   <View style={S.histRow}>
-                    <View style={[S.histIcon, { backgroundColor: tc + '15' }]}>
+                    <View style={[S.histIcon, { backgroundColor: withOpacity(tc, 0.125) }]}>
                       <Ionicons name={TYPE_ICONS[item.type]} size={22} color={tc} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <View style={S.histTop}>
                         <Badge variant={badgeVariant(item.type)}>{item.type}</Badge>
-                        <Text style={[S.histSum, { color: tc }]}>{summary}</Text>
+                        <Text style={[S.histSum, { color: tc, fontFamily: fontFamily.mono }]}>
+                          {summary}
+                        </Text>
                       </View>
                       <Text style={[S.histDate, { color: colors.foregroundMuted }]}>
                         {fmtDate(item.completedAt)}
@@ -797,6 +852,7 @@ const S = StyleSheet.create({
   rHeaderTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
   hero: {
     borderRadius: borderRadius.xl,
+    borderWidth: 1,
     padding: spacing['2xl'],
     alignItems: 'center',
     marginBottom: spacing.xl,
@@ -831,7 +887,7 @@ const S = StyleSheet.create({
   // Holland bars
   hBar: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.sm },
   hKey: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  hKeyTxt: { color: '#fff', fontSize: fontSize.sm, fontWeight: fontWeight.bold },
+  hKeyTxt: { fontSize: fontSize.sm, fontWeight: fontWeight.bold },
   hScore: { width: 32, fontSize: fontSize.sm, fontWeight: fontWeight.semibold, textAlign: 'right' },
   // Chips
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

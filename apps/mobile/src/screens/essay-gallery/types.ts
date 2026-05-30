@@ -92,18 +92,32 @@ export type Colors = ReturnType<typeof useColors>;
 // Constants
 // ---------------------------------------------------------------------------
 
-export const RESULT_COLORS: Record<string, string> = {
-  ADMITTED: '#6f7b58',
-  REJECTED: '#ef4444',
-  WAITLISTED: '#f59e0b',
-  DEFERRED: '#3b82f6',
-};
+/**
+ * Admission-result accent colors, derived from the theme's semantic tokens so
+ * they render correctly in both light and dark (Nocturne). Call inside a
+ * component to get the live values for the current color scheme.
+ */
+export function useResultColors(): Record<string, string> {
+  const c = useColors();
+  return {
+    ADMITTED: c.success,
+    REJECTED: c.error,
+    WAITLISTED: c.warning,
+    DEFERRED: c.info,
+  };
+}
 
-export const STATUS_COLORS: Record<string, string> = {
-  excellent: '#6f7b58',
-  good: '#3b82f6',
-  needs_work: '#f59e0b',
-};
+/**
+ * Paragraph quality-status accent colors, derived from theme tokens.
+ */
+export function useStatusColors(): Record<string, string> {
+  const c = useColors();
+  return {
+    excellent: c.success,
+    good: c.info,
+    needs_work: c.warning,
+  };
+}
 
 export const ESSAY_TYPES = [
   'ALL',

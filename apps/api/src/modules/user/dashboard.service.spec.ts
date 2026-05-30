@@ -238,6 +238,7 @@ describe('DashboardService', () => {
       expect(result.stats.predictions).toBe(4);
 
       expect(result.pendingTasks.total).toBe(3);
+      expect(result.pendingTasks.todayCount).toBe(1);
       expect(result.pendingTasks.byType).toEqual([
         { type: 'ESSAY', count: 2 },
         { type: 'DOCUMENT', count: 1 },

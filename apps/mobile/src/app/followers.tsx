@@ -25,7 +25,7 @@ import {
   ConfirmDialog,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
@@ -319,6 +319,9 @@ export default function FollowersPage() {
           onPress={() => setRecommendationsCollapsed((prev) => !prev)}
           activeOpacity={0.7}
           style={styles.recommendationsHeader}
+          accessibilityRole="button"
+          accessibilityLabel={t('followers.recommendations.title')}
+          accessibilityState={{ expanded: !recommendationsCollapsed }}
         >
           <View style={styles.recommendationsHeaderLeft}>
             <Ionicons name="sparkles" size={18} color={colors.primary} />
@@ -522,6 +525,7 @@ const RecommendationCard = React.memo(function RecommendationCard({
     <AnimatedCard
       style={[styles.recommendationCard, { borderColor: colors.border }]}
       onPress={onPress}
+      accessibilityLabel={`${t('chat.startChat')}: ${getDisplayName(user)}`}
     >
       <View style={styles.recommendationContent}>
         <Avatar source={user.profile?.avatarUrl} name={getDisplayName(user)} size="lg" />
@@ -578,7 +582,11 @@ const UserCard = React.memo(function UserCard({
   unfollowLoading: boolean;
 }) {
   return (
-    <AnimatedCard style={styles.userCard} onPress={onPress}>
+    <AnimatedCard
+      style={styles.userCard}
+      onPress={onPress}
+      accessibilityLabel={`${t('chat.startChat')}: ${getDisplayName(user)}`}
+    >
       <View style={styles.userCardInner}>
         {/* Left: Avatar */}
         <Avatar source={user.profile?.avatarUrl} name={getDisplayName(user)} size="default" />
@@ -610,8 +618,10 @@ const UserCard = React.memo(function UserCard({
           </AnimatedButton>
           <TouchableOpacity
             onPress={onBlock}
-            style={[styles.blockButton, { backgroundColor: colors.error + '10' }]}
+            style={[styles.blockButton, { backgroundColor: withOpacity(colors.error, 0.0625) }]}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('chat.block')}
           >
             <Ionicons name="ban-outline" size={16} color={colors.error} />
           </TouchableOpacity>
@@ -644,7 +654,9 @@ const BlockedUserCard = React.memo(function BlockedUserCard({
         {/* Left: Avatar */}
         <View style={styles.blockedAvatarContainer}>
           <Avatar source={user.profile?.avatarUrl} name={getDisplayName(user)} size="default" />
-          <View style={[styles.blockedOverlay, { backgroundColor: colors.error + '30' }]}>
+          <View
+            style={[styles.blockedOverlay, { backgroundColor: withOpacity(colors.error, 0.19) }]}
+          >
             <Ionicons name="ban" size={16} color={colors.error} />
           </View>
         </View>

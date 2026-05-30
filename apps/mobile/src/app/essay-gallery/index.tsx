@@ -29,12 +29,12 @@ import {
   SkeletonCard,
   AnimatedButton,
 } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { essayAiRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { GalleryResponse, GalleryEssay } from '@/screens/essay-gallery/types';
 import {
-  RESULT_COLORS,
+  useResultColors,
   ESSAY_TYPES,
   RESULTS,
   YEARS,
@@ -46,6 +46,7 @@ import { DetailSheet } from '@/screens/essay-gallery/DetailSheet';
 export default function EssayGalleryPage() {
   const { t } = useTranslation();
   const c = useColors();
+  const resultColors = useResultColors();
   const insets = useSafeAreaInsets();
 
   // Filters
@@ -179,7 +180,7 @@ export default function EssayGalleryPage() {
         <View style={S.statItem}>
           <AnimatedCounter
             value={admitted}
-            style={[S.statValue, { color: RESULT_COLORS.ADMITTED }]}
+            style={[S.statValue, { color: resultColors.ADMITTED }]}
           />
           <Text style={[S.statLabel, { color: c.foregroundMuted }]}>
             {t('essayGallery.stats.admitted')}
@@ -269,7 +270,7 @@ export default function EssayGalleryPage() {
     >
       {RESULTS.map((result) => {
         const active = selectedResult === result;
-        const color = result !== 'ALL' ? RESULT_COLORS[result] : undefined;
+        const color = result !== 'ALL' ? resultColors[result] : undefined;
         return (
           <TouchableOpacity
             key={result}
@@ -296,7 +297,12 @@ export default function EssayGalleryPage() {
   const renderClearFilters = () => {
     if (!hasActiveFilters) return null;
     return (
-      <TouchableOpacity onPress={clearFilters} style={S.clearFiltersBtn}>
+      <TouchableOpacity
+        onPress={clearFilters}
+        style={S.clearFiltersBtn}
+        accessibilityRole="button"
+        accessibilityLabel={t('essayGallery.clearFilters')}
+      >
         <Ionicons name="close-circle-outline" size={16} color={c.primary} />
         <Text style={[S.clearFiltersText, { color: c.primary }]}>
           {t('essayGallery.clearFilters')}
@@ -467,6 +473,7 @@ const S = StyleSheet.create({
   statValue: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   statLabel: {
     fontSize: fontSize.xs,
@@ -533,6 +540,7 @@ const S = StyleSheet.create({
   pageText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.mono,
   },
 
   // Skeleton

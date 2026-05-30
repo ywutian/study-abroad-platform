@@ -9,7 +9,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 
-import { useColors, fontSize, fontWeight } from '@/utils/theme';
+import { useColors, fontSize, fontWeight, fontFamily } from '@/utils/theme';
 
 interface ChinaAdmitChartProps {
   /** Per-year admitted counts, ascending by year. */
@@ -54,6 +54,7 @@ export function ChinaAdmitChart({ yearly, color, height = 88 }: ChinaAdmitChartP
                 y={barY - 4}
                 fontSize={11}
                 fontWeight="600"
+                fontFamily={fontFamily.mono}
                 fill={c.foreground}
                 textAnchor="middle"
               >
@@ -74,6 +75,7 @@ export function ChinaAdmitChart({ yearly, color, height = 88 }: ChinaAdmitChartP
                 x={`${xPct + barWidthPct / 2}%`}
                 y={height - 2}
                 fontSize={10}
+                fontFamily={fontFamily.mono}
                 fill={c.foregroundMuted}
                 textAnchor="middle"
               >

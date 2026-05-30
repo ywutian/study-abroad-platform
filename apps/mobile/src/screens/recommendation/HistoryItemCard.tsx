@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
 import { AnimatedButton, AnimatedCard, CardContent } from '@/components/ui';
-import { colors as themeColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { spacing, fontSize, fontWeight, fontFamily } from '@/utils/theme';
 
 import { RecommendationResult, ColorsType, TIER_CONFIG, formatDate } from './types';
 
@@ -39,7 +39,11 @@ export const HistoryItemCard = memo(function HistoryItemCard({
   const tierSummary = tierSummaryBase.filter((item) => item.count > 0);
 
   return (
-    <AnimatedCard style={styles.historyCard} onPress={() => onToggle(item.id)}>
+    <AnimatedCard
+      style={styles.historyCard}
+      onPress={() => onToggle(item.id)}
+      accessibilityLabel={`${formatDate(item.createdAt)}, ${item.recommendations.length} ${t('recommendation.schools')}`}
+    >
       <CardContent>
         <View style={styles.historyCardHeader}>
           <View style={styles.historyCardInfo}>
@@ -47,12 +51,16 @@ export const HistoryItemCard = memo(function HistoryItemCard({
               {formatDate(item.createdAt)}
             </Text>
             <Text style={[styles.historySchoolCount, { color: colors.foregroundMuted }]}>
-              {item.recommendations.length} {t('recommendation.schools')}
+              <Text style={{ fontFamily: fontFamily.mono }}>{item.recommendations.length}</Text>{' '}
+              {t('recommendation.schools')}
             </Text>
           </View>
           <View style={styles.historyTierRow}>
             {tierSummary.map((tier) => (
-              <View key={tier.tier} style={styles.historyTierBadge}>
+              <View
+                key={tier.tier}
+                style={[styles.historyTierBadge, { backgroundColor: colors.muted }]}
+              >
                 <View
                   style={[
                     styles.historyTierBadgeDot,
@@ -60,7 +68,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
                   ]}
                 />
                 <Text style={[styles.historyTierBadgeText, { color: colors.foregroundMuted }]}>
-                  {tier.label} {tier.count}
+                  {tier.label} <Text style={{ fontFamily: fontFamily.mono }}>{tier.count}</Text>
                 </Text>
               </View>
             ))}
@@ -73,7 +81,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
         </View>
 
         {isExpanded && (
-          <View style={styles.historyExpandedContent}>
+          <View style={[styles.historyExpandedContent, { borderTopColor: colors.border }]}>
             <Text
               style={[styles.historySummary, { color: colors.foregroundSecondary }]}
               numberOfLines={3}
@@ -97,13 +105,17 @@ export const HistoryItemCard = memo(function HistoryItemCard({
                     {school.schoolName}
                   </Text>
                   <Text style={[styles.historySchoolScore, { color: colors.foregroundMuted }]}>
-                    {t('recommendation.fitScore')} {school.fitScore}
+                    {t('recommendation.fitScore')}{' '}
+                    <Text style={{ fontFamily: fontFamily.mono }}>{school.fitScore}</Text>
                   </Text>
                 </View>
               ))}
               {item.recommendations.length > 5 && (
                 <Text style={[styles.historyMoreText, { color: colors.foregroundMuted }]}>
-                  +{item.recommendations.length - 5} {t('recommendation.moreSchools')}
+                  <Text style={{ fontFamily: fontFamily.mono }}>
+                    +{item.recommendations.length - 5}
+                  </Text>{' '}
+                  {t('recommendation.moreSchools')}
                 </Text>
               )}
             </View>
@@ -156,7 +168,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: themeColors.light.muted,
   },
   historyTierBadgeDot: {
     width: 8,
@@ -170,7 +181,6 @@ const styles = StyleSheet.create({
   historyExpandedContent: {
     marginTop: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: themeColors.light.border,
     paddingTop: spacing.lg,
   },
   historySummary: {

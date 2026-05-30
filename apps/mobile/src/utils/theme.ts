@@ -52,6 +52,17 @@ export const colors = {
   dark: withMobileExtras(sharedColors.dark, semanticSurfaces.dark, 'dark'),
 } as const;
 
+/**
+ * Brand font families. `mono` = Geist Mono (loaded in app/_layout.tsx) — the
+ * "Nocturne" signature for numerals (stats, day counts, tiers). Canonical
+ * colors intentionally stay in the shared token source (see the
+ * `no-shared-token-drift` rule); the redesign's warm dark-gold look comes from
+ * the existing default palette.
+ */
+export const fontFamily = {
+  mono: 'GeistMono',
+} as const;
+
 export function getPaletteColors(
   palette: ColorPalette = DEFAULT_COLOR_PALETTE,
   mode: ColorScheme = 'light'

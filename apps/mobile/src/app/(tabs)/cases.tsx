@@ -29,7 +29,7 @@ import { Select } from '@/components/ui/Select';
 import { SubmitCaseModal } from '@/components/features/SubmitCaseModal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { useAuthStore } from '@/stores';
-import { useColors, colors as themeColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, fontFamily } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
 import type { Case, CaseResult } from '@/types';
 
@@ -241,7 +241,14 @@ export default function CasesScreen() {
           <Ionicons name="filter" size={20} color={colors.foreground} />
           {activeFiltersCount > 0 && (
             <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
-              <Text style={styles.filterBadgeText}>{activeFiltersCount}</Text>
+              <Text
+                style={[
+                  styles.filterBadgeText,
+                  { color: colors.primaryForeground, fontFamily: fontFamily.mono },
+                ]}
+              >
+                {activeFiltersCount}
+              </Text>
             </View>
           )}
         </TouchableOpacity>
@@ -369,7 +376,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterBadgeText: {
-    color: themeColors.light.onGradient,
     fontSize: 10,
     fontWeight: fontWeight.bold,
   },
@@ -418,6 +424,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.mono,
   },
   footerRow: {
     flexDirection: 'row',

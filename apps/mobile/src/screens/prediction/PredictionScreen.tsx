@@ -35,7 +35,15 @@ import {
   Segment,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  withOpacity,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+} from '@/utils/theme';
 import {
   API_ROUTES,
   type AIAnalysisResult,
@@ -313,38 +321,55 @@ export default function PredictionScreen() {
       {/* Header Card */}
       <Animated.View entering={FadeInDown.duration(400).springify()}>
         <LinearGradient
-          colors={[colors.primary, colors.primary + 'dd']}
+          colors={[colors.primary, withOpacity(colors.primary, 0.866)]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.headerCard}
         >
           <View style={styles.headerContent}>
-            <View style={styles.headerIcon}>
-              <Ionicons name="analytics" size={32} color="#fff" />
+            <View style={[styles.headerIcon, { backgroundColor: colors.onGradientOverlay }]}>
+              <Ionicons name="analytics" size={32} color={colors.onGradient} />
             </View>
             <View style={styles.headerText}>
-              <Text style={styles.headerTitle}>{t('prediction.title')}</Text>
-              <Text style={styles.headerSubtitle}>{t('prediction.subtitle')}</Text>
+              <Text style={[styles.headerTitle, { color: colors.onGradient }]}>
+                {t('prediction.title')}
+              </Text>
+              <Text style={[styles.headerSubtitle, { color: colors.onGradientMuted }]}>
+                {t('prediction.subtitle')}
+              </Text>
             </View>
           </View>
 
           {/* Profile Completeness */}
-          <View style={styles.progressSection}>
+          <View style={[styles.progressSection, { backgroundColor: colors.onGradientOverlay }]}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>{t('prediction.profileCompleteness')}</Text>
-              <Text style={styles.progressValue}>{profileCompleteness?.score || 0}%</Text>
+              <Text style={[styles.progressLabel, { color: colors.onGradientMuted }]}>
+                {t('prediction.profileCompleteness')}
+              </Text>
+              <Text
+                style={[
+                  styles.progressValue,
+                  { color: colors.onGradient, fontFamily: fontFamily.mono },
+                ]}
+              >
+                {profileCompleteness?.score || 0}%
+              </Text>
             </View>
             <Progress
               value={profileCompleteness?.score || 0}
               max={100}
               style={styles.progressBar}
-              color="#fff"
-              trackColor="rgba(255,255,255,0.3)"
+              color={colors.onGradient}
+              trackColor={colors.onGradientOverlay}
             />
             {profileCompleteness?.canRunPrediction === false ? (
-              <Text style={styles.progressHint}>{t('prediction.predictionBlockedHint')}</Text>
+              <Text style={[styles.progressHint, { color: colors.onGradientMuted }]}>
+                {t('prediction.predictionBlockedHint')}
+              </Text>
             ) : (profileCompleteness?.score || 0) < 80 ? (
-              <Text style={styles.progressHint}>{t('prediction.completeProfileHint')}</Text>
+              <Text style={[styles.progressHint, { color: colors.onGradientMuted }]}>
+                {t('prediction.completeProfileHint')}
+              </Text>
             ) : null}
           </View>
         </LinearGradient>
@@ -355,31 +380,37 @@ export default function PredictionScreen() {
         entering={FadeInUp.delay(200).duration(400).springify()}
         style={styles.statsContainer}
       >
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+        <View
+          style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <Ionicons name="school-outline" size={24} color={colors.primary} />
           <AnimatedCounter
             value={predictions.length}
-            style={[styles.statValue, { color: colors.foreground }]}
+            style={[styles.statValue, { color: colors.foreground, fontFamily: fontFamily.mono }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
             {t('prediction.stats.predicted')}
           </Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+        <View
+          style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <Ionicons name="trending-up-outline" size={24} color={colors.success} />
           <AnimatedCounter
             value={predictions.filter((p) => p.tier === 'safety').length}
-            style={[styles.statValue, { color: colors.foreground }]}
+            style={[styles.statValue, { color: colors.foreground, fontFamily: fontFamily.mono }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
             {t('prediction.stats.safety')}
           </Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
+        <View
+          style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
           <Ionicons name="rocket-outline" size={24} color={colors.error} />
           <AnimatedCounter
             value={predictions.filter((p) => p.tier === 'reach').length}
-            style={[styles.statValue, { color: colors.foreground }]}
+            style={[styles.statValue, { color: colors.foreground, fontFamily: fontFamily.mono }]}
           />
           <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
             {t('prediction.stats.reach')}
@@ -407,6 +438,8 @@ export default function PredictionScreen() {
       <TouchableOpacity
         onPress={() => router.push('/profile/analysis' as Href)}
         activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={t('applicationAnalysis.title')}
         style={[
           styles.analysisCard,
           {
@@ -696,6 +729,9 @@ export default function PredictionScreen() {
                     {prediction.probability != null && prediction.tier !== 'unavailable' ? (
                       <TouchableOpacity
                         onPress={() => openReportModal(prediction.schoolId)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('prediction.reportResult')}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         style={[
                           styles.reportButton,
                           { backgroundColor: withOpacity(colors.primary, 0.1) },
@@ -730,7 +766,9 @@ export default function PredictionScreen() {
         <AnimatedButton
           onPress={() => {}}
           style={styles.addButton}
-          leftIcon={<Ionicons name="add-circle-outline" size={20} color="#fff" />}
+          leftIcon={
+            <Ionicons name="add-circle-outline" size={20} color={colors.primaryForeground} />
+          }
         >
           {t('prediction.addPrediction')}
         </AnimatedButton>
@@ -761,6 +799,9 @@ export default function PredictionScreen() {
               <TouchableOpacity
                 key={result}
                 onPress={() => setReportResult(result)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={t(`prediction.results.${result.toLowerCase()}`)}
                 style={[
                   styles.resultOption,
                   { borderColor: isSelected ? resultColors[result] : colors.border },
@@ -793,6 +834,9 @@ export default function PredictionScreen() {
                 <TouchableOpacity
                   key={round}
                   onPress={() => setReportRound(round)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: isSelected }}
+                  accessibilityLabel={round}
                   style={[
                     styles.roundOption,
                     {
@@ -878,7 +922,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -889,15 +932,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: '#fff',
     marginBottom: spacing.xs,
   },
   headerSubtitle: {
     fontSize: fontSize.sm,
-    color: 'rgba(255,255,255,0.8)',
   },
   progressSection: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: borderRadius.lg,
     padding: spacing.md,
   },
@@ -908,19 +948,16 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: fontSize.sm,
-    color: 'rgba(255,255,255,0.9)',
   },
   progressValue: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
-    color: '#fff',
   },
   progressBar: {
     height: 6,
   },
   progressHint: {
     fontSize: fontSize.xs,
-    color: 'rgba(255,255,255,0.7)',
     marginTop: spacing.sm,
   },
   statsContainer: {
@@ -993,6 +1030,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
+    borderWidth: 1,
   },
   statValue: {
     fontSize: fontSize.xl,

@@ -24,7 +24,15 @@ import {
   type Notification,
   type NotificationType,
 } from '@/hooks/useNotifications';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -104,7 +112,6 @@ const NotificationItem = React.memo(function NotificationItem({
           styles.notificationItem,
           {
             backgroundColor: item.read ? colors.card : withOpacity(colors.primary, 0.06),
-            borderColor: colors.border,
           },
         ]}
         accessibilityRole="button"
@@ -136,7 +143,12 @@ const NotificationItem = React.memo(function NotificationItem({
           >
             {item.content}
           </Text>
-          <Text style={[styles.notificationTime, { color: colors.foregroundMuted }]}>
+          <Text
+            style={[
+              styles.notificationTime,
+              { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+            ]}
+          >
             {timeAgo(item.createdAt, t)}
           </Text>
         </View>

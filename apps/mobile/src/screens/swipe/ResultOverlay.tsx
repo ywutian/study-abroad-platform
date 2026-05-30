@@ -11,7 +11,15 @@ import { useTranslation } from 'react-i18next';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  shadows,
+  withOpacity,
+} from '@/utils/theme';
 
 import { SwipeResultDto, CARD_WIDTH } from './types';
 
@@ -42,7 +50,7 @@ export default function ResultOverlay({ result }: ResultOverlayProps) {
           styles.resultPanel,
           {
             backgroundColor: c.card,
-            borderColor: isCorrect ? c.success + '30' : c.error + '24',
+            borderColor: isCorrect ? withOpacity(c.success, 0.19) : withOpacity(c.error, 0.14),
             shadowColor: c.shadow,
           },
         ]}
@@ -50,7 +58,11 @@ export default function ResultOverlay({ result }: ResultOverlayProps) {
         <View
           style={[
             styles.resultIconWrap,
-            { backgroundColor: isCorrect ? c.success + '15' : c.error + '12' },
+            {
+              backgroundColor: isCorrect
+                ? withOpacity(c.success, 0.082)
+                : withOpacity(c.error, 0.07),
+            },
           ]}
         >
           <Ionicons name={icon} size={32} color={fgColor} />

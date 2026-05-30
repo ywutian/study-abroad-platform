@@ -17,7 +17,7 @@ import { authRoutes } from '@study-abroad/shared';
 import { Button, Input } from '@/components/ui';
 import { apiClient } from '@/lib/api/client';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight } from '@/utils/theme';
 
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
@@ -56,7 +56,9 @@ export default function ForgotPasswordScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.content, { paddingTop: insets.top + spacing['4xl'] }]}>
-          <View style={[styles.iconContainer, { backgroundColor: colors.success + '20' }]}>
+          <View
+            style={[styles.iconContainer, { backgroundColor: withOpacity(colors.success, 0.125) }]}
+          >
             <Ionicons name="mail-open" size={48} color={colors.success} />
           </View>
           <Text style={[styles.title, { color: colors.foreground }]}>
@@ -84,13 +86,21 @@ export default function ForgotPasswordScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Back button */}
-        <TouchableOpacity onPress={() => router.back()} style={styles.backNav}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backNav}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.foreground} />
         </TouchableOpacity>
 
         {/* Header */}
         <View style={styles.header}>
-          <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
+          <View
+            style={[styles.iconContainer, { backgroundColor: withOpacity(colors.primary, 0.125) }]}
+          >
             <Ionicons name="key" size={48} color={colors.primary} />
           </View>
           <Text style={[styles.title, { color: colors.foreground }]}>

@@ -27,7 +27,7 @@ import { AnimatedButton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 
 import {
   SwipeCaseDto,
@@ -348,10 +348,16 @@ export default function GameView({ onShowStats }: GameViewProps) {
           style={[
             styles.actionBtn,
             styles.rejectBtn,
-            { backgroundColor: c.error + '15', borderColor: c.error + '40' },
+            {
+              backgroundColor: withOpacity(c.error, 0.082),
+              borderColor: withOpacity(c.error, 0.25),
+            },
             disabled && styles.actionBtnDisabled,
           ]}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('swipe.reject')}
+          accessibilityState={{ disabled }}
         >
           <Ionicons name="thumbs-down" size={28} color={disabled ? c.foregroundMuted : c.error} />
           <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : c.error }]}>
@@ -366,10 +372,16 @@ export default function GameView({ onShowStats }: GameViewProps) {
           style={[
             styles.actionBtn,
             styles.waitlistBtn,
-            { backgroundColor: c.warning + '15', borderColor: c.warning + '40' },
+            {
+              backgroundColor: withOpacity(c.warning, 0.082),
+              borderColor: withOpacity(c.warning, 0.25),
+            },
             disabled && styles.actionBtnDisabled,
           ]}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('swipe.waitlist')}
+          accessibilityState={{ disabled }}
         >
           <Ionicons name="pause" size={24} color={disabled ? c.foregroundMuted : c.warning} />
           <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : c.warning }]}>
@@ -384,10 +396,16 @@ export default function GameView({ onShowStats }: GameViewProps) {
           style={[
             styles.actionBtn,
             styles.admitBtn,
-            { backgroundColor: c.success + '15', borderColor: c.success + '40' },
+            {
+              backgroundColor: withOpacity(c.success, 0.082),
+              borderColor: withOpacity(c.success, 0.25),
+            },
             disabled && styles.actionBtnDisabled,
           ]}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('swipe.admit')}
+          accessibilityState={{ disabled }}
         >
           <Ionicons name="thumbs-up" size={28} color={disabled ? c.foregroundMuted : c.success} />
           <Text style={[styles.actionLabel, { color: disabled ? c.foregroundMuted : c.success }]}>

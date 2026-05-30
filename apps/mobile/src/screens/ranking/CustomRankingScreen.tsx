@@ -25,7 +25,16 @@ import {
 } from '@/components/ui';
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  type Colors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
 import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 import { apiClient } from '@/lib/api/client';
@@ -117,10 +126,12 @@ export default function CustomRankingScreen() {
 
   const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
 
+  // Warm Nocturne palette has no literal gold/silver/bronze tokens — map the
+  // top-3 podium onto the gold primary + warm neutrals so it reads on dark.
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return { icon: 'trophy', color: '#FFD700' };
-    if (rank === 2) return { icon: 'medal', color: '#C0C0C0' };
-    if (rank === 3) return { icon: 'medal', color: '#CD7F32' };
+    if (rank === 1) return { icon: 'trophy', color: colors.warning };
+    if (rank === 2) return { icon: 'medal', color: colors.foregroundSecondary };
+    if (rank === 3) return { icon: 'medal', color: colors.success };
     return null;
   };
 
@@ -132,8 +143,10 @@ export default function CustomRankingScreen() {
     >
       {/* Header */}
       <Animated.View entering={FadeInDown.duration(400)}>
-        <View style={[styles.headerCard, { backgroundColor: colors.card }]}>
-          <View style={styles.headerIcon}>
+        <View
+          style={[styles.headerCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        >
+          <View style={[styles.headerIcon, { backgroundColor: withOpacity(colors.primary, 0.1) }]}>
             <Ionicons name="options-outline" size={28} color={colors.primary} />
           </View>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>
@@ -198,7 +211,7 @@ export default function CustomRankingScreen() {
               onPress={handleCalculate}
               loading={isLoading}
               style={styles.calculateButton}
-              leftIcon={<Ionicons name="play" size={18} color="#fff" />}
+              leftIcon={<Ionicons name="play" size={18} color={colors.primaryForeground} />}
             >
               {t('ranking.preview')}
             </AnimatedButton>
@@ -255,6 +268,8 @@ export default function CustomRankingScreen() {
                     <TouchableOpacity
                       onPress={() => router.push(`/school/${school.id}`)}
                       activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`#${school.rank} ${school.name}, ${t('ranking.score')} ${(school.score ?? 0).toFixed(1)}`}
                     >
                       <AnimatedCard style={styles.schoolCard}>
                         <CardContent style={styles.schoolContent}>
@@ -267,7 +282,12 @@ export default function CustomRankingScreen() {
                                 color={rankIcon.color}
                               />
                             ) : (
-                              <Text style={[styles.rankNumber, { color: colors.foregroundMuted }]}>
+                              <Text
+                                style={[
+                                  styles.rankNumber,
+                                  { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+                                ]}
+                              >
                                 {school.rank}
                               </Text>
                             )}
@@ -301,8 +321,13 @@ export default function CustomRankingScreen() {
 
                           {/* Score */}
                           <View style={styles.scoreContainer}>
-                            <Text style={[styles.score, { color: colors.primary }]}>
-                              {school.score.toFixed(1)}
+                            <Text
+                              style={[
+                                styles.score,
+                                { color: colors.primary, fontFamily: fontFamily.mono },
+                              ]}
+                            >
+                              {(school.score ?? 0).toFixed(1)}
                             </Text>
                             <Text style={[styles.scoreLabel, { color: colors.foregroundMuted }]}>
                               {t('ranking.score')}
@@ -352,7 +377,9 @@ function WeightSlider({
     <View style={styles.sliderContainer}>
       <View style={styles.sliderHeader}>
         <Text style={[styles.sliderLabel, { color: colors.foreground }]}>{label}</Text>
-        <Text style={[styles.sliderValue, { color: colors.primary }]}>{value}%</Text>
+        <Text style={[styles.sliderValue, { color: colors.primary, fontFamily: fontFamily.mono }]}>
+          {value}%
+        </Text>
       </View>
       <Slider value={value} onValueChange={onChange} minimumValue={0} maximumValue={100} step={5} />
       {hint && <Text style={[styles.sliderHint, { color: colors.foregroundMuted }]}>{hint}</Text>}
@@ -367,14 +394,14 @@ const styles = StyleSheet.create({
   headerCard: {
     margin: spacing.lg,
     padding: spacing.xl,
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
     alignItems: 'center',
   },
   headerIcon: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(29, 24, 19, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,

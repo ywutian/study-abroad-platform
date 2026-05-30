@@ -18,7 +18,15 @@ import {
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { caseRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  withOpacity,
+  spacing,
+  fontSize,
+  fontWeight,
+  fontFamily,
+  borderRadius,
+} from '@/utils/theme';
 import type { Case } from '@/types';
 
 export default function CaseDetailScreen() {
@@ -109,7 +117,7 @@ export default function CaseDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: getResultColor() + '15' }]}>
+        <View style={[styles.header, { backgroundColor: withOpacity(getResultColor(), 0.08) }]}>
           <Badge
             variant={
               caseData.result === 'ADMITTED'
@@ -129,6 +137,9 @@ export default function CaseDetailScreen() {
           <TouchableOpacity
             onPress={() => caseData.schoolId && router.push(`/school/${caseData.schoolId}`)}
             style={[styles.schoolRow, { backgroundColor: withOpacity(colors.card, 0.7) }]}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={caseData.school?.name || t('common.unknownSchool')}
           >
             <SchoolAvatar
               name={caseData.school?.name}
@@ -336,6 +347,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   contentText: {
     fontSize: fontSize.base,

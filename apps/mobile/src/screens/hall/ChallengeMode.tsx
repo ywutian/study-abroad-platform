@@ -23,7 +23,7 @@ import { useToast } from '@/components/ui/Toast';
 import { hallRoutes } from '@study-abroad/shared';
 import type { ChallengeAttemptResult } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 
 type ChallengeResultOption = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
 const RESULT_OPTIONS: ChallengeResultOption[] = ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'];
@@ -145,9 +145,9 @@ export function ChallengeMode() {
           {profile.grade ? (
             <ProfileChip c={c} label={t('hall.challenge.grade')} value={profile.grade} />
           ) : null}
-          {profile.gpa ? <ProfileChip c={c} label="GPA" value={profile.gpa} /> : null}
-          {profile.sat ? <ProfileChip c={c} label="SAT" value={profile.sat} /> : null}
-          {profile.toefl ? <ProfileChip c={c} label="TOEFL" value={profile.toefl} /> : null}
+          {profile.gpa ? <ProfileChip c={c} label="GPA" value={profile.gpa} mono /> : null}
+          {profile.sat ? <ProfileChip c={c} label="SAT" value={profile.sat} mono /> : null}
+          {profile.toefl ? <ProfileChip c={c} label="TOEFL" value={profile.toefl} mono /> : null}
           {profile.targetMajor ? (
             <ProfileChip
               c={c}
@@ -220,6 +220,9 @@ export function ChallengeMode() {
                       key={option}
                       onPress={() => pickGuess(school.caseId, option)}
                       style={[S.optionPill, { backgroundColor: active ? c.primary : c.muted }]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={t(`hall.challenge.results.${option}`)}
                     >
                       <Text
                         style={[
@@ -273,15 +276,19 @@ function ProfileChip({
   c,
   label,
   value,
+  mono,
 }: {
   c: ReturnType<typeof useColors>;
   label: string;
   value: string;
+  mono?: boolean;
 }) {
   return (
     <View style={[S.chip, { backgroundColor: c.muted }]}>
       <Text style={[S.chipLabel, { color: c.foregroundMuted }]}>{label}</Text>
-      <Text style={[S.chipValue, { color: c.foreground }]}>{value}</Text>
+      <Text style={[S.chipValue, { color: c.foreground }, mono && { fontFamily: fontFamily.mono }]}>
+        {value}
+      </Text>
     </View>
   );
 }

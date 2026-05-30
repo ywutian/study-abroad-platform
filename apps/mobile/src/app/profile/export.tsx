@@ -8,7 +8,7 @@ import { Card, CardContent, Button, Loading } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import type { Profile } from '@/types';
 
 export default function ExportScreen() {
@@ -68,12 +68,24 @@ export default function ExportScreen() {
       <View style={styles.content}>
         <Card>
           <CardContent style={styles.cardContent}>
-            <Ionicons name="clipboard-outline" size={32} color={colors.primary} />
+            <View
+              style={[styles.iconCircle, { backgroundColor: withOpacity(colors.primary, 0.125) }]}
+            >
+              <Ionicons name="code-slash-outline" size={28} color={colors.primary} />
+            </View>
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>JSON</Text>
             <Text style={[styles.cardDesc, { color: colors.foregroundMuted }]}>
               {t('profile.exportData')}
             </Text>
-            <Button onPress={handleExportJson} loading={exporting} variant="outline" size="sm">
+            <Button
+              onPress={handleExportJson}
+              loading={exporting}
+              variant="outline"
+              size="sm"
+              style={styles.exportButton}
+              accessibilityLabel={t('profile.exportData')}
+              leftIcon={<Ionicons name="share-outline" size={16} color={colors.primary} />}
+            >
               {t('profile.exportData')}
             </Button>
           </CardContent>
@@ -100,12 +112,23 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.xl,
   },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
+    letterSpacing: 0.5,
   },
   cardDesc: {
     fontSize: fontSize.sm,
     textAlign: 'center',
+  },
+  exportButton: {
+    marginTop: spacing.xs,
   },
 });

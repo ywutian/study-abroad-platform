@@ -328,6 +328,8 @@ export interface DashboardSummary {
   };
   pendingTasks: {
     total: number;
+    /** Tasks due today (not yet completed). Optional/additive — older clients ignore it. */
+    todayCount?: number;
     byType: { type: string; count: number }[];
     profileGaps: string[];
   };
