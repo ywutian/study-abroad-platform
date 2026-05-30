@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { Button, Input, Select, Loading } from '@/components/ui';
+import { Button, Input, Select, Loading, Card, CardContent } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import type { Profile } from '@/types';
 
 const GRADE_OPTIONS = [
@@ -133,80 +134,110 @@ export default function BasicInfoScreen() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.form}>
-        <Select
-          options={GRADE_OPTIONS}
-          value={grade}
-          onChange={setGrade}
-          label={t('profile.fields.grade')}
-          placeholder={t('profile.fields.grade')}
-        />
-
-        <Select
-          options={schoolTypeOptions}
-          value={schoolType}
-          onChange={setSchoolType}
-          label={t('profile.fields.schoolType')}
-          placeholder={t('profile.fields.schoolType')}
-        />
-
-        <Input
-          value={currentSchool}
-          onChangeText={setCurrentSchool}
-          label={t('profile.fields.currentSchool')}
-          placeholder={t('profile.fields.currentSchool')}
-        />
-
-        <Input
-          value={targetMajor}
-          onChangeText={setTargetMajor}
-          label={t('profile.fields.targetMajor')}
-          placeholder={t('profile.fields.targetMajor')}
-        />
-
-        <View style={styles.row}>
-          <View style={styles.rowItem}>
-            <Input
-              value={gpa}
-              onChangeText={setGpa}
-              label={t('profile.fields.gpaValue')}
-              placeholder="3.8"
-              keyboardType="decimal-pad"
-            />
-          </View>
-          <View style={styles.rowItemSmall}>
-            <Select
-              options={GPA_SCALE_OPTIONS}
-              value={gpaScale}
-              onChange={setGpaScale}
-              label={t('profile.fields.gpaScale')}
-            />
-          </View>
+      {/* Header band — icon chip + screen title */}
+      <View style={styles.header}>
+        <View style={[styles.headerIcon, { backgroundColor: withOpacity(colors.primary, 0.14) }]}>
+          <Ionicons name="person-outline" size={20} color={colors.primary} />
         </View>
-
-        <Select
-          options={budgetOptions}
-          value={budgetTier}
-          onChange={setBudgetTier}
-          label={t('profile.fields.budget')}
-          placeholder={t('profile.fields.budget')}
-        />
-
-        <Select
-          options={visibilityOptions}
-          value={visibility}
-          onChange={setVisibility}
-          label={t('profile.visibility')}
-        />
-
-        <Button onPress={handleSave} loading={saveMutation.isPending} style={styles.saveButton}>
-          {t('common.save')}
-        </Button>
+        <View style={styles.headerText}>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]} numberOfLines={1}>
+            {t('profile.basicInfo')}
+          </Text>
+          <Text style={[styles.headerSub, { color: colors.foregroundMuted }]} numberOfLines={1}>
+            {t('profile.completeProfile')}
+          </Text>
+        </View>
       </View>
+
+      {/* Academic & background card */}
+      <Card style={styles.card}>
+        <CardContent style={styles.cardContent}>
+          <Select
+            options={GRADE_OPTIONS}
+            value={grade}
+            onChange={setGrade}
+            label={t('profile.fields.grade')}
+            placeholder={t('profile.fields.grade')}
+          />
+
+          <Select
+            options={schoolTypeOptions}
+            value={schoolType}
+            onChange={setSchoolType}
+            label={t('profile.fields.schoolType')}
+            placeholder={t('profile.fields.schoolType')}
+          />
+
+          <Input
+            value={currentSchool}
+            onChangeText={setCurrentSchool}
+            label={t('profile.fields.currentSchool')}
+            placeholder={t('profile.fields.currentSchool')}
+          />
+
+          <Input
+            value={targetMajor}
+            onChangeText={setTargetMajor}
+            label={t('profile.fields.targetMajor')}
+            placeholder={t('profile.fields.targetMajor')}
+          />
+
+          <View style={styles.row}>
+            <View style={styles.rowItem}>
+              <Input
+                value={gpa}
+                onChangeText={setGpa}
+                label={t('profile.fields.gpaValue')}
+                placeholder="3.8"
+                keyboardType="decimal-pad"
+              />
+            </View>
+            <View style={styles.rowItemSmall}>
+              <Select
+                options={GPA_SCALE_OPTIONS}
+                value={gpaScale}
+                onChange={setGpaScale}
+                label={t('profile.fields.gpaScale')}
+              />
+            </View>
+          </View>
+
+          <Select
+            options={budgetOptions}
+            value={budgetTier}
+            onChange={setBudgetTier}
+            label={t('profile.fields.budget')}
+            placeholder={t('profile.fields.budget')}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Privacy card */}
+      <View style={styles.sectionLabelRow}>
+        <Ionicons name="lock-closed-outline" size={15} color={colors.foregroundMuted} />
+        <Text style={[styles.sectionLabel, { color: colors.foregroundMuted }]}>
+          {t('profile.visibility')}
+        </Text>
+      </View>
+      <Card style={styles.card}>
+        <CardContent style={styles.cardContent}>
+          <Select
+            options={visibilityOptions}
+            value={visibility}
+            onChange={setVisibility}
+            label={t('profile.visibility')}
+          />
+        </CardContent>
+      </Card>
+
+      <Button onPress={handleSave} loading={saveMutation.isPending} style={styles.saveButton}>
+        {t('common.save')}
+      </Button>
     </ScrollView>
   );
 }
@@ -219,9 +250,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  form: {
+  content: {
     padding: spacing.lg,
     gap: spacing.lg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  headerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  headerTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    letterSpacing: -0.2,
+  },
+  headerSub: {
+    fontSize: fontSize.sm,
+    marginTop: 2,
+  },
+  card: {
+    borderRadius: borderRadius.lg,
+  },
+  cardContent: {
+    padding: spacing.lg,
+    gap: spacing.lg,
+  },
+  sectionLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+    marginBottom: -spacing.sm,
+  },
+  sectionLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: 0.2,
   },
   row: {
     flexDirection: 'row',
@@ -234,6 +309,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   saveButton: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
 });

@@ -26,7 +26,15 @@ import type {
   DataReliability,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { ChinaAdmitChart, ChinaAdmitNoData } from './ChinaAdmitChart';
 
 /** Theme color token per data-reliability rating (resolved via useColors). */
@@ -87,7 +95,13 @@ export function ChinaAdmitDashboard() {
     <View>
       {/* Data transparency banner */}
       <View
-        style={[S.banner, { backgroundColor: c.primary + '12', borderColor: c.primary + '40' }]}
+        style={[
+          S.banner,
+          {
+            backgroundColor: withOpacity(c.primary, 0.07),
+            borderColor: withOpacity(c.primary, 0.25),
+          },
+        ]}
       >
         <Ionicons name="shield-checkmark-outline" size={16} color={c.primary} />
         <Text style={[S.bannerText, { color: c.primary }]}>
@@ -171,7 +185,7 @@ function ReliabilityBadge({ reliability }: { reliability: DataReliability }) {
   const color = c[RELIABILITY_TOKEN[reliability]];
   return (
     <View
-      style={[S.reliabilityBadge, { backgroundColor: color + '22' }]}
+      style={[S.reliabilityBadge, { backgroundColor: withOpacity(color, 0.13) }]}
       accessibilityLabel={t(`hall.verified.chinaAdmit.reliability.${reliability}`)}
     >
       <Text style={[S.reliabilityText, { color }]}>{reliability}</Text>
@@ -251,6 +265,7 @@ const S = StyleSheet.create({
   reliabilityText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   signalRow: {
     flexDirection: 'row',
@@ -264,5 +279,6 @@ const S = StyleSheet.create({
   },
   signalChange: {
     fontSize: fontSize.xs,
+    fontFamily: fontFamily.mono,
   },
 });

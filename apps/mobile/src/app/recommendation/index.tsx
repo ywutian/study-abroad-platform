@@ -29,7 +29,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 import { Segment } from '@/components/ui';
-import { useColors, colors as themeColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight } from '@/utils/theme';
 
 import { GenerateTab } from '@/screens/recommendation/GenerateTab';
 import { HistoryTab } from '@/screens/recommendation/HistoryTab';
@@ -100,18 +100,22 @@ export default function RecommendationPage() {
         {/* Hero */}
         <Animated.View entering={FadeInDown.duration(500).springify()}>
           <LinearGradient
-            colors={[colors.primary, colors.primary + 'cc']}
+            colors={[colors.primary, withOpacity(colors.primary, 0.8)]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.hero}
           >
             <View style={styles.heroContent}>
-              <View style={styles.heroIcon}>
+              <View style={[styles.heroIcon, { backgroundColor: colors.onGradientOverlay }]}>
                 <Ionicons name="school" size={28} color={colors.onGradient} />
               </View>
               <View style={styles.heroTextContainer}>
-                <Text style={styles.heroTitle}>{t('recommendation.heroTitle')}</Text>
-                <Text style={styles.heroSubtitle}>{t('recommendation.heroSubtitle')}</Text>
+                <Text style={[styles.heroTitle, { color: colors.onGradient }]}>
+                  {t('recommendation.heroTitle')}
+                </Text>
+                <Text style={[styles.heroSubtitle, { color: colors.onGradientMuted }]}>
+                  {t('recommendation.heroSubtitle')}
+                </Text>
               </View>
             </View>
           </LinearGradient>
@@ -178,7 +182,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: themeColors.light.onGradientOverlay,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -189,12 +192,10 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: themeColors.light.onGradient,
     marginBottom: spacing.xs,
   },
   heroSubtitle: {
     fontSize: fontSize.sm,
-    color: themeColors.light.onGradientMuted,
     lineHeight: fontSize.sm * 1.4,
   },
 

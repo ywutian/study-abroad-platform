@@ -83,6 +83,7 @@ export default function ThemeScreen() {
         onChangeText={setQuery}
         placeholder={t('settings.themeSearchPlaceholder')}
         placeholderTextColor={colors.placeholder}
+        accessibilityLabel={t('settings.themeSearchPlaceholder')}
         style={[
           styles.searchInput,
           {
@@ -104,6 +105,7 @@ export default function ThemeScreen() {
             <Pressable
               key={category.id}
               accessibilityRole="button"
+              accessibilityLabel={category.label}
               accessibilityState={{ selected: active }}
               onPress={() => setActiveCategory(category.id)}
               style={[
@@ -144,6 +146,7 @@ export default function ThemeScreen() {
               <Pressable
                 key={theme.id}
                 accessibilityRole="button"
+                accessibilityLabel={labelLocale === 'zh' ? theme.labelZh : theme.labelEn}
                 accessibilityState={{ selected: active }}
                 onPress={() => setColorPalette(theme.id as ColorPalette)}
                 style={[
@@ -205,7 +208,7 @@ const styles = StyleSheet.create({
   searchInput: {
     height: 44,
     borderWidth: 1,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.md,
     fontSize: fontSize.sm,
     marginBottom: spacing.md,
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
   paletteCard: {
     width: '48%',
     borderWidth: 1,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     padding: spacing.sm,
     shadowOpacity: 0.08,
     shadowRadius: 10,
@@ -282,7 +285,7 @@ const styles = StyleSheet.create({
   emptyState: {
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 120,

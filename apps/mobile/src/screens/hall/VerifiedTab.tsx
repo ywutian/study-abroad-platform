@@ -13,7 +13,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState, Loading } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { hallRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { VerifiedUserDto, VerifiedRankingResponse, RankingFilter } from './types';
@@ -106,7 +106,9 @@ export function VerifiedTab() {
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
-            <Text style={[S.vStatValue, { color: c.info }]}>{stats.avgGpa.toFixed(2)}</Text>
+            <Text style={[S.vStatValue, { color: c.info }]}>
+              {stats.avgGpa != null ? stats.avgGpa.toFixed(2) : '—'}
+            </Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
               {t('hall.verified.stats.avgGpa')}
             </Text>
@@ -128,6 +130,9 @@ export function VerifiedTab() {
               key={filter}
               onPress={() => setVerifiedFilter(filter)}
               style={[S.filterChip, { backgroundColor: active ? c.primary : c.muted }]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={filterLabel(filter)}
             >
               <Text
                 style={[S.filterChipText, { color: active ? c.primaryForeground : c.foreground }]}
@@ -171,6 +176,7 @@ const S = StyleSheet.create({
   vStatValue: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   vStatLabel: {
     fontSize: fontSize.xs,

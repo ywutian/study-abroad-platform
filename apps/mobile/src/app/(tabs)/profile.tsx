@@ -27,7 +27,15 @@ import {
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  withOpacity,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+} from '@/utils/theme';
 import type { Profile } from '@/types';
 
 export default function ProfileScreen() {
@@ -658,6 +666,7 @@ const styles = StyleSheet.create({
   pointsValue: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   pointsLabel: {
     fontSize: fontSize.sm,

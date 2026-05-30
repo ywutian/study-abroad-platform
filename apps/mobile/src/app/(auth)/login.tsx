@@ -158,7 +158,12 @@ export default function LoginScreen() {
             }
           />
 
-          <Link href="/(auth)/forgot-password" style={styles.forgotPassword}>
+          <Link
+            href="/(auth)/forgot-password"
+            style={styles.forgotPassword}
+            accessibilityRole="link"
+            accessibilityLabel={t('auth.login.forgotPassword')}
+          >
             <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
               {t('auth.login.forgotPassword')}
             </Text>
@@ -174,7 +179,11 @@ export default function LoginScreen() {
           <Text style={[styles.footerText, { color: colors.foregroundMuted }]}>
             {t('auth.login.noAccount')}
           </Text>
-          <Link href="/(auth)/register">
+          <Link
+            href="/(auth)/register"
+            accessibilityRole="link"
+            accessibilityLabel={t('auth.login.signUp')}
+          >
             <Text style={[styles.footerLink, { color: colors.primary }]}>
               {t('auth.login.signUp')}
             </Text>

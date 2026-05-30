@@ -121,7 +121,18 @@
       "safety": "保底"
     },
     "upcomingDeadlines": "即将到来的截止日",
-    "daysLeft": "天"
+    "daysLeft": "天",
+    "greetingMorning": "早上好",
+    "greetingAfternoon": "下午好",
+    "greetingEvening": "晚上好",
+    "nextActionDays": "还剩 {{days}} 天",
+    "nextActionTasks": "还差 {{count}} 项任务 · 继续完成",
+    "statTodayTasks": "今日待办",
+    "statSubmitted": "已提交",
+    "statCompletion": "资料完成",
+    "viewSchoolList": "查看选校单",
+    "statusActive": "进行中",
+    "statusUpcoming": "待开始"
   },
   "auth": {
     "login": {

@@ -3,7 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AnimatedCard, CardContent, ProgressBar } from '@/components/ui';
-import { spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { RankingResult, Colors } from './types';
 import { getPercentileColor } from './types';
 
@@ -14,7 +21,7 @@ interface RankingItemProps {
 
 export const RankingItem = memo(function RankingItem({ item, colors: c }: RankingItemProps) {
   const { t } = useTranslation();
-  const pColor = getPercentileColor(item.percentile);
+  const pColor = getPercentileColor(item.percentile, c);
   const breakdownKeys = item.breakdown ? Object.keys(item.breakdown) : [];
 
   return (
@@ -31,7 +38,7 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
               })}
             </Text>
           </View>
-          <View style={[S.percentileBadge, { backgroundColor: pColor + '15' }]}>
+          <View style={[S.percentileBadge, { backgroundColor: withOpacity(pColor, 0.08) }]}>
             <Text style={[S.percentileText, { color: pColor }]}>
               {t('hall.ranking.top')} {Math.round(100 - item.percentile)}%
             </Text>
@@ -104,6 +111,7 @@ const S = StyleSheet.create({
   percentileText: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   rankScoreRow: {
     flexDirection: 'row',
@@ -121,6 +129,7 @@ const S = StyleSheet.create({
   rankValue: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   rankDivider: {
     width: 1,

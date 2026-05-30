@@ -25,7 +25,16 @@ import {
   Input,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+  type Colors,
+} from '@/utils/theme';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 import { userRoutes } from '@study-abroad/shared';
@@ -381,6 +390,8 @@ export default function SettingsScreen() {
             <TouchableOpacity
               onPress={() => router.push('/profile/basic' as Href)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.personalInfo')}
             >
               <AnimatedCard style={styles.profileCard}>
                 <CardContent style={styles.profileContent}>
@@ -394,8 +405,8 @@ export default function SettingsScreen() {
                     </Text>
                     {user.role === 'VERIFIED' && (
                       <Badge variant="warning" style={styles.vipBadge}>
-                        <Ionicons name="diamond" size={12} color="#fff" />
-                        <Text style={styles.vipText}> VIP</Text>
+                        <Ionicons name="diamond" size={12} color={colors.warning} />
+                        <Text style={[styles.vipText, { color: colors.warning }]}> VIP</Text>
                       </Badge>
                     )}
                   </View>
@@ -436,7 +447,12 @@ export default function SettingsScreen() {
       {deleteDialogVisible && (
         <View style={[styles.passwordOverlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.passwordDialog, { backgroundColor: colors.card }]}>
-            <View style={[styles.deleteIconContainer, { backgroundColor: colors.error + '15' }]}>
+            <View
+              style={[
+                styles.deleteIconContainer,
+                { backgroundColor: withOpacity(colors.error, 0.08) },
+              ]}
+            >
               <Ionicons name="trash" size={32} color={colors.error} />
             </View>
             <Text style={[styles.deleteTitle, { color: colors.foreground }]}>
@@ -482,7 +498,7 @@ export default function SettingsScreen() {
 }
 
 // Setting Row Component
-function SettingRow({ item, colors }: { item: SettingItem; colors: any }) {
+function SettingRow({ item, colors }: { item: SettingItem; colors: Colors }) {
   const textColor = item.danger ? colors.error : colors.foreground;
 
   const content = (
@@ -490,7 +506,9 @@ function SettingRow({ item, colors }: { item: SettingItem; colors: any }) {
       <View
         style={[
           styles.settingIcon,
-          { backgroundColor: item.danger ? colors.error + '15' : colors.muted },
+          {
+            backgroundColor: item.danger ? withOpacity(colors.error, 0.08) : colors.muted,
+          },
         ]}
       >
         <Ionicons name={item.icon} size={20} color={item.danger ? colors.error : colors.primary} />
@@ -500,7 +518,14 @@ function SettingRow({ item, colors }: { item: SettingItem; colors: any }) {
       {item.type === 'toggle' ? (
         <Switch value={item.toggleValue || false} onValueChange={item.onToggle || (() => {})} />
       ) : item.type === 'info' ? (
-        <Text style={[styles.settingValue, { color: colors.foregroundMuted }]}>{item.value}</Text>
+        <Text
+          style={[
+            styles.settingValue,
+            { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+          ]}
+        >
+          {item.value}
+        </Text>
       ) : (
         <View style={styles.settingRight}>
           {item.value && (
@@ -561,7 +586,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   vipText: {
-    color: '#fff',
     fontSize: fontSize.xs,
     fontWeight: fontWeight.semibold,
   },

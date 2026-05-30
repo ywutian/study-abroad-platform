@@ -11,7 +11,7 @@ import {
   Progress,
   AnimatedCounter,
 } from '@/components/ui';
-import { spacing, fontSize, fontWeight } from '@/utils/theme';
+import { spacing, fontSize, fontWeight, fontFamily } from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 
@@ -102,7 +102,12 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
             <Text style={[styles.probabilityLabel, { color: colors.foregroundMuted }]}>
               {t('recommendation.probability')}
             </Text>
-            <Text style={[styles.probabilityValue, { color: tierConfig.color }]}>
+            <Text
+              style={[
+                styles.probabilityValue,
+                { color: tierConfig.color, fontFamily: fontFamily.mono },
+              ]}
+            >
               {Math.round(school.estimatedProbability)}%
             </Text>
           </View>
@@ -220,6 +225,7 @@ const styles = StyleSheet.create({
   fitScoreValue: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   fitScoreLabel: {
     fontSize: fontSize.xs,

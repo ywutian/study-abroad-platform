@@ -18,7 +18,15 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { TestScore } from '@/types';
 
 const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'DUOLINGO', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
@@ -370,7 +378,7 @@ export default function ScoresScreen() {
                       <View
                         style={[
                           styles.scoreTypeBadge,
-                          { backgroundColor: getScoreColor(score.type) + '20' },
+                          { backgroundColor: withOpacity(getScoreColor(score.type), 0.125) },
                         ]}
                       >
                         <Text style={[styles.scoreTypeText, { color: getScoreColor(score.type) }]}>
@@ -383,7 +391,12 @@ export default function ScoresScreen() {
                         </Text>
                       )}
                       {score.testDate && (
-                        <Text style={[styles.scoreDate, { color: colors.foregroundMuted }]}>
+                        <Text
+                          style={[
+                            styles.scoreDate,
+                            { color: colors.foregroundMuted, fontFamily: fontFamily.mono },
+                          ]}
+                        >
                           {score.testDate}
                         </Text>
                       )}
@@ -393,6 +406,8 @@ export default function ScoresScreen() {
                         onPress={() => openEditModal(score)}
                         style={styles.actionButton}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('profileEdit.editScore')}
                       >
                         <Ionicons name="pencil-outline" size={18} color={colors.primary} />
                       </TouchableOpacity>
@@ -400,12 +415,19 @@ export default function ScoresScreen() {
                         onPress={() => setDeleteTarget(score)}
                         style={styles.actionButton}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('common.delete')}
                       >
                         <Ionicons name="trash-outline" size={18} color={colors.error} />
                       </TouchableOpacity>
                     </View>
                   </View>
-                  <Text style={[styles.scoreValue, { color: colors.foreground }]}>
+                  <Text
+                    style={[
+                      styles.scoreValue,
+                      { color: colors.foreground, fontFamily: fontFamily.mono },
+                    ]}
+                  >
                     {score.score}
                   </Text>
                 </CardContent>
@@ -418,9 +440,11 @@ export default function ScoresScreen() {
       {/* Floating Add Button */}
       {scores.length > 0 && (
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: colors.primary }]}
+          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
           onPress={openAddModal}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.addScore')}
         >
           <Ionicons name="add" size={28} color={colors.primaryForeground} />
         </TouchableOpacity>
@@ -586,11 +610,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 6,
+    elevation: 3,
   },
   formContainer: {
     paddingBottom: spacing.md,

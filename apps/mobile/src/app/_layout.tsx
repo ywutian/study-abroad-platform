@@ -7,6 +7,7 @@ import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -278,6 +279,12 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
+        // Load brand fonts (Geist Mono — signature monospaced numerals).
+        // Failure is non-fatal: the app falls back to the system font.
+        await Font.loadAsync({
+          GeistMono: require('../../assets/fonts/GeistMono.ttf'),
+        }).catch(() => undefined);
+
         // Initialize i18n
         await initI18n();
 

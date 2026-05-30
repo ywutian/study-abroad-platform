@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   SearchBar,
-  Badge,
   RankingBadge,
   Loading,
   EmptyState,
@@ -18,7 +17,15 @@ import {
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { BottomSheet } from '@/components/ui/Modal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
-import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
 import type { School } from '@/types';
 
@@ -28,15 +35,23 @@ interface SchoolListItemProps {
 }
 
 const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolListItemProps) {
+  const acc =
+    item.acceptanceRate != null ? formatAcceptanceRate(Number(item.acceptanceRate)) : null;
   return (
-    <TouchableOpacity onPress={() => router.push(`/school/${item.id}`)} style={styles.cardWrapper}>
+    <TouchableOpacity
+      onPress={() => router.push(`/school/${item.id}`)}
+      style={styles.cardWrapper}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={item.name}
+    >
       <Card>
         <CardContent style={styles.cardContent}>
           <View style={styles.mediaStack}>
             {item.media?.campusCover?.url ? (
               <Image
                 source={{ uri: item.media.campusCover.url }}
-                style={styles.coverThumb}
+                style={[styles.coverThumb, { backgroundColor: colors.muted }]}
                 resizeMode="cover"
               />
             ) : null}
@@ -52,14 +67,26 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
             <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
               {item.name}
             </Text>
-            <Text style={[styles.schoolLocation, { color: colors.foregroundMuted }]}>
+            <Text
+              style={[styles.schoolLocation, { color: colors.foregroundMuted }]}
+              numberOfLines={1}
+            >
               {item.city}, {item.state}
             </Text>
             <View style={styles.badges}>
               <RankingBadge rankings={item.rankings} usNewsRank={item.usNewsRank} />
-              {item.acceptanceRate != null && (
-                <Badge variant="outline">{formatAcceptanceRate(Number(item.acceptanceRate))}</Badge>
-              )}
+              {acc ? (
+                <View style={[styles.accBadge, { backgroundColor: colors.backgroundTertiary }]}>
+                  <Text
+                    style={[
+                      styles.accBadgeText,
+                      { color: colors.foregroundSecondary, fontFamily: fontFamily.mono },
+                    ]}
+                  >
+                    {acc}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.foregroundMuted} />
@@ -230,7 +257,7 @@ export default function SchoolsScreen() {
             }}
             style={[
               styles.sortOption,
-              sortBy === option.value && { backgroundColor: colors.primary + '10' },
+              sortBy === option.value && { backgroundColor: withOpacity(colors.primary, 0.1) },
             ]}
           >
             <Text
@@ -302,7 +329,15 @@ const styles = StyleSheet.create({
     width: 92,
     height: 64,
     borderRadius: 12,
-    backgroundColor: '#e5e7eb',
+  },
+  accBadge: {
+    borderRadius: borderRadius.full,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  accBadgeText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
   },
   logoOverlay: {
     position: 'absolute',

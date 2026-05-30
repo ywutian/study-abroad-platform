@@ -27,7 +27,7 @@ import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { Tabs } from '@/components/ui/Tabs';
 import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
 import { formatAcceptanceRate } from '@/utils/format';
 import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
@@ -220,7 +220,14 @@ export default function SchoolDetailScreen() {
                         {getRankingListShortLabel(r.list)} · {r.year}
                       </Text>
                     </View>
-                    <Text style={[styles.rankValue, { color: colors.primary }]}>#{r.rank}</Text>
+                    <Text
+                      style={[
+                        styles.rankValue,
+                        { color: colors.primary, fontFamily: fontFamily.mono },
+                      ]}
+                    >
+                      #{r.rank}
+                    </Text>
                   </View>
                 ));
               })()}
@@ -329,6 +336,8 @@ export default function SchoolDetailScreen() {
               <TouchableOpacity
                 key={caseItem.id}
                 onPress={() => router.push(`/case/${caseItem.id}`)}
+                accessibilityRole="button"
+                accessibilityLabel={`${caseItem.major}, ${caseItem.year}, ${t(`cases.result.${caseItem.result.toLowerCase()}`)}`}
               >
                 <Card style={styles.card}>
                   <CardContent style={styles.caseItem}>
@@ -372,7 +381,7 @@ export default function SchoolDetailScreen() {
           {school.media?.campusCover?.url ? (
             <Image
               source={{ uri: school.media.campusCover.url }}
-              style={styles.coverImage}
+              style={[styles.coverImage, { backgroundColor: colors.muted }]}
               resizeMode="cover"
             />
           ) : null}
@@ -408,7 +417,14 @@ export default function SchoolDetailScreen() {
                 { backgroundColor: colors.card, borderColor: colors.border },
               ]}
             >
-              <Text style={[styles.statValue, { color: colors.foreground }]}>{stat.value}</Text>
+              <Text
+                style={[
+                  styles.statValue,
+                  { color: colors.foreground, fontFamily: fontFamily.mono },
+                ]}
+              >
+                {stat.value}
+              </Text>
               <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
                 {stat.label}
               </Text>
@@ -446,7 +462,6 @@ const styles = StyleSheet.create({
     height: 180,
     marginTop: -spacing['2xl'],
     marginBottom: spacing.md,
-    backgroundColor: '#e5e7eb',
   },
   logo: {
     marginBottom: spacing.lg,

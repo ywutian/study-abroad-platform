@@ -3,7 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AnimatedCard, CardContent, Badge, Avatar } from '@/components/ui';
-import { spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { VerifiedUserDto, Colors } from './types';
 import { RESULT_BADGE_VARIANT } from './types';
 
@@ -39,12 +46,12 @@ export const VerifiedItem = memo(function VerifiedItem({ item, colors: c }: Veri
             <View style={S.verifiedBadges}>
               <Badge variant={resultVariant}>{item.result}</Badge>
               {item.gpa != null && (
-                <View style={[S.gpaBadge, { backgroundColor: c.info + '15' }]}>
+                <View style={[S.gpaBadge, { backgroundColor: withOpacity(c.info, 0.08) }]}>
                   <Text style={[S.gpaBadgeText, { color: c.info }]}>GPA {item.gpa}</Text>
                 </View>
               )}
               {item.sat != null && (
-                <View style={[S.gpaBadge, { backgroundColor: c.warning + '15' }]}>
+                <View style={[S.gpaBadge, { backgroundColor: withOpacity(c.warning, 0.08) }]}>
                   <Text style={[S.gpaBadgeText, { color: c.warning }]}>SAT {item.sat}</Text>
                 </View>
               )}
@@ -96,5 +103,6 @@ const S = StyleSheet.create({
   gpaBadgeText: {
     fontSize: 10,
     fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.mono,
   },
 });

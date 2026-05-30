@@ -15,7 +15,7 @@ import {
   getRecruitmentContextName,
   resumeRoutes,
 } from '@study-abroad/shared';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import { EmptyState, Loading, Segment, Select } from '@/components/ui';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -302,6 +302,8 @@ export default function TeamsScreen() {
               <View style={styles.row}>
                 <TouchableOpacity
                   style={[styles.actionButton, { borderColor: colors.border }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('teams.recruitment.swipeDeck.pass')}
                   onPress={() =>
                     swipeMutation.mutate({
                       sourceCardId: currentCard.id,
@@ -317,6 +319,8 @@ export default function TeamsScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('teams.recruitment.swipeDeck.like')}
                   onPress={() =>
                     swipeMutation.mutate({
                       sourceCardId: currentCard.id,
@@ -445,6 +449,12 @@ export default function TeamsScreen() {
                   <View style={styles.row}>
                     <TouchableOpacity
                       style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        currentCard
+                          ? t('teams.recruitment.action.saveCard')
+                          : t('teams.recruitment.action.createCard')
+                      }
                       onPress={() =>
                         currentCard ? updateMutation.mutate() : createMutation.mutate()
                       }
@@ -458,6 +468,8 @@ export default function TeamsScreen() {
                     {currentCard && (
                       <TouchableOpacity
                         style={[styles.actionButton, { borderColor: colors.border }]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('teams.recruitment.action.publish')}
                         onPress={() => publishMutation.mutate(currentCard.id)}
                       >
                         <Text style={[styles.actionLabel, { color: colors.foreground }]}>
@@ -512,6 +524,9 @@ export default function TeamsScreen() {
                     <TouchableOpacity
                       style={[styles.actionButton, { borderColor: colors.border }]}
                       disabled={!currentCard}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('teams.recruitment.display.save')}
+                      accessibilityState={{ disabled: !currentCard }}
                       onPress={() => profileMutation.mutate(false)}
                     >
                       <Text style={[styles.actionLabel, { color: colors.foreground }]}>
@@ -521,6 +536,9 @@ export default function TeamsScreen() {
                     <TouchableOpacity
                       style={[styles.primaryButton, { backgroundColor: colors.primary }]}
                       disabled={!currentCard}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('teams.recruitment.display.confirmConsent')}
+                      accessibilityState={{ disabled: !currentCard }}
                       onPress={() => profileMutation.mutate(true)}
                     >
                       <Text style={[styles.primaryLabel, { color: colors.primaryForeground }]}>
@@ -644,28 +662,29 @@ function getMatchKindLabel(t: TranslationFn, kind: string) {
     : t('teams.recruitment.matchKind.teamUp');
 }
 
-function getToneStyle(tone: RecruitmentHighlight['tone']) {
+function getToneStyle(tone: RecruitmentHighlight['tone'], colors: ReturnType<typeof useColors>) {
   switch (tone) {
     case 'success':
-      return { backgroundColor: '#ece8d2', color: '#555d3c' };
+      return { backgroundColor: withOpacity(colors.success, 0.125), color: colors.success };
     case 'warning':
-      return { backgroundColor: '#fef3c7', color: '#92400e' };
+      return { backgroundColor: withOpacity(colors.warning, 0.125), color: colors.warning };
     case 'danger':
-      return { backgroundColor: '#fee2e2', color: '#991b1b' };
+      return { backgroundColor: withOpacity(colors.error, 0.125), color: colors.error };
     default:
-      return { backgroundColor: '#e0f2fe', color: '#075985' };
+      return { backgroundColor: withOpacity(colors.info, 0.125), color: colors.info };
   }
 }
 
 function HighlightChipGroup({ title, chips }: { title: string; chips: RecruitmentHighlight[] }) {
+  const colors = useColors();
   if (chips.length === 0) return null;
 
   return (
     <View style={styles.highlightBlock}>
-      <Text style={styles.highlightTitle}>{title}</Text>
+      <Text style={[styles.highlightTitle, { color: colors.foregroundMuted }]}>{title}</Text>
       <View style={styles.chipRow}>
         {chips.map((chip, index) => {
-          const toneStyle = getToneStyle(chip.tone);
+          const toneStyle = getToneStyle(chip.tone, colors);
           return (
             <View
               key={`${chip.source}-${chip.sourceId ?? chip.label}-${index}`}
@@ -731,6 +750,9 @@ function CoordinationDetails({ card }: { card: TeamRecruitmentCardFrontDto }) {
     <View style={[styles.coordination, { borderColor: colors.border }]}>
       <TouchableOpacity
         style={styles.coordinationHeader}
+        accessibilityRole="button"
+        accessibilityLabel={t('teams.recruitment.card.coordination')}
+        accessibilityState={{ expanded }}
         onPress={() => setExpanded((value) => !value)}
       >
         <Text style={[styles.coordinationTitle, { color: colors.foregroundMuted }]}>
@@ -833,6 +855,9 @@ function ToggleChip({
   return (
     <TouchableOpacity
       onPress={onPress}
+      accessibilityRole="checkbox"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: active }}
       style={[
         styles.toggleChip,
         {
@@ -906,7 +931,6 @@ const styles = StyleSheet.create({
   highlightTitle: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.semibold,
-    color: '#6f665b',
   },
   chipRow: {
     flexDirection: 'row',

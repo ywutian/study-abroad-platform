@@ -9,7 +9,15 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import type { Profile, Education } from '@/types';
 
 export default function EducationScreen() {
@@ -186,7 +194,13 @@ export default function EducationScreen() {
                     <View style={styles.itemHeader}>
                       <View style={styles.itemInfo}>
                         <View
-                          style={[styles.iconBadge, { backgroundColor: colors.primary + '20' }]}
+                          style={[
+                            styles.iconBadge,
+                            {
+                              backgroundColor: withOpacity(colors.primary, 0.125),
+                              borderColor: withOpacity(colors.primary, 0.25),
+                            },
+                          ]}
                         >
                           <Ionicons name="school-outline" size={18} color={colors.primary} />
                         </View>
@@ -217,6 +231,8 @@ export default function EducationScreen() {
                           onPress={() => openEditModal(edu)}
                           style={styles.actionButton}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t('common.edit')} ${edu.schoolName}`}
                         >
                           <Ionicons name="pencil-outline" size={18} color={colors.primary} />
                         </TouchableOpacity>
@@ -224,17 +240,24 @@ export default function EducationScreen() {
                           onPress={() => setDeleteTarget(edu)}
                           style={styles.actionButton}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t('common.delete')} ${edu.schoolName}`}
                         >
                           <Ionicons name="trash-outline" size={18} color={colors.error} />
                         </TouchableOpacity>
                       </View>
                     </View>
                     {edu.gpa && (
-                      <View style={styles.gpaContainer}>
+                      <View style={[styles.gpaContainer, { borderTopColor: colors.border }]}>
                         <Text style={[styles.gpaLabel, { color: colors.foregroundMuted }]}>
                           GPA
                         </Text>
-                        <Text style={[styles.gpaValue, { color: colors.foreground }]}>
+                        <Text
+                          style={[
+                            styles.gpaValue,
+                            { color: colors.foreground, fontFamily: fontFamily.mono },
+                          ]}
+                        >
                           {edu.gpa}
                           {edu.gpaScale ? ` / ${edu.gpaScale}` : ''}
                         </Text>
@@ -254,6 +277,8 @@ export default function EducationScreen() {
           style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
           onPress={openAddModal}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.addEducation')}
         >
           <Ionicons name="add" size={28} color={colors.primaryForeground} />
         </TouchableOpacity>
@@ -396,6 +421,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -431,7 +457,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(100, 116, 139, 0.2)',
   },
   gpaLabel: {
     fontSize: fontSize.xs,

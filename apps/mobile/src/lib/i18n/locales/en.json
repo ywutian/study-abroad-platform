@@ -121,7 +121,18 @@
       "safety": "Safety"
     },
     "upcomingDeadlines": "Upcoming Deadlines",
-    "daysLeft": "days"
+    "daysLeft": "days",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "nextActionDays": "{{days}} days left",
+    "nextActionTasks": "{{count}} tasks to finish · keep going",
+    "statTodayTasks": "Today",
+    "statSubmitted": "Submitted",
+    "statCompletion": "Profile",
+    "viewSchoolList": "School list",
+    "statusActive": "In progress",
+    "statusUpcoming": "Upcoming"
   },
   "auth": {
     "login": {

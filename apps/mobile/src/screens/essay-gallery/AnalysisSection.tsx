@@ -9,11 +9,19 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { CircularProgress, AnimatedButton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import type { AnalysisResult, ParagraphAnalysis, EssayDetail, Colors } from './types';
-import { RESULT_COLORS, STATUS_COLORS } from './types';
+import { useResultColors, useStatusColors } from './types';
 
 // ---------------------------------------------------------------------------
 // StructureCheckItem
@@ -28,12 +36,13 @@ const StructureCheckItem = React.memo(function StructureCheckItem({
   checked: boolean;
   colors: Colors;
 }) {
+  const resultColors = useResultColors();
   return (
     <View style={S.structureCheckItem}>
       <Ionicons
         name={checked ? 'checkmark-circle' : 'close-circle'}
         size={20}
-        color={checked ? RESULT_COLORS.ADMITTED : RESULT_COLORS.REJECTED}
+        color={checked ? resultColors.ADMITTED : resultColors.REJECTED}
       />
       <Text style={[S.structureCheckLabel, { color: c.foreground }]}>{label}</Text>
     </View>
@@ -56,7 +65,9 @@ const ParagraphReviewCard = React.memo(function ParagraphReviewCard({
   colors: Colors;
 }) {
   const { t } = useTranslation();
-  const statusColor = STATUS_COLORS[paragraph.status] || c.foregroundMuted;
+  const resultColors = useResultColors();
+  const statusColors = useStatusColors();
+  const statusColor = statusColors[paragraph.status] || c.foregroundMuted;
 
   const statusLabel = (status: string) => {
     const map: Record<string, string> = {
@@ -70,12 +81,20 @@ const ParagraphReviewCard = React.memo(function ParagraphReviewCard({
   return (
     <View style={[S.paragraphCard, { borderColor: c.border }]}>
       {/* Header - always visible, tappable */}
-      <TouchableOpacity onPress={onToggle} style={S.paragraphCardHeader}>
+      <TouchableOpacity
+        onPress={onToggle}
+        style={S.paragraphCardHeader}
+        accessibilityRole="button"
+        accessibilityLabel={statusLabel(paragraph.status)}
+        accessibilityState={{ expanded }}
+      >
         <View style={S.paragraphCardHeaderLeft}>
-          <View style={[S.paragraphScoreBadge, { backgroundColor: statusColor + '20' }]}>
+          <View
+            style={[S.paragraphScoreBadge, { backgroundColor: withOpacity(statusColor, 0.125) }]}
+          >
             <Text style={[S.paragraphScoreText, { color: statusColor }]}>{paragraph.score}</Text>
           </View>
-          <View style={[S.statusBadge, { backgroundColor: statusColor + '15' }]}>
+          <View style={[S.statusBadge, { backgroundColor: withOpacity(statusColor, 0.08) }]}>
             <Text style={[S.statusBadgeText, { color: statusColor }]}>
               {statusLabel(paragraph.status)}
             </Text>
@@ -112,12 +131,12 @@ const ParagraphReviewCard = React.memo(function ParagraphReviewCard({
           {/* Highlights */}
           {paragraph.highlights.length > 0 && (
             <View style={S.highlightsSection}>
-              <Text style={[S.highlightsTitle, { color: RESULT_COLORS.ADMITTED }]}>
+              <Text style={[S.highlightsTitle, { color: resultColors.ADMITTED }]}>
                 {t('essayGallery.detail.analysis.highlights')}
               </Text>
               {paragraph.highlights.map((h, i) => (
                 <View key={i} style={S.bulletItem}>
-                  <Ionicons name="star" size={12} color={RESULT_COLORS.ADMITTED} />
+                  <Ionicons name="star" size={12} color={resultColors.ADMITTED} />
                   <Text style={[S.bulletText, { color: c.foreground }]}>{h}</Text>
                 </View>
               ))}
@@ -127,12 +146,12 @@ const ParagraphReviewCard = React.memo(function ParagraphReviewCard({
           {/* Suggestions */}
           {paragraph.suggestions.length > 0 && (
             <View style={S.suggestionsSection}>
-              <Text style={[S.suggestionsTitle, { color: RESULT_COLORS.WAITLISTED }]}>
+              <Text style={[S.suggestionsTitle, { color: resultColors.WAITLISTED }]}>
                 {t('essayGallery.detail.analysis.suggestions')}
               </Text>
               {paragraph.suggestions.map((s, i) => (
                 <View key={i} style={S.bulletItem}>
-                  <Ionicons name="bulb" size={12} color={RESULT_COLORS.WAITLISTED} />
+                  <Ionicons name="bulb" size={12} color={resultColors.WAITLISTED} />
                   <Text style={[S.bulletText, { color: c.foreground }]}>{s}</Text>
                 </View>
               ))}
@@ -156,6 +175,7 @@ interface AnalysisSectionProps {
 export function AnalysisSection({ essayId, essayDetail }: AnalysisSectionProps) {
   const { t } = useTranslation();
   const c = useColors();
+  const resultColors = useResultColors();
   const toast = useToast();
   const [expandedParagraphs, setExpandedParagraphs] = useState<Set<number>>(new Set());
 
@@ -218,10 +238,10 @@ export function AnalysisSection({ essayId, essayDetail }: AnalysisSectionProps) 
           strokeWidth={10}
           color={
             analysis.overallScore >= 80
-              ? RESULT_COLORS.ADMITTED
+              ? resultColors.ADMITTED
               : analysis.overallScore >= 60
-                ? RESULT_COLORS.DEFERRED
-                : RESULT_COLORS.WAITLISTED
+                ? resultColors.DEFERRED
+                : resultColors.WAITLISTED
           }
           label={t('essayGallery.detail.analysis.score')}
         />
@@ -389,6 +409,7 @@ const S = StyleSheet.create({
   paragraphScoreText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.mono,
   },
   statusBadge: {
     paddingHorizontal: spacing.sm,

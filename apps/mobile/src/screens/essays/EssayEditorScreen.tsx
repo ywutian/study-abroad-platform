@@ -26,7 +26,15 @@ import * as Haptics from 'expo-haptics';
 
 import { AnimatedButton, Loading, Modal, Badge } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import {
+  useColors,
+  withOpacity,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+} from '@/utils/theme';
 import { essayAiRoutes, profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 
@@ -74,13 +82,15 @@ interface AIRewriteResult {
 
 type AITool = 'review' | 'polish' | 'brainstorm' | 'continue' | 'opening' | 'rewrite';
 
-const AI_TOOLS: { id: AITool; icon: string; color: string }[] = [
-  { id: 'review', icon: 'star', color: '#f59e0b' },
-  { id: 'polish', icon: 'sparkles', color: '#6574ff' },
-  { id: 'brainstorm', icon: 'bulb', color: '#6f7b58' },
-  { id: 'continue', icon: 'arrow-forward', color: '#3b82f6' },
-  { id: 'opening', icon: 'flag', color: '#ec4899' },
-  { id: 'rewrite', icon: 'refresh', color: '#ef4444' },
+type ToolColorKey = 'warning' | 'info' | 'success' | 'primary' | 'pink' | 'error';
+
+const AI_TOOLS: { id: AITool; icon: string; colorKey: ToolColorKey }[] = [
+  { id: 'review', icon: 'star', colorKey: 'warning' },
+  { id: 'polish', icon: 'sparkles', colorKey: 'info' },
+  { id: 'brainstorm', icon: 'bulb', colorKey: 'success' },
+  { id: 'continue', icon: 'arrow-forward', colorKey: 'primary' },
+  { id: 'opening', icon: 'flag', colorKey: 'pink' },
+  { id: 'rewrite', icon: 'refresh', colorKey: 'error' },
 ];
 
 export default function EssayEditorScreen() {
@@ -343,11 +353,20 @@ export default function EssayEditorScreen() {
         />
         <View style={styles.headerMeta}>
           <Text style={[styles.wordCountText, { color: colors.foregroundMuted }]}>
-            {wordCount} {t('essayEditor.words')}
-            {essay?.wordLimit ? ` / ${essay.wordLimit}` : ''}
+            <Text style={styles.wordCountNum}>{wordCount}</Text> {t('essayEditor.words')}
+            {essay?.wordLimit ? (
+              <Text style={styles.wordCountNum}>{` / ${essay.wordLimit}`}</Text>
+            ) : (
+              ''
+            )}
           </Text>
           {hasChanges && (
-            <TouchableOpacity onPress={handleSave} disabled={saveMutation.isPending}>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={saveMutation.isPending}
+              accessibilityRole="button"
+              accessibilityLabel={t('essayEditor.save')}
+            >
               <Text style={[styles.saveText, { color: colors.primary }]}>
                 {saveMutation.isPending ? t('essayEditor.saving') : t('essayEditor.save')}
               </Text>
@@ -410,16 +429,21 @@ export default function EssayEditorScreen() {
               (tool.id === 'continue' && continueMutation.isPending) ||
               (tool.id === 'opening' && openingMutation.isPending) ||
               (tool.id === 'rewrite' && rewriteMutation.isPending);
+            const toolColor = colors[tool.colorKey];
 
             return (
               <TouchableOpacity
                 key={tool.id}
                 onPress={() => handleAITool(tool.id)}
                 disabled={isAnyAILoading}
+                accessibilityRole="button"
+                accessibilityLabel={t(`essayEditor.tools.${tool.id}`)}
+                accessibilityState={{ disabled: isAnyAILoading, busy: isLoading }}
                 style={[
                   styles.toolButton,
                   {
-                    backgroundColor: withOpacity(tool.color, 0.1),
+                    backgroundColor: withOpacity(toolColor, 0.125),
+                    borderColor: withOpacity(toolColor, 0.19),
                     opacity: isAnyAILoading && !isLoading ? 0.5 : 1,
                   },
                 ]}
@@ -427,9 +451,9 @@ export default function EssayEditorScreen() {
                 <Ionicons
                   name={tool.icon as ComponentProps<typeof Ionicons>['name']}
                   size={18}
-                  color={tool.color}
+                  color={toolColor}
                 />
-                <Text style={[styles.toolLabel, { color: tool.color }]}>
+                <Text style={[styles.toolLabel, { color: toolColor }]}>
                   {t(`essayEditor.tools.${tool.id}`)}
                 </Text>
               </TouchableOpacity>
@@ -608,7 +632,12 @@ function ReviewResult({
   return (
     <ScrollView style={styles.resultContainer}>
       {/* Overall Score */}
-      <View style={[styles.scoreCard, { backgroundColor: withOpacity(colors.primary, 0.1) }]}>
+      <View
+        style={[
+          styles.scoreCard,
+          { backgroundColor: withOpacity(colors.primary, 0.1), borderColor: colors.border },
+        ]}
+      >
         <Text style={[styles.scoreValue, { color: colors.primary }]}>{result.overallScore}</Text>
         <Text style={[styles.scoreLabel, { color: colors.foregroundMuted }]}>
           {t('essayEditor.overallScore')}
@@ -742,6 +771,8 @@ function BrainstormResult({
         <TouchableOpacity
           key={i}
           onPress={() => onCopy(idea.description)}
+          accessibilityRole="button"
+          accessibilityLabel={`${idea.title} — ${t('essayEditor.tapToCopy')}`}
           style={[styles.ideaCard, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
           <View style={styles.ideaHeader}>
@@ -832,7 +863,10 @@ function OpeningResult({
           <View style={styles.openingActions}>
             <TouchableOpacity
               onPress={() => onApply(opening.content)}
-              style={[styles.smallAction, { backgroundColor: withOpacity(colors.primary, 0.1) }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('essayEditor.use')}
+              hitSlop={8}
+              style={[styles.smallAction, { backgroundColor: withOpacity(colors.primary, 0.125) }]}
             >
               <Ionicons name="checkmark" size={16} color={colors.primary} />
               <Text style={[styles.smallActionText, { color: colors.primary }]}>
@@ -841,9 +875,12 @@ function OpeningResult({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => onCopy(opening.content)}
+              accessibilityRole="button"
+              accessibilityLabel={t('essayEditor.copy')}
+              hitSlop={8}
               style={[
                 styles.smallAction,
-                { backgroundColor: withOpacity(colors.foregroundMuted, 0.1) },
+                { backgroundColor: withOpacity(colors.foregroundMuted, 0.125) },
               ]}
             >
               <Ionicons name="copy" size={16} color={colors.foregroundMuted} />
@@ -883,7 +920,10 @@ function RewriteResult({
           <View style={styles.openingActions}>
             <TouchableOpacity
               onPress={() => onApply(version.content)}
-              style={[styles.smallAction, { backgroundColor: withOpacity(colors.primary, 0.1) }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('essayEditor.use')}
+              hitSlop={8}
+              style={[styles.smallAction, { backgroundColor: withOpacity(colors.primary, 0.125) }]}
             >
               <Ionicons name="checkmark" size={16} color={colors.primary} />
               <Text style={[styles.smallActionText, { color: colors.primary }]}>
@@ -892,9 +932,12 @@ function RewriteResult({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => onCopy(version.content)}
+              accessibilityRole="button"
+              accessibilityLabel={t('essayEditor.copy')}
+              hitSlop={8}
               style={[
                 styles.smallAction,
-                { backgroundColor: withOpacity(colors.foregroundMuted, 0.1) },
+                { backgroundColor: withOpacity(colors.foregroundMuted, 0.125) },
               ]}
             >
               <Ionicons name="copy" size={16} color={colors.foregroundMuted} />
@@ -915,6 +958,7 @@ const styles = StyleSheet.create({
   titleInput: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, marginBottom: spacing.xs },
   headerMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   wordCountText: { fontSize: fontSize.sm },
+  wordCountNum: { fontFamily: fontFamily.mono },
   saveText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
   editorScroll: { flex: 1 },
   contentInput: {
@@ -935,6 +979,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
+    borderWidth: 1,
   },
   toolLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
   resultContainer: { maxHeight: 500, paddingHorizontal: spacing.lg },
@@ -942,9 +987,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing['2xl'],
     borderRadius: borderRadius.xl,
+    borderWidth: 1,
     marginBottom: spacing.lg,
   },
-  scoreValue: { fontSize: 48, fontWeight: fontWeight.bold },
+  scoreValue: { fontSize: 48, fontWeight: fontWeight.bold, fontFamily: fontFamily.mono },
   scoreLabel: { fontSize: fontSize.sm, marginTop: spacing.xs },
   categoryRow: {
     flexDirection: 'row',

@@ -99,6 +99,10 @@ export class DashboardService {
   ): Promise<DashboardSummary> {
     // 并行获取所有数据
     const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
     const [
       user,
       profile,
@@ -111,6 +115,7 @@ export class DashboardService {
       schoolTierGroups,
       pendingTaskCount,
       pendingTaskTypes,
+      todayTaskCount,
       personalEvents,
       schoolListWithDeadlines,
       priorityTasks,
@@ -262,6 +267,19 @@ export class DashboardService {
         }),
         'pending-task-types',
         [],
+      ),
+
+      // 今日待办（截止日在今天、尚未完成的任务）
+      safe(
+        this.prisma.applicationTask.count({
+          where: {
+            timeline: { userId },
+            completed: false,
+            dueDate: { gte: startOfToday, lt: startOfTomorrow },
+          },
+        }),
+        'today-task-count',
+        0,
       ),
 
       // 即将到期的个人事件（比赛/考试）：deadline 或 eventDate 在未来
@@ -709,6 +727,7 @@ export class DashboardService {
       },
       pendingTasks: {
         total: pendingTaskCount,
+        todayCount: todayTaskCount,
         byType: tasksByType,
         profileGaps,
       },

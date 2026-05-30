@@ -9,7 +9,15 @@ import type { ComponentProps } from 'react';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { FadeInView } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
+import {
+  useColors,
+  spacing,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  fontFamily,
+  withOpacity,
+} from '@/utils/theme';
 
 interface MoreItem {
   icon: ComponentProps<typeof Ionicons>['name'];
@@ -89,8 +97,15 @@ export default function MoreScreen() {
                 {item.label}
               </Text>
               {item.badge !== undefined && item.badge > 0 && (
-                <View style={[styles.badge, { backgroundColor: colors.error }]}>
-                  <Text style={styles.badgeText}>{item.badge}</Text>
+                <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      { color: colors.primaryForeground, fontFamily: fontFamily.mono },
+                    ]}
+                  >
+                    {item.badge}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -164,6 +179,5 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: fontWeight.bold,
-    color: '#fff9ef',
   },
 });
