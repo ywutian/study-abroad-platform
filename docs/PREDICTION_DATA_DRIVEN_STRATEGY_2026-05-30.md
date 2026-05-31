@@ -106,6 +106,16 @@ Deep-confirmation nuances (why this is _not_ a blanket "raise the constants"):
 
 Verification: **668/668 prediction tests pass** (incl. the behavioral matrix + the geo/ED regression tests, updated with documented rationale); data-integrity gate PASS. No served data changed — only the fallback logic for schools without a published per-round/residency rate.
 
+## 7.7 Intelligent data audit (2026-05-31)
+
+The automated gates (§7.5) catch structural contamination classes but not "plausible-but-wrong" values. A **41-agent workflow** (2.95M tokens) verified ALL 241 US schools' prediction fields against each school's published CDS / IPEDS / College Scorecard. It found **76 discrepancies (28 high, 30 medium, 18 low)**:
+
+- **Stale / wrong anchors (~25)** — worst: **University of Colorado Boulder stored 18.47% for an ~80% school** (mislabeled field) → every CU Boulder prediction was a catastrophic false "reach". Others: Texas Tech 84.6→72.6, Nevada-Reno 73.7→85.3, Mississippi State 62→77.6 (stale 7 yrs), Ohio State 60.6→50.8, Pratt 44.9→73.3, SAIC 60→77, Manhattan SoM 78.9→40.
+- **Mislabeled `intl` fields (~16)** — an enrollment % / unrelated number stored as the intl admit rate (Rose-Hulman 68.9%, Texas A&M 56.5%, Clarkson 64.9%…). These **passed the `intl<overall` gate** (they sit below the high overall rate) yet are still wrong → nulled (engine uses its selectivity fallback).
+- **Mislabeled OOS** (MIT's overall rate copied into the OOS slot; Cleveland State's in-state share in OOS…) and **fabricated rounds** (Amherst "EA 61%" — Amherst has no EA) → nulled. **Stale ED/EA** (Colgate, Case Western, RPI) → set.
+
+Fix: `prisma/seed-audit-corrections-2026-05-31.ts` — **48 primary-sourced school field-sets**, wired into the seed pipeline after the rate seeds; integrity gate re-checked PASS. **This is why "data-grounded" requires intelligent verification, not just structural invariants** — the gate is necessary but not sufficient.
+
 ## 8. Honest limits
 
 - Marginal-only ⇒ the model cannot distinguish two applicants with identical marginals; that delta lives in unobtainable joint data. This is a _feature_ (no false precision), not a bug to engineer away.

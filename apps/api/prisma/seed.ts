@@ -20,6 +20,7 @@ import { seedLacGpaTerminal } from './seed-lac-gpa-terminal';
 import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
 import { correctIntlRates } from './seed-intl-rate-correction';
 import { correctRoundRateScaleErrors } from './seed-round-rate-correction';
+import { applyAuditCorrections } from './seed-audit-corrections-2026-05-31';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
 
@@ -2110,6 +2111,15 @@ export async function main() {
   const roundCorrection = await correctRoundRateScaleErrors(prisma);
   console.log(
     `  ✅ Round-rate correction: ${roundCorrection.nulled.length} scale-error school(s) nulled`,
+  );
+
+  // ========== intelligent data-audit corrections (2026-05-31) ==========
+  // Corrects stale anchors / mislabeled fields found by the 41-agent CDS/IPEDS
+  // verification that the invariant gates can't catch. Runs after all rate
+  // seeds so it overrides their stale values.
+  const auditCorrections = await applyAuditCorrections(prisma);
+  console.log(
+    `  ✅ Audit corrections: ${auditCorrections.updated} school field-set(s) applied`,
   );
 
   // ========== GPA Distributions (CDS Section C9) ==========
