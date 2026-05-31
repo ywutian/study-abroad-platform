@@ -263,11 +263,38 @@ describe('counselor modifiers launch guards', () => {
       expect(result.label).not.toContain('yield-informed');
     });
 
-    it('falls back to the flat 2.5x ED heuristic when no yield is known', () => {
+    it('falls back to a selectivity-scaled ED heuristic when no yield is known', () => {
+      // 2026-05-31: the ED fallback is scaled by selectivity (was a flat 2.5×,
+      // which over-boosted at T30+ and overflowed past 100% above ~45% admit).
+      // A 10% overall rate → 2.4×.
       const result = roundMultiplier('ED', baseSchool({ acceptanceRate: 0.1 }));
 
-      expect(result.multiplier).toBe(2.5);
+      expect(result.multiplier).toBe(2.4);
       expect(result.label).toBe('Early Decision');
+    });
+
+    it('scales the ED fallback down at less-selective schools', () => {
+      // elite (<8%) → 3.0×, T30 (20-30%) → 1.8×, >45% → 1.15× (a flat 2.5×
+      // there would overflow past 100%). Published-aggregate pattern.
+      expect(
+        roundMultiplier('ED', baseSchool({ acceptanceRate: 0.05 })).multiplier,
+      ).toBe(3.0);
+      expect(
+        roundMultiplier('ED', baseSchool({ acceptanceRate: 0.25 })).multiplier,
+      ).toBe(1.8);
+      expect(
+        roundMultiplier('ED', baseSchool({ acceptanceRate: 0.6 })).multiplier,
+      ).toBe(1.15);
+    });
+
+    it('raises REA/SCEA to 2.3x for the elite tier it serves', () => {
+      // was 1.5×; real REA÷overall ≈ 2.3-2.4× (Harvard 2.43×, Yale 2.4×).
+      const result = roundMultiplier(
+        'REA',
+        baseSchool({ acceptanceRate: 0.04 }),
+      );
+      expect(result.multiplier).toBe(2.3);
+      expect(result.label).toContain('Restrictive Early Action');
     });
   });
 
@@ -876,15 +903,14 @@ describe('counselor modifiers launch guards', () => {
       expect(asFraction.multiplier).toBeCloseTo(asPercent.multiplier, 6);
     });
 
-    // Bug #2 — UMich oosAcceptanceRate=18 > acceptanceRate=15.64 invariant (PR #290).
-    // When the published OOS rate is higher than the overall rate (a data
-    // quirk for CSU campuses, SUNY, and some flagships), the ratio must
-    // still be clamped to ≤ 1.3 so an out-of-state applicant never gets an
-    // *unbounded* geographic boost relative to the school baseline. The
-    // clamp keeps the modifier defensible even when the source row is
-    // counter-intuitive.
+    // Bug #2 — OOS data must stay BOUNDED (PR #290), but the bound was raised
+    // 1.3→1.8 on 2026-05-31: revenue-seeking UCs/CSUs genuinely admit OOS at up
+    // to ~2× the resident rate (UC Fall 2024 official: Irvine 1.73×, Cal Poly
+    // 2.07×), so 1.3 under-predicted real data. 1.8 captures almost all of it
+    // while staying bounded (not unbounded) per PR #290's intent; the
+    // data-integrity gate guards against contaminated oos rows.
     // Source: apps/api/scripts/closure-reports/overnight-2026-05-25/data-integrity-audit.md (Check 5a)
-    it('Bug #2 (PR #290): geoMultiplier clamps ratios ≤ 1.3 even when oos > overall', () => {
+    it('Bug #2 (PR #290): geoMultiplier keeps OOS ratios bounded (≤ 1.8) when oos > overall', () => {
       const result = geoMultiplier(
         baseProfile({
           isInternational: false,
@@ -900,13 +926,13 @@ describe('counselor modifiers launch guards', () => {
         },
       );
       expect(result.label).toContain('Out-of-state');
-      expect(result.multiplier).toBeLessThanOrEqual(1.3);
-      // ratio = 18/15.64 ≈ 1.15 — within clamp
+      expect(result.multiplier).toBeLessThanOrEqual(1.8);
+      // ratio = 18/15.64 ≈ 1.15 — within clamp, passes through unchanged
       expect(result.multiplier).toBeCloseTo(18 / 15.64, 2);
     });
 
-    it('Bug #2 (PR #290): geoMultiplier clamps extreme oos/overall ratios too', () => {
-      // Hypothetical edge case: oos=80 vs overall=30 (ratio=2.67) → clamp 1.3
+    it('Bug #2 (PR #290): geoMultiplier clamps extreme oos/overall ratios to 1.8', () => {
+      // Edge case: oos=80 vs overall=30 (ratio=2.67) → clamp 1.8
       const result = geoMultiplier(
         baseProfile({
           isInternational: false,
@@ -921,7 +947,7 @@ describe('counselor modifiers launch guards', () => {
           oosAcceptanceRate: 80,
         },
       );
-      expect(result.multiplier).toBe(1.3);
+      expect(result.multiplier).toBe(1.8);
     });
   });
 });
