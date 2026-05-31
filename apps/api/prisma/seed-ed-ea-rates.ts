@@ -247,6 +247,216 @@ export const ED_EA_RATE_SEEDS: ReadonlyArray<EdEaSeed> = [
     source: 'https://nextgenadmit.com/northeastern-admission-statistics/',
     confidence: 'MEDIUM',
   },
+
+  // ── 2026-05-30 marginal-backfill research pass (CDS C21, primary-sourced) ──
+  // 22 schools added below to fill the round data-driven path (was ~28% covered).
+  // 14 other researched schools yielded NO public early-round rate and are
+  // intentionally absent: Princeton/Stanford/Caltech stopped disclosing REA;
+  // Wake Forest/NYU/Tufts/Colby suppress CDS C21 counts; 7 publics (UNC/UF/UIUC/
+  // Wisconsin/Maryland/Purdue/Ohio State) publish no separate EA admit count
+  // (CDS C22 has no count fields). This is a structural data wall, not a gap.
+  // Rationale + research: docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md
+  {
+    nameNorm: 'harvard university',
+    eaAcceptanceRatePct: 8.74,
+    dataYear: 'Class of 2028',
+    source:
+      'https://news.harvard.edu/gazette/story/2023/12/college-accepts-692-under-early-action-program/',
+    confidence: 'HIGH',
+    notes: 'Restrictive (Single-Choice) EA, no ED. 692/7921.',
+  },
+  {
+    nameNorm: 'swarthmore college',
+    edAcceptanceRatePct: 17.8,
+    dataYear: 'Class of 2029',
+    source:
+      'https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-CDS-2025-26.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 228/1281.',
+  },
+  {
+    nameNorm: 'wellesley college',
+    edAcceptanceRatePct: 29.42,
+    dataYear: 'Class of 2029',
+    source:
+      'https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2025-2026-FINAL.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 301/1023.',
+  },
+  {
+    nameNorm: 'carleton college',
+    edAcceptanceRatePct: 36.58,
+    dataYear: 'Class of 2028',
+    source:
+      'https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf',
+    confidence: 'HIGH',
+    notes:
+      'Own CDS 2024-25 C21 combined ED1+ED2: 244/667. NB 2025-26 file shows 263/760 also labeled Fall 2024 (template lag).',
+  },
+  {
+    nameNorm: 'harvey mudd college',
+    edAcceptanceRatePct: 18.35,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2026/03/CDS-HMC-2025.2026_shared.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 109/594 (corrects stale 16.16%).',
+  },
+  {
+    nameNorm: 'claremont mckenna college',
+    edAcceptanceRatePct: 22.09,
+    dataYear: 'Class of 2029',
+    source: 'https://www.cmc.edu/sites/default/files/CDS_2025-26_0.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 216/978.',
+  },
+  {
+    nameNorm: 'grinnell college',
+    edAcceptanceRatePct: 34.18,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.grinnell.edu/sites/default/files/docs/2025-03/Grinnell-2024-2025-Common-Data-Set.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 283/828.',
+  },
+  {
+    nameNorm: 'barnard college',
+    edAcceptanceRatePct: 25.62,
+    dataYear: 'Class of 2028',
+    source:
+      'https://barnard.edu/sites/default/files/inline-files/Barnard%20CDS%202024-2025.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21: 434/1694 (corrects press-release 23.8%).',
+  },
+  {
+    nameNorm: 'davidson college',
+    edAcceptanceRatePct: 29.06,
+    dataYear: 'Class of 2028',
+    source: 'https://www.davidson.edu/media/9718/download',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 358/1232.',
+  },
+  {
+    nameNorm: 'washington and lee university',
+    edAcceptanceRatePct: 27.58,
+    dataYear: 'Class of 2029',
+    source: 'https://my.wlu.edu/document/2025-common-data-set',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21: 289/1048. ED only, no EA.',
+  },
+  {
+    nameNorm: 'bates college',
+    edAcceptanceRatePct: 27.13,
+    dataYear: 'Class of 2028',
+    source: 'https://www.bates.edu/research/files/2026/03/CDS_2024-2025.pdf',
+    confidence: 'HIGH',
+    notes:
+      'Own CDS C21 combined ED1+ED2: 306/1128 (apps surged; stale figure was 41.7%).',
+  },
+  {
+    nameNorm: 'boston college',
+    edAcceptanceRatePct: 33.44,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf',
+    confidence: 'HIGH',
+    notes:
+      'Own CDS C21 combined ED1+ED2: 1434/4288 (corrects wrong 44.6%/30%).',
+  },
+  {
+    nameNorm: 'lehigh university',
+    edAcceptanceRatePct: 47.35,
+    dataYear: 'Class of 2029',
+    source:
+      'https://data.lehigh.edu/sites/data.lehigh.edu/files/1302026-CDS-2025-2026-FINAL.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 966/2040.',
+  },
+  {
+    nameNorm: 'university of rochester',
+    edAcceptanceRatePct: 38.05,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 527/1385 (AS&E).',
+  },
+  {
+    nameNorm: 'brandeis university',
+    edAcceptanceRatePct: 42.22,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.brandeis.edu/institutional-research/docs/cds-2024-25.pdf',
+    confidence: 'HIGH',
+    notes: 'Own CDS C21 combined ED1+ED2: 323/765.',
+  },
+  {
+    nameNorm: 'case western reserve university',
+    edAcceptanceRatePct: 24.98,
+    dataYear: 'Class of 2029',
+    source:
+      'https://case.edu/ir/sites/default/files/2026-02/CDS%202025-26%20Adjusted%20Final.pdf',
+    confidence: 'HIGH',
+    notes:
+      'Own CDS C21 combined ED1+ED2: 263/1053. Also EA but no EA counts published.',
+  },
+  {
+    nameNorm: 'university of georgia',
+    eaAcceptanceRatePct: 32.0,
+    dataYear: 'Class of 2030',
+    source:
+      'https://admissions.uga.edu/blog/2026-ea-totals-and-out-of-state-international-decisions/',
+    confidence: 'HIGH',
+    notes:
+      'Non-binding EA. UGA blog: 10,760/34,280 = ~32% (45% in-state, 22% OOS).',
+  },
+  {
+    nameNorm: 'hamilton college',
+    edAcceptanceRatePct: 29.44,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/hamilton-college-early-decision-admission-statistics/',
+    confidence: 'MEDIUM',
+    notes: 'Combined ED1+ED2 247/839 (Ivy Coach citing Hamilton CDS).',
+  },
+  {
+    nameNorm: 'vassar college',
+    edAcceptanceRatePct: 31.2,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/vassar-college-early-decision-admission-statistics/',
+    confidence: 'MEDIUM',
+    notes: 'Combined ED1+ED2 312/999 (Ivy Coach citing Vassar CDS).',
+  },
+  {
+    nameNorm: 'smith college',
+    edAcceptanceRatePct: 32.58,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/smith-college-early-decision-admission-statistics/',
+    confidence: 'MEDIUM',
+    notes: 'Combined ED1+ED2 (Ivy Coach citing Smith CDS).',
+  },
+  {
+    nameNorm: 'haverford college',
+    edAcceptanceRatePct: 33.12,
+    dataYear: 'Class of 2028',
+    source:
+      'https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/haverford-college-early-decision-admission-statistics/',
+    confidence: 'MEDIUM',
+    notes:
+      'Combined ED1+ED2 vs 12.37% overall (Ivy Coach citing Haverford CDS).',
+  },
+  {
+    nameNorm: 'colgate university',
+    edAcceptanceRatePct: 35.25,
+    dataYear: 'Class of 2029',
+    source:
+      'https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/colgate-university-early-decision-admission-statistics/',
+    confidence: 'MEDIUM',
+    notes:
+      'Combined ED1+ED2 (Ivy Coach citing Colgate CDS; discarded conflicting 19.2%).',
+  },
 ];
 
 export async function seedEdEaRates(

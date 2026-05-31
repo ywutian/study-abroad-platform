@@ -18,6 +18,7 @@ import { seedGlobalEvents20262027 } from './seed-global-events-2026-2027';
 import { seedGpaDistributions } from './seed-gpa-distributions';
 import { seedLacGpaTerminal } from './seed-lac-gpa-terminal';
 import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
+import { correctIntlRates } from './seed-intl-rate-correction';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
 
@@ -2089,6 +2090,16 @@ export async function main() {
       (edEaRates.notFound.length > 0
         ? `, ${edEaRates.notFound.length} schools not yet in DB`
         : ''),
+  );
+
+  // ========== intlAcceptanceRate data-quality correction ==========
+  // Null contaminated intl rates (enrollment-% / overall-rate leaks) so the
+  // counselor intlMultiplier never emits a wrong boost. Runs after all intl
+  // writers; enforced by scripts/audit-intl-rate-quality.ts. See
+  // docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md.
+  const intlCorrection = await correctIntlRates(prisma);
+  console.log(
+    `  ✅ Intl-rate correction: ${intlCorrection.nulled.length} contaminated value(s) nulled`,
   );
 
   // ========== GPA Distributions (CDS Section C9) ==========
