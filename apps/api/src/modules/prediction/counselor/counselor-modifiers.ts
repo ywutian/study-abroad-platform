@@ -1175,11 +1175,16 @@ export function intlMultiplier(
   // admit rate ≈ overall per published CDS — the elite-school 0.7× penalty
   // is not empirically justified there.
   if (overallRate != null && overallRate >= 0.4) {
+    // 2026-05-31 aggregate self-calibration: the empirical intl/overall ratio
+    // at >=40%-admit schools (published-data median ~0.70, IQR 0.50-0.84) is
+    // well below the old 0.95 — international applicants face a real penalty
+    // even at less-selective schools. Set to 0.80 (inside the IQR, conservative
+    // vs the 0.70 median for publisher-sample bias). See scripts/audit-fallback-calibration.ts.
     return {
-      multiplier: 0.95,
+      multiplier: 0.8,
       label: 'International (less-selective school)',
-      evidence: `This school admits ${(overallRate * 100).toFixed(0)}% overall — international applicants face only a small penalty at less-selective institutions`,
-      impact: 'neutral',
+      evidence: `This school admits ${(overallRate * 100).toFixed(0)}% overall, but international applicants are admitted at roughly 0.7-0.8× that rate even at less-selective schools (aggregate CDS calibration)`,
+      impact: 'negative',
     };
   }
 

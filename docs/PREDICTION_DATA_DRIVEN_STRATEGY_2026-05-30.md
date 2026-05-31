@@ -15,7 +15,7 @@ probability = clip( anchor × ∏(modifiers),  lower = anchor × 0.1,  upper = m
 ```
 
 - **anchor** = (Tier 1) CDS admit-band rate for the applicant's GPA×test cell — **only 9 UC campuses exist** — else (Tier 2/3, ~96% of schools) the school's **overall published acceptance rate**.
-- **modifiers** = 8 core + a profile-context composite, each a hand-authored multiplier with a cited source (`counselor-modifiers.ts`): gpaBand, testBand (geo-mean combined), round (ED/EA), firstGen ×1.4, geo (in/out-state), intl (selectivity-tiered), major, + soft profile-context capped to ×[0.90, 1.13]. Legacy/athlete/URM are **disabled** (evidence-required). Several modifiers have a "data-driven path" (use the school's _published_ ED/intl/OOS/major ratio) that fires only when that field is populated; otherwise a hardcoded fallback multiplier.
+- **modifiers** = 8 core + a profile-context composite, each a hand-authored multiplier with a cited source (`counselor-modifiers.ts`): gpaBand, testBand (geo-mean combined), round (ED/EA, selectivity-scaled fallback — §7.6), firstGen (selectivity-scaled — §7.6), geo (in/out-state), intl (selectivity-tiered), major, + soft profile-context capped to ×[0.90, 1.13]. Legacy/athlete/URM are **disabled** (evidence-required). Several modifiers have a "data-driven path" (use the school's _published_ ED/intl/OOS/major ratio) that fires only when that field is populated; otherwise a hardcoded fallback multiplier.
 
 The modifier constants are **set from admissions literature, not learned** (the engine has ~4 verified outcomes; Platt calibration needs ≥50 and is therefore effectively inactive). The patch history in `counselor-modifiers.ts` shows the constants are tuned against **eyeball regression tests**, not outcome data.
 
@@ -115,6 +115,18 @@ The automated gates (§7.5) catch structural contamination classes but not "plau
 - **Mislabeled OOS** (MIT's overall rate copied into the OOS slot; Cleveland State's in-state share in OOS…) and **fabricated rounds** (Amherst "EA 61%" — Amherst has no EA) → nulled. **Stale ED/EA** (Colgate, Case Western, RPI) → set.
 
 Fix: `prisma/seed-audit-corrections-2026-05-31.ts` — **48 primary-sourced school field-sets**, wired into the seed pipeline after the rate seeds; integrity gate re-checked PASS. **This is why "data-grounded" requires intelligent verification, not just structural invariants** — the gate is necessary but not sufficient.
+
+## 7.8 Aggregate self-calibration (2026-05-31)
+
+The capstone of the data-grounded program (§3, §7.2): `scripts/audit-fallback-calibration.ts` validates the engine's hand-set **fallback** multipliers against the **empirical** ratio computed from the schools that DO publish the data (ed/overall, oos/overall, intl/overall) — pure aggregate calibration, **zero individual outcomes**.
+
+Findings (on the post-audit clean data):
+
+- **ED fallback ✅ all 5 tiers** — the §7.6 selectivity-scaled ED (3.0/2.4/1.8/1.4/1.15) sits inside the empirical IQR of every band (medians 2.53 / 2.30 / 1.68 / 1.28 / 1.38). **The published aggregate ED data confirms the scaling was right** — strong independent validation of the #312 change.
+- **intl ≥40% ⚠️→✅ (fixed)** — the fallback was 0.95 but the empirical intl/overall median at high-accept schools is **0.70** (IQR 0.50-0.84, n=72): international applicants face a real penalty even at less-selective schools. Lowered to **0.80** (inside the IQR, conservative for publisher-sample bias). intl <10% (0.48 vs 0.52) was already ✅.
+- **Left, documented:** the geo OOS fallback (×0.5 vs empirical ~1.0 — **confirms §7.6**; domestic-only + the data-path covers nearly all schools) and intl 10-20% / 20-40% (0.78 vs ~0.55; very wide IQRs + literature-grounded need-blind/need-aware splits → a candidate for refinement once more intl data accrues, not a confident fix today).
+
+This **closes the loop**: the engine's fallbacks are now validated against — and where clearly off, calibrated to — the published aggregate data, not just admissions literature. It is the concrete realization of the §7.2 unlock (make the bridge data-driven without any individual outcomes).
 
 ## 8. Honest limits
 

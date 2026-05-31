@@ -418,6 +418,18 @@ describe('counselor modifiers launch guards', () => {
       expect(result.label).toContain('need-aware');
     });
 
+    it('applies a measured intl penalty at less-selective (>=40%) schools', () => {
+      // 2026-05-31 aggregate self-calibration: the empirical intl/overall median
+      // at >=40%-admit schools is ~0.70 (the old 0.95 was too lenient). Set to
+      // 0.80 (inside the empirical IQR). See scripts/audit-fallback-calibration.ts.
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.5,
+      });
+      expect(result.multiplier).toBeCloseTo(0.8, 3);
+      expect(result.label).toContain('less-selective');
+    });
+
     it('uses unverified midpoint at highly-selective schools when status is null', () => {
       const result = intlMultiplier(intlProfile, {
         ...baseSchool(),
