@@ -37,11 +37,11 @@
       { "name": "AP Scholar with Honor", "level": "NATIONAL", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.2, 0.55],
-  "expectedTier": "match",
+  "expectedProbabilityRange": [0.15, 0.34],
+  "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "UC Berkeley CA in-state RD ~17% (overall 11% × in-state lift)。Mid-strong profile + in-state 应 reach-high/match-low 区间 15-35%。Berkeley 有 Tier 1 CDS bands。",
+    "intuition": "UC Berkeley CA in-state RD：overall 11% × in-state÷overall ~1.2 (UCOP 2024 systemwide 1.06 / Berkeley 1.35) — NOT the old in-state÷OOS ~1.8. Mid-strong profile + in-state lands ~31%, which is < the 35% match threshold → reach (the case's own '15-35% reach-high' band). Tier corrected match→reach 2026-05-31 per per-state geo recalibration (counselor gold set #316).",
     "sources": [
       {
         "name": "UC Berkeley CDS 2024-25",
@@ -57,7 +57,7 @@
       }
     ]
   },
-  "lastReviewedAt": "2026-05-24",
+  "lastReviewedAt": "2026-05-31",
   "reviewedBy": "yitian@",
   "tags": [
     "t15-public",
