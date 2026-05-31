@@ -19,6 +19,7 @@ import { seedGpaDistributions } from './seed-gpa-distributions';
 import { seedLacGpaTerminal } from './seed-lac-gpa-terminal';
 import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
 import { correctIntlRates } from './seed-intl-rate-correction';
+import { correctRoundRateScaleErrors } from './seed-round-rate-correction';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
 
@@ -2100,6 +2101,15 @@ export async function main() {
   const intlCorrection = await correctIntlRates(prisma);
   console.log(
     `  ✅ Intl-rate correction: ${intlCorrection.nulled.length} contaminated value(s) nulled`,
+  );
+
+  // ========== round-rate scale-error correction ==========
+  // Null implausibly-tiny (<1%) ED/EA/ED2 rates (scale errors) so the
+  // roundMultiplier doesn't silently drop to neutral. Enforced by
+  // scripts/audit-prediction-data-integrity.ts.
+  const roundCorrection = await correctRoundRateScaleErrors(prisma);
+  console.log(
+    `  ✅ Round-rate correction: ${roundCorrection.nulled.length} scale-error school(s) nulled`,
   );
 
   // ========== GPA Distributions (CDS Section C9) ==========
