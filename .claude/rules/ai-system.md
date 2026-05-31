@@ -51,7 +51,7 @@ Each AI module has `*.prompts.ts` exporting: `buildXxxSystemPrompt(locale, ...co
 - `prediction_ui_context` memory: only for conversation context, **never** calibration/training truth
 - Prediction explanation fields (public-safe): `sourceSummary`, `uncertaintyReasons`, `confidenceReason`, `roundContext`, `latestOutcomeLabel`
 - **Never** expose `servedTrace`, shadow/challenger results, internal policy gates to users
-- v5 ML-primary in shadow: internal comparison only; school agent answers served results
+- Served path = the deterministic **Counselor engine** (`counselor-cold-start-v1.x`, anchor × bounded modifiers); the ML/v5 path was **deleted 2026-05-07** — there is no champion/shadow model. The school agent answers served counselor results only. Fallback multipliers are selectivity-scaled vs published aggregates, not outcome-tuned (see `docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md`).
 
 ## Application Analysis Convention
 
