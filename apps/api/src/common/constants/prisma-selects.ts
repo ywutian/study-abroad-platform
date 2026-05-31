@@ -116,6 +116,7 @@ export const SCHOOL_PREDICTION_CONTEXT_SELECT = {
   acceptanceRate: true,
   intlAcceptanceRate: true,
   oosAcceptanceRate: true,
+  inStateAcceptanceRate: true,
   intlStudentPct: true,
   needBlindInternational: true,
 } as const satisfies Prisma.SchoolSelect;

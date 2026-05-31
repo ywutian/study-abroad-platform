@@ -371,8 +371,8 @@ describe('counselor modifiers launch guards', () => {
       expect(result.label).toContain('In-state');
       // 1 + (2.36-1) * weight(0.3792) = 1 + 1.36 * 0.427 ≈ 1.58
       expect(result.multiplier).toBeCloseTo(1.58, 1);
-      expect(result.multiplier!).toBeLessThan(2.36);
-      expect(result.multiplier!).toBeGreaterThan(1);
+      expect(result.multiplier).toBeLessThan(2.36);
+      expect(result.multiplier).toBeGreaterThan(1);
     });
 
     it('near-open-access same-state public is NEUTRALIZED by damping (Georgia State)', () => {
@@ -412,6 +412,72 @@ describe('counselor modifiers launch guards', () => {
           state: 'OH',
           acceptanceRate: 0.508,
           oosAcceptanceRate: 0.497,
+        }),
+      );
+      expect(result.label.toLowerCase()).toContain('neutral');
+    });
+  });
+
+  // PRIMARY path: a school's OWN published in-state rate overrides the state-map+damping
+  // fallback (real per-school data beats the flagship-ratio proxy). Symmetric with OOS.
+  describe('geoMultiplier — per-school published in-state rate (PRIMARY)', () => {
+    const inState = (state: string) =>
+      baseProfile({ isInternational: false, stateOfResidence: state });
+
+    it('uses published in-state÷overall directly, overriding the state-map fallback', () => {
+      const result = geoMultiplier(
+        inState('NC'),
+        baseSchool({
+          isPrivate: false,
+          state: 'NC',
+          acceptanceRate: 0.1534,
+          oosAcceptanceRate: 0.0663,
+          inStateAcceptanceRate: 0.38, // published: 38% / 15.34% = 2.48×
+        }),
+      );
+      expect(result.label).toContain('In-state');
+      expect(result.multiplier).toBeCloseTo(2.48, 1);
+      expect(result.evidence?.toLowerCase()).toContain('school-published');
+    });
+
+    it('PRIMARY overrides fallback even in an UNTRACKED state (real data > proxy)', () => {
+      // WA is in the map at 1.18, but a published in-state rate must win.
+      const result = geoMultiplier(
+        inState('CO'), // CO is NOT in STATE_IN_STATE_OVER_OVERALL (would default to 1.0)
+        baseSchool({
+          isPrivate: false,
+          state: 'CO',
+          acceptanceRate: 0.4,
+          oosAcceptanceRate: 0.25,
+          inStateAcceptanceRate: 0.6, // 60%/40% = 1.5× — a real boost the default-1.0 would miss
+        }),
+      );
+      expect(result.multiplier).toBeCloseTo(1.5, 2);
+    });
+
+    it('cross-check guard: OOS ≥ in-state → neutral despite a stale-low overall (Ohio State artifact)', () => {
+      const result = geoMultiplier(
+        inState('OH'),
+        baseSchool({
+          isPrivate: false,
+          state: 'OH',
+          acceptanceRate: 0.508, // stale/low — would imply a false 57.3/50.8 = 1.13× boost
+          oosAcceptanceRate: 0.59,
+          inStateAcceptanceRate: 0.573, // OOS 59% ≥ in-state 57.3% → residency not favorable
+        }),
+      );
+      expect(result.label.toLowerCase()).toContain('neutral');
+    });
+
+    it('published in-state ≈ overall → neutral', () => {
+      const result = geoMultiplier(
+        inState('MD'),
+        baseSchool({
+          isPrivate: false,
+          state: 'MD',
+          acceptanceRate: 0.45,
+          oosAcceptanceRate: 0.42,
+          inStateAcceptanceRate: 0.46, // ≈ overall → ratio ~1.02 → neutral
         }),
       );
       expect(result.label.toLowerCase()).toContain('neutral');

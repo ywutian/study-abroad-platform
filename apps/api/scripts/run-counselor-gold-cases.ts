@@ -187,6 +187,7 @@ const MINIMAL_SCHOOL_FIXTURE = [
     fields: {
       acceptanceRate: 0.3792,
       oosAcceptanceRate: 0.311,
+      inStateAcceptanceRate: 0.4698, // published UGA CDS 2024-25 resident rate → PRIMARY path (1.24×)
       sat25: 1280,
       sat75: 1450,
       isPrivate: false,
@@ -351,6 +352,8 @@ async function main() {
       state: true,
       needBlindInternational: true,
       intlAcceptanceRate: true,
+      oosAcceptanceRate: true,
+      inStateAcceptanceRate: true,
     },
   });
   const schoolByNameNorm = new Map(schoolRows.map((s) => [s.nameNorm, s]));
@@ -382,6 +385,8 @@ async function main() {
       isPrivate?: boolean | null;
       needBlindInternational?: boolean | null;
       intlAcceptanceRate?: number | null;
+      oosAcceptanceRate?: number | null;
+      inStateAcceptanceRate?: number | null;
     } = {
       id: school.id,
       name: school.name,
@@ -400,6 +405,12 @@ async function main() {
       needBlindInternational: school.needBlindInternational ?? null,
       intlAcceptanceRate: school.intlAcceptanceRate
         ? Number(school.intlAcceptanceRate)
+        : undefined,
+      oosAcceptanceRate: school.oosAcceptanceRate
+        ? Number(school.oosAcceptanceRate)
+        : undefined,
+      inStateAcceptanceRate: school.inStateAcceptanceRate
+        ? Number(school.inStateAcceptanceRate)
         : undefined,
     };
 

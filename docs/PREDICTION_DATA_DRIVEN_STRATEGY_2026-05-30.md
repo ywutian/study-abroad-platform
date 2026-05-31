@@ -166,6 +166,16 @@ Validated against published numbers: **UNC in-state 38.2%** (published 38%), **U
 
 **Gold set expanded 36→39** with intra-state heterogeneity sentinels: GA Tech (full boost) + UGA (same state, damped — a two-sided trap: flat-2.36 → 0.95 caught above, neutral → 0.53 caught below) + Ohio State (residency-neutral default). 5 UC gold cases + 1 Layer-3 calibration case (Penn State) updated to the data-grounded values (each rationale cites the published basis). Result: **gold 39/39, calibration spec back to its pre-change baseline, 141 counselor unit tests green.**
 
+## 7.11 Per-school in-state rate fill — real data replaces the proxy (2026-05-31)
+
+§7.10's per-state map + selectivity damping is an _approximation_ for the non-flagship publics. To complete it, an 11-agent workflow (62 schools, ~985K tokens) web-verified each school's actual published **in-state and OOS freshman admit rates** (official CDS section C / IR residency tables / UC Information Center). New nullable column **`School.inStateAcceptanceRate`** (migration `20260531200000`); the geo modifier now has a **PRIMARY path**: when a school publishes its own in-state rate, use in-state÷overall directly (symmetric with the OOS path); the state-map+damping is the FALLBACK only where unpublished.
+
+- **37 in-state + 38 OOS rates found** (60% hit rate); **24 no-data** keep the fallback; **2 stale overalls** corrected for ratio consistency (SJSU 72.65→84.61; Hawaii 69.7→86.6). Applied for **29 non-UC publics** (seed `seed-instate-rate-2026-05-31.ts` + migration `20260531210000`). Real data refines the proxy: UGA damping-1.58× → published **1.24×** (in-state 46.98% / overall 37.92%); NC State 1.18×, USC-Columbia 1.27×, Purdue 1.48×.
+- **Consistency cross-check** added to the engine: a genuine in-state advantage requires residents admitted MORE easily than non-residents; if a school's own OOS ≥ its in-state rate, neutralize (guards a stale-low stored overall from inflating in-state÷overall — e.g. Ohio State in-state 57% ≈ OOS 59%).
+- **Gold runner made faithful**: it had silently omitted `oosAcceptanceRate` from its school SELECT (so the per-school OOS guard never fired); added `oos` + `inStateAcceptanceRate` so the gold cases now exercise the real production geo inputs. Only UGA shifted (→ PRIMARY 0.656); gold 39/39, 150 counselor unit tests green.
+
+**⚠️ UC finding (deferred — product-sensitive, needs a separate decision):** the same UC Information Center data shows **8 of 9 UC campuses admit OOS _easier_ than in-state** (UCLA in-state 9.6% vs OOS 11.2%; UCSD 24.7 vs 39.4; UC Irvine 21.6 vs 47.6; only Berkeley favors residents, 13.6 vs 10.3). So the current CA-map 1.35× in-state boost **over-predicts CA residents at most UCs**. This was NOT applied here because UCs use CDS **resident-band** anchors, where an in-state multiplier risks double-counting, and correcting it would change core UC predictions (safety→match for CA in-state) + require re-calibrating the UC gold/calibration cases. Flagged for a deliberate follow-up.
+
 ## 8. Honest limits
 
 - Marginal-only ⇒ the model cannot distinguish two applicants with identical marginals; that delta lives in unobtainable joint data. This is a _feature_ (no false precision), not a bug to engineer away.

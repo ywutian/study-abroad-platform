@@ -139,6 +139,7 @@ export class CounselorEngineService {
       needBlindInternational?: boolean | null;
       intlAcceptanceRate?: number | null;
       oosAcceptanceRate?: number | null;
+      inStateAcceptanceRate?: number | null;
       institutionType?: string | null;
     },
     applicationRound?: string,

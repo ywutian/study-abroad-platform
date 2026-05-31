@@ -1401,6 +1401,7 @@ model School {
   intlStudentPct         Decimal? @db.Decimal(5, 2)
   intlAcceptanceRate     Decimal? @db.Decimal(5, 2)
   oosAcceptanceRate      Decimal? @db.Decimal(5, 2) // Out-of-state freshman admit rate %
+  inStateAcceptanceRate  Decimal? @db.Decimal(5, 2) // In-state/resident freshman admit rate % (published; engine uses inState/overall directly, else state-map+selectivity-damping fallback)
 
   // Transfer student info
   transferAcceptanceRate Decimal? @db.Decimal(5, 2) // Transfer admission rate %

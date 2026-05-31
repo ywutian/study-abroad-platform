@@ -1074,6 +1074,7 @@ export function geoMultiplier(
     isPrivate?: boolean | null;
     acceptanceRate?: number | null;
     oosAcceptanceRate?: number | null;
+    inStateAcceptanceRate?: number | null;
   },
 ): ModifierResult {
   // Don't double-penalize international applicants — `intlMultiplier` already
@@ -1130,6 +1131,40 @@ export function geoMultiplier(
   }
 
   if (isInState) {
+    // PRIMARY (data-grounded): when the school publishes its OWN in-state/resident admit rate,
+    // use in-state÷overall directly — real per-school data beats the flagship-ratio proxy. The
+    // state map + selectivity damping below is only the FALLBACK for schools without a published
+    // split. Symmetric with the OOS data path above (oos÷overall).
+    const inStateRate = normalizeRate(school.inStateAcceptanceRate);
+    if (inStateRate != null && overallRate != null) {
+      // Consistency cross-check: a genuine in-state advantage requires residents admitted
+      // MORE easily than non-residents. If the school's own OOS rate is ≥ its in-state rate,
+      // residency is not favorable here — neutralize. This guards against a stale/low stored
+      // overall spuriously inflating in-state÷overall (e.g. Ohio State in-state 57% ≈ OOS 59%
+      // but a stale overall 51% would otherwise imply a false 1.13× boost).
+      if (oosRate != null && oosRate >= inStateRate) {
+        return {
+          ...NEUTRAL,
+          label: `In-state (${schoolState} — published residency-neutral)`,
+          evidence: `${schoolState} admits residents (~${(inStateRate * 100).toFixed(0)}%) at roughly the same or lower rate than non-residents (~${(oosRate * 100).toFixed(0)}%) — residency is not an advantage here (school-published).`,
+        };
+      }
+      const ratio = Math.max(0.9, Math.min(2.5, inStateRate / overallRate));
+      if (ratio <= 1.03) {
+        return {
+          ...NEUTRAL,
+          label: `In-state (${schoolState} — published residency-neutral)`,
+          evidence: `${schoolState} residents are admitted at ~${(inStateRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (school-published) — residency is effectively neutral here.`,
+        };
+      }
+      return {
+        multiplier: ratio,
+        label: 'In-state at public university',
+        evidence: `${schoolState} residents are admitted at ~${(inStateRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (×${ratio.toFixed(2)}, school-published in-state rate).`,
+        impact: 'positive',
+      };
+    }
+
     const stateRatio =
       STATE_IN_STATE_OVER_OVERALL[schoolState] ?? DEFAULT_IN_STATE_MULTIPLIER;
     // Per-school guard: if THIS school's OWN published OOS rate is ≈ its overall rate,

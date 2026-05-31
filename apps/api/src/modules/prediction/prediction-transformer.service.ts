@@ -674,6 +674,7 @@ export class PredictionTransformerService {
       eaAcceptanceRate: school.eaAcceptanceRate ?? undefined,
       intlAcceptanceRate: school.intlAcceptanceRate,
       oosAcceptanceRate: school.oosAcceptanceRate,
+      inStateAcceptanceRate: school.inStateAcceptanceRate,
       transferAcceptanceRate: school.transferAcceptanceRate,
       hasEarlyDecision: school.hasEarlyDecision,
       institutionType: school.institutionType,
