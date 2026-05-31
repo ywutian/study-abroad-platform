@@ -536,9 +536,13 @@ describe('CounselorEngineService', () => {
       // out-of-state applicants at HIGHER rates than the overall pool —
       // they recruit non-residents for tuition revenue and the OOS pool is
       // more self-selected. So oosRate (0.573) > overallRate (0.418) is a
-      // REAL pattern, not corruption. The geo modifier's ratio clamp caps
-      // the resulting boost at ×1.3.
-      expect(result.modifierResults.geo.multiplier).toBeCloseTo(1.3, 2);
+      // REAL pattern, not corruption. As of 2026-05-31 the OOS ratio clamp was
+      // raised 1.3→1.8, so the real ratio (0.573/0.418 ≈ 1.37) now passes
+      // through instead of being capped — more accurate for revenue-seeking UCs.
+      expect(result.modifierResults.geo.multiplier).toBeCloseTo(
+        0.573 / 0.418,
+        2,
+      );
     });
 
     it('Tier 1 (SAT cell): suppresses gpa+test modifiers — no double-counting', async () => {
@@ -912,12 +916,16 @@ describe('CounselorEngineService', () => {
 
     it('annotates clamp activation when modifiers exceed bounds', async () => {
       const result = await service.compute(
-        profile({ recruitedAthlete: true }),
-        school({ acceptanceRate: 0.2 }),
+        profile({
+          gpa: 4.0,
+          testScores: [{ type: 'SAT', score: 1570 }],
+        }),
+        school({ acceptanceRate: 0.05, sat25: 1440, sat75: 1540 }),
         'ED',
       );
 
-      // 0.2 × 2.5 (ED) × 4.0 (athlete) = 2.0 → clamped to 0.2 × 2.5 = 0.5
+      // ED at a 5% school → ×3.0 (selectivity-scaled) and strong stats push the
+      // combined modifiers above the anchor×2.5 cap, so the engine annotates it.
       const clampNote = result.factors.find((f) =>
         f.name.includes('Capped at 2.5'),
       );

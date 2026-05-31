@@ -211,7 +211,7 @@ export class CounselorEngineService {
         : testBandMultiplier(profile, school),
       round: roundMultiplier(resolvedRound, school),
       legacyHook: legacyHookMultiplier(profile, school),
-      firstGen: firstGenMultiplier(profile),
+      firstGen: firstGenMultiplier(profile, school),
       athlete: athleteMultiplier(profile),
       urm: urmMultiplier(profile, school),
       geo: geoMultiplier(profile, school),

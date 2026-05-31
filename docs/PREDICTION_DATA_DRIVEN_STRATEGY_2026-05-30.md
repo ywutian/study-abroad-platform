@@ -86,6 +86,26 @@ Two findings: (1) **marginals are already well-covered** — the old "data scarc
 
 **intlAcceptanceRate data-quality incident (found + fixed).** Auditing the _existing_ 77% coverage (`scripts/audit-intl-rate-quality.ts`) found **56 contaminated values**: `intl >= overall` (statistically impossible at selective schools) or a fraction-vs-percent scale mismatch. Root cause: international ENROLLMENT % (`intlStudentPct`, separately 100%-covered) and overall-rate relabels leaked into the admit-rate column via an early metadata migration. Impact: the counselor `intlMultiplier` (`ratio = intl/overall`, clamped [0.3, 1.2]) turned a correct ~×0.5 international _penalty_ into a wrong **×1.2 boost** at elite schools (Yale 11%/4.8%, Caltech 9%/2.6%, Stanford 8%/3.8%, Dartmouth, Northwestern …) — telling international applicants their odds were _higher_ than domestic, on exactly their dream schools. Fix: `prisma/seed-intl-rate-correction.ts` nulls contaminated values (→ engine falls back to the correct selectivity heuristic), wired into the seed pipeline after the intl writers; `scripts/audit-intl-rate-quality.ts` is the regression gate (exit 1 on any `intl >= overall`). Local DB: **194 → 138 clean intl rates, gate PASS**. Apply to prod by running the correction standalone. This is the canonical example of why "data-grounded" requires _auditing_ the data, not just having it.
 
+## 7.6 Modifier-constant correctness pass (2026-05-31)
+
+After the data fixes, an evidence-backed audit of the counselor's hand-set _fallback_ multipliers (used when a school's own published rate is absent) found several that were selectivity-_blind_ where the real pattern scales with selectivity. These are correctness fixes against **published aggregate data** (like the intl fix), NOT outcome-tuning — each is grounded in a known cross-tier relationship, so it stays generalizable (`counselor-modifiers.ts`).
+
+| Constant              | Was                     | Now                                                                                | Evidence                                                                                                                 |
+| --------------------- | ----------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **ED fallback**       | flat ×2.5               | selectivity-scaled: 3.0 (<8%) / 2.4 (<15%) / 1.8 (<30%) / 1.4 (<45%) / 1.15 (≥45%) | ED÷overall ranges 3.5× (Dartmouth) → 1.2× (Tulane); flat 2.5 over-boosted T30+ and overflowed past 100% above ~50% admit |
+| **REA/SCEA fallback** | ×1.5                    | ×2.3                                                                               | Harvard 8.74%/3.59% = 2.43×, Yale ≈2.4× (REA is structurally elite-only)                                                 |
+| **ED2 fallback**      | flat ×2.0               | 0.75× the scaled ED                                                                | proportional to the ED1 boost                                                                                            |
+| **first-gen**         | flat ×1.4 (all schools) | selectivity-scaled: 1.4 (<15%) → 1.0 (≥45%)                                        | Arcidiacono SFFA ~1.5 OR is a Harvard-specific holistic artifact; ~neutral at non-holistic schools                       |
+| **geo OOS clamp**     | ≤1.3                    | ≤1.8                                                                               | revenue-seeking UCs admit OOS _easier_ (UC 2024: Irvine 1.73×, Cal Poly 2.07×); 1.3 under-predicted real data            |
+
+Deep-confirmation nuances (why this is _not_ a blanket "raise the constants"):
+
+- **geo is the lowest-value change for this platform**: it only affects DOMESTIC applicants (intl users get NEUTRAL geo), and the 1.3 clamp was a _deliberate, tested_ PR #290 safety decision — so it was raised only modestly (→1.8, still bounded), with the data-integrity gate as the contamination guard.
+- The ×0.5 OOS-penalty fallback was **left as-is**: it rarely fires (nearly all these publics have a real `oosAcceptanceRate` → the data path handles them) and is correct for the genuine OOS-harder flagships (UNC 0.43×, UT-Austin 0.38×).
+- **EA (×1.3) left unchanged** — empirically defensible (MIT EA ≈ 1.16×).
+
+Verification: **668/668 prediction tests pass** (incl. the behavioral matrix + the geo/ED regression tests, updated with documented rationale); data-integrity gate PASS. No served data changed — only the fallback logic for schools without a published per-round/residency rate.
+
 ## 8. Honest limits
 
 - Marginal-only ⇒ the model cannot distinguish two applicants with identical marginals; that delta lives in unobtainable joint data. This is a _feature_ (no false precision), not a bug to engineer away.

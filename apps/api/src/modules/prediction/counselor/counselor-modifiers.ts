@@ -617,14 +617,38 @@ export function testBandMultiplier(
 }
 
 /**
+ * Selectivity-scaled ED boost — fallback when the school's own ED rate (and
+ * CDS yield) are unknown. The ED-vs-OVERALL advantage shrinks sharply with
+ * selectivity, so a flat constant is wrong in both directions:
+ *   - elites (<8% overall): ED÷overall ≈ 2.7-3.5× (Columbia 3.4×, Brown 2.7×,
+ *     Duke 2.9×, Dartmouth 3.5×)
+ *   - T25-T40 (15-30%): ≈ 1.5-2.3× (Emory 2.3×, Richmond 1.5×, Macalester 1.6×)
+ *   - >45% overall: collapses to ~1.1-1.3× (a flat 2.5× there overflows past
+ *     100%, e.g. Tulane ED÷overall ≈ 1.2×)
+ * This is a known *published-aggregate* pattern (not outcome-tuned), so it is
+ * data-grounded and generalizable. Source: CollegeVine ED/EA-by-tier table
+ * (blog.collegevine.com/ed-and-ea-acceptance-rates).
+ */
+function selectivityScaledEdMultiplier(overallRate: number | null): number {
+  if (overallRate == null) return 2.0; // unknown selectivity → conservative midpoint
+  if (overallRate < 0.08) return 3.0;
+  if (overallRate < 0.15) return 2.4;
+  if (overallRate < 0.3) return 1.8;
+  if (overallRate < 0.45) return 1.4;
+  return 1.15;
+}
+
+/**
  * Modifier #3: Application round.
  *
  * When the school publishes its own ED/EA admit rate (CDS Section C21), use
  * the actual ratio `edRate / overallRate` (clamped to [1.0, 4.0]). This is
  * the data-driven path — ED at HYPSM ~1.3-1.5×, T20 ED ~2-2.5×, T50 ED ~1.8×.
  *
- * Fallback heuristic multipliers from peer-school averages: ED 2.5× is the
- * typical Ivy/peer ratio. RD = 1.0 baseline.
+ * Fallback heuristic (when no ED rate / yield is published): the ED boost is
+ * scaled by school selectivity via `selectivityScaledEdMultiplier`; REA/SCEA
+ * is a flat 2.3× (it is structurally elite-only, where REA÷overall ≈ 2.3-2.4×:
+ * Harvard 8.74%/3.59% = 2.43×, Yale 2.4×).
  */
 export function roundMultiplier(
   round: string | undefined,
@@ -770,29 +794,39 @@ export function roundMultiplier(
     };
   }
 
-  // Heuristic fallback (unchanged from v1.2)
+  // Heuristic fallback — selectivity-scaled (2026-05-31). A flat ED 2.5× was
+  // too high at T30+ (real ED÷overall ≈ 1.3-1.8×) and overflows past 100% above
+  // ~45% admit; REA 1.5× was too low for the HYPSM tier it exclusively serves
+  // (real ≈ 2.3-2.4×). See selectivityScaledEdMultiplier + docs.
   switch (r) {
-    case 'ED':
+    case 'ED': {
+      const m = selectivityScaledEdMultiplier(overallRate);
       return {
-        multiplier: 2.5,
+        multiplier: m,
         label: 'Early Decision',
-        evidence:
-          'ED admit rates are typically 2-5× the RD rate at peer institutions (CDS Section C21)',
+        evidence: `ED admit rates run ~${m.toFixed(1)}× the overall rate at this selectivity tier (scaled to a ${overallRate != null ? `${(overallRate * 100).toFixed(0)}% overall` : 'unknown'} admit rate; CDS Section C21)`,
         impact: 'positive',
       };
-    case 'ED2':
+    }
+    case 'ED2': {
+      const m = Math.max(
+        1.0,
+        selectivityScaledEdMultiplier(overallRate) * 0.75,
+      );
       return {
-        multiplier: 2.0,
+        multiplier: m,
         label: 'Early Decision 2',
-        evidence: 'ED2 admit rates are typically 1.5-3× the RD rate',
+        evidence: `ED2 admit rates run ~${m.toFixed(1)}× the overall rate (≈0.75× the ED1 boost at this selectivity tier)`,
         impact: 'positive',
       };
+    }
     case 'REA':
     case 'SCEA':
       return {
-        multiplier: 1.5,
+        multiplier: 2.3,
         label: 'Restrictive Early Action',
-        evidence: 'REA/SCEA admit rates are typically 1.3-1.8× the RD rate',
+        evidence:
+          'REA/SCEA is structurally elite-only, where the early-round admit rate runs ~2.3-2.4× the overall rate (e.g. Harvard 8.74%/3.59% = 2.43×, Yale ≈ 2.4×)',
         impact: 'positive',
       };
     case 'EA':
@@ -856,20 +890,45 @@ export function legacyHookMultiplier(
 }
 
 /**
- * Modifier #5: First-generation college student.
+ * Modifier #5: First-generation college student — selectivity-scaled.
  *
- * Coefficient from Arcidiacono SFFA report: ~1.5× odds ratio for first-gen
- * applicants at need-aware schools. Counselor uses 1.4 as a conservative public estimate.
+ * The Arcidiacono SFFA odds ratio (~1.5×) is a *Harvard-specific*, holistic,
+ * need-aware artifact — it exists because selective schools practice
+ * contextual review and actively recruit first-gen students. It is NOT a
+ * universal cross-tier constant: at less-selective schools that admit largely
+ * on GPA/test thresholds there is no published first-gen admit advantage. So
+ * the boost is scaled by selectivity (concentrated at selective holistic
+ * schools, tapering to neutral above ~45% admit) rather than applied flat.
+ * Source: Arcidiacono SFFA expert report / NBER w26316.
  */
-export function firstGenMultiplier(profile: ProfileInput): ModifierResult {
+export function firstGenMultiplier(
+  profile: ProfileInput,
+  school?: SchoolInput,
+): ModifierResult {
   if (!profile.isFirstGen) {
     return { ...NEUTRAL, label: 'First-generation status' };
   }
+  const overall = normalizeRate(school?.acceptanceRate);
+  const multiplier =
+    overall == null
+      ? 1.3
+      : overall < 0.15
+        ? 1.4
+        : overall < 0.3
+          ? 1.2
+          : overall < 0.45
+            ? 1.1
+            : 1.0;
+  if (multiplier <= 1.0) {
+    return {
+      ...NEUTRAL,
+      label: 'First-generation status (neutral at less-selective school)',
+    };
+  }
   return {
-    multiplier: 1.4,
+    multiplier,
     label: 'First-generation college student',
-    evidence:
-      'First-gen applicants see ~1.4-1.5× the baseline admit rate at most US schools (Arcidiacono SFFA)',
+    evidence: `First-gen applicants see ~${multiplier.toFixed(1)}× the baseline admit rate at selective holistic-review schools (Arcidiacono SFFA); the effect tapers to neutral at less-selective schools`,
     impact: 'positive',
   };
 }
@@ -990,7 +1049,14 @@ export function geoMultiplier(
   const overallRate = normalizeRate(school.acceptanceRate);
   const oosRate = normalizeRate(school.oosAcceptanceRate);
   if (!isInState && overallRate != null && oosRate != null) {
-    const ratio = Math.max(0.35, Math.min(1.3, oosRate / overallRate));
+    // Upper clamp raised 1.3→1.8 (2026-05-31): the revenue-seeking UCs/CSUs
+    // genuinely admit out-of-state/international at higher rates than residents
+    // (UC Fall 2024 official: Irvine OOS÷overall 1.73, Cal Poly 2.07, SB 1.43,
+    // Davis 1.37). The old 1.3 cap (PR #290) treated oos>overall as a "data
+    // quirk"; it is real published data — the data-integrity gate now guards
+    // against contamination, so a bounded 1.8 is safe and more accurate. Stays
+    // bounded (not unbounded) per PR #290's intent.
+    const ratio = Math.max(0.35, Math.min(1.8, oosRate / overallRate));
     return {
       multiplier: ratio,
       label: 'Out-of-state (school data)',
