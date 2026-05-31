@@ -342,9 +342,9 @@ describe('CounselorEngineService', () => {
         }),
         'RD',
       );
-      // anchor 0.11 × strong GPA 1.1 × strong test 1.2 × in-state UC 1.8 = 0.26
-      // capped at 0.11 × 2.5 = 0.275
-      expect(result.probability).toBeGreaterThanOrEqual(0.15);
+      // anchor 0.11 × strong academic geomean ~1.15 × in-state CA 1.2 = ~0.15
+      // (in-state÷overall, not the old in-state÷OOS 1.8 that over-predicted UC)
+      expect(result.probability).toBeGreaterThanOrEqual(0.13);
       expect(result.probability).toBeLessThanOrEqual(0.3);
     });
 
@@ -581,11 +581,13 @@ describe('CounselorEngineService', () => {
       expect(result.tier).toBe(1);
       expect(result.anchor).toBeCloseTo(0.65, 2);
       // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0
-      // (suppressed) × geo CA in-state UC 1.8 = 1.17 → clipped at 0.98 ceiling
-      // (since 0.65 × 2.5 = 1.625, but absolute ceiling is 0.98).
-      // Critical: NOT 0.65 × 1.3 × 1.5 × 1.8 = 2.28 → that's the bug we fixed.
-      expect(result.probability).toBeGreaterThanOrEqual(0.95);
-      expect(result.probability).toBeLessThanOrEqual(0.98);
+      // (suppressed) × geo CA in-state 1.2 (in-state÷overall) = ~0.78 — a more
+      // honest "strong in-state at less-selective UC Davis" than the old clipped
+      // 0.98 (the in-state÷OOS 1.8 over-boosted it into the ceiling).
+      // Critical: gpa/test are suppressed (encoded in the Tier 1 cell), NOT
+      // stacked as 0.65 × 1.3 × 1.5 × 1.2 → that's the double-count we prevent.
+      expect(result.probability).toBeGreaterThanOrEqual(0.72);
+      expect(result.probability).toBeLessThanOrEqual(0.85);
 
       // factors[] should include the suppression note for both gpa and test
       const gpaFactor = result.factors.find((f) =>

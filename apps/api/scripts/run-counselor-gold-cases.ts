@@ -119,6 +119,55 @@ const MINIMAL_SCHOOL_FIXTURE = [
       state: 'CA',
     },
   },
+  // Non-UC public flagships — gold cases 032-036 (per-state in-state÷overall
+  // recalibration, 2026-05-31). Pinned so the cases stay deterministic against
+  // CI seed/overlay drift. acceptanceRate/oosAcceptanceRate = each school's
+  // published overall/OOS admit rate; `state` drives the per-state in-state
+  // multiplier (NC 2.2× → VA/TX 1.5× → MI neutral).
+  {
+    schoolNameNorm: 'university of north carolina at chapel hill',
+    fields: {
+      acceptanceRate: 0.1534,
+      oosAcceptanceRate: 0.0663,
+      sat25: 1400,
+      sat75: 1530,
+      isPrivate: false,
+      state: 'NC',
+    },
+  },
+  {
+    schoolNameNorm: 'university of texas at austin',
+    fields: {
+      acceptanceRate: 0.2664,
+      oosAcceptanceRate: 0.1013,
+      sat25: 1230,
+      sat75: 1490,
+      isPrivate: false,
+      state: 'TX',
+    },
+  },
+  {
+    schoolNameNorm: 'university of virginia',
+    fields: {
+      acceptanceRate: 0.1681,
+      oosAcceptanceRate: 0.1383,
+      sat25: 1410,
+      sat75: 1520,
+      isPrivate: false,
+      state: 'VA',
+    },
+  },
+  {
+    schoolNameNorm: 'university of michigan, ann arbor',
+    fields: {
+      acceptanceRate: 0.1564,
+      oosAcceptanceRate: 0.18,
+      sat25: 1360,
+      sat75: 1530,
+      isPrivate: false,
+      state: 'MI',
+    },
+  },
 ] as const;
 
 function normalizeSchoolName(name: string): string {

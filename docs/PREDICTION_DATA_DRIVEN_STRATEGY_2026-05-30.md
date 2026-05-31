@@ -128,6 +128,27 @@ Findings (on the post-audit clean data):
 
 This **closes the loop**: the engine's fallbacks are now validated against — and where clearly off, calibrated to — the published aggregate data, not just admissions literature. It is the concrete realization of the §7.2 unlock (make the bridge data-driven without any individual outcomes).
 
+## 7.9 Gold-set validation → per-state geo recalibration (2026-05-31)
+
+Ran the user-authored **counselor gold set** (`pnpm gold:counselor`, 31 cases asserting `compute()` lands in an empirical band) against the post-audit engine: **27/31**, down from 31/31 on 2026-05-10. All 4 regressions were one segment — **strong CA in-state → UC flagships, all over-predicting** (UCB 0.45 vs gold [0.15, 0.32]).
+
+**Root cause (a reference-frame data bug, same class as the intl/ED fixes):** the in-state modifier applied a flat **1.8×** (= UC in-state÷OOS, ~17%/9%) to the **overall-population** CDS-band anchor. But in-state÷OVERALL is only ~1.06–1.35 for UC — multiplying an overall anchor by the in-state-vs-OOS gap double-counts. The flat constant also contradicted the engine's own #312 evidence that UCs admit OOS _easier_.
+
+**Fix — per-state in-state÷overall map** (`STATE_IN_STATE_OVER_OVERALL` in `counselor-modifiers.ts`), each value the system's PUBLISHED in-state÷overall (research deliverable, official CDS where available):
+
+| state      | ratio | source / confidence                                                                                           |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------------- |
+| NC (UNC)   | 2.2   | official CDS 2023-24 (in-state 41.2% / overall 18.7%); OOS capped 18% — highest confidence                    |
+| VA (UVA)   | 1.5   | Dean of Admission 2024/25 (~25%/16.5%)                                                                        |
+| TX (UT)    | 1.5   | OOS÷overall 0.38; in-state bimodal (top-6% auto-admit) — conservative blend                                   |
+| CA (UC)    | 1.2   | UCOP systemwide 1.06, Berkeley 1.35 — selective campuses tilt up                                              |
+| FL (UF)    | 1.1   | CDS residency blank; DB oos≈overall → ~neutral                                                                |
+| MI (UMich) | 1.0   | no official split (circulating 39% is impossible vs 17.9% overall); DB oos>overall → OOS easier → **neutral** |
+
+OOS is untouched — already per-school data-driven (`oos/overall`). This captures contrasts a flat constant never could: UNC in-state 0.37 vs OOS 0.07; UMich in-state 0.17 ≈ OOS 0.20 (correctly no boost).
+
+**Avoiding test-set overfitting (the user's core principle):** a naive flat 1.25 would have fixed the UC-heavy gold set but **under-predicted UNC/UT in-state** (uncovered by gold). So the fix is per-published-data, and the **gold set was expanded 31→36** with non-UC in-state cases — UNC (NC), UVA (VA), UT (TX), and a **UMich "no-boost" sentinel** (upper bound 0.25 catches any flat-boost regression) + a UNC in-state/OOS contrast pair. Result: **36/36 green**, 685 prediction unit tests green, analysis gold 50/50.
+
 ## 8. Honest limits
 
 - Marginal-only ⇒ the model cannot distinguish two applicants with identical marginals; that delta lives in unobtainable joint data. This is a _feature_ (no false precision), not a bug to engineer away.

@@ -987,20 +987,51 @@ export function urmMultiplier(
 }
 
 /**
- * Modifier #8a: In-state vs out-of-state at public flagships.
+ * Modifier #8a: In-state vs out-of-state at public universities.
  *
- * UC system: in-state ~17% admit, OOS ~9% (UC official data) → 1.8× / 0.5×.
- * UMich, UNC, UVA, UT-Austin, UF: similar 2-3× in-state advantage.
- * Other publics: 1.3× / 0.85× (smaller residency preference).
- * Privates: 1.0 (no residency effect).
+ * THE ANCHOR IS THE OVERALL-POPULATION ADMIT RATE, so the in-state modifier
+ * must be in-state÷OVERALL — NOT the in-state÷OOS gap. Multiplying an overall
+ * anchor by the (much larger) in-state-vs-OOS ratio double-counts and
+ * over-predicts in-state applicants. A flat 1.8 (= UC in-state÷OOS) did exactly
+ * that: it inflated strong CA in-state UC predictions to ~45% — caught by the
+ * counselor gold set on 2026-05-31. Each ratio below is the system's PUBLISHED
+ * in-state÷overall admit rate (reviewed 2026-05-31):
+ *
+ *   NC 2.2  — UNC-CH official CDS 2023-24 C1: in-state 41.2% / overall 18.7%
+ *             (OOS enrollment legally capped at 18%). Highest confidence.
+ *   VA 1.5  — UVA Dean of Admission 2024/2025: in-state ~24-25% / overall ~16.5%.
+ *   TX 1.5  — UT-Austin OOS÷overall 0.38 (strong in-state pref); in-state is
+ *             bimodal (top-6% auto-admit ~100% vs holistic ~10%), no single
+ *             official %, so 1.5 is a conservative blend.
+ *   CA 1.2  — UC systemwide in-state÷overall 1.06 (UCOP 2024); Berkeley 1.35,
+ *             UCLA 1.06. Selective campuses tilt above systemwide; UC freshman-
+ *             GPA bands are CA-resident-leaning, so the anchor already captures
+ *             much of the residency effect — keep the extra tilt small.
+ *   FL 1.1  — UF CDS leaves the residency columns blank; DB oos 23.3% ≈ overall
+ *             24.2% → ~residency-neutral.
+ *   MI 1.0  — UMich publishes no residency split; the circulating "39% in-state"
+ *             is mathematically impossible against the official 17.9% overall,
+ *             and DB oos 18% > overall 15.6% → OOS admitted *easier* → neutral.
+ *
+ * Out-of-state uses the per-school oos÷overall DATA path in geoMultiplier when
+ * a published OOS rate exists; PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF only
+ * feeds the OOS *fallback* for strong-residency states that lack OOS data.
  */
+const STATE_IN_STATE_OVER_OVERALL: Record<string, number> = {
+  NC: 2.2,
+  VA: 1.5,
+  TX: 1.5,
+  CA: 1.2,
+  FL: 1.1,
+  MI: 1.0,
+};
+/** Modest in-state edge on an overall anchor for publics without a tracked ratio. */
+const DEFAULT_IN_STATE_MULTIPLIER = 1.2;
 const PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF = new Set([
-  'CA', // UC system, CSU
-  'MI', // UMich
-  'NC', // UNC
+  'NC', // UNC — in-state 2.2× overall
   'VA', // UVA, W&M
   'TX', // UT-Austin, A&M
-  'FL', // UF, FSU
+  'CA', // UC system, CSU
 ]);
 
 export function geoMultiplier(
@@ -1065,19 +1096,21 @@ export function geoMultiplier(
     };
   }
 
-  if (isInState && strongPref) {
-    return {
-      multiplier: 1.8,
-      label: 'In-state at public flagship',
-      evidence: `${schoolState} residents see ~1.8-2.5× the OOS admit rate at this state's flagship public universities`,
-      impact: 'positive',
-    };
-  }
   if (isInState) {
+    const inStateRatio =
+      STATE_IN_STATE_OVER_OVERALL[schoolState] ?? DEFAULT_IN_STATE_MULTIPLIER;
+    // Residency-neutral states (e.g. MI, where OOS is admitted *easier*): no boost.
+    if (inStateRatio <= 1.03) {
+      return {
+        ...NEUTRAL,
+        label: `In-state (${schoolState} — residency-neutral public)`,
+        evidence: `${schoolState} public universities admit in-state and out-of-state applicants at ~equal rates (published residency data), so residency is treated as neutral here.`,
+      };
+    }
     return {
-      multiplier: 1.3,
-      label: 'In-state at public school',
-      evidence: `${schoolState} residents see ~1.3× the OOS admit rate at most public universities`,
+      multiplier: inStateRatio,
+      label: 'In-state at public university',
+      evidence: `${schoolState} residents are admitted at ~${inStateRatio.toFixed(2)}× this school's OVERALL admit rate (published in-state÷overall data; the anchor is the overall-population rate, so this uses in-state÷overall — not the larger in-state÷OOS gap, which would double-count).`,
       impact: 'positive',
     };
   }

@@ -1,0 +1,19 @@
+{
+  "id": "032-unc-strong-nc-instate-rd",
+  "description": "UNC-Chapel Hill — strong NC in-state applicant, RD",
+  "rationale": "NC is the strongest-residency-preference flagship state: UNC's official CDS 2023-24 shows in-state 41.2% vs overall 18.7% (in-state÷overall = 2.20), with OOS enrollment legally capped at 18%. The per-state geo map applies 2.20×, and a strong in-stater lands near the anchor×2.5 guardrail (~0.37). Range [0.28, 0.52] brackets that while asserting UNC in-state is a TARGET (not a 15% reach, not an 80% safety). Guards the high pole of the residency spectrum.",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "NC",
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "economics",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of North Carolina at Chapel Hill",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.28, 0.52],
+  "tags": ["public-flagship", "in-state", "strong-residency-pref"]
+}

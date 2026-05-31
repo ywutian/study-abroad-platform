@@ -1,0 +1,19 @@
+{
+  "id": "035-ut-austin-strong-tx-instate-rd",
+  "description": "UT-Austin — strong TX in-state applicant, RD",
+  "rationale": "TX in-state is structurally favored: UT-Austin's OOS÷overall is 0.38 (OOS much harder), and in-state admission is bimodal by state law (top-6% auto-admit ~100% vs holistic ~10%), so there is no single official in-state %; the per-state map uses a conservative 1.5× blend. A strong in-stater (anchor ~0.266) lands ~0.50. Range [0.36, 0.64] brackets that — UT in-state is a strong TARGET/low-safety for top applicants.",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "TX",
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "economics",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of Texas at Austin",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.36, 0.64],
+  "tags": ["public-flagship", "in-state", "strong-residency-pref"]
+}
