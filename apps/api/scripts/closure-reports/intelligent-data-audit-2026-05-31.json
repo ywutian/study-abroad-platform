@@ -1,0 +1,690 @@
+{
+  "totalSchools": 241,
+  "batches": 41,
+  "findings": [
+    {
+      "school": "Rose-Hulman Institute of Technology",
+      "field": "intl",
+      "dbValue": "68.9%",
+      "realValue": "~8.2%",
+      "severity": "high",
+      "source": "https://www.rose-hulman.edu/academics/academic-affairs/irpa/reports/2024-25-Academic-Year-CDS.pdf",
+      "note": "MISLABELED FIELD. CDS 2024-25 B2 reports 190 nonresident (international) of 2,309 degree-seeking undergrads = ~8.2% (first-year: 69/604 = ~11%). DB's 68.9% is ~8x reality and cannot be an international-student share. Likely some other metric (e.g. a male/retention/test-submit %) miswritten into the intl field. IPEDS likewise shows ~8-12% intl."
+    },
+    {
+      "school": "Williams College",
+      "field": "oos",
+      "dbValue": "0.09%",
+      "realValue": "~86.6%",
+      "severity": "high",
+      "source": "https://www.collegefactual.com/colleges/williams-college/student-life/diversity/chart-geographic-diversity.html",
+      "note": "MISLABELED / MISPARSED FIELD. Williams is overwhelmingly out-of-state (~86.6% OOS; ~9.4% international; only ~4% in-state Massachusetts). An OOS value of 0.09% is structurally impossible for Williams and is almost certainly a decimal/parse error (e.g. an in-state proportion or stray fraction) landing in the OOS field. Official CDS residency confirms the vast majority are non-MA."
+    },
+    {
+      "school": "The Juilliard School",
+      "field": "sat25",
+      "dbValue": "1460-1570",
+      "realValue": "N/A (test-blind)",
+      "severity": "medium",
+      "source": "https://www.juilliard.edu/admissions/how-apply",
+      "note": "Juilliard is a TEST-BLIND audition conservatory: it neither requires, considers, nor reports SAT/ACT scores (confirmed test-blind; DataUSA/IPEDS report no SAT). The stored 1460-1570 band is not a real Juilliard C9 figure and is fabricated/mislabeled for an audition-based admission. Admission is driven by audition/portfolio, so any precise SAT range is spurious. (Applies to both sat25 and sat75.)"
+    },
+    {
+      "school": "The Juilliard School",
+      "field": "overall",
+      "dbValue": "6%",
+      "realValue": "~9%",
+      "severity": "low",
+      "source": "https://datausa.io/profile/university/the-juilliard-school",
+      "note": "Borderline anchor drift. DataUSA/IPEDS 2023 = 8.96% (181/2,020); 2024-25 reported ~9.15% (189/2,065). DB's 6% is ~3pp low / ~33% relative below current published rate. Within Juilliard's historical audition-rate volatility (11-yr avg ~7.6%, division-dependent), so flagged low, but the anchor is stale vs the most recent published overall rate."
+    },
+    {
+      "school": "Harvey Mudd College",
+      "field": "intl",
+      "dbValue": "4.64%",
+      "realValue": "~13.4%",
+      "severity": "low",
+      "source": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/06/CDS_2023-2024_Complete_V2.pdf",
+      "note": "Low-priority field, but >2x off. CDS 2023-24 C1 residency: 30 international enrolled of 224 first-years = ~13.4% (B2 shows 31/224 first-year nonresident, 95/915 total UG = ~10.4%). DB's 4.64% is well below any HMC intl share and too large to be year-drift; possibly a stale or mis-derived value (e.g. intl-of-admits computed differently)."
+    },
+    {
+      "school": "Massachusetts Institute of Technology",
+      "field": "oos",
+      "dbValue": "4.55%",
+      "realValue": "91%",
+      "severity": "high",
+      "source": "https://ir.mit.edu/projects/2024-25-common-data-set/",
+      "note": "Mislabeled field: the DB out-of-state value (4.55%) is byte-identical to MIT's overall admit rate (4.55%) — the admit rate was copied into the OOS slot. MIT's actual first-time first-year out-of-state share is 91% per the 2024-25 CDS."
+    },
+    {
+      "school": "Pratt Institute",
+      "field": "overall",
+      "dbValue": "44.87%",
+      "realValue": "73.25%",
+      "severity": "high",
+      "source": "https://www.pratt.edu/wp-content/uploads/2023/05/CDS_2022-2023_Pratt.pdf",
+      "note": "Stale anchor. 44.87% is Pratt's 2022 (CDS 2022-23) rate; the rate then rose to 53.17% (2023) and 73.25% for Fall 2024 / Class of 2028 (6,195 admit / 8,457 applied). Current overall admit is ~28pp higher than the stored anchor — materially understates probability. Note the DB's stray EA=73% equals the current overall, reinforcing that 73% is the real current admit rate."
+    },
+    {
+      "school": "Amherst College",
+      "field": "ea",
+      "dbValue": "61%",
+      "realValue": "no EA (ED-only)",
+      "severity": "high",
+      "source": "https://www.amherst.edu/about/facts/secondary_school_reports/class-of-2028-profile",
+      "note": "Amherst offers Early Decision only and has no Early Action program. A 61% EA admit rate is a fabricated/mislabeled field — no such round exists. (Amherst's actual ED rate for Class of 2028 was 216/735 = ~29%.)"
+    },
+    {
+      "school": "Curtis Institute of Music",
+      "field": "intl",
+      "dbValue": "1.6%",
+      "realValue": "~49%",
+      "severity": "high",
+      "source": "https://www.collegetuitioncompare.com/edu/211893/curtis-institute-of-music/enrollment/",
+      "note": "Curtis is ~49% international (79 non-resident-alien of 161 enrolled, 2024-25; Curtis states 'as much as 50% from outside the US'). DB value 1.6% is wrong by ~30x — almost certainly a mislabeled/garbage figure for a conservatory whose student body is roughly half international."
+    },
+    {
+      "school": "Amherst College",
+      "field": "oos",
+      "dbValue": "0.08%",
+      "realValue": "~88%",
+      "severity": "medium",
+      "source": "https://www.amherst.edu/about/facts/secondary_school_reports/class-of-2028-profile",
+      "note": "0.08% out-of-state is impossible for Amherst, which enrolls from 49 states + 76 countries with the large majority from outside Massachusetts (~88-90% out-of-state). The stored value is effectively zero and clearly wrong/mislabeled."
+    },
+    {
+      "school": "Curtis Institute of Music",
+      "field": "oos",
+      "dbValue": "2.8%",
+      "realValue": "high (nationally/intl drawn)",
+      "severity": "medium",
+      "source": "https://datausa.io/profile/university/curtis-institute-of-music",
+      "note": "2.8% out-of-state is implausible for a top conservatory that draws ~49% internationally and the remainder nationally from across the US. The Pennsylvania-resident share is a small minority, so a ~2.8% OOS figure is clearly wrong/mislabeled (it understates rather than overstates non-PA enrollment)."
+    },
+    {
+      "school": "Berklee College of Music",
+      "field": "sat25",
+      "dbValue": "1080-1320",
+      "realValue": "1210-1390",
+      "severity": "low",
+      "source": "https://www.collegetuitioncompare.com/edu/164748/berklee-college-of-music/admission/",
+      "note": "Stored SAT range 1080-1320 runs ~130 pts low at the 25th and ~70 low at the 75th vs the more recent reported submitter range (~1210-1390). Berklee is test-blind/optional so SAT carries little weight and submitter samples are small/noisy — low confidence, possible year-drift rather than a hard error."
+    },
+    {
+      "school": "School of the Art Institute of Chicago",
+      "field": "overall",
+      "dbValue": "60%",
+      "realValue": "76-77%",
+      "severity": "high",
+      "source": "https://www.collegetuitioncompare.com/edu/143048/school-of-the-art-institute-of-chicago/admission/",
+      "note": "Prediction ANCHOR is materially understated. IPEDS 2024-25 reports 77.47% (CollegeTuitionCompare, updated Dec 2024); CollegeData reports 77% (5,120 admits / 6,626 apps); Niche reports 76.4% (5,069 / 6,633). Three independent IPEDS-derived sources converge at ~76-77%, vs DB 60% — off by ~16-17 percentage points (~28% relative). Notably the DB yield (11.8%) exactly matches IPEDS (11.77%), so it is specifically the admit rate that is stale/wrong, not a whole-row data problem. SAT (DB 1080-1320 vs ~1120-1340) is within tolerance and SAIC is test-blind, so not flagged."
+    },
+    {
+      "school": "Manhattan School of Music",
+      "field": "overall",
+      "dbValue": "78.94%",
+      "realValue": "~40%",
+      "severity": "high",
+      "source": "https://www.collegetuitioncompare.com/edu/192712/manhattan-school-of-music/admission/",
+      "note": "ANCHOR ~2x off. Most recent published overall admit rate is 40.78% (2024-25, 573/1405 admitted) per IPEDS-sourced data; 39.9% in 2023 (572/1432); US News reports ~36%. No year in any source approaches 79%. The DB 78.94% appears mislabeled/duplicated — it nearly matches the DB OOS field (74.05%). Tellingly, the DB EA=36% and yield=25% (vs real 25.31%) BOTH match reality, so the overall field specifically is wrong, not the school's whole record."
+    },
+    {
+      "school": "New England Conservatory",
+      "field": "overall",
+      "dbValue": "31%",
+      "realValue": "41.1%",
+      "severity": "medium",
+      "source": "https://www.collegetuitioncompare.com/edu/167057/the-new-england-conservatory-of-music/admission/",
+      "note": "ANCHOR off by ~10pp and >25% relative. Most recent published overall admit rate is 41.10% (2024-25, 457/1112 admitted); Niche 43%, 2023 ~42.8%. The DB overall=31% looks stale/mislabeled because the DB EA field (41.1%) EXACTLY equals the true current overall rate, and the DB yield (29.5%) exactly matches the real yield (29.54%) — i.e. the correct overall figure already lives in the wrong field while overall holds an outdated number."
+    },
+    {
+      "school": "ArtCenter College of Design",
+      "field": "sat25",
+      "dbValue": "1080-1320",
+      "realValue": "1210-1470",
+      "severity": "low",
+      "source": "https://www.clastify.com/blog/score-requirements/art-center-college-of-design/sat",
+      "note": "Borderline/low confidence. Aggregators report a middle-50% SAT of 1210-1470 for ArtCenter, ~130 pts above the DB's 1080-1320 on both ends (exceeds the 40-pt threshold). BUT ArtCenter is now test-blind ('SAT/ACT not considered'), so there is no authoritative current CDS SAT range to confirm against, and SAT is non-load-bearing for this portfolio-based art school. Overall admit anchor (76.18%) and yield (31.5%) both check out, so this is a soft flag only."
+    },
+    {
+      "school": "Savannah College of Art and Design",
+      "field": "overall",
+      "dbValue": "92%",
+      "realValue": "83%",
+      "severity": "medium",
+      "source": "https://edurank.org/uni/savannah-college-of-art-and-design/",
+      "note": "SCAD's most recent reported admit rate is ~83% (13,241 admitted / 15,956 applied, 2024-25). DB's 92% is ~9pp too high — over the 5pp materiality bar. Likely a stale or rounded-up figure; the anchor should be ~83%."
+    },
+    {
+      "school": "Savannah College of Art and Design",
+      "field": "oos",
+      "dbValue": "93.84%",
+      "realValue": "n/a (SCAD reports no residency-split admit rate; ~71-82% of students are out-of-state)",
+      "severity": "high",
+      "source": "https://en.wikipedia.org/wiki/Savannah_College_of_Art_and_Design",
+      "note": "MISLABELED FIELD. SCAD is a private art school with rolling national/international admission and does NOT publish an out-of-state admit rate. The 93.84% corresponds to no real SCAD admit rate — it appears to be a geography/enrollment statistic (share of students who are out-of-state, reported as ~71-82%) stored in an admit-rate field. Since the overall rate is ~83%, an OOS admit rate near 94% is internally inconsistent."
+    },
+    {
+      "school": "Savannah College of Art and Design",
+      "field": "intl",
+      "dbValue": "87.4%",
+      "realValue": "~13% (CDS Fall 2024 nonresident); 25.4% by Fall 2025",
+      "severity": "high",
+      "source": "https://www.scad.edu/about/institutional-effectiveness/office-institutional-research/student-body-diversity",
+      "note": "Clearly wrong / mislabeled. SCAD's international (nonresident) share of students is roughly 13% (CDS Fall 2024), rising to ~25% by Fall 2025 — nowhere near 87.4%. 87.4% has no basis as an international admit rate or international enrollment share; it looks like a mis-mapped or inverted figure (e.g. a domestic/non-international share, or an unrelated stat) landing in the intl field."
+    },
+    {
+      "school": "Maryland Institute College of Art",
+      "field": "overall",
+      "dbValue": "64%",
+      "realValue": "76.8%",
+      "severity": "medium",
+      "source": "https://www.univstats.com/colleges/maryland-institute-college-of-art/admission/",
+      "note": "IPEDS 2024-25 overall admit rate is 76.79% (2,458 admitted / 3,201 applicants). DB shows 64%, a ~13pp understatement of the prediction anchor. Notably the DB's SAT range (1078-1305) and yield (10.4% vs IPEDS 10.37%) match this same IPEDS vintage exactly, so the admit-rate field is internally inconsistent with the matching yield — pointing to a stale/wrong overall rate rather than a different data year. Not ~2x off, so medium not high."
+    },
+    {
+      "school": "California College of the Arts",
+      "field": "overall",
+      "dbValue": "84%",
+      "realValue": "91.1%",
+      "severity": "medium",
+      "source": "https://www.univstats.com/colleges/california-college-of-the-arts/admission/",
+      "note": "Most-recent IPEDS 2024-25 overall admit rate is 91.10% (2,160 admitted / 2,371 applicants). DB shows 84%, ~7pp below and matching NO published year: collegetuitioncompare shows 75.69% (2022-23), 73.40% (2023-24), 91.10% (2024-25). DB yield 7.8% matches IPEDS 7.96%, so the yield is current but the admit rate is not. CCA's rate is volatile year-to-year, so medium severity; flagged because the anchor sits between cycles and is below the latest published figure by >5pp."
+    },
+    {
+      "school": "Colgate University",
+      "field": "ed",
+      "dbValue": "35.25%",
+      "realValue": "22.94%",
+      "severity": "medium",
+      "source": "https://www.colgate.edu/sites/default/files/2024-07/CDS_2023-2024%20FINAL.pdf",
+      "note": "Colgate's own 2023-24 Common Data Set (C21) reports 2,097 early-decision applications received and 481 admitted under the ED plan = 22.94%. Independently corroborated (Colgate Class of 2028 reporting cites a 22.94% ED I+II rate). The DB's stored ED=35.25% is wrong by ~12pp (~54% relative) for the same cycle whose overall rate (11.95%) and SAT range (1440-1510) the DB matches exactly. Not the prediction anchor, but a clearly incorrect present ED-field value."
+    },
+    {
+      "school": "University of North Carolina at Chapel Hill",
+      "field": "ea",
+      "dbValue": "15.34%",
+      "realValue": "~23% (not officially published)",
+      "severity": "low",
+      "source": "https://www.collegevine.com/faq/163956/difference-in-acceptance-rates-for-early-action-vs-regular-decision-at-unc-chapel-hill",
+      "note": "EA field holds 15.34%, byte-identical to the stored overall admit rate (15.34%, Class of 2028 anchor) — a placeholder/mislabel rather than a true EA rate. UNC does not publish a separate EA admit rate, but EA is meaningfully higher than overall (sources cite ~23% in a prior cycle); a non-binding EA round is never equal to the blended overall rate. Low severity: the number is not wildly off and UNC does not officially break EA out, but the field is mislabeled (overall value copied into EA). All other UNC values (overall 15.34%, OOS 6.63%, intl 14.28%, SAT 1400-1530) match the published Class of 2028 figures exactly and are correct."
+    },
+    {
+      "school": "University of California, Irvine",
+      "field": "sat25",
+      "dbValue": "1250-1430",
+      "realValue": "1180-1440",
+      "severity": "medium",
+      "source": "https://www.prepscholar.com/sat/s/colleges/UC-Irvine-sat-scores-GPA",
+      "note": "UCI's published SAT composite middle-50 is 1180-1440 (sourced from its Common Data Set / Peterson's 2024). The DB 75th (1430) matches the real 1440 within tolerance, but the DB 25th of 1250 is ~70 points above the published 1180, exceeding the 40-point materiality threshold. UCI is test-optional so SAT figures still apply. Overall admit rate 28.78% is CORRECT (UC official Fall-2025 admit data: 124,230 apps / 35,661 admits = 28.7%), so the anchor is fine — only the SAT 25th is materially high."
+    },
+    {
+      "school": "University of California, Santa Barbara",
+      "field": "sat25",
+      "dbValue": "1290-1460",
+      "realValue": "1230-1480",
+      "severity": "low",
+      "source": "https://www.prepscholar.com/sat/s/colleges/UCSB-sat-scores-GPA",
+      "note": "Published SAT composite middle-50 is 1230-1480; DB 25th of 1290 is ~60 points above the published 1230 (75th 1460 vs 1480 is within tolerance). Borderline/low because UCSB is fully TEST-BLIND — it no longer collects or uses SAT, so all SAT ranges are legacy figures from the last test-submitting cohort and sources disagree by year. Flagging only as a data-currency note. NOTE: the DB overall admit rate of 38.2% is CORRECT and was nearly mis-flagged — UC's official first-year admit page shows Fall-2025 = 110,178 apps / 42,170 admits = 38.3%; secondary search summaries citing ~27.9% are wrong/outdated and should be ignored."
+    },
+    {
+      "school": "Ohio State University",
+      "field": "overall",
+      "dbValue": "60.57%",
+      "realValue": "50.8%",
+      "severity": "high",
+      "source": "https://irp.osu.edu/sites/default/files/documents/2025/07/CDS-2023-2024-The%20Ohio%20State%20University-Columbus.pdf",
+      "note": "Primary CDS 2023-24 (Section C1): 70,028 applied / 35,588 admitted = 50.82%. DB 60.57% overstates the prediction anchor by ~9.8pp. No recent OSU year reaches 60% (Autumn 2023 ~50.8%, Autumn 2025 49% per CDS; other counts ~57%). DB value is too high vs every primary figure."
+    },
+    {
+      "school": "Purdue University",
+      "field": "overall",
+      "dbValue": "43.43%",
+      "realValue": "50.3%",
+      "severity": "medium",
+      "source": "https://www.purdue.edu/idata/wp-content/uploads/2026/04/CDS_2023_2024.xlsx",
+      "note": "Primary CDS 2023-24 (Section C1, men+women): applied 44,960+27,840=72,800, admitted 20,259+16,343=36,602 = 50.28%. DB 43.43% understates anchor by ~6.9pp. Note DB also stores OOS=43.58%, nearly identical to the wrong overall — suggests both fields were populated from one ~43-44% source rather than the true 50.3% admit rate."
+    },
+    {
+      "school": "University of Washington",
+      "field": "sat25",
+      "dbValue": "1333",
+      "realValue": "1280",
+      "severity": "medium",
+      "source": "https://uw-s3-cdn.s3.us-west-2.amazonaws.com/wp-content/uploads/sites/162/2024/03/01124227/CDS_Seattle_2023_2024.xlsx",
+      "note": "Primary CDS 2023-24 (Section C9): SAT Composite 25th=1280, 50th=1410, 75th=1490. DB SAT 25th of 1333 is 53 points too high (exceeds 40-pt threshold). The 75th (1500 vs 1490) and overall admit (39.15% vs CDS 42.5%) are within year-drift tolerance; the 25th appears to have picked up the 50th-percentile band or a different cohort."
+    },
+    {
+      "school": "Ohio State University",
+      "field": "oos",
+      "dbValue": "58.98%",
+      "realValue": "49.7%",
+      "severity": "low",
+      "source": "https://irp.osu.edu/sites/default/files/documents/2025/07/CDS-2023-2024-The%20Ohio%20State%20University-Columbus.pdf",
+      "note": "CDS 2023-24 out-of-state admit rate = 17,472 admitted / 35,133 applied = 49.7%. DB OOS 58.98% is ~9pp high. Bounded and OOS is a secondary field with definitional variance (admit-rate vs enrolled-share), but the present value is notably overstated relative to the primary breakdown."
+    },
+    {
+      "school": "Rutgers University-New Brunswick",
+      "field": "yield",
+      "dbValue": "20.53%",
+      "realValue": "27.12%",
+      "severity": "low",
+      "source": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "note": "CDS 2023-24: 7,681 enrolled / 28,326 admitted = 27.12% yield. DB 20.53% is ~6.6pp / 24% relative below the primary figure. Overall admit (65.35%) and SAT (1270-1480) match the CDS exactly; only the yield field is understated, possibly a stale or wrong-cohort value."
+    },
+    {
+      "school": "Texas A&M University",
+      "field": "intl",
+      "dbValue": "56.53%",
+      "realValue": "~1-5%",
+      "severity": "high",
+      "source": "https://www.collegefactual.com/colleges/texas-a-and-m-university-college-station/student-life/international/",
+      "note": "MISLABELED FIELD. TAMU College Station undergrad international enrollment is ~683/55,568 = ~1.2% (total-institution intl ~5%). A value of 56.53% is impossible as an international share — it is not even the in-state share (TAMU is ~75% in-state). Some non-international metric (likely an OOS-applicant or in-state-related figure) was stored in the intl field. All other TAMU fields check out: overall 57.32% matches CDS 2024-25 (31,472 admits / 54,905 apps = ~57.3%); SAT 1160-1390 exact; yield 39.91% matches ~12,498 enrolled / 31,472 admitted."
+    },
+    {
+      "school": "University of Georgia",
+      "field": "intl",
+      "dbValue": "20.91%",
+      "realValue": "~1.3%",
+      "severity": "medium",
+      "source": "https://www.admissions.uga.edu/admissions/international/",
+      "note": "MISLABELED FIELD. UGA Fall 2024 undergrad population is 83% Georgia / 16% out-of-state / 1% international (435 intl undergrads / 32,399 = ~1.3%; total-institution intl ~5.72%). 20.91% is ~16x the true undergrad international share and is closer in magnitude to an out-of-state figure — a non-international number was placed in the intl field. UGA overall (DB 37.92% vs Class of 2028 36.9% = 43,090 apps/15,900 admits) and SAT 1220-1400 (matches the 2023-24 admitted mid-50% of 1230-1410) are within tolerance and NOT flagged, though the current Class of 2029 SAT range has risen to 1300-1470."
+    },
+    {
+      "school": "Case Western Reserve University",
+      "field": "ed",
+      "dbValue": "24.98%",
+      "realValue": "37.06%",
+      "severity": "medium",
+      "source": "https://case.edu/ir/sites/default/files/2025-05/CWRU%202024%20-%2025%20CDS%20ADJ.pdf",
+      "note": "DB's overall (37.78%), SAT (1450-1530) and yield (11.56%) are EXACT matches to the 2024-25 CDS (Class of 2028), but the ED value is stale/mismatched: that same CDS C21 reports 298 ED admits / 804 ED apps = 37.06%. The DB's 24.98% is roughly the prior Class-of-2027 ED rate (~25.54%). It is materially off (~12pp / ~33% rel) and directionally misleading — it makes ED look LOWER than the overall admit rate, when the current CDS shows ED is essentially equal to it. (EA=23.43% in DB is a real Class-of-2027 figure, 4437/18938; CWRU stopped reporting EA after that cycle, so left unflagged as low-priority.)"
+    },
+    {
+      "school": "Villanova University",
+      "field": "ea",
+      "dbValue": "28%",
+      "realValue": "~15.4%",
+      "severity": "low",
+      "source": "https://www1.villanova.edu/dam/villanova/provost/decision_support/CDS_2023_2024_v2.pdf",
+      "note": "Primary 2023-24 CDS C22: 2,266 EA admits / 14,667 EA apps = 15.45%. Clastify also reports Class-of-2023 EA = 15.5%; Villanova later stopped breaking out EA. Every source puts Villanova EA near 15%, never 28%. Low-priority field but the DB value is clearly wrong. (Overall 26.98% and SAT 1410-1490 both check out exactly, so the anchor is fine.)"
+    },
+    {
+      "school": "Villanova University",
+      "field": "intl",
+      "dbValue": "17%",
+      "realValue": "~2%",
+      "severity": "low",
+      "source": "https://www1.villanova.edu/dam/villanova/provost/decision_support/CDS_2023_2024_v2.pdf",
+      "note": "2023-24 CDS: first-year international enrolled 35/1,740 = 2.0%; intl admitted 178/5,810 = 3.1%; all-undergrad nonresident share ~2%. College Transitions confirms 'only 2% of undergrads were international.' Villanova has a notably LOW international population; the DB's 17% is off by ~8x. Low-priority field but clearly wrong."
+    },
+    {
+      "school": "Northeastern University",
+      "field": "intl",
+      "dbValue": "3.81%",
+      "realValue": "~10-13%",
+      "severity": "low",
+      "source": "https://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+      "note": "2024-25 CDS B2: first-time first-year nonresidents 270/2,759 = 9.8%; all degree-seeking undergrad nonresidents 2,892/22,589 = 12.8% (institution-wide intl ~38% per Boston Globe). DB's 3.81% understates the true undergrad international share by ~3x. Low-priority field and intl can be computed several ways, but 3.81% is inconsistent with every primary measure. (Overall 5.22% and SAT 1450-1520 are EXACT CDS matches — anchor is solid.)"
+    },
+    {
+      "school": "Rensselaer Polytechnic Institute",
+      "field": "ed",
+      "dbValue": "69.09%",
+      "realValue": "~58%",
+      "severity": "low",
+      "source": "https://www.ivycoach.com/the-ivy-coach-blog/early-decision-early-action/rensselaer-polytechnic-institute-early-decision-early-action-admission-statistics/",
+      "note": "DB ED admit rate (edAcceptanceRate) is 69.09%, but RPI's actual ED admit rate has been stable at ~58% for the two most recent cycles (Class of 2027: 58.5%; Class of 2028 / Fall 2024: 57.9%, 139 of 240 admitted). 69% overstates the true value by ~11pp and does not match any recent year — likely a stale capture from an older cycle (RPI overall+ED ran higher ~Fall 2020-21). Secondary axis, bounded, not the anchor; overall (67.25% vs recent 63.4%, 3.85pp) and SAT (1380-1500 vs CDS 1390-1500) are within year-drift tolerance and not flagged. RPI intl=56.24% is correct as an international ADMIT rate (schema: intlAcceptanceRate), not enrollment share; yield 12.05% matches CDS 12% exactly."
+    },
+    {
+      "school": "University of Colorado Boulder",
+      "field": "overall",
+      "dbValue": "18.47%",
+      "realValue": "~80%",
+      "severity": "high",
+      "source": "https://www.gradgpt.com/common-data-set/university-of-colorado-boulder",
+      "note": "ANCHOR ERROR (~4x too low). CU Boulder is a large public flagship that admits the great majority of applicants. Official/CDS-derived figures: Fall 2024 = 81.4% (57,340 applied / 46,692 admitted); CDS 54,756 applied / 44,053 admitted = 80.5%; GradGPT/IPEDS ~76%. DB 18.47% is not a year-drift — it is off by ~62 percentage points. Likely a mislabeled field (an enrollment-composition or selectivity-index value stored as the overall admit rate). Because overall admit rate is the prediction anchor, this corrupts every CU Boulder prediction."
+    },
+    {
+      "school": "University of Colorado Boulder",
+      "field": "oos",
+      "dbValue": "24.25%",
+      "realValue": "~77%",
+      "severity": "medium",
+      "source": "https://www.collegeraptor.com/colleges/admissions/University-of-Colorado-Boulder-CO--126614",
+      "note": "Out-of-state ADMIT rate is ~77% (Fall 2024 freshman profile: in-state ~92%, out-of-state ~77%). DB 24.25% is ~3x too low and inconsistent with a school that admits ~80% overall. Appears mislabeled — 24.25% resembles a 'percent of enrolled students who are out-of-state' composition figure rather than an OOS admit rate. Flagged because it is a clearly-wrong present value tied to the same broken CU Boulder record as the overall anchor."
+    },
+    {
+      "school": "University of Colorado Boulder",
+      "field": "intl",
+      "dbValue": "7.02%",
+      "realValue": "~85%",
+      "severity": "medium",
+      "source": "https://www.collegedroid.com/colleges/university-of-colorado-boulder/admission",
+      "note": "International ADMIT rate is ~85% (Fall 2024 freshman profile). DB 7.02% is an order of magnitude too low and looks like an enrollment-share figure (intl students are a small fraction of the class) mislabeled as the international admit rate. Same corrupted CU Boulder record as the overall and OOS fields; SAT 1170-1370 and yield 17.21% on this record are fine (real SAT ~1160-1390, yield ~16.2%), which is what makes the three admit-rate fields stand out as mislabeled."
+    },
+    {
+      "school": "University of Denver",
+      "field": "overall",
+      "dbValue": "77.29%",
+      "realValue": "71.2%",
+      "severity": "high",
+      "source": "https://www.du.edu/sites/default/files/2024-06/DU_CDS_2023_2024_3.pdf",
+      "note": "Anchor admit rate. DU's own 2023-24 CDS C1 reports 13,679 admitted / 19,214 applied = 71.2%. DB's 77.29% is off by ~6.1pp (8.6% relative) and is stale — DU has become more selective. Recent reporting also cites ~71%."
+    },
+    {
+      "school": "University of San Diego",
+      "field": "overall",
+      "dbValue": "52.38%",
+      "realValue": "46.8%",
+      "severity": "high",
+      "source": "https://www.sandiego.edu/facts/documents/cds/cds_2023_2024.pdf",
+      "note": "Anchor admit rate. USD's own 2023-24 CDS C1 reports 7,452 admitted / 15,921 applied = 46.8%. DB's 52.38% is off by ~5.6pp (12% relative) and is stale; USD has tightened. SAT (1200-1350) checks out exactly, only the rate is wrong."
+    },
+    {
+      "school": "Worcester Polytechnic Institute",
+      "field": "sat25",
+      "dbValue": "1300-1460",
+      "realValue": "test-blind, no SAT published",
+      "severity": "medium",
+      "source": "https://www.wpi.edu/sites/default/files/2024-03/WPI_CDS_2023-2024_3-28-24.pdf",
+      "note": "WPI's 2023-24 CDS explicitly states admissions are Test-blind and the C9 SAT 25th/75th cells are blank (no scores used or reported). The DB's 1300-1460 range cannot come from WPI's current CDS — it is stale (pre-test-blind) or a third-party estimate, and is misleading as a published SAT band for a test-blind school. WPI overall rate (DB 60.16% vs CDS 58.5%) is within drift and OK."
+    },
+    {
+      "school": "University of Denver",
+      "field": "intl",
+      "dbValue": "48.79%",
+      "realValue": "58.3%",
+      "severity": "low",
+      "source": "https://www.du.edu/sites/default/files/2024-06/DU_CDS_2023_2024_3.pdf",
+      "note": "Secondary field. DU 2023-24 CDS Part C shows international 537 admitted / 921 applied = 58.3% vs DB 48.79% (~9.5pp lower). Likely stale; flagged low since intl admit-rate methodology varies and it is not the anchor."
+    },
+    {
+      "school": "Saint Louis University",
+      "field": "overall",
+      "dbValue": "70.05%",
+      "realValue": "75.04%",
+      "severity": "medium",
+      "source": "https://www.collegetuitioncompare.com/trends/saint-louis-university/admission/",
+      "note": "DB anchor (70.05%) exactly matches SLU's 2021-22 acceptance rate (70.00%) and is stale by ~3 years. Per-year IPEDS trend: 2021-22=70.0%, 2022-23=84.71%, 2023-24=81.47%, most recent 2024-25=75.04% (11,656 admitted of 15,533). Current value is ~5pp above the DB anchor (at threshold) and every intervening year was 6-15pp higher, so the prediction anchor is materially low. Bounded (not 2x, not mislabeled), hence medium. SAT 1210-1400 and yield 13.86% remain consistent with current data and are not flagged."
+    },
+    {
+      "school": "Rutgers University-Newark",
+      "field": "yield",
+      "dbValue": "7.07%",
+      "realValue": "10.06%",
+      "severity": "low",
+      "source": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf",
+      "note": "CDS 2023-24 C1: 1,408 enrolled / 13,997 admitted = 10.06% yield. DB's 7.07% is ~3pp / ~30% relative low — likely an older-year or alt-denominator value. Non-anchor field; the overall (78.73%), OOS (77.56%) and intl (70.10%) admit rates all match this same CDS to the decimal, so the anchor is correct. Flagged only for completeness; borderline."
+    },
+    {
+      "school": "Clarkson University",
+      "field": "intl",
+      "dbValue": "64.92%",
+      "realValue": "~6% (undergrad) / ~16% (all)",
+      "severity": "high",
+      "source": "https://www.collegetuitioncompare.com/edu/190044/clarkson-university/enrollment/",
+      "note": "DB intl=64.92% is impossible as an international-student share. Clarkson's undergraduate international (nonresident alien) share is ~6% (139 of ~2,296 undergrads, 2024-25); total incl. graduate ~16% (541 of ~3,348). 64.92% is a clearly-wrong / mislabeled value (not the actual % international). All other Clarkson fields are fine: overall 82.5% vs published 77-82% = year-drift (<5pp, <25% rel); SAT 1190-1360 vs 1200-1390 within 40pts; ED 75.74% plausible vs ~77-82% overall; yield 9.49% exact match."
+    },
+    {
+      "school": "University of San Francisco",
+      "field": "ed",
+      "dbValue": "49.41%",
+      "realValue": "EA rate, not ED (~49.4%)",
+      "severity": "medium",
+      "source": "https://www.acceptancerate.com/schools/university-of-san-francisco",
+      "note": "USF's 49.4% figure is the EARLY ACTION rate (49.4%, only ~85 EA applicants), stored in the ED (Early Decision) field. USF offers EA and ED as distinct plans (per usfca.edu/admission). Regular Decision was 61.8%. This is a mislabeled field (EA value in ED slot), not a wrong number per se. NOTE: USF overall=61.71% is CORRECT and checks out exactly against the latest cycle (24,888 applied / 15,358 admitted = 61.7%); the 50.8% seen for Fall 2023 was a one-year dip, and SAT 1200-1380 matches exactly, so neither is flagged."
+    },
+    {
+      "school": "University of Vermont",
+      "field": "overall",
+      "dbValue": "73.05%",
+      "realValue": "65.3%",
+      "severity": "high",
+      "source": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+      "note": "2024-2025 CDS Section C1: 17,722 admitted / 27,138 applied = 65.3%. DB's 73.05% is off by 7.75pp (>5pp threshold). The DB yield (15.84%) and SAT (1300-1430 vs real 1300-1420) match the same CDS, so this is a stale/wrong admit-rate field, not a different-year artifact — this is the prediction anchor."
+    },
+    {
+      "school": "University of Vermont",
+      "field": "oos",
+      "dbValue": "75.18%",
+      "realValue": "65.7%",
+      "severity": "medium",
+      "source": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+      "note": "2024-2025 CDS C1 residency breakdown: 16,036 out-of-state admitted / 24,417 out-of-state applied = 65.7%. DB's 75.18% is ~9.5pp too high, tracking the same overstatement as the overall rate."
+    },
+    {
+      "school": "University of Hawaii at Manoa",
+      "field": "overall",
+      "dbValue": "86.6%",
+      "realValue": "69.7%",
+      "severity": "high",
+      "source": "https://manoa.hawaii.edu/miro/wp-content/uploads/2023/11/AnalysisBrief_CommonDataSet_2023-2024_updated.pdf",
+      "note": "Anchor admit rate is ~17pp too high. CDS 2023-24 Section C1 shows 19,217 first-time freshman applied and 13,388 admitted = 69.67% overall admit rate (yield 3,056/13,388 = 22.8%). DB's 86.6% is materially wrong and inflates predicted admit probability for this school. Note: this CDS does not publish C9 SAT (test-optional, 'data not provided'), but the DB SAT band 1130-1350 matches third-party aggregators, so only the admit-rate anchor is the problem."
+    },
+    {
+      "school": "University of Rhode Island",
+      "field": "sat25",
+      "dbValue": "1020",
+      "realValue": "1160",
+      "severity": "medium",
+      "source": "https://web.uri.edu/ir/wp-content/uploads/sites/276/URI_CDS_2023-2024Final20250211-PTFNumbersUpdated.pdf",
+      "note": "CDS 2023-24 Section C9 SAT Composite is 1160 (25th) / 1220 (50th) / 1300 (75th). DB stores 1020-1260: the 25th is off by 140 points (clearly material) and the 75th is off by 40 (at threshold). The whole SAT band is shifted low by ~80-140 points vs the primary CDS."
+    },
+    {
+      "school": "University of Rhode Island",
+      "field": "overall",
+      "dbValue": "72.16%",
+      "realValue": "77.1%",
+      "severity": "low",
+      "source": "https://web.uri.edu/ir/wp-content/uploads/sites/276/URI_CDS_2023-2024Final20250211-PTFNumbersUpdated.pdf",
+      "note": "Borderline / below hard threshold. CDS 2023-24 C1: 25,391 applied / 19,568 admitted = 77.07% overall. DB's 72.16% is ~4.9pp / 6.4% relative low — just under the >5pp / >25% bar, likely a prior-year value. OOS 71.8% (DB) vs CDS OOS 20,634/15,971 = 77.4%, and intl 67.41% (DB) vs CDS intl 427/311 = 72.8% are similarly ~5pp low but consistent and not mislabeled, so logged only as low/year-drift context."
+    },
+    {
+      "school": "Missouri University of Science and Technology",
+      "field": "overall",
+      "dbValue": "78.63%",
+      "realValue": "72.55%",
+      "severity": "low",
+      "source": "https://www.collegetuitioncompare.com/edu/178411/missouri-university-of-science-and-technology/admission/",
+      "note": "Missouri S&T 2024-25 CDS overall admit rate = 72.55% (6,059 admitted / 8,352 applied); Fall 2023 was 73.1% and 2022 was 81.5%. DB 78.63% is ~6pp above the two most recent cycles, just over the >5pp materiality bar — a stale/blended snapshot rather than a 2x error or mislabel. Notably the DB yield (20.94%) matches the 2024-25 CDS exactly, so only the admit-rate field is out of date. Bounded year-drift, hence low severity. SAT 1220-1380 vs published 1220-1400 is within tolerance and not flagged."
+    },
+    {
+      "school": "Mississippi State University",
+      "field": "overall",
+      "dbValue": "62%",
+      "realValue": "77.6%",
+      "severity": "high",
+      "source": "https://www.collegetuitioncompare.com/trends/mississippi-state-university/admission/",
+      "note": "Anchor is stale by ~7 years. 62% matches MSU's 2017-18 rate (62.40%); admit rate has been 75-80% every year since 2020 (80.04% 2020-21, 75.19% 2022-23, 76.32% 2023-24, 77.64% 2024-25 per the IPEDS-derived trend, consistent with the official CDS at ir.msstate.edu/CDS/). The same DB row's SAT 1100-1350 and yield 19.84% are current and correct, confirming the row tracks MSU but the admit rate specifically is outdated — understating selectivity by ~15pp (~24% relative)."
+    },
+    {
+      "school": "University of Nevada, Reno",
+      "field": "overall",
+      "dbValue": "73.71%",
+      "realValue": "85.3%",
+      "severity": "high",
+      "source": "https://dataden.unr.edu/Resources/CDS/CDS_2023-2024.pdf",
+      "note": "Primary CDS 2023-24 Section C1: 8,652 admitted of 10,142 applied (men 3,693/4,372 + women 4,922/5,728 + other 37/42) = 85.3% admit rate. DB stores 73.71% — an 11.6pp understatement of the prediction ANCHOR. Corroborated by all IPEDS-derived aggregators (Niche, AcceptanceRate, CollegeSimply all cite 85.3% for Fall 2023, ~85% trend across 2021-2023). No recent-year drift explains an 11.6pp gap; the stored value is wrong/stale."
+    },
+    {
+      "school": "University of Nevada, Reno",
+      "field": "yield",
+      "dbValue": "26.45%",
+      "realValue": "39.6%",
+      "severity": "medium",
+      "source": "https://dataden.unr.edu/Resources/CDS/CDS_2023-2024.pdf",
+      "note": "Primary CDS 2023-24 C1: enrolled = 1,501 men + 1,899 women + 23 other = 3,423; admitted = 8,652; yield = 3,423/8,652 = 39.6%. DB stores 26.45% — ~13pp low. Travels with the same mis-stated UNR admissions record as the admit-rate error; flag together for the record fix."
+    },
+    {
+      "school": "Texas Tech University",
+      "field": "overall",
+      "dbValue": "84.61%",
+      "realValue": "72.6%",
+      "severity": "high",
+      "source": "https://bigfuture.collegeboard.org/colleges/texas-tech-university/admissions",
+      "note": "ANCHOR ERROR. College Board (CDS-sourced) reports 72.64% (34,356 applied / 24,958 admitted) for the latest year. Multi-year history is consistently 67-73% (70.1% 2020, 67.9% 2021, 67.3% 2022, ~67% 2023, 72.6% 2024 — collegetuitioncompare/clastify). DB's 84.61% is ~12pp too high and matches no recent year; it is a stale/wrong value on the most important prediction anchor. NOTE: TTU's SAT 1110-1270 in DB is CORRECT (confirmed exactly), so only the admit rate is wrong."
+    },
+    {
+      "school": "University of Idaho",
+      "field": "oos",
+      "dbValue": "85.94%",
+      "realValue": "no residency split this high; overall ~75-79%",
+      "severity": "medium",
+      "source": "https://www.collegetuitioncompare.com/edu/142285/university-of-idaho/admission/",
+      "note": "MISLABELED/IMPLAUSIBLE FIELD. Stored out-of-state admit rate (85.94%) is HIGHER than the overall admit rate (DB 79.09%; latest published 75.53%) AND higher than the highest published subgroup (women 79.52%, men 71.57%). U of Idaho publishes no in-state/out-of-state admit-rate breakdown, and no residency cohort admits at ~86%. The 85.94% looks like a different metric (e.g. an enrollment/yield or in-state figure) miscoded as an OOS admit rate. Overall=79.09% itself is only borderline (latest 75.53%, 2023 was 79.1%) — year-drift, not flagged."
+    },
+    {
+      "school": "South Dakota State University",
+      "field": "sat25",
+      "dbValue": "993",
+      "realValue": "~1070",
+      "severity": "low",
+      "source": "https://www.prepscholar.com/sat/s/colleges/South-Dakota-State-University-sat-scores-GPA",
+      "note": "DB SAT 25th=993 sits ~77 pts below Peterson's/PrepScholar 25th=1070 (range 1070-1220); other aggregators (collegesimply, univstats) report 1040-1300. The DB 75th=1240 matches well, only the 25th is low. SDSU is heavily ACT-submitting (~2% submit SAT) so the SAT band is noisy and sources disagree among themselves by ~70 pts on the 25th. Borderline; overall admit-rate anchor (DB 87.43% vs IPEDS ~86.1% / US News 86%) checks out, so only the 25th-pctile SAT is mildly stale/low. Not a mislabeled field."
+    },
+    {
+      "school": "New Mexico State University",
+      "field": "overall",
+      "dbValue": "71%",
+      "realValue": "88.97%",
+      "severity": "high",
+      "source": "https://api.data.gov/ed/collegescorecard/v1/schools?id=188030 (College Scorecard / IPEDS, latest admission_rate.overall = 0.8897)",
+      "note": "Anchor admit rate is ~18pp / 25% relative too low. NMSU's rate rose sharply (54.6% in 2020 -> ~67% multi-year avg -> 88.97% latest); the stored 71% is a stale snapshot. Most-recent primary (College Scorecard/IPEDS, also collegetuitioncompare 88.97% for 2024-25) confirms ~89%. This understates admit probability for the prediction anchor."
+    },
+    {
+      "school": "University of Toledo",
+      "field": "intl",
+      "dbValue": "71.01%",
+      "realValue": "~6-9%",
+      "severity": "medium",
+      "source": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2023-2024.pdf (CDS 2023-24: nonresident freshmen 182/2117 = 8.6%; UToledo CISP reports ~6% intl of population)",
+      "note": "International-enrollment share stored as 71.01% is implausible for a US public flagship and ~10x reality. Toledo's own CDS B1/C1 and international fact sheet put nonresident/international at ~6-9%. Field is clearly wrong/mislabeled (does not match intl admit rate either, which is 1565/1860 = 84%)."
+    },
+    {
+      "school": "New Mexico State University",
+      "field": "intl",
+      "dbValue": "67.45%",
+      "realValue": "~5.7%",
+      "severity": "medium",
+      "source": "https://catalogs.nmsu.edu/nmsu/international-students/ and NMSU OIA factbook (2024-25: 878 international = 5.70% of enrollment)",
+      "note": "International-enrollment share stored as 67.45% is ~12x reality. NMSU's own figures show 878 international students = 5.70% of total enrollment (2024-25), Fall 2023 nonresident ~7.6%. Field is clearly wrong/mislabeled."
+    },
+    {
+      "school": "Wayne State University",
+      "field": "intl",
+      "dbValue": "49.39%",
+      "realValue": "~2-6%",
+      "severity": "medium",
+      "source": "https://api.data.gov/ed/collegescorecard/v1/schools?id=172644 (undergrad nonresident-alien share = 2.23%); WSU IRDA Quick Facts ~5.5% intl of total enrollment",
+      "note": "International-enrollment share stored as 49.39% is implausibly high (no value near it). College Scorecard undergrad nonresident-alien = 2.23%; total intl ~5.5% (1313 of 23,553, 2024-25). Field is clearly wrong/mislabeled."
+    },
+    {
+      "school": "Northern Illinois University",
+      "field": "overall",
+      "dbValue": "88.15%",
+      "realValue": "~69.8-70.5%",
+      "severity": "high",
+      "source": "https://www.collegetuitioncompare.com/edu/147703/northern-illinois-university/admission/",
+      "note": "Anchor is wrong. 2024-25 admit rate is 69.79% (collegetuitioncompare) / 70.5% in 2023 (datausa, 17,033 of 24,177). DB 88.15% is ~18pp / ~26% too high. Not year-drift: DB yield 12.06% matches the same 2024-25 collegetuitioncompare source exactly, so the admit-rate field is corrupted."
+    },
+    {
+      "school": "Northern Illinois University",
+      "field": "intl",
+      "dbValue": "87.62%",
+      "realValue": "~4.4% (1% undergrad)",
+      "severity": "high",
+      "source": "https://www.collegefactual.com/colleges/northern-illinois-university/student-life/international/",
+      "note": "Physically impossible. Real international share is ~4.4% of all students, 173 undergrad intl out of ~14k (~1%). DB 87.62% is a mislabeled/corrupted value, not an international percentage."
+    },
+    {
+      "school": "Northern Illinois University",
+      "field": "oos",
+      "dbValue": "83.53%",
+      "realValue": "implausible (~10-20% expected)",
+      "severity": "medium",
+      "source": "https://datausa.io/profile/university/northern-illinois-university",
+      "note": "NIU is an in-state-dominant Illinois regional public; an 83.53% out-of-state share is facially implausible (in-state should dominate). Could not pin exact primary OOS figure, but magnitude is clearly wrong and matches the corruption seen in NIU's intl field."
+    },
+    {
+      "school": "Northern Illinois University",
+      "field": "sat75",
+      "dbValue": "1080-1320",
+      "realValue": "~940-1170",
+      "severity": "medium",
+      "source": "https://datausa.io/profile/university/northern-illinois-university",
+      "note": "NIU is test-optional/test-blind ('SAT not considered for admission' per collegetuitioncompare). Where a middle-50% is reported it is ~940-1170; DB 1080-1320 is ~140 points too high on both ends (>40pt threshold). SAT band is dubious for this test-optional school."
+    },
+    {
+      "school": "University of Wisconsin-Milwaukee",
+      "field": "intl",
+      "dbValue": "79.32%",
+      "realValue": "~6.86% (5% undergrad)",
+      "severity": "high",
+      "source": "https://uwm.edu/cie/about/international-student-data/",
+      "note": "Physically impossible. UWM international enrollment is ~6.86% overall (1,542 of ~22.5k; 400 undergrad ~5%). DB 79.32% is a mislabeled/corrupted value, same error pattern as NIU's intl field."
+    },
+    {
+      "school": "University of Wisconsin-Milwaukee",
+      "field": "oos",
+      "dbValue": "99.22%",
+      "realValue": "implausible (~10-15% expected)",
+      "severity": "medium",
+      "source": "https://datausa.io/profile/university/university-of-wisconsin-milwaukee",
+      "note": "UWM is an in-state-dominant Wisconsin regional public; a 99.22% out-of-state share is facially impossible (it is overwhelmingly in-state). Value is clearly wrong/mislabeled; could not pin the exact primary OOS figure but magnitude is implausible."
+    },
+    {
+      "school": "University of Wisconsin-Milwaukee",
+      "field": "overall",
+      "dbValue": "97.11%",
+      "realValue": "~88.4-90.7%",
+      "severity": "medium",
+      "source": "https://datausa.io/profile/university/university-of-wisconsin-milwaukee",
+      "note": "Anchor is high. Real admit rate is 88.4% (2023 IPEDS, 14,736 of 16,662) to 90.68% (2024-25 collegetuitioncompare). DB 97.11% is ~6.4-8.7pp too high — exceeds the >5pp materiality threshold, though not 2x."
+    },
+    {
+      "school": "Cleveland State University",
+      "field": "intl",
+      "dbValue": "85%",
+      "realValue": "~4.1%",
+      "severity": "high",
+      "source": "https://www.collegefactual.com/colleges/cleveland-state-university/student-life/international/",
+      "note": "Mislabeled field. DB stores intl=85%, but CSU has only 462 international undergraduates out of 11,166 (~4.1%); international students are ~10% of TOTAL (incl. grad) enrollment at most. An 85% international share is implausible for an Ohio regional public; this looks like an admit-rate-like value dropped into the international slot. Overall admit rate (91%) and SAT 970-1210 both check out, so only this enrichment field is wrong. Off by roughly 20x."
+    },
+    {
+      "school": "Cleveland State University",
+      "field": "oos",
+      "dbValue": "95.88%",
+      "realValue": "~4%",
+      "severity": "high",
+      "source": "https://www.princetonreview.com/college/cleveland-state-university-1023050",
+      "note": "In-state/out-of-state inversion. CSU is ~96% in-state / ~4% out-of-state (Princeton Review, Data USA). The DB out-of-state value of 95.88% is actually the IN-STATE percentage stored in the OOS field. (95.88% also nearly equals CSU's prior-year acceptance rate of ~95.5%, so an admit-rate mislabel is an alternative read; either way the OOS field is wrong.) True out-of-state share is ~4%, so the stored figure is off by ~24x."
+    },
+    {
+      "school": "Wright State University",
+      "field": "sat75",
+      "dbValue": "1000",
+      "realValue": "1240",
+      "severity": "high",
+      "source": "https://www.wright.edu/sites/www.wright.edu/files/page/attachments/CDS_2024-2025_Dayton.pdf",
+      "note": "2024-2025 CDS (Dayton Main Campus), Section C9: SAT Composite 25th/75th = 912.5 / 1240 (50th=1125). DB stores 830-1000 — the entire DB range sits BELOW the true 25th percentile, and the DB 75th (1000) is 240 pts under the real 75th (1240). Clearly stale/wrong SAT band."
+    },
+    {
+      "school": "Wright State University",
+      "field": "sat25",
+      "dbValue": "830",
+      "realValue": "913",
+      "severity": "medium",
+      "source": "https://www.wright.edu/sites/www.wright.edu/files/page/attachments/CDS_2024-2025_Dayton.pdf",
+      "note": "2024-2025 CDS (Dayton) C9: SAT Composite 25th percentile = 912.5 (rounds to 913). DB stores 830, off by ~83 pts (>40-pt threshold). Same wrong/stale SAT band as the 75th."
+    },
+    {
+      "school": "Wright State University",
+      "field": "overall",
+      "dbValue": "99.69%",
+      "realValue": "96.33%",
+      "severity": "low",
+      "source": "https://corescholar.libraries.wright.edu/common-data-set/20/",
+      "note": "Dayton Main Campus 2024-2025 CDS C1: 8,530 admitted / 8,855 applied = 96.33% (and historically 94-96%: 94.45% in 2024, 95.22% in 2022, 96.04% in 2021). DB's 99.69% never matches the Main campus in any recent year — 99.x% is the Wright State LAKE Campus rate (99.8% in 2022). The 3.4pp gap is under the strict 5pp bar, so low severity, but the value appears to be a wrong-campus conflation rather than year-drift."
+    }
+  ]
+}
