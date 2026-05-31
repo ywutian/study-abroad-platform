@@ -1,0 +1,18 @@
+{
+  "id": "039-ohio-state-strong-instate-rd",
+  "description": "Ohio State — strong OH in-state applicant, RD (residency-neutral state → NO boost)",
+  "rationale": "Burden-of-proof sentinel. The 2026-05-31 audit found OSU's own CDS shows in-state 57.3% ≈ out-of-state 59.0% — residency is NOT priced. OH carries no entry in STATE_IN_STATE_OVER_OVERALL, so the new DEFAULT 1.0 (neutral) applies: anchor 0.508 × geo 1.0 × this strong profile's stat boost (~1.4×) ≈ 0.71. Guardrail [0.62, 0.8] guards against regressing to the old flat 1.2 default, which would lift this to ~0.85 (caught above 0.8) — the over-prediction that hit all 34 residency-neutral states.",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "OH",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "Ohio State University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.62, 0.8],
+  "tags": ["public-flagship", "in-state", "residency-neutral"]
+}

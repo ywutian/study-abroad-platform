@@ -149,6 +149,23 @@ OOS is untouched — already per-school data-driven (`oos/overall`). This captur
 
 **Avoiding test-set overfitting (the user's core principle):** a naive flat 1.25 would have fixed the UC-heavy gold set but **under-predicted UNC/UT in-state** (uncovered by gold). So the fix is per-published-data, and the **gold set was expanded 31→36** with non-UC in-state cases — UNC (NC), UVA (VA), UT (TX), and a **UMich "no-boost" sentinel** (upper bound 0.25 catches any flat-boost regression) + a UNC in-state/OOS contrast pair. Result: **36/36 green**, 685 prediction unit tests green, analysis gold 50/50.
 
+## 7.10 All-48-state in-state audit + selectivity damping (2026-05-31)
+
+§7.9 fixed only the 6 states the gold set covered, leaving a flat **`DEFAULT_IN_STATE_MULTIPLIER = 1.2`** on the other 42 public-flagship states — the same flat-constant bug, just unaudited. An **8-agent workflow** web-verified each state flagship's published **in-state÷overall** (primary CDS section C / official admissions newsroom / state higher-ed dashboard; 48 flagships, ~758K tokens). The finding: **the flat 1.2 was wrong for 30 of 48 states.**
+
+- **24 over-boosted** (1.2 → ~1.0): most flagships barely price residency (Ohio State in 57.3% ≈ OOS 59.0%; Minnesota, Maryland, Arizona, UMass… all publish in-state ≈ overall, several OOS-_favored_ like Binghamton 0.78 and Rutgers).
+- **6 under-boosted** (1.2 was too low): **GA Tech 2.36** (residents 30% vs 9% overall 12.7% — steepest US gap), **TN 1.6** (two-thirds-in-state law), NC 2.2→**2.5**, CA 1.2→**1.35**, IL→1.35, WI→1.38.
+- **2 data bugs:** "Connecticut College" (private LAC mislabeled `isPrivate=false`; the real CT flagship is UConn — fixed by migration `20260531190000`); NY flagship Binghamton admits residents _harder_ than OOS.
+
+**The verified map** (`STATE_IN_STATE_OVER_OVERALL`, 13 states with a real effect) is now FLAGSHIP-level, and **`DEFAULT_IN_STATE_MULTIPLIER = 1.0`** (burden of proof: no published residency advantage → neutral). Two mechanisms resolve **intra-state heterogeneity** (a single state value can't fit GA Tech _and_ UGA _and_ Georgia State):
+
+1. **`residencySelectivityWeight(overall)`** — residency advantage is strongest at the most selective publics and ~0 near open access (same principle as the #312 ED scaling). The flagship ratio applies in full ≤15% overall, tapers linearly to 0 by ≥55%. So GA Tech (14%) keeps 2.36×, UGA (38%) damps to ~1.58×, Georgia State (55%) → neutral.
+2. **Per-school OOS guard** — if a school's _own_ published OOS ≈ its overall (≥0.95×), residency isn't priced there regardless of the state flagship → neutral. Catches Texas A&M, Texas Tech, VA Tech, William & Mary, Appalachian State from their own data.
+
+Validated against published numbers: **UNC in-state 38.2%** (published 38%), **UC Berkeley 14.9%** (published CA-resident 14.9%) — exact. **CA removed from the strong-residency OOS-penalty set** (UCs admit OOS easier, #312); UC OOS now uses each campus's published `oos/overall` instead of a flat 0.5× guess.
+
+**Gold set expanded 36→39** with intra-state heterogeneity sentinels: GA Tech (full boost) + UGA (same state, damped — a two-sided trap: flat-2.36 → 0.95 caught above, neutral → 0.53 caught below) + Ohio State (residency-neutral default). 5 UC gold cases + 1 Layer-3 calibration case (Penn State) updated to the data-grounded values (each rationale cites the published basis). Result: **gold 39/39, calibration spec back to its pre-change baseline, 141 counselor unit tests green.**
+
 ## 8. Honest limits
 
 - Marginal-only ⇒ the model cannot distinguish two applicants with identical marginals; that delta lives in unobtainable joint data. This is a _feature_ (no false precision), not a bug to engineer away.

@@ -1018,20 +1018,53 @@ export function urmMultiplier(
  * feeds the OOS *fallback* for strong-residency states that lack OOS data.
  */
 const STATE_IN_STATE_OVER_OVERALL: Record<string, number> = {
-  NC: 2.2,
-  VA: 1.5,
-  TX: 1.5,
-  CA: 1.2,
-  FL: 1.1,
-  MI: 1.0,
+  // Verified FLAGSHIP in-state÷overall ratios. Primary sources audited 2026-05-31
+  // (48-flagship web audit: each state's CDS section C / official admissions newsroom /
+  // state higher-ed dashboard — see docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md §7.10).
+  // These are the MOST-selective public per state; residencySelectivityWeight() and the
+  // per-school OOS guard (in geoMultiplier) adapt them to less-selective same-state publics.
+  NC: 2.5, // UNC: in-state 38% / overall 15.3% (state law caps non-residents at 18% of class)
+  GA: 2.36, // Georgia Tech: residents 30% / overall 12.7% (Fall 2025 newsroom — steepest US gap)
+  TN: 1.6, // UT-Knoxville: in-state 70% / overall 42% (two-thirds-in-state policy)
+  VA: 1.54, // UVA: in-state 25% / overall 16.5%
+  TX: 1.41, // UT-Austin: top-6% auto-admit
+  WI: 1.38, // UW-Madison: in-state 56% / overall 41%
+  CA: 1.35, // UC system: CA resident 14.9% / overall 11% (Berkeley, UC Information Center)
+  IL: 1.35, // UIUC: IL resident 49% / overall 37% (land-grant)
+  IN: 1.34, // Purdue
+  SC: 1.3, // Clemson
+  WA: 1.18, // U Washington
+  DE: 1.16, // U Delaware
+  MD: 1.14, // UMD College Park
 };
-/** Modest in-state edge on an overall anchor for publics without a tracked ratio. */
-const DEFAULT_IN_STATE_MULTIPLIER = 1.2;
+/**
+ * Burden-of-proof default: a state with NO verified residency advantage is NEUTRAL (1.0).
+ * The 2026-05-31 48-flagship audit found the old flat 1.2 over-predicted in-state applicants
+ * for 34 states whose published data shows in-state ≈ overall (or OOS is admitted *easier*).
+ */
+const DEFAULT_IN_STATE_MULTIPLIER = 1.0;
+/**
+ * Residency advantage scales with selectivity (same principle as the #312 ED scaling):
+ * near-open-access publics admit qualified applicants regardless of residency, so the in-state
+ * lever vanishes; it is strongest at the most selective publics. This adapts the FLAGSHIP-level
+ * state ratio to LESS-selective same-state publics — e.g. Georgia Tech (14% overall) keeps the
+ * full 2.36×, but Georgia State (55% overall) is neutralized, avoiding a 98%-clamped over-prediction.
+ */
+function residencySelectivityWeight(overallRate: number | null): number {
+  if (overallRate == null) return 1.0; // unknown selectivity → treat as flagship-like
+  if (overallRate <= 0.15) return 1.0; // highly selective → full residency effect
+  if (overallRate >= 0.55) return 0.0; // near open-access → residency unpriced
+  return (0.55 - overallRate) / (0.55 - 0.15); // linear taper between
+}
+/** OOS fallback (0.5×) applies only at states whose flagships genuinely penalize non-residents. */
 const PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF = new Set([
-  'NC', // UNC — in-state 2.2× overall
+  'NC', // UNC — in-state 2.5× overall
+  'GA', // Georgia Tech — steepest in/out gap in the US
+  'TN', // UT-Knoxville — two-thirds-in-state policy
   'VA', // UVA, W&M
   'TX', // UT-Austin, A&M
-  'CA', // UC system, CSU
+  // CA intentionally excluded: UCs/CSUs admit OOS *easier* (see #312); their OOS path is
+  // data-driven from published oosAcceptanceRate, not the strong-residency 0.5× fallback.
 ]);
 
 export function geoMultiplier(
@@ -1097,20 +1130,41 @@ export function geoMultiplier(
   }
 
   if (isInState) {
-    const inStateRatio =
+    const stateRatio =
       STATE_IN_STATE_OVER_OVERALL[schoolState] ?? DEFAULT_IN_STATE_MULTIPLIER;
-    // Residency-neutral states (e.g. MI, where OOS is admitted *easier*): no boost.
-    if (inStateRatio <= 1.03) {
+    // Per-school guard: if THIS school's OWN published OOS rate is ≈ its overall rate,
+    // residency is not priced here regardless of the state flagship — neutralize. Handles
+    // intra-state heterogeneity straight from the school's own data (Texas A&M, Texas Tech,
+    // VA Tech, William & Mary, Appalachian State all publish OOS ≈ overall while their state's
+    // flagship strongly favours residents). MI-style residency-neutral states hit this via
+    // stateRatio ≤ 1.03.
+    const schoolPricesResidency = !(
+      oosRate != null &&
+      overallRate != null &&
+      oosRate >= overallRate * 0.95
+    );
+    if (stateRatio <= 1.03 || !schoolPricesResidency) {
       return {
         ...NEUTRAL,
         label: `In-state (${schoolState} — residency-neutral public)`,
-        evidence: `${schoolState} public universities admit in-state and out-of-state applicants at ~equal rates (published residency data), so residency is treated as neutral here.`,
+        evidence: `Published residency data shows this public admits in-state and out-of-state applicants at ~equal rates, so residency is treated as neutral here.`,
+      };
+    }
+    // Scale the FLAGSHIP state ratio down for less-selective same-state publics: residency is
+    // the strongest lever at the most selective publics and vanishes near open access.
+    const weight = residencySelectivityWeight(overallRate);
+    const effective = 1 + (stateRatio - 1) * weight;
+    if (effective <= 1.03) {
+      return {
+        ...NEUTRAL,
+        label: `In-state (${schoolState} — residency-neutral at this selectivity)`,
+        evidence: `${schoolState} residents get a meaningful admit edge only at the most selective publics; at this school's admit rate residency is effectively neutral.`,
       };
     }
     return {
-      multiplier: inStateRatio,
+      multiplier: effective,
       label: 'In-state at public university',
-      evidence: `${schoolState} residents are admitted at ~${inStateRatio.toFixed(2)}× this school's OVERALL admit rate (published in-state÷overall data; the anchor is the overall-population rate, so this uses in-state÷overall — not the larger in-state÷OOS gap, which would double-count).`,
+      evidence: `${schoolState} residents are admitted at ~${effective.toFixed(2)}× this school's OVERALL admit rate (verified flagship in-state÷overall ${stateRatio.toFixed(2)}× scaled by this school's selectivity; the overall-population anchor means we use in-state÷overall, not the larger in-state÷OOS gap, which would double-count).`,
       impact: 'positive',
     };
   }

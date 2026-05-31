@@ -1,0 +1,18 @@
+{
+  "id": "038-uga-strong-ga-instate-rd",
+  "description": "UGA — strong GA in-state applicant, RD (SAME state as GA Tech, but mid-selectivity → DAMPED boost)",
+  "rationale": "The intra-state heterogeneity sentinel. UGA (overall ~38%) is in the SAME state as Georgia Tech, yet a flat per-state 2.36× would clamp UGA in-state to ~0.95 — far above reality. residencySelectivityWeight at 38% overall ≈ 0.43 damps the GA flagship ratio to ~1.58×; with this strong profile's stat boost (~1.4×) the full-engine result is ~0.84 (anchor 0.38 × geo 1.58 × stats 1.4). Guardrail [0.73, 0.92] is a two-sided trap on the GEO behavior: revert to flat 2.36 → clamps to ~0.95 (caught above) ; revert to neutral 1.0 → ~0.53 (caught below). UGA's own OOS 31% < overall 38% confirms residency IS priced here (per-school guard does not neutralize).",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "GA",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of Georgia",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.73, 0.92],
+  "tags": ["public-flagship", "in-state", "selectivity-damped"]
+}

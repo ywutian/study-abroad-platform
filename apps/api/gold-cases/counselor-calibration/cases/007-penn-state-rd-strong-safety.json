@@ -35,22 +35,22 @@
     ],
     "awards": [{ "name": "Honor Roll", "level": "SCHOOL", "year": 2025 }]
   },
-  "expectedProbabilityRange": [0.6, 0.95],
+  "expectedProbabilityRange": [0.5, 0.8],
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "Penn State overall accept ~60%。GPA 3.8 / SAT 1400 strong-mid profile + PA in-state preference 应在 75-95% safety 区间。Counselor 直觉认为这是标准 backup 学校。**Fixture 2026-05-24 修正：原始 stateOfResidence=OH (OOS) 让 Penn State 失去 in-state lift，预测落到 47% match — 这其实是合理的 OOS reality。改成 PA in-state 才符合 'safety' 期望。**",
+    "intuition": "Penn State overall accept ~60%; GPA 3.8 / SAT 1400 strong-mid profile, competitive CS major, RD. **2026-05-31 48-flagship audit correction: Penn State's own CDS shows in-state 60.56% ≈ out-of-state 59.24% — residency is NOT priced (PA carries no in-state multiplier; the prior 2026-05-24 fixture's 'PA in-state preference' premise was empirically wrong, it relied on the old flat-1.2 default).** Without a residency lift this resolves to a strong MATCH (~0.55) at a competitive CS program, not a residency-driven safety. (Separately surfaced, not fixed here: whether the stats boost should lift a >75th-percentile applicant higher at high-accept schools — a strong-stats-vs-safety calibration question independent of geography.)",
     "sources": [
       {
         "name": "Penn State CDS 2024-25",
-        "evidence": "Overall admit rate 60.56% (Section C); SAT middle 50 1190-1380, applicant 1400 above 75th percentile"
+        "evidence": "Overall admit 60.56%, out-of-state 59.24% (≈ overall → residency neutral); SAT middle 50 1190-1380, applicant 1400 above 75th percentile"
       },
       {
-        "name": "Common App Report 2024",
-        "evidence": "Flagship state schools with 50%+ accept admit strong applicants at 80-95% rate"
+        "name": "2026-05-31 flagship in-state÷overall audit",
+        "evidence": "PA flagships (Pitt, Penn State) publish OOS ≈ overall → no in-state advantage; burden-of-proof default 1.0 (neutral)"
       }
     ]
   },
-  "lastReviewedAt": "2026-05-24",
+  "lastReviewedAt": "2026-05-31",
   "reviewedBy": "yitian@",
   "tags": [
     "t70-public",

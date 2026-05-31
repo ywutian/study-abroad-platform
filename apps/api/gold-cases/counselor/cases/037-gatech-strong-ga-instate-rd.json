@@ -1,0 +1,18 @@
+{
+  "id": "037-gatech-strong-ga-instate-rd",
+  "description": "Georgia Tech — strong GA in-state applicant, RD (selective flagship, FULL residency boost)",
+  "rationale": "GA Tech overall 12.7-14% (Fall 2025); Georgia residents admitted 30% vs nonresidents 9% — the steepest in/out gap among most-applied US schools (official GT newsroom). At this high selectivity residencySelectivityWeight ≈ 1.0, so the verified GA flagship ratio (2.36×) applies in full: anchor 0.14 × 2.36 ≈ 0.33, matching the published ~30% resident rate. Locks the 'selective flagship gets the full verified boost' behavior.",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "GA",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "Georgia Institute of Technology",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.25, 0.45],
+  "tags": ["public-flagship", "in-state", "selectivity-full-boost"]
+}

@@ -337,6 +337,87 @@ describe('counselor modifiers launch guards', () => {
     });
   });
 
+  // 2026-05-31 48-flagship audit: replaced the flat 1.2 in-state default with verified
+  // per-state ratios + selectivity damping + a per-school OOS guard. These lock the
+  // intra-state heterogeneity behavior (one state value can't fit GT and UGA at once).
+  describe('geoMultiplier — per-state in-state recalibration', () => {
+    const inState = (state: string) =>
+      baseProfile({ isInternational: false, stateOfResidence: state });
+
+    it('selective flagship gets the FULL verified state ratio (GA Tech 2.36×)', () => {
+      const result = geoMultiplier(
+        inState('GA'),
+        baseSchool({
+          isPrivate: false,
+          state: 'GA',
+          acceptanceRate: 0.1407,
+          oosAcceptanceRate: 0.1042,
+        }),
+      );
+      expect(result.label).toContain('In-state');
+      expect(result.multiplier).toBeCloseTo(2.36, 2);
+    });
+
+    it('less-selective same-state public is DAMPED by selectivity (UGA ~1.58×, not 2.36×)', () => {
+      const result = geoMultiplier(
+        inState('GA'),
+        baseSchool({
+          isPrivate: false,
+          state: 'GA',
+          acceptanceRate: 0.3792,
+          oosAcceptanceRate: 0.311,
+        }),
+      );
+      expect(result.label).toContain('In-state');
+      // 1 + (2.36-1) * weight(0.3792) = 1 + 1.36 * 0.427 ≈ 1.58
+      expect(result.multiplier).toBeCloseTo(1.58, 1);
+      expect(result.multiplier!).toBeLessThan(2.36);
+      expect(result.multiplier!).toBeGreaterThan(1);
+    });
+
+    it('near-open-access same-state public is NEUTRALIZED by damping (Georgia State)', () => {
+      const result = geoMultiplier(
+        inState('GA'),
+        baseSchool({
+          isPrivate: false,
+          state: 'GA',
+          acceptanceRate: 0.5543,
+          oosAcceptanceRate: 0.3736,
+        }),
+      );
+      expect(result.label.toLowerCase()).toContain('neutral');
+    });
+
+    it('per-school OOS guard neutralizes a residency-flat school in a strong-pref state', () => {
+      // TX is a strong-residency state, but a school whose OWN published OOS ≈ overall
+      // does not price residency → neutral (isolates the guard from damping: at 0.30
+      // overall, damping alone would NOT fully neutralize).
+      const result = geoMultiplier(
+        inState('TX'),
+        baseSchool({
+          isPrivate: false,
+          state: 'TX',
+          acceptanceRate: 0.3,
+          oosAcceptanceRate: 0.3,
+        }),
+      );
+      expect(result.label.toLowerCase()).toContain('neutral');
+    });
+
+    it('untracked state falls to the NEUTRAL default (burden of proof), not a flat 1.2 boost', () => {
+      const result = geoMultiplier(
+        inState('OH'),
+        baseSchool({
+          isPrivate: false,
+          state: 'OH',
+          acceptanceRate: 0.508,
+          oosAcceptanceRate: 0.497,
+        }),
+      );
+      expect(result.label.toLowerCase()).toContain('neutral');
+    });
+  });
+
   describe('unchecked hook boosts', () => {
     it('does not apply self-reported legacy boost without evidence', () => {
       const result = legacyHookMultiplier(

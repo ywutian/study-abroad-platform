@@ -1,8 +1,8 @@
 {
   "id": "003-ucb-strong-ca-instate-rd",
   "description": "UC Berkeley — strong CA in-state applicant, RD, CS major",
-  "rationale": "After the UCOP discipline data load, UCB uses a Tier 1 CS-aware anchor instead of the old overall-rate-only fixture. Strong CA in-state stats still push the result to the upper end, but official CS selectivity keeps it near 30%. Range [0.15, 0.32] allows the current 30.6% counselor result while preserving the guardrail that UCB remains highly competitive.",
-  "lastReviewedAt": "2026-04-30",
+  "rationale": "UCB uses a Tier 1 CS-aware anchor; strong CA in-state stats push to the upper end. The 2026-05-31 48-flagship audit corrected the CA in-state multiplier 1.2→1.35 (UC Information Center: CA resident 14.9% / overall 11%), so a strong-profile band anchor (~0.25) × 1.35 ≈ 0.34. Range [0.2, 0.38] allows the data-grounded ~34% while keeping the guardrail that UCB CS remains highly competitive.",
+  "lastReviewedAt": "2026-05-31",
   "profile": {
     "gpa": 3.9,
     "gpaScale": 4,
@@ -14,6 +14,6 @@
   },
   "schoolName": "University of California, Berkeley",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.15, 0.32],
+  "expectedProbabilityRange": [0.2, 0.38],
   "tags": ["uc-system", "tier-2-algorithmic"]
 }

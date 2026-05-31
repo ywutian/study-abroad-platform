@@ -119,11 +119,11 @@ const MINIMAL_SCHOOL_FIXTURE = [
       state: 'CA',
     },
   },
-  // Non-UC public flagships — gold cases 032-036 (per-state in-state÷overall
-  // recalibration, 2026-05-31). Pinned so the cases stay deterministic against
-  // CI seed/overlay drift. acceptanceRate/oosAcceptanceRate = each school's
-  // published overall/OOS admit rate; `state` drives the per-state in-state
-  // multiplier (NC 2.2× → VA/TX 1.5× → MI neutral).
+  // Non-UC public flagships — gold cases 032-039 (per-state in-state÷overall
+  // recalibration + 48-flagship audit, 2026-05-31). Pinned so the cases stay
+  // deterministic against CI seed/overlay drift. acceptanceRate/oosAcceptanceRate =
+  // each school's published overall/OOS admit rate; `state` drives the per-state
+  // in-state multiplier, scaled by selectivity + the per-school OOS guard.
   {
     schoolNameNorm: 'university of north carolina at chapel hill',
     fields: {
@@ -166,6 +166,42 @@ const MINIMAL_SCHOOL_FIXTURE = [
       sat75: 1530,
       isPrivate: false,
       state: 'MI',
+    },
+  },
+  // Intra-state heterogeneity sentinels (cases 037-039): GA Tech (selective, full
+  // 2.36× boost) vs UGA (same state, mid-selectivity → damped ~1.58×) proves a flat
+  // per-state constant is insufficient; Ohio State locks the residency-neutral default.
+  {
+    schoolNameNorm: 'georgia institute of technology',
+    fields: {
+      acceptanceRate: 0.1407,
+      oosAcceptanceRate: 0.1042,
+      sat25: 1370,
+      sat75: 1540,
+      isPrivate: false,
+      state: 'GA',
+    },
+  },
+  {
+    schoolNameNorm: 'university of georgia',
+    fields: {
+      acceptanceRate: 0.3792,
+      oosAcceptanceRate: 0.311,
+      sat25: 1280,
+      sat75: 1450,
+      isPrivate: false,
+      state: 'GA',
+    },
+  },
+  {
+    schoolNameNorm: 'ohio state university',
+    fields: {
+      acceptanceRate: 0.508,
+      oosAcceptanceRate: 0.497,
+      sat25: 1280,
+      sat75: 1450,
+      isPrivate: false,
+      state: 'OH',
     },
   },
 ] as const;

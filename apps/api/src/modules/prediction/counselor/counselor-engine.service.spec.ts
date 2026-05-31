@@ -631,11 +631,13 @@ describe('CounselorEngineService', () => {
       expect(result.tier).toBe(1);
       expect(result.anchor).toBeCloseTo(0.42, 2);
       // Anchor 0.42 (GPA-band) × gpa 1.0 (suppressed) × test 1.5 (still applies,
-      // 1500 above sat75+50=1500) × geo OOS strong-pref CA 0.5 = 0.315.
+      // 1500 above sat75+50=1500) × geo 0.85 = 0.5355. Geo is the generic public-OOS
+      // 0.85× fallback: this UCD fixture has no oosAcceptanceRate, and CA is NOT in the
+      // strong-residency 0.5× set — UCs admit OOS *easier*, not harder (2026-05-31 audit /
+      // #312); in prod UCD's published OOS rate drives the data path instead.
       // Test modifier MUST still fire because GPA_ONLY cell doesn't encode test signal.
-      // Floored at 0.42 × 0.3 = 0.126 (safety floor doesn't bind here).
-      expect(result.probability).toBeGreaterThanOrEqual(0.25);
-      expect(result.probability).toBeLessThanOrEqual(0.42);
+      expect(result.probability).toBeGreaterThanOrEqual(0.45);
+      expect(result.probability).toBeLessThanOrEqual(0.6);
 
       const gpaFactor = result.factors.find((f) =>
         f.name.toLowerCase().includes('gpa'),
