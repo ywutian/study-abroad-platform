@@ -20,13 +20,16 @@ import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 describe('CounselorEngineService', () => {
   let service: CounselorEngineService;
   let prisma: {
-    schoolCdsAdmitBand: { findFirst: jest.Mock };
+    schoolCdsAdmitBand: { findFirst: jest.Mock; findMany: jest.Mock };
     schoolProgram: { findFirst: jest.Mock };
   };
 
   beforeEach(async () => {
     prisma = {
-      schoolCdsAdmitBand: { findFirst: jest.fn().mockResolvedValue(null) },
+      schoolCdsAdmitBand: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       schoolProgram: { findFirst: jest.fn().mockResolvedValue(null) },
     };
 

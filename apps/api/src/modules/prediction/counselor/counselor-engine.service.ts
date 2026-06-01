@@ -588,6 +588,15 @@ export class CounselorEngineService {
           let rate = row.admitRate.toNumber();
           if (rate >= 1) rate = rate / 100; // tolerate percentages stored as 88 not 0.88
           if (rate <= 0 || rate >= 1) continue;
+          // Isotonic floor: a strictly-higher GPA band must never serve a LOWER
+          // anchor than a lower band in the same (testType, testBand) ladder.
+          rate = await this.isotonicBandRate(
+            school.id,
+            c.testType,
+            c.testBand,
+            gpaBand,
+            rate,
+          );
           // Cell with testType = SAT/ACT encodes BOTH gpa + test signal.
           // Cell with testType = GPA_ONLY encodes ONLY gpa.
           const encoded: Set<EncodedDimension> = new Set(['gpa']);
@@ -597,6 +606,53 @@ export class CounselorEngineService {
       }
     }
     return null;
+  }
+
+  /**
+   * Isotonic (monotonic) floor for the by-GPA CDS band ladder. A strictly-HIGHER
+   * GPA band must never serve a LOWER anchor than a lower GPA band in the same
+   * (testType, testBand) ladder. Hand-estimated CDS ladders can dip at the top
+   * (e.g. UC Merced GPA_ONLY: 3.50-3.74 = 92% but 3.75-4.00 = 88%), which would
+   * make a 3.8-GPA applicant score BELOW a 3.7 — a visible, trust-eroding
+   * non-monotonicity (caught by the 2026-06 invariant audit). We clamp the
+   * matched band's rate UP to the running max over all strictly-lower GPA bands
+   * in the same ladder. This only ever RAISES the served rate and never lowers
+   * one, so it cannot push a prediction above the school's own published
+   * top-band ceiling. Bands are only comparable WITHIN a family (standard 4.0 vs
+   * UC-weighted) and WITHIN a fixed testBand (we never mix SAT bands).
+   */
+  private async isotonicBandRate(
+    schoolId: string,
+    testType: string,
+    testBand: string,
+    matchedBand: string,
+    matchedRate: number,
+  ): Promise<number> {
+    const LADDERS = [
+      ['<3.00', '3.00-3.24', '3.25-3.49', '3.50-3.74', '3.75-4.00'],
+      ['<3.60', '3.60-3.79', '3.80-3.99', '4.00-4.19', '4.20-4.40'],
+    ];
+    const family = LADDERS.find((l) => l.includes(matchedBand));
+    if (!family) return matchedRate;
+    const lowerBands = family.slice(0, family.indexOf(matchedBand));
+    if (lowerBands.length === 0) return matchedRate;
+
+    const rows = await this.prisma.schoolCdsAdmitBand.findMany({
+      where: { schoolId, testType, testBand, gpaBand: { in: lowerBands } },
+      orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
+      select: { gpaBand: true, admitRate: true },
+    });
+    const seen = new Set<string>();
+    let max = matchedRate;
+    for (const r of rows) {
+      if (seen.has(r.gpaBand)) continue; // first row per band = latest cycle
+      seen.add(r.gpaBand);
+      let rate = r.admitRate.toNumber();
+      if (rate >= 1) rate = rate / 100;
+      if (rate <= 0 || rate >= 1) continue;
+      if (rate > max) max = rate;
+    }
+    return max;
   }
 
   private async lookupProgramAcceptanceRate(
