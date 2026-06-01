@@ -1,8 +1,8 @@
 {
   "id": "002-ucm-strong-oos-rd",
   "description": "UC Merced — strong OOS applicant, RD",
-  "rationale": "UCM anchor ~0.88. OOS at UC × 0.5; strong stats × 1.5 (combined GPA + test). Expected ~0.66 but anchor × 2.5 cap = 0.98 doesn't bind, anchor × 0.3 floor = 0.26 also doesn't bind. Strong stats partially offset OOS penalty. Range reflects expected band.",
-  "lastReviewedAt": "2026-04-26",
+  "rationale": "UCM anchor ~0.88 (near open-access). The 2026-05-31 audit removed CA from the strong-residency OOS-penalty set: UCs admit OOS *easier*, not harder (#312), so the old flat ×0.5 OOS penalty was wrong. UC Merced actively recruits OOS; a strong OOS applicant at an ~88%-admit school is near-certain, so the result rises to the 0.98 clamp. Range [0.72, 0.98].",
+  "lastReviewedAt": "2026-05-31",
   "profile": {
     "gpa": 3.85,
     "gpaScale": 4,
@@ -13,6 +13,6 @@
   },
   "schoolName": "University of California, Merced",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.5, 0.9],
+  "expectedProbabilityRange": [0.72, 0.98],
   "tags": ["uc-system", "tier-2-algorithmic"]
 }

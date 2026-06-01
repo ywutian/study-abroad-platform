@@ -139,6 +139,7 @@ export class CounselorEngineService {
       needBlindInternational?: boolean | null;
       intlAcceptanceRate?: number | null;
       oosAcceptanceRate?: number | null;
+      inStateAcceptanceRate?: number | null;
       institutionType?: string | null;
     },
     applicationRound?: string,
@@ -202,6 +203,35 @@ export class CounselorEngineService {
       impact: 'positive',
     });
 
+    // Suppress the in-state geo BOOST when the anchor is a UC by-GPA Tier-1 band
+    // (`cds-bands-v1`). The flat CA in-state multiplier (~1.35×) is measured against the
+    // OVERALL all-GPA pool (CA-resident ~14.9% / overall ~11%), but the band already
+    // conditions on a top GPA — stacking them over-predicts. UC is test-blind (since 2021,
+    // so the SAT is ignored) and its applicant pool is GPA-saturated (a 3.9 GPA sits at the
+    // admit-class median, not an elite slice), so the marginal top-GPA lift is small
+    // (~1.3-1.5×, not 2-3×). Multi-source research (2026-05-31, 11 agents) puts a strong
+    // CA-resident's UC Berkeley admit rate at ~22% (range 18-27%): band 0.25 alone matches
+    // that, while band × 1.35 = 0.34 over-predicts. This holds under BOTH readings of the
+    // band's basis — if it's a CA-resident rate the multiplier is a literal double-count; if
+    // it's an all-applicant rate the residency lift is already ~spent at the top band.
+    // Mirrors the gpa/test Tier-1 suppression above. OOS applicants are unaffected (their geo
+    // is a penalty/adjustment, not an in-state boost). NOTE: this overrides
+    // STATE_IN_STATE_OVER_OVERALL['CA'] for UC band hits — that constant only takes effect
+    // for CA publics that fall to a Tier-2/3 overall anchor (no by-GPA band).
+    const geoRaw = geoMultiplier(profile, school);
+    const geoIsInStateBoost =
+      geoRaw.impact === 'positive' && /in-state/i.test(geoRaw.label ?? '');
+    const geo =
+      anchorSource === 'cds-bands-v1' && geoIsInStateBoost
+        ? {
+            multiplier: 1.0,
+            label: `${geoRaw.label} (already captured by the by-GPA band)`,
+            evidence:
+              'UC admit-by-GPA bands already condition on a top GPA, and UC is test-blind with a GPA-saturated applicant pool, so an extra in-state multiplier would over-state the residency advantage — the band itself is the served estimate (a strong CA resident at UC Berkeley is ~22% per published data, not ~34%).',
+            impact: 'positive' as const,
+          }
+        : geoRaw;
+
     const modifierResults = {
       gpaBand: encodedDimensions.has('gpa')
         ? suppressed('GPA')
@@ -214,7 +244,7 @@ export class CounselorEngineService {
       firstGen: firstGenMultiplier(profile, school),
       athlete: athleteMultiplier(profile),
       urm: urmMultiplier(profile, school),
-      geo: geoMultiplier(profile, school),
+      geo,
       intl: intlMultiplier(profile, school),
       major: majorMultiplier(
         profile,

@@ -128,6 +128,68 @@ Findings (on the post-audit clean data):
 
 This **closes the loop**: the engine's fallbacks are now validated against — and where clearly off, calibrated to — the published aggregate data, not just admissions literature. It is the concrete realization of the §7.2 unlock (make the bridge data-driven without any individual outcomes).
 
+## 7.9 Gold-set validation → per-state geo recalibration (2026-05-31)
+
+Ran the user-authored **counselor gold set** (`pnpm gold:counselor`, 31 cases asserting `compute()` lands in an empirical band) against the post-audit engine: **27/31**, down from 31/31 on 2026-05-10. All 4 regressions were one segment — **strong CA in-state → UC flagships, all over-predicting** (UCB 0.45 vs gold [0.15, 0.32]).
+
+**Root cause (a reference-frame data bug, same class as the intl/ED fixes):** the in-state modifier applied a flat **1.8×** (= UC in-state÷OOS, ~17%/9%) to the **overall-population** CDS-band anchor. But in-state÷OVERALL is only ~1.06–1.35 for UC — multiplying an overall anchor by the in-state-vs-OOS gap double-counts. The flat constant also contradicted the engine's own #312 evidence that UCs admit OOS _easier_.
+
+**Fix — per-state in-state÷overall map** (`STATE_IN_STATE_OVER_OVERALL` in `counselor-modifiers.ts`), each value the system's PUBLISHED in-state÷overall (research deliverable, official CDS where available):
+
+| state      | ratio | source / confidence                                                                                           |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------------- |
+| NC (UNC)   | 2.2   | official CDS 2023-24 (in-state 41.2% / overall 18.7%); OOS capped 18% — highest confidence                    |
+| VA (UVA)   | 1.5   | Dean of Admission 2024/25 (~25%/16.5%)                                                                        |
+| TX (UT)    | 1.5   | OOS÷overall 0.38; in-state bimodal (top-6% auto-admit) — conservative blend                                   |
+| CA (UC)    | 1.2   | UCOP systemwide 1.06, Berkeley 1.35 — selective campuses tilt up                                              |
+| FL (UF)    | 1.1   | CDS residency blank; DB oos≈overall → ~neutral                                                                |
+| MI (UMich) | 1.0   | no official split (circulating 39% is impossible vs 17.9% overall); DB oos>overall → OOS easier → **neutral** |
+
+OOS is untouched — already per-school data-driven (`oos/overall`). This captures contrasts a flat constant never could: UNC in-state 0.37 vs OOS 0.07; UMich in-state 0.17 ≈ OOS 0.20 (correctly no boost).
+
+**Avoiding test-set overfitting (the user's core principle):** a naive flat 1.25 would have fixed the UC-heavy gold set but **under-predicted UNC/UT in-state** (uncovered by gold). So the fix is per-published-data, and the **gold set was expanded 31→36** with non-UC in-state cases — UNC (NC), UVA (VA), UT (TX), and a **UMich "no-boost" sentinel** (upper bound 0.25 catches any flat-boost regression) + a UNC in-state/OOS contrast pair. Result: **36/36 green**, 685 prediction unit tests green, analysis gold 50/50.
+
+## 7.10 All-48-state in-state audit + selectivity damping (2026-05-31)
+
+§7.9 fixed only the 6 states the gold set covered, leaving a flat **`DEFAULT_IN_STATE_MULTIPLIER = 1.2`** on the other 42 public-flagship states — the same flat-constant bug, just unaudited. An **8-agent workflow** web-verified each state flagship's published **in-state÷overall** (primary CDS section C / official admissions newsroom / state higher-ed dashboard; 48 flagships, ~758K tokens). The finding: **the flat 1.2 was wrong for 30 of 48 states.**
+
+- **24 over-boosted** (1.2 → ~1.0): most flagships barely price residency (Ohio State in 57.3% ≈ OOS 59.0%; Minnesota, Maryland, Arizona, UMass… all publish in-state ≈ overall, several OOS-_favored_ like Binghamton 0.78 and Rutgers).
+- **6 under-boosted** (1.2 was too low): **GA Tech 2.36** (residents 30% vs 9% overall 12.7% — steepest US gap), **TN 1.6** (two-thirds-in-state law), NC 2.2→**2.5**, CA 1.2→**1.35**, IL→1.35, WI→1.38.
+- **2 data bugs:** "Connecticut College" (private LAC mislabeled `isPrivate=false`; the real CT flagship is UConn — fixed by migration `20260531190000`); NY flagship Binghamton admits residents _harder_ than OOS.
+
+**The verified map** (`STATE_IN_STATE_OVER_OVERALL`, 13 states with a real effect) is now FLAGSHIP-level, and **`DEFAULT_IN_STATE_MULTIPLIER = 1.0`** (burden of proof: no published residency advantage → neutral). Two mechanisms resolve **intra-state heterogeneity** (a single state value can't fit GA Tech _and_ UGA _and_ Georgia State):
+
+1. **`residencySelectivityWeight(overall)`** — residency advantage is strongest at the most selective publics and ~0 near open access (same principle as the #312 ED scaling). The flagship ratio applies in full ≤15% overall, tapers linearly to 0 by ≥55%. So GA Tech (14%) keeps 2.36×, UGA (38%) damps to ~1.58×, Georgia State (55%) → neutral.
+2. **Per-school OOS guard** — if a school's _own_ published OOS ≈ its overall (≥0.95×), residency isn't priced there regardless of the state flagship → neutral. Catches Texas A&M, Texas Tech, VA Tech, William & Mary, Appalachian State from their own data.
+
+Validated against published numbers: **UNC in-state 38.2%** (published 38%), **UC Berkeley 14.9%** (published CA-resident 14.9%) — exact. **CA removed from the strong-residency OOS-penalty set** (UCs admit OOS easier, #312); UC OOS now uses each campus's published `oos/overall` instead of a flat 0.5× guess.
+
+**Gold set expanded 36→39** with intra-state heterogeneity sentinels: GA Tech (full boost) + UGA (same state, damped — a two-sided trap: flat-2.36 → 0.95 caught above, neutral → 0.53 caught below) + Ohio State (residency-neutral default). 5 UC gold cases + 1 Layer-3 calibration case (Penn State) updated to the data-grounded values (each rationale cites the published basis). Result: **gold 39/39, calibration spec back to its pre-change baseline, 141 counselor unit tests green.**
+
+## 7.11 Per-school in-state rate fill — real data replaces the proxy (2026-05-31)
+
+§7.10's per-state map + selectivity damping is an _approximation_ for the non-flagship publics. To complete it, an 11-agent workflow (62 schools, ~985K tokens) web-verified each school's actual published **in-state and OOS freshman admit rates** (official CDS section C / IR residency tables / UC Information Center). New nullable column **`School.inStateAcceptanceRate`** (migration `20260531200000`); the geo modifier now has a **PRIMARY path**: when a school publishes its own in-state rate, use in-state÷overall directly (symmetric with the OOS path); the state-map+damping is the FALLBACK only where unpublished.
+
+- **37 in-state + 38 OOS rates found** (60% hit rate); **24 no-data** keep the fallback; **2 stale overalls** corrected for ratio consistency (SJSU 72.65→84.61; Hawaii 69.7→86.6). Applied for **29 non-UC publics** (seed `seed-instate-rate-2026-05-31.ts` + migration `20260531210000`). Real data refines the proxy: UGA damping-1.58× → published **1.24×** (in-state 46.98% / overall 37.92%); NC State 1.18×, USC-Columbia 1.27×, Purdue 1.48×.
+- **Consistency cross-check** added to the engine: a genuine in-state advantage requires residents admitted MORE easily than non-residents; if a school's own OOS ≥ its in-state rate, neutralize (guards a stale-low stored overall from inflating in-state÷overall — e.g. Ohio State in-state 57% ≈ OOS 59%).
+- **Gold runner made faithful**: it had silently omitted `oosAcceptanceRate` from its school SELECT (so the per-school OOS guard never fired); added `oos` + `inStateAcceptanceRate` so the gold cases now exercise the real production geo inputs. Only UGA shifted (→ PRIMARY 0.656); gold 39/39, 150 counselor unit tests green.
+
+## 7.12 UC in-state double-count — resolved (2026-05-31)
+
+The §7.11 deferred UC item was forced + resolved by the Layer-3 calibration gate (032-ucb breached its ceiling at band 0.25 × CA-1.35 = 0.354). Two findings:
+
+1. **8 of 9 UC campuses admit OOS _easier_ than in-state** (UCLA in-state 9.6% vs OOS 11.2%; UCSD 24.7 vs 39.4; UC Irvine 21.6 vs 47.6; only Berkeley favors residents, 13.6 vs 10.3). The per-school OOS guard (§7.10) already neutralizes those 8 — so this finding's blast radius is **UC Berkeley alone**.
+2. **The flat CA-1.35 in-state boost double-counts on a by-GPA band.** The 1.35× is measured against the overall all-GPA pool, but a UC Tier-1 band already conditions on a top GPA. Stacking over-predicts.
+
+**Fix:** the engine suppresses the in-state geo boost when anchored on a `cds-bands-v1` band (mirrors the existing GPA/test Tier-1 suppression). OOS unaffected.
+
+**Validation — two multi-agent research passes (2026-05-31):**
+
+- _Band-semantics pass_ (6 agents + adversarial): agents split on whether the bands are CA-resident or all-applicant (UC publishes no fetchable resident×GPA crosstab), but **both readings converge on the same action** — band 0.25 is the defensible served value; band × 1.35 = 0.34 over-predicts. The adversarial agent "could not refute the result, only the (over-stated) rationale."
+- _UCB point-estimate pass_ (5 source angles + converge): a strong CA-resident's UC Berkeley admit rate ≈ **22% (range 18-27%)**, median of 5 estimates. **Decisive new fact: UC is test-blind since 2021** (SAT ignored) and the pool is GPA-saturated (a 3.9 GPA is the admit-class _median_, not elite), so the marginal top-GPA lift is small (~1.3-1.5×, not 2-3×). So the served 0.25 is correct-to-slightly-high; 0.34 over-predicts by ~12pp. (This _reversed_ an earlier worry that suppression under-predicts UCB — the true rate is below 0.25, not above.)
+
+Net served effect: UC Berkeley strong CA-resident in-state ≈ 0.25 (was double-counting to ~0.34). All other UCs unchanged. Confidence medium (UC's resident×GPA cell is structurally unpublished — see [[feedback_do_not_tune_coefficients]]).
+
 ## 8. Honest limits
 
 - Marginal-only ⇒ the model cannot distinguish two applicants with identical marginals; that delta lives in unobtainable joint data. This is a _feature_ (no false precision), not a bug to engineer away.

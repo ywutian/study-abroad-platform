@@ -3829,7 +3829,8 @@
         "description": "Connecticut College is a private liberal arts college in New London, known for its Connections curriculum and strong interdisciplinary programs.",
         "descriptionZh": "康涅狄格学院是一所位于新伦敦的私立文理学院，以其 Connections 课程体系和跨学科项目闻名。",
         "totalEnrollment": 1937,
-        "nicheOverallGrade": "B+"
+        "nicheOverallGrade": "B+",
+        "isPrivate": true
       },
       "provenance": {
         "act25": {

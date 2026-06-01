@@ -1,0 +1,19 @@
+{
+  "id": "034-uva-strong-va-instate-rd",
+  "description": "UVA — strong VA in-state applicant, RD (mid-spectrum residency pref)",
+  "rationale": "VA sits mid-spectrum. UVA Dean of Admission 2024/2025 reports in-state ~24-25% vs overall ~16.5% (in-state÷overall ≈ 1.4-1.55); the per-state map uses 1.5×. A strong in-stater (anchor ~0.168) lands ~0.28. Range [0.20, 0.42] brackets that and asserts UVA in-state is a solid TARGET — more reachable than for OOS (where the oos÷overall 0.79 data path applies) but well short of a safety.",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "VA",
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "economics",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of Virginia",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.2, 0.42],
+  "tags": ["public-flagship", "in-state", "mid-residency-pref"]
+}

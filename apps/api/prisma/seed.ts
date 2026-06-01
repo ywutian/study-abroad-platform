@@ -21,6 +21,7 @@ import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
 import { correctIntlRates } from './seed-intl-rate-correction';
 import { correctRoundRateScaleErrors } from './seed-round-rate-correction';
 import { applyAuditCorrections } from './seed-audit-corrections-2026-05-31';
+import { applyInStateRates } from './seed-instate-rate-2026-05-31';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
 
@@ -2121,6 +2122,12 @@ export async function main() {
   console.log(
     `  ✅ Audit corrections: ${auditCorrections.updated} school field-set(s) applied`,
   );
+
+  // Per-school in-state/resident admit rates (2026-05-31 research). Populates
+  // inStateAcceptanceRate so the geo modifier uses real published in-state÷overall
+  // (PRIMARY path) instead of the state-map+damping proxy. Runs after audit corrections.
+  const inStateRates = await applyInStateRates(prisma);
+  console.log(`  ✅ In-state rates: ${inStateRates} school(s) populated`);
 
   // ========== GPA Distributions (CDS Section C9) ==========
   const gpaDists = await seedGpaDistributions(prisma);

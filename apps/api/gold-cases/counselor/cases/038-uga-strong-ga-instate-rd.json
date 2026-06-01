@@ -1,0 +1,18 @@
+{
+  "id": "038-uga-strong-ga-instate-rd",
+  "description": "UGA — strong GA in-state applicant, RD (SAME state as GA Tech, but mid-selectivity → DAMPED boost)",
+  "rationale": "The intra-state heterogeneity sentinel, now on REAL published data (2026-05-31 in-state fill). UGA's official CDS 2024-25 residency table gives in-state 46.98% / overall 37.92% = 1.24× — so the engine's PRIMARY path uses that directly (not the flagship-ratio proxy). Full-engine result ≈ 0.66 (anchor 0.38 × geo 1.24 × this strong profile's stat boost ~1.4×). Guardrail [0.58, 0.75] is a two-sided trap: the OLD fallback damping (1.58×) would give ~0.84 (caught above) and neutral would give ~0.53 (caught below), so it locks the data-grounded value against both. Contrast with same-state Georgia Tech (full 2.36× at 14% selectivity) proves one state value can't fit both — real per-school data resolves it.",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "GA",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of Georgia",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.58, 0.75],
+  "tags": ["public-flagship", "in-state", "selectivity-damped"]
+}

@@ -342,9 +342,9 @@ describe('CounselorEngineService', () => {
         }),
         'RD',
       );
-      // anchor 0.11 × strong GPA 1.1 × strong test 1.2 × in-state UC 1.8 = 0.26
-      // capped at 0.11 × 2.5 = 0.275
-      expect(result.probability).toBeGreaterThanOrEqual(0.15);
+      // anchor 0.11 × strong academic geomean ~1.15 × in-state CA 1.2 = ~0.15
+      // (in-state÷overall, not the old in-state÷OOS 1.8 that over-predicted UC)
+      expect(result.probability).toBeGreaterThanOrEqual(0.13);
       expect(result.probability).toBeLessThanOrEqual(0.3);
     });
 
@@ -580,12 +580,15 @@ describe('CounselorEngineService', () => {
 
       expect(result.tier).toBe(1);
       expect(result.anchor).toBeCloseTo(0.65, 2);
-      // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0
-      // (suppressed) × geo CA in-state UC 1.8 = 1.17 → clipped at 0.98 ceiling
-      // (since 0.65 × 2.5 = 1.625, but absolute ceiling is 0.98).
-      // Critical: NOT 0.65 × 1.3 × 1.5 × 1.8 = 2.28 → that's the bug we fixed.
-      expect(result.probability).toBeGreaterThanOrEqual(0.95);
-      expect(result.probability).toBeLessThanOrEqual(0.98);
+      // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0 (suppressed)
+      // × geo 1.0 (ALSO suppressed): the UC by-GPA band already conditions on a top GPA,
+      // and the flat CA in-state multiplier is measured against the overall all-GPA pool,
+      // so stacking it on the band over-predicts (UC is test-blind + GPA-saturated → the
+      // marginal top-GPA lift is small). Result ≈ 0.65 (the band itself) — the honest
+      // "strong in-state at less-selective UC Davis", NOT 0.65 × 1.3 × 1.5 × 1.2 (the
+      // gpa+test+geo quadruple-count we prevent).
+      expect(result.probability).toBeGreaterThanOrEqual(0.6);
+      expect(result.probability).toBeLessThanOrEqual(0.72);
 
       // factors[] should include the suppression note for both gpa and test
       const gpaFactor = result.factors.find((f) =>
@@ -629,11 +632,13 @@ describe('CounselorEngineService', () => {
       expect(result.tier).toBe(1);
       expect(result.anchor).toBeCloseTo(0.42, 2);
       // Anchor 0.42 (GPA-band) × gpa 1.0 (suppressed) × test 1.5 (still applies,
-      // 1500 above sat75+50=1500) × geo OOS strong-pref CA 0.5 = 0.315.
+      // 1500 above sat75+50=1500) × geo 0.85 = 0.5355. Geo is the generic public-OOS
+      // 0.85× fallback: this UCD fixture has no oosAcceptanceRate, and CA is NOT in the
+      // strong-residency 0.5× set — UCs admit OOS *easier*, not harder (2026-05-31 audit /
+      // #312); in prod UCD's published OOS rate drives the data path instead.
       // Test modifier MUST still fire because GPA_ONLY cell doesn't encode test signal.
-      // Floored at 0.42 × 0.3 = 0.126 (safety floor doesn't bind here).
-      expect(result.probability).toBeGreaterThanOrEqual(0.25);
-      expect(result.probability).toBeLessThanOrEqual(0.42);
+      expect(result.probability).toBeGreaterThanOrEqual(0.45);
+      expect(result.probability).toBeLessThanOrEqual(0.6);
 
       const gpaFactor = result.factors.find((f) =>
         f.name.toLowerCase().includes('gpa'),

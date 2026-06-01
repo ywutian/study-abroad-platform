@@ -35,11 +35,11 @@
     ],
     "awards": [{ "name": "Honor Roll", "level": "SCHOOL", "year": 2025 }]
   },
-  "expectedProbabilityRange": [0.5, 0.85],
-  "expectedTier": "safety",
+  "expectedProbabilityRange": [0.4, 0.6],
+  "expectedTier": "match",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "UCSB CA in-state overall ~38% (UCSB 整体 38%)，中等 profile 应 match 35-60%。UCSB 有 5 个 CDS bands。",
+    "intuition": "UCSB CA in-state overall ~38%，中等 profile 应 match 35-60%。In-state÷overall ~1.2 (anchor 40% × 1.2 = ~48%) = match — NOT the old in-state÷OOS ~1.8 which over-predicted to ~72% safety. Tier/band corrected safety→match 2026-05-31 per per-state geo recalibration (counselor gold set #316). UCSB 有 5 个 CDS bands。",
     "sources": [
       {
         "name": "UCSB CDS 2024-25",
@@ -51,7 +51,7 @@
       }
     ]
   },
-  "lastReviewedAt": "2026-05-24",
+  "lastReviewedAt": "2026-05-31",
   "reviewedBy": "yitian@",
   "tags": [
     "t35-public",

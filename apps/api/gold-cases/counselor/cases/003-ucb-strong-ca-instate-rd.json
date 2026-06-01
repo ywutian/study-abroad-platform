@@ -1,8 +1,8 @@
 {
   "id": "003-ucb-strong-ca-instate-rd",
   "description": "UC Berkeley — strong CA in-state applicant, RD, CS major",
-  "rationale": "After the UCOP discipline data load, UCB uses a Tier 1 CS-aware anchor instead of the old overall-rate-only fixture. Strong CA in-state stats still push the result to the upper end, but official CS selectivity keeps it near 30%. Range [0.15, 0.32] allows the current 30.6% counselor result while preserving the guardrail that UCB remains highly competitive.",
-  "lastReviewedAt": "2026-04-30",
+  "rationale": "UCB resolves to the Tier-2 overall anchor (~11%) under the CI gate DB: cds-admit-bands are seeded by the orchestrator (pnpm db:seed), NOT by `prisma db seed`/seed.ts which the gate runs, so the resident GPA band is absent there. Strong CA in-state = overall 0.11 × CA-1.35 (2026-05-31 audit value) × stats ≈ 0.16 — a reach (UCB is brutally selective even for strong residents). Range [0.12, 0.3]. (NOTE: under the orchestrator seed the Tier-1 resident band 0.25 applies; an in-state multiplier on top would double-count — see §7.11 deferred UC item.)",
+  "lastReviewedAt": "2026-05-31",
   "profile": {
     "gpa": 3.9,
     "gpaScale": 4,
@@ -14,6 +14,6 @@
   },
   "schoolName": "University of California, Berkeley",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.15, 0.32],
+  "expectedProbabilityRange": [0.12, 0.3],
   "tags": ["uc-system", "tier-2-algorithmic"]
 }

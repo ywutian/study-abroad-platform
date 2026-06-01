@@ -1,8 +1,8 @@
 {
   "id": "006-ucla-strong-oos-rd",
   "description": "UC Los Angeles — strong OOS applicant, RD",
-  "rationale": "UCLA anchor 0.09; OOS UC × 0.5; strong stats × 1.3; final ~0.06. Above floor.",
-  "lastReviewedAt": "2026-04-26",
+  "rationale": "UCLA anchor ~0.09. The 2026-05-31 audit removed CA from the flat ×0.5 OOS penalty (UCs admit OOS easier, #312); UCLA OOS now uses its published data (OOS 9.3% ≈ overall 9.0% = ×~1.0, UCLA admits OOS at roughly the same rate as overall). Strong-profile result ≈ 0.15. Range [0.07, 0.2].",
+  "lastReviewedAt": "2026-05-31",
   "profile": {
     "gpa": 3.9,
     "gpaScale": 4,
@@ -18,6 +18,6 @@
   },
   "schoolName": "University of California, Los Angeles",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.03, 0.12],
+  "expectedProbabilityRange": [0.05, 0.2],
   "tags": ["uc-system", "tier-2-algorithmic"]
 }

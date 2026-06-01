@@ -118,6 +118,7 @@ export interface SchoolInput {
   acceptanceRate?: number;
   intlAcceptanceRate?: number;
   oosAcceptanceRate?: number;
+  inStateAcceptanceRate?: number;
   transferAcceptanceRate?: number;
   intlStudentPct?: number;
   // null = unreviewed (treated as midpoint by counselor); true/false = verified

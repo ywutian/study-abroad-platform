@@ -987,20 +987,88 @@ export function urmMultiplier(
 }
 
 /**
- * Modifier #8a: In-state vs out-of-state at public flagships.
+ * Modifier #8a: In-state vs out-of-state at public universities.
  *
- * UC system: in-state ~17% admit, OOS ~9% (UC official data) → 1.8× / 0.5×.
- * UMich, UNC, UVA, UT-Austin, UF: similar 2-3× in-state advantage.
- * Other publics: 1.3× / 0.85× (smaller residency preference).
- * Privates: 1.0 (no residency effect).
+ * THE ANCHOR IS THE OVERALL-POPULATION ADMIT RATE, so the in-state modifier
+ * must be in-state÷OVERALL — NOT the in-state÷OOS gap. Multiplying an overall
+ * anchor by the (much larger) in-state-vs-OOS ratio double-counts and
+ * over-predicts in-state applicants. A flat 1.8 (= UC in-state÷OOS) did exactly
+ * that: it inflated strong CA in-state UC predictions to ~45% — caught by the
+ * counselor gold set on 2026-05-31. Each ratio below is the system's PUBLISHED
+ * in-state÷overall admit rate (reviewed 2026-05-31):
+ *
+ *   NC 2.2  — UNC-CH official CDS 2023-24 C1: in-state 41.2% / overall 18.7%
+ *             (OOS enrollment legally capped at 18%). Highest confidence.
+ *   VA 1.5  — UVA Dean of Admission 2024/2025: in-state ~24-25% / overall ~16.5%.
+ *   TX 1.5  — UT-Austin OOS÷overall 0.38 (strong in-state pref); in-state is
+ *             bimodal (top-6% auto-admit ~100% vs holistic ~10%), no single
+ *             official %, so 1.5 is a conservative blend.
+ *   CA 1.2  — UC systemwide in-state÷overall 1.06 (UCOP 2024); Berkeley 1.35,
+ *             UCLA 1.06. Selective campuses tilt above systemwide; UC freshman-
+ *             GPA bands are CA-resident-leaning, so the anchor already captures
+ *             much of the residency effect — keep the extra tilt small.
+ *   FL 1.1  — UF CDS leaves the residency columns blank; DB oos 23.3% ≈ overall
+ *             24.2% → ~residency-neutral.
+ *   MI 1.0  — UMich publishes no residency split; the circulating "39% in-state"
+ *             is mathematically impossible against the official 17.9% overall,
+ *             and DB oos 18% > overall 15.6% → OOS admitted *easier* → neutral.
+ *
+ * Out-of-state uses the per-school oos÷overall DATA path in geoMultiplier when
+ * a published OOS rate exists; PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF only
+ * feeds the OOS *fallback* for strong-residency states that lack OOS data.
  */
+const STATE_IN_STATE_OVER_OVERALL: Record<string, number> = {
+  // Verified FLAGSHIP in-state÷overall ratios. Primary sources audited 2026-05-31
+  // (48-flagship web audit: each state's CDS section C / official admissions newsroom /
+  // state higher-ed dashboard — see docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md §7.10).
+  // These are the MOST-selective public per state; residencySelectivityWeight() and the
+  // per-school OOS guard (in geoMultiplier) adapt them to less-selective same-state publics.
+  NC: 2.5, // UNC: in-state 38% / overall 15.3% (state law caps non-residents at 18% of class)
+  GA: 2.36, // Georgia Tech: residents 30% / overall 12.7% (Fall 2025 newsroom — steepest US gap)
+  TN: 1.6, // UT-Knoxville: in-state 70% / overall 42% (two-thirds-in-state policy)
+  VA: 1.54, // UVA: in-state 25% / overall 16.5%
+  TX: 1.41, // UT-Austin: top-6% auto-admit
+  WI: 1.38, // UW-Madison: in-state 56% / overall 41%
+  CA: 1.35, // UC system: CA resident 14.9% / overall 11% (Berkeley, UC Information Center).
+  // NOTE: for UC schools that resolve to a by-GPA Tier-1 band (anchorSource 'cds-bands-v1'),
+  // this in-state boost is SUPPRESSED in counselor-engine.service.ts (the band already
+  // captures the top-GPA residency rate — stacking over-predicts; researched UCB strong
+  // CA-resident ≈ 22%). So 1.35 only takes effect for CA publics on a Tier-2/3 overall anchor.
+  IL: 1.35, // UIUC: IL resident 49% / overall 37% (land-grant)
+  IN: 1.34, // Purdue
+  SC: 1.3, // Clemson
+  WA: 1.18, // U Washington
+  DE: 1.16, // U Delaware
+  MD: 1.14, // UMD College Park
+};
+/**
+ * Burden-of-proof default: a state with NO verified residency advantage is NEUTRAL (1.0).
+ * The 2026-05-31 48-flagship audit found the old flat 1.2 over-predicted in-state applicants
+ * for 34 states whose published data shows in-state ≈ overall (or OOS is admitted *easier*).
+ */
+const DEFAULT_IN_STATE_MULTIPLIER = 1.0;
+/**
+ * Residency advantage scales with selectivity (same principle as the #312 ED scaling):
+ * near-open-access publics admit qualified applicants regardless of residency, so the in-state
+ * lever vanishes; it is strongest at the most selective publics. This adapts the FLAGSHIP-level
+ * state ratio to LESS-selective same-state publics — e.g. Georgia Tech (14% overall) keeps the
+ * full 2.36×, but Georgia State (55% overall) is neutralized, avoiding a 98%-clamped over-prediction.
+ */
+function residencySelectivityWeight(overallRate: number | null): number {
+  if (overallRate == null) return 1.0; // unknown selectivity → treat as flagship-like
+  if (overallRate <= 0.15) return 1.0; // highly selective → full residency effect
+  if (overallRate >= 0.55) return 0.0; // near open-access → residency unpriced
+  return (0.55 - overallRate) / (0.55 - 0.15); // linear taper between
+}
+/** OOS fallback (0.5×) applies only at states whose flagships genuinely penalize non-residents. */
 const PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF = new Set([
-  'CA', // UC system, CSU
-  'MI', // UMich
-  'NC', // UNC
+  'NC', // UNC — in-state 2.5× overall
+  'GA', // Georgia Tech — steepest in/out gap in the US
+  'TN', // UT-Knoxville — two-thirds-in-state policy
   'VA', // UVA, W&M
   'TX', // UT-Austin, A&M
-  'FL', // UF, FSU
+  // CA intentionally excluded: UCs/CSUs admit OOS *easier* (see #312); their OOS path is
+  // data-driven from published oosAcceptanceRate, not the strong-residency 0.5× fallback.
 ]);
 
 export function geoMultiplier(
@@ -1010,6 +1078,7 @@ export function geoMultiplier(
     isPrivate?: boolean | null;
     acceptanceRate?: number | null;
     oosAcceptanceRate?: number | null;
+    inStateAcceptanceRate?: number | null;
   },
 ): ModifierResult {
   // Don't double-penalize international applicants — `intlMultiplier` already
@@ -1065,19 +1134,76 @@ export function geoMultiplier(
     };
   }
 
-  if (isInState && strongPref) {
-    return {
-      multiplier: 1.8,
-      label: 'In-state at public flagship',
-      evidence: `${schoolState} residents see ~1.8-2.5× the OOS admit rate at this state's flagship public universities`,
-      impact: 'positive',
-    };
-  }
   if (isInState) {
+    // PRIMARY (data-grounded): when the school publishes its OWN in-state/resident admit rate,
+    // use in-state÷overall directly — real per-school data beats the flagship-ratio proxy. The
+    // state map + selectivity damping below is only the FALLBACK for schools without a published
+    // split. Symmetric with the OOS data path above (oos÷overall).
+    const inStateRate = normalizeRate(school.inStateAcceptanceRate);
+    if (inStateRate != null && overallRate != null) {
+      // Consistency cross-check: a genuine in-state advantage requires residents admitted
+      // MORE easily than non-residents. If the school's own OOS rate is ≥ its in-state rate,
+      // residency is not favorable here — neutralize. This guards against a stale/low stored
+      // overall spuriously inflating in-state÷overall (e.g. Ohio State in-state 57% ≈ OOS 59%
+      // but a stale overall 51% would otherwise imply a false 1.13× boost).
+      if (oosRate != null && oosRate >= inStateRate) {
+        return {
+          ...NEUTRAL,
+          label: `In-state (${schoolState} — published residency-neutral)`,
+          evidence: `${schoolState} admits residents (~${(inStateRate * 100).toFixed(0)}%) at roughly the same or lower rate than non-residents (~${(oosRate * 100).toFixed(0)}%) — residency is not an advantage here (school-published).`,
+        };
+      }
+      const ratio = Math.max(0.9, Math.min(2.5, inStateRate / overallRate));
+      if (ratio <= 1.03) {
+        return {
+          ...NEUTRAL,
+          label: `In-state (${schoolState} — published residency-neutral)`,
+          evidence: `${schoolState} residents are admitted at ~${(inStateRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (school-published) — residency is effectively neutral here.`,
+        };
+      }
+      return {
+        multiplier: ratio,
+        label: 'In-state at public university',
+        evidence: `${schoolState} residents are admitted at ~${(inStateRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (×${ratio.toFixed(2)}, school-published in-state rate).`,
+        impact: 'positive',
+      };
+    }
+
+    const stateRatio =
+      STATE_IN_STATE_OVER_OVERALL[schoolState] ?? DEFAULT_IN_STATE_MULTIPLIER;
+    // Per-school guard: if THIS school's OWN published OOS rate is ≈ its overall rate,
+    // residency is not priced here regardless of the state flagship — neutralize. Handles
+    // intra-state heterogeneity straight from the school's own data (Texas A&M, Texas Tech,
+    // VA Tech, William & Mary, Appalachian State all publish OOS ≈ overall while their state's
+    // flagship strongly favours residents). MI-style residency-neutral states hit this via
+    // stateRatio ≤ 1.03.
+    const schoolPricesResidency = !(
+      oosRate != null &&
+      overallRate != null &&
+      oosRate >= overallRate * 0.95
+    );
+    if (stateRatio <= 1.03 || !schoolPricesResidency) {
+      return {
+        ...NEUTRAL,
+        label: `In-state (${schoolState} — residency-neutral public)`,
+        evidence: `Published residency data shows this public admits in-state and out-of-state applicants at ~equal rates, so residency is treated as neutral here.`,
+      };
+    }
+    // Scale the FLAGSHIP state ratio down for less-selective same-state publics: residency is
+    // the strongest lever at the most selective publics and vanishes near open access.
+    const weight = residencySelectivityWeight(overallRate);
+    const effective = 1 + (stateRatio - 1) * weight;
+    if (effective <= 1.03) {
+      return {
+        ...NEUTRAL,
+        label: `In-state (${schoolState} — residency-neutral at this selectivity)`,
+        evidence: `${schoolState} residents get a meaningful admit edge only at the most selective publics; at this school's admit rate residency is effectively neutral.`,
+      };
+    }
     return {
-      multiplier: 1.3,
-      label: 'In-state at public school',
-      evidence: `${schoolState} residents see ~1.3× the OOS admit rate at most public universities`,
+      multiplier: effective,
+      label: 'In-state at public university',
+      evidence: `${schoolState} residents are admitted at ~${effective.toFixed(2)}× this school's OVERALL admit rate (verified flagship in-state÷overall ${stateRatio.toFixed(2)}× scaled by this school's selectivity; the overall-population anchor means we use in-state÷overall, not the larger in-state÷OOS gap, which would double-count).`,
       impact: 'positive',
     };
   }

@@ -95,6 +95,8 @@ export interface SchoolMetrics {
   intlAcceptanceRate?: number;
   /** Out-of-state acceptance rate for public schools (0–100 percentage) */
   oosAcceptanceRate?: number;
+  /** In-state/resident acceptance rate for public schools (0–100 percentage) */
+  inStateAcceptanceRate?: number;
   /** Transfer acceptance rate (0-100 percentage) when published. */
   transferAcceptanceRate?: number;
   /** Whether the school has an ED program */

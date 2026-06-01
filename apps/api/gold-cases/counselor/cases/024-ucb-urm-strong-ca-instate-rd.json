@@ -1,8 +1,8 @@
 {
   "id": "024-ucb-urm-strong-ca-instate-rd",
   "description": "UCB + URM + strong CA in-state RD",
-  "rationale": "After the UCOP discipline data load, this case follows the same UCB Tier 1 CS-aware path as the strong in-state case. The URM hook is intentionally not allowed to explode the estimate past the official CS/program anchor; current counselor output is 30.6%, so the guardrail range is [0.15, 0.32].",
-  "lastReviewedAt": "2026-04-30",
+  "rationale": "Same UCB path as 003 under the CI gate DB's Tier-2 overall anchor (~11%); the URM hook is not allowed to explode the estimate past the program anchor. overall 0.11 × CA-1.35 × stats ≈ 0.16 (reach). Guardrail range [0.12, 0.3]. (Tier-1 resident-band caveat: see §7.11 deferred UC item.)",
+  "lastReviewedAt": "2026-05-31",
   "profile": {
     "gpa": 3.9,
     "gpaScale": 4,
@@ -19,6 +19,6 @@
   },
   "schoolName": "University of California, Berkeley",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.15, 0.32],
+  "expectedProbabilityRange": [0.12, 0.3],
   "tags": ["uc-system", "hook-urm"]
 }

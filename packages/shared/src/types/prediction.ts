@@ -182,6 +182,8 @@ export interface PredictionResult {
     intlAcceptanceRate?: number;
     /** 0–100 percentage — out-of-state freshman acceptance rate */
     oosAcceptanceRate?: number;
+    /** 0–100 percentage — in-state/resident freshman acceptance rate */
+    inStateAcceptanceRate?: number;
     /** 0–100 percentage — share of international students */
     intlStudentPct?: number;
     needBlindInternational?: boolean | null;

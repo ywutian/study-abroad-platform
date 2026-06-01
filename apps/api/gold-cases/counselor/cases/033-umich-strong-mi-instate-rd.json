@@ -1,0 +1,24 @@
+{
+  "id": "033-umich-strong-mi-instate-rd",
+  "description": "U. Michigan–Ann Arbor — strong MI in-state applicant, RD (residency-neutral sentinel)",
+  "rationale": "THE KEY GUARD against a flat in-state boost returning. UMich publishes no residency split; the circulating '39% in-state' is mathematically impossible vs the official 17.9% overall, and our DB shows OOS 18% > overall 15.6% — i.e. OOS is admitted EASIER, so in-state earns NO boost (geo treated as neutral). A strong in-stater lands near the overall band (~0.17). Range [0.10, 0.25] brackets that; crucially the upper bound 0.25 would CATCH a regression to the old flat 1.8 (which would push this to 0.156×1.8 ≈ 0.28).",
+  "lastReviewedAt": "2026-05-31",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "MI",
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "economics",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of Michigan, Ann Arbor",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.1, 0.25],
+  "tags": [
+    "public-flagship",
+    "in-state",
+    "residency-neutral",
+    "regression-guard"
+  ]
+}

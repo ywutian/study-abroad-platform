@@ -83,6 +83,12 @@ const MINIMAL_CDS_FIXTURE = [
     source: 'gold-counselor-fixture:uc-santa-cruz:2024',
     sourceUrl: 'https://admissions.ucsc.edu/',
   },
+  // NOTE: UCB/UCLA/UCSD/UCSB are intentionally NOT pinned here. `prisma db seed`
+  // (= seed.ts, what the CI gate DB runs) does not seed cds-admit-bands, so the gate
+  // resolves these to the Tier-2 overall rate. Pinning their Tier-1 resident bands would
+  // make the gate use band × CA-in-state, double-counting residency (the bands are already
+  // CA-resident rates) — which broke the Layer-3 calibration (032-ucb). The UC in-state
+  // gold/calibration ranges are therefore calibrated to the Tier-2 (overall × CA) path.
 ] as const;
 
 // School-level fields needed by gold cases that the default seed leaves null
@@ -117,6 +123,92 @@ const MINIMAL_SCHOOL_FIXTURE = [
       act75: 32,
       isPrivate: false,
       state: 'CA',
+    },
+  },
+  // Non-UC public flagships — gold cases 032-039 (per-state in-state÷overall
+  // recalibration + 48-flagship audit, 2026-05-31). Pinned so the cases stay
+  // deterministic against CI seed/overlay drift. acceptanceRate/oosAcceptanceRate =
+  // each school's published overall/OOS admit rate; `state` drives the per-state
+  // in-state multiplier, scaled by selectivity + the per-school OOS guard.
+  {
+    schoolNameNorm: 'university of north carolina at chapel hill',
+    fields: {
+      acceptanceRate: 0.1534,
+      oosAcceptanceRate: 0.0663,
+      sat25: 1400,
+      sat75: 1530,
+      isPrivate: false,
+      state: 'NC',
+    },
+  },
+  {
+    schoolNameNorm: 'university of texas at austin',
+    fields: {
+      acceptanceRate: 0.2664,
+      oosAcceptanceRate: 0.1013,
+      sat25: 1230,
+      sat75: 1490,
+      isPrivate: false,
+      state: 'TX',
+    },
+  },
+  {
+    schoolNameNorm: 'university of virginia',
+    fields: {
+      acceptanceRate: 0.1681,
+      oosAcceptanceRate: 0.1383,
+      sat25: 1410,
+      sat75: 1520,
+      isPrivate: false,
+      state: 'VA',
+    },
+  },
+  {
+    schoolNameNorm: 'university of michigan, ann arbor',
+    fields: {
+      acceptanceRate: 0.1564,
+      oosAcceptanceRate: 0.18,
+      sat25: 1360,
+      sat75: 1530,
+      isPrivate: false,
+      state: 'MI',
+    },
+  },
+  // Intra-state heterogeneity sentinels (cases 037-039): GA Tech (selective, full
+  // 2.36× boost) vs UGA (same state, mid-selectivity → damped ~1.58×) proves a flat
+  // per-state constant is insufficient; Ohio State locks the residency-neutral default.
+  {
+    schoolNameNorm: 'georgia institute of technology',
+    fields: {
+      acceptanceRate: 0.1407,
+      oosAcceptanceRate: 0.1042,
+      sat25: 1370,
+      sat75: 1540,
+      isPrivate: false,
+      state: 'GA',
+    },
+  },
+  {
+    schoolNameNorm: 'university of georgia',
+    fields: {
+      acceptanceRate: 0.3792,
+      oosAcceptanceRate: 0.311,
+      inStateAcceptanceRate: 0.4698, // published UGA CDS 2024-25 resident rate → PRIMARY path (1.24×)
+      sat25: 1280,
+      sat75: 1450,
+      isPrivate: false,
+      state: 'GA',
+    },
+  },
+  {
+    schoolNameNorm: 'ohio state university',
+    fields: {
+      acceptanceRate: 0.508,
+      oosAcceptanceRate: 0.497,
+      sat25: 1280,
+      sat75: 1450,
+      isPrivate: false,
+      state: 'OH',
     },
   },
 ] as const;
@@ -266,6 +358,7 @@ async function main() {
       state: true,
       needBlindInternational: true,
       intlAcceptanceRate: true,
+      inStateAcceptanceRate: true,
     },
   });
   const schoolByNameNorm = new Map(schoolRows.map((s) => [s.nameNorm, s]));
@@ -297,6 +390,7 @@ async function main() {
       isPrivate?: boolean | null;
       needBlindInternational?: boolean | null;
       intlAcceptanceRate?: number | null;
+      inStateAcceptanceRate?: number | null;
     } = {
       id: school.id,
       name: school.name,
@@ -315,6 +409,9 @@ async function main() {
       needBlindInternational: school.needBlindInternational ?? null,
       intlAcceptanceRate: school.intlAcceptanceRate
         ? Number(school.intlAcceptanceRate)
+        : undefined,
+      inStateAcceptanceRate: school.inStateAcceptanceRate
+        ? Number(school.inStateAcceptanceRate)
         : undefined,
     };
 
