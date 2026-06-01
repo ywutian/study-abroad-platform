@@ -1029,7 +1029,11 @@ const STATE_IN_STATE_OVER_OVERALL: Record<string, number> = {
   VA: 1.54, // UVA: in-state 25% / overall 16.5%
   TX: 1.41, // UT-Austin: top-6% auto-admit
   WI: 1.38, // UW-Madison: in-state 56% / overall 41%
-  CA: 1.35, // UC system: CA resident 14.9% / overall 11% (Berkeley, UC Information Center)
+  CA: 1.35, // UC system: CA resident 14.9% / overall 11% (Berkeley, UC Information Center).
+  // NOTE: for UC schools that resolve to a by-GPA Tier-1 band (anchorSource 'cds-bands-v1'),
+  // this in-state boost is SUPPRESSED in counselor-engine.service.ts (the band already
+  // captures the top-GPA residency rate — stacking over-predicts; researched UCB strong
+  // CA-resident ≈ 22%). So 1.35 only takes effect for CA publics on a Tier-2/3 overall anchor.
   IL: 1.35, // UIUC: IL resident 49% / overall 37% (land-grant)
   IN: 1.34, // Purdue
   SC: 1.3, // Clemson

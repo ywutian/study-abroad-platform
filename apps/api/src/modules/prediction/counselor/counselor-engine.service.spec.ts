@@ -581,11 +581,11 @@ describe('CounselorEngineService', () => {
       expect(result.tier).toBe(1);
       expect(result.anchor).toBeCloseTo(0.65, 2);
       // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0 (suppressed)
-      // × geo 1.0 (ALSO suppressed): the UC freshman-by-GPA Tier 1 cell is a
-      // CALIFORNIA-RESIDENT admit rate, so in-state residency is already encoded —
-      // applying the in-state multiplier on top would double-count, exactly like
-      // gpa/test. Result ≈ 0.65 (the resident band itself) — the honest "strong
-      // in-state at less-selective UC Davis", NOT 0.65 × 1.3 × 1.5 × 1.2 (the
+      // × geo 1.0 (ALSO suppressed): the UC by-GPA band already conditions on a top GPA,
+      // and the flat CA in-state multiplier is measured against the overall all-GPA pool,
+      // so stacking it on the band over-predicts (UC is test-blind + GPA-saturated → the
+      // marginal top-GPA lift is small). Result ≈ 0.65 (the band itself) — the honest
+      // "strong in-state at less-selective UC Davis", NOT 0.65 × 1.3 × 1.5 × 1.2 (the
       // gpa+test+geo quadruple-count we prevent).
       expect(result.probability).toBeGreaterThanOrEqual(0.6);
       expect(result.probability).toBeLessThanOrEqual(0.72);

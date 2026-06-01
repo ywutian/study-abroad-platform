@@ -174,7 +174,21 @@ Validated against published numbers: **UNC in-state 38.2%** (published 38%), **U
 - **Consistency cross-check** added to the engine: a genuine in-state advantage requires residents admitted MORE easily than non-residents; if a school's own OOS ≥ its in-state rate, neutralize (guards a stale-low stored overall from inflating in-state÷overall — e.g. Ohio State in-state 57% ≈ OOS 59%).
 - **Gold runner made faithful**: it had silently omitted `oosAcceptanceRate` from its school SELECT (so the per-school OOS guard never fired); added `oos` + `inStateAcceptanceRate` so the gold cases now exercise the real production geo inputs. Only UGA shifted (→ PRIMARY 0.656); gold 39/39, 150 counselor unit tests green.
 
-**⚠️ UC finding (deferred — product-sensitive, needs a separate decision):** the same UC Information Center data shows **8 of 9 UC campuses admit OOS _easier_ than in-state** (UCLA in-state 9.6% vs OOS 11.2%; UCSD 24.7 vs 39.4; UC Irvine 21.6 vs 47.6; only Berkeley favors residents, 13.6 vs 10.3). So the current CA-map 1.35× in-state boost **over-predicts CA residents at most UCs**. This was NOT applied here because UCs use CDS **resident-band** anchors, where an in-state multiplier risks double-counting, and correcting it would change core UC predictions (safety→match for CA in-state) + require re-calibrating the UC gold/calibration cases. Flagged for a deliberate follow-up.
+## 7.12 UC in-state double-count — resolved (2026-05-31)
+
+The §7.11 deferred UC item was forced + resolved by the Layer-3 calibration gate (032-ucb breached its ceiling at band 0.25 × CA-1.35 = 0.354). Two findings:
+
+1. **8 of 9 UC campuses admit OOS _easier_ than in-state** (UCLA in-state 9.6% vs OOS 11.2%; UCSD 24.7 vs 39.4; UC Irvine 21.6 vs 47.6; only Berkeley favors residents, 13.6 vs 10.3). The per-school OOS guard (§7.10) already neutralizes those 8 — so this finding's blast radius is **UC Berkeley alone**.
+2. **The flat CA-1.35 in-state boost double-counts on a by-GPA band.** The 1.35× is measured against the overall all-GPA pool, but a UC Tier-1 band already conditions on a top GPA. Stacking over-predicts.
+
+**Fix:** the engine suppresses the in-state geo boost when anchored on a `cds-bands-v1` band (mirrors the existing GPA/test Tier-1 suppression). OOS unaffected.
+
+**Validation — two multi-agent research passes (2026-05-31):**
+
+- _Band-semantics pass_ (6 agents + adversarial): agents split on whether the bands are CA-resident or all-applicant (UC publishes no fetchable resident×GPA crosstab), but **both readings converge on the same action** — band 0.25 is the defensible served value; band × 1.35 = 0.34 over-predicts. The adversarial agent "could not refute the result, only the (over-stated) rationale."
+- _UCB point-estimate pass_ (5 source angles + converge): a strong CA-resident's UC Berkeley admit rate ≈ **22% (range 18-27%)**, median of 5 estimates. **Decisive new fact: UC is test-blind since 2021** (SAT ignored) and the pool is GPA-saturated (a 3.9 GPA is the admit-class _median_, not elite), so the marginal top-GPA lift is small (~1.3-1.5×, not 2-3×). So the served 0.25 is correct-to-slightly-high; 0.34 over-predicts by ~12pp. (This _reversed_ an earlier worry that suppression under-predicts UCB — the true rate is below 0.25, not above.)
+
+Net served effect: UC Berkeley strong CA-resident in-state ≈ 0.25 (was double-counting to ~0.34). All other UCs unchanged. Confidence medium (UC's resident×GPA cell is structurally unpublished — see [[feedback_do_not_tune_coefficients]]).
 
 ## 8. Honest limits
 
