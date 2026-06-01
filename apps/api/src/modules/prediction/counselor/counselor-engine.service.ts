@@ -275,13 +275,16 @@ export class CounselorEngineService {
     // When one dimension is encoded (Tier 1 cell already accounts for GPA or
     // test), the suppressed multiplier is 1.0 anyway, so multiplying directly
     // is correct.
-    const bothNonNeutral =
-      modifierResults.gpaBand.multiplier !== 1.0 &&
-      modifierResults.testBand.multiplier !== 1.0;
+    // Correlation correction (geometric mean), applied UNIFORMLY whenever both academic
+    // dimensions are active (not Tier-1 encoded). The earlier conditional — geomean only when
+    // BOTH non-neutral, else product — was non-monotonic: a strictly-WORSE applicant (both
+    // stats below the band → geomean lift) could outscore a better one (one stat in the neutral
+    // middle-50 → full product penalty), inverting their order at ~21% of ranked schools
+    // (2026-06 monotonicity audit). The geomean is monotonic in both inputs, so applying it
+    // uniformly removes the boundary discontinuity while preserving its anti-collapse intent
+    // (a consistently-strong applicant at a top school is not double-penalized to the floor).
     const bothAcademicActive =
-      !encodedDimensions.has('gpa') &&
-      !encodedDimensions.has('test') &&
-      bothNonNeutral;
+      !encodedDimensions.has('gpa') && !encodedDimensions.has('test');
     const academicProduct = bothAcademicActive
       ? Math.sqrt(
           modifierResults.gpaBand.multiplier *

@@ -247,44 +247,61 @@ describe('CounselorEngineService', () => {
   // Geomean academic correctness (2026-05-24 fix)
   // -------------------------------------------------------------------------
 
-  describe('geomean academic correctness — only when both dimensions non-neutral', () => {
-    // Geometric mean is a correlation correction for when GPA and test BOTH
-    // signal something (e.g. both above admit pool). When one is exactly 1.0
-    // (neutral / admit-pool-middle-50), sqrt(gpa × 1.0) wrongly *reduces* the
-    // gpa multiplier. The fix: only apply geomean when both differ from 1.0.
+  describe('geomean academic correction — applied uniformly (monotonic)', () => {
+    // Geometric mean is a correlation correction (GPA and test are correlated; a plain
+    // product double-counts a consistent profile). It is applied UNIFORMLY whenever both
+    // academic dimensions are active. An earlier version applied it only when BOTH were
+    // non-neutral (else product) — but that product↔geomean switch was NON-MONOTONIC:
+    // a strictly-WORSE applicant (both stats below band → geomean lift) could outscore a
+    // better one (one stat in the neutral middle-50 → full product penalty). geomean is
+    // monotonic in both inputs, so applying it uniformly removes the boundary discontinuity.
+    // (2026-06 monotonicity audit: the old switch inverted ~21% of ranked schools.)
 
-    it('multiplies directly (no geomean) when test is in admit pool middle-50 (testBand=1.0)', async () => {
-      // Profile: SAT 1450 — exactly in [sat25=1400, sat75=1500] middle-50
-      // → testBand multiplier = 1.0 (neutral)
-      // GPA 3.9 vs school SAT bands implies gpaBand is the only non-neutral
-      // academic signal. With the fix, gpaBand is preserved (not square-rooted).
+    it('keeps a neutral-test strong applicant near anchor (no collapse)', async () => {
       const middleSatResult = await service.compute(
         profile({ gpa: 3.9, testScores: [{ type: 'SAT', score: 1450 }] }),
         school({ acceptanceRate: 0.3, sat25: 1400, sat75: 1500 }),
       );
-
-      // SAT-in-middle profile should land NEAR anchor (~30%); previously
-      // pre-fix sqrt(gpaBand × 1.0) would suppress the result slightly below
-      // anchor when only GPA carried signal. We assert the result is at least
-      // as high as the anchor (engine should not punish a neutral test score
-      // by suppressing other dimensions).
-      expect(middleSatResult.probability).toBeGreaterThanOrEqual(0.3 - 0.01);
+      expect(middleSatResult.probability).toBeGreaterThanOrEqual(0.3 - 0.05);
     });
 
-    it('applies geomean when BOTH gpaBand and testBand differ from 1.0', async () => {
-      // Profile: GPA 3.95 (above admit pool) + SAT 1560 (above sat75=1500)
-      // → both gpaBand > 1.0 and testBand > 1.0 → geomean kicks in to avoid
-      // double-counting the correlated strength.
+    it('applies geomean (no cap-slam) when both gpaBand and testBand are boosts', async () => {
       const bothStrongResult = await service.compute(
         profile({ gpa: 3.95, testScores: [{ type: 'SAT', score: 1560 }] }),
         school({ acceptanceRate: 0.05, sat25: 1400, sat75: 1500 }),
       );
-
-      // Sanity: probability is bounded by anchor × 2.5 = 0.125
-      // (geomean correction should keep the result well within the clamp
-      // band, not collapse to floor or hit ceiling)
       expect(bothStrongResult.probability).toBeGreaterThan(0.05 * 0.1);
       expect(bothStrongResult.probability).toBeLessThanOrEqual(0.05 * 2.5);
+    });
+
+    it('MONOTONIC: a strictly-worse applicant never outscores a better one (top-GPA-saturated school)', async () => {
+      // Regression for the 2026-06 non-monotonicity. At a school where almost all admits
+      // are top-GPA (so 3.3 and 3.7 both map near the bottom GPA percentile) and the better
+      // applicant's SAT lands in the neutral middle-50 while the worse applicant's is below
+      // 25th, the old product↔geomean switch made the worse applicant score HIGHER.
+      const sat: any = {
+        acceptanceRate: 0.38,
+        sat25: 1220,
+        sat75: 1400,
+        gpaDistribution: {
+          '<3.00': 0.008,
+          '3.00-3.24': 0.0016,
+          '3.25-3.49': 0.0031,
+          '3.50-3.74': 0.0125,
+          '3.75-4.00': 0.9748,
+        },
+      };
+      const better = await service.compute(
+        profile({ gpa: 3.7, testScores: [{ type: 'SAT', score: 1300 }] }), // in-band test
+        school(sat),
+      );
+      const worse = await service.compute(
+        profile({ gpa: 3.3, testScores: [{ type: 'SAT', score: 1180 }] }), // below-25th test
+        school(sat),
+      );
+      expect(better.probability).toBeGreaterThanOrEqual(
+        worse.probability - 0.001,
+      );
     });
   });
 
