@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Build
 # ============================================
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 # Install pnpm and openssl
 RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
@@ -98,7 +98,7 @@ RUN cp -r /app/packages/shared/dist /prod/node_modules/@study-abroad/shared/dist
 # ============================================
 # Stage 2: Production Runner
 # ============================================
-FROM node:20-alpine AS runner
+FROM node:26-alpine AS runner
 
 # Install openssl for Prisma
 RUN apk add --no-cache openssl
