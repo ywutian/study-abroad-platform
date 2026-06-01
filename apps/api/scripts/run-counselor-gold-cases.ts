@@ -83,83 +83,12 @@ const MINIMAL_CDS_FIXTURE = [
     source: 'gold-counselor-fixture:uc-santa-cruz:2024',
     sourceUrl: 'https://admissions.ucsc.edu/',
   },
-  // UCB/UCLA/UCSD/UCSB Tier 1 cells — gold cases 003-010/024 anchor here. seed.ts does
-  // NOT seed cds-admit-bands, so the gate DB would otherwise fall to the Tier-2 overall
-  // rate (different anchor than local/prod), making the UC ranges non-deterministic.
-  // Force-upserted (loadMinimalCdsFixture) so CI matches the published UC Information
-  // Center freshman-by-GPA bands. (admitRate values mirror prisma/seeds/data/cds-admit-bands.json.)
-  {
-    schoolNameNorm: 'university of california, berkeley',
-    gpaBand: '3.75-4.00',
-    testType: 'GPA_ONLY',
-    testBand: 'ANY',
-    admitRate: 0.25,
-    sampleCount: 1200,
-    cycleYear: 2024,
-    source: 'gold-counselor-fixture:uc-berkeley:2024',
-    sourceUrl:
-      'https://www.universityofcalifornia.edu/about-us/information-center',
-  },
-  {
-    schoolNameNorm: 'university of california, berkeley',
-    gpaBand: '3.50-3.74',
-    testType: 'GPA_ONLY',
-    testBand: 'ANY',
-    admitRate: 0.09,
-    sampleCount: 9000,
-    cycleYear: 2024,
-    source: 'gold-counselor-fixture:uc-berkeley:2024',
-    sourceUrl:
-      'https://www.universityofcalifornia.edu/about-us/information-center',
-  },
-  {
-    schoolNameNorm: 'university of california, los angeles',
-    gpaBand: '3.75-4.00',
-    testType: 'SAT',
-    testBand: '1500-1600',
-    admitRate: 0.18,
-    sampleCount: 800,
-    cycleYear: 2024,
-    source: 'gold-counselor-fixture:uc-los-angeles:2024',
-    sourceUrl:
-      'https://www.universityofcalifornia.edu/about-us/information-center',
-  },
-  {
-    schoolNameNorm: 'university of california, los angeles',
-    gpaBand: '3.75-4.00',
-    testType: 'GPA_ONLY',
-    testBand: 'ANY',
-    admitRate: 0.14,
-    sampleCount: 1500,
-    cycleYear: 2024,
-    source: 'gold-counselor-fixture:uc-los-angeles:2024',
-    sourceUrl:
-      'https://www.universityofcalifornia.edu/about-us/information-center',
-  },
-  {
-    schoolNameNorm: 'university of california, san diego',
-    gpaBand: '3.75-4.00',
-    testType: 'GPA_ONLY',
-    testBand: 'ANY',
-    admitRate: 0.38,
-    sampleCount: 1200,
-    cycleYear: 2024,
-    source: 'gold-counselor-fixture:uc-san-diego:2024',
-    sourceUrl:
-      'https://www.universityofcalifornia.edu/about-us/information-center',
-  },
-  {
-    schoolNameNorm: 'university of california, santa barbara',
-    gpaBand: '3.75-4.00',
-    testType: 'GPA_ONLY',
-    testBand: 'ANY',
-    admitRate: 0.4,
-    sampleCount: 1000,
-    cycleYear: 2024,
-    source: 'gold-counselor-fixture:uc-santa-barbara:2024',
-    sourceUrl:
-      'https://www.universityofcalifornia.edu/about-us/information-center',
-  },
+  // NOTE: UCB/UCLA/UCSD/UCSB are intentionally NOT pinned here. `prisma db seed`
+  // (= seed.ts, what the CI gate DB runs) does not seed cds-admit-bands, so the gate
+  // resolves these to the Tier-2 overall rate. Pinning their Tier-1 resident bands would
+  // make the gate use band × CA-in-state, double-counting residency (the bands are already
+  // CA-resident rates) — which broke the Layer-3 calibration (032-ucb). The UC in-state
+  // gold/calibration ranges are therefore calibrated to the Tier-2 (overall × CA) path.
 ] as const;
 
 // School-level fields needed by gold cases that the default seed leaves null

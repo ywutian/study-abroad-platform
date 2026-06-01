@@ -203,6 +203,27 @@ export class CounselorEngineService {
       impact: 'positive',
     });
 
+    // UC CDS Tier 1 cells (`cds-bands-v1`) come from the UC Information Center
+    // freshman-by-GPA tables, which are CALIFORNIA-RESIDENT admit rates. For an in-state
+    // applicant the band ALREADY encodes the residency advantage, so applying the in-state
+    // geo multiplier on top double-counts (e.g. UCB band 0.25 × CA 1.35 = 0.34 instead of the
+    // true resident rate ~0.25). Suppress the in-state geo boost when anchored on a resident
+    // band — exactly like the gpa/test Tier-1 encoding above. OOS applicants are unaffected
+    // (their geo is a penalty/adjustment, not an in-state boost, so it still applies).
+    const geoRaw = geoMultiplier(profile, school);
+    const geoIsInStateBoost =
+      geoRaw.impact === 'positive' && /in-state/i.test(geoRaw.label ?? '');
+    const geo =
+      anchorSource === 'cds-bands-v1' && geoIsInStateBoost
+        ? {
+            multiplier: 1.0,
+            label: `${geoRaw.label} (already encoded in resident Tier 1 cell)`,
+            evidence:
+              'The UC freshman-by-GPA Tier 1 cell is a California-resident admit rate, so in-state residency is already encoded — not multiplied again (avoids double-counting).',
+            impact: 'positive' as const,
+          }
+        : geoRaw;
+
     const modifierResults = {
       gpaBand: encodedDimensions.has('gpa')
         ? suppressed('GPA')
@@ -215,7 +236,7 @@ export class CounselorEngineService {
       firstGen: firstGenMultiplier(profile, school),
       athlete: athleteMultiplier(profile),
       urm: urmMultiplier(profile, school),
-      geo: geoMultiplier(profile, school),
+      geo,
       intl: intlMultiplier(profile, school),
       major: majorMultiplier(
         profile,

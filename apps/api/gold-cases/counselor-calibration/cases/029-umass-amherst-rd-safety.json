@@ -37,23 +37,22 @@
       { "name": "AMC 12 Honor Roll", "level": "NATIONAL", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.7, 0.98],
-  "expectedTier": "safety",
+  "expectedProbabilityRange": [0.55, 0.98],
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "UMass Amherst overall ~60%, MA in-state preference 让 strong in-state profile 接近 safety (75-90%)。",
+    "intuition": "UMass Amherst overall ~60%; strong applicant. **2026-05-31 48-flagship audit: UMass is residency-NEUTRAL — its own CDS shows in-state ≈ out-of-state admit rate (the '60%+ of class' figure is enrollment SHARE, not an admit-rate advantage). MA carries no in-state multiplier (DEFAULT 1.0), so the prior 'in-state preference → safety' premise was wrong (it relied on the old flat 1.2 default).** Without a residency boost this is a strong MATCH driven by stats at a ~60% school. expectedTier removed: the value swings with the stored UMass overall, which differs across snapshots (CI gate DB ~60.6 → ~0.69); the range is the guardrail.",
     "sources": [
       {
         "name": "UMass Amherst CDS 2024-25",
-        "evidence": "Overall admit rate 59.89%; in-state slightly higher"
+        "evidence": "Overall admit rate 59.89%; in-state ≈ out-of-state (residency not priced)"
       },
       {
-        "name": "UMass admissions data 2024",
-        "evidence": "MA residents 60%+ of class; in-state strong profiles see 80-90% admit"
+        "name": "2026-05-31 flagship in-state÷overall audit",
+        "evidence": "MA flagship publishes in-state ≈ overall → no in-state advantage; burden-of-proof default 1.0 (neutral)"
       }
     ]
   },
-  "lastReviewedAt": "2026-05-24",
+  "lastReviewedAt": "2026-05-31",
   "reviewedBy": "yitian@",
   "tags": [
     "t60-public",

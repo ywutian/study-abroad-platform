@@ -580,14 +580,15 @@ describe('CounselorEngineService', () => {
 
       expect(result.tier).toBe(1);
       expect(result.anchor).toBeCloseTo(0.65, 2);
-      // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0
-      // (suppressed) × geo CA in-state 1.2 (in-state÷overall) = ~0.78 — a more
-      // honest "strong in-state at less-selective UC Davis" than the old clipped
-      // 0.98 (the in-state÷OOS 1.8 over-boosted it into the ceiling).
-      // Critical: gpa/test are suppressed (encoded in the Tier 1 cell), NOT
-      // stacked as 0.65 × 1.3 × 1.5 × 1.2 → that's the double-count we prevent.
-      expect(result.probability).toBeGreaterThanOrEqual(0.72);
-      expect(result.probability).toBeLessThanOrEqual(0.85);
+      // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0 (suppressed)
+      // × geo 1.0 (ALSO suppressed): the UC freshman-by-GPA Tier 1 cell is a
+      // CALIFORNIA-RESIDENT admit rate, so in-state residency is already encoded —
+      // applying the in-state multiplier on top would double-count, exactly like
+      // gpa/test. Result ≈ 0.65 (the resident band itself) — the honest "strong
+      // in-state at less-selective UC Davis", NOT 0.65 × 1.3 × 1.5 × 1.2 (the
+      // gpa+test+geo quadruple-count we prevent).
+      expect(result.probability).toBeGreaterThanOrEqual(0.6);
+      expect(result.probability).toBeLessThanOrEqual(0.72);
 
       // factors[] should include the suppression note for both gpa and test
       const gpaFactor = result.factors.find((f) =>
