@@ -275,13 +275,30 @@ export class CounselorEngineService {
     // When one dimension is encoded (Tier 1 cell already accounts for GPA or
     // test), the suppressed multiplier is 1.0 anyway, so multiplying directly
     // is correct.
-    const bothNonNeutral =
-      modifierResults.gpaBand.multiplier !== 1.0 &&
-      modifierResults.testBand.multiplier !== 1.0;
+    // Correlation correction (geometric mean) for the combined GPA×test academic signal,
+    // applied UNIFORMLY whenever both academic dimensions are active (not Tier-1 encoded).
+    //
+    // GPA and test are correlated, so a plain product double-counts a consistent profile. The
+    // geomean corrects this in BOTH tails toward the school baseline: a consistently-below-bar
+    // applicant isn't double-penalized to the floor (anti-collapse), and a both-strong applicant
+    // doesn't slam the anchor×2.5 cap (no over-confidence). It is also applied to the
+    // single-dimension case ON PURPOSE: a strong GPA NOT corroborated by a strong test (test
+    // merely in the school's middle-50 → neutral) is genuinely weaker evidence than the GPA alone
+    // implies, so dampening it toward the baseline is the correlation principle, not a bug.
+    //
+    // Why uniform (the design decision, 2026-06 monotonicity audit):
+    //   - The earlier "geomean iff BOTH non-neutral, else product" switch was NON-MONOTONIC — a
+    //     strictly-WORSE applicant (both stats below band → geomean lift) could outscore a better
+    //     one (one stat in the neutral middle-50 → full product penalty), inverting ~21% of
+    //     ranked schools at the edge profile.
+    //   - Penalty-side-only (sqrt iff product<1) is monotonic too, but removes the both-BOOST
+    //     dampening → strong in-state applicants at in-state-favoring publics slam the 0.98 cap
+    //     (over-confidence), and it abandons the correlation principle for single-dim boosts.
+    //   - No simple symmetric monotonic combine can leave single-dim boosts at full product AND
+    //     dampen both-dim boosts AND lift both-dim penalties (sign(ln gpa · ln test) is identical
+    //     in both tails). Uniform geomean is the consistent, monotonic, conservative resolution.
     const bothAcademicActive =
-      !encodedDimensions.has('gpa') &&
-      !encodedDimensions.has('test') &&
-      bothNonNeutral;
+      !encodedDimensions.has('gpa') && !encodedDimensions.has('test');
     const academicProduct = bothAcademicActive
       ? Math.sqrt(
           modifierResults.gpaBand.multiplier *

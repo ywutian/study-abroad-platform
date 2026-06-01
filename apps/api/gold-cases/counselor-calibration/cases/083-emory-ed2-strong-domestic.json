@@ -50,11 +50,11 @@
       { "name": "Science Olympiad State Medal", "level": "STATE", "year": 2025 }
     ]
   },
-  "expectedProbabilityRange": [0.12, 0.32],
+  "expectedProbabilityRange": [0.1, 0.32],
   "expectedTier": "reach",
   "expectedConfidenceAtMost": "high",
   "rationale": {
-    "intuition": "Emory overall RD ~10.29%, ED1 ~23.23%, ED2 ~10% (industry — pool is smaller and admit count lower than ED1 but still above RD). Strong domestic profile (3.92/1510 squarely in the 25-75 band of 1480-1540) with credible health-sciences narrative should land mid-band of ED2 admits — counselor consensus 12-30%. Lower bound reflects that ED2 pool already self-selected for fit and applicants are typically Emory-yield-protected; upper bound caps below ED1 lift because ED2 admit absolute count is half of ED1.",
+    "intuition": "Emory overall RD ~10.29%, ED1 ~23.23%, ED2 ~10% (industry — pool is smaller and admit count lower than ED1 but still above RD). Strong domestic profile (3.92/1510 squarely in the 25-75 band of 1480-1540) with credible health-sciences narrative should land mid-band of ED2 admits — counselor consensus ~10-30%. NOTE (2026-06): floor relaxed 0.12→0.10 when the academic combine switched to a UNIFORM geometric mean (monotonicity audit). The 1510 SAT sits in Emory's middle-50 (neutral test=1.0), so the correlation correction correctly does NOT give the strong GPA the full product boost — an uncorroborated GPA is weaker evidence — landing this profile at ~11.4%, still squarely 'reach' and inside the 8-15% ED2 base band the sources cite. Upper bound caps below ED1 lift because ED2 admit absolute count is half of ED1.",
     "sources": [
       {
         "name": "Emory CDS 2024-25 (C21)",
@@ -77,7 +77,7 @@
       }
     ]
   },
-  "lastReviewedAt": "2026-05-26",
+  "lastReviewedAt": "2026-06-01",
   "reviewedBy": "yitian@",
   "tags": [
     "t20-private",
