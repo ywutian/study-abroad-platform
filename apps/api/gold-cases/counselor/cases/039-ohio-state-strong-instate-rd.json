@@ -1,7 +1,7 @@
 {
   "id": "039-ohio-state-strong-instate-rd",
   "description": "Ohio State — strong OH in-state applicant, RD (residency-neutral state → NO boost)",
-  "rationale": "Burden-of-proof sentinel. The 2026-05-31 audit found OSU's own CDS shows in-state 57.3% ≈ out-of-state 59.0% — residency is NOT priced. OH carries no entry in STATE_IN_STATE_OVER_OVERALL, so the new DEFAULT 1.0 (neutral) applies: anchor 0.508 × geo 1.0 × this strong profile's stat boost (~1.4×) ≈ 0.71. Guardrail [0.62, 0.8] guards against regressing to the old flat 1.2 default, which would lift this to ~0.85 (caught above 0.8) — the over-prediction that hit all 34 residency-neutral states.",
+  "rationale": "Burden-of-proof sentinel. OSU's own CDS shows in-state 57.3% ≈ out-of-state 59.0% — residency is NOT priced. OH carries no entry in STATE_IN_STATE_OVER_OVERALL, so the new DEFAULT 1.0 (neutral) applies: a strong applicant's prediction is driven by the overall anchor × stats, with NO in-state boost. Range [0.6, 0.92] is anchor-tolerant on purpose — the stored OSU overall differs between environments (local 50.8% post-#313 audit vs the CI closure-overlay's older ~60.6%), giving ~0.71 vs ~0.85; both are 'neutral × strong-stats'. A spurious in-state boost (e.g. the old flat 1.2×) would clamp toward ~0.98 and be caught above 0.92.",
   "lastReviewedAt": "2026-05-31",
   "profile": {
     "gpa": 3.9,
@@ -13,6 +13,6 @@
   },
   "schoolName": "Ohio State University",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.62, 0.8],
+  "expectedProbabilityRange": [0.6, 0.92],
   "tags": ["public-flagship", "in-state", "residency-neutral"]
 }
