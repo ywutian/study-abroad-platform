@@ -1120,7 +1120,10 @@ export class ProfileApplicationAnalysisV2Service {
         ),
       },
       recourse: normalizeRecourse(parsed.recourse),
-      uncertainty: normalizeUncertainty(parsed.uncertainty),
+      uncertainty: normalizeUncertainty(
+        parsed.uncertainty,
+        deterministic.prediction,
+      ),
       evidenceIds,
       unknowns: mergeStringLists(
         ensureStringArray(parsed.unknowns),
@@ -1543,18 +1546,28 @@ function normalizeRecourse(value: unknown): RecourseGuidance | undefined {
   };
 }
 
-function normalizeUncertainty(value: unknown): StrategyUncertainty | undefined {
+export function normalizeUncertainty(
+  value: unknown,
+  prediction?: { probabilityLow?: number; probabilityHigh?: number },
+): StrategyUncertainty | undefined {
   if (!isRecord(value)) return undefined;
   const intervalLabel = ensureString(value.intervalLabel);
   if (!intervalLabel) return undefined;
+  // GROUNDED numbers: the numeric interval is sourced from the prediction engine
+  // (the single probability authority), NOT from the LLM. The school-analyst prompt
+  // no longer emits probabilityLow/High; even if a stale/rogue LLM response still
+  // includes them, they are ignored here. The LLM supplies only the qualitative
+  // intervalLabel + reasons. (Previously these numbers were the LLM's own — a
+  // fabricated second probability interval that could contradict the prediction's,
+  // violating the "prediction is the only probability source" rule.)
   return {
     probabilityLow:
-      typeof value.probabilityLow === 'number'
-        ? value.probabilityLow
+      typeof prediction?.probabilityLow === 'number'
+        ? prediction.probabilityLow
         : undefined,
     probabilityHigh:
-      typeof value.probabilityHigh === 'number'
-        ? value.probabilityHigh
+      typeof prediction?.probabilityHigh === 'number'
+        ? prediction.probabilityHigh
         : undefined,
     intervalLabel: intervalLabel as 'tight' | 'balanced' | 'wide',
     reasons: ensureStringArray(value.reasons),
