@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "240-penn-state-pct-rd",
+  "scenarioGroup": "PERCENT_GPA_SCALE",
+  "schoolName": "Pennsylvania State University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 95,
+    "gpaScale": 100,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "PA",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1350
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.42, 0.92],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~60.56% + round/residency/scale reasoning + counselor norms), NOT engine output. Floor kept wide to span the local↔CI-gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~60.56% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency + scale handling"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public", "in-state", "percentage-gpa", "domestic"]
+}

@@ -1,0 +1,38 @@
+{
+  "kind": "standalone",
+  "id": "241-wake-forest-to-rd",
+  "scenarioGroup": "TEST_OPTIONAL",
+  "schoolName": "Wake Forest University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [],
+    "activities": [],
+    "awards": [],
+    "applyingTestOptional": true
+  },
+  "expectedProbabilityRange": [0.08, 0.48],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~21.67% + round/residency/scale reasoning + counselor norms), NOT engine output. Floor kept wide to span the local↔CI-gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~21.67% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency + scale handling"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["private", "test-optional", "regular-decision", "domestic"]
+}
