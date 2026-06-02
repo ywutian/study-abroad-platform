@@ -26,6 +26,11 @@
  *   9.  URM-neutral    — URM flag is EXACTLY neutral (disabled pending compliance review)
  *   10. Legacy-neutral — legacy flag is EXACTLY neutral (disabled pending evidence verification)
  *   11. Determinism    — identical input ⇒ identical output
+ *   12. Clamp-bounds   — a predictable result stays within [anchor×0.1, min(0.98, anchor×2.5)]
+ *   13. Hooks-combine  — stacking hooks (first-gen + athlete) never scores below either alone
+ *   14. ECs-never-hurt — a strong-activity/award profile ⇒ prob ≥ the bare profile
+ *   15. Submit≥TO      — submitting a strong (above-75th) test never scores below test-optional
+ *   16. GPA-monotonic (intl) — GPA-monotonicity also holds for international applicants
  *
  * Exit codes: 0 = all invariants hold, 2 = at least one violation.
  *
@@ -274,6 +279,105 @@ async function main(): Promise<void> {
     });
     const [d1, d2] = await Promise.all([run(dp, s, 'ED'), run(dp, s, 'ED')]);
     ck('11 determinism', d1 === d2, () => `${String(s.name)}: ${d1} != ${d2}`);
+
+    // I12 — anchored clamp exactness: a predictable result stays within
+    // [anchor×0.1, min(0.98, anchor×2.5)] (no modifier stack escapes the clamp).
+    const baseRes = await eng.compute(base as never, s as never, 'RD' as never);
+    if (baseRes.tier !== 4 && baseRes.anchor > 0) {
+      const loB = baseRes.anchor * 0.1 - EPS;
+      const hiB = Math.min(0.98, baseRes.anchor * 2.5) + EPS;
+      ck(
+        '12 clamp-bounds',
+        baseRes.probability >= loB && baseRes.probability <= hiB,
+        () =>
+          `${String(s.name)}: ${baseRes.probability.toFixed(4)} outside [${loB.toFixed(4)}, ${hiB.toFixed(4)}] (anchor ${baseRes.anchor.toFixed(3)})`,
+      );
+    }
+
+    // I13 — hook-combo monotonicity: stacking hooks never scores below either alone.
+    const fgAth = await run(
+      { ...(base as object), isFirstGen: true, recruitedAthlete: true },
+      s,
+    );
+    ck(
+      '13 hooks-combine',
+      fgAth >= fg - EPS && fgAth >= ath - EPS,
+      () =>
+        `${String(s.name)}: fg+ath ${fgAth.toFixed(4)} < fg ${fg.toFixed(4)} / ath ${ath.toFixed(4)}`,
+    );
+
+    // I14 — ECs/awards never hurt: a strong-activity profile >= the bare profile.
+    const withEcs = await run(
+      {
+        ...(base as object),
+        activities: [
+          {
+            name: 'Research',
+            category: 'RESEARCH',
+            role: 'Lead Researcher',
+            hoursPerWeek: 10,
+            weeksPerYear: 40,
+            yearsActive: 3,
+            tier: 1,
+          },
+        ],
+        awards: [{ name: 'National Award', level: 'NATIONAL', year: 2025 }],
+      },
+      s,
+    );
+    ck(
+      '14 ECs-never-hurt',
+      withEcs >= b - EPS,
+      () =>
+        `${String(s.name)}: with-ECs ${withEcs.toFixed(4)} < bare ${b.toFixed(4)}`,
+    );
+  }
+
+  // I15 — test-optional never beats submitting a STRONG (above-75th) test.
+  for (const s of withSat) {
+    const strong = Math.min(1600, (s.sat75 as number) + 30);
+    const submit = await run(
+      mkProfile({ gpa: 3.7, testScores: [{ type: 'SAT', score: strong }] }),
+      s,
+    );
+    const toHide = await run(
+      mkProfile({ gpa: 3.7, testScores: [], applyingTestOptional: true }),
+      s,
+    );
+    ck(
+      '15 submit-strong>=TO',
+      submit >= toHide - EPS,
+      () =>
+        `${String(s.name)}: submit-strong ${submit.toFixed(4)} < test-optional ${toHide.toFixed(4)}`,
+    );
+  }
+
+  // I16 — GPA-monotonic ALSO holds for international applicants (profile diversity).
+  for (const s of withSat) {
+    const s25 = s.sat25 as number;
+    const s75 = s.sat75 as number;
+    const mid = Math.round(s25 + (s75 - s25) * 0.5);
+    let prev = -1;
+    for (let g = 3.0; g <= 4.001; g += 0.2) {
+      const pr = await run(
+        mkProfile({
+          gpa: +g.toFixed(2),
+          testScores: [{ type: 'SAT', score: mid }],
+          isInternational: true,
+          nationality: 'CN',
+          highSchoolLocation: 'CN',
+          stateOfResidence: undefined,
+        }),
+        s,
+      );
+      ck(
+        '16 GPA-monotonic (intl)',
+        pr >= prev - EPS,
+        () =>
+          `${String(s.name)} [intl]: gpa ${g.toFixed(2)} => ${pr.toFixed(4)} < prev ${prev.toFixed(4)}`,
+      );
+      prev = Math.max(prev, pr);
+    }
   }
 
   // ---- Report ----
@@ -289,6 +393,11 @@ async function main(): Promise<void> {
     '9 URM-neutral',
     '10 legacy-neutral',
     '11 determinism',
+    '12 clamp-bounds',
+    '13 hooks-combine',
+    '14 ECs-never-hurt',
+    '15 submit-strong>=TO',
+    '16 GPA-monotonic (intl)',
   ];
   console.log(`\n═══ Counselor Invariant Sweep ═══`);
   console.log(
