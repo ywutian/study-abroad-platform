@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "255-amherst-rd",
+  "scenarioGroup": "LAC_RD_STRONG_DOMESTIC",
+  "schoolName": "Amherst College",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1470
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.03, 0.3],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~9.01% + round/residency reasoning + counselor norms), NOT engine output; floor kept wide to span local↔gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~9.01% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["lac", "regular-decision", "domestic", "unhooked"]
+}

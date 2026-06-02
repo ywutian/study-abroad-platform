@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "260-georgetown-borderline-rd",
+  "scenarioGroup": "BORDERLINE_AT_REACH",
+  "schoolName": "Georgetown University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1330
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.02, 0.22],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~12.92% + round/residency reasoning + counselor norms), NOT engine output; floor kept wide to span local↔gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~12.92% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["t20-private", "borderline", "regular-decision", "domestic"]
+}

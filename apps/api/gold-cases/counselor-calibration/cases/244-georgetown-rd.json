@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "244-georgetown-rd",
+  "scenarioGroup": "T20_RD_STRONG_DOMESTIC",
+  "schoolName": "Georgetown University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1480
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.06, 0.38],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~12.92% + round/residency reasoning + counselor norms), NOT engine output; floor kept wide to span local↔gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~12.92% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["t20-private", "regular-decision", "domestic", "unhooked"]
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "246-brandeis-rd",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "Brandeis University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1400
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.24, 0.72],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~40.51% + round/residency reasoning + counselor norms), NOT engine output; floor kept wide to span local↔gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~40.51% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["private", "match", "regular-decision", "domestic"]
+}
