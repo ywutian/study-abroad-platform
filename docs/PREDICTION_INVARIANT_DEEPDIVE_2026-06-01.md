@@ -31,12 +31,15 @@ school's **SAT** 25/75 — the same axis `testBand` already measures from the _r
 should never be a "below 25th" penalty. Vanderbilt (same SAT bands but _has_ gpaDistribution) gave
 the same 3.90 → ×1.05, a 2× swing purely from data coverage.
 
-**Fix:** in `gpaBandMultiplier`'s heuristic path, when a real SAT/ACT is present, dampen the
-GPA-proxy toward neutral via the geometric mean with 1.0 (`sqrt`) — the same correlation-correction
-the engine applies to the gpa×test combine. Fires **only** on the heuristic path (CDS-C9 path is a
-distinct GPA axis, exempt) and **only** when a real test exists (test-optional applicants keep the
-full GPA-proxy). `sqrt` is monotonic → no inversion. Rice 3.90/1500: gpaBand ×0.50 → ×0.707, prob
-4.7% → 5.6%; the false ×0.5-on-a-3.9 artifact is gone.
+**Fix:** in `gpaBandMultiplier`'s heuristic path, when a real SAT/ACT is present, soften the false
+GPA-proxy **penalty** toward neutral via the geometric mean with 1.0 (`sqrt`). **Penalty side only**
+(`multiplier < 1`): a GPA-equivSat _above_ the school's SAT-75 is a legitimate signal, and the engine's
+gpa×test combine already applies the uniform-geomean correlation correction to boosts downstream —
+sqrt-ing the boost here too would **double-dampen** it (this dropped 082-cooper-union ED 0.5pp below its
+floor on the band-less gate DB in the first attempt). Fires **only** on the heuristic path (CDS-C9 path
+is a distinct GPA axis, exempt) and **only** when a real test exists (test-optional applicants keep the
+full GPA-proxy). `sqrt` below 1 + identity at/above 1 is monotonic → no inversion. Rice 3.90/1500:
+gpaBand ×0.50 → ×0.707, prob 4.7% → 5.6%; the false ×0.5-on-a-3.9 artifact is gone.
 
 ### F2 — No input-domain clamp on SAT/ACT/GPA `[LOW robustness]`
 

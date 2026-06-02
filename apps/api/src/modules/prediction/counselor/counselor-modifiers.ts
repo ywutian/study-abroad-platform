@@ -323,31 +323,37 @@ export function gpaBandMultiplier(
     };
   }
 
-  // De-duplicate the redundant academic axis (2026-06 invariant deep-dive).
+  // De-duplicate the redundant academic PENALTY (2026-06 invariant deep-dive).
   // This HEURISTIC bands GPA-as-equivalent-SAT against the school's *SAT* 25/75
-  // — the SAME axis the real testBand modifier measures. When the applicant also
-  // submitted a real SAT/ACT, letting both contribute at full strength
-  // double-counts the testing axis; and because the equivSat mapping caps at
-  // ~1540, it wrongly flags a strong GPA as "below 25th" at elite-SAT schools
-  // (e.g. a 3.90 GPA at Rice, sat25 1510 → ×0.50). The real test is the
-  // authoritative signal, so the GPA-proxy is dampened toward neutral via the
-  // geometric mean with 1.0 (sqrt) — the same correlation-correction the engine
-  // already applies to the gpa×test combine. Fires ONLY on this heuristic path
+  // — the SAME axis the real testBand modifier measures. Because the equivSat
+  // mapping caps at ~1540, it wrongly flags a strong GPA as "below 25th" at
+  // elite-SAT schools (e.g. a 3.90 GPA at Rice, sat25 1510 → ×0.50) — a FALSE
+  // penalty. When a real SAT/ACT is present (so the testing axis is already
+  // measured directly), soften that false GPA-proxy penalty toward neutral via
+  // the geometric mean with 1.0 (sqrt).
+  //
+  // PENALTY side only (multiplier < 1). The boost side is intentionally left at
+  // full strength here: a high GPA-equivSat above the school's SAT-75 is a
+  // legitimate (not false) signal, and the engine's gpa×test combine already
+  // applies the uniform-geomean correlation correction to it downstream —
+  // sqrt-ing the boost here too would DOUBLE-dampen it (this dropped
+  // 082-cooper-union ED 0.5pp below its calibration floor on the band-less gate
+  // DB). sqrt below 1 + identity at/above 1 is monotonic and continuous at 1, so
+  // a strictly-stronger GPA never scores lower. Fires ONLY on this heuristic path
   // (the CDS-C9 data path measures a distinct GPA axis and is exempt) AND only
   // when a real SAT/ACT exists — a test-optional / no-test applicant keeps the
-  // full GPA-proxy as their primary academic signal. sqrt is monotonic, so a
-  // strictly-stronger GPA still scores at least as high.
+  // full GPA-proxy as their primary academic signal.
   const hasRealTest = (profile.testScores ?? []).some(
     (t) =>
       (t.type === 'SAT' || t.type === 'ACT') &&
       Number.isFinite(t.score) &&
       t.score > 0,
   );
-  if (hasRealTest && result.multiplier !== 1.0) {
+  if (hasRealTest && result.multiplier < 1.0) {
     result = {
       ...result,
       multiplier: Math.sqrt(result.multiplier),
-      evidence: `${result.evidence} — dampened toward neutral because a real test score is present (GPA-vs-SAT proxy not double-counted against the testing axis)`,
+      evidence: `${result.evidence} — penalty softened because a real test score is present (GPA-vs-SAT proxy not double-counted against the testing axis)`,
     };
   }
 

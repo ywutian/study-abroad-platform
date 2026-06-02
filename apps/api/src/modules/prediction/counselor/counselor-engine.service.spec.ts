@@ -146,7 +146,7 @@ describe('CounselorEngineService', () => {
       satAvg: 1535,
     };
 
-    it('dampens the heuristic GPA-band toward neutral when a real test is present', async () => {
+    it('softens the heuristic GPA PENALTY toward neutral when a real test is present', async () => {
       const withTest = await service.compute(
         profile({ gpa: 3.9, testScores: [{ type: 'SAT', score: 1500 }] }),
         school(eliteNoGpaDist),
@@ -156,6 +156,18 @@ describe('CounselorEngineService', () => {
         Math.sqrt(0.5),
         2,
       );
+    });
+
+    it('leaves a GPA-proxy BOOST at full strength (penalty-side-only de-dup)', async () => {
+      // Low-SAT school: a 4.0 GPA maps to equivSat ~1540 (> sat75 1300) → heuristic
+      // boost ×1.3. The boost is a legit signal and the gpa×test combine already
+      // correlation-corrects it downstream, so F1 must NOT sqrt-dampen it here
+      // (doing so double-dampened 082-cooper-union below its floor).
+      const result = await service.compute(
+        profile({ gpa: 4.0, testScores: [{ type: 'SAT', score: 1250 }] }),
+        school({ acceptanceRate: 0.7, sat25: 1100, sat75: 1300, satAvg: 1200 }),
+      );
+      expect(result.modifierResults.gpaBand.multiplier).toBeCloseTo(1.3, 2);
     });
 
     it('keeps the full GPA-proxy when NO real test exists (de-dup must not fire)', async () => {
