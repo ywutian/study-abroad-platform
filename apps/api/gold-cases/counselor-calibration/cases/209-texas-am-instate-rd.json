@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "209-texas-am-instate-rd",
+  "scenarioGroup": "MID_PUBLIC_INSTATE",
+  "schoolName": "Texas A&M University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "TX",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1350
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.55, 0.95],
+  "rationale": {
+    "intuition": "TAMU ~57% overall, TX in-state favored, strong stats → safety/match. Band is external-anchored to the school's published admit rate + round/residency reasoning, intentionally WIDE (the honest plausible band), NOT the engine's output. expectedTier omitted: the value swings with the stored overall rate across snapshots; the range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS / Common Data Set vintage)",
+        "evidence": "~57.32% overall used as the anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public", "in-state", "domestic"]
+}
