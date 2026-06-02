@@ -688,6 +688,15 @@ jobs:
           path: apps/api/gold-cases/counselor-calibration/reports/
           retention-days: 14
 
+      # NOTE: the counselor invariant sweep (`pnpm invariants:counselor`) is intentionally
+      # NOT gated here. It is a full-POPULATION property sweep and is only meaningful on a
+      # prod-representative dataset (complete CDS band ladders + gpaDistribution). This gate
+      # DB is seeded via `prisma db seed` (minimal/partial: no full bands), which produces
+      # tier-crossing artifacts (a 3.8 matching a lone low Tier-1 band scores below a 3.5 on
+      # the Tier-2 overall) that do NOT exist on the orchestrator-seeded prod path. Run it
+      # LOCALLY against `pnpm --filter api db:seed` instead — see the script header and
+      # docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
+
       - name: Run prediction gate
         run: pnpm exec tsx scripts/prediction-gate.ts --days 365 --min-verified 200 --school-query Wisconsin --round EA --base-url http://localhost:4101/api/v1
         env:

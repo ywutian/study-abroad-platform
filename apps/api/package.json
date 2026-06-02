@@ -58,6 +58,7 @@
     "distillation:eval": "tsx scripts/eval-teacher-blend.ts",
     "gold:counselor": "ts-node --transpile-only scripts/run-counselor-gold-cases.ts",
     "calibration:counselor": "ts-node --transpile-only scripts/run-counselor-calibration-spec.ts",
+    "invariants:counselor": "ts-node --transpile-only scripts/run-counselor-invariants.ts",
     "verify:counselor-coverage": "ts-node --transpile-only scripts/verify-counselor-coverage.ts --launch",
     "verify:counselor-data-quality": "ts-node --transpile-only scripts/verify-counselor-data-quality.ts --launch --strict",
     "verify:prediction-launch": "ts-node --transpile-only scripts/verify-prediction-launch.ts",
