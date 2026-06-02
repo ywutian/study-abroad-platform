@@ -22,8 +22,6 @@ const SCHOOL_ANALYST_SCHEMA = `{
     "whyNotGuaranteed": "string"
   },
   "uncertainty": {
-    "probabilityLow": "number",
-    "probabilityHigh": "number",
     "intervalLabel": "tight|balanced|wide",
     "reasons": ["string"]
   },
