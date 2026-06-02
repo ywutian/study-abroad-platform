@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "235-colorado-boulder-instate-rd",
+  "scenarioGroup": "MID_PUBLIC_INSTATE",
+  "schoolName": "University of Colorado Boulder",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "CO",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1250
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.52, 0.97],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~80.5% + round/residency/scale reasoning + counselor norms), NOT engine output. Floor kept wide to span the local↔CI-gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~80.5% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency + scale handling"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public", "in-state", "match", "domestic"]
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "236-iowa-instate-rd",
+  "scenarioGroup": "SAFETY_RD_DOMESTIC",
+  "schoolName": "University of Iowa",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "IA",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1180
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.58, 0.98],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~83.62% + round/residency/scale reasoning + counselor norms), NOT engine output. Floor kept wide to span the local↔CI-gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~83.62% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency + scale handling"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public", "in-state", "safety", "domestic"]
+}

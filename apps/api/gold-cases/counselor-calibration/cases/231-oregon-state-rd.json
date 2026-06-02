@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "231-oregon-state-rd",
+  "scenarioGroup": "SAFETY_RD_DOMESTIC",
+  "schoolName": "Oregon State University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "OR",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1150
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.55, 0.98],
+  "rationale": {
+    "intuition": "External-anchored WIDE band (published admit rate ~77.3% + round/residency/scale reasoning + counselor norms), NOT engine output. Floor kept wide to span the local↔CI-gate band divergence. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~77.3% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency + scale handling"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public", "safety", "domestic"]
+}
