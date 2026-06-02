@@ -120,7 +120,7 @@ function usableSatBand(school: SchoolInput): {
  *
  * Returns null if GPA is missing or unparseable.
  */
-function gpaToEquivalentSat(
+export function gpaToEquivalentSat(
   gpa: number | undefined,
   gpaScale: number | undefined,
 ): number | null {
@@ -396,7 +396,7 @@ export function gpaBandMultiplier(
  * 32 ≈ 1300 (T100 baseline)
  * <32 → 1200
  */
-function ibToEquivalentSat(ibScore: number): number | null {
+export function ibToEquivalentSat(ibScore: number): number | null {
   if (!Number.isFinite(ibScore) || ibScore < 0 || ibScore > 45) return null;
   if (ibScore >= 45) return 1600;
   if (ibScore >= 42) return 1540;
@@ -422,7 +422,7 @@ function ibToEquivalentSat(ibScore: number): number | null {
  *  CCC = 96 → 1200
  *  <96 → 1150
  */
-function aLevelToEquivalentSat(ucasPoints: number): number | null {
+export function aLevelToEquivalentSat(ucasPoints: number): number | null {
   if (!Number.isFinite(ucasPoints) || ucasPoints < 0) return null;
   if (ucasPoints >= 220) return 1600;
   if (ucasPoints >= 200) return 1550;
@@ -449,7 +449,7 @@ function aLevelToEquivalentSat(ucasPoints: number): number | null {
  * 590 (省前 30%) → 1350
  * <590 → 1280
  */
-function gaokaoToEquivalentSat(gaokaoScore: number): number | null {
+export function gaokaoToEquivalentSat(gaokaoScore: number): number | null {
   if (!Number.isFinite(gaokaoScore) || gaokaoScore < 0 || gaokaoScore > 750) {
     return null;
   }
