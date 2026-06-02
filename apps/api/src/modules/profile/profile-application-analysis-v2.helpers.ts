@@ -23,6 +23,7 @@ import type {
 } from '../ai/ai.types';
 import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
 import type { CaseComparisonResult } from '../prediction/prediction-historical.service';
+import { resolveEffectiveTier } from '../school-list/school-list.constants';
 
 export const MAX_FOCUS_SCHOOLS = 5;
 
@@ -105,6 +106,13 @@ export interface PolicyCardBuildResult {
   unknowns: string[];
 }
 
+// NOTE (scoped-out): this sorts on the stored `item.tier`, which for PREDICTED
+// rows is the stale placeholder — the same bug the portfolio balance just
+// fixed. It is NOT fixed here on purpose: focus selection runs *before*
+// predictions are loaded (predictions are fetched for the schools this picks),
+// so the effective tier isn't available yet without reordering the pipeline.
+// Tracked as a follow-up; the round-presence sort still dominates so the
+// practical impact is limited to tie-breaking order.
 export function selectFocusSchools(
   items: LoadedSchoolListItem[],
 ): LoadedSchoolListItem[] {
@@ -238,7 +246,7 @@ export function buildPortfolioSummary(
   focusSchools: LoadedSchoolListItem[],
   predictionMap: Map<string, LoadedPrediction>,
 ): ApplicationAnalysisPortfolioSummary {
-  const balance = resolvePortfolioBalance(schoolListItems);
+  const balance = resolvePortfolioBalance(schoolListItems, predictionMap);
   const missingPredictions = focusSchools.filter(
     (item) => !predictionMap.has(item.schoolId),
   ).length;
@@ -318,13 +326,16 @@ export function buildPortfolioSummary(
         ? '重点学校已有可用预测与政策卡片。'
         : 'The focus schools now have usable predictions and policy cards.',
     ],
-    riskBoundaries: schoolListItems.some((item) => !item.round)
-      ? [
-          isZh
-            ? '部分学校还没有绑定申请轮次，round strategy 仍不完整。'
-            : 'Some schools still do not have an application round attached.',
-        ]
-      : [],
+    riskBoundaries: [
+      ...buildPortfolioRiskBoundaries(schoolListItems, predictionMap, isZh),
+      ...(schoolListItems.some((item) => !item.round)
+        ? [
+            isZh
+              ? '部分学校还没有绑定申请轮次，round strategy 仍不完整。'
+              : 'Some schools still do not have an application round attached.',
+          ]
+        : []),
+    ],
   };
 }
 
@@ -456,7 +467,11 @@ export function buildDeterministicSchoolResult(
   return {
     schoolId: item.schoolId,
     schoolName,
-    tier: item.tier,
+    // Display the EFFECTIVE tier (engine prediction wins for PREDICTED rows;
+    // a MANUAL override wins) so the card badge can't contradict the
+    // prediction block or the portfolio verdict, which use the same resolver.
+    tier: resolveEffectiveTier(item.tier, item.tierSource, prediction?.tier)
+      .tier,
     round: item.round ?? profile.applicationRound ?? undefined,
     prediction: prediction
       ? {
@@ -762,26 +777,147 @@ function resolveApplicantTypeFromProfile(
   );
 }
 
+/** A high-probability admit floor below this is treated as "no real safety". */
+const SAFETY_FLOOR_PROBABILITY = 0.5;
+
+interface ResolvedTierCounts {
+  counts: Record<'REACH' | 'TARGET' | 'SAFETY', number>;
+  /** Schools whose tier could actually be resolved (prediction or MANUAL). */
+  resolved: number;
+}
+
+/**
+ * Count schools by their EFFECTIVE tier. The engine prediction wins for
+ * PREDICTED rows; an explicit MANUAL tier wins; a PREDICTED row with no usable
+ * prediction is a stale default placeholder (`SchoolListItem.tier` defaults to
+ * TARGET) and is EXCLUDED — counting it would let the placeholder fake a
+ * balanced list. This is the whole point of the fix: list shape = the engine's
+ * view of admit odds, not the labels the student happened to type.
+ */
+function resolveEffectiveTierCounts(
+  schoolListItems: LoadedSchoolListItem[],
+  predictionMap: Map<string, LoadedPrediction>,
+): ResolvedTierCounts {
+  const counts = { REACH: 0, TARGET: 0, SAFETY: 0 };
+  let resolved = 0;
+  for (const item of schoolListItems) {
+    const predictionTier = predictionMap.get(item.schoolId)?.tier ?? null;
+    const { tier, tierIsEstimated } = resolveEffectiveTier(
+      item.tier,
+      item.tierSource,
+      predictionTier,
+    );
+    if (tierIsEstimated) continue; // stale PREDICTED placeholder — not a signal
+    counts[tier] += 1;
+    resolved += 1;
+  }
+  return { counts, resolved };
+}
+
 function resolvePortfolioBalance(
   schoolListItems: LoadedSchoolListItem[],
+  predictionMap: Map<string, LoadedPrediction>,
 ): PortfolioBalance {
-  if (schoolListItems.length < 3) return 'insufficient';
-
-  const counts = schoolListItems.reduce(
-    (acc, item) => {
-      acc[item.tier] += 1;
-      return acc;
-    },
-    { REACH: 0, TARGET: 0, SAFETY: 0 } as Record<
-      'REACH' | 'TARGET' | 'SAFETY',
-      number
-    >,
+  const { counts, resolved } = resolveEffectiveTierCounts(
+    schoolListItems,
+    predictionMap,
   );
+  // Need ≥3 schools with a *resolvable* effective tier to judge the list shape.
+  if (resolved < 3) return 'insufficient';
 
   if (counts.REACH >= counts.TARGET + counts.SAFETY) return 'reachHeavy';
   if (counts.SAFETY >= counts.REACH + counts.TARGET) return 'safetyHeavy';
+  // undermatch = no reaches AND a real safety floor — the student is leaving
+  // ambition on the table, which is only fair advice when they're actually safe.
   if (counts.REACH === 0 && counts.SAFETY >= counts.TARGET) return 'undermatch';
   return 'balanced';
+}
+
+/**
+ * Portfolio-level risk lines grounded in the engine's predictions, not the
+ * student's self-assigned tiers:
+ *   1. No real safety floor (≥3 resolvable tiers, 0 predict as safety).
+ *   2. No likely admit anywhere (top predicted probability < ~50%).
+ *   3. Per-school "your safety isn't safe" — a MANUAL claim the engine contradicts.
+ * (1)/(2) key off the engine; (3) only fires for MANUAL rows, where the user
+ * made a deliberate claim worth checking. Round is already baked into each
+ * prediction's probability, so these are round-aware for free.
+ */
+function buildPortfolioRiskBoundaries(
+  schoolListItems: LoadedSchoolListItem[],
+  predictionMap: Map<string, LoadedPrediction>,
+  isZh: boolean,
+): string[] {
+  const lines: string[] = [];
+  const { counts, resolved } = resolveEffectiveTierCounts(
+    schoolListItems,
+    predictionMap,
+  );
+
+  // (1) No real safety floor.
+  if (resolved >= 3 && counts.SAFETY === 0) {
+    lines.push(
+      isZh
+        ? '当前没有一所学校预测为"保底"区间——提交前至少补一所录取概率很高的真保底校。'
+        : 'None of your current schools predict as a true safety. Add at least one high-probability school before you submit.',
+    );
+  }
+
+  // (2) No likely admit anywhere — top predicted probability below the floor.
+  const probabilities = schoolListItems
+    .map((item) => predictionMap.get(item.schoolId))
+    .filter((p): p is LoadedPrediction => Boolean(p))
+    .map((p) => toNumber(p.probability) ?? 0);
+  if (
+    resolved >= 3 &&
+    probabilities.length >= 3 &&
+    Math.max(...probabilities) < SAFETY_FLOOR_PROBABILITY
+  ) {
+    lines.push(
+      isZh
+        ? '清单里最高的预测录取概率也低于约 50%——目前每一所都算冲刺，几乎没有稳妥的落点。'
+        : 'Even your highest predicted admit chance is below ~50% — every school is effectively a reach, with no reliable landing spot.',
+    );
+  }
+
+  // (3) Per-school "you claimed safer than the engine predicts" (MANUAL only).
+  let targetPredictsReach = 0;
+  for (const item of schoolListItems) {
+    if (item.tierSource !== 'MANUAL') continue;
+    const predicted = predictionMap.get(item.schoolId)?.tier ?? null;
+    const { predictedTier } = resolveEffectiveTier(
+      item.tier,
+      item.tierSource,
+      predicted,
+    );
+    if (!predictedTier) continue;
+    const name =
+      item.school.nameZh && isZh ? item.school.nameZh : item.school.name;
+    if (item.tier === 'SAFETY' && predictedTier === 'REACH') {
+      lines.push(
+        isZh
+          ? `你把 ${name} 标成了保底，但它的预测落在冲刺区间——别把它当退路，再补一所真正稳的学校。`
+          : `You've marked ${name} as a safety, but it predicts in reach territory — don't count on it as a fallback; add a school where you're genuinely likely to be admitted.`,
+      );
+    } else if (item.tier === 'SAFETY' && predictedTier === 'TARGET') {
+      lines.push(
+        isZh
+          ? `${name} 更接近匹配校而非真正的保底——可以保留，但确保清单里至少有一两所概率很高的保底。`
+          : `${name} is closer to a match than a true safety — keep it, but make sure one or two schools on your list are clear safeties.`,
+      );
+    } else if (item.tier === 'TARGET' && predictedTier === 'REACH') {
+      targetPredictsReach += 1;
+    }
+  }
+  if (targetPredictsReach >= 2) {
+    lines.push(
+      isZh
+        ? `有 ${targetPredictsReach} 所你列为匹配校的学校预测更像冲刺——清单实际比看上去更偏冲刺。`
+        : `${targetPredictsReach} schools you listed as matches predict more like reaches — your list leans further toward reaches than it looks.`,
+    );
+  }
+
+  return lines;
 }
 
 function resolveEvidenceTestingPolicy(

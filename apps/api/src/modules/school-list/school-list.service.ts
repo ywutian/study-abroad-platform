@@ -25,7 +25,8 @@ import {
   SCHOOL_LIST_SCHOOL_SELECT,
   AI_RECOMMENDATION_SCHOOL_SELECT,
   mapSchoolForList,
-  predictionTierToSchoolTier,
+  resolveEffectiveTier,
+  type ResolvedTierFields,
   SCHOOL_TIER_SORT_RANK,
 } from './school-list.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
@@ -160,36 +161,11 @@ export class SchoolListService {
     storedTier: SchoolTier,
     tierSource: TierSource,
     predictionTier?: string | null,
-  ): {
-    tier: SchoolTier;
-    tierSource: TierSource;
-    predictedTier?: SchoolTier;
-    tierIsEstimated: boolean;
-  } {
-    const predictedTier = predictionTierToSchoolTier(predictionTier);
-    if (tierSource === TierSource.MANUAL) {
-      return {
-        tier: storedTier,
-        tierSource,
-        predictedTier: predictedTier ?? undefined,
-        tierIsEstimated: false,
-      };
-    }
-    // PREDICTED: follow the live prediction when usable, else fall back.
-    if (predictedTier) {
-      return {
-        tier: predictedTier,
-        tierSource,
-        predictedTier,
-        tierIsEstimated: false,
-      };
-    }
-    return {
-      tier: storedTier,
-      tierSource,
-      predictedTier: undefined,
-      tierIsEstimated: true,
-    };
+  ): ResolvedTierFields {
+    // Single source of truth lives in school-list.constants so the
+    // application-analysis portfolio diagnosis resolves the effective tier
+    // identically (no drift between the school-list UI and the analysis).
+    return resolveEffectiveTier(storedTier, tierSource, predictionTier);
   }
 
   /**

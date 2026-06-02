@@ -1,4 +1,9 @@
-import { Prisma, SchoolMediaType, SchoolTier } from '@prisma/client';
+import {
+  Prisma,
+  SchoolMediaType,
+  SchoolTier,
+  TierSource,
+} from '@prisma/client';
 import type {
   SchoolPublicMedia,
   SchoolPublicMediaAsset,
@@ -116,6 +121,63 @@ export function predictionTierToSchoolTier(
     default:
       return null;
   }
+}
+
+export interface ResolvedTierFields {
+  /** The effective tier to display/count (prediction-derived or user-set). */
+  tier: SchoolTier;
+  tierSource: TierSource;
+  /** The live prediction tier, when one was resolvable. */
+  predictedTier?: SchoolTier;
+  /**
+   * True when `tier` is only the stored default placeholder (a `PREDICTED` row
+   * with no usable prediction yet) — the UI should render a neutral
+   * "not assessed" state rather than a confident tier.
+   */
+  tierIsEstimated: boolean;
+}
+
+/**
+ * Resolve the effective tier of a `SchoolListItem` (single source of truth,
+ * consumed by both the school-list API and the application-analysis portfolio
+ * diagnosis).
+ *
+ * - `MANUAL`    — the user-set `tier` wins; `tierIsEstimated` is false. (The
+ *   live prediction is still returned as `predictedTier` so callers can detect
+ *   a claim-vs-prediction mismatch, e.g. "you marked this a safety but it
+ *   predicts as a reach".)
+ * - `PREDICTED` — the live prediction tier wins when available; otherwise the
+ *   stored `tier` is just the default placeholder and `tierIsEstimated` is true.
+ */
+export function resolveEffectiveTier(
+  storedTier: SchoolTier,
+  tierSource: TierSource,
+  predictionTier?: string | null,
+): ResolvedTierFields {
+  const predictedTier = predictionTierToSchoolTier(predictionTier);
+  if (tierSource === TierSource.MANUAL) {
+    return {
+      tier: storedTier,
+      tierSource,
+      predictedTier: predictedTier ?? undefined,
+      tierIsEstimated: false,
+    };
+  }
+  // PREDICTED: follow the live prediction when usable, else fall back.
+  if (predictedTier) {
+    return {
+      tier: predictedTier,
+      tierSource,
+      predictedTier,
+      tierIsEstimated: false,
+    };
+  }
+  return {
+    tier: storedTier,
+    tierSource,
+    predictedTier: undefined,
+    tierIsEstimated: true,
+  };
 }
 
 /** Display sort rank for a tier: reach first, then match, then safety. */
