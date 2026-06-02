@@ -125,9 +125,11 @@ function gpaToEquivalentSat(
   gpaScale: number | undefined,
 ): number | null {
   if (gpa == null || !Number.isFinite(gpa)) return null;
-  // Normalize to 4.0 scale
+  // Normalize to 4.0 scale, clamped to the physical [0, 4.0] domain so an
+  // overflow input (e.g. gpa 4.5 on a 4.0 scale, or a weighted GPA mis-tagged
+  // with the wrong scale) can't be rewarded above a perfect 4.0.
   const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
-  const gpa4 = (gpa / scale) * 4.0;
+  const gpa4 = clamp((gpa / scale) * 4.0, 0, 4.0);
   if (gpa4 >= 3.97) return 1540;
   if (gpa4 >= 3.93) return 1520;
   if (gpa4 >= 3.88) return 1490;
@@ -231,7 +233,7 @@ export function gpaBandMultiplier(
   const gpa = profile.gpa;
   const scale =
     profile.gpaScale && profile.gpaScale > 0 ? profile.gpaScale : 4.0;
-  const gpa4 = gpa != null ? (gpa / scale) * 4.0 : null;
+  const gpa4 = gpa != null ? clamp((gpa / scale) * 4.0, 0, 4.0) : null;
 
   // ── Data-driven path: school publishes its CDS C9 GPA distribution ────────
   if (
@@ -318,6 +320,40 @@ export function gpaBandMultiplier(
       label: 'GPA well below 25th percentile',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) is more than 100 points below this school's 25th percentile (${sat25})`,
       impact: 'negative',
+    };
+  }
+
+  // De-duplicate the redundant academic PENALTY (2026-06 invariant deep-dive).
+  // This HEURISTIC bands GPA-as-equivalent-SAT against the school's *SAT* 25/75
+  // — the SAME axis the real testBand modifier measures. Because the equivSat
+  // mapping caps at ~1540, it wrongly flags a strong GPA as "below 25th" at
+  // elite-SAT schools (e.g. a 3.90 GPA at Rice, sat25 1510 → ×0.50) — a FALSE
+  // penalty. When a real SAT/ACT is present (so the testing axis is already
+  // measured directly), soften that false GPA-proxy penalty toward neutral via
+  // the geometric mean with 1.0 (sqrt).
+  //
+  // PENALTY side only (multiplier < 1). The boost side is intentionally left at
+  // full strength here: a high GPA-equivSat above the school's SAT-75 is a
+  // legitimate (not false) signal, and the engine's gpa×test combine already
+  // applies the uniform-geomean correlation correction to it downstream —
+  // sqrt-ing the boost here too would DOUBLE-dampen it (this dropped
+  // 082-cooper-union ED 0.5pp below its calibration floor on the band-less gate
+  // DB). sqrt below 1 + identity at/above 1 is monotonic and continuous at 1, so
+  // a strictly-stronger GPA never scores lower. Fires ONLY on this heuristic path
+  // (the CDS-C9 data path measures a distinct GPA axis and is exempt) AND only
+  // when a real SAT/ACT exists — a test-optional / no-test applicant keeps the
+  // full GPA-proxy as their primary academic signal.
+  const hasRealTest = (profile.testScores ?? []).some(
+    (t) =>
+      (t.type === 'SAT' || t.type === 'ACT') &&
+      Number.isFinite(t.score) &&
+      t.score > 0,
+  );
+  if (hasRealTest && result.multiplier < 1.0) {
+    result = {
+      ...result,
+      multiplier: Math.sqrt(result.multiplier),
+      evidence: `${result.evidence} — penalty softened because a real test score is present (GPA-vs-SAT proxy not double-counted against the testing axis)`,
     };
   }
 
@@ -528,14 +564,23 @@ export function testBandMultiplier(
     if (!ts.score) continue;
     switch (ts.type) {
       case 'SAT':
-        considerScore(ts.score, `SAT ${ts.score}`);
+        // Clamp to the physical SAT domain so an impossible score (e.g. 2000)
+        // can't be rewarded as a top-band result.
+        considerScore(
+          Math.min(1600, Math.max(400, ts.score)),
+          `SAT ${ts.score}`,
+        );
         break;
-      case 'ACT':
-        if (bestDirectAct == null || ts.score > bestDirectAct) {
-          bestDirectAct = ts.score;
+      case 'ACT': {
+        // Clamp to the physical ACT domain (1-36) before the SAT-equivalent
+        // conversion, for the same reason.
+        const act = Math.min(36, Math.max(1, ts.score));
+        if (bestDirectAct == null || act > bestDirectAct) {
+          bestDirectAct = act;
         }
-        considerScore(ts.score * 45, `ACT ${ts.score}`);
+        considerScore(act * 45, `ACT ${ts.score}`);
         break;
+      }
       case 'IB':
         considerScore(ibToEquivalentSat(ts.score), `IB ${ts.score}`);
         break;
