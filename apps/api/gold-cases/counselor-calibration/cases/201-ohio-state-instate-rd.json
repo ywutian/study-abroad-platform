@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "201-ohio-state-instate-rd",
+  "scenarioGroup": "MID_PUBLIC_RESIDENCY_NEUTRAL",
+  "schoolName": "Ohio State University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "OH",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1250
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.3, 0.78],
+  "rationale": {
+    "intuition": "OSU ~51% overall and admits OOS ≈ in-state (residency-neutral), so a 3.6/1250 (below-median) gets no residency lift → plausible 30-78%. Band is external-anchored to the school's published admit rate + round/residency reasoning, intentionally WIDE (the honest plausible band), NOT the engine's output. expectedTier omitted: the value swings with the stored overall rate across snapshots; the range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS / Common Data Set vintage)",
+        "evidence": "~50.8% overall used as the anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["mid-public", "residency-neutral", "regular-decision", "domestic"]
+}

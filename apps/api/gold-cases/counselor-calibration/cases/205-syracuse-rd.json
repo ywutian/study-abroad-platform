@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "205-syracuse-rd",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "Syracuse University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1280
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.42, 0.85],
+  "rationale": {
+    "intuition": "Syracuse ~52% overall; solid-but-not-elite stats → match. Band is external-anchored to the school's published admit rate + round/residency reasoning, intentionally WIDE (the honest plausible band), NOT the engine's output. expectedTier omitted: the value swings with the stored overall rate across snapshots; the range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS / Common Data Set vintage)",
+        "evidence": "~46% overall used as the anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["private", "match", "regular-decision", "domestic"]
+}
