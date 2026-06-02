@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "226-uga-instate-ea",
+  "scenarioGroup": "MID_PUBLIC_INSTATE",
+  "schoolName": "University of Georgia",
+  "applicationRound": "EA",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "GA",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1350
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.45, 0.92],
+  "rationale": {
+    "intuition": "External-anchored band (school published admit rate ~37.92% + round/residency reasoning + counselor norms), intentionally WIDE, NOT the engine's output. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~37.92% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public-flagship", "in-state", "early-action", "domestic"]
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "222-lehigh-rd",
+  "scenarioGroup": "MATCH_RD_MID_PROFILE",
+  "schoolName": "Lehigh University",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.8,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1390
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.18, 0.62],
+  "rationale": {
+    "intuition": "External-anchored band (school published admit rate ~25.93% + round/residency reasoning + counselor norms), intentionally WIDE, NOT the engine's output. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~25.93% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["private", "match", "regular-decision", "domestic"]
+}
