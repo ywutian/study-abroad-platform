@@ -134,6 +134,73 @@ describe('CounselorEngineService', () => {
     });
   });
 
+  describe('GPA-proxy de-duplication + input clamps (2026-06 invariant deep-dive)', () => {
+    // sat25 1510: a strong 3.9 GPA maps to equivSat ~1490 (< sat25) → the heuristic
+    // GPA-vs-SAT path would flag it "below 25th" → ×0.50. That proxy is the SAME axis
+    // testBand measures, so when a real SAT is present it must be dampened toward
+    // neutral (sqrt) rather than double-counted.
+    const eliteNoGpaDist = {
+      acceptanceRate: 0.08,
+      sat25: 1510,
+      sat75: 1560,
+      satAvg: 1535,
+    };
+
+    it('dampens the heuristic GPA-band toward neutral when a real test is present', async () => {
+      const withTest = await service.compute(
+        profile({ gpa: 3.9, testScores: [{ type: 'SAT', score: 1500 }] }),
+        school(eliteNoGpaDist),
+      );
+      // ×0.50 (heuristic "below 25th") → sqrt → ~0.707, not double-counted.
+      expect(withTest.modifierResults.gpaBand.multiplier).toBeCloseTo(
+        Math.sqrt(0.5),
+        2,
+      );
+    });
+
+    it('keeps the full GPA-proxy when NO real test exists (de-dup must not fire)', async () => {
+      const noTest = await service.compute(
+        profile({ gpa: 3.9, testScores: [] }),
+        school(eliteNoGpaDist),
+      );
+      expect(noTest.modifierResults.gpaBand.multiplier).toBeCloseTo(0.5, 2);
+    });
+
+    it('clamps an impossible SAT to the physical ceiling (9999 scored as 1600)', async () => {
+      const s = school({ acceptanceRate: 0.7, sat25: 1100, sat75: 1300 });
+      const legit = await service.compute(
+        profile({ gpa: 3.8, testScores: [{ type: 'SAT', score: 1600 }] }),
+        s,
+      );
+      const garbage = await service.compute(
+        profile({ gpa: 3.8, testScores: [{ type: 'SAT', score: 9999 }] }),
+        s,
+      );
+      expect(garbage.probability).toBeCloseTo(legit.probability, 5);
+    });
+
+    it('clamps an overflow GPA to a perfect 4.0 (5.0/scale-4 scored as 4.0)', async () => {
+      const s = school({ acceptanceRate: 0.7, sat25: 1100, sat75: 1300 });
+      const over = await service.compute(
+        profile({
+          gpa: 5.0,
+          gpaScale: 4,
+          testScores: [{ type: 'SAT', score: 1400 }],
+        }),
+        s,
+      );
+      const perfect = await service.compute(
+        profile({
+          gpa: 4.0,
+          gpaScale: 4,
+          testScores: [{ type: 'SAT', score: 1400 }],
+        }),
+        s,
+      );
+      expect(over.probability).toBeCloseTo(perfect.probability, 5);
+    });
+  });
+
   describe('Tier 3 — scorecard without SAT bands', () => {
     it('still works when sat25/sat75 are missing', async () => {
       const result = await service.compute(
