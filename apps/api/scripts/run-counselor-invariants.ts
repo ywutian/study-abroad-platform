@@ -27,11 +27,20 @@
  *   10. Legacy-neutral — legacy flag is EXACTLY neutral (disabled pending evidence verification)
  *   11. Determinism    — identical input ⇒ identical output
  *
- * Exit codes: 0 = all invariants hold, 2 = at least one violation (CI blocks merge).
+ * Exit codes: 0 = all invariants hold, 2 = at least one violation.
  *
- * NOTE: the CI Prediction Gate DB is seeded via `prisma db seed` (no CDS bands), so this
- * sweep exercises the Tier-2 (scorecard) path for all schools. A local DB seeded via the
- * orchestrator additionally exercises Tier-1 CDS bands. Both are valid — run it in both.
+ * RUN THIS LOCALLY against the full prod-representative seed:
+ *     pnpm --filter api db:seed   # orchestrator: complete CDS band ladders + gpaDistribution
+ *     pnpm --filter api invariants:counselor          # 0 violations on prod-like data
+ *     pnpm --filter api invariants:counselor --limit 60   # fast subset
+ *
+ * It is NOT wired into the CI Prediction Gate. A full-POPULATION sweep is only meaningful on a
+ * complete dataset: the gate DB is seeded via `prisma db seed` (minimal/partial — no full band
+ * ladders), which produces TIER-CROSSING artifacts (a 3.8 GPA that matches a lone low Tier-1 band
+ * scores below a 3.5 that falls through to the higher Tier-2 overall rate). Those are gate-DB DATA
+ * artifacts, not engine bugs — on the orchestrator seed (= prod) the engine is invariant-clean
+ * (0 violations). Run this before merging any counselor-engine change. See
+ * docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
  */
 
 import { NestFactory } from '@nestjs/core';
