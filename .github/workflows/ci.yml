@@ -688,6 +688,20 @@ jobs:
           path: apps/api/gold-cases/counselor-calibration/reports/
           retention-days: 14
 
+      - name: Run counselor invariant sweep
+        # Property-based regression gate (2026-06 invariant deep-dive). Where gold +
+        # calibration test SPECIFIC (school, profile) points, this asserts the
+        # STRUCTURAL properties the engine must satisfy EVERYWHERE — monotonicity in
+        # GPA/test, joint dominance, bounded range, ED/EA>=RD, hooks never hurt,
+        # URM/legacy exactly neutral (compliance), determinism — across the full
+        # school population (~7k checks). Catches "a strictly-better applicant scores
+        # lower" / "absurd output" regressions pre-merge, not in prod.
+        # See docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
+        working-directory: apps/api
+        run: pnpm invariants:counselor
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
       - name: Run prediction gate
         run: pnpm exec tsx scripts/prediction-gate.ts --days 365 --min-verified 200 --school-query Wisconsin --round EA --base-url http://localhost:4101/api/v1
         env:
