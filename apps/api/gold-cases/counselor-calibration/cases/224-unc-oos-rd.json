@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "224-unc-oos-rd",
+  "scenarioGroup": "PUBLIC_OOS_PENALTY",
+  "schoolName": "University of North Carolina at Chapel Hill",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1480
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.02, 0.25],
+  "rationale": {
+    "intuition": "External-anchored band (school published admit rate ~15.34% + round/residency reasoning + counselor norms), intentionally WIDE, NOT the engine's output. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~15.34% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["public-flagship", "out-of-state", "strong-residency-pref", "reach"]
+}

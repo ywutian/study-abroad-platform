@@ -1,0 +1,42 @@
+{
+  "kind": "standalone",
+  "id": "213-davidson-rd",
+  "scenarioGroup": "LAC_RD_STRONG_DOMESTIC",
+  "schoolName": "Davidson College",
+  "applicationRound": "RD",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "stateOfResidence": "NY",
+    "isLegacy": false,
+    "isFirstGen": false,
+    "recruitedAthlete": false,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1420
+      }
+    ],
+    "activities": [],
+    "awards": []
+  },
+  "expectedProbabilityRange": [0.1, 0.45],
+  "rationale": {
+    "intuition": "External-anchored band (school published admit rate ~12.62% + round/residency reasoning + counselor norms), intentionally WIDE, NOT the engine's output. expectedTier omitted; range is the guardrail.",
+    "sources": [
+      {
+        "name": "Published overall admit rate (CDS vintage)",
+        "evidence": "~12.62% overall anchor"
+      },
+      {
+        "name": "Counselor reach/match/safety norms",
+        "evidence": "round lift + profile-vs-band fit + residency treatment"
+      }
+    ]
+  },
+  "lastReviewedAt": "2026-06-02",
+  "reviewedBy": "claude-estimated (AI external-anchored; pending human review)",
+  "tags": ["lac", "regular-decision", "domestic", "unhooked"]
+}
