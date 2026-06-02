@@ -49,11 +49,17 @@ export class ApplicationAnalysisExperimentScheduler {
   }
 
   private automationEnabled(): boolean {
+    // OPT-IN (default off). The experiment/governance automation promotes
+    // analysis policies based on gate evaluations that require admission
+    // OUTCOMES we do not yet collect — so on the current data it can only
+    // produce empty no-op runs. It is explicitly enabled (=== 'true'), not
+    // merely "not disabled", so the ungrounded cron never runs by default.
+    // The global SCHEDULERS_ENABLED kill switch still applies.
     return (
       this.configService.get<string>('SCHEDULERS_ENABLED') !== 'false' &&
       this.configService.get<string>(
         'APPLICATION_ANALYSIS_AUTOMATION_ENABLED',
-      ) !== 'false'
+      ) === 'true'
     );
   }
 }

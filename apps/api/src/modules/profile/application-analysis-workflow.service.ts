@@ -83,6 +83,25 @@ type EvidenceStatus =
   | 'EXPIRED';
 type GovernanceEvidenceMode = 'fixture' | 'real' | 'mixed' | 'none';
 
+/**
+ * Application-analysis governance + experiment platform.
+ *
+ * STATUS (2026-06): part grounded, part premature infrastructure.
+ *  - GROUNDED + LIVE: evidence management (createEvidence / reviewEvidence /
+ *    listApprovedEvidenceBySchool) and policy versioning (getActivePolicyVersion
+ *    / activatePolicy / rollbackPolicy). These manage the REVIEWED policy data
+ *    that feeds the live policy cards in the V2 analysis. Keep working.
+ *  - AWAITING OUTCOME DATA (not yet grounded): the experiment lifecycle
+ *    (shadow → canary → activate), gate evaluations, fairnessReport,
+ *    uncertaintyPreview (conformal) and recoursePreview all require admission
+ *    OUTCOMES we do not yet collect. They are admin-only (@Roles(OPERATOR)) and
+ *    are NOT surfaced on the live user path, so this is internal-hygiene, not a
+ *    user-facing data-integrity issue.
+ *
+ * The cron automation (ApplicationAnalysisExperimentScheduler) is therefore
+ * OPT-IN / default-off (APPLICATION_ANALYSIS_AUTOMATION_ENABLED) so it does not
+ * run on absent data. Revisit grounding once an admission-outcome pipeline exists.
+ */
 @Injectable()
 export class ApplicationAnalysisWorkflowService {
   private readonly logger = new Logger(ApplicationAnalysisWorkflowService.name);
