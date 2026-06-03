@@ -166,15 +166,14 @@ describe('Counselor concordances & under-tested modifiers', () => {
       name: 'S',
       acceptanceRate: 0.2,
     } as unknown as SchoolInput & { acceptanceRate: number };
-    const profile = (targetMajor?: string): ProfileInput =>
-      ({
-        gpa: 3.8,
-        gpaScale: 4,
-        testScores: [],
-        activities: [],
-        awards: [],
-        targetMajor,
-      }) as unknown as ProfileInput;
+    const profile = (targetMajor?: string): ProfileInput => ({
+      gpa: 3.8,
+      gpaScale: 4,
+      testScores: [],
+      activities: [],
+      awards: [],
+      targetMajor,
+    });
 
     it('is neutral when no target major', () => {
       expect(majorMultiplier(profile(), school, 0.05).multiplier).toBe(1.0);
@@ -216,15 +215,14 @@ describe('Counselor concordances & under-tested modifiers', () => {
       sat25: 1400,
       sat75: 1550,
     } as unknown as SchoolInput;
-    const mk = (over: Partial<ProfileInput> = {}): ProfileInput =>
-      ({
-        gpa: 3.9,
-        gpaScale: 4,
-        testScores: [],
-        activities: [],
-        awards: [],
-        ...over,
-      }) as unknown as ProfileInput;
+    const mk = (over: Partial<ProfileInput> = {}): ProfileInput => ({
+      gpa: 3.9,
+      gpaScale: 4,
+      testScores: [],
+      activities: [],
+      awards: [],
+      ...over,
+    });
     const strongProfile = mk({
       activities: [
         {
@@ -241,7 +239,7 @@ describe('Counselor concordances & under-tested modifiers', () => {
         { name: 'ISEF Grand Award', level: 'INTERNATIONAL', year: 2025 },
         { name: 'National Merit', level: 'NATIONAL', year: 2025 },
       ],
-    } as Partial<ProfileInput>);
+    });
 
     it('caps a spike profile at ≤ 1.13 (intentional anti-noise ceiling)', () => {
       const m = profileContextMultiplier(strongProfile, school).multiplier;
