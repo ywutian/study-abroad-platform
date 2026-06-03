@@ -1074,21 +1074,10 @@ export class ProfileApplicationAnalysisV2Service {
     deterministic: ApplicationAnalysisSchoolResult,
     parsed: Record<string, unknown>,
   ): NormalizedSchoolAnalysisResponse {
-    const validationErrors: string[] = [];
-    const allowedEvidenceIds = new Set(deterministic.evidenceIds);
-    const rawEvidenceIds = ensureStringArray(parsed.evidenceIds);
-    const evidenceIds = rawEvidenceIds.filter((item) =>
-      allowedEvidenceIds.has(item),
+    const { evidenceIds, validationErrors } = filterAllowedEvidenceIds(
+      deterministic.evidenceIds,
+      ensureStringArray(parsed.evidenceIds),
     );
-    if (
-      rawEvidenceIds.length > 0 &&
-      evidenceIds.length !== rawEvidenceIds.length
-    ) {
-      validationErrors.push('school-analysis-evidence-id-not-allowed');
-    }
-    if (evidenceIds.length === 0 && deterministic.evidenceIds.length > 0) {
-      validationErrors.push('school-analysis-missing-evidence-binding');
-    }
 
     return {
       assessment: {
@@ -1138,23 +1127,11 @@ export class ProfileApplicationAnalysisV2Service {
     fallbackActionPlan: AnalysisActionPlan,
     parsed: Record<string, unknown>,
   ): NormalizedPortfolioResponse {
-    const validationErrors: string[] = [];
-    const balance = ensureString(parsed.balance);
-    const normalizedBalance =
-      balance &&
-      [
-        'balanced',
-        'reachHeavy',
-        'safetyHeavy',
-        'undermatch',
-        'insufficient',
-      ].includes(balance)
-        ? (balance as ApplicationAnalysisPortfolioSummary['balance'])
-        : fallbackSummary.balance;
-
-    if (balance && normalizedBalance !== balance) {
-      validationErrors.push('portfolio-balance-invalid');
-    }
+    const { balance: normalizedBalance, validationErrors } =
+      normalizeBalanceValue(
+        ensureString(parsed.balance),
+        fallbackSummary.balance,
+      );
 
     return {
       portfolioSummary: {
@@ -1544,6 +1521,61 @@ function normalizeRecourse(value: unknown): RecourseGuidance | undefined {
     constraints: ensureStringArray(value.constraints),
     whyNotGuaranteed,
   };
+}
+
+/**
+ * Anti-hallucination guard: the LLM may only cite evidence IDs that the
+ * deterministic layer actually produced. Any ID the model invents is stripped,
+ * and the mismatch is recorded so the response can be flagged/degraded — the
+ * model can never fabricate a source binding. Returns the filtered IDs plus
+ * validation errors (`school-analysis-evidence-id-not-allowed` when the model
+ * cited IDs outside the allow-list; `school-analysis-missing-evidence-binding`
+ * when filtering removed every ID despite the deterministic layer having some).
+ */
+export function filterAllowedEvidenceIds(
+  allowedEvidenceIds: string[],
+  rawEvidenceIds: string[],
+): { evidenceIds: string[]; validationErrors: string[] } {
+  const allowed = new Set(allowedEvidenceIds);
+  const evidenceIds = rawEvidenceIds.filter((item) => allowed.has(item));
+  const validationErrors: string[] = [];
+  if (
+    rawEvidenceIds.length > 0 &&
+    evidenceIds.length !== rawEvidenceIds.length
+  ) {
+    validationErrors.push('school-analysis-evidence-id-not-allowed');
+  }
+  if (evidenceIds.length === 0 && allowedEvidenceIds.length > 0) {
+    validationErrors.push('school-analysis-missing-evidence-binding');
+  }
+  return { evidenceIds, validationErrors };
+}
+
+const VALID_PORTFOLIO_BALANCES: readonly ApplicationAnalysisPortfolioSummary['balance'][] =
+  ['balanced', 'reachHeavy', 'safetyHeavy', 'undermatch', 'insufficient'];
+
+/**
+ * Anti-hallucination guard: the LLM-supplied portfolio balance must be one of
+ * the known enum values. An invented value is rejected (falls back to the
+ * deterministic balance) and recorded as `portfolio-balance-invalid` — the
+ * model cannot smuggle a made-up list-shape verdict into the response.
+ */
+export function normalizeBalanceValue(
+  raw: string | undefined,
+  fallback: ApplicationAnalysisPortfolioSummary['balance'],
+): {
+  balance: ApplicationAnalysisPortfolioSummary['balance'];
+  validationErrors: string[];
+} {
+  const balance =
+    raw && VALID_PORTFOLIO_BALANCES.includes(raw as never)
+      ? (raw as ApplicationAnalysisPortfolioSummary['balance'])
+      : fallback;
+  const validationErrors: string[] = [];
+  if (raw && balance !== raw) {
+    validationErrors.push('portfolio-balance-invalid');
+  }
+  return { balance, validationErrors };
 }
 
 export function normalizeUncertainty(
