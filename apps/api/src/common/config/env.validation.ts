@@ -70,9 +70,14 @@ const envSchema = z.object({
 
   // --- Scheduler governance ---
   SCHEDULERS_ENABLED: z.enum(['true', 'false']).default('true'),
+  // OPT-IN (default off): the application-analysis experiment/governance
+  // automation evaluates analyses against admission OUTCOMES we do not yet
+  // collect. Running it on absent data only yields empty no-op promotions and
+  // log noise, so it stays dormant until that data pipeline exists. Set to
+  // 'true' (with SCHEDULERS_ENABLED not 'false') to re-enable.
   APPLICATION_ANALYSIS_AUTOMATION_ENABLED: z
     .enum(['true', 'false'])
-    .default('true'),
+    .default('false'),
 
   // --- CORS ---
   CORS_ORIGINS: z.string().optional(),
