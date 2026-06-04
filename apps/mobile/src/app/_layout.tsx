@@ -121,6 +121,7 @@ const DETAIL_SCREENS = [
   'recommendation/index',
   'find-college',
   'essays',
+  'essay/[id]',
   'essay-gallery/index',
   'timeline',
   'assessment',

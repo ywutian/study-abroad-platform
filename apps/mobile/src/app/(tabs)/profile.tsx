@@ -75,29 +75,37 @@ export default function ProfileScreen() {
 
   const analysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
 
-  // Calculate profile completion (memoized to avoid recalculation on every render)
+  // Calculate profile completion (memoized to avoid recalculation on every render).
+  // Also resolves the first incomplete section so "Complete profile" jumps the
+  // user straight to what's missing instead of always dumping them on Basic Info.
   const calculateCompletion = useMemo(() => {
-    if (!profile) return { percentage: 0, missing: [] as string[] };
+    if (!profile) return { percentage: 0, missing: [] as string[], nextRoute: '/profile/basic' };
     let completed = 0;
     const total = 7;
     const missing: string[] = [];
+    let nextRoute: string | null = null;
+    const mark = (ok: unknown, label: string, route: string) => {
+      if (ok) {
+        completed++;
+      } else {
+        missing.push(label);
+        if (!nextRoute) nextRoute = route;
+      }
+    };
 
-    if (profile.grade) completed++;
-    else missing.push(t('profile.fields.grade'));
-    if (profile.targetMajor) completed++;
-    else missing.push(t('profile.fields.targetMajor'));
-    if (profile.gpa) completed++;
-    else missing.push(t('profile.gpa'));
-    if (profile.testScores?.length > 0) completed++;
-    else missing.push(t('profile.testScores'));
-    if (profile.activities?.length > 0) completed++;
-    else missing.push(t('profile.activities'));
-    if (profile.awards?.length > 0) completed++;
-    else missing.push(t('profile.awards'));
-    if (profile.education?.length > 0) completed++;
-    else missing.push(t('profile.education'));
+    mark(profile.grade, t('profile.fields.grade'), '/profile/basic');
+    mark(profile.targetMajor, t('profile.fields.targetMajor'), '/profile/basic');
+    mark(profile.gpa, t('profile.gpa'), '/profile/basic');
+    mark(profile.testScores?.length, t('profile.testScores'), '/profile/scores');
+    mark(profile.activities?.length, t('profile.activities'), '/profile/activities');
+    mark(profile.awards?.length, t('profile.awards'), '/profile/awards');
+    mark(profile.education?.length, t('profile.education'), '/profile/education');
 
-    return { percentage: Math.round((completed / total) * 100), missing };
+    return {
+      percentage: Math.round((completed / total) * 100),
+      missing,
+      nextRoute: nextRoute ?? '/profile/basic',
+    };
   }, [profile, t]);
 
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
@@ -108,7 +116,7 @@ export default function ProfileScreen() {
     router.replace('/(auth)/login');
   };
 
-  const { percentage: completion, missing: missingFields } = calculateCompletion;
+  const { percentage: completion, missing: missingFields, nextRoute } = calculateCompletion;
 
   const menuItems = useMemo(
     () => [
@@ -262,7 +270,7 @@ export default function ProfileScreen() {
               <Button
                 variant="outline"
                 size="sm"
-                onPress={() => router.push('/profile/basic')}
+                onPress={() => router.push(nextRoute as Href)}
                 style={styles.completeButton}
               >
                 {t('profile.completeProfile')}
