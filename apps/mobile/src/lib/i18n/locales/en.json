@@ -452,6 +452,7 @@
       "send": "Send",
       "thinking": "Thinking...",
       "noResponse": "No response received.",
+      "loginPrompt": "Log in to chat with your AI counselor",
       "toolCalling": "Calling tools...",
       "quickQuestions": "Quick Questions",
       "suggestions": {

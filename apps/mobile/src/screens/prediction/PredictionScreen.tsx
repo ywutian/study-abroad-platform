@@ -445,22 +445,27 @@ export default function PredictionScreen() {
         </View>
       </Animated.View>
 
-      <View
-        style={[
-          styles.explanationCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
-          {t('prediction.probabilityVsRateDisclaimer')}
-        </Text>
-        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
-          {t('prediction.confidenceDisclaimer')}
-        </Text>
-        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
-          {t('prediction.tierDisclaimer')}
-        </Text>
-      </View>
+      {/* Only explain the probability/confidence/tier semantics once there are
+          real results to explain — don't greet an empty first-run with a wall of
+          jargon before the student has seen a single prediction. */}
+      {predictions.length > 0 && (
+        <View
+          style={[
+            styles.explanationCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+            {t('prediction.probabilityVsRateDisclaimer')}
+          </Text>
+          <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+            {t('prediction.confidenceDisclaimer')}
+          </Text>
+          <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+            {t('prediction.tierDisclaimer')}
+          </Text>
+        </View>
+      )}
 
       <TouchableOpacity
         onPress={() => router.push('/profile/analysis' as Href)}

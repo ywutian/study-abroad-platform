@@ -342,9 +342,23 @@ describe('PredictionScreen', () => {
       isAuthenticated: true,
     });
 
+    // Disclaimers are gated behind having ≥1 prediction (we don't greet an empty
+    // first-run with a wall of jargon), so seed one prediction.
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/predictions/dashboard')) {
-        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+        return Promise.resolve({
+          totalSchools: 1,
+          avgProbability: 0.5,
+          predictions: [
+            {
+              schoolId: 's1',
+              school: { name: 'MIT' },
+              probability: 0.5,
+              tier: 'match',
+              confidence: 'medium',
+            },
+          ],
+        });
       }
       if (url.includes('/profiles/me/completeness')) {
         return Promise.resolve({ score: 75 });

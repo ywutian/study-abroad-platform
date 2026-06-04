@@ -452,6 +452,7 @@
       "send": "发送",
       "thinking": "思考中...",
       "noResponse": "未收到回复。",
+      "loginPrompt": "登录后即可与 AI 顾问对话",
       "toolCalling": "正在调用工具...",
       "quickQuestions": "快捷问题",
       "suggestions": {

@@ -13,7 +13,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import Markdown from 'react-native-markdown-display';
 
 import * as Haptics from 'expo-haptics';
@@ -490,9 +490,19 @@ export default function AIScreen() {
         </View>
 
         {!isAuthenticated && (
-          <Text style={[styles.authHint, { color: colors.foregroundMuted }]}>
-            {t('errors.unauthorized')}
-          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/login')}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.login')}
+            style={styles.authHintRow}
+          >
+            <Text style={[styles.authHint, { color: colors.foregroundMuted }]}>
+              {t('ai.chat.loginPrompt')}
+            </Text>
+            <Text style={[styles.authHint, styles.authHintLink, { color: colors.primary }]}>
+              {t('common.login')}
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -640,9 +650,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  authHintRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
   authHint: {
     fontSize: fontSize.xs,
     textAlign: 'center',
-    marginTop: spacing.sm,
+  },
+  authHintLink: {
+    fontWeight: fontWeight.semibold,
   },
 });
