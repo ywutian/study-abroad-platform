@@ -161,7 +161,7 @@ describe('useChatSocket Hook', () => {
         expect.stringContaining('/chat'),
         expect.objectContaining({
           auth: { token: 'fake-access-token' },
-          transports: ['websocket', 'polling'],
+          transports: ['polling', 'websocket'],
           reconnection: true,
         })
       );
