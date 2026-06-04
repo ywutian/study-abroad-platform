@@ -1,5 +1,5 @@
 /**
- * More Tab — Grid of additional features
+ * More Tab — additional features, grouped into sections
  */
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
@@ -27,48 +27,70 @@ interface MoreItem {
   badge?: number;
 }
 
+interface MoreSection {
+  title: string;
+  items: MoreItem[];
+}
+
 export default function MoreScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
-  const items: MoreItem[] = [
+  const sections: MoreSection[] = [
     {
-      icon: 'folder-open',
-      label: t('more.cases'),
-      route: '/(tabs)/cases',
-      color: colors.info,
+      title: t('more.groupApply'),
+      items: [
+        { icon: 'folder-open', label: t('more.cases'), route: '/(tabs)/cases', color: colors.info },
+        { icon: 'create', label: t('more.essays'), route: '/essays', color: colors.violet },
+        { icon: 'document-text', label: t('more.resume'), route: '/resume', color: colors.primary },
+        { icon: 'calendar', label: t('more.timeline'), route: '/timeline', color: colors.primary },
+        {
+          icon: 'clipboard',
+          label: t('more.assessment'),
+          route: '/assessment',
+          color: colors.pink,
+        },
+        { icon: 'lock-closed', label: t('more.vault'), route: '/vault', color: colors.success },
+        { icon: 'podium', label: t('more.ranking'), route: '/ranking', color: colors.info },
+      ],
     },
     {
-      icon: 'notifications',
-      label: t('more.notifications'),
-      route: '/notifications',
-      color: colors.warning,
+      title: t('more.groupCommunity'),
+      items: [
+        { icon: 'chatbubbles', label: t('more.forum'), route: '/forum', color: colors.info },
+        { icon: 'star', label: t('more.peerReview'), route: '/peer-review', color: colors.violet },
+        { icon: 'people', label: t('more.teams'), route: '/teams', color: colors.info },
+        {
+          icon: 'notifications',
+          label: t('more.notifications'),
+          route: '/notifications',
+          color: colors.warning,
+        },
+      ],
     },
-    { icon: 'chatbubbles', label: t('more.forum'), route: '/forum', color: colors.info },
-    { icon: 'create', label: t('more.essays'), route: '/essays', color: colors.violet },
-    { icon: 'document-text', label: t('more.resume'), route: '/resume', color: colors.primary },
-    { icon: 'lock-closed', label: t('more.vault'), route: '/vault', color: colors.success },
-    { icon: 'people', label: t('more.teams'), route: '/teams', color: colors.info },
-    { icon: 'trophy', label: t('more.points'), route: '/points', color: colors.warning },
-    { icon: 'star', label: t('more.peerReview'), route: '/peer-review', color: colors.violet },
-    { icon: 'gift', label: t('more.referral'), route: '/referral', color: colors.warning },
     {
-      icon: 'shield-checkmark',
-      label: t('more.verification'),
-      route: '/verification',
-      color: colors.success,
+      title: t('more.groupAccount'),
+      items: [
+        { icon: 'trophy', label: t('more.points'), route: '/points', color: colors.warning },
+        { icon: 'gift', label: t('more.referral'), route: '/referral', color: colors.warning },
+        {
+          icon: 'shield-checkmark',
+          label: t('more.verification'),
+          route: '/verification',
+          color: colors.success,
+        },
+        {
+          icon: 'settings',
+          label: t('more.settings'),
+          route: '/settings',
+          color: colors.mutedForeground,
+        },
+      ],
     },
-    { icon: 'podium', label: t('more.ranking'), route: '/ranking', color: colors.info },
-    { icon: 'clipboard', label: t('more.assessment'), route: '/assessment', color: colors.pink },
-    {
-      icon: 'settings',
-      label: t('more.settings'),
-      route: '/settings',
-      color: colors.mutedForeground,
-    },
-    { icon: 'calendar', label: t('more.timeline'), route: '/timeline', color: colors.primary },
   ];
+
+  let cardIndex = 0;
 
   return (
     <ScrollView
@@ -83,40 +105,58 @@ export default function MoreScreen() {
         </Text>
       </View>
 
-      <View style={styles.grid}>
-        {items.map((item, index) => (
-          <FadeInView key={item.route} index={index} staggerDelay={30} style={styles.gridItem}>
-            <TouchableOpacity
-              onPress={() => router.push(item.route as never)}
-              activeOpacity={0.7}
-              style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-              accessibilityRole="button"
-              accessibilityLabel={item.label}
-            >
-              <View
-                style={[styles.iconContainer, { backgroundColor: withOpacity(item.color, 0.1) }]}
+      {sections.map((section) => (
+        <View key={section.title} style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
+            {section.title}
+          </Text>
+          <View style={styles.grid}>
+            {section.items.map((item) => (
+              <FadeInView
+                key={item.route}
+                index={cardIndex++}
+                staggerDelay={20}
+                style={styles.gridItem}
               >
-                <Ionicons name={item.icon} size={24} color={item.color} />
-              </View>
-              <Text style={[styles.cardLabel, { color: colors.foreground }]} numberOfLines={1}>
-                {item.label}
-              </Text>
-              {item.badge !== undefined && item.badge > 0 && (
-                <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                  <Text
+                <TouchableOpacity
+                  onPress={() => router.push(item.route as never)}
+                  activeOpacity={0.7}
+                  style={[
+                    styles.card,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.label}
+                >
+                  <View
                     style={[
-                      styles.badgeText,
-                      { color: colors.primaryForeground, fontFamily: fontFamily.mono },
+                      styles.iconContainer,
+                      { backgroundColor: withOpacity(item.color, 0.1) },
                     ]}
                   >
-                    {item.badge}
+                    <Ionicons name={item.icon} size={24} color={item.color} />
+                  </View>
+                  <Text style={[styles.cardLabel, { color: colors.foreground }]} numberOfLines={1}>
+                    {item.label}
                   </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </FadeInView>
-        ))}
-      </View>
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                      <Text
+                        style={[
+                          styles.badgeText,
+                          { color: colors.primaryForeground, fontFamily: fontFamily.mono },
+                        ]}
+                      >
+                        {item.badge}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </FadeInView>
+            ))}
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
 }
@@ -128,7 +168,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-    paddingBottom: spacing['2xl'],
+    paddingBottom: spacing.lg,
   },
   title: {
     fontSize: fontSize['2xl'],
@@ -137,6 +177,17 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: fontSize.sm,
+  },
+  section: {
+    marginBottom: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
   },
   grid: {
     flexDirection: 'row',

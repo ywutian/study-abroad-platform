@@ -1914,6 +1914,9 @@
     "title": "更多功能",
     "subtitle": "探索所有工具和功能",
     "cases": "案例",
+    "groupApply": "申请工具",
+    "groupCommunity": "社区",
+    "groupAccount": "账户与奖励",
     "essays": "文书",
     "resume": "简历",
     "vault": "保险箱",
@@ -1928,7 +1931,7 @@
     "timeline": "时间线",
     "chat": "聊天",
     "notifications": "通知",
-    "forum": "论坛"
+    "forum": "社区"
   },
   "resume": {
     "title": "简历构建器",
