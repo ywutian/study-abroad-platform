@@ -214,33 +214,68 @@ export default function AIScreen() {
             return newMessages;
           });
         } else {
-          // React Native fetch does not expose a stable SSE body reader here,
-          // so mobile auto-mode uses the non-streaming chat endpoint.
-          const result = await apiClient.post<{
-            message?: string;
-            response?: { message?: string };
-            data?: { message?: string };
-          }>(
-            '/ai-agent/chat',
-            {
-              message: text,
-              conversationId: null,
-              stream: false,
-            },
-            { timeout: 60000, retries: 0 }
-          );
-          const responseText = getAiResponseText(result, t('ai.chat.noResponse'));
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage?.role === 'assistant') {
-              newMessages[newMessages.length - 1] = {
-                ...lastMessage,
-                content: responseText,
+          // Auto mode streams tokens via apiClient.stream() (expo/fetch SSE),
+          // falling back to the non-streaming endpoint if the stream fails.
+          const updateAssistant = (next: (prevContent: string) => string) => {
+            setMessages((prev) => {
+              const msgs = [...prev];
+              const last = msgs[msgs.length - 1];
+              if (last?.role === 'assistant') {
+                msgs[msgs.length - 1] = { ...last, content: next(last.content) };
+              }
+              return msgs;
+            });
+          };
+
+          let streamedAny = false;
+          try {
+            for await (const raw of apiClient.stream(
+              '/ai-agent/chat',
+              { message: text, conversationId: null, stream: true },
+              controller.signal
+            )) {
+              let event: {
+                type?: string;
+                content?: string;
+                error?: string;
+                response?: { message?: string };
               };
+              try {
+                event = JSON.parse(raw);
+              } catch {
+                continue; // skip keep-alive / non-JSON lines
+              }
+              if (event.type === 'content' && event.content) {
+                streamedAny = true;
+                const delta = event.content;
+                updateAssistant((c) => c + delta);
+              } else if (event.type === 'done' && !streamedAny && event.response?.message) {
+                streamedAny = true;
+                const full = event.response.message;
+                updateAssistant(() => full);
+              } else if (event.type === 'error') {
+                throw new Error(event.error || t('ai.chat.noResponse'));
+              }
             }
-            return newMessages;
-          });
+          } catch (streamErr) {
+            if (streamErr instanceof Error && streamErr.name === 'AbortError') {
+              throw streamErr; // outer catch keeps the partial content
+            }
+            if (!streamedAny) {
+              // Stream produced nothing → non-streaming fallback (handles 401 refresh).
+              const result = await apiClient.post<{
+                message?: string;
+                response?: { message?: string };
+                data?: { message?: string };
+              }>(
+                '/ai-agent/chat',
+                { message: text, conversationId: null, stream: false },
+                { timeout: 60000, retries: 0 }
+              );
+              updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
+            }
+            // Otherwise keep the partial content that already streamed.
+          }
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
