@@ -54,7 +54,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 200,
-        useNativeDriver: false, // Web doesn't support native driver
+        useNativeDriver: true,
       }).start();
 
       const tc = getTypeConfig();
@@ -62,7 +62,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 200,
-          useNativeDriver: false, // Web doesn't support native driver
+          useNativeDriver: true,
         }).start(() => setVisible(false));
       }, newConfig.duration || tc.defaultDuration);
     },
