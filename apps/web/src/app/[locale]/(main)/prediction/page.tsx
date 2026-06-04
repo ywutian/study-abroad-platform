@@ -228,7 +228,11 @@ export default function PredictionPage() {
     const selectedIds = selectedSchools.map((s) => s.id);
     const ucIds = ucIdsData?.schoolIds ?? [];
     const hasAnyUc = ucIds.length > 0 && selectedIds.some((id) => ucIds.includes(id));
-    const schoolIdsToUse = hasAnyUc ? ucIds : selectedIds;
+    // Keep the user's non-UC picks alongside the UC comparison set — the backend
+    // expands UC to the campuses they own and preserves the rest. (This used to
+    // REPLACE the selection with all 9 UC ids, silently dropping non-UC schools
+    // like MIT, and 400'd when the user hadn't saved all 9 UCs.)
+    const schoolIdsToUse = hasAnyUc ? Array.from(new Set([...selectedIds, ...ucIds])) : selectedIds;
     if (hasAnyUc) {
       setUcExpandedFrom([...selectedSchools]);
     } else {
