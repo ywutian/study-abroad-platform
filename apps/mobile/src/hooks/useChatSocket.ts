@@ -109,8 +109,10 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
 
       socket = io(`${SOCKET_URL}/chat`, {
         auth: { token },
-        transports: ['websocket', 'polling'],
-        withCredentials: true, // send the Cloud Run session-affinity cookie
+        // Polling first: React Native's WebSocket fails the socket.io upgrade
+        // against Cloud Run, but HTTP long-polling works (same path as REST).
+        // socket.io still upgrades to websocket when it can; if not, polling holds.
+        transports: ['polling', 'websocket'],
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 2000,
