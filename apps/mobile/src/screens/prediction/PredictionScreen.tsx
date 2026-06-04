@@ -2,7 +2,7 @@
  * 录取预测页面
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -251,14 +251,41 @@ export default function PredictionScreen() {
   const intlContext = detectInternationalStatus(profile ?? {});
   const predictions = mapDashboardToPredictions(dashboardData, intlContext.isInternational);
 
+  // Target school list — predictions can only run on schools the user has added
+  // to their list (the backend enforces schoolId ∈ SchoolListItem).
+  const { data: schoolListData } = useQuery({
+    queryKey: ['school-list'],
+    queryFn: () => apiClient.get<{ schoolId: string }[]>(API_ROUTES.SCHOOL_LISTS),
+    enabled: isAuthenticated,
+  });
+  const schoolListIds = useMemo(
+    () => (Array.isArray(schoolListData) ? schoolListData : []).map((item) => item.schoolId),
+    [schoolListData]
+  );
+
   // 运行预测
   const predictMutation = useMutation({
-    mutationFn: (schoolIds: string[]) => apiClient.post(API_ROUTES.PREDICTIONS, { schoolIds }),
+    mutationFn: (schoolIds: string[]) =>
+      apiClient.post(API_ROUTES.PREDICTIONS, { schoolIds }, { timeout: 60000, retries: 0 }),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetch();
     },
+    onError: (e: unknown) => {
+      toast.error(e instanceof Error ? e.message : t('errors.unknown'));
+    },
   });
+
+  // "Add prediction": run predictions across the whole target list, or send the
+  // user to build that list first (find-college) when it's still empty.
+  const handleAddPrediction = useCallback(() => {
+    if (predictMutation.isPending) return;
+    if (schoolListIds.length === 0) {
+      router.push('/find-college' as Href);
+      return;
+    }
+    predictMutation.mutate(schoolListIds);
+  }, [predictMutation, schoolListIds]);
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -304,7 +331,7 @@ export default function PredictionScreen() {
           description={t('prediction.empty.loginRequiredDesc')}
           action={{
             label: t('prediction.empty.goLogin'),
-            onPress: () => {},
+            onPress: () => router.push('/(auth)/login' as Href),
           }}
         />
       </View>
@@ -755,7 +782,7 @@ export default function PredictionScreen() {
             description={t('prediction.empty.description')}
             action={{
               label: t('prediction.empty.addSchool'),
-              onPress: () => {},
+              onPress: () => router.push('/find-college' as Href),
             }}
           />
         )}
@@ -764,7 +791,8 @@ export default function PredictionScreen() {
       {/* Add Prediction Button */}
       <View style={styles.addButtonContainer}>
         <AnimatedButton
-          onPress={() => {}}
+          onPress={handleAddPrediction}
+          loading={predictMutation.isPending}
           style={styles.addButton}
           leftIcon={
             <Ionicons name="add-circle-outline" size={20} color={colors.primaryForeground} />

@@ -27,6 +27,7 @@ jest.mock('@/lib/api/client', () => ({
   apiClient: {
     get: jest.fn().mockResolvedValue(null),
     post: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
@@ -39,6 +40,23 @@ jest.mock('@/stores', () => ({
   useThemeStore: jest.fn(() => ({
     colorScheme: 'light',
   })),
+}));
+
+// Mock Toast (school detail uses useToast for the save-to-list action)
+jest.mock('@/components/ui/Toast', () => ({
+  useToast: () => ({
+    show: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warning: jest.fn(),
+  }),
+}));
+
+// Mock Haptics
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(),
+  NotificationFeedbackType: { Success: 'success', Error: 'error' },
 }));
 
 // Mock case-helpers
@@ -75,6 +93,7 @@ jest.mock('@study-abroad/shared', () => ({
   },
   schoolListRoutes: {
     list: () => '/school-lists',
+    byId: (id: string) => `/school-lists/${id}`,
   },
   caseRoutes: {
     list: () => '/cases',

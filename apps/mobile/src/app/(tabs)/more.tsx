@@ -41,6 +41,18 @@ export default function MoreScreen() {
     {
       title: t('more.groupApply'),
       items: [
+        {
+          icon: 'search',
+          label: t('findCollege.title'),
+          route: '/find-college',
+          color: colors.primary,
+        },
+        {
+          icon: 'bulb',
+          label: t('recommendation.title'),
+          route: '/recommendation',
+          color: colors.violet,
+        },
         { icon: 'folder-open', label: t('more.cases'), route: '/(tabs)/cases', color: colors.info },
         { icon: 'create', label: t('more.essays'), route: '/essays', color: colors.violet },
         { icon: 'document-text', label: t('more.resume'), route: '/resume', color: colors.primary },
@@ -59,6 +71,7 @@ export default function MoreScreen() {
       title: t('more.groupCommunity'),
       items: [
         { icon: 'chatbubbles', label: t('more.forum'), route: '/forum', color: colors.info },
+        { icon: 'ribbon', label: t('hall.title'), route: '/hall', color: colors.pink },
         { icon: 'star', label: t('more.peerReview'), route: '/peer-review', color: colors.violet },
         { icon: 'people', label: t('more.teams'), route: '/teams', color: colors.info },
         {

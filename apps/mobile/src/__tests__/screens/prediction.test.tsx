@@ -306,6 +306,36 @@ describe('PredictionScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/profile/analysis');
   });
 
+  it('navigates to login from the empty-state login button when unauthenticated', () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    fireEvent.press(getByText('prediction.empty.goLogin'));
+    expect(router.push).toHaveBeenCalledWith('/(auth)/login');
+  });
+
+  it('routes "Add Prediction" to find-college when the target list is empty', async () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '1', email: 'test@example.com', role: 'USER' },
+      isAuthenticated: true,
+    });
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/predictions/dashboard')) {
+        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+      }
+      if (url.includes('/school-lists')) return Promise.resolve([]);
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    await waitFor(() => expect(getByText('prediction.addPrediction')).toBeTruthy());
+    fireEvent.press(getByText('prediction.addPrediction'));
+    expect(router.push).toHaveBeenCalledWith('/find-college');
+  });
+
   it('shows explanation copy for estimate, data support, and tier semantics', async () => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
       user: { id: '1', email: 'test@example.com', role: 'USER' },
