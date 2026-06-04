@@ -1122,11 +1122,9 @@ function buildHistoricalSignals(
 ): string[] {
   const isZh = locale === 'zh';
   if (!comparison) {
-    return [
-      isZh
-        ? '该校历史案例样本不足，历史信号只能作为弱参考。'
-        : 'Historical case coverage for this school is thin, so case-based signals are weak.',
-    ];
+    // No sufficient historical sample → emit no signals (the UI hides the whole
+    // section) instead of surfacing a "not enough cases" caveat.
+    return [];
   }
 
   const signals: string[] = [];

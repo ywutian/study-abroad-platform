@@ -739,13 +739,12 @@ export default function PredictionScreen() {
                     </View>
                   )}
 
-                  {/* Similar real cases */}
-                  <View style={styles.similarCasesSection}>
-                    <Text style={[styles.insightTitle, { color: colors.foreground }]}>
-                      {t('prediction.similarCasesTitle')}
-                    </Text>
-                    <CaseComparisonPanel schoolId={prediction.schoolId} />
-                  </View>
+                  {/* Similar real cases — the panel renders its own header and
+                      hides the whole section when there isn't a sufficient sample. */}
+                  <CaseComparisonPanel
+                    schoolId={prediction.schoolId}
+                    title={t('prediction.similarCasesTitle')}
+                  />
 
                   <View style={styles.cardFooter}>
                     <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
@@ -1167,10 +1166,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
   },
   factors: {
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  similarCasesSection: {
     gap: spacing.sm,
     marginBottom: spacing.md,
   },

@@ -349,11 +349,13 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
             items={school.assessment.nextActions}
             compact
           />
-          <ListBlock
-            title={t('applicationAnalysis.schoolCards.historical')}
-            items={school.assessment.historicalSignals}
-            compact
-          />
+          {school.assessment.historicalSignals.length > 0 && (
+            <ListBlock
+              title={t('applicationAnalysis.schoolCards.historical')}
+              items={school.assessment.historicalSignals}
+              compact
+            />
+          )}
           <ListBlock
             title={t('applicationAnalysis.schoolCards.hardStops')}
             items={school.assessment.hardStopRisks}
