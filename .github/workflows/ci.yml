@@ -1135,6 +1135,7 @@ jobs:
             --max-instances=3 \
             --min-instances=0 \
             --cpu-throttling \
+            --session-affinity \
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
