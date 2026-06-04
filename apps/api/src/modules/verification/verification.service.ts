@@ -149,6 +149,28 @@ export class VerificationService {
   }
 
   /**
+   * Lightweight verification status for the current user (mobile profile pills).
+   * `emailVerified` comes from the User record; `identityVerified` is true when
+   * the user has at least one APPROVED verification request.
+   */
+  async getVerificationStatus(userId: string) {
+    const [user, approvedCount] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { emailVerified: true },
+      }),
+      this.prisma.verificationRequest.count({
+        where: { userId, status: VerificationStatus.APPROVED },
+      }),
+    ]);
+
+    return {
+      emailVerified: user?.emailVerified ?? false,
+      identityVerified: approvedCount > 0,
+    };
+  }
+
+  /**
    * 获取待审核的认证请求（管理员）
    */
   async getPendingVerifications(page = 1, pageSize = 20) {

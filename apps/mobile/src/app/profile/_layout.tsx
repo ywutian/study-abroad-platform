@@ -1,5 +1,7 @@
 import React from 'react';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColors } from '@/utils/theme';
 
@@ -22,6 +24,20 @@ export default function ProfileLayout() {
         },
         headerShadowVisible: false,
         headerBackTitle: t('common.back'),
+        // Each profile sub-screen is pushed individually, so it becomes the root
+        // of this nested stack with no automatic back button. Provide an explicit
+        // one (same fix as settings/index) so users are never stranded.
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/profile'))}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.back')}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={{ paddingRight: 8 }}
+          >
+            <Ionicons name="chevron-back" size={26} color={colors.foreground} />
+          </TouchableOpacity>
+        ),
       }}
     >
       <Stack.Screen name="basic" options={{ title: t('profile.basicInfo') }} />

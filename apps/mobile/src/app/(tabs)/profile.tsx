@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -66,8 +67,9 @@ export default function ProfileScreen() {
 
   const { data: pointsData } = useQuery({
     queryKey: ['points', 'balance'],
-    queryFn: () =>
-      apiClient.get<{ balance: number; level: string }>(`${API_ROUTES.POINTS}/balance`),
+    // Canonical endpoint is GET /users/me/points -> { points } (there is no
+    // /points/balance route — that 404'd and the card never rendered).
+    queryFn: () => apiClient.get<{ points: number }>(`${API_ROUTES.USERS}/me/points`),
     enabled: isAuthenticated,
   });
 
@@ -337,7 +339,7 @@ export default function ProfileScreen() {
           style={[styles.pointsCard, { backgroundColor: withOpacity(colors.warning, 0.1) }]}
         >
           <Ionicons name="star" size={20} color={colors.warning} />
-          <Text style={[styles.pointsValue, { color: colors.warning }]}>{pointsData.balance}</Text>
+          <Text style={[styles.pointsValue, { color: colors.warning }]}>{pointsData.points}</Text>
           <Text style={[styles.pointsLabel, { color: colors.foregroundMuted }]}>
             {t('profile.points')}
           </Text>
@@ -413,10 +415,12 @@ export default function ProfileScreen() {
                 >
                   <View style={styles.analysisStatBlock}>
                     <Text style={[styles.analysisStatLabel, { color: colors.foregroundMuted }]}>
-                      Trace
+                      {t('applicationAnalysis.schoolCards.updated')}
                     </Text>
                     <Text style={[styles.analysisStatValue, { color: colors.foreground }]}>
-                      {analysis.meta.traceId.slice(0, 8)}
+                      {analysis.meta.generatedAt
+                        ? new Date(analysis.meta.generatedAt).toLocaleDateString()
+                        : '—'}
                     </Text>
                   </View>
                   <View style={[styles.analysisStatDivider, { backgroundColor: colors.border }]} />
@@ -551,7 +555,7 @@ export default function ProfileScreen() {
       {/* Version */}
       <View style={styles.footer}>
         <Text style={[styles.version, { color: colors.foregroundMuted }]}>
-          {t('settings.version')} 1.0.0
+          {t('settings.version')} {Constants.expoConfig?.version || '1.0.0'}
         </Text>
       </View>
     </ScrollView>

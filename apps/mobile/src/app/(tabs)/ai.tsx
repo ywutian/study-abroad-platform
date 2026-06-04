@@ -13,6 +13,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import Markdown from 'react-native-markdown-display';
 
 import * as Haptics from 'expo-haptics';
@@ -120,12 +121,14 @@ export default function AIScreen() {
   const toast = useToast();
   const { isAuthenticated, user } = useAuthStore();
   const scrollRef = useRef<FlashListRef<AiChatMessage>>(null);
+  const params = useLocalSearchParams<{ prompt?: string }>();
 
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('auto');
   const abortRef = useRef<AbortController | null>(null);
+  const seededPromptRef = useRef(false);
 
   // Abort in-flight stream on unmount
   useEffect(() => {
@@ -133,6 +136,16 @@ export default function AIScreen() {
       abortRef.current?.abort();
     };
   }, []);
+
+  // Seed the input from a deep-link param (e.g. Essays "AI Review" button) once,
+  // so the prompt isn't silently dropped. We pre-fill rather than auto-send so the
+  // user can review before spending an AI request.
+  useEffect(() => {
+    if (params.prompt && !seededPromptRef.current) {
+      seededPromptRef.current = true;
+      setInput(params.prompt);
+    }
+  }, [params.prompt]);
 
   const agentModes = [
     { key: 'auto', label: t('ai.chat.agentModes.auto') },

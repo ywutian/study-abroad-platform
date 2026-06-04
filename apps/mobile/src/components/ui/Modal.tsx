@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
 interface ModalProps {
@@ -39,6 +40,7 @@ export function Modal({
 }: ModalProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   return (
     <RNModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -70,7 +72,13 @@ export function Modal({
                   {title && (
                     <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
                   )}
-                  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <TouchableOpacity
+                    onPress={onClose}
+                    style={styles.closeButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('common.close')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
                     <Ionicons name="close" size={24} color={colors.foregroundMuted} />
                   </TouchableOpacity>
                 </View>

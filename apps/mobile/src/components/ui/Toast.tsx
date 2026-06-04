@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useRef } from 
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -37,6 +38,7 @@ interface ToastProviderProps {
 export function ToastProvider({ children }: ToastProviderProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [config, setConfig] = useState<ToastConfig>({ message: '' });
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -187,6 +189,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
                   useNativeDriver: true,
                 }).start(() => setVisible(false));
               }}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons name="close" size={18} color={colors.foregroundMuted} />
             </TouchableOpacity>
@@ -209,6 +214,7 @@ export function Toast({
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
@@ -265,7 +271,12 @@ export function Toast({
       >
         <Ionicons name={typeConfig.icon} size={20} color={typeConfig.color} style={styles.icon} />
         <Text style={[styles.message, { color: colors.foreground }]}>{config.message}</Text>
-        <TouchableOpacity onPress={onClose}>
+        <TouchableOpacity
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.close')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Ionicons name="close" size={18} color={colors.foregroundMuted} />
         </TouchableOpacity>
       </View>

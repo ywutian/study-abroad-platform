@@ -9,7 +9,10 @@ import { VerificationService } from './verification.service';
 import { CreateVerificationDto, ReviewVerificationDto } from './dto';
 import { CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { ThrottleStrict } from '../../common/decorators/throttle.decorator';
+import {
+  ThrottleStrict,
+  ThrottleRelaxed,
+} from '../../common/decorators/throttle.decorator';
 import { Role } from '@prisma/client';
 
 @ApiTags('verification')
@@ -56,6 +59,16 @@ export class VerificationController {
   @ApiOperation({ summary: 'Get verification statistics (admin)' })
   async getVerificationStats() {
     return this.verificationService.getVerificationStats();
+  }
+
+  // NOTE: must stay above `@Get(':id')` so the static path wins route matching.
+  // Not admin-only and read-heavy (polled on every profile load) → relax the
+  // controller-level ThrottleStrict so normal usage isn't rate-limited.
+  @Get('status')
+  @ThrottleRelaxed()
+  @ApiOperation({ summary: 'Get my verification status (email + identity)' })
+  async getVerificationStatus(@CurrentUser() user: CurrentUserPayload) {
+    return this.verificationService.getVerificationStatus(user.id);
   }
 
   @Get(':id')

@@ -16,9 +16,6 @@ function useDefaultColors() {
   return scheme === 'dark' ? themeColors.dark : themeColors.light;
 }
 
-// Fallback for non-hook contexts
-const defaultColors = themeColors.light;
-
 interface LoadingProps {
   size?: 'small' | 'large';
   text?: string;
@@ -60,6 +57,9 @@ export function Skeleton({
   borderRadius = 4,
   style,
 }: SkeletonProps) {
+  // Theme-aware: use the active scheme's muted color so dark-mode skeletons
+  // don't flash the light cream palette on a near-black background.
+  const colors = useDefaultColors();
   return (
     <View
       style={[
@@ -68,7 +68,7 @@ export function Skeleton({
           width: width as number | `${number}%`,
           height,
           borderRadius,
-          backgroundColor: defaultColors.muted,
+          backgroundColor: colors.muted,
         },
         style,
       ]}
