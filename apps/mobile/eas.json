@@ -23,7 +23,9 @@
       "channel": "preview",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://study-abroad-api-1032896108391.us-central1.run.app"
+        "EXPO_PUBLIC_API_URL": "https://study-abroad-api-1032896108391.us-central1.run.app",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "SENTRY_CLI_EXECUTABLE": "sentry-cli"
       }
     },
     "production": {
@@ -33,11 +35,17 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://study-abroad-api-1032896108391.us-central1.run.app"
+        "EXPO_PUBLIC_API_URL": "https://study-abroad-api-1032896108391.us-central1.run.app",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "SENTRY_CLI_EXECUTABLE": "sentry-cli"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6776472384"
+      }
+    }
   }
 }
