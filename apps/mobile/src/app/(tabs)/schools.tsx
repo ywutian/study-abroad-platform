@@ -119,6 +119,8 @@ export default function SchoolsScreen() {
     endpoint: '/schools',
     params: {
       search: debouncedSearch || undefined,
+      // Slim list-card payload (~5x smaller; drops provenance/metadata the list never renders).
+      view: 'list',
     },
   });
 
