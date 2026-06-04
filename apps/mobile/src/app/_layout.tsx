@@ -142,7 +142,7 @@ const DETAIL_SCREENS = [
   'notifications',
 ] as const;
 
-const DETAIL_SCREEN_OPTIONS = { title: '', headerBackTitle: '' } as const;
+const DETAIL_SCREEN_OPTIONS = { title: '' } as const;
 
 /**
  * Redirect unauthenticated users away from protected routes.
@@ -192,6 +192,10 @@ function RootLayoutNav() {
             backgroundColor: colors.background,
           },
           headerShadowVisible: false,
+          // native-stack v7: empty headerBackTitle is treated as falsy and iOS
+          // falls back to the previous screen's title ("(tabs)" -> "tabs").
+          // 'minimal' is the correct API to show only the back chevron.
+          headerBackButtonDisplayMode: 'minimal',
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -201,6 +205,12 @@ function RootLayoutNav() {
         ))}
         <Stack.Screen
           name="profile"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="settings"
           options={{
             headerShown: false,
           }}

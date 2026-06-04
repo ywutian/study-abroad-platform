@@ -188,12 +188,18 @@ export default function AIScreen() {
           const result = await apiClient.post<{
             message?: string;
             response?: { message?: string };
-          }>('/ai-agent/agent', {
-            agent: agentMode,
-            message: text,
-            conversationId: undefined,
-            locale: undefined,
-          });
+          }>(
+            '/ai-agent/agent',
+            {
+              agent: agentMode,
+              message: text,
+              conversationId: undefined,
+              locale: undefined,
+            },
+            // AI agent + Cloud Run cold start routinely exceeds the 15s default;
+            // no auto-retry (it would re-charge quota and hit the concurrency cap).
+            { timeout: 60000, retries: 0 }
+          );
           const responseText =
             result.message || result.response?.message || t('ai.chat.noResponse');
           setMessages((prev) => {
@@ -214,11 +220,15 @@ export default function AIScreen() {
             message?: string;
             response?: { message?: string };
             data?: { message?: string };
-          }>('/ai-agent/chat', {
-            message: text,
-            conversationId: null,
-            stream: false,
-          });
+          }>(
+            '/ai-agent/chat',
+            {
+              message: text,
+              conversationId: null,
+              stream: false,
+            },
+            { timeout: 60000, retries: 0 }
+          );
           const responseText = getAiResponseText(result, t('ai.chat.noResponse'));
           setMessages((prev) => {
             const newMessages = [...prev];

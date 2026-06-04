@@ -62,7 +62,6 @@ export default function MoreScreen() {
       color: colors.mutedForeground,
     },
     { icon: 'calendar', label: t('more.timeline'), route: '/timeline', color: colors.primary },
-    { icon: 'chatbubbles', label: t('more.chat'), route: '/chat', color: colors.info },
   ];
 
   return (
