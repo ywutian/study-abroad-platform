@@ -43,6 +43,9 @@ export default function TabLayout() {
         name="cases"
         options={{
           title: t('tabs.cases'),
+          // Demoted from the tab bar (6 -> 5 tabs); still routable from the
+          // "More" menu and school/prediction surfaces.
+          href: null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="folder-open" size={size} color={color} />
           ),

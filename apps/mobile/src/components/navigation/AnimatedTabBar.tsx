@@ -151,6 +151,7 @@ const TAB_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   cases: 'folder-open',
   ai: 'sparkles',
   profile: 'person',
+  more: 'grid-outline',
 };
 
 export function AnimatedTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
@@ -168,52 +169,63 @@ export function AnimatedTabBar({ state, descriptors, navigation, insets }: Botto
         },
       ]}
     >
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label =
-          typeof options.tabBarLabel === 'string'
-            ? options.tabBarLabel
-            : options.title !== undefined
-              ? options.title
-              : route.name;
+      {state.routes
+        .filter((route) => {
+          // Respect expo-router's href:null (and tabBarButton:null): demoted
+          // screens stay routable but must not render a (ghost) tab button.
+          const opts = descriptors[route.key].options as {
+            href?: string | null;
+            tabBarButton?: unknown;
+          };
+          return opts.href !== null && opts.tabBarButton == null;
+        })
+        .map((route) => {
+          const { options } = descriptors[route.key];
+          const label =
+            typeof options.tabBarLabel === 'string'
+              ? options.tabBarLabel
+              : options.title !== undefined
+                ? options.title
+                : route.name;
 
-        const isFocused = state.index === index;
-        const iconName = TAB_ICONS[route.name] || 'ellipse';
+          // Filtering shifts the map index, so compare against the ORIGINAL index.
+          const isFocused = state.index === state.routes.indexOf(route);
+          const iconName = TAB_ICONS[route.name] || 'ellipse';
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
-          }
-        };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
-        };
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            });
+          };
 
-        return (
-          <AnimatedTabBarButton
-            key={route.key}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            isFocused={isFocused}
-            label={label as string}
-            iconName={iconName}
-            activeColor={colors.primary}
-            inactiveColor={colors.foregroundMuted}
-            backgroundColor={colors.card}
-            badge={route.name === 'index' ? unreadCount : undefined}
-          />
-        );
-      })}
+          return (
+            <AnimatedTabBarButton
+              key={route.key}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              isFocused={isFocused}
+              label={label as string}
+              iconName={iconName}
+              activeColor={colors.primary}
+              inactiveColor={colors.foregroundMuted}
+              backgroundColor={colors.card}
+              badge={route.name === 'index' ? unreadCount : undefined}
+            />
+          );
+        })}
     </View>
   );
 }

@@ -34,6 +34,12 @@ export default function MoreScreen() {
 
   const items: MoreItem[] = [
     {
+      icon: 'folder-open',
+      label: t('more.cases'),
+      route: '/(tabs)/cases',
+      color: colors.info,
+    },
+    {
       icon: 'notifications',
       label: t('more.notifications'),
       route: '/notifications',
