@@ -1018,7 +1018,9 @@
       "goLogin": "去登录",
       "title": "暂无预测结果",
       "description": "添加学校开始预测",
-      "addSchool": "添加学校"
+      "addSchool": "添加学校",
+      "hasSchools": "已收藏 {{count}} 所学校，运行预测查看录取概率。",
+      "runNow": "查看我的概率"
     },
     "addPrediction": "添加学校预测",
     "reportResult": "报告结果",

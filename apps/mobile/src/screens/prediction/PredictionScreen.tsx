@@ -779,10 +779,24 @@ export default function PredictionScreen() {
           <EmptyState
             icon="analytics-outline"
             title={t('prediction.empty.title')}
-            description={t('prediction.empty.description')}
+            // Distinguish "no schools saved" (send them to add some) from "schools
+            // saved but not yet scored" (run the prediction right here) — otherwise
+            // the user who already saved schools gets bounced to find-college where
+            // their schools already sit, with no idea what to do next.
+            description={
+              schoolListIds.length > 0
+                ? t('prediction.empty.hasSchools', { count: schoolListIds.length })
+                : t('prediction.empty.description')
+            }
             action={{
-              label: t('prediction.empty.addSchool'),
-              onPress: () => router.push('/find-college' as Href),
+              label:
+                schoolListIds.length > 0
+                  ? t('prediction.empty.runNow')
+                  : t('prediction.empty.addSchool'),
+              onPress:
+                schoolListIds.length > 0
+                  ? handleAddPrediction
+                  : () => router.push('/find-college' as Href),
             }}
           />
         )}

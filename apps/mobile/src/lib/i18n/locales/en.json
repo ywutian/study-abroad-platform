@@ -1018,7 +1018,9 @@
       "goLogin": "Login",
       "title": "No predictions yet",
       "description": "Add schools to start prediction",
-      "addSchool": "Add School"
+      "addSchool": "Add School",
+      "hasSchools": "You've saved {{count}} school(s). Run a prediction to see your chances.",
+      "runNow": "See my chances"
     },
     "addPrediction": "Add School Prediction",
     "reportResult": "Report Result",
