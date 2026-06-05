@@ -13,7 +13,7 @@ import {
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -36,6 +36,7 @@ import { useDebouncedSearch } from '@/hooks/api';
 import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
+import { usePaginatedQuery } from '@/hooks/api';
 import {
   useColors,
   spacing,
@@ -46,7 +47,7 @@ import {
   withOpacity,
 } from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
-import type { School, PaginatedResponse } from '@/types';
+import type { School } from '@/types';
 
 // ============== Constants ==============
 
@@ -470,43 +471,45 @@ export default function FindCollegePage() {
 
   // ============== Queries ==============
 
-  // Fetch schools with infinite query
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch, isRefetching } =
-    useInfiniteQuery({
-      queryKey: ['find-college-schools', debouncedSearch, appliedFilters],
-      queryFn: async ({ pageParam = 1 }) => {
-        const params: Record<string, string | number | boolean | undefined> = {
-          page: pageParam,
-          pageSize: PAGE_LIMIT,
-          search: debouncedSearch || undefined,
-        };
+  // Build the filter→param map (renames the form fields to the API's param names).
+  const schoolParams = useMemo(() => {
+    const params: Record<string, string | number | boolean | undefined> = {
+      search: debouncedSearch || undefined,
+    };
+    if (appliedFilters.minRank) params.rankMin = Number(appliedFilters.minRank);
+    if (appliedFilters.maxRank) params.rankMax = Number(appliedFilters.maxRank);
+    if (appliedFilters.minTuition) params.tuitionMin = Number(appliedFilters.minTuition);
+    if (appliedFilters.maxTuition) params.tuitionMax = Number(appliedFilters.maxTuition);
+    if (appliedFilters.minAcceptanceRate)
+      params.acceptanceMin = Number(appliedFilters.minAcceptanceRate);
+    if (appliedFilters.maxAcceptanceRate)
+      params.acceptanceMax = Number(appliedFilters.maxAcceptanceRate);
+    if (appliedFilters.state) params.state = appliedFilters.state;
+    if (appliedFilters.type && appliedFilters.type !== 'all') {
+      params.schoolType = appliedFilters.type;
+    }
+    return params;
+  }, [debouncedSearch, appliedFilters]);
 
-        if (appliedFilters.minRank) params.rankMin = Number(appliedFilters.minRank);
-        if (appliedFilters.maxRank) params.rankMax = Number(appliedFilters.maxRank);
-        if (appliedFilters.minTuition) params.tuitionMin = Number(appliedFilters.minTuition);
-        if (appliedFilters.maxTuition) params.tuitionMax = Number(appliedFilters.maxTuition);
-        if (appliedFilters.minAcceptanceRate)
-          params.acceptanceMin = Number(appliedFilters.minAcceptanceRate);
-        if (appliedFilters.maxAcceptanceRate)
-          params.acceptanceMax = Number(appliedFilters.maxAcceptanceRate);
-        if (appliedFilters.state) params.state = appliedFilters.state;
-        if (appliedFilters.type && appliedFilters.type !== 'all') {
-          params.schoolType = appliedFilters.type;
-        }
-
-        return apiClient.get<PaginatedResponse<School>>('/schools', { params });
-      },
-      getNextPageParam: (lastPage) => {
-        if (lastPage.page < lastPage.totalPages) {
-          return lastPage.page + 1;
-        }
-        return undefined;
-      },
-      initialPageParam: 1,
-    });
-
-  const schools = data?.pages.flatMap((page) => page.items) || [];
-  const totalResults = data?.pages[0]?.total ?? 0;
+  // Fetch schools (infinite scroll). `reference` tier caches the catalog so revisits
+  // are instant; usePaginatedQuery bakes in keepPreviousData so the list never blanks
+  // to a skeleton when the search term or filters change.
+  const {
+    items: schools,
+    total: totalResults,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = usePaginatedQuery<School>({
+    queryKey: qk.findCollege.list(debouncedSearch, appliedFilters),
+    endpoint: '/schools',
+    params: schoolParams,
+    limit: PAGE_LIMIT,
+    cacheTier: 'reference',
+  });
 
   // Fetch user's school list to determine "in list" state
   const { data: schoolListData } = useQuery({

@@ -42,6 +42,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { subscriptionRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -134,13 +135,6 @@ const YEARLY_DISCOUNT_MONTHS = 10; // pay 10 months, get 12
 // Query Key Factory
 // ============================================================
 
-const subscriptionKeys = {
-  all: ['subscription'] as const,
-  plans: () => [...subscriptionKeys.all, 'plans'] as const,
-  current: () => [...subscriptionKeys.all, 'current'] as const,
-  billing: () => [...subscriptionKeys.all, 'billing'] as const,
-};
-
 // ============================================================
 // Helpers
 // ============================================================
@@ -181,7 +175,7 @@ export default function SubscriptionPage() {
   // ─── Queries ───────────────────────────────────────────
 
   const { data: plans, isLoading: plansLoading } = useQuery<PlanDetails[]>({
-    queryKey: subscriptionKeys.plans(),
+    queryKey: qk.subscription.plans(),
     queryFn: () => apiClient.get(subscriptionRoutes.plans()),
     staleTime: 10 * 60_000,
   });
@@ -191,7 +185,7 @@ export default function SubscriptionPage() {
     isLoading: subLoading,
     refetch: refetchSub,
   } = useQuery<UserSubscription>({
-    queryKey: subscriptionKeys.current(),
+    queryKey: qk.subscription.current(),
     queryFn: () => apiClient.get(subscriptionRoutes.current()),
     staleTime: 60_000,
   });
@@ -201,7 +195,7 @@ export default function SubscriptionPage() {
     isLoading: billingLoading,
     refetch: refetchBilling,
   } = useQuery<BillingHistoryItem[]>({
-    queryKey: subscriptionKeys.billing(),
+    queryKey: qk.subscription.billing(),
     queryFn: () => apiClient.get(subscriptionRoutes.invoices()),
     enabled: billingExpanded,
     staleTime: 5 * 60_000,
@@ -212,8 +206,8 @@ export default function SubscriptionPage() {
   const subscribeMutation = useMutation({
     mutationFn: (dto: SubscribeDto) => apiClient.post(subscriptionRoutes.subscribe(), dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: subscriptionKeys.current() });
-      queryClient.invalidateQueries({ queryKey: subscriptionKeys.billing() });
+      queryClient.invalidateQueries({ queryKey: qk.subscription.current() });
+      queryClient.invalidateQueries({ queryKey: qk.subscription.billing() });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('subscription.subscribeSuccess'));
     },
@@ -226,8 +220,8 @@ export default function SubscriptionPage() {
   const cancelMutation = useMutation({
     mutationFn: () => apiClient.delete(subscriptionRoutes.cancel()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: subscriptionKeys.current() });
-      queryClient.invalidateQueries({ queryKey: subscriptionKeys.billing() });
+      queryClient.invalidateQueries({ queryKey: qk.subscription.current() });
+      queryClient.invalidateQueries({ queryKey: qk.subscription.billing() });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('subscription.cancelSuccess'));
       setCancelDialogVisible(false);

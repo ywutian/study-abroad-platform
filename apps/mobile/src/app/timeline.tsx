@@ -38,6 +38,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -170,14 +171,6 @@ const TASK_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   OTHER: 'ellipsis-horizontal',
 };
 
-const keys = {
-  list: ['timeline', 'list'] as const,
-  overview: ['timeline', 'overview'] as const,
-  personal: ['timeline', 'personalEvents'] as const,
-  global: (y: number) => ['timeline', 'globalEvents', y] as const,
-  tasks: (id: string) => ['timeline', 'tasks', id] as const,
-};
-
 // ── Helpers ────────────────────────────────────────────────
 
 const getDaysLeft = (d?: Date | string) => {
@@ -246,7 +239,7 @@ export default function TimelinePage() {
     isLoading: tlLoading,
     refetch: refetchTl,
   } = useQuery<TimelineResponse[]>({
-    queryKey: keys.list,
+    queryKey: qk.timeline.list(),
     queryFn: () => apiClient.get(API_ROUTES.TIMELINES),
   });
   const {
@@ -254,7 +247,7 @@ export default function TimelinePage() {
     isLoading: ovLoading,
     refetch: refetchOv,
   } = useQuery<TimelineOverview>({
-    queryKey: keys.overview,
+    queryKey: qk.timeline.overview(),
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/overview`),
     enabled: activeTab === 'overview',
   });
@@ -263,13 +256,13 @@ export default function TimelinePage() {
     isLoading: peLoading,
     refetch: refetchPe,
   } = useQuery<PersonalEventResponse[]>({
-    queryKey: keys.personal,
+    queryKey: qk.timeline.personal(),
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/personal-events`),
     enabled: activeTab === 'events',
   });
   const yr = new Date().getFullYear();
   const { data: globalEvents, isLoading: geLoading } = useQuery<GlobalEventResponse[]>({
-    queryKey: keys.global(yr),
+    queryKey: qk.timeline.global(yr),
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/global-events`, { params: { year: yr } }),
     enabled: activeTab === 'events',
   });
@@ -277,8 +270,8 @@ export default function TimelinePage() {
   // ── Mutations ──
 
   const invalidateTl = () => {
-    qc.invalidateQueries({ queryKey: keys.list });
-    qc.invalidateQueries({ queryKey: keys.overview });
+    qc.invalidateQueries({ queryKey: qk.timeline.list() });
+    qc.invalidateQueries({ queryKey: qk.timeline.overview() });
   };
 
   const toggleTask = useMutation<TaskResponse, Error, string>({
@@ -314,7 +307,7 @@ export default function TimelinePage() {
   >({
     mutationFn: (dto) => apiClient.post(`${API_ROUTES.TIMELINES}/personal-events`, dto),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.personal });
+      qc.invalidateQueries({ queryKey: qk.timeline.personal() });
       setEventModal(false);
       setEventForm({ title: '', category: '', notes: '' });
       toast.success(t('timeline.eventAdded'));
@@ -324,7 +317,7 @@ export default function TimelinePage() {
   const deleteEvt = useMutation<void, Error, string>({
     mutationFn: (id) => apiClient.delete(`${API_ROUTES.TIMELINES}/personal-events/${id}`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.personal });
+      qc.invalidateQueries({ queryKey: qk.timeline.personal() });
       toast.success(t('timeline.deleted'));
     },
     onError: (e) => toast.error(e.message),
@@ -333,7 +326,7 @@ export default function TimelinePage() {
     mutationFn: (gid) =>
       apiClient.post(`${API_ROUTES.TIMELINES}/personal-events/subscribe`, { globalEventId: gid }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.personal });
+      qc.invalidateQueries({ queryKey: qk.timeline.personal() });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('timeline.subscribed'));
     },
@@ -342,7 +335,7 @@ export default function TimelinePage() {
   const togglePTask = useMutation<any, Error, string>({
     mutationFn: (id) => apiClient.post(`${API_ROUTES.TIMELINES}/personal-tasks/${id}/toggle`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.personal });
+      qc.invalidateQueries({ queryKey: qk.timeline.personal() });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
     onError: (e) => toast.error(e.message),
@@ -1120,7 +1113,7 @@ function InlineTaskList({
   onAdd: () => void;
 }) {
   const { data: tasks, isLoading } = useQuery<TaskResponse[]>({
-    queryKey: keys.tasks(timelineId),
+    queryKey: qk.timeline.tasks(timelineId),
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/${timelineId}/tasks`),
     staleTime: 30_000,
   });

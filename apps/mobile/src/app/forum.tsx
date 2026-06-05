@@ -14,7 +14,7 @@ import {
 import { FlashList } from '@shopify/flash-list';
 import { Stack, router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -47,6 +47,7 @@ import {
 } from '@/utils/theme';
 import { API_ROUTES, forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk, cachePolicy } from '@/lib/query';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -144,12 +145,6 @@ const SORT_OPTIONS: { key: PostSortBy; labelKey: string }[] = [
   { key: PostSortBy.popular, labelKey: 'forum.sort.popular' },
   { key: PostSortBy.comments, labelKey: 'forum.sort.comments' },
 ];
-
-const keys = {
-  categories: ['forum', 'categories'] as const,
-  stats: ['forum', 'stats'] as const,
-  posts: (params: Record<string, unknown>) => ['forum', 'posts', params] as const,
-};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -410,13 +405,16 @@ export default function ForumPage() {
   // ---- Queries ----
 
   const { data: categories } = useQuery<CategoryDto[]>({
-    queryKey: keys.categories,
+    queryKey: qk.forum.categories(),
     queryFn: () => apiClient.get<CategoryDto[]>(`${API_ROUTES.FORUMS}/categories`),
+    // Categories rarely change within a session.
+    ...cachePolicy.static,
   });
 
   const { data: stats } = useQuery<ForumStats>({
-    queryKey: keys.stats,
+    queryKey: qk.forum.stats(),
     queryFn: () => apiClient.get<ForumStats>(`${API_ROUTES.FORUMS}/stats`),
+    ...cachePolicy.standard,
   });
 
   const {
@@ -425,8 +423,12 @@ export default function ForumPage() {
     isFetching,
     refetch,
   } = useQuery<PostsResponse>({
-    queryKey: keys.posts(queryParams),
+    queryKey: qk.forum.posts(queryParams),
     queryFn: () => apiClient.get<PostsResponse>(forumRoutes.posts(), { params: queryParams }),
+    // User-mutable feed → fresh tier; keepPreviousData so the list doesn't blank on
+    // search/category/sort change.
+    ...cachePolicy.fresh,
+    placeholderData: keepPreviousData,
   });
 
   // ---- Mutations ----
@@ -434,7 +436,7 @@ export default function ForumPage() {
   const createPost = useMutation<PostDto, Error, CreatePostDto>({
     mutationFn: (dto) => apiClient.post<PostDto>(forumRoutes.posts(), dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum'] });
+      queryClient.invalidateQueries({ queryKey: qk.forum.all });
       setCreateModalVisible(false);
       resetNewPost();
       toast.success(t('forum.postCreated'));

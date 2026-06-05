@@ -43,10 +43,11 @@ export const qk = {
   },
 
   /** Find-college browse. Keeps its own prefix; share `qk.schools.list` only if the
-   *  filter shape is unified during migration (verify cache aliasing intentionally). */
+   *  filter shape is unified during migration (verify cache aliasing intentionally).
+   *  `filters: object` so a typed filter interface (no index signature) passes without a cast. */
   findCollege: {
     all: ['find-college-schools'] as const,
-    list: (search: string, filters: Params = {}) =>
+    list: (search: string, filters: object = {}) =>
       ['find-college-schools', search, filters] as const,
   },
 

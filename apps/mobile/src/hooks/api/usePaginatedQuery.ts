@@ -1,5 +1,6 @@
 import { useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
+import { cachePolicy, type CacheTier } from '@/lib/query';
 import type { PaginatedResponse } from '@/types';
 
 interface UsePaginatedQueryOptions {
@@ -13,10 +14,12 @@ interface UsePaginatedQueryOptions {
   limit?: number;
   /** Whether the query is enabled (default: true) */
   enabled?: boolean;
-  /** Override how long results stay fresh (ms). Default: the global 5 min. Pass a
-   *  large value for static reference lists so revisits are instant (no refetch). */
+  /** Declare the data class instead of raw numbers — spreads `cachePolicy[cacheTier]`.
+   *  e.g. `reference` for a catalog so revisits are instant. Mirrors the web `useListQuery`. */
+  cacheTier?: CacheTier;
+  /** Override how long results stay fresh (ms). Takes precedence over `cacheTier`. */
   staleTime?: number;
-  /** Override garbage-collection time (ms). Default: the global 30 min. */
+  /** Override garbage-collection time (ms). Takes precedence over `cacheTier`. */
   gcTime?: number;
 }
 
@@ -32,9 +35,11 @@ export function usePaginatedQuery<T>({
   params = {},
   limit = 20,
   enabled = true,
+  cacheTier,
   staleTime,
   gcTime,
 }: UsePaginatedQueryOptions) {
+  const policy = cacheTier ? cachePolicy[cacheTier] : undefined;
   const query = useInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam = 1 }) => {
@@ -54,15 +59,18 @@ export function usePaginatedQuery<T>({
     },
     initialPageParam: 1,
     enabled,
-    staleTime,
-    gcTime,
+    staleTime: staleTime ?? policy?.staleTime,
+    gcTime: gcTime ?? policy?.gcTime,
     placeholderData: keepPreviousData,
   });
 
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
+  /** Total matching records reported by the first page (for "N results" headers). */
+  const total = query.data?.pages[0]?.total ?? 0;
 
   return {
     items,
+    total,
     error: query.error,
     fetchNextPage: query.fetchNextPage,
     hasNextPage: query.hasNextPage,

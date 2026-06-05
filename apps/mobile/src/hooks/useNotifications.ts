@@ -7,6 +7,7 @@ import { deepLinkPaths } from '@/lib/linking';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { API_ROUTES, notificationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification';
 
@@ -223,12 +224,6 @@ function navigateToNotification(notification: Notification): void {
 // Query keys
 // ---------------------------------------------------------------------------
 
-const notificationQueryKeys = {
-  list: (userId: string | null) => ['notifications', userId ?? 'anonymous'] as const,
-  unreadCount: (userId: string | null) =>
-    ['notifications', userId ?? 'anonymous', 'unread-count'] as const,
-};
-
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
@@ -254,7 +249,7 @@ export function useNotifications() {
     error: notificationsError,
     refetch: refreshNotifications,
   } = useQuery<Notification[]>({
-    queryKey: notificationQueryKeys.list(userId),
+    queryKey: qk.notifications.list(userId),
     queryFn: async () => {
       try {
         const result = await apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS);
@@ -291,7 +286,7 @@ export function useNotifications() {
     error: unreadCountError,
     refetch: refetchUnreadCount,
   } = useQuery<UnreadCountResponse>({
-    queryKey: notificationQueryKeys.unreadCount(userId),
+    queryKey: qk.notifications.unreadCount(userId),
     queryFn: async () => {
       try {
         const result = await apiClient.get<UnreadCountResponse>(
@@ -340,16 +335,16 @@ export function useNotifications() {
     mutationFn: (notificationId: string) =>
       apiClient.post(notificationRoutes.markRead(notificationId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.list(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount(userId) });
     },
   });
 
   const markAllAsReadMutation = useMutation({
     mutationFn: () => apiClient.post(notificationRoutes.readAll()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.list(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount(userId) });
       useNotificationStore.getState().resetUnread();
     },
   });
@@ -358,8 +353,8 @@ export function useNotifications() {
     mutationFn: (notificationId: string) =>
       apiClient.delete(notificationRoutes.delete(notificationId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.list(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount(userId) });
     },
   });
 
@@ -419,8 +414,8 @@ export function useNotifications() {
     // Foreground notification received
     notificationListener.current = Notifications.addNotificationReceivedListener((event) => {
       // Refresh queries so UI stays up-to-date
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.list(userId) });
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCount(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.list(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount(userId) });
     });
 
     // User tapped on notification
