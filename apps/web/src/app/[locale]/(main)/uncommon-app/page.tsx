@@ -38,6 +38,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -76,7 +77,7 @@ export default function UncommonAppPage() {
     useState<TieredRecommendations | null>(null);
 
   const { data: schoolList, isLoading: listLoading } = useQuery({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get<SchoolListItem[]>(schoolListRoutes.list()),
   });
 
@@ -116,7 +117,7 @@ export default function UncommonAppPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(schoolListRoutes.byId(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       queryClient.invalidateQueries({ queryKey: PROFILE_ANALYSIS_KEY });
       setAnalysis(null);
       toast.success(t('removedFromList'));
@@ -169,7 +170,7 @@ export default function UncommonAppPage() {
       apiClient.post(`${API_ROUTES.TIMELINES}/generate`, { schoolIds }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['timelines'] });
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       toast.success(t('workspace.syncSuccess'));
     },
     onError: () => {

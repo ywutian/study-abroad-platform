@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { useRecommendationPreflight, useGenerateRecommendation } from '@/hooks/use-recommendation';
 import type { GenerateRecommendationDto } from '@/hooks/use-recommendation';
 import type { RecommendationResult } from '@study-abroad/shared';
@@ -24,7 +25,7 @@ export function RecommendTab() {
   const preflight = useRecommendationPreflight();
   const generateMutation = useGenerateRecommendation();
   const { data: schoolList } = useQuery({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get<Array<{ schoolId: string }>>('/school-lists'),
   });
 

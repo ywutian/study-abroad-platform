@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { teamRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
@@ -45,7 +46,7 @@ export default function TeamSettingsPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['teams', id],
+    queryKey: qk.teams.detail(id),
     queryFn: () => apiClient.get<TeamDetail>(teamRoutes.byId(id)),
     enabled: !!id,
   });
@@ -69,7 +70,7 @@ export default function TeamSettingsPage() {
       maxMembers?: number;
     }) => apiClient.patch(teamRoutes.byId(id), body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: qk.teams.all });
       toast.success(t('toast.settingsSaved'));
     },
     onError: (e: unknown) => {
@@ -81,7 +82,7 @@ export default function TeamSettingsPage() {
   const disbandMutation = useMutation({
     mutationFn: () => apiClient.delete(teamRoutes.byId(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: qk.teams.all });
       toast.success(t('toast.disbanded'));
       setDisbandOpen(false);
       router.push('/teams');

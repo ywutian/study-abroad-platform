@@ -33,6 +33,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES, assessmentRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -171,7 +172,7 @@ export default function AssessmentPage() {
     isLoading: quizLoading,
     refetch: refetchQuiz,
   } = useQuery<AssessmentDto>({
-    queryKey: ['assessment', selectedType],
+    queryKey: qk.assessment.byType(selectedType),
     queryFn: () => apiClient.get(`${API_ROUTES.ASSESSMENTS}/${selectedType}`),
     enabled: !!selectedType && viewState === 'quiz',
     staleTime: 10 * 60_000,
@@ -182,7 +183,7 @@ export default function AssessmentPage() {
     isLoading: histLoading,
     refetch: refetchHist,
   } = useQuery<AssessmentResultDto[]>({
-    queryKey: ['assessment', 'history'],
+    queryKey: qk.assessment.history(),
     queryFn: () => apiClient.get(`${API_ROUTES.ASSESSMENTS}/history/me`),
     enabled: viewState === 'history',
     staleTime: 5 * 60_000,

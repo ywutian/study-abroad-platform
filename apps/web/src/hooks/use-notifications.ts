@@ -4,6 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useChatSocket } from './use-chat-socket';
 import { toast } from 'sonner';
+import { qk } from '@/lib/query';
 
 interface Notification {
   id: string;
@@ -21,8 +22,8 @@ export function useNotifications() {
   const _handleNewNotification = useCallback(
     (notification: Notification) => {
       // 刷新通知列表和未读计数
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.all });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount() });
 
       // 显示toast提醒
       toast(notification.title, {
@@ -37,7 +38,7 @@ export function useNotifications() {
   const { isConnected } = useChatSocket({
     onNewMessage: () => {
       // 新消息也刷新通知
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount() });
     },
   });
 

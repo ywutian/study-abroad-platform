@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -240,12 +241,12 @@ export function TeamsPageClient() {
   const [copiedInviteUrl, setCopiedInviteUrl] = useState<string | null>(null);
 
   const { data: matchPoolsData, isLoading: matchPoolsLoading } = useQuery({
-    queryKey: ['teams', 'match-pools'],
+    queryKey: qk.teams.matchPools(),
     queryFn: () => apiClient.get<MatchPoolsResponse>(teamRoutes.matchPools()),
   });
 
   const { data: selectedPoolDetail, isLoading: selectedPoolLoading } = useQuery({
-    queryKey: ['teams', 'match-pools', selectedPublicPoolId],
+    queryKey: qk.teams.matchPool(selectedPublicPoolId),
     queryFn: () => apiClient.get<MatchPoolDto>(teamRoutes.matchPoolById(selectedPublicPoolId)),
     enabled: !!selectedPublicPoolId,
   });
@@ -258,7 +259,7 @@ export function TeamsPageClient() {
     selectedPublicEntry?.competition?.id ?? selectedPublicEntry?.competitionId ?? null;
 
   const { data: officialContextsData, isLoading: officialContextsLoading } = useQuery({
-    queryKey: ['teams', 'recruitment-contexts', 'official', selectedOfficialCompetitionId],
+    queryKey: qk.teams.recruitmentContext('official', selectedOfficialCompetitionId),
     queryFn: () =>
       apiClient.get<RecruitmentContextDto>(
         teamRoutes.recruitmentContextsBySourceTypeAndCompetitionId({
@@ -271,13 +272,13 @@ export function TeamsPageClient() {
   });
 
   const { data: myCommunityContextsData, isLoading: myCommunityContextsLoading } = useQuery({
-    queryKey: ['teams', 'community-contexts'],
+    queryKey: qk.teams.communityContexts(),
     queryFn: () => apiClient.get<RecruitmentContextDto>(teamRoutes.communityContexts()),
     enabled: !!accessToken,
   });
 
   const { data: myRecruitments, isLoading: myRecruitmentsLoading } = useQuery({
-    queryKey: ['teams', 'recruitments', 'my'],
+    queryKey: qk.teams.recruitmentsMy(),
     queryFn: () => apiClient.get<MyRecruitmentsResponse>(teamRoutes.myRecruitments()),
     enabled: !!accessToken,
   });
@@ -311,7 +312,7 @@ export function TeamsPageClient() {
   }, [currentTeamEntry, editorContextId]);
 
   const { data: deckData, isLoading: deckLoading } = useQuery({
-    queryKey: ['teams', 'recruitments', 'deck', currentCard?.id],
+    queryKey: qk.teams.recruitmentsDeckCard(currentCard?.id),
     queryFn: () =>
       apiClient.get<RecruitmentDeckResponse>(teamRoutes.recruitmentDeck(), {
         params: currentCard?.id ? { cardId: currentCard.id } : undefined,
@@ -323,7 +324,7 @@ export function TeamsPageClient() {
   // a context. Lets new users browse the marketplace before committing to publish.
   const previewContextId = tab === 'public' ? selectedPublicContextId : selectedPrivateContextId;
   const { data: previewDeckData, isLoading: previewDeckLoading } = useQuery({
-    queryKey: ['teams', 'recruitments', 'deck', 'preview', previewContextId],
+    queryKey: qk.teams.recruitmentsDeckPreview(previewContextId),
     queryFn: () =>
       apiClient.get<RecruitmentDeckResponse>(teamRoutes.recruitmentDeckPreview(), {
         params: previewContextId ? { recruitmentContextId: previewContextId } : undefined,
@@ -332,7 +333,7 @@ export function TeamsPageClient() {
   });
 
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
-    queryKey: ['teams', 'matches'],
+    queryKey: qk.teams.matches(),
     queryFn: () => apiClient.get<{ items: TeamMatchDto[] }>(teamRoutes.matches()),
     enabled: isAuthenticated,
   });
@@ -560,7 +561,7 @@ export function TeamsPageClient() {
   }, [authUserId, currentCard]);
 
   const invalidateRecruitmentQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['teams'] });
+    queryClient.invalidateQueries({ queryKey: qk.teams.all });
   };
 
   const createCommunityContextMutation = useMutation({
@@ -1044,7 +1045,7 @@ export function TeamsPageClient() {
               }
               onRefresh={() =>
                 queryClient.invalidateQueries({
-                  queryKey: ['teams', 'recruitments', 'deck'],
+                  queryKey: qk.teams.recruitmentsDeck(),
                 })
               }
             />
@@ -1377,7 +1378,7 @@ export function TeamsPageClient() {
               }
               onRefresh={() =>
                 queryClient.invalidateQueries({
-                  queryKey: ['teams', 'recruitments', 'deck'],
+                  queryKey: qk.teams.recruitmentsDeck(),
                 })
               }
             />

@@ -71,7 +71,7 @@ export const qk = {
 
   ranking: {
     all: ['customRanking'] as const,
-    calculate: (weights: Params) => ['customRanking', weights] as const,
+    calculate: (weights: object) => ['customRanking', weights] as const,
   },
 
   // ════════════════════════════ Prediction / recommendation ════════════════════
@@ -88,7 +88,7 @@ export const qk = {
 
   assessment: {
     all: ['assessment'] as const,
-    byType: (type: string) => ['assessment', type] as const,
+    byType: (type: string | null) => ['assessment', type] as const,
     history: () => ['assessment', 'history'] as const,
   },
 
@@ -110,6 +110,7 @@ export const qk = {
     stats: () => ['forum', 'stats'] as const,
     posts: (params: Params = {}) => ['forum', 'posts', params] as const,
     detail: (id: string) => ['forum', 'post', id] as const,
+    comments: (id: string) => ['forum', 'comments', id] as const,
   },
 
   teams: {
@@ -162,7 +163,8 @@ export const qk = {
 
   // ════════════════════════════ Admin ══════════════════════════════════════════
   admin: {
-    users: (search = '') => ['adminUsers', search] as const,
+    usersAll: ['adminUsers'] as const,
+    users: (search: string) => ['adminUsers', search] as const,
     reports: () => ['adminReports'] as const,
     stats: () => ['adminStats'] as const,
   },

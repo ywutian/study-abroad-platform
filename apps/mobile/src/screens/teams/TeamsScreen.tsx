@@ -22,6 +22,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { useToast } from '@/components/ui/Toast';
 import { teamService } from '@/lib/api/services/team';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 
 type MyRecruitmentsResponse = {
   items: Array<{
@@ -73,17 +74,17 @@ export default function TeamsScreen() {
   const [showPersonality, setShowPersonality] = useState(false);
 
   const { data: contextsData, isLoading: contextsLoading } = useQuery({
-    queryKey: ['mobile-teams', 'contexts'],
+    queryKey: qk.teams.contexts(),
     queryFn: () => teamService.getRecruitmentContexts() as Promise<RecruitmentContextDto>,
   });
 
   const { data: myRecruitments, isLoading: myRecruitmentsLoading } = useQuery({
-    queryKey: ['mobile-teams', 'mine'],
+    queryKey: qk.teams.mine(),
     queryFn: () => teamService.getMyRecruitments() as Promise<MyRecruitmentsResponse>,
   });
 
   const { data: resumes } = useQuery({
-    queryKey: ['mobile-teams', 'resumes'],
+    queryKey: qk.teams.resumes(),
     queryFn: () => apiClient.get<ResumeOption[]>(resumeRoutes.list()),
   });
 
@@ -130,7 +131,7 @@ export default function TeamsScreen() {
   }, [currentCard, currentEntry?.team.name]);
 
   const { data: deckData, isLoading: deckLoading } = useQuery({
-    queryKey: ['mobile-teams', 'deck', currentEntry?.team.id],
+    queryKey: qk.teams.deck(currentEntry?.team.id),
     queryFn: () =>
       teamService.getRecruitmentDeck(
         currentEntry?.team.id ? { teamId: currentEntry.team.id } : undefined
@@ -139,12 +140,12 @@ export default function TeamsScreen() {
   });
 
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
-    queryKey: ['mobile-teams', 'matches'],
+    queryKey: qk.teams.matches(),
     queryFn: () => teamService.getMatches() as Promise<{ items: TeamMatchDto[] }>,
   });
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['mobile-teams'] });
+    queryClient.invalidateQueries({ queryKey: qk.teams.all });
   };
 
   const createMutation = useMutation({

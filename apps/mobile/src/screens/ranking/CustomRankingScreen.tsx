@@ -38,6 +38,7 @@ import {
 import { API_ROUTES } from '@study-abroad/shared';
 import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 
 interface RankingWeights {
   usNewsRank: number;
@@ -83,7 +84,7 @@ export default function CustomRankingScreen() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['customRanking', weights],
+    queryKey: qk.ranking.calculate(weights),
     queryFn: () => apiClient.post<RankedSchool[]>(`${API_ROUTES.RANKINGS}/calculate`, weights),
     enabled: false,
   });

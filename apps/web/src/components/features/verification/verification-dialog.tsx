@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { verificationRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import {
@@ -83,7 +84,7 @@ export function VerificationDialog({
     onSuccess: () => {
       toast.success(t('verification.submitSuccess'));
       queryClient.invalidateQueries({ queryKey: ['my-verifications'] });
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: qk.cases.all });
       onOpenChange(false);
       resetForm();
     },

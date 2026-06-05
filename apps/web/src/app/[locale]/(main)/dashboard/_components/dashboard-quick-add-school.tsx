@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { getSchoolName } from '@/lib/utils';
@@ -86,7 +87,7 @@ export function DashboardQuickAddSchool() {
 
   // Surface user's already-added schools to disable duplicate adds.
   const { data: existingList } = useQuery({
-    queryKey: ['school-lists', 'mine'],
+    queryKey: qk.schoolList.mine,
     queryFn: () => apiClient.get<Array<{ schoolId: string }>>('/school-lists'),
     enabled: open,
   });
@@ -105,7 +106,7 @@ export function DashboardQuickAddSchool() {
   // (We use React Query's optimistic-update API rather than React 19's
   // useOptimistic so the optimistic state participates in the same cache
   // that powers the deduplication check above — single source of truth.)
-  const SCHOOL_LIST_KEY = ['school-lists', 'mine'] as const;
+  const SCHOOL_LIST_KEY = qk.schoolList.mine;
   type SchoolListSnapshot = Array<{ schoolId: string }>;
 
   const addSchool = useMutation({
@@ -144,7 +145,7 @@ export function DashboardQuickAddSchool() {
       // Replace optimistic state with the real server truth, regardless
       // of success / failure outcome.
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
     },
   });
 

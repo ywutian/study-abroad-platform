@@ -26,6 +26,7 @@ import type {
   DataReliability,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -64,7 +65,7 @@ export function ChinaAdmitDashboard() {
   const isZh = i18n.language === 'zh';
 
   const { data: trend, isLoading } = useQuery<ChinaAdmitTrendResponse>({
-    queryKey: ['hall-china-admit-trend'],
+    queryKey: qk.hall.chinaAdmitTrend(),
     queryFn: () =>
       apiClient.get<ChinaAdmitTrendResponse>(hallRoutes.verifiedChinaAdmitTrend(), {
         params: { years: 4 },
@@ -73,7 +74,7 @@ export function ChinaAdmitDashboard() {
   });
 
   const { data: signals } = useQuery<DifficultySignalEntry[]>({
-    queryKey: ['hall-difficulty-signal'],
+    queryKey: qk.hall.difficultySignal(),
     queryFn: () => apiClient.get<DifficultySignalEntry[]>(hallRoutes.verifiedDifficultySignal()),
     staleTime: 10 * 60_000,
   });

@@ -23,6 +23,7 @@ import { useToast } from '@/components/ui/Toast';
 import { hallRoutes } from '@study-abroad/shared';
 import type { ChallengeAttemptResult } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 
 type ChallengeResultOption = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
@@ -75,7 +76,7 @@ export function ChallengeMode() {
     refetch,
     isFetching,
   } = useQuery<ChallengeCase | null>({
-    queryKey: ['hall-challenge'],
+    queryKey: qk.hall.challenge(),
     queryFn: () => apiClient.get<ChallengeCase | null>(hallRoutes.challengeSubmit()),
     staleTime: 0,
   });

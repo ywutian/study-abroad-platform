@@ -58,6 +58,8 @@ export const qk = {
     detail: (id: string) => ['schools', 'detail', id] as const,
     countries: () => ['schools', 'countries'] as const,
     rankingLists: (source: string) => ['schools', 'ranking-lists', source] as const,
+    /** UC system school ids (prediction page). */
+    ucIds: () => ['schools', 'uc-ids'] as const,
   },
 
   // ── Cases library ──────────────────────────────────────────────────
@@ -65,6 +67,8 @@ export const qk = {
     all: ['cases'] as const,
     list: (params: Params = {}) => ['cases', 'list', params] as const,
     detail: (id: string) => ['cases', 'detail', id] as const,
+    /** "Students like you" comparison for a school. */
+    similar: (schoolId: string) => ['cases', 'similar', schoolId] as const,
   },
 
   // ── Social / followers ─────────────────────────────────────────────
@@ -95,11 +99,22 @@ export const qk = {
     saved: () => ['ranking', 'saved'] as const,
   },
 
-  // ── Teams ──────────────────────────────────────────────────────────
+  // ── Teams (rich sub-resource keys — builders mirror the existing strings exactly) ──
   teams: {
     all: ['teams'] as const,
-    list: (params: Params = {}) => ['teams', 'list', params] as const,
-    detail: (id: string) => ['teams', 'detail', id] as const,
+    detail: (id: string) => ['teams', id] as const,
+    matchPools: () => ['teams', 'match-pools'] as const,
+    matchPool: (id: string) => ['teams', 'match-pools', id] as const,
+    recruitmentContext: (scope: string, id: string | null | undefined) =>
+      ['teams', 'recruitment-contexts', scope, id] as const,
+    communityContexts: () => ['teams', 'community-contexts'] as const,
+    recruitmentsMy: () => ['teams', 'recruitments', 'my'] as const,
+    recruitmentsDeck: () => ['teams', 'recruitments', 'deck'] as const,
+    recruitmentsDeckCard: (cardId: string | undefined) =>
+      ['teams', 'recruitments', 'deck', cardId] as const,
+    recruitmentsDeckPreview: (contextId: string | undefined) =>
+      ['teams', 'recruitments', 'deck', 'preview', contextId] as const,
+    matches: () => ['teams', 'matches'] as const,
   },
 
   // ── Forum (migrates off manual fetch in a later pass) ──────────────

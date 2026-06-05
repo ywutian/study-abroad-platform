@@ -20,6 +20,7 @@ import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
 import { PageContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
@@ -79,7 +80,7 @@ export default function PredictionPage() {
   const [selectedSchools, setSelectedSchools] = useState<SchoolSearchItem[]>([]);
   const [hasPreFilled, setHasPreFilled] = useState(false);
   const { data: schoolListData } = useQuery({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get<SchoolListItemApi[]>(schoolListRoutes.list()),
     enabled: canFetchProtectedData,
   });
@@ -116,7 +117,7 @@ export default function PredictionPage() {
   const { data: dashboardData } = usePredictionDashboard(canFetchProtectedData);
   const predictMutation = useRunPrediction();
   const { data: ucIdsData, isLoading: ucIdsLoading } = useQuery({
-    queryKey: ['schools', 'uc-ids'],
+    queryKey: qk.schools.ucIds(),
     queryFn: () => apiClient.get<{ schoolIds: string[] }>(schoolRoutes.ucIds()),
     enabled: canFetchProtectedData,
   });

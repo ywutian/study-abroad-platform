@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -35,7 +36,7 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
   const c = useColors();
 
   const { data: stats } = useQuery<SwipeStatsDto>({
-    queryKey: ['swipe', 'stats'],
+    queryKey: qk.swipe.stats(),
     queryFn: () => apiClient.get<SwipeStatsDto>(`${API_ROUTES.HALLS}/swipe/stats`),
     staleTime: 30_000,
   });

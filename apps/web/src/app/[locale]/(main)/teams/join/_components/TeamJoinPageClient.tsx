@@ -9,6 +9,7 @@ import { PageContainer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { useEffect, useRef } from 'react';
 import { Users } from 'lucide-react';
@@ -31,7 +32,7 @@ export function TeamJoinPageClient() {
     mutationFn: (tkn: string) =>
       apiClient.post<JoinResult>(teamRoutes.joinByToken(), { token: tkn }),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: qk.teams.all });
       router.push(`/teams/${data.id}`);
     },
     onError: () => {

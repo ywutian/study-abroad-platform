@@ -13,6 +13,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
+import { qk } from '@/lib/query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
 import { schoolListRoutes } from '@study-abroad/shared';
@@ -30,7 +31,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
   const { accessToken, isInitialized } = useAuthStore();
 
   const { data: schoolListData } = useQuery({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get<any[]>(schoolListRoutes.list()),
     enabled: isInitialized && !!accessToken,
   });
@@ -55,7 +56,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
       }),
     onSuccess: () => {
       toast.success(t('school.bookmarkAdded'));
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
     },
     onError: (error: Error) => {
       if (error instanceof ApiError && error.statusCode === 409) {
@@ -69,7 +70,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
     mutationFn: (listItemId: string) => apiClient.delete(schoolListRoutes.byId(listItemId)),
     onSuccess: () => {
       toast.success(t('school.bookmarkRemoved'));
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
     },
   });
 

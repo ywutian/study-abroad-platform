@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { CountBadge } from '@/components/ui/count-badge';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { notificationRoutes } from '@study-abroad/shared';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
@@ -235,7 +236,7 @@ export function NotificationCenter() {
 
   // 获取未读数量
   const { data: unreadData } = useQuery({
-    queryKey: ['notifications-unread-count'],
+    queryKey: qk.notifications.unreadCount(),
     queryFn: () => apiClient.get<{ count: number }>(notificationRoutes.unreadCount()),
     refetchInterval: 30000, // 30秒刷新一次
   });
@@ -243,7 +244,7 @@ export function NotificationCenter() {
 
   // 获取通知列表
   const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['notifications'],
+    queryKey: qk.notifications.all,
     queryFn: () =>
       apiClient.get<Notification[]>(notificationRoutes.list(), { params: { limit: 50 } }),
     enabled: open,
@@ -253,8 +254,8 @@ export function NotificationCenter() {
   const markAsReadMutation = useMutation({
     mutationFn: (id: string) => apiClient.post(notificationRoutes.markRead(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.all });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount() });
     },
   });
 
@@ -262,8 +263,8 @@ export function NotificationCenter() {
   const markAllAsReadMutation = useMutation({
     mutationFn: () => apiClient.post(notificationRoutes.readAll()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.all });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount() });
     },
   });
 
@@ -271,8 +272,8 @@ export function NotificationCenter() {
   const deleteNotificationMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(notificationRoutes.byId(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.all });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount() });
     },
   });
 
@@ -280,8 +281,8 @@ export function NotificationCenter() {
   const clearAllMutation = useMutation({
     mutationFn: () => apiClient.delete(notificationRoutes.list()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.all });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount() });
     },
   });
 

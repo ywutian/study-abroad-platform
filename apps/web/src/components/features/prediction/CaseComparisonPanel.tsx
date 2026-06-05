@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { Users, AlertCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -72,7 +73,7 @@ export const CaseComparisonPanel = memo(function CaseComparisonPanel({
   const [showAll, setShowAll] = useState(false);
 
   const { data, isLoading, isError } = useQuery<SimilarCasesResponse>({
-    queryKey: ['cases', 'similar', schoolId],
+    queryKey: qk.cases.similar(schoolId),
     queryFn: () =>
       apiClient.get<SimilarCasesResponse>(
         `/cases/similar?schoolId=${encodeURIComponent(schoolId)}`
