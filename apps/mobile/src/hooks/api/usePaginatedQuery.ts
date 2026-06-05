@@ -3,8 +3,8 @@ import { apiClient } from '@/lib/api/client';
 import type { PaginatedResponse } from '@/types';
 
 interface UsePaginatedQueryOptions {
-  /** Query key array (e.g. ['schools', search, sort]) */
-  queryKey: unknown[];
+  /** Query key (use the `qk` factory). Accepts readonly tuples from `as const`. */
+  queryKey: readonly unknown[];
   /** API endpoint path (e.g. '/schools') */
   endpoint: string;
   /** Query params to send with each request (page & pageSize are added automatically) */

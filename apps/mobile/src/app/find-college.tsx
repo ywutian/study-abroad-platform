@@ -35,6 +35,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useDebouncedSearch } from '@/hooks/api';
 import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -509,7 +510,7 @@ export default function FindCollegePage() {
 
   // Fetch user's school list to determine "in list" state
   const { data: schoolListData } = useQuery({
-    queryKey: ['school-list'],
+    queryKey: qk.schoolList.all,
     queryFn: () =>
       apiClient.get<{ id: string; schoolId: string; school: School }[]>(API_ROUTES.SCHOOL_LISTS),
   });
@@ -528,7 +529,7 @@ export default function FindCollegePage() {
   const addToListMutation = useMutation({
     mutationFn: (schoolId: string) => apiClient.post(API_ROUTES.SCHOOL_LISTS, { schoolId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-list'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('findCollege.addedToList'));
     },
@@ -546,7 +547,7 @@ export default function FindCollegePage() {
       return apiClient.delete(schoolListRoutes.byId(item.id));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-list'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.info(t('findCollege.removedFromList'));
     },

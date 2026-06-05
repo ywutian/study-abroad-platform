@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
 interface SimilarCase {
@@ -40,7 +41,7 @@ export function CaseComparisonPanel({ schoolId, title }: { schoolId: string; tit
   const colors = useColors();
 
   const { data, isLoading, isError } = useQuery<SimilarCasesResponse>({
-    queryKey: ['cases', 'similar', schoolId],
+    queryKey: qk.cases.similar(schoolId),
     queryFn: () =>
       apiClient.get<SimilarCasesResponse>(
         `/cases/similar?schoolId=${encodeURIComponent(schoolId)}`

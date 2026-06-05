@@ -18,6 +18,7 @@ import {
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { BottomSheet } from '@/components/ui/Modal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
+import { qk, cachePolicy } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -119,20 +120,17 @@ export default function SchoolsScreen() {
     isRefetching,
   } = usePaginatedQuery<School>({
     // sortBy is NOT in the key — sorting is done client-side (sortedSchools below),
-    // so changing sort must reuse the cached list instead of refetching from page 1.
-    queryKey: ['schools', debouncedSearch],
+    // so changing sort reuses the cached list instead of refetching from page 1.
+    queryKey: qk.schools.list({ search: debouncedSearch }),
     endpoint: '/schools',
     params: {
       search: debouncedSearch || undefined,
       // Slim list-card payload (~5x smaller; drops provenance/metadata the list never renders).
       view: 'list',
     },
-    // School data is static reference data — keep it fresh for an hour so revisiting
-    // the tab is instant (no skeleton, no refetch). Pull-to-refresh forces a reload.
-    staleTime: 1000 * 60 * 60,
-    // Survive in cache for 2h even if the tab unmounts, so a revisit doesn't fall
-    // back to a cold fetch (default gcTime is only 30 min).
-    gcTime: 1000 * 60 * 60 * 2,
+    // Static reference data — instant revisits (no skeleton/refetch within the tier
+    // window). Pull-to-refresh still forces a reload.
+    ...cachePolicy.reference,
   });
 
   const sortedSchools = useMemo(() => {

@@ -54,6 +54,7 @@ import {
   resolveContextualBaseline,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { CaseComparisonPanel } from '@/components/prediction/CaseComparisonPanel';
 
@@ -201,7 +202,7 @@ export default function PredictionScreen() {
         notes: data.notes,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+      queryClient.invalidateQueries({ queryKey: qk.predictions.all });
       setReportModalVisible(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({ type: 'success', message: t('prediction.resultReported') });
@@ -241,7 +242,7 @@ export default function PredictionScreen() {
     isLoading: predictionsLoading,
     refetch,
   } = useQuery({
-    queryKey: ['predictions', 'dashboard'],
+    queryKey: qk.predictions.dashboard,
     queryFn: () => apiClient.get<DashboardResponse>(`${API_ROUTES.PREDICTIONS}/dashboard`),
     enabled: isAuthenticated,
   });
@@ -254,7 +255,7 @@ export default function PredictionScreen() {
   // Target school list — predictions can only run on schools the user has added
   // to their list (the backend enforces schoolId ∈ SchoolListItem).
   const { data: schoolListData } = useQuery({
-    queryKey: ['school-list'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get<{ schoolId: string }[]>(API_ROUTES.SCHOOL_LISTS),
     enabled: isAuthenticated,
   });

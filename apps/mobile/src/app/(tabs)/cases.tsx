@@ -28,6 +28,7 @@ import { BottomSheet } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { SubmitCaseModal } from '@/components/features/SubmitCaseModal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { useColors, spacing, fontSize, fontWeight, fontFamily } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
@@ -133,7 +134,7 @@ export default function CasesScreen() {
     refetch,
     isRefetching,
   } = usePaginatedQuery<Case>({
-    queryKey: ['cases', debouncedSearch, resultFilter, yearFilter],
+    queryKey: qk.cases.list({ search: debouncedSearch, result: resultFilter, year: yearFilter }),
     endpoint: '/cases',
     params: {
       search: debouncedSearch || undefined,
@@ -334,7 +335,7 @@ export default function CasesScreen() {
         visible={submitModalVisible}
         onClose={() => setSubmitModalVisible(false)}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['cases'] });
+          queryClient.invalidateQueries({ queryKey: qk.cases.all });
         }}
       />
     </View>
