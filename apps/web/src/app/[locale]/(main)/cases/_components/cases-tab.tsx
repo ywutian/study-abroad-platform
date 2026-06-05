@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -15,8 +15,12 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { apiClient, STALE_TIME } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import { caseRoutes } from '@study-abroad/shared';
+import { useDebounce } from '@/hooks/useDebounce';
+import { UI_TIMERS } from '@/lib/constants';
+import { qk, cachePolicy } from '@/lib/query';
+import { toStableParams } from '@/hooks/use-list-query';
 import { CaseCard, SubmitCaseDialog } from '@/components/features';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -79,20 +83,29 @@ export function CasesTab() {
     registerTour({ id: TOURS.CASES, steps: getCasesTourSteps(tTour) });
   }, [registerTour, tTour]);
 
+  // Debounce only the search box so typing fires ONE request after a pause, not one
+  // per keystroke. `toStableParams` drops blank filters + stabilises the key so the
+  // "no filters" view is a single cache entry. `reference` tier = the catalog is not
+  // refetched on every focus; `keepPreviousData` keeps the grid from blanking to a
+  // skeleton while a new filter set loads.
+  const debouncedSearch = useDebounce(filters.search, UI_TIMERS.SEARCH_DEBOUNCE);
+  const queryParams = toStableParams({ ...filters, search: debouncedSearch });
+
   const {
     data: cases,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['cases', filters],
+    queryKey: qk.cases.list(queryParams),
     queryFn: () =>
       apiClient.get<any>(caseRoutes.list(), {
-        params: filters as any,
+        params: queryParams,
         suppressErrorToast: true,
       }),
     retry: 2,
-    staleTime: STALE_TIME.DYNAMIC,
+    placeholderData: keepPreviousData,
+    ...cachePolicy.reference,
     refetchOnWindowFocus: false,
   });
 

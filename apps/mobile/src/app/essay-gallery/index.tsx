@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -32,6 +32,7 @@ import {
 import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { essayAiRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk, cachePolicy } from '@/lib/query';
 import type { GalleryResponse, GalleryEssay } from '@/screens/essay-gallery/types';
 import {
   useResultColors,
@@ -91,8 +92,12 @@ export default function EssayGalleryPage() {
     isLoading,
     isFetching,
   } = useQuery<GalleryResponse>({
-    queryKey: ['essay-gallery', queryParams],
+    queryKey: qk.essayGallery.list(queryParams),
     queryFn: () => apiClient.get<GalleryResponse>(essayAiRoutes.gallery(), { params: queryParams }),
+    // Public gallery → reference tier (cache so revisits are instant); keepPreviousData
+    // so the grid doesn't blank to a skeleton on page/filter change.
+    ...cachePolicy.reference,
+    placeholderData: keepPreviousData,
   });
 
   const hasActiveFilters =

@@ -168,6 +168,10 @@ function isDesignSystemIgnored(lines: string[], index: number): boolean {
   return index > 0 && lines[index - 1].includes('@design-system-ignore-next-line');
 }
 
+function isCachePolicyIgnored(lines: string[], index: number): boolean {
+  return index > 0 && lines[index - 1].includes('@cache-policy-ignore-next-line');
+}
+
 const FORBIDDEN_SHADOW_PATTERNS = [
   /shadow-\[[^\]]*oklch\([^)]*[ _]0\.(?:1\d|[2-9]\d?)[^)]*\)[^\]]*\]/,
   /box-shadow:\s*[^;]*oklch\([^)]*[ _]0\.(?:1\d|[2-9]\d?)[^)]*\)/,
@@ -652,6 +656,119 @@ function checkUndefinedDsVar(
   return issues;
 }
 
+// ── Cache-policy / query-key rules (unified caching layer — see lib/query/) ──
+
+/**
+ * First-segment domain strings that have a `qk` builder and represent a LIST.
+ * An inline `queryKey: ['<domain>', …]` for one of these should route through the
+ * `qk` factory instead, so keys + invalidations can't drift apart.
+ */
+const QK_LIST_DOMAINS = [
+  'cases',
+  'schools',
+  'school-lists',
+  'social-relations',
+  'social-overview',
+  'recommended-users',
+  'notifications',
+  'notifications-unread-count',
+  'ranking',
+  'teams',
+  'forum',
+];
+
+// The factory itself, tests, and type defs may hold inline keys legitimately.
+const CACHE_POLICY_EXEMPT_FILES = ['/lib/query/', '/hooks/use-list-query', '.test.', '.spec.'];
+
+// Signals that a query (or its surrounding block) is a paginated/searchable list.
+const LIST_SIGNAL_PATTERN =
+  /useInfiniteQuery|useListQuery|usePaginatedQuery|keepPreviousData|placeholderData|pageSize|\bpage\b|\bsearch\b|\bfilters\b/;
+
+/** (a) Inline list query key instead of the `qk` factory. */
+function checkInlineListQueryKey(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
+  const domainAlt = QK_LIST_DOMAINS.map((d) => d.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')).join(
+    '|'
+  );
+  const pattern = new RegExp(`queryKey:\\s*\\[\\s*['"\`](${domainAlt})['"\`]`);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
+    const m = line.match(pattern);
+    if (m) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-inline-list-query-key',
+        message: `Inline list query key ['${m[1]}', …] — use the \`qk\` factory (import { qk } from '@/lib/query') so keys + invalidations stay consistent. Suppress with // @cache-policy-ignore-next-line.`,
+        severity: 'warning',
+      });
+    }
+  }
+  return issues;
+}
+
+/** (b) A short-lived staleTime (DYNAMIC/REALTIME) on what looks like a list query. */
+function checkDynamicStaleTimeOnList(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
+  const WINDOW = 8;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
+    if (!/staleTime:\s*STALE_TIME\.(?:DYNAMIC|REALTIME)/.test(line)) continue;
+    let hasListSignal = false;
+    for (let j = Math.max(0, i - WINDOW); j <= Math.min(lines.length - 1, i + WINDOW); j++) {
+      if (j !== i && LIST_SIGNAL_PATTERN.test(lines[j])) {
+        hasListSignal = true;
+        break;
+      }
+    }
+    if (hasListSignal) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-dynamic-staletime-on-list',
+        message:
+          'Short staleTime (DYNAMIC/REALTIME) on a list query causes refetch thrash. Spread a `cachePolicy` tier (reference/standard) instead. Suppress with // @cache-policy-ignore-next-line.',
+        severity: 'warning',
+      });
+    }
+  }
+  return issues;
+}
+
+/** (c) A paginated/searchable query in a file that never sets keepPreviousData. */
+function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
+  const content = lines.join('\n');
+  // Files on the shared list hook already bake in keepPreviousData.
+  if (/useListQuery|usePaginatedQuery/.test(content)) return issues;
+  if (/keepPreviousData|placeholderData/.test(content)) return issues;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
+    const isInfinite = /useInfiniteQuery\s*[<(]/.test(line);
+    const isOffsetList =
+      /useQuery\s*[<(]/.test(line) &&
+      lines.slice(i, i + 15).some((l) => /pageSize|page:\s|['"]page['"]/.test(l));
+    if (isInfinite || isOffsetList) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'list-query-needs-keep-previous',
+        message:
+          'Paginated/searchable query without keepPreviousData — the list blanks to a skeleton on every page/filter change. Add `placeholderData: keepPreviousData` (or use the shared list hook). Suppress with // @cache-policy-ignore-next-line.',
+        severity: 'warning',
+      });
+      return issues; // one finding per file is enough to flag it
+    }
+  }
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
@@ -687,7 +804,10 @@ function main() {
       ...checkConsole(filePath, lines),
       ...checkMissingLoading(filePath),
       ...checkMissingErrorBoundary(filePath),
-      ...checkTooltipWithoutProvider(filePath, content)
+      ...checkTooltipWithoutProvider(filePath, content),
+      ...checkInlineListQueryKey(filePath, lines),
+      ...checkDynamicStaleTimeOnList(filePath, lines),
+      ...checkListQueryNeedsKeepPrevious(filePath, lines)
     );
   }
 
@@ -723,8 +843,10 @@ function main() {
   console.log(`Total: ${errors.length} error(s), ${warnings.length} warning(s)`);
   console.log('');
 
-  // Exit with error if there are blocking issues
-  if (errors.length > 0 && stagedOnly) {
+  // Exit with error if there are blocking issues. Fail under BOTH pre-commit
+  // (--staged) AND CI — previously CI ran without --staged, so `error`-severity rules
+  // never blocked there (toothless). Mirrors the mobile checker.
+  if (errors.length > 0 && (stagedOnly || isCI)) {
     process.exit(1);
   }
 }

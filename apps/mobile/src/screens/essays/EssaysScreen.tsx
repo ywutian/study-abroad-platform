@@ -38,6 +38,7 @@ import {
 } from '@/utils/theme';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 
 type EssayStatus = 'draft' | 'in_progress' | 'review' | 'completed';
@@ -91,7 +92,7 @@ export default function EssaysScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['essays'],
+    queryKey: qk.essays.all,
     queryFn: () => apiClient.get<Essay[]>(`${profileRoutes.me()}/essays`),
     enabled: isAuthenticated,
   });
@@ -100,7 +101,7 @@ export default function EssaysScreen() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/essays/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['essays'] });
+      queryClient.invalidateQueries({ queryKey: qk.essays.all });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({ type: 'success', message: t('essays.toast.deleted') });
       setDeleteId(null);

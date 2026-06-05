@@ -37,6 +37,7 @@ import {
 } from '@/utils/theme';
 import { essayAiRoutes, profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 
 interface Essay {
   id: string;
@@ -167,7 +168,7 @@ export default function EssayEditorScreen() {
       return apiClient.put(`${profileRoutes.me()}/essays/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['essays'] });
+      queryClient.invalidateQueries({ queryKey: qk.essays.all });
       setHasChanges(false);
       toast.show({ type: 'success', message: t('essayEditor.saved') });
     },

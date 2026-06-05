@@ -289,6 +289,131 @@ function isDesignSystemIgnored(lines: string[], index: number): boolean {
   return index > 0 && lines[index - 1].includes('@design-system-ignore-next-line');
 }
 
+function isCachePolicyIgnored(lines: string[], index: number): boolean {
+  return index > 0 && lines[index - 1].includes('@cache-policy-ignore-next-line');
+}
+
+// ── Cache-policy / query-key rules (unified caching layer — see lib/query/) ──
+
+/** First-segment domain strings that have a `qk` builder and represent a LIST. */
+const QK_LIST_DOMAINS = [
+  'cases',
+  'schools',
+  'school-list',
+  'find-college-schools',
+  'mobile-teams',
+  'essays',
+  'essay-gallery',
+  'forum',
+  'customRanking',
+  'adminUsers',
+  'adminReports',
+  'notifications',
+  'timeline',
+  'subscription',
+  'recommendation',
+  'hall-verified',
+  'hall-target-ranking',
+  'hall-difficulty-signal',
+  'hall-china-admit-trend',
+  'hall-challenge',
+  'swipe',
+  'assessment',
+];
+
+// The factory itself, the shared hooks, and tests may hold inline keys legitimately.
+const CACHE_POLICY_EXEMPT_FILES = ['/lib/query/', '/hooks/api/', '.test.', '.spec.'];
+
+const LIST_SIGNAL_PATTERN =
+  /useInfiniteQuery|usePaginatedQuery|keepPreviousData|placeholderData|pageSize|\bpage\b|\bsearch\b|\bfilters\b/;
+
+/** (a) Inline list query key instead of the `qk` factory. */
+function checkInlineListQueryKey(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
+  const domainAlt = QK_LIST_DOMAINS.map((d) => d.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')).join(
+    '|'
+  );
+  const pattern = new RegExp(`queryKey:\\s*\\[\\s*['"\`](${domainAlt})['"\`]`);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
+    const m = line.match(pattern);
+    if (m) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-inline-list-query-key',
+        message: `Inline list query key ['${m[1]}', …] — use the \`qk\` factory (import { qk } from '@/lib/query') so keys + invalidations stay consistent. Suppress with // @cache-policy-ignore-next-line.`,
+        severity: 'warning',
+      });
+    }
+  }
+  return issues;
+}
+
+/** (b) A sub-minute staleTime literal on what looks like a list query. */
+function checkDynamicStaleTimeOnList(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
+  const WINDOW = 8;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
+    const m = line.match(/staleTime:\s*([\d_]+)\s*[,}]/);
+    if (!m) continue;
+    const ms = Number(m[1].replace(/_/g, ''));
+    if (!Number.isFinite(ms) || ms >= 60_000) continue; // ≥1 min is fine for a list
+    let hasListSignal = false;
+    for (let j = Math.max(0, i - WINDOW); j <= Math.min(lines.length - 1, i + WINDOW); j++) {
+      if (j !== i && LIST_SIGNAL_PATTERN.test(lines[j])) {
+        hasListSignal = true;
+        break;
+      }
+    }
+    if (hasListSignal) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-dynamic-staletime-on-list',
+        message:
+          'Sub-minute staleTime on a list query causes refetch thrash. Spread a `cachePolicy` tier (reference/standard) instead. Suppress with // @cache-policy-ignore-next-line.',
+        severity: 'warning',
+      });
+    }
+  }
+  return issues;
+}
+
+/** (c) A paginated/searchable query in a file that never sets keepPreviousData. */
+function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
+  const content = lines.join('\n');
+  if (/usePaginatedQuery/.test(content)) return issues; // hook bakes it in
+  if (/keepPreviousData|placeholderData/.test(content)) return issues;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
+    const isInfinite = /useInfiniteQuery\s*[<(]/.test(line);
+    const isOffsetList =
+      /useQuery\s*[<(]/.test(line) &&
+      lines.slice(i, i + 15).some((l) => /pageSize|page:\s|['"]page['"]/.test(l));
+    if (isInfinite || isOffsetList) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'list-query-needs-keep-previous',
+        message:
+          'Paginated/searchable query without keepPreviousData — the list blanks to a skeleton on every page/filter change. Add `placeholderData: keepPreviousData` (or use usePaginatedQuery). Suppress with // @cache-policy-ignore-next-line.',
+        severity: 'warning',
+      });
+      return issues;
+    }
+  }
+  return issues;
+}
+
 function scanPatternRule(
   filePath: string,
   lines: string[],
@@ -342,7 +467,10 @@ function main() {
       ...checkHardcodedStatusColor(filePath, lines),
       ...checkSharedTokenDrift(filePath, lines),
       ...checkConsole(filePath, lines),
-      ...checkFileSize(filePath, lines)
+      ...checkFileSize(filePath, lines),
+      ...checkInlineListQueryKey(filePath, lines),
+      ...checkDynamicStaleTimeOnList(filePath, lines),
+      ...checkListQueryNeedsKeepPrevious(filePath, lines)
     );
   }
 

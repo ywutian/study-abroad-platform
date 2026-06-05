@@ -1,4 +1,5 @@
 import { useColors } from '@/utils/theme';
+import { qk } from '@/lib/query';
 import type { SchoolRanking } from '@study-abroad/shared/ranking';
 import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 
@@ -124,11 +125,9 @@ export const TIER_CONFIG = {
 // Query Key Factory
 // ============================================================
 
-export const recommendationKeys = {
-  all: ['recommendation'] as const,
-  preflight: () => [...recommendationKeys.all, 'preflight'] as const,
-  history: () => [...recommendationKeys.all, 'history'] as const,
-};
+// Re-exported from the unified `qk` factory so every recommendation screen shares
+// one key source (was a standalone duplicate). Same shape: all / preflight() / history().
+export const recommendationKeys = qk.recommendation;
 
 // ============================================================
 // Helpers

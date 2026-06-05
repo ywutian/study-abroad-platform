@@ -23,7 +23,9 @@ import {
 import { useRouter } from '@/lib/i18n/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuthStore } from '@/stores/auth';
-import { apiClient, STALE_TIME } from '@/lib/api';
+import { apiClient } from '@/lib/api';
+import { qk, cachePolicy } from '@/lib/query';
+import { toStableParams } from '@/hooks/use-list-query';
 import { ApiError } from '@/lib/api/api-error';
 import { schoolRoutes, schoolListRoutes, API_ROUTES } from '@study-abroad/shared';
 import { NICHE_GRADE_QUERY_VALUES, type NicheGradeQueryValue } from '@study-abroad/shared/scoring';
@@ -232,21 +234,22 @@ export function BrowseTab() {
 
   // Country list (fetched once, used for both filter dropdown and chip labels)
   const { data: availableCountries } = useQuery<AvailableCountry[]>({
-    queryKey: ['schools', 'countries'],
+    queryKey: qk.schools.countries(),
     queryFn: () =>
       apiClient.get<AvailableCountry[]>(schoolRoutes.countries(), {
         suppressErrorToast: true,
       }),
-    staleTime: 5 * 60 * 1000,
+    // Country filter + ranking-list options are immutable for a session.
+    ...cachePolicy.static,
   });
 
   const { data: rankingListOptions } = useQuery<RankingListOption[]>({
-    queryKey: ['schools', 'ranking-lists', SCHOOL_DEFAULT_RANKING_SOURCE],
+    queryKey: qk.schools.rankingLists(SCHOOL_DEFAULT_RANKING_SOURCE),
     queryFn: () =>
       apiClient.get<RankingListOption[]>(schoolRoutes.rankingLists(), {
         suppressErrorToast: true,
       }),
-    staleTime: 5 * 60 * 1000,
+    ...cachePolicy.static,
   });
 
   const countriesT = useTranslations('schools.countries');
@@ -328,17 +331,18 @@ export function BrowseTab() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: [
-      'schools',
-      debouncedSearch,
+    queryKey: qk.schools.list({
+      search: debouncedSearch,
       country,
-      advancedFilters,
+      // Stable-serialise the two nested filter objects so deep-equal filter sets
+      // share one cache entry and blank fields drop out of the key.
+      filters: toStableParams(advancedFilters),
       sortBy,
       rankingList,
-      fitWeights,
+      weights: toStableParams(fitWeights),
       page,
       pageSize,
-    ],
+    }),
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: buildSchoolQueryParams({
@@ -354,9 +358,10 @@ export function BrowseTab() {
         }),
         suppressErrorToast: true,
       }),
-    // Static catalog data → cache 30 min so revisits are instant; keep the previous
-    // results on screen during a refetch (page/filter change) instead of going blank.
-    staleTime: STALE_TIME.STATIC,
+    // Static catalog data → `reference` tier (30 min stale + 30 min gc) so revisits
+    // are instant; keep the previous results on screen during a refetch (page/filter
+    // change) instead of going blank.
+    ...cachePolicy.reference,
     placeholderData: keepPreviousData,
     retry: 2,
     refetchOnWindowFocus: false,
@@ -369,7 +374,7 @@ export function BrowseTab() {
     onSuccess: (_, { schoolId }) => {
       setAddedSchools((prev) => new Set([...prev, schoolId]));
       toast.success(t('addedToList'));
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
     },
     onError: (error: Error) => {
       if (error instanceof ApiError && error.statusCode === 409) {
@@ -403,7 +408,7 @@ export function BrowseTab() {
         setAddedSchools((prev) => new Set([...prev, s.id]));
       });
       setSelectedSchools([]);
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
 
       try {
         const tlResult = await apiClient.post<{
