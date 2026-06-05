@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   PaginatedResponse,
   RecommendedSocialUser,
@@ -41,6 +41,9 @@ import { toast } from 'sonner';
 
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
+import { useDebounce } from '@/hooks/useDebounce';
+import { UI_TIMERS } from '@/lib/constants';
+import { qk, cachePolicy } from '@/lib/query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
@@ -128,27 +131,41 @@ export default function FollowersPage() {
     }
   }, [activeTab, relationship]);
 
+  // Debounce search so typing fires one request after a pause, not per keystroke.
+  // The page-reset effect above still keys off raw `searchQuery` (resetting to page 1
+  // as you type is correct), but the network query uses the debounced value.
+  const debouncedSearch = useDebounce(searchQuery, UI_TIMERS.SEARCH_DEBOUNCE);
+
   const overviewQuery = useQuery({
-    queryKey: ['social-overview'],
+    queryKey: qk.social.overview(),
     queryFn: () => apiClient.get<SocialOverview>(chatRoutes.socialOverview()),
     enabled: !!user,
   });
 
   const relationsQuery = useQuery({
-    queryKey: ['social-relations', activeTab, page, searchQuery, sort, relationship, role],
+    queryKey: qk.social.relations({
+      type: activeTab,
+      page,
+      search: debouncedSearch || undefined,
+      sort,
+      relationship: activeTab === 'blocked' ? 'all' : relationship,
+      role,
+    }),
     queryFn: () =>
       apiClient.get<PaginatedResponse<SocialRelationItem>>(chatRoutes.socialRelations(), {
         params: {
           type: activeTab,
           page,
           pageSize: SOCIAL_RELATION_PAGE_SIZE,
-          search: searchQuery || undefined,
+          search: debouncedSearch || undefined,
           sort,
           relationship: activeTab === 'blocked' ? 'all' : relationship,
           role,
         },
       }),
     enabled: !!user,
+    placeholderData: keepPreviousData,
+    ...cachePolicy.standard,
   });
 
   const bulkMutation = useMutation({
@@ -1020,10 +1037,10 @@ function getActionIcon(action: SocialBulkAction) {
 }
 
 function invalidateSocialQueries(queryClient: ReturnType<typeof useQueryClient>) {
-  queryClient.invalidateQueries({ queryKey: ['social-overview'] });
-  queryClient.invalidateQueries({ queryKey: ['social-relations'] });
-  queryClient.invalidateQueries({ queryKey: ['recommended-users'] });
-  queryClient.invalidateQueries({ queryKey: ['followers'] });
-  queryClient.invalidateQueries({ queryKey: ['following'] });
-  queryClient.invalidateQueries({ queryKey: ['blocked'] });
+  queryClient.invalidateQueries({ queryKey: qk.social.overview() });
+  queryClient.invalidateQueries({ queryKey: qk.social.relationsAll });
+  queryClient.invalidateQueries({ queryKey: qk.social.recommended() });
+  queryClient.invalidateQueries({ queryKey: qk.social.followers() });
+  queryClient.invalidateQueries({ queryKey: qk.social.following() });
+  queryClient.invalidateQueries({ queryKey: qk.social.blocked() });
 }

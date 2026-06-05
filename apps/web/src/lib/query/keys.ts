@@ -68,10 +68,17 @@ export const qk = {
   },
 
   // ── Social / followers ─────────────────────────────────────────────
+  // Keys are hyphenated siblings (NOT nested under one `['social']` prefix) to match
+  // the strings the followers feature already uses. Invalidate the whole paginated
+  // relations list via `relationsAll` (bare prefix matches every page/filter).
   social: {
-    all: ['social'] as const,
     overview: () => ['social-overview'] as const,
     relations: (params: Params = {}) => ['social-relations', params] as const,
+    relationsAll: ['social-relations'] as const,
+    recommended: () => ['recommended-users'] as const,
+    followers: () => ['followers'] as const,
+    following: () => ['following'] as const,
+    blocked: () => ['blocked'] as const,
   },
 
   // ── Notifications ──────────────────────────────────────────────────

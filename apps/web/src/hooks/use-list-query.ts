@@ -64,11 +64,14 @@ function stableStringify(value: unknown): string {
  * array) are dropped so the "no filters" state collapses to a single cache entry;
  * nested objects/arrays are stable-serialised so key order can't cause a cache miss.
  */
-export function toStableParams(filters: Filters | undefined): StableParams {
+// `object` (not `Record<string, unknown>`) so typed filter *interfaces* —
+// which lack an implicit index signature — are accepted without a cast at call sites.
+export function toStableParams(filters: object | undefined): StableParams {
   const out: StableParams = {};
   if (!filters) return out;
-  for (const key of Object.keys(filters).sort()) {
-    const value = filters[key];
+  const entries = filters as Record<string, unknown>;
+  for (const key of Object.keys(entries).sort()) {
+    const value = entries[key];
     if (value === undefined || value === null || value === '') continue;
     if (Array.isArray(value)) {
       if (value.length === 0) continue;

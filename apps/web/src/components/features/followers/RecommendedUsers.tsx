@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { chatRoutes } from '@study-abroad/shared';
@@ -59,18 +60,18 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['recommended-users'],
+    queryKey: qk.social.recommended(),
     queryFn: () => apiClient.get<RecommendedUser[]>(`${chatRoutes.recommendations()}?limit=8`),
   });
 
   const followMutation = useMutation({
     mutationFn: (userId: string) => apiClient.post(chatRoutes.follow(userId)),
     onSuccess: (_, userId) => {
-      queryClient.setQueryData(['recommended-users'], (old: RecommendedUser[] | undefined) =>
+      queryClient.setQueryData(qk.social.recommended(), (old: RecommendedUser[] | undefined) =>
         old?.filter((u) => u.id !== userId)
       );
-      queryClient.invalidateQueries({ queryKey: ['following'] });
-      queryClient.invalidateQueries({ queryKey: ['followers'] });
+      queryClient.invalidateQueries({ queryKey: qk.social.following() });
+      queryClient.invalidateQueries({ queryKey: qk.social.followers() });
       toast.success(t('followers.toast.followSuccess'));
     },
   });

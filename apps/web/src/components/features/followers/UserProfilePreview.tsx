@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { ApiError } from '@/lib/api/api-error';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -92,9 +93,9 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     mutationFn: () => apiClient.post(chatRoutes.follow(userId!)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
-      queryClient.invalidateQueries({ queryKey: ['following'] });
-      queryClient.invalidateQueries({ queryKey: ['followers'] });
-      queryClient.invalidateQueries({ queryKey: ['recommended-users'] });
+      queryClient.invalidateQueries({ queryKey: qk.social.following() });
+      queryClient.invalidateQueries({ queryKey: qk.social.followers() });
+      queryClient.invalidateQueries({ queryKey: qk.social.recommended() });
       toast.success(t('followers.toast.followSuccess'));
     },
   });
@@ -103,8 +104,8 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     mutationFn: () => apiClient.delete(chatRoutes.follow(userId!)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
-      queryClient.invalidateQueries({ queryKey: ['following'] });
-      queryClient.invalidateQueries({ queryKey: ['followers'] });
+      queryClient.invalidateQueries({ queryKey: qk.social.following() });
+      queryClient.invalidateQueries({ queryKey: qk.social.followers() });
       toast.success(t('followers.toast.unfollowSuccess'));
     },
   });

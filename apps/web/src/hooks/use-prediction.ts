@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { API_ROUTES, predictionRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
@@ -227,6 +227,7 @@ export function usePredictionHistory(page = 1, pageSize = 20, enabled = true) {
         params: { page, pageSize },
       }),
     staleTime: STALE_TIME.MODERATE,
+    placeholderData: keepPreviousData, // keep the table visible while paging
     enabled,
   });
 }

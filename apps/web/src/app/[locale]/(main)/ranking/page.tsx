@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
+import { toStableParams } from '@/hooks/use-list-query';
 import { rankingRoutes } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Trophy } from 'lucide-react';
@@ -44,7 +46,7 @@ export default function RankingPage() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['ranking', weights],
+    queryKey: qk.ranking.calculate(toStableParams(weights)),
     queryFn: () =>
       apiClient.post<
         Array<{
