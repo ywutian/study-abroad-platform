@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.studyabroad.mobile",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "associatedDomains": ["applinks:studyabroad.app"]
     },
     "android": {

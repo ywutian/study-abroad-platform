@@ -4,7 +4,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import {
   FloatingAddButton,
   type SelectedSchool,
@@ -21,6 +21,7 @@ import {
   type SchoolFilters,
 } from '@/components/features/schools/school-filters';
 import { useRouter } from '@/lib/i18n/navigation';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
@@ -191,6 +192,9 @@ export function BrowseTab() {
 
   // Filter state
   const [search, setSearch] = useState(initialState.search);
+  // Debounce the search before it drives the query so typing doesn't fire a
+  // network request per keystroke (the raw `search` still feeds the input).
+  const debouncedSearch = useDebounce(search, 300);
   const [country, setCountry] = useState(initialState.country);
   const [sortBy, setSortBy] = useState<SchoolSortBy>(initialState.sortBy);
   const [rankingList, setRankingList] = useState<SchoolRankingList>(initialState.rankingList);
@@ -268,7 +272,7 @@ export function BrowseTab() {
       return;
     }
     setPage(1);
-  }, [search, country, advancedFilters, sortBy, rankingList, fitWeights, pageSize]);
+  }, [debouncedSearch, country, advancedFilters, sortBy, rankingList, fitWeights, pageSize]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -326,7 +330,7 @@ export function BrowseTab() {
   } = useQuery({
     queryKey: [
       'schools',
-      search,
+      debouncedSearch,
       country,
       advancedFilters,
       sortBy,
@@ -338,7 +342,7 @@ export function BrowseTab() {
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: buildSchoolQueryParams({
-          search,
+          search: debouncedSearch,
           country,
           filters: advancedFilters,
           page,
@@ -350,7 +354,10 @@ export function BrowseTab() {
         }),
         suppressErrorToast: true,
       }),
-    staleTime: STALE_TIME.DYNAMIC,
+    // Static catalog data → cache 30 min so revisits are instant; keep the previous
+    // results on screen during a refetch (page/filter change) instead of going blank.
+    staleTime: STALE_TIME.STATIC,
+    placeholderData: keepPreviousData,
     retry: 2,
     refetchOnWindowFocus: false,
   });
