@@ -63,8 +63,10 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success', Error: 'error' },
 }));
 
-// Mock debounced search hook
+// Mock debounced search hook (keep the REAL usePaginatedQuery so the screen still
+// drives apiClient.get through useInfiniteQuery — tests below assert on those calls).
 jest.mock('@/hooks/api', () => ({
+  ...jest.requireActual('@/hooks/api'),
   useDebouncedSearch: () => ({
     search: '',
     debouncedSearch: '',

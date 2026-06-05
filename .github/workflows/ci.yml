@@ -101,7 +101,7 @@ jobs:
             PID_WEB=$!
           fi
           if [[ "${{ needs.detect-changes.outputs.mobile }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
-            pnpm --filter mobile lint &
+            pnpm --filter study-abroad-mobile lint &
             PID_MOBILE=$!
           fi
           [ -n "${PID_API:-}" ] && { wait $PID_API || FAIL=1; }
@@ -122,9 +122,14 @@ jobs:
             pnpm --filter api lint:quality &
             PID_AQ=$!
           fi
+          if [[ "${{ needs.detect-changes.outputs.mobile }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+            pnpm --filter study-abroad-mobile lint:quality &
+            PID_MQ=$!
+          fi
           [ -n "${PID_I18N:-}" ] && { wait $PID_I18N || FAIL=1; }
           [ -n "${PID_WQ:-}" ] && { wait $PID_WQ || FAIL=1; }
           [ -n "${PID_AQ:-}" ] && { wait $PID_AQ || FAIL=1; }
+          [ -n "${PID_MQ:-}" ] && { wait $PID_MQ || FAIL=1; }
           exit $FAIL
 
       - name: Check commit messages
@@ -186,7 +191,7 @@ jobs:
             PID_WEB=$!
           fi
           if [[ "${{ needs.detect-changes.outputs.mobile }}" == "true" || "${{ needs.detect-changes.outputs.ci }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
-            pnpm --filter mobile exec tsc --noEmit &
+            pnpm --filter study-abroad-mobile exec tsc --noEmit &
             PID_MOBILE=$!
           fi
           [ -n "${PID_API:-}" ] && { wait $PID_API || FAIL=1; }
@@ -245,7 +250,10 @@ jobs:
 
       - name: Run Mobile tests
         if: needs.detect-changes.outputs.mobile == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
-        run: pnpm --filter mobile test -- --passWithNoTests --forceExit
+        # `exec jest` (not `test -- …`) so jest receives the flags instead of reading
+        # them as a test-path pattern; `--filter mobile` matched no project (the package
+        # is `study-abroad-mobile`), so this step had been a silent no-op in CI.
+        run: pnpm --filter study-abroad-mobile exec jest --passWithNoTests --forceExit
 
   # ── E2E Tests ─────────────────────────────────────────────
   e2e:
@@ -890,7 +898,7 @@ jobs:
         run: pnpm lint:bundle
 
       - name: Type check Mobile
-        run: pnpm --filter mobile exec tsc --noEmit
+        run: pnpm --filter study-abroad-mobile exec tsc --noEmit
 
       - name: Upload API build
         uses: actions/upload-artifact@v7
