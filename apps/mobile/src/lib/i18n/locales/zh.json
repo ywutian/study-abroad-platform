@@ -1024,6 +1024,7 @@
       "runNow": "查看我的概率"
     },
     "addPrediction": "添加学校预测",
+    "maxSchoolsNotice": "正在预测你的前 {{count}} 所学校。",
     "reportResult": "报告结果",
     "reportActualResult": "报告实际结果",
     "selectResult": "实际录取结果是什么？",

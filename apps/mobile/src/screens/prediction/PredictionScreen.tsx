@@ -276,16 +276,23 @@ export default function PredictionScreen() {
     },
   });
 
-  // "Add prediction": run predictions across the whole target list, or send the
-  // user to build that list first (find-college) when it's still empty.
+  // "Add prediction": run predictions across the target list, or send the user to
+  // build that list first (find-college) when it's still empty. The backend caps a
+  // single request at 10 schools (@ArrayMaxSize), so predict the first 10 and tell
+  // the user when their list is longer — otherwise the whole batch 400s with a raw
+  // validator string and nothing runs.
   const handleAddPrediction = useCallback(() => {
     if (predictMutation.isPending) return;
     if (schoolListIds.length === 0) {
       router.push('/find-college' as Href);
       return;
     }
-    predictMutation.mutate(schoolListIds);
-  }, [predictMutation, schoolListIds]);
+    const MAX_PER_RUN = 10;
+    if (schoolListIds.length > MAX_PER_RUN) {
+      toast.info(t('prediction.maxSchoolsNotice', { count: MAX_PER_RUN }));
+    }
+    predictMutation.mutate(schoolListIds.slice(0, MAX_PER_RUN));
+  }, [predictMutation, schoolListIds, toast, t]);
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {

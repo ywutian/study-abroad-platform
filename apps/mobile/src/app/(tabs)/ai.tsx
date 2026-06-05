@@ -271,8 +271,12 @@ export default function AIScreen() {
               }
             }
           } catch (streamErr) {
-            if (streamErr instanceof Error && streamErr.name === 'AbortError') {
-              throw streamErr; // outer catch keeps the partial content
+            // expo/fetch does NOT raise a named 'AbortError', so detect cancellation
+            // via the signal itself. On abort: skip the fallback entirely (don't
+            // re-charge AI quota with an un-cancellable request after the user left)
+            // — the outer catch keeps whatever partial content already streamed.
+            if (controller.signal.aborted) {
+              throw streamErr;
             }
             if (!streamedAny) {
               // Stream produced nothing → non-streaming fallback (handles 401 refresh).
@@ -283,7 +287,7 @@ export default function AIScreen() {
               }>(
                 '/ai-agent/chat',
                 { message: text, conversationId: null, stream: false },
-                { timeout: 60000, retries: 0 }
+                { timeout: 60000, retries: 0, signal: controller.signal }
               );
               updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
             }
@@ -291,7 +295,7 @@ export default function AIScreen() {
           }
         }
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (controller.signal.aborted) {
           // User cancelled or component unmounted — keep partial content
           return;
         }

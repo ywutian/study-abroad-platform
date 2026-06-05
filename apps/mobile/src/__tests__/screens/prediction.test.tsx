@@ -36,6 +36,7 @@ jest.mock('@/components/ui/Toast', () => ({
     success: jest.fn(),
     error: jest.fn(),
     warning: jest.fn(),
+    info: jest.fn(),
   }),
 }));
 
@@ -334,6 +335,33 @@ describe('PredictionScreen', () => {
     await waitFor(() => expect(getByText('prediction.addPrediction')).toBeTruthy());
     fireEvent.press(getByText('prediction.addPrediction'));
     expect(router.push).toHaveBeenCalledWith('/find-college');
+  });
+
+  it('caps "Add Prediction" at the backend max (10) when the saved list is longer', async () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '1', email: 'test@example.com', role: 'USER' },
+      isAuthenticated: true,
+    });
+    const elevenSchools = Array.from({ length: 11 }, (_, i) => ({ schoolId: `s${i}` }));
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/predictions/dashboard')) {
+        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+      }
+      if (url.includes('/school-lists')) return Promise.resolve(elevenSchools);
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    // Wait for the school-list to resolve (empty state switches to "has schools").
+    await waitFor(() => expect(getByText('prediction.empty.hasSchools')).toBeTruthy());
+    fireEvent.press(getByText('prediction.addPrediction'));
+
+    await waitFor(() => expect(apiClient.post).toHaveBeenCalled());
+    const predictCall = (apiClient.post as jest.Mock).mock.calls.find((c) =>
+      String(c[0]).includes('/predictions')
+    );
+    // Sliced to 10 — never sends the full 11 (which would 400 on @ArrayMaxSize(10)).
+    expect(predictCall?.[1]?.schoolIds).toHaveLength(10);
   });
 
   it('shows explanation copy for estimate, data support, and tier semantics', async () => {

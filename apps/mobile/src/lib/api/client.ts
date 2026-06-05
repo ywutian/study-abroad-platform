@@ -187,6 +187,13 @@ class ApiClient {
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
+      // Honor a caller-supplied abort signal (e.g. user cancellation) alongside
+      // the timeout — without this it's silently dropped by the override below,
+      // so callers passing `signal` couldn't actually cancel the request.
+      if (init.signal) {
+        if (init.signal.aborted) controller.abort();
+        else init.signal.addEventListener('abort', () => controller.abort(), { once: true });
+      }
 
       try {
         const response = await fetch(url, {

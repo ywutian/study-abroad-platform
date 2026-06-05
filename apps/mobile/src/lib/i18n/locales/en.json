@@ -1024,6 +1024,7 @@
       "runNow": "See my chances"
     },
     "addPrediction": "Add School Prediction",
+    "maxSchoolsNotice": "Predicting your first {{count}} schools.",
     "reportResult": "Report Result",
     "reportActualResult": "Report Actual Result",
     "selectResult": "What was the actual result?",

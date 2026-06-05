@@ -98,14 +98,17 @@ export default function SchoolDetailScreen() {
 
   const { data: schoolListData } = useQuery({
     queryKey: ['school-list'],
-    queryFn: () => apiClient.get<{ schoolId: string }[]>(API_ROUTES.SCHOOL_LISTS),
+    queryFn: () => apiClient.get<{ id: string; schoolId: string }[]>(API_ROUTES.SCHOOL_LISTS),
     enabled: isAuthenticated,
   });
-  const isInList = useMemo(
+  // Resolve the SchoolListItem (it carries its own PK `id`, distinct from the
+  // schoolId) — DELETE /school-lists/:id expects that item PK, not the schoolId.
+  const listItem = useMemo(
     () =>
-      (Array.isArray(schoolListData) ? schoolListData : []).some((item) => item.schoolId === id),
+      (Array.isArray(schoolListData) ? schoolListData : []).find((item) => item.schoolId === id),
     [schoolListData, id]
   );
+  const isInList = !!listItem;
 
   const addToListMutation = useMutation({
     mutationFn: () => apiClient.post(API_ROUTES.SCHOOL_LISTS, { schoolId: id }),
@@ -118,7 +121,7 @@ export default function SchoolDetailScreen() {
   });
 
   const removeFromListMutation = useMutation({
-    mutationFn: () => apiClient.delete(schoolListRoutes.byId(id!)),
+    mutationFn: (listItemId: string) => apiClient.delete(schoolListRoutes.byId(listItemId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -129,9 +132,9 @@ export default function SchoolDetailScreen() {
 
   const toggleList = useCallback(() => {
     if (addToListMutation.isPending || removeFromListMutation.isPending) return;
-    if (isInList) removeFromListMutation.mutate();
+    if (listItem) removeFromListMutation.mutate(listItem.id);
     else addToListMutation.mutate();
-  }, [isInList, addToListMutation, removeFromListMutation]);
+  }, [listItem, addToListMutation, removeFromListMutation]);
 
   if (isLoading) {
     return (
