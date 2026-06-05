@@ -7,6 +7,9 @@ import {
 import { normalizeLocale, toBcp47 } from '@study-abroad/shared';
 import { addBreadcrumb } from '@/lib/sentry';
 import type { ApiError } from '@/types';
+// Expo's WinterCG fetch exposes a real ReadableStream body (response.body.getReader()),
+// which React Native's global fetch does not — required for SSE streaming.
+import { fetch as expoFetch } from 'expo/fetch';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4101';
 const API_VERSION = '/api/v1';
@@ -184,6 +187,13 @@ class ApiClient {
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
+      // Honor a caller-supplied abort signal (e.g. user cancellation) alongside
+      // the timeout — without this it's silently dropped by the override below,
+      // so callers passing `signal` couldn't actually cancel the request.
+      if (init.signal) {
+        if (init.signal.aborted) controller.abort();
+        else init.signal.addEventListener('abort', () => controller.abort(), { once: true });
+      }
 
       try {
         const response = await fetch(url, {
@@ -308,12 +318,14 @@ class ApiClient {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    return fetch(`${this.baseUrl}${API_VERSION}${endpoint}`, {
+    // expoFetch gives a streamable body in React Native; cast to the DOM Response
+    // shape used by the stream() reader below (status/ok/body.getReader()).
+    return expoFetch(`${this.baseUrl}${API_VERSION}${endpoint}`, {
       method: 'POST',
       headers,
       body: data ? JSON.stringify(data) : undefined,
       signal,
-    });
+    }) as unknown as Promise<Response>;
   }
 
   async *stream(

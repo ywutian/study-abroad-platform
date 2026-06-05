@@ -22,6 +22,12 @@ jest.mock('@/lib/storage/secure-store', () => ({
   },
 }));
 
+// openStream() uses expo/fetch for streamable bodies; delegate to the mocked
+// global.fetch so the existing stream tests keep working unchanged.
+jest.mock('expo/fetch', () => ({
+  fetch: (...args: unknown[]) => (global.fetch as jest.Mock)(...args),
+}));
+
 import {
   getAccessToken,
   getRefreshToken,

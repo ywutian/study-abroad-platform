@@ -36,6 +36,7 @@ jest.mock('@/components/ui/Toast', () => ({
     success: jest.fn(),
     error: jest.fn(),
     warning: jest.fn(),
+    info: jest.fn(),
   }),
 }));
 
@@ -306,15 +307,86 @@ describe('PredictionScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/profile/analysis');
   });
 
+  it('navigates to login from the empty-state login button when unauthenticated', () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    fireEvent.press(getByText('prediction.empty.goLogin'));
+    expect(router.push).toHaveBeenCalledWith('/(auth)/login');
+  });
+
+  it('routes "Add Prediction" to find-college when the target list is empty', async () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '1', email: 'test@example.com', role: 'USER' },
+      isAuthenticated: true,
+    });
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/predictions/dashboard')) {
+        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+      }
+      if (url.includes('/school-lists')) return Promise.resolve([]);
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    await waitFor(() => expect(getByText('prediction.addPrediction')).toBeTruthy());
+    fireEvent.press(getByText('prediction.addPrediction'));
+    expect(router.push).toHaveBeenCalledWith('/find-college');
+  });
+
+  it('caps "Add Prediction" at the backend max (10) when the saved list is longer', async () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '1', email: 'test@example.com', role: 'USER' },
+      isAuthenticated: true,
+    });
+    const elevenSchools = Array.from({ length: 11 }, (_, i) => ({ schoolId: `s${i}` }));
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/predictions/dashboard')) {
+        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+      }
+      if (url.includes('/school-lists')) return Promise.resolve(elevenSchools);
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    // Wait for the school-list to resolve (empty state switches to "has schools").
+    await waitFor(() => expect(getByText('prediction.empty.hasSchools')).toBeTruthy());
+    fireEvent.press(getByText('prediction.addPrediction'));
+
+    await waitFor(() => expect(apiClient.post).toHaveBeenCalled());
+    const predictCall = (apiClient.post as jest.Mock).mock.calls.find((c) =>
+      String(c[0]).includes('/predictions')
+    );
+    // Sliced to 10 — never sends the full 11 (which would 400 on @ArrayMaxSize(10)).
+    expect(predictCall?.[1]?.schoolIds).toHaveLength(10);
+  });
+
   it('shows explanation copy for estimate, data support, and tier semantics', async () => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
       user: { id: '1', email: 'test@example.com', role: 'USER' },
       isAuthenticated: true,
     });
 
+    // Disclaimers are gated behind having ≥1 prediction (we don't greet an empty
+    // first-run with a wall of jargon), so seed one prediction.
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/predictions/dashboard')) {
-        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+        return Promise.resolve({
+          totalSchools: 1,
+          avgProbability: 0.5,
+          predictions: [
+            {
+              schoolId: 's1',
+              school: { name: 'MIT' },
+              probability: 0.5,
+              tier: 'match',
+              confidence: 'medium',
+            },
+          ],
+        });
       }
       if (url.includes('/profiles/me/completeness')) {
         return Promise.resolve({ score: 75 });

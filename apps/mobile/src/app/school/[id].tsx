@@ -1,9 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
+import React, { useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import {
@@ -25,8 +27,11 @@ import {
 } from '@study-abroad/shared/ranking';
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { Tabs } from '@/components/ui/Tabs';
-import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
+import { API_ROUTES, schoolRoutes, schoolListRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk, cachePolicy } from '@/lib/query';
+import { useToast } from '@/components/ui/Toast';
+import { useAuthStore } from '@/stores';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { getResultBadgeVariant } from '@/utils/case-helpers';
 import { formatAcceptanceRate } from '@/utils/format';
@@ -74,9 +79,11 @@ export default function SchoolDetailScreen() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['school', id],
+    queryKey: qk.schools.detail(id!),
     queryFn: () => apiClient.get<School>(schoolRoutes.byId(id!)),
     enabled: !!id,
+    // School detail is static reference data — revisiting the same school is instant.
+    ...cachePolicy.reference,
   });
 
   const { data: casesData, isLoading: casesLoading } = useQuery({
@@ -87,6 +94,51 @@ export default function SchoolDetailScreen() {
       }),
     enabled: !!id,
   });
+
+  // ── Save-to-list (target school list) ──
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { isAuthenticated } = useAuthStore();
+
+  const { data: schoolListData } = useQuery({
+    queryKey: qk.schoolList.all,
+    queryFn: () => apiClient.get<{ id: string; schoolId: string }[]>(API_ROUTES.SCHOOL_LISTS),
+    enabled: isAuthenticated,
+  });
+  // Resolve the SchoolListItem (it carries its own PK `id`, distinct from the
+  // schoolId) — DELETE /school-lists/:id expects that item PK, not the schoolId.
+  const listItem = useMemo(
+    () =>
+      (Array.isArray(schoolListData) ? schoolListData : []).find((item) => item.schoolId === id),
+    [schoolListData, id]
+  );
+  const isInList = !!listItem;
+
+  const addToListMutation = useMutation({
+    mutationFn: () => apiClient.post(API_ROUTES.SCHOOL_LISTS, { schoolId: id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.success(t('findCollege.addedToList'));
+    },
+    onError: () => toast.error(t('findCollege.addError')),
+  });
+
+  const removeFromListMutation = useMutation({
+    mutationFn: (listItemId: string) => apiClient.delete(schoolListRoutes.byId(listItemId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.info(t('findCollege.removedFromList'));
+    },
+    onError: () => toast.error(t('findCollege.removeError')),
+  });
+
+  const toggleList = useCallback(() => {
+    if (addToListMutation.isPending || removeFromListMutation.isPending) return;
+    if (listItem) removeFromListMutation.mutate(listItem.id);
+    else addToListMutation.mutate();
+  }, [listItem, addToListMutation, removeFromListMutation]);
 
   if (isLoading) {
     return (
@@ -368,7 +420,30 @@ export default function SchoolDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: school.name }} />
+      <Stack.Screen
+        options={{
+          title: school.name,
+          headerRight: isAuthenticated
+            ? () => (
+                <TouchableOpacity
+                  onPress={toggleList}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isInList ? t('findCollege.removeFromList') : t('findCollege.addToList')
+                  }
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  style={{ paddingLeft: 8 }}
+                >
+                  <Ionicons
+                    name={isInList ? 'bookmark' : 'bookmark-outline'}
+                    size={24}
+                    color={isInList ? colors.primary : colors.foreground}
+                  />
+                </TouchableOpacity>
+              )
+            : undefined,
+        }}
+      />
       <ScrollView
         style={[styles.container, { backgroundColor: colors.background }]}
         showsVerticalScrollIndicator={false}
@@ -382,7 +457,9 @@ export default function SchoolDetailScreen() {
             <Image
               source={{ uri: school.media.campusCover.url }}
               style={[styles.coverImage, { backgroundColor: colors.muted }]}
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={150}
             />
           ) : null}
           <SchoolAvatar

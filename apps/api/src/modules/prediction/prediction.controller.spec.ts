@@ -72,6 +72,9 @@ describe('PredictionController', () => {
             profile: {
               findUnique: jest.fn().mockResolvedValue(mockProfile),
             },
+            schoolListItem: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
         {
@@ -140,7 +143,7 @@ describe('PredictionController', () => {
       expect(predictionService.predict).not.toHaveBeenCalled();
     });
 
-    it('should expand to all 9 UC campuses when any UC school is selected', async () => {
+    it('expands to the UC campuses the user owns (keeping non-UC) when any UC is selected', async () => {
       const ucIds = [
         'uc-1',
         'uc-2',
@@ -153,17 +156,52 @@ describe('PredictionController', () => {
         'uc-9',
       ];
       schoolService.getUcSchoolIds.mockResolvedValue(ucIds);
+      // User owns all 9 UC campuses in their school list.
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue(
+        ucIds.map((schoolId) => ({ schoolId })),
+      );
 
       const dto = { schoolIds: ['uc-1', 'school-other'], forceRefresh: false };
       const result = await controller.predict(mockUser, dto);
 
-      expect(predictionService.predict).toHaveBeenCalledWith(
-        'profile-1',
-        ucIds,
-        false,
-        'zh',
+      const calledWith = (predictionService.predict as jest.Mock).mock
+        .calls[0][1];
+      expect(calledWith).toEqual(
+        expect.arrayContaining([...ucIds, 'school-other']),
       );
       expect(result.ucComparisonExpanded).toBe(true);
+    });
+
+    it('only expands to OWNED UC campuses, so a partial UC list does not 400', async () => {
+      const ucIds = [
+        'uc-1',
+        'uc-2',
+        'uc-3',
+        'uc-4',
+        'uc-5',
+        'uc-6',
+        'uc-7',
+        'uc-8',
+        'uc-9',
+      ];
+      schoolService.getUcSchoolIds.mockResolvedValue(ucIds);
+      // User has added only UCLA (uc-1) — not all 9.
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+        { schoolId: 'uc-1' },
+      ]);
+
+      const dto = { schoolIds: ['uc-1', 'school-other'], forceRefresh: false };
+      await controller.predict(mockUser, dto);
+
+      const calledWith = (predictionService.predict as jest.Mock).mock
+        .calls[0][1] as string[];
+      // Predicts the owned UC + the non-UC pick, NOT all 9 (which would trip the
+      // schoolId ∈ SchoolListItem invariant and 400).
+      expect(calledWith).toEqual(
+        expect.arrayContaining(['uc-1', 'school-other']),
+      );
+      expect(calledWith).not.toContain('uc-9');
+      expect(calledWith).toHaveLength(2);
     });
   });
 

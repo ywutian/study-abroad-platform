@@ -1,5 +1,6 @@
 import React, { useState, memo, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +18,7 @@ import {
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { BottomSheet } from '@/components/ui/Modal';
 import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
+import { qk, cachePolicy } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -52,7 +54,9 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
               <Image
                 source={{ uri: item.media.campusCover.url }}
                 style={[styles.coverThumb, { backgroundColor: colors.muted }]}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={150}
               />
             ) : null}
             <SchoolAvatar
@@ -115,11 +119,18 @@ export default function SchoolsScreen() {
     refetch,
     isRefetching,
   } = usePaginatedQuery<School>({
-    queryKey: ['schools', debouncedSearch, sortBy],
+    // sortBy is NOT in the key — sorting is done client-side (sortedSchools below),
+    // so changing sort reuses the cached list instead of refetching from page 1.
+    queryKey: qk.schools.list({ search: debouncedSearch }),
     endpoint: '/schools',
     params: {
       search: debouncedSearch || undefined,
+      // Slim list-card payload (~5x smaller; drops provenance/metadata the list never renders).
+      view: 'list',
     },
+    // Static reference data — instant revisits (no skeleton/refetch within the tier
+    // window). Pull-to-refresh still forces a reload.
+    ...cachePolicy.reference,
   });
 
   const sortedSchools = useMemo(() => {

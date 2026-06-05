@@ -163,8 +163,10 @@ describe('HomeScreen', () => {
 
   it('renders quick action buttons', () => {
     const { getByText } = renderWithProviders(<HomeScreen />);
-    expect(getByText('home.features.profile')).toBeTruthy();
+    // Quick Actions were deduped to the 4 highest-intent destinations.
     expect(getByText('home.features.prediction')).toBeTruthy();
-    expect(getByText('home.features.ranking')).toBeTruthy();
+    expect(getByText('home.features.timeline')).toBeTruthy();
+    expect(getByText('home.features.forum')).toBeTruthy();
+    expect(getByText('home.features.swipe')).toBeTruthy();
   });
 });

@@ -38,6 +38,7 @@ import {
 import { UrbanInstituteDataService } from './urban-institute-data.service';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
 import { AppilyScrapeService } from './scrapers/appily.scraper';
+import { toSchoolListItem } from './school.constants';
 import { Public, Roles, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -183,7 +184,7 @@ export class SchoolController {
       minFoodGrade,
     } = query;
 
-    return this.schoolService.findAll(
+    const result = await this.schoolService.findAll(
       { page, pageSize },
       {
         country,
@@ -220,6 +221,11 @@ export class SchoolController {
         minFoodGrade,
       },
     );
+
+    // Additive slim projection for list cards; default/full response is unchanged.
+    return query.view === 'list'
+      ? { ...result, items: result.items.map(toSchoolListItem) }
+      : result;
   }
 
   /**

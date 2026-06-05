@@ -84,6 +84,15 @@ export class SchoolQueryDto extends PaginationDto {
   @Max(500)
   rankMax?: number;
 
+  @ApiPropertyOptional({
+    description:
+      'Response projection. "list" returns a slim list-card payload (omits provenance/metadata, ~5x smaller).',
+    enum: ['list'],
+  })
+  @IsOptional()
+  @IsIn(['list'])
+  view?: 'list';
+
   @ApiPropertyOptional({ description: 'Minimum acceptance rate (%)' })
   @IsOptional()
   @Type(() => Number)

@@ -2,7 +2,7 @@
  * 录取预测页面
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -54,6 +54,7 @@ import {
   resolveContextualBaseline,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { CaseComparisonPanel } from '@/components/prediction/CaseComparisonPanel';
 
@@ -201,7 +202,7 @@ export default function PredictionScreen() {
         notes: data.notes,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['predictions'] });
+      queryClient.invalidateQueries({ queryKey: qk.predictions.all });
       setReportModalVisible(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({ type: 'success', message: t('prediction.resultReported') });
@@ -241,7 +242,7 @@ export default function PredictionScreen() {
     isLoading: predictionsLoading,
     refetch,
   } = useQuery({
-    queryKey: ['predictions', 'dashboard'],
+    queryKey: qk.predictions.dashboard,
     queryFn: () => apiClient.get<DashboardResponse>(`${API_ROUTES.PREDICTIONS}/dashboard`),
     enabled: isAuthenticated,
   });
@@ -251,14 +252,48 @@ export default function PredictionScreen() {
   const intlContext = detectInternationalStatus(profile ?? {});
   const predictions = mapDashboardToPredictions(dashboardData, intlContext.isInternational);
 
+  // Target school list — predictions can only run on schools the user has added
+  // to their list (the backend enforces schoolId ∈ SchoolListItem).
+  const { data: schoolListData } = useQuery({
+    queryKey: qk.schoolList.all,
+    queryFn: () => apiClient.get<{ schoolId: string }[]>(API_ROUTES.SCHOOL_LISTS),
+    enabled: isAuthenticated,
+  });
+  const schoolListIds = useMemo(
+    () => (Array.isArray(schoolListData) ? schoolListData : []).map((item) => item.schoolId),
+    [schoolListData]
+  );
+
   // 运行预测
   const predictMutation = useMutation({
-    mutationFn: (schoolIds: string[]) => apiClient.post(API_ROUTES.PREDICTIONS, { schoolIds }),
+    mutationFn: (schoolIds: string[]) =>
+      apiClient.post(API_ROUTES.PREDICTIONS, { schoolIds }, { timeout: 60000, retries: 0 }),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetch();
     },
+    onError: (e: unknown) => {
+      toast.error(e instanceof Error ? e.message : t('errors.unknown'));
+    },
   });
+
+  // "Add prediction": run predictions across the target list, or send the user to
+  // build that list first (find-college) when it's still empty. The backend caps a
+  // single request at 10 schools (@ArrayMaxSize), so predict the first 10 and tell
+  // the user when their list is longer — otherwise the whole batch 400s with a raw
+  // validator string and nothing runs.
+  const handleAddPrediction = useCallback(() => {
+    if (predictMutation.isPending) return;
+    if (schoolListIds.length === 0) {
+      router.push('/find-college' as Href);
+      return;
+    }
+    const MAX_PER_RUN = 10;
+    if (schoolListIds.length > MAX_PER_RUN) {
+      toast.info(t('prediction.maxSchoolsNotice', { count: MAX_PER_RUN }));
+    }
+    predictMutation.mutate(schoolListIds.slice(0, MAX_PER_RUN));
+  }, [predictMutation, schoolListIds, toast, t]);
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -304,7 +339,7 @@ export default function PredictionScreen() {
           description={t('prediction.empty.loginRequiredDesc')}
           action={{
             label: t('prediction.empty.goLogin'),
-            onPress: () => {},
+            onPress: () => router.push('/(auth)/login' as Href),
           }}
         />
       </View>
@@ -418,22 +453,27 @@ export default function PredictionScreen() {
         </View>
       </Animated.View>
 
-      <View
-        style={[
-          styles.explanationCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
-          {t('prediction.probabilityVsRateDisclaimer')}
-        </Text>
-        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
-          {t('prediction.confidenceDisclaimer')}
-        </Text>
-        <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
-          {t('prediction.tierDisclaimer')}
-        </Text>
-      </View>
+      {/* Only explain the probability/confidence/tier semantics once there are
+          real results to explain — don't greet an empty first-run with a wall of
+          jargon before the student has seen a single prediction. */}
+      {predictions.length > 0 && (
+        <View
+          style={[
+            styles.explanationCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+            {t('prediction.probabilityVsRateDisclaimer')}
+          </Text>
+          <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+            {t('prediction.confidenceDisclaimer')}
+          </Text>
+          <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+            {t('prediction.tierDisclaimer')}
+          </Text>
+        </View>
+      )}
 
       <TouchableOpacity
         onPress={() => router.push('/profile/analysis' as Href)}
@@ -712,13 +752,12 @@ export default function PredictionScreen() {
                     </View>
                   )}
 
-                  {/* Similar real cases */}
-                  <View style={styles.similarCasesSection}>
-                    <Text style={[styles.insightTitle, { color: colors.foreground }]}>
-                      {t('prediction.similarCasesTitle')}
-                    </Text>
-                    <CaseComparisonPanel schoolId={prediction.schoolId} />
-                  </View>
+                  {/* Similar real cases — the panel renders its own header and
+                      hides the whole section when there isn't a sufficient sample. */}
+                  <CaseComparisonPanel
+                    schoolId={prediction.schoolId}
+                    title={t('prediction.similarCasesTitle')}
+                  />
 
                   <View style={styles.cardFooter}>
                     <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
@@ -752,10 +791,24 @@ export default function PredictionScreen() {
           <EmptyState
             icon="analytics-outline"
             title={t('prediction.empty.title')}
-            description={t('prediction.empty.description')}
+            // Distinguish "no schools saved" (send them to add some) from "schools
+            // saved but not yet scored" (run the prediction right here) — otherwise
+            // the user who already saved schools gets bounced to find-college where
+            // their schools already sit, with no idea what to do next.
+            description={
+              schoolListIds.length > 0
+                ? t('prediction.empty.hasSchools', { count: schoolListIds.length })
+                : t('prediction.empty.description')
+            }
             action={{
-              label: t('prediction.empty.addSchool'),
-              onPress: () => {},
+              label:
+                schoolListIds.length > 0
+                  ? t('prediction.empty.runNow')
+                  : t('prediction.empty.addSchool'),
+              onPress:
+                schoolListIds.length > 0
+                  ? handleAddPrediction
+                  : () => router.push('/find-college' as Href),
             }}
           />
         )}
@@ -764,7 +817,8 @@ export default function PredictionScreen() {
       {/* Add Prediction Button */}
       <View style={styles.addButtonContainer}>
         <AnimatedButton
-          onPress={() => {}}
+          onPress={handleAddPrediction}
+          loading={predictMutation.isPending}
           style={styles.addButton}
           leftIcon={
             <Ionicons name="add-circle-outline" size={20} color={colors.primaryForeground} />
@@ -1125,10 +1179,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
   },
   factors: {
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  similarCasesSection: {
     gap: spacing.sm,
     marginBottom: spacing.md,
   },

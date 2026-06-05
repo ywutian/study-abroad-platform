@@ -30,6 +30,7 @@ import {
   type RecommendationResult,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
 import {
@@ -144,13 +145,13 @@ export default function UncommonAppScreen() {
   });
 
   const { data: schoolList } = useQuery<SchoolListItem[]>({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get(schoolListRoutes.list()),
     enabled: isAuthenticated,
   });
 
   const { data: predictionDashboard } = useQuery<PredictionDashboard>({
-    queryKey: ['predictions', 'dashboard'],
+    queryKey: qk.predictions.dashboard,
     queryFn: () => apiClient.get(`${API_ROUTES.PREDICTIONS}/dashboard`),
     enabled: isAuthenticated,
   });

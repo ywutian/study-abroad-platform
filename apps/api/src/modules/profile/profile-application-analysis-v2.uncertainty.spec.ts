@@ -50,6 +50,6 @@ describe('normalizeUncertainty — interval is prediction-grounded, not LLM-auth
     expect(
       normalizeUncertainty(null, { probabilityLow: 0.1, probabilityHigh: 0.2 }),
     ).toBeUndefined();
-    expect(normalizeUncertainty('nonsense' as unknown, {})).toBeUndefined();
+    expect(normalizeUncertainty('nonsense', {})).toBeUndefined();
   });
 });

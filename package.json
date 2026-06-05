@@ -117,6 +117,7 @@
       "tar": ">=7.5.10",
       "multer": ">=2.1.1",
       "@xmldom/xmldom": ">=0.9.10",
+      "@expo/plist>@xmldom/xmldom": "0.8.13",
       "fast-xml-parser": ">=5.5.6",
       "minimatch@^3": ">=3.1.4 <4",
       "minimatch@^5": ">=5.1.8 <6",

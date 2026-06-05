@@ -35,6 +35,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useDebouncedSearch } from '@/hooks/api';
 import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import {
   useColors,
   spacing,
@@ -509,8 +510,9 @@ export default function FindCollegePage() {
 
   // Fetch user's school list to determine "in list" state
   const { data: schoolListData } = useQuery({
-    queryKey: ['school-list'],
-    queryFn: () => apiClient.get<{ schoolId: string; school: School }[]>(API_ROUTES.SCHOOL_LISTS),
+    queryKey: qk.schoolList.all,
+    queryFn: () =>
+      apiClient.get<{ id: string; schoolId: string; school: School }[]>(API_ROUTES.SCHOOL_LISTS),
   });
 
   const schoolListIds = useMemo(() => {
@@ -527,7 +529,7 @@ export default function FindCollegePage() {
   const addToListMutation = useMutation({
     mutationFn: (schoolId: string) => apiClient.post(API_ROUTES.SCHOOL_LISTS, { schoolId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-list'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.success(t('findCollege.addedToList'));
     },
@@ -536,11 +538,16 @@ export default function FindCollegePage() {
     },
   });
 
-  // Remove from school list mutation
+  // Remove from school list mutation. DELETE /school-lists/:id expects the
+  // SchoolListItem PK, not the schoolId — resolve it from the cached list.
   const removeFromListMutation = useMutation({
-    mutationFn: (schoolId: string) => apiClient.delete(schoolListRoutes.byId(schoolId)),
+    mutationFn: (schoolId: string) => {
+      const item = (schoolListData ?? []).find((i) => i.schoolId === schoolId);
+      if (!item) return Promise.reject(new Error('SCHOOL_NOT_IN_LIST'));
+      return apiClient.delete(schoolListRoutes.byId(item.id));
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-list'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.info(t('findCollege.removedFromList'));
     },

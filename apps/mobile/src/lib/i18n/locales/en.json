@@ -452,6 +452,7 @@
       "send": "Send",
       "thinking": "Thinking...",
       "noResponse": "No response received.",
+      "loginPrompt": "Log in to chat with your AI counselor",
       "toolCalling": "Calling tools...",
       "quickQuestions": "Quick Questions",
       "suggestions": {
@@ -1018,9 +1019,12 @@
       "goLogin": "Login",
       "title": "No predictions yet",
       "description": "Add schools to start prediction",
-      "addSchool": "Add School"
+      "addSchool": "Add School",
+      "hasSchools": "You've saved {{count}} school(s). Run a prediction to see your chances.",
+      "runNow": "See my chances"
     },
     "addPrediction": "Add School Prediction",
+    "maxSchoolsNotice": "Predicting your first {{count}} schools.",
     "reportResult": "Report Result",
     "reportActualResult": "Report Actual Result",
     "selectResult": "What was the actual result?",
@@ -1913,6 +1917,10 @@
   "more": {
     "title": "More Features",
     "subtitle": "Explore all tools and features",
+    "cases": "Cases",
+    "groupApply": "Application",
+    "groupCommunity": "Community",
+    "groupAccount": "Account & Rewards",
     "essays": "Essays",
     "resume": "Resume",
     "vault": "Vault",

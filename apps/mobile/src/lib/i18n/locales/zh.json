@@ -452,6 +452,7 @@
       "send": "发送",
       "thinking": "思考中...",
       "noResponse": "未收到回复。",
+      "loginPrompt": "登录后即可与 AI 顾问对话",
       "toolCalling": "正在调用工具...",
       "quickQuestions": "快捷问题",
       "suggestions": {
@@ -1018,9 +1019,12 @@
       "goLogin": "去登录",
       "title": "暂无预测结果",
       "description": "添加学校开始预测",
-      "addSchool": "添加学校"
+      "addSchool": "添加学校",
+      "hasSchools": "已收藏 {{count}} 所学校，运行预测查看录取概率。",
+      "runNow": "查看我的概率"
     },
     "addPrediction": "添加学校预测",
+    "maxSchoolsNotice": "正在预测你的前 {{count}} 所学校。",
     "reportResult": "报告结果",
     "reportActualResult": "报告实际结果",
     "selectResult": "实际录取结果是什么？",
@@ -1913,6 +1917,10 @@
   "more": {
     "title": "更多功能",
     "subtitle": "探索所有工具和功能",
+    "cases": "案例",
+    "groupApply": "申请工具",
+    "groupCommunity": "社区",
+    "groupAccount": "账户与奖励",
     "essays": "文书",
     "resume": "简历",
     "vault": "保险箱",
@@ -1927,7 +1935,7 @@
     "timeline": "时间线",
     "chat": "聊天",
     "notifications": "通知",
-    "forum": "论坛"
+    "forum": "社区"
   },
   "resume": {
     "title": "简历构建器",

@@ -24,6 +24,7 @@ export default function SettingsLayout() {
         headerBackTitle: t('common.back'),
       }}
     >
+      <Stack.Screen name="index" options={{ title: t('settings.title') }} />
       <Stack.Screen name="language" options={{ title: t('settings.language') }} />
       <Stack.Screen name="theme" options={{ title: t('settings.theme') }} />
     </Stack>

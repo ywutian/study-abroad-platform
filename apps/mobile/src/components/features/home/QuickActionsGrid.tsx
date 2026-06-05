@@ -35,23 +35,11 @@ export function QuickActionsGrid({ pendingCount = 0 }: QuickActionsGridProps) {
   const actions = useMemo<QuickAction[]>(
     () => [
       {
-        icon: 'person-outline',
-        title: t('home.features.profile'),
-        desc: t('home.features.profileDesc'),
-        route: '/(tabs)/profile',
-        accent: true,
-      },
-      {
         icon: 'trending-up-outline',
         title: t('home.features.prediction'),
         desc: t('home.features.predictionDesc'),
         route: '/prediction',
-      },
-      {
-        icon: 'list-outline',
-        title: t('home.features.ranking'),
-        desc: t('home.features.rankingDesc'),
-        route: '/ranking',
+        accent: true,
       },
       {
         icon: 'calendar-outline',

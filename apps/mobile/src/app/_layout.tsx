@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/Button';
 import { NetworkProvider, ErrorBoundary } from '@/components/providers';
 import { useColors, colors as themeColors, withOpacity } from '@/utils/theme';
 import { createAsyncStoragePersister, MAX_CACHE_AGE_MS } from '@/lib/query-persister';
+import { prefetchReferenceData, attachCacheMetrics } from '@/lib/query';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
 
 // 初始化 Sentry (在 App 外部，仅执行一次)
@@ -63,6 +64,9 @@ const queryClient = new QueryClient({
 
 const persister = createAsyncStoragePersister();
 const persistOptions = { persister, maxAge: MAX_CACHE_AGE_MS };
+
+// Observe cache hit-rates for the app's lifetime (O(1) per event; logs in dev).
+attachCacheMetrics(queryClient);
 
 /**
  * Watches for session expiry and shows a toast to inform the user before
@@ -121,6 +125,7 @@ const DETAIL_SCREENS = [
   'recommendation/index',
   'find-college',
   'essays',
+  'essay/[id]',
   'essay-gallery/index',
   'timeline',
   'assessment',
@@ -142,7 +147,7 @@ const DETAIL_SCREENS = [
   'notifications',
 ] as const;
 
-const DETAIL_SCREEN_OPTIONS = { title: '', headerBackTitle: '' } as const;
+const DETAIL_SCREEN_OPTIONS = { title: '' } as const;
 
 /**
  * Redirect unauthenticated users away from protected routes.
@@ -192,6 +197,10 @@ function RootLayoutNav() {
             backgroundColor: colors.background,
           },
           headerShadowVisible: false,
+          // native-stack v7: empty headerBackTitle is treated as falsy and iOS
+          // falls back to the previous screen's title ("(tabs)" -> "tabs").
+          // 'minimal' is the correct API to show only the back chevron.
+          headerBackButtonDisplayMode: 'minimal',
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -201,6 +210,12 @@ function RootLayoutNav() {
         ))}
         <Stack.Screen
           name="profile"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="settings"
           options={{
             headerShown: false,
           }}
@@ -337,7 +352,13 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={persistOptions}
+          // After the on-disk cache is restored, warm static reference lists so the
+          // first Schools-tab open is instant (no cold fetch). No-op if still fresh.
+          onSuccess={() => void prefetchReferenceData(queryClient)}
+        >
           <ErrorBoundary>
             <NetworkProvider>
               <ToastProvider>

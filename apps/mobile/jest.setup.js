@@ -14,6 +14,11 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }));
 
+// Mock expo/fetch (WinterCG fetch with native streaming) → delegate to global fetch
+jest.mock('expo/fetch', () => ({
+  fetch: (...args) => global.fetch(...args),
+}));
+
 // Mock expo-router
 jest.mock('expo-router', () => ({
   Link: ({ children }) => children,

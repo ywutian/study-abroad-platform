@@ -12,7 +12,7 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -566,6 +566,10 @@ export default function TimelinePage() {
           icon="school-outline"
           title={t('timeline.empty.noSchools')}
           description={t('timeline.empty.noSchoolsDesc')}
+          action={{
+            label: t('prediction.empty.addSchool'),
+            onPress: () => router.push('/find-college'),
+          }}
         />
       );
     return <>{sorted.map((x, i) => renderSchoolCard(x, i))}</>;

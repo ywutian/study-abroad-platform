@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useColors, spacing, fontSize, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
 interface SearchBarProps {
   value: string;
@@ -111,6 +119,9 @@ export function SearchWithFilters({
             <TouchableOpacity
               key={filter.key}
               onPress={() => onFilterChange?.(filter.key)}
+              accessibilityRole="button"
+              accessibilityLabel={filter.label}
+              accessibilityState={{ selected: activeFilter === filter.key }}
               style={[
                 styles.filterChip,
                 {
@@ -126,13 +137,17 @@ export function SearchWithFilters({
                 }
                 style={styles.filterIcon}
               />
-              <View>
-                <Ionicons
-                  name="text"
-                  size={0}
-                  color={activeFilter === filter.key ? colors.primaryForeground : colors.foreground}
-                />
-              </View>
+              <Text
+                style={[
+                  styles.filterLabel,
+                  {
+                    color:
+                      activeFilter === filter.key ? colors.primaryForeground : colors.foreground,
+                  },
+                ]}
+              >
+                {filter.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -176,5 +191,9 @@ const styles = StyleSheet.create({
   },
   filterIcon: {
     marginRight: spacing.xs,
+  },
+  filterLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
   },
 });

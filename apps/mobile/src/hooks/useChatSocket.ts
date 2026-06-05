@@ -103,13 +103,20 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
       const token = await getAccessToken();
       if (!token || !mountedRef.current) return;
 
+      // Only surface the first connection error per failure streak, otherwise
+      // an unreachable socket floods the console/onError handler on every retry.
+      let connectErrorLogged = false;
+
       socket = io(`${SOCKET_URL}/chat`, {
         auth: { token },
-        transports: ['websocket', 'polling'],
+        // Polling first: React Native's WebSocket fails the socket.io upgrade
+        // against Cloud Run, but HTTP long-polling works (same path as REST).
+        // socket.io still upgrades to websocket when it can; if not, polling holds.
+        transports: ['polling', 'websocket'],
         reconnection: true,
         reconnectionAttempts: Infinity,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 10000,
+        reconnectionDelay: 2000,
+        reconnectionDelayMax: 30000,
       });
 
       socketRef.current = socket;
@@ -119,6 +126,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
       socket.on('connect', () => {
         if (!mountedRef.current) return;
         setIsConnected(true);
+        connectErrorLogged = false; // reset so a later outage is surfaced once
       });
 
       socket.on('disconnect', () => {
@@ -127,7 +135,9 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
       });
 
       socket.on('connect_error', (err: Error) => {
-        console.warn('[ChatSocket] Connection error:', err.message);
+        if (connectErrorLogged) return;
+        connectErrorLogged = true;
+        console.warn('[ChatSocket] Connection error (will keep retrying quietly):', err.message);
         optionsRef.current.onError?.(err.message);
       });
 

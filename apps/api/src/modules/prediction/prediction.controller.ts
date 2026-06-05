@@ -122,10 +122,28 @@ export class PredictionController {
       return { results: [], processingTime: 0 };
     }
 
-    // When user selects any UC school, expand to all 9 UC campuses for comparison (plan: UC 本科横向比较)
+    // UC shares one application across campuses, so when the user includes any UC
+    // we expand for cross-campus comparison (plan: UC 本科横向比较) — but only to
+    // campuses they actually have in their school list, because predict() enforces
+    // schoolId ∈ SchoolListItem (sending un-owned UC ids 400s). Non-UC selections
+    // are preserved. If the intersection is empty we keep the original ids so the
+    // ownership invariant returns its proper error instead of silently predicting
+    // nothing.
     const ucIds = await this.schoolService.getUcSchoolIds();
-    const hasAnyUc = data.schoolIds.some((id) => ucIds.includes(id));
-    const schoolIdsToUse = hasAnyUc ? ucIds : data.schoolIds;
+    const ucIdSet = new Set(ucIds);
+    const hasAnyUc = data.schoolIds.some((id) => ucIdSet.has(id));
+    let schoolIdsToUse = data.schoolIds;
+    if (hasAnyUc) {
+      const ownedUc = await this.prisma.schoolListItem.findMany({
+        where: { userId: user.id, schoolId: { in: ucIds } },
+        select: { schoolId: true },
+      });
+      const nonUc = data.schoolIds.filter((id) => !ucIdSet.has(id));
+      const expanded = Array.from(
+        new Set([...nonUc, ...ownedUc.map((o) => o.schoolId)]),
+      );
+      schoolIdsToUse = expanded.length > 0 ? expanded : data.schoolIds;
+    }
 
     const output = await this.predictionService.predict(
       profile.id,

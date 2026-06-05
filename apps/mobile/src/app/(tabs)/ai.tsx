@@ -13,6 +13,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, router } from 'expo-router';
 import Markdown from 'react-native-markdown-display';
 
 import * as Haptics from 'expo-haptics';
@@ -120,12 +121,14 @@ export default function AIScreen() {
   const toast = useToast();
   const { isAuthenticated, user } = useAuthStore();
   const scrollRef = useRef<FlashListRef<AiChatMessage>>(null);
+  const params = useLocalSearchParams<{ prompt?: string }>();
 
   const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('auto');
   const abortRef = useRef<AbortController | null>(null);
+  const seededPromptRef = useRef(false);
 
   // Abort in-flight stream on unmount
   useEffect(() => {
@@ -133,6 +136,16 @@ export default function AIScreen() {
       abortRef.current?.abort();
     };
   }, []);
+
+  // Seed the input from a deep-link param (e.g. Essays "AI Review" button) once,
+  // so the prompt isn't silently dropped. We pre-fill rather than auto-send so the
+  // user can review before spending an AI request.
+  useEffect(() => {
+    if (params.prompt && !seededPromptRef.current) {
+      seededPromptRef.current = true;
+      setInput(params.prompt);
+    }
+  }, [params.prompt]);
 
   const agentModes = [
     { key: 'auto', label: t('ai.chat.agentModes.auto') },
@@ -188,12 +201,18 @@ export default function AIScreen() {
           const result = await apiClient.post<{
             message?: string;
             response?: { message?: string };
-          }>('/ai-agent/agent', {
-            agent: agentMode,
-            message: text,
-            conversationId: undefined,
-            locale: undefined,
-          });
+          }>(
+            '/ai-agent/agent',
+            {
+              agent: agentMode,
+              message: text,
+              conversationId: undefined,
+              locale: undefined,
+            },
+            // AI agent + Cloud Run cold start routinely exceeds the 15s default;
+            // no auto-retry (it would re-charge quota and hit the concurrency cap).
+            { timeout: 60000, retries: 0 }
+          );
           const responseText =
             result.message || result.response?.message || t('ai.chat.noResponse');
           setMessages((prev) => {
@@ -208,32 +227,75 @@ export default function AIScreen() {
             return newMessages;
           });
         } else {
-          // React Native fetch does not expose a stable SSE body reader here,
-          // so mobile auto-mode uses the non-streaming chat endpoint.
-          const result = await apiClient.post<{
-            message?: string;
-            response?: { message?: string };
-            data?: { message?: string };
-          }>('/ai-agent/chat', {
-            message: text,
-            conversationId: null,
-            stream: false,
-          });
-          const responseText = getAiResponseText(result, t('ai.chat.noResponse'));
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage?.role === 'assistant') {
-              newMessages[newMessages.length - 1] = {
-                ...lastMessage,
-                content: responseText,
+          // Auto mode streams tokens via apiClient.stream() (expo/fetch SSE),
+          // falling back to the non-streaming endpoint if the stream fails.
+          const updateAssistant = (next: (prevContent: string) => string) => {
+            setMessages((prev) => {
+              const msgs = [...prev];
+              const last = msgs[msgs.length - 1];
+              if (last?.role === 'assistant') {
+                msgs[msgs.length - 1] = { ...last, content: next(last.content) };
+              }
+              return msgs;
+            });
+          };
+
+          let streamedAny = false;
+          try {
+            for await (const raw of apiClient.stream(
+              '/ai-agent/chat',
+              { message: text, conversationId: null, stream: true },
+              controller.signal
+            )) {
+              let event: {
+                type?: string;
+                content?: string;
+                error?: string;
+                response?: { message?: string };
               };
+              try {
+                event = JSON.parse(raw);
+              } catch {
+                continue; // skip keep-alive / non-JSON lines
+              }
+              if (event.type === 'content' && event.content) {
+                streamedAny = true;
+                const delta = event.content;
+                updateAssistant((c) => c + delta);
+              } else if (event.type === 'done' && !streamedAny && event.response?.message) {
+                streamedAny = true;
+                const full = event.response.message;
+                updateAssistant(() => full);
+              } else if (event.type === 'error') {
+                throw new Error(event.error || t('ai.chat.noResponse'));
+              }
             }
-            return newMessages;
-          });
+          } catch (streamErr) {
+            // expo/fetch does NOT raise a named 'AbortError', so detect cancellation
+            // via the signal itself. On abort: skip the fallback entirely (don't
+            // re-charge AI quota with an un-cancellable request after the user left)
+            // — the outer catch keeps whatever partial content already streamed.
+            if (controller.signal.aborted) {
+              throw streamErr;
+            }
+            if (!streamedAny) {
+              // Stream produced nothing → non-streaming fallback (handles 401 refresh).
+              const result = await apiClient.post<{
+                message?: string;
+                response?: { message?: string };
+                data?: { message?: string };
+              }>(
+                '/ai-agent/chat',
+                { message: text, conversationId: null, stream: false },
+                { timeout: 60000, retries: 0, signal: controller.signal }
+              );
+              updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
+            }
+            // Otherwise keep the partial content that already streamed.
+          }
         }
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (controller.signal.aborted) {
           // User cancelled or component unmounted — keep partial content
           return;
         }
@@ -432,9 +494,19 @@ export default function AIScreen() {
         </View>
 
         {!isAuthenticated && (
-          <Text style={[styles.authHint, { color: colors.foregroundMuted }]}>
-            {t('errors.unauthorized')}
-          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/login')}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.login')}
+            style={styles.authHintRow}
+          >
+            <Text style={[styles.authHint, { color: colors.foregroundMuted }]}>
+              {t('ai.chat.loginPrompt')}
+            </Text>
+            <Text style={[styles.authHint, styles.authHintLink, { color: colors.primary }]}>
+              {t('common.login')}
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -582,9 +654,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  authHintRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
   authHint: {
     fontSize: fontSize.xs,
     textAlign: 'center',
-    marginTop: spacing.sm,
+  },
+  authHintLink: {
+    fontWeight: fontWeight.semibold,
   },
 });

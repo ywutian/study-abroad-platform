@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -66,36 +67,45 @@ export default function ProfileScreen() {
 
   const { data: pointsData } = useQuery({
     queryKey: ['points', 'balance'],
-    queryFn: () =>
-      apiClient.get<{ balance: number; level: string }>(`${API_ROUTES.POINTS}/balance`),
+    // Canonical endpoint is GET /users/me/points -> { points } (there is no
+    // /points/balance route — that 404'd and the card never rendered).
+    queryFn: () => apiClient.get<{ points: number }>(`${API_ROUTES.USERS}/me/points`),
     enabled: isAuthenticated,
   });
 
   const analysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
 
-  // Calculate profile completion (memoized to avoid recalculation on every render)
+  // Calculate profile completion (memoized to avoid recalculation on every render).
+  // Also resolves the first incomplete section so "Complete profile" jumps the
+  // user straight to what's missing instead of always dumping them on Basic Info.
   const calculateCompletion = useMemo(() => {
-    if (!profile) return { percentage: 0, missing: [] as string[] };
+    if (!profile) return { percentage: 0, missing: [] as string[], nextRoute: '/profile/basic' };
     let completed = 0;
     const total = 7;
     const missing: string[] = [];
+    let nextRoute: string | null = null;
+    const mark = (ok: unknown, label: string, route: string) => {
+      if (ok) {
+        completed++;
+      } else {
+        missing.push(label);
+        if (!nextRoute) nextRoute = route;
+      }
+    };
 
-    if (profile.grade) completed++;
-    else missing.push(t('profile.fields.grade'));
-    if (profile.targetMajor) completed++;
-    else missing.push(t('profile.fields.targetMajor'));
-    if (profile.gpa) completed++;
-    else missing.push(t('profile.gpa'));
-    if (profile.testScores?.length > 0) completed++;
-    else missing.push(t('profile.testScores'));
-    if (profile.activities?.length > 0) completed++;
-    else missing.push(t('profile.activities'));
-    if (profile.awards?.length > 0) completed++;
-    else missing.push(t('profile.awards'));
-    if (profile.education?.length > 0) completed++;
-    else missing.push(t('profile.education'));
+    mark(profile.grade, t('profile.fields.grade'), '/profile/basic');
+    mark(profile.targetMajor, t('profile.fields.targetMajor'), '/profile/basic');
+    mark(profile.gpa, t('profile.gpa'), '/profile/basic');
+    mark(profile.testScores?.length, t('profile.testScores'), '/profile/scores');
+    mark(profile.activities?.length, t('profile.activities'), '/profile/activities');
+    mark(profile.awards?.length, t('profile.awards'), '/profile/awards');
+    mark(profile.education?.length, t('profile.education'), '/profile/education');
 
-    return { percentage: Math.round((completed / total) * 100), missing };
+    return {
+      percentage: Math.round((completed / total) * 100),
+      missing,
+      nextRoute: nextRoute ?? '/profile/basic',
+    };
   }, [profile, t]);
 
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
@@ -106,7 +116,7 @@ export default function ProfileScreen() {
     router.replace('/(auth)/login');
   };
 
-  const { percentage: completion, missing: missingFields } = calculateCompletion;
+  const { percentage: completion, missing: missingFields, nextRoute } = calculateCompletion;
 
   const menuItems = useMemo(
     () => [
@@ -260,7 +270,7 @@ export default function ProfileScreen() {
               <Button
                 variant="outline"
                 size="sm"
-                onPress={() => router.push('/profile/basic')}
+                onPress={() => router.push(nextRoute as Href)}
                 style={styles.completeButton}
               >
                 {t('profile.completeProfile')}
@@ -337,7 +347,7 @@ export default function ProfileScreen() {
           style={[styles.pointsCard, { backgroundColor: withOpacity(colors.warning, 0.1) }]}
         >
           <Ionicons name="star" size={20} color={colors.warning} />
-          <Text style={[styles.pointsValue, { color: colors.warning }]}>{pointsData.balance}</Text>
+          <Text style={[styles.pointsValue, { color: colors.warning }]}>{pointsData.points}</Text>
           <Text style={[styles.pointsLabel, { color: colors.foregroundMuted }]}>
             {t('profile.points')}
           </Text>
@@ -413,10 +423,12 @@ export default function ProfileScreen() {
                 >
                   <View style={styles.analysisStatBlock}>
                     <Text style={[styles.analysisStatLabel, { color: colors.foregroundMuted }]}>
-                      Trace
+                      {t('applicationAnalysis.schoolCards.updated')}
                     </Text>
                     <Text style={[styles.analysisStatValue, { color: colors.foreground }]}>
-                      {analysis.meta.traceId.slice(0, 8)}
+                      {analysis.meta.generatedAt
+                        ? new Date(analysis.meta.generatedAt).toLocaleDateString()
+                        : '—'}
                     </Text>
                   </View>
                   <View style={[styles.analysisStatDivider, { backgroundColor: colors.border }]} />
@@ -551,7 +563,7 @@ export default function ProfileScreen() {
       {/* Version */}
       <View style={styles.footer}>
         <Text style={[styles.version, { color: colors.foregroundMuted }]}>
-          {t('settings.version')} 1.0.0
+          {t('settings.version')} {Constants.expoConfig?.version || '1.0.0'}
         </Text>
       </View>
     </ScrollView>
