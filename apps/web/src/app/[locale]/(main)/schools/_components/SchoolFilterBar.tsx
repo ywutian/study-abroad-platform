@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import {
   type SchoolFilters,
   type SchoolWeightParams,
@@ -88,7 +89,7 @@ export function SchoolFilterBar({
   const t = useTranslations('schools');
 
   const { data: availableCountries } = useQuery<AvailableCountry[]>({
-    queryKey: ['schools', 'countries'],
+    queryKey: qk.schools.countries(),
     queryFn: () => apiClient.get(schoolRoutes.countries(), { suppressErrorToast: true }),
     staleTime: 5 * 60 * 1000,
   });

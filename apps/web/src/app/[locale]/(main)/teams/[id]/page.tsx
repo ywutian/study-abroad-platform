@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { teamRoutes } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores';
 import { getSchoolName } from '@/lib/utils';
@@ -59,7 +60,7 @@ export default function TeamDetailPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['teams', id],
+    queryKey: qk.teams.detail(id),
     queryFn: () => apiClient.get<TeamDetail>(teamRoutes.byId(id)),
     enabled: !!id,
   });
@@ -70,7 +71,7 @@ export default function TeamDetailPage() {
   const leaveMutation = useMutation({
     mutationFn: () => apiClient.post(teamRoutes.leave(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: qk.teams.all });
       toast.success(t('toast.left'));
       setLeaveOpen(false);
       router.push('/teams?tab=my');
@@ -84,7 +85,7 @@ export default function TeamDetailPage() {
   const disbandMutation = useMutation({
     mutationFn: () => apiClient.delete(teamRoutes.byId(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: qk.teams.all });
       toast.success(t('toast.disbanded'));
       setDisbandOpen(false);
       router.push('/teams');
@@ -116,7 +117,7 @@ export default function TeamDetailPage() {
     try {
       await apiClient.post(teamRoutes.join(id));
       toast.success(t('toast.joined'));
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: qk.teams.all });
     } catch (e: unknown) {
       const err = e as { response?: { data?: { error?: { code?: string; message?: string } } } };
       const code = err.response?.data?.error?.code;

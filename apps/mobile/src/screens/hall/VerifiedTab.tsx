@@ -16,6 +16,7 @@ import { EmptyState, Loading } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { hallRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import type { VerifiedUserDto, VerifiedRankingResponse, RankingFilter } from './types';
 import { RANKING_FILTERS } from './types';
 import { VerifiedItem } from './VerifiedItem';
@@ -34,7 +35,7 @@ export function VerifiedTab() {
     isLoading,
     refetch,
   } = useQuery<VerifiedRankingResponse>({
-    queryKey: ['hall-verified', verifiedFilter],
+    queryKey: qk.hall.verified(verifiedFilter),
     queryFn: () =>
       apiClient.get<VerifiedRankingResponse>(hallRoutes.verifiedRanking(), {
         params: { filter: verifiedFilter, limit: 50 },

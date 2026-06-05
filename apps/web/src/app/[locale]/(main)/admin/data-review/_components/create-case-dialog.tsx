@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { caseRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2, ChevronDown } from 'lucide-react';
@@ -100,7 +101,7 @@ export function CreateCaseDialog({ open, onOpenChange }: Props) {
       toast.success(t('success'));
       queryClient.invalidateQueries({ queryKey: ['reviewQueue'] });
       queryClient.invalidateQueries({ queryKey: ['reviewStats'] });
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: qk.cases.all });
       onOpenChange(false);
       resetForm();
     },

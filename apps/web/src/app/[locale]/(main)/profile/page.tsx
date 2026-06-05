@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import {
   type DashboardData,
   profileRoutes,
@@ -168,7 +169,7 @@ export default function ProfilePage() {
   });
 
   const { data: schoolListData } = useQuery({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () =>
       apiClient.get<
         Array<{

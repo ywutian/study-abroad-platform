@@ -27,6 +27,7 @@ import { AnimatedButton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 
 import {
@@ -113,7 +114,7 @@ export default function GameView({ onShowStats }: GameViewProps) {
       }
 
       setResultOverlay(result);
-      queryClient.invalidateQueries({ queryKey: ['swipe', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: qk.swipe.stats() });
 
       if (resultTimerRef.current) clearTimeout(resultTimerRef.current);
       resultTimerRef.current = setTimeout(() => {

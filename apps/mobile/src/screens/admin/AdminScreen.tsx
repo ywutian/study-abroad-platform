@@ -37,6 +37,7 @@ import {
 import { Segment } from '@/components/ui/Tabs';
 import { adminRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
@@ -115,7 +116,7 @@ export default function AdminScreen() {
     isLoading: reportsLoading,
     refetch: refetchReports,
   } = useQuery({
-    queryKey: ['adminReports'],
+    queryKey: qk.admin.reports(),
     queryFn: () =>
       apiClient.get<{ items: Report[]; total: number }>(adminRoutes.reports(), {
         params: { status: 'PENDING' },
@@ -128,7 +129,7 @@ export default function AdminScreen() {
     isLoading: usersLoading,
     refetch: refetchUsers,
   } = useQuery({
-    queryKey: ['adminUsers', userSearch],
+    queryKey: qk.admin.users(userSearch),
     queryFn: () =>
       apiClient.get<{ items: User[]; total: number }>(adminRoutes.users(), {
         params: userSearch ? { search: userSearch } : {},
@@ -145,7 +146,7 @@ export default function AdminScreen() {
         resolution: t('admin.dialogs.defaultResolution'),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminReports'] });
+      queryClient.invalidateQueries({ queryKey: qk.admin.reports() });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       setSelectedReport(null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -159,7 +160,7 @@ export default function AdminScreen() {
     mutationFn: ({ userId, role }: { userId: string; role: string }) =>
       apiClient.put(adminRoutes.userRole(userId), { role }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      queryClient.invalidateQueries({ queryKey: qk.admin.usersAll });
       setSelectedUser(null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
@@ -171,7 +172,7 @@ export default function AdminScreen() {
   const deleteUserMutation = useMutation({
     mutationFn: (userId: string) => apiClient.delete(adminRoutes.userById(userId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      queryClient.invalidateQueries({ queryKey: qk.admin.usersAll });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       setSelectedUser(null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

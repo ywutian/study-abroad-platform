@@ -32,6 +32,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { caseRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Loader2, Send, GraduationCap } from 'lucide-react';
@@ -143,7 +144,7 @@ export function SubmitCaseDialog({
   const submitMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => apiClient.post(caseRoutes.list(), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: qk.cases.all });
       onOpenChange(false);
       toast.success(t('toast.success'));
       setTimeout(() => {

@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Loading } from '@/components/ui';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 
 import { SwipeStatsDto, SCREEN_WIDTH } from './types';
@@ -32,7 +33,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
   const insets = useSafeAreaInsets();
 
   const { data: stats, isLoading: statsLoading } = useQuery<SwipeStatsDto>({
-    queryKey: ['swipe', 'stats'],
+    queryKey: qk.swipe.stats(),
     queryFn: () => apiClient.get<SwipeStatsDto>(`${API_ROUTES.HALLS}/swipe/stats`),
     staleTime: 30_000,
   });

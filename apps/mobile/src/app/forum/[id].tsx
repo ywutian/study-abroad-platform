@@ -44,6 +44,7 @@ import {
 } from '@/utils/theme';
 import { forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 
 // ---------------------------------------------------------------------------
@@ -166,7 +167,7 @@ export default function ForumPostDetailPage() {
     isLoading: postLoading,
     refetch: refetchPost,
   } = useQuery<PostDto>({
-    queryKey: ['forum', 'post', id],
+    queryKey: qk.forum.detail(id),
     queryFn: () => apiClient.get<PostDto>(forumRoutes.post(id!)),
     enabled: !!id,
   });
@@ -176,7 +177,7 @@ export default function ForumPostDetailPage() {
     isLoading: commentsLoading,
     refetch: refetchComments,
   } = useQuery<CommentDto[]>({
-    queryKey: ['forum', 'comments', id],
+    queryKey: qk.forum.comments(id),
     queryFn: () => apiClient.get<CommentDto[]>(forumRoutes.comments(id!)),
     enabled: !!id,
   });
@@ -198,8 +199,8 @@ export default function ForumPostDetailPage() {
   const commentMutation = useMutation<CommentDto, Error, { content: string; parentId?: string }>({
     mutationFn: (dto) => apiClient.post<CommentDto>(forumRoutes.comments(id!), dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum', 'comments', id] });
-      queryClient.invalidateQueries({ queryKey: ['forum', 'post', id] });
+      queryClient.invalidateQueries({ queryKey: qk.forum.comments(id) });
+      queryClient.invalidateQueries({ queryKey: qk.forum.detail(id) });
       setCommentText('');
       setReplyTo(null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -210,7 +211,7 @@ export default function ForumPostDetailPage() {
   const applyMutation = useMutation<void, Error, void>({
     mutationFn: () => apiClient.post(forumRoutes.postApply(id!)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum', 'post', id] });
+      queryClient.invalidateQueries({ queryKey: qk.forum.detail(id) });
       toast.success(t('forum.applied'));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     },
@@ -228,7 +229,7 @@ export default function ForumPostDetailPage() {
   const deleteMutation = useMutation<void, Error, void>({
     mutationFn: () => apiClient.delete(forumRoutes.post(id!)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum'] });
+      queryClient.invalidateQueries({ queryKey: qk.forum.all });
       toast.success(t('forum.postDeleted'));
       router.back();
     },

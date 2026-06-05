@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { API_ROUTES, schoolListRoutes, timelineRoutes } from '@study-abroad/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -136,7 +137,7 @@ export default function TimelinePage() {
   );
 
   const { data: schoolListItemsRaw } = useQuery<unknown>({
-    queryKey: ['school-lists'],
+    queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get(schoolListRoutes.list()),
   });
   const schoolListItems = useMemo(

@@ -17,6 +17,7 @@ import {
 } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
+import { qk } from '@/lib/query';
 
 // ============================================
 // Query Keys — 统一管理，防止拼写错误
@@ -111,7 +112,7 @@ export function useAddToSchoolList() {
         isAIRecommended: dto.isAIRecommended ?? true,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
     },
   });

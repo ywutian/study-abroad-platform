@@ -9,6 +9,7 @@ import { EmptyState, Loading } from '@/components/ui';
 import { useColors, spacing } from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import type { RankingResult } from './types';
 import { RankingItem } from './RankingItem';
 
@@ -23,7 +24,7 @@ export function RankingTab() {
     isLoading,
     refetch,
   } = useQuery<RankingResult[]>({
-    queryKey: ['hall-target-ranking'],
+    queryKey: qk.hall.targetRanking(),
     queryFn: () => apiClient.get<RankingResult[]>(`${API_ROUTES.HALLS}/target-ranking`),
     staleTime: 5 * 60_000,
   });

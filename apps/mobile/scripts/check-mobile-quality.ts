@@ -345,7 +345,8 @@ function checkInlineListQueryKey(filePath: string, lines: string[]): Issue[] {
         line: i + 1,
         rule: 'no-inline-list-query-key',
         message: `Inline list query key ['${m[1]}', …] — use the \`qk\` factory (import { qk } from '@/lib/query') so keys + invalidations stay consistent. Suppress with // @cache-policy-ignore-next-line.`,
-        severity: 'warning',
+        // PROMOTED to error 2026-06: mobile inline-key worklist cleared to 0.
+        severity: 'error',
       });
     }
   }

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
+import { qk } from '@/lib/query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { AI_TIMEOUTS } from '@/lib/constants';
@@ -144,7 +145,7 @@ export function useProfileMutations() {
       apiClient.post(schoolListRoutes.list(), { schoolId, tier: 'TARGET', round }),
     meta: { skipGlobalErrorToast: true },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       invalidateProfileDependents();
     },
   });
@@ -152,7 +153,7 @@ export function useProfileMutations() {
   const removeSchoolMutation = useMutation({
     mutationFn: (listItemId: string) => apiClient.delete(schoolListRoutes.byId(listItemId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       invalidateProfileDependents();
     },
   });
@@ -161,7 +162,7 @@ export function useProfileMutations() {
     mutationFn: ({ listItemId, round }: { listItemId: string; round: string }) =>
       apiClient.put(schoolListRoutes.byId(listItemId), { round }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       invalidateProfileDependents();
       toast.success(t('profile.toast.roundUpdated'));
     },
@@ -278,7 +279,7 @@ export function useProfileMutations() {
       );
 
       // Batch invalidation — single refetch after all mutations
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      queryClient.invalidateQueries({ queryKey: qk.schoolList.all });
       invalidateProfileDependents();
 
       // Summary toast with per-school error details

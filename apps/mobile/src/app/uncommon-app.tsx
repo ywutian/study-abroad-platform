@@ -157,13 +157,13 @@ export default function UncommonAppScreen() {
   });
 
   const { data: recommendationPreflight } = useQuery<RecommendationPreflight>({
-    queryKey: ['recommendation', 'preflight'],
+    queryKey: qk.recommendation.preflight(),
     queryFn: () => apiClient.get(recommendationRoutes.preflight()),
     enabled: isAuthenticated,
   });
 
   const { data: recommendationHistory } = useQuery<RecommendationResult[]>({
-    queryKey: ['recommendation', 'history'],
+    queryKey: qk.recommendation.history(),
     queryFn: () => apiClient.get(recommendationRoutes.history()),
     enabled: isAuthenticated,
   });
@@ -228,8 +228,8 @@ export default function UncommonAppScreen() {
         { timeout: 60000 }
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recommendation', 'history'] });
-      queryClient.invalidateQueries({ queryKey: ['recommendation', 'preflight'] });
+      queryClient.invalidateQueries({ queryKey: qk.recommendation.history() });
+      queryClient.invalidateQueries({ queryKey: qk.recommendation.preflight() });
       toast.success(t('recommendation.generateSuccess'));
     },
     onError: () => {

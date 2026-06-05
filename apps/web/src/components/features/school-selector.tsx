@@ -22,6 +22,7 @@ import { RankingBadge } from '@/components/ui/ranking-badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { apiClient } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { formatAcceptanceRate, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { type SchoolRanking } from '@/lib/utils/ranking';
 import { isSafeUrl } from '@/lib/utils/url';
@@ -65,7 +66,7 @@ export function SchoolSelector({
 
   // Fetch schools
   const { data: schoolsResponse, isLoading } = useQuery({
-    queryKey: ['schools', search],
+    queryKey: qk.schools.list({ search }),
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: { search, pageSize: '100' },
