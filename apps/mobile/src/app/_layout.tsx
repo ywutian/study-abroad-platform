@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/Button';
 import { NetworkProvider, ErrorBoundary } from '@/components/providers';
 import { useColors, colors as themeColors, withOpacity } from '@/utils/theme';
 import { createAsyncStoragePersister, MAX_CACHE_AGE_MS } from '@/lib/query-persister';
+import { prefetchReferenceData, attachCacheMetrics } from '@/lib/query';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
 
 // 初始化 Sentry (在 App 外部，仅执行一次)
@@ -63,6 +64,9 @@ const queryClient = new QueryClient({
 
 const persister = createAsyncStoragePersister();
 const persistOptions = { persister, maxAge: MAX_CACHE_AGE_MS };
+
+// Observe cache hit-rates for the app's lifetime (O(1) per event; logs in dev).
+attachCacheMetrics(queryClient);
 
 /**
  * Watches for session expiry and shows a toast to inform the user before
@@ -348,7 +352,13 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={persistOptions}
+          // After the on-disk cache is restored, warm static reference lists so the
+          // first Schools-tab open is instant (no cold fetch). No-op if still fresh.
+          onSuccess={() => void prefetchReferenceData(queryClient)}
+        >
           <ErrorBoundary>
             <NetworkProvider>
               <ToastProvider>

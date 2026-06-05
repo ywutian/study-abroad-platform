@@ -63,7 +63,10 @@ import {
 // Cache TTL in seconds
 const CACHE_TTL = {
   SCHOOL_DETAIL: 3600, // 1 hour for individual school
-  SCHOOL_LIST: 300, // 5 minutes for lists
+  // 1 hour: school data is static and write paths call onSchoolChange/
+  // invalidateSchoolCache (delByPrefix 'school:list:'), so a longer TTL is safe and
+  // keeps the shared cache warm — fewer cold DB queries between visits.
+  SCHOOL_LIST: 3600,
   SCHOOL_METRICS: 86400, // 24 hours for metrics (rarely change)
 };
 
