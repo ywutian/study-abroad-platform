@@ -1,5 +1,6 @@
 import React, { useState, memo, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,7 +53,9 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
               <Image
                 source={{ uri: item.media.campusCover.url }}
                 style={[styles.coverThumb, { backgroundColor: colors.muted }]}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={150}
               />
             ) : null}
             <SchoolAvatar
@@ -115,13 +118,21 @@ export default function SchoolsScreen() {
     refetch,
     isRefetching,
   } = usePaginatedQuery<School>({
-    queryKey: ['schools', debouncedSearch, sortBy],
+    // sortBy is NOT in the key — sorting is done client-side (sortedSchools below),
+    // so changing sort must reuse the cached list instead of refetching from page 1.
+    queryKey: ['schools', debouncedSearch],
     endpoint: '/schools',
     params: {
       search: debouncedSearch || undefined,
       // Slim list-card payload (~5x smaller; drops provenance/metadata the list never renders).
       view: 'list',
     },
+    // School data is static reference data — keep it fresh for an hour so revisiting
+    // the tab is instant (no skeleton, no refetch). Pull-to-refresh forces a reload.
+    staleTime: 1000 * 60 * 60,
+    // Survive in cache for 2h even if the tab unmounts, so a revisit doesn't fall
+    // back to a cold fetch (default gcTime is only 30 min).
+    gcTime: 1000 * 60 * 60 * 2,
   });
 
   const sortedSchools = useMemo(() => {

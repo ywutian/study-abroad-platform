@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -453,7 +454,9 @@ export default function SchoolDetailScreen() {
             <Image
               source={{ uri: school.media.campusCover.url }}
               style={[styles.coverImage, { backgroundColor: colors.muted }]}
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={150}
             />
           ) : null}
           <SchoolAvatar
