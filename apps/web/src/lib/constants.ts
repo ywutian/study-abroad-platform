@@ -18,6 +18,9 @@ export const AI_TIMEOUTS = {
 
 // ── React Query Cache Times ─────────────────────────────────
 export const STALE_TIME = {
+  /** Infinity — immutable for a session (enums, country filters, ranking-list options).
+   *  Never auto-refetches; only a manual refetch() or cold start re-pulls. */
+  IMMUTABLE: Number.POSITIVE_INFINITY,
   /** 30 min — rarely changing data (school details, rankings) */
   STATIC: 30 * 60 * 1000,
   /** 5 min — moderate freshness (lists, profile, AI analysis) */
