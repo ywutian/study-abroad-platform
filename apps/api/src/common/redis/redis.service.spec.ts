@@ -283,3 +283,104 @@ describe('RedisService resilience', () => {
     );
   });
 });
+
+describe('RedisService metered operations', () => {
+  let metrics: RedisMetricsCollector;
+  let activeServices: RedisService[];
+
+  function createService(overrides: Record<string, unknown> = {}) {
+    const service = new RedisService(createConfig(overrides), metrics);
+    activeServices.push(service);
+    return service;
+  }
+
+  beforeEach(() => {
+    metrics = new RedisMetricsCollector();
+    activeServices = [];
+  });
+
+  afterEach(async () => {
+    await Promise.all(
+      activeServices.map((service) => service.onModuleDestroy()),
+    );
+  });
+
+  it('routes incrby through the client and records a metered op', async () => {
+    const service = createService();
+    const incrby = jest.fn().mockResolvedValue(7);
+    attachClient(service, { incrby });
+
+    await expect(service.incrby('budget:user-1', 3)).resolves.toBe(7);
+    expect(incrby).toHaveBeenCalledWith('budget:user-1', 3);
+    expect(metrics.snapshot().totals.totalOps).toBe(1);
+  });
+
+  it('coerces hincrbyfloat to a number', async () => {
+    const service = createService();
+    attachClient(service, {
+      hincrbyfloat: jest.fn().mockResolvedValue('1.5'),
+    });
+
+    await expect(service.hincrbyfloat('cost:daily', 'usd', 1.5)).resolves.toBe(
+      1.5,
+    );
+  });
+
+  it('returns typed fallbacks when Redis is unavailable', async () => {
+    const service = createService();
+    // No client attached → not connected → safeRecord returns the fallback.
+    await expect(service.incrby('k', 1)).resolves.toBe(0);
+    await expect(service.hgetall('k')).resolves.toEqual({});
+    await expect(service.zrange('k', 0, -1)).resolves.toEqual([]);
+    await expect(service.zcard('k')).resolves.toBe(0);
+    await expect(service.pttl('k')).resolves.toBe(-2);
+  });
+
+  it('runs zset operations through the client', async () => {
+    const service = createService();
+    const zadd = jest.fn().mockResolvedValue(1);
+    const zrange = jest.fn().mockResolvedValue(['a', 'b']);
+    attachClient(service, { zadd, zrange });
+
+    await expect(service.zadd('queue', 5, 'task-1')).resolves.toBe(1);
+    await expect(service.zrange('queue', 0, -1)).resolves.toEqual(['a', 'b']);
+    expect(zadd).toHaveBeenCalledWith('queue', 5, 'task-1');
+  });
+
+  describe('withClient escape hatch', () => {
+    it('runs the callback with the raw client and records one metered op', async () => {
+      const service = createService();
+      const evalFn = jest.fn().mockResolvedValue(3);
+      attachClient(service, { eval: evalFn });
+
+      const result = await service.withClient('atomic', 'ratelimit', (client) =>
+        (client as unknown as { eval: jest.Mock }).eval('SCRIPT', 1, 'k'),
+      );
+
+      expect(result).toBe(3);
+      expect(evalFn).toHaveBeenCalledWith('SCRIPT', 1, 'k');
+      expect(metrics.snapshot().totals.totalOps).toBe(1);
+    });
+
+    it('throws when Redis is unavailable so callers hit their own fallback', async () => {
+      const service = createService();
+      // No client attached.
+      await expect(
+        service.withClient('atomic', 'ratelimit', async () => 1),
+      ).rejects.toThrow('Redis unavailable');
+    });
+
+    it('re-throws driver errors (preserving caller try/catch degradation)', async () => {
+      const service = createService();
+      attachClient(service, {
+        eval: jest.fn().mockRejectedValue(new Error('ECONNRESET')),
+      });
+
+      await expect(
+        service.withClient('atomic', 'ratelimit', (client) =>
+          (client as unknown as { eval: jest.Mock }).eval('SCRIPT'),
+        ),
+      ).rejects.toThrow('ECONNRESET');
+    });
+  });
+});

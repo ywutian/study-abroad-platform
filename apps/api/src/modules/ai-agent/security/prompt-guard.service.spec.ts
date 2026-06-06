@@ -24,6 +24,9 @@ describe('PromptGuardService', () => {
     mockRedisService = {
       getClient: jest.fn().mockReturnValue(mockRedisClient),
       connected: true,
+      get: jest.fn().mockResolvedValue(null),
+      incrby: jest.fn().mockResolvedValue(1),
+      expire: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<RedisService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -381,11 +384,11 @@ describe('PromptGuardService', () => {
   // === 威胁历史测试 ===
   describe('threat history', () => {
     it('should increment threat count in Redis', async () => {
-      mockRedisClient.get.mockResolvedValue('0');
+      (mockRedisService.get as jest.Mock).mockResolvedValue('0');
 
       await service.analyze('DAN', { userId: 'test-user' });
 
-      expect(mockRedisClient.incrby).toHaveBeenCalledWith(
+      expect(mockRedisService.incrby).toHaveBeenCalledWith(
         'threat:history:test-user',
         expect.any(Number),
       );
@@ -403,7 +406,7 @@ describe('PromptGuardService', () => {
     });
 
     it('should add history score to risk calculation', async () => {
-      mockRedisClient.get.mockResolvedValue('5'); // 5 次历史威胁
+      (mockRedisService.get as jest.Mock).mockResolvedValue('5'); // 5 次历史威胁
 
       const result = await service.analyze('hello', { userId: 'test-user' });
       // 历史分数 = min(0.3, 5 * 0.05) = 0.25
@@ -413,7 +416,7 @@ describe('PromptGuardService', () => {
     it('should expire history after 1 hour', async () => {
       await service.analyze('DAN', { userId: 'test-user' });
 
-      expect(mockRedisClient.expire).toHaveBeenCalledWith(
+      expect(mockRedisService.expire).toHaveBeenCalledWith(
         'threat:history:test-user',
         3600,
       );

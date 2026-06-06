@@ -82,6 +82,8 @@ describe('MemoryManagerService', () => {
               set: jest.fn().mockResolvedValue('OK'),
             }),
             connected: true,
+            setNXStrict: jest.fn().mockResolvedValue(true),
+            del: jest.fn().mockResolvedValue(undefined),
           },
         },
         {

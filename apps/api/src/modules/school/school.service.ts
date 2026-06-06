@@ -17,6 +17,7 @@ import {
 } from '@study-abroad/shared/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import {
   Prisma,
   School,
@@ -62,15 +63,15 @@ import {
 
 // Cache TTL in seconds
 const CACHE_TTL = {
-  SCHOOL_DETAIL: 3600, // 1 hour for individual school
+  SCHOOL_DETAIL: REDIS_TTL.SCHOOL_DETAIL,
   // 1 hour: school data is static and write paths call onSchoolChange/
   // invalidateSchoolCache (delByPrefix 'school:list:'), so a longer TTL is safe and
   // keeps the shared cache warm — fewer cold DB queries between visits.
-  SCHOOL_LIST: 3600,
-  SCHOOL_METRICS: 86400, // 24 hours for metrics (rarely change)
+  SCHOOL_LIST: REDIS_TTL.SCHOOL_LIST,
+  SCHOOL_METRICS: REDIS_TTL.SCHOOL_METRICS,
 };
 
-const LOCAL_CACHE_TTL_SECONDS = 60;
+const LOCAL_CACHE_TTL_SECONDS = REDIS_TTL.LOCAL_CACHE;
 const LOCAL_CACHE_MAX_ENTRIES = 200;
 
 interface LocalCacheEntry<T> {
@@ -1437,7 +1438,7 @@ export class SchoolService {
     };
 
     // Cache for 1 hour
-    await this.redis.setJSON(cacheKey, report, 3600);
+    await this.redis.setJSON(cacheKey, report, REDIS_TTL.SCHOOL_REPORT);
 
     return report;
   }
@@ -1461,7 +1462,7 @@ export class SchoolService {
     });
     const ids = schools.map((s) => s.id);
     try {
-      await this.redis.setJSON(cacheKey, ids, 86400); // 24h
+      await this.redis.setJSON(cacheKey, ids, REDIS_TTL.SCHOOL_IDS);
     } catch {
       // Cache write failures must not break UC prediction setup.
     }
@@ -1509,7 +1510,7 @@ export class SchoolService {
     // Cache for 5 minutes — school additions happen infrequently
     this.setLocalCache(cacheKey, result);
     try {
-      await this.redis.setJSON(cacheKey, result, 300);
+      await this.redis.setJSON(cacheKey, result, REDIS_TTL.SHORT_RESULT);
     } catch {
       // Cache write failures must not turn the filter endpoint into a 500.
     }
@@ -1658,7 +1659,7 @@ export class SchoolService {
 
     try {
       this.setLocalCache(cacheKey, result);
-      await this.redis.setJSON(cacheKey, result, 300);
+      await this.redis.setJSON(cacheKey, result, REDIS_TTL.SHORT_RESULT);
     } catch {
       // Cache write failures must not break ranking selector metadata.
     }

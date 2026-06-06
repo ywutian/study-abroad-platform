@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
+import { REDIS_TTL } from '../redis/redis-ttl.constants';
 
 interface FeatureFlagRules {
   roles?: string[];
@@ -15,7 +16,7 @@ interface EvaluationContext {
 }
 
 const CACHE_PREFIX = 'ff:';
-const CACHE_TTL_SECONDS = 60;
+const CACHE_TTL_SECONDS = REDIS_TTL.FEATURE_FLAG;
 
 @Injectable()
 export class FeatureFlagService {

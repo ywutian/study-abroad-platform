@@ -11,6 +11,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import {
   NotificationService,
   NotificationType,
@@ -85,12 +86,17 @@ export class DeadlineReminderScheduler {
 
     for (const [userId, userEvents] of grouped) {
       try {
-        // Redis dedup: one reminder per user per day-window per date
+        // Redis dedup: one reminder per user per day-window per date.
+        // setNX returns false only when the key already exists (already sent);
+        // when Redis is down it fails open (true) so reminders still go out.
         const dedupKey = `deadline-reminded:${userId}:${days}:${dateStr}`;
-        const client = this.redis?.getClient();
-        if (client) {
-          const result = await client.set(dedupKey, '1', 'EX', 86400, 'NX');
-          if (result !== 'OK') continue; // Already sent today
+        if (this.redis) {
+          const firstSendToday = await this.redis.setNX(
+            dedupKey,
+            '1',
+            REDIS_TTL.DEADLINE_DEDUP,
+          );
+          if (!firstSendToday) continue; // Already sent today
         }
 
         const titles = userEvents.map((e) => `• ${e.title}`).join('\n');

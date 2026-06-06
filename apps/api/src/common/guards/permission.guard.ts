@@ -10,8 +10,9 @@ import { Role } from '@prisma/client';
 import { PERMISSION_KEY } from '../decorators/require-permission.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
+import { REDIS_TTL } from '../redis/redis-ttl.constants';
 
-const CACHE_TTL = 300; // 5 minutes
+const CACHE_TTL = REDIS_TTL.PERMISSION;
 const ROLE_CACHE_PREFIX = 'role_perms:';
 const USER_CACHE_PREFIX = 'user_perms:';
 

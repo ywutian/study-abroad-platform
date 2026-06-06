@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../../common/redis/redis-ttl.constants';
 
 export enum AlertSeverity {
   CRITICAL = 'critical',
@@ -632,7 +633,7 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
           timestamp: new Date().toISOString(),
         }),
       );
-      await this.redis.expire(key, 7 * 24 * 60 * 60); // 7 天 TTL
+      await this.redis.expire(key, REDIS_TTL.ALERT_DATA);
     } catch {
       // 不因日志记录失败影响告警发送
     }
@@ -674,7 +675,7 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
         acknowledgedAt: new Date().toISOString(),
         notes,
       }),
-      30 * 24 * 60 * 60, // 30 天 TTL
+      REDIS_TTL.ALERT_ARCHIVE,
     );
 
     // 如果配置了 PagerDuty，发送 resolve 事件

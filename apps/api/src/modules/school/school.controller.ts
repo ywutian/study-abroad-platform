@@ -45,6 +45,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { Prisma, Role } from '@prisma/client';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   AuditLogService,
@@ -447,7 +448,7 @@ export class SchoolController {
       };
 
       try {
-        await this.redis.setJSON(cacheKey, mapped, 7200);
+        await this.redis.setJSON(cacheKey, mapped, REDIS_TTL.SCHOOL_REC_RESULT);
       } catch {
         // Redis is only a cache for recommendations.
       }

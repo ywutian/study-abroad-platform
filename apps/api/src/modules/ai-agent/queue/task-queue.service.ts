@@ -197,28 +197,21 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
       )
     `;
 
-    // 添加到 Redis 队列
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
-      try {
-        if (options?.delay) {
-          // 延迟任务
-          await client.zadd(
-            this.DELAYED_KEY,
-            scheduledAt.getTime(),
-            JSON.stringify(task),
-          );
-        } else {
-          // 立即任务（按优先级）
-          await client.zadd(
-            this.QUEUE_KEY,
-            -task.priority, // 负数使高优先级排前面
-            JSON.stringify(task),
-          );
-        }
-      } catch (err) {
-        this.logger.error(`Failed to add task to Redis: ${String(err)}`);
-      }
+    // 添加到 Redis 队列（zadd 在 Redis 不可用时 no-op；任务已落库，best-effort）
+    if (options?.delay) {
+      // 延迟任务
+      await this.redis.zadd(
+        this.DELAYED_KEY,
+        scheduledAt.getTime(),
+        JSON.stringify(task),
+      );
+    } else {
+      // 立即任务（按优先级）
+      await this.redis.zadd(
+        this.QUEUE_KEY,
+        -task.priority, // 负数使高优先级排前面
+        JSON.stringify(task),
+      );
     }
 
     this.logger.debug(`Task added: ${taskId} (${type})`);
@@ -236,22 +229,19 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
       WHERE id = ${taskId} AND status = ${TaskStatus.PENDING}
     `;
 
-    // 从 Redis 队列移除
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
-      try {
-        // 需要遍历队列找到并移除
-        const tasks = await client.zrange(this.QUEUE_KEY, 0, -1);
-        for (const taskJson of tasks) {
-          const task = JSON.parse(taskJson);
-          if (task.id === taskId) {
-            await client.zrem(this.QUEUE_KEY, taskJson);
-            break;
-          }
+    // 从 Redis 队列移除（zrange 在 Redis 不可用时返回 []，best-effort）
+    try {
+      // 需要遍历队列找到并移除
+      const tasks = await this.redis.zrange(this.QUEUE_KEY, 0, -1);
+      for (const taskJson of tasks) {
+        const task = JSON.parse(taskJson);
+        if (task.id === taskId) {
+          await this.redis.zrem(this.QUEUE_KEY, taskJson);
+          break;
         }
-      } catch (err) {
-        this.logger.error(`Failed to remove task from Redis: ${String(err)}`);
       }
+    } catch (err) {
+      this.logger.error(`Failed to remove task from Redis: ${String(err)}`);
     }
 
     return result > 0;
@@ -455,17 +445,14 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async promoteDelayedTasks(): Promise<void> {
-    const client = this.redis.getClient();
-    if (!client || !this.redis.connected) return;
-
     try {
       const now = Date.now();
-      const tasks = await client.zrangebyscore(this.DELAYED_KEY, 0, now);
+      const tasks = await this.redis.zrangebyscore(this.DELAYED_KEY, 0, now);
 
       for (const taskJson of tasks) {
         const task = JSON.parse(taskJson);
-        await client.zadd(this.QUEUE_KEY, -task.priority, taskJson);
-        await client.zrem(this.DELAYED_KEY, taskJson);
+        await this.redis.zadd(this.QUEUE_KEY, -task.priority, taskJson);
+        await this.redis.zrem(this.DELAYED_KEY, taskJson);
       }
     } catch (err) {
       this.logger.debug(`Failed to promote delayed tasks: ${String(err)}`);
@@ -473,20 +460,20 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async getNextTask(): Promise<Task | null> {
-    const client = this.redis.getClient();
-
-    if (client && this.redis.connected) {
-      try {
-        // 从 Redis 获取
-        const result = await client.zpopmin(this.QUEUE_KEY);
-        if (result && result.length > 0) {
-          return JSON.parse(result[0]);
-        }
-      } catch (err) {
-        this.logger.debug(
-          `Redis queue error, falling back to DB: ${String(err)}`,
-        );
+    try {
+      // 从 Redis 获取（withClient 在不可用/出错时抛出 → 降级到 DB）
+      const result = await this.redis.withClient(
+        'atomic',
+        this.QUEUE_KEY,
+        (client) => client.zpopmin(this.QUEUE_KEY),
+      );
+      if (result && result.length > 0) {
+        return JSON.parse(result[0]);
       }
+    } catch (err) {
+      this.logger.debug(
+        `Redis queue error, falling back to DB: ${String(err)}`,
+      );
     }
 
     // 降级：从数据库获取

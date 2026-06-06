@@ -13,6 +13,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { ResilienceService } from '../core/resilience.service';
 
 const EMBEDDING_CONFIG = {
@@ -60,7 +61,7 @@ export class EmbeddingService {
   private readonly maxCacheSize = 500;
 
   // Redis缓存TTL：24小时
-  private readonly CACHE_TTL = 86400;
+  private readonly CACHE_TTL = REDIS_TTL.EMBEDDING_CACHE;
 
   constructor(
     private redis: RedisService,
@@ -301,16 +302,14 @@ export class EmbeddingService {
 
   private async getCachedEmbedding(key: string): Promise<number[] | null> {
     const redisKey = `emb:${key}`;
-    const client = this.redis.getClient();
-
-    if (client && this.redis.connected) {
+    // `get` returns null on a miss OR when Redis is down — both fall through to
+    // the in-memory cache below, matching the previous try/catch behavior.
+    const raw = await this.redis.get(redisKey);
+    if (raw) {
       try {
-        const raw = await client.get(redisKey);
-        if (raw) {
-          return JSON.parse(raw);
-        }
-      } catch (err) {
-        this.logger.debug(`Redis getCachedEmbedding failed: ${String(err)}`);
+        return JSON.parse(raw);
+      } catch {
+        // corrupt entry — fall through to memory
       }
     }
 
@@ -323,20 +322,17 @@ export class EmbeddingService {
     embedding: number[],
   ): Promise<void> {
     const redisKey = `emb:${key}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        await client.set(
-          redisKey,
-          JSON.stringify(embedding),
-          'EX',
-          this.CACHE_TTL,
-        );
-        return;
-      } catch (err) {
-        this.logger.debug(`Redis cacheEmbedding failed: ${String(err)}`);
-      }
+    // withClient throws when Redis is down or errors, so we fall through to the
+    // in-memory cache exactly as the previous if/try-catch did — but the write
+    // is now metered and visible in the cache-health dashboard.
+    try {
+      await this.redis.withClient('write', redisKey, (client) =>
+        client.set(redisKey, JSON.stringify(embedding), 'EX', this.CACHE_TTL),
+      );
+      return;
+    } catch (err) {
+      this.logger.debug(`Redis cacheEmbedding failed: ${String(err)}`);
     }
 
     // 降级到内存
@@ -361,19 +357,17 @@ export class EmbeddingService {
     fallbackSize: number;
     redisKeyCount?: number;
   }> {
-    const client = this.redis.getClient();
-
-    if (client && this.redis.connected) {
-      try {
-        const keys = await client.keys('emb:*');
-        return {
-          mode: 'redis',
-          fallbackSize: this.fallbackCache.size,
-          redisKeyCount: keys.length,
-        };
-      } catch {
-        // fall through
-      }
+    try {
+      const keys = await this.redis.withClient('read', 'emb:*', (client) =>
+        client.keys('emb:*'),
+      );
+      return {
+        mode: 'redis',
+        fallbackSize: this.fallbackCache.size,
+        redisKeyCount: keys.length,
+      };
+    } catch {
+      // fall through
     }
 
     return {

@@ -92,6 +92,9 @@ Rules JSON: `{ "roles": ["ADMIN"], "userIds": ["uuid"], "percentage": 50 }`. Eva
 | `no-missing-test` | warning | Service without `.spec.ts` |
 | `no-duplicated-select` | warning | Same select block repeated 2+ times |
 | `no-select-mapping-drift` | warning | SELECT field not in mapper |
+| `no-raw-redis-getclient` | error | `redis.getClient()` bypassing metrics/circuit-breaker — use a wrapper or `redis.withClient()` (suppress `// @redis-raw-allowed`) |
+| `no-hardcoded-redis-ttl` | error | Numeric TTL literal on a Redis write — use `REDIS_TTL.*` from `common/redis/redis-ttl.constants` (suppress `// @redis-ttl-allowed`) |
+| `no-redis-poll-without-backoff` | error | `setInterval` polling Redis on a fixed <30s cadence (the #274 quota-burn) — use setTimeout-reschedule + backoff (suppress `// @redis-poll-allowed`) |
 
 ## Deep Dive
 

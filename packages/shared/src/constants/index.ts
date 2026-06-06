@@ -164,6 +164,9 @@ export * from './application-rounds';
 // 预测功能常量
 export * from './prediction';
 
+// React Query 缓存档位（web + mobile 共享的 staleTime 真相源）
+export * from './query-cache';
+
 // 共享枚举
 export * from './enums';
 

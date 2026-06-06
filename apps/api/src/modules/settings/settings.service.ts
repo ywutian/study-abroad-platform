@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 
 // System setting key constants
 export const SETTING_KEYS = {
@@ -301,7 +302,7 @@ const SETTING_KEY_ALIASES: Record<string, string> = Object.entries(
   return acc;
 }, {});
 
-const CACHE_TTL = 300; // 5 minutes
+const CACHE_TTL = REDIS_TTL.SETTINGS;
 const CACHE_PREFIX = 'setting:';
 
 @Injectable()

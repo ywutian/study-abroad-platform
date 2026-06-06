@@ -1,8 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PredictionResultDto } from './dto';
 
-const CACHE_TTL = 86400; // 24 hours — profile changes trigger invalidation via invalidateUserCache()
+// profile changes trigger invalidation via invalidateUserCache()
+const CACHE_TTL = REDIS_TTL.PREDICTION_RESULT;
 const CACHE_PREFIX = 'prediction:';
 
 /**

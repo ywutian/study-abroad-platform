@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CHAT_MESSAGE_OFFLINE,
@@ -182,8 +183,8 @@ export class NotificationService {
   private readonly UNREAD_COUNT_KEY_PREFIX = 'unread_count:';
   private readonly PUSH_TOKEN_KEY_PREFIX = 'notification_push_tokens:';
   private readonly MAX_NOTIFICATIONS = 100;
-  private readonly NOTIFICATION_TTL = 60 * 60 * 24 * 30; // 30天
-  private readonly PUSH_TOKEN_TTL = 60 * 60 * 24 * 90; // 90天
+  private readonly NOTIFICATION_TTL = REDIS_TTL.NOTIFICATION;
+  private readonly PUSH_TOKEN_TTL = REDIS_TTL.PUSH_TOKEN;
   private readonly EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
 
   constructor(

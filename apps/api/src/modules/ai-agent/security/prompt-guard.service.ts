@@ -9,6 +9,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 
 // ==================== 类型定义 ====================
 
@@ -451,9 +452,8 @@ export class PromptGuardService {
 
   private async checkThreatHistory(userId: string): Promise<number> {
     const key = `threat:history:${userId}`;
-    const client = this.redis.getClient();
 
-    if (!client || !this.redis.connected) {
+    if (!this.redis.connected) {
       const cached = this.threatCache.get(userId);
       if (cached && Date.now() - cached.lastSeen < 3600000) {
         return Math.min(0.3, cached.count * 0.05);
@@ -461,12 +461,10 @@ export class PromptGuardService {
       return 0;
     }
 
-    try {
-      const count = await client.get(key);
-      return Math.min(0.3, parseInt(count || '0') * 0.05);
-    } catch {
-      return 0;
-    }
+    // `get` returns null on a transient Redis error too, so parseInt('0') → 0,
+    // matching the previous catch-returns-0 behavior.
+    const count = await this.redis.get(key);
+    return Math.min(0.3, parseInt(count || '0') * 0.05);
   }
 
   private async recordThreat(
@@ -476,16 +474,10 @@ export class PromptGuardService {
     const hasCritical = threats.some((t) => t.severity === 'CRITICAL');
     const increment = hasCritical ? 3 : 1;
 
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
-      try {
-        const key = `threat:history:${userId}`;
-        await client.incrby(key, increment);
-        await client.expire(key, 3600); // 1小时过期
-      } catch (err) {
-        this.logger.debug(`Failed to record threat: ${String(err)}`);
-      }
-    }
+    // best-effort Redis counter — incrby/expire no-op when Redis is down.
+    const key = `threat:history:${userId}`;
+    await this.redis.incrby(key, increment);
+    await this.redis.expire(key, REDIS_TTL.THREAT_HISTORY); // 1 小时过期
 
     // 更新本地缓存
     const cached = this.threatCache.get(userId) || { count: 0, lastSeen: 0 };

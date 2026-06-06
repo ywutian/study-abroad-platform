@@ -1,7 +1,10 @@
 /**
  * Redis 缓存服务 - 短期记忆存储
  *
- * 使用项目现有的 RedisService，Redis 不可用时降级为内存缓存
+ * 使用项目现有的 RedisService，Redis 不可用时降级为内存缓存。
+ * 所有 Redis 访问走 `redis.withClient(...)`：它在 Redis 不可用或出错时抛出，
+ * 让既有的 try/catch 命中内存降级路径——行为不变，但操作现在会计入
+ * cache-health 监控面板（消除 #274 那类隐形配额泄漏的盲区）。
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -58,19 +61,18 @@ export class RedisCacheService {
     ttl?: number,
   ): Promise<void> {
     const key = `conv:msgs:${conversationId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
+    try {
+      await this.redis.withClient('write', key, async (client) => {
         await client.rpush(key, JSON.stringify(message));
         await client.ltrim(key, -this.maxConversationMessages, -1);
         await client.expire(key, ttl || this.defaultTTL);
-        return;
-      } catch (err) {
-        this.logger.debug(
-          `Redis cacheMessage failed, using fallback: ${String(err)}`,
-        );
-      }
+      });
+      return;
+    } catch (err) {
+      this.logger.debug(
+        `Redis cacheMessage failed, using fallback: ${String(err)}`,
+      );
     }
 
     // 降级到内存
@@ -87,17 +89,14 @@ export class RedisCacheService {
     conversationId: string,
   ): Promise<MessageRecord[]> {
     const key = `conv:msgs:${conversationId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        const raw = await client.lrange(key, 0, -1);
-        return raw.map((r) => JSON.parse(r));
-      } catch (err) {
-        this.logger.debug(
-          `Redis getConversationMessages failed: ${String(err)}`,
-        );
-      }
+    try {
+      const raw = await this.redis.withClient('read', key, (client) =>
+        client.lrange(key, 0, -1),
+      );
+      return raw.map((r) => JSON.parse(r));
+    } catch (err) {
+      this.logger.debug(`Redis getConversationMessages failed: ${String(err)}`);
     }
 
     return this.getFallback<MessageRecord[]>(key) || [];
@@ -112,10 +111,9 @@ export class RedisCacheService {
     ttl?: number,
   ): Promise<void> {
     const key = `conv:meta:${conversationId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
+    try {
+      await this.redis.withClient('write', key, async (client) => {
         const existing = await this.getConversationMeta(conversationId);
         await client.set(
           key,
@@ -123,10 +121,10 @@ export class RedisCacheService {
           'EX',
           ttl || this.defaultTTL,
         );
-        return;
-      } catch (err) {
-        this.logger.debug(`Redis cacheConversation failed: ${String(err)}`);
-      }
+      });
+      return;
+    } catch (err) {
+      this.logger.debug(`Redis cacheConversation failed: ${String(err)}`);
     }
 
     const existing = this.getFallback<Partial<ConversationRecord>>(key);
@@ -140,15 +138,14 @@ export class RedisCacheService {
     conversationId: string,
   ): Promise<Partial<ConversationRecord> | null> {
     const key = `conv:meta:${conversationId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        const raw = await client.get(key);
-        return raw ? JSON.parse(raw) : null;
-      } catch (err) {
-        this.logger.debug(`Redis getConversationMeta failed: ${String(err)}`);
-      }
+    try {
+      const raw = await this.redis.withClient('read', key, (client) =>
+        client.get(key),
+      );
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      this.logger.debug(`Redis getConversationMeta failed: ${String(err)}`);
     }
 
     return this.getFallback<Partial<ConversationRecord>>(key);
@@ -160,15 +157,10 @@ export class RedisCacheService {
   async deleteConversation(conversationId: string): Promise<void> {
     const msgKey = `conv:msgs:${conversationId}`;
     const metaKey = `conv:meta:${conversationId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        await client.del(msgKey, metaKey);
-      } catch (err) {
-        this.logger.debug(`Redis deleteConversation failed: ${String(err)}`);
-      }
-    }
+    // del no-ops when Redis is down; memory entries are removed regardless.
+    await this.redis.del(msgKey);
+    await this.redis.del(metaKey);
 
     this.fallbackCache.delete(msgKey);
     this.fallbackCache.delete(metaKey);
@@ -185,20 +177,14 @@ export class RedisCacheService {
     ttl?: number,
   ): Promise<void> {
     const key = `user:ctx:${userId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        await client.set(
-          key,
-          JSON.stringify(context),
-          'EX',
-          ttl || this.defaultTTL,
-        );
-        return;
-      } catch (err) {
-        this.logger.debug(`Redis cacheUserContext failed: ${String(err)}`);
-      }
+    try {
+      await this.redis.withClient('write', key, (client) =>
+        client.set(key, JSON.stringify(context), 'EX', ttl || this.defaultTTL),
+      );
+      return;
+    } catch (err) {
+      this.logger.debug(`Redis cacheUserContext failed: ${String(err)}`);
     }
 
     this.setFallback(key, context, ttl || this.defaultTTL);
@@ -209,15 +195,14 @@ export class RedisCacheService {
    */
   async getUserContext(userId: string): Promise<Record<string, any> | null> {
     const key = `user:ctx:${userId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        const raw = await client.get(key);
-        return raw ? JSON.parse(raw) : null;
-      } catch (err) {
-        this.logger.debug(`Redis getUserContext failed: ${String(err)}`);
-      }
+    try {
+      const raw = await this.redis.withClient('read', key, (client) =>
+        client.get(key),
+      );
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      this.logger.debug(`Redis getUserContext failed: ${String(err)}`);
     }
 
     return this.getFallback<Record<string, any>>(key);
@@ -239,15 +224,8 @@ export class RedisCacheService {
    */
   async deleteUserContext(userId: string): Promise<void> {
     const key = `user:ctx:${userId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        await client.del(key);
-      } catch (err) {
-        this.logger.debug(`Redis deleteUserContext failed: ${String(err)}`);
-      }
-    }
+    await this.redis.del(key);
 
     this.fallbackCache.delete(key);
   }
@@ -262,15 +240,14 @@ export class RedisCacheService {
     conversationId: string,
   ): Promise<void> {
     const key = `user:active:${userId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        await client.set(key, conversationId, 'EX', this.defaultTTL);
-        return;
-      } catch (err) {
-        this.logger.debug(`Redis setActiveConversation failed: ${String(err)}`);
-      }
+    try {
+      await this.redis.withClient('write', key, (client) =>
+        client.set(key, conversationId, 'EX', this.defaultTTL),
+      );
+      return;
+    } catch (err) {
+      this.logger.debug(`Redis setActiveConversation failed: ${String(err)}`);
     }
 
     this.setFallback(key, conversationId, this.defaultTTL);
@@ -281,14 +258,13 @@ export class RedisCacheService {
    */
   async getActiveConversation(userId: string): Promise<string | null> {
     const key = `user:active:${userId}`;
-    const client = this.redis.getClient();
 
-    if (client && this.redis.connected) {
-      try {
-        return await client.get(key);
-      } catch (err) {
-        this.logger.debug(`Redis getActiveConversation failed: ${String(err)}`);
-      }
+    try {
+      return await this.redis.withClient('read', key, (client) =>
+        client.get(key),
+      );
+    } catch (err) {
+      this.logger.debug(`Redis getActiveConversation failed: ${String(err)}`);
     }
 
     return this.getFallback<string>(key);
@@ -339,21 +315,18 @@ export class RedisCacheService {
     keyCount?: number;
     fallbackSize: number;
   }> {
-    const client = this.redis.getClient();
-    const connected = !!(client && this.redis.connected);
-
-    if (connected) {
-      try {
-        const keys = await client.keys('conv:*');
-        return {
-          connected: true,
-          mode: 'redis',
-          keyCount: keys.length,
-          fallbackSize: this.fallbackCache.size,
-        };
-      } catch {
-        // fall through
-      }
+    try {
+      const keys = await this.redis.withClient('read', 'conv:*', (client) =>
+        client.keys('conv:*'),
+      );
+      return {
+        connected: true,
+        mode: 'redis',
+        keyCount: keys.length,
+        fallbackSize: this.fallbackCache.size,
+      };
+    } catch {
+      // fall through
     }
 
     return {

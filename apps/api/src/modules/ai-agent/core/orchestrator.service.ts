@@ -33,6 +33,7 @@ import { EmbeddingRouterService } from './embedding-router.service';
 import { FallbackService } from './fallback.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { ConfigValidatorService } from '../config/config-validator.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
@@ -277,25 +278,20 @@ export class OrchestratorService {
 
   /** Acquire a per-conversation lock (Redis SET NX, 60s TTL). Returns false if already locked. */
   private async acquireConversationLock(key: string): Promise<boolean> {
-    const client = this.redis?.getClient();
-    if (!client) return true; // No Redis = no locking (single-instance safe)
-    try {
-      const result = await client.set(`lock:conv:${key}`, '1', 'EX', 60, 'NX');
-      return result === 'OK';
-    } catch {
-      return true; // Fail-open: allow request if Redis is down
-    }
+    if (!this.redis) return true; // No Redis = no locking (single-instance safe)
+    // setNX fails open (returns true) when Redis is unavailable, so a Redis
+    // outage degrades to "no locking" exactly like the no-client path above.
+    return this.redis.setNX(
+      `lock:conv:${key}`,
+      '1',
+      REDIS_TTL.CONVERSATION_LOCK,
+    );
   }
 
   /** Release the per-conversation lock. */
   private async releaseConversationLock(key: string): Promise<void> {
-    const client = this.redis?.getClient();
-    if (!client) return;
-    try {
-      await client.del(`lock:conv:${key}`);
-    } catch {
-      // Best-effort: lock will expire in 60s anyway
-    }
+    // Best-effort: del is a no-op when Redis is down; lock expires in 60s anyway.
+    await this.redis?.del(`lock:conv:${key}`);
   }
 
   /**

@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { randomUUID, createHash } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PredictionService } from '../prediction/prediction.service';
 import {
   CaseComparisonResult,
@@ -47,7 +48,7 @@ import {
   buildSchoolAnalystUserPrompt,
 } from './profile-application-analysis-v2.prompts';
 
-const ANALYSIS_CACHE_TTL_SECONDS = 3600;
+const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 

@@ -37,42 +37,26 @@ export class BruteForceService {
   }
 
   async isLocked(email: string): Promise<boolean> {
-    const client = this.redis.getClient();
-    if (!client) {
+    const key = this.buildKey(email);
+    // `get` returns null when Redis is down OR no attempts are recorded — both
+    // consult the in-memory store, matching the previous fallback behavior.
+    const attempts = await this.redis.get(key);
+    if (attempts === null) {
       return this.isLockedMemory(email);
     }
-
-    try {
-      const key = this.buildKey(email);
-      const attempts = await this.redis.get(key);
-      if (attempts === null) {
-        return this.isLockedMemory(email);
-      }
-      return parseInt(attempts, 10) >= MAX_ATTEMPTS;
-    } catch (error) {
-      this.logger.warn(
-        `Redis unavailable for lockout check (${email}), using in-memory fallback: ${
-          error instanceof Error ? error.message : 'unknown'
-        }`,
-      );
-      return this.isLockedMemory(email);
-    }
+    return parseInt(attempts, 10) >= MAX_ATTEMPTS;
   }
 
   async recordFailedAttempt(email: string): Promise<number> {
-    const client = this.redis.getClient();
-    if (!client) {
-      return this.recordFailedAttemptMemory(email);
-    }
+    const key = this.buildKey(email);
 
     let current: number;
     try {
-      const key = this.buildKey(email);
-      current = (await client.eval(
-        INCR_WITH_EXPIRE_SCRIPT,
-        1,
-        key,
-        LOCKOUT_SECONDS,
+      // Atomic INCR + first-time EXPIRE via Lua. withClient throws when Redis is
+      // down or errors, so we fall back to the in-memory counter exactly as
+      // before — the op is now metered in the cache-health dashboard.
+      current = (await this.redis.withClient('atomic', key, (client) =>
+        client.eval(INCR_WITH_EXPIRE_SCRIPT, 1, key, LOCKOUT_SECONDS),
       )) as number;
     } catch (error) {
       this.logger.warn(
@@ -86,16 +70,8 @@ export class BruteForceService {
     const remaining = Math.max(0, MAX_ATTEMPTS - current);
 
     if (current >= MAX_ATTEMPTS) {
-      // Refresh TTL — non-critical, so log and continue on failure
-      try {
-        await this.redis.expire(this.buildKey(email), LOCKOUT_SECONDS);
-      } catch (error) {
-        this.logger.warn(
-          `Redis error refreshing lockout TTL for ${email}: ${
-            error instanceof Error ? error.message : 'unknown'
-          }`,
-        );
-      }
+      // Refresh TTL — non-critical; expire no-ops on failure.
+      await this.redis.expire(key, LOCKOUT_SECONDS);
       this.logger.warn(
         `Account locked for ${email} after ${current} failed attempts`,
       );
