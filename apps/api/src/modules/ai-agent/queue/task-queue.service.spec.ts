@@ -24,6 +24,14 @@ describe('TaskQueueService', () => {
           useValue: {
             getClient: jest.fn().mockReturnValue(null),
             connected: false,
+            zadd: jest.fn().mockResolvedValue(1),
+            zrange: jest.fn().mockResolvedValue([]),
+            zrangebyscore: jest.fn().mockResolvedValue([]),
+            zrem: jest.fn().mockResolvedValue(0),
+            del: jest.fn().mockResolvedValue(undefined),
+            withClient: jest
+              .fn()
+              .mockRejectedValue(new Error('Redis unavailable')),
           },
         },
       ],

@@ -13,6 +13,7 @@ import { fireAndForget } from '../../common/utils/async.util';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { MemoryType, EntityType } from '@prisma/client';
 import {
@@ -71,7 +72,11 @@ export class RecommendationService {
     const isZh = locale === 'zh';
     // Idempotency lock: prevent concurrent duplicate requests (2-minute expiry)
     const lockKey = `recommendation:lock:${userId}`;
-    const acquired = await this.redis.setNX(lockKey, '1', 120);
+    const acquired = await this.redis.setNX(
+      lockKey,
+      '1',
+      REDIS_TTL.RECOMMENDATION_LOCK,
+    );
     if (!acquired) {
       throw new ConflictException(
         isZh

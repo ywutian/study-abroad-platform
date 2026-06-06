@@ -24,6 +24,9 @@ describe('BruteForceService', () => {
             get: jest.fn(),
             del: jest.fn(),
             expire: jest.fn(),
+            // withClient invokes the callback with the mock client so the Lua
+            // eval still runs; tests simulate "Redis down" by rejecting it.
+            withClient: jest.fn((_op, _key, fn) => fn(mockRedisClient)),
           },
         },
       ],
@@ -85,19 +88,18 @@ describe('BruteForceService', () => {
       );
     });
 
-    it('should fall back to in-memory store when Redis client is null', async () => {
-      (redisService.getClient as jest.Mock).mockReturnValue(null);
+    it('should fall back to in-memory store when Redis is unavailable', async () => {
+      // get() returns null when Redis is down → isLocked consults memory.
+      (redisService.get as jest.Mock).mockResolvedValue(null);
 
       const result = await service.isLocked('test@example.com');
 
       expect(result).toBe(false);
-      expect(redisService.get).not.toHaveBeenCalled();
     });
 
-    it('should fall back to in-memory store when Redis throws an error', async () => {
-      (redisService.get as jest.Mock).mockRejectedValue(
-        new Error('Connection refused'),
-      );
+    it('should fall back to in-memory store when Redis errors (get returns null)', async () => {
+      // RedisService.get is safeRecord — a Redis error surfaces as null, not a throw.
+      (redisService.get as jest.Mock).mockResolvedValue(null);
 
       const result = await service.isLocked('test@example.com');
 
@@ -173,8 +175,10 @@ describe('BruteForceService', () => {
       expect(remaining).toBe(0); // Math.max(0, 10 - 15) = 0
     });
 
-    it('should fall back to in-memory when Redis client is null', async () => {
-      (redisService.getClient as jest.Mock).mockReturnValue(null);
+    it('should fall back to in-memory when Redis is unavailable', async () => {
+      (redisService.withClient as jest.Mock).mockRejectedValue(
+        new Error('Redis unavailable'),
+      );
 
       const remaining = await service.recordFailedAttempt('test@example.com');
 
@@ -190,16 +194,17 @@ describe('BruteForceService', () => {
       expect(remaining).toBe(9); // Falls back to memory store
     });
 
-    it('should not throw when TTL refresh fails after lockout', async () => {
+    it('treats TTL refresh as best-effort after lockout', async () => {
       mockRedisClient.eval.mockResolvedValue(10);
-      (redisService.expire as jest.Mock).mockRejectedValue(
-        new Error('Redis error'),
-      );
 
-      // Should not throw, just log a warning
+      // RedisService.expire is safeRecord (never throws); lockout still works.
       const remaining = await service.recordFailedAttempt('test@example.com');
 
       expect(remaining).toBe(0);
+      expect(redisService.expire).toHaveBeenCalledWith(
+        'brute_force:test@example.com',
+        900,
+      );
     });
   });
 
@@ -251,8 +256,12 @@ describe('BruteForceService', () => {
 
   describe('in-memory fallback behavior', () => {
     beforeEach(() => {
-      // Disable Redis for all tests in this block
-      (redisService.getClient as jest.Mock).mockReturnValue(null);
+      // Disable Redis for all tests in this block: withClient throws → memory
+      // path for recordFailedAttempt; get returns null → isLocked uses memory.
+      (redisService.withClient as jest.Mock).mockRejectedValue(
+        new Error('Redis unavailable'),
+      );
+      (redisService.get as jest.Mock).mockResolvedValue(null);
     });
 
     it('should track failed attempts in memory and lock after 10 failures', async () => {

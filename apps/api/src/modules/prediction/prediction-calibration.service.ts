@@ -5,12 +5,13 @@ import {
 } from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 
 const CALIBRATION_CACHE_PREFIX = 'prediction:calibration:';
-const DISTRIBUTION_CACHE_TTL = 86400; // 24 hours
+const DISTRIBUTION_CACHE_TTL = REDIS_TTL.PREDICTION_DISTRIBUTION;
 
 const SCHOOL_CALIBRATION_CACHE_KEY = 'prediction:school-calibrations';
-const SCHOOL_CALIBRATION_CACHE_TTL = 3600; // 1 hour
+const SCHOOL_CALIBRATION_CACHE_TTL = REDIS_TTL.SCHOOL_CALIBRATION;
 const CALIBRATION_EXCLUDED_SOURCES = ['quick-match'] as const;
 
 /**

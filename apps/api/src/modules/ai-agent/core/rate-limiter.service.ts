@@ -50,9 +50,8 @@ export class RateLimiterService {
     const config = this.getConfig(type, isVip);
     const fullKey = `ratelimit:${type}:${key}`;
 
-    // 优先使用 Redis
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
+    // 优先使用 Redis（checkLimitRedis 内部 withClient 出错时自行降级到内存）
+    if (this.redis.connected) {
       return this.checkLimitRedis(fullKey, config);
     }
 
@@ -70,7 +69,6 @@ export class RateLimiterService {
     fullKey: string,
     config: RateLimitConfig,
   ): Promise<RateLimitResult> {
-    const client = this.redis.getClient()!;
     const now = Date.now();
     const windowStart = now - config.windowMs;
 
@@ -107,14 +105,16 @@ export class RateLimiterService {
         return {1, remaining, windowMs, maxRequests}
       `;
 
-      const result = (await client.eval(
-        luaScript,
-        1,
-        fullKey,
-        now.toString(),
-        windowStart.toString(),
-        config.maxRequests.toString(),
-        config.windowMs.toString(),
+      const result = (await this.redis.withClient('atomic', fullKey, (client) =>
+        client.eval(
+          luaScript,
+          1,
+          fullKey,
+          now.toString(),
+          windowStart.toString(),
+          config.maxRequests.toString(),
+          config.windowMs.toString(),
+        ),
       )) as number[];
 
       return {
@@ -217,28 +217,32 @@ export class RateLimiterService {
     const fullKey = `ratelimit:${type}:${key}`;
     const now = Date.now();
 
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
-      try {
-        const windowStart = now - config.windowMs;
-        await client.zremrangebyscore(fullKey, '-inf', windowStart);
-        const currentCount = await client.zcard(fullKey);
-        const oldest = await client.zrange(fullKey, 0, 0, 'WITHSCORES');
+    try {
+      const { currentCount, oldest } = await this.redis.withClient(
+        'atomic',
+        fullKey,
+        async (client) => {
+          const windowStart = now - config.windowMs;
+          await client.zremrangebyscore(fullKey, '-inf', windowStart);
+          const count = await client.zcard(fullKey);
+          const first = await client.zrange(fullKey, 0, 0, 'WITHSCORES');
+          return { currentCount: count, oldest: first };
+        },
+      );
 
-        const resetIn =
-          oldest.length > 1
-            ? config.windowMs - (now - parseInt(oldest[1]))
-            : config.windowMs;
+      const resetIn =
+        oldest.length > 1
+          ? config.windowMs - (now - parseInt(oldest[1]))
+          : config.windowMs;
 
-        return {
-          allowed: currentCount < config.maxRequests,
-          remaining: Math.max(0, config.maxRequests - currentCount),
-          resetIn,
-          limit: config.maxRequests,
-        };
-      } catch {
-        // 降级到内存
-      }
+      return {
+        allowed: currentCount < config.maxRequests,
+        remaining: Math.max(0, config.maxRequests - currentCount),
+        resetIn,
+        limit: config.maxRequests,
+      };
+    } catch {
+      // 降级到内存
     }
 
     // 内存实现
@@ -268,15 +272,8 @@ export class RateLimiterService {
   ): Promise<void> {
     const fullKey = `ratelimit:${type}:${key}`;
 
-    // 清理 Redis
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
-      try {
-        await client.del(fullKey);
-      } catch (error) {
-        this.logger.warn(`Failed to reset Redis rate limit: ${String(error)}`);
-      }
-    }
+    // 清理 Redis（del 在不可用时 no-op）
+    await this.redis.del(fullKey);
 
     // 清理内存
     this.fallbackWindows.delete(fullKey);

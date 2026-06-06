@@ -12,6 +12,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { Prisma } from '@prisma/client';
 import { MemoryScorerService, MemoryTier } from './memory-scorer.service';
 
@@ -80,7 +81,7 @@ export class MemoryDecayService implements OnModuleInit {
    * 每天凌晨 3 点执行衰减任务
    */
   private static readonly DECAY_LOCK_KEY = 'memory:decay:lock';
-  private static readonly LOCK_TTL = 600; // 10 minutes
+  private static readonly LOCK_TTL = REDIS_TTL.DECAY_LOCK;
 
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async runDailyDecay(): Promise<DecayResult> {
@@ -90,18 +91,15 @@ export class MemoryDecayService implements OnModuleInit {
     }
 
     // 分布式锁（Redis 不可用时降级到内存锁）
-    const client = this.redis.getClient();
-    const useRedisLock = !!(client && this.redis.connected);
+    const useRedisLock = this.redis.connected;
 
     if (useRedisLock) {
-      const locked = await client.set(
+      const locked = await this.redis.setNXStrict(
         MemoryDecayService.DECAY_LOCK_KEY,
         '1',
-        'EX',
         MemoryDecayService.LOCK_TTL,
-        'NX',
       );
-      if (locked !== 'OK') {
+      if (!locked) {
         this.logger.warn('Decay lock held by another instance, skipping');
         return this.emptyResult();
       }
@@ -158,7 +156,7 @@ export class MemoryDecayService implements OnModuleInit {
     } finally {
       this.isRunning = false;
       if (useRedisLock) {
-        await client.del(MemoryDecayService.DECAY_LOCK_KEY).catch(() => {});
+        await this.redis.del(MemoryDecayService.DECAY_LOCK_KEY);
       }
     }
   }

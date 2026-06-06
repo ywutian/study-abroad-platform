@@ -18,6 +18,7 @@ import {
 import { Cron } from '@nestjs/schedule';
 import { MemoryType, EntityType } from '@prisma/client';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { RedisCacheService } from './redis-cache.service';
 import { PersistentMemoryService } from './persistent-memory.service';
 import { EmbeddingService } from './embedding.service';
@@ -57,7 +58,7 @@ export class MemoryManagerService {
   private readonly logger = new Logger(MemoryManagerService.name);
 
   private static readonly CLEANUP_LOCK_KEY = 'memory:cleanup:lock';
-  private static readonly CLEANUP_LOCK_TTL = 300; // 5 minutes
+  private static readonly CLEANUP_LOCK_TTL = REDIS_TTL.CLEANUP_LOCK;
   private isRunning = false;
 
   constructor(
@@ -792,18 +793,15 @@ export class MemoryManagerService {
   // 清理过期记忆（每小时自动执行，分布式锁防多副本重复）
   @Cron('0 * * * *')
   async cleanup(): Promise<{ expiredMemories: number }> {
-    const client = this.redis.getClient();
-    const useRedisLock = !!(client && this.redis.connected);
+    const useRedisLock = this.redis.connected;
 
     if (useRedisLock) {
-      const locked = await client.set(
+      const locked = await this.redis.setNXStrict(
         MemoryManagerService.CLEANUP_LOCK_KEY,
         '1',
-        'EX',
         MemoryManagerService.CLEANUP_LOCK_TTL,
-        'NX',
       );
-      if (locked !== 'OK') {
+      if (!locked) {
         this.logger.debug('Cleanup lock held by another instance, skipping');
         return { expiredMemories: 0 };
       }

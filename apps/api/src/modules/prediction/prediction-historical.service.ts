@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import {
   ProfileMetrics,
@@ -9,7 +10,7 @@ import {
   parseRange,
 } from './utils/score-calculator';
 
-const DISTRIBUTION_CACHE_TTL = 86400; // 24 hours
+const DISTRIBUTION_CACHE_TTL = REDIS_TTL.PREDICTION_DISTRIBUTION;
 const DISTRIBUTION_CACHE_PREFIX = 'school:distribution:';
 const MIN_CASES_FOR_FILTERED = 10;
 

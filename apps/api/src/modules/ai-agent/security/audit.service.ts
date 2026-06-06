@@ -10,6 +10,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import {
   AlertChannelService,
   AlertSeverity,
@@ -457,22 +458,15 @@ export class AuditService {
       }
     }
 
-    // Fallback: 直写 Redis 告警队列
-    const client = this.redis.getClient();
-    if (client && this.redis.connected) {
-      try {
-        await client.lpush(
-          'security:alerts',
-          JSON.stringify({
-            ...event,
-            timestamp: new Date().toISOString(),
-          }),
-        );
-        await client.ltrim('security:alerts', 0, 999);
-      } catch {
-        // 忽略 Redis 错误
-      }
-    }
+    // Fallback: 直写 Redis 告警队列（best-effort，Redis 不可用时 lpush/ltrim 自动 no-op）
+    await this.redis.lpush(
+      'security:alerts',
+      JSON.stringify({
+        ...event,
+        timestamp: new Date().toISOString(),
+      }),
+    );
+    await this.redis.ltrim('security:alerts', 0, 999);
   }
 
   private mapSecuritySeverityToAlertSeverity(
@@ -489,25 +483,19 @@ export class AuditService {
   }
 
   private async updateSecurityMetrics(event: SecurityEvent): Promise<void> {
-    const client = this.redis.getClient();
-    if (!client || !this.redis.connected) return;
+    const now = new Date();
+    const hourKey = `security:hourly:${now.toISOString().slice(0, 13)}`;
+    const dayKey = `security:daily:${now.toISOString().slice(0, 10)}`;
 
-    try {
-      const now = new Date();
-      const hourKey = `security:hourly:${now.toISOString().slice(0, 13)}`;
-      const dayKey = `security:daily:${now.toISOString().slice(0, 10)}`;
-
-      await Promise.all([
-        client.hincrby(hourKey, event.type, 1),
-        client.hincrby(hourKey, `severity:${event.severity}`, 1),
-        client.expire(hourKey, 86400 * 2),
-        client.hincrby(dayKey, event.type, 1),
-        client.hincrby(dayKey, `severity:${event.severity}`, 1),
-        client.expire(dayKey, 86400 * 35),
-      ]);
-    } catch {
-      // 忽略 Redis 错误
-    }
+    // best-effort metrics — each op no-ops when Redis is unavailable.
+    await Promise.all([
+      this.redis.hincrby(hourKey, event.type, 1),
+      this.redis.hincrby(hourKey, `severity:${event.severity}`, 1),
+      this.redis.expire(hourKey, REDIS_TTL.SECURITY_HOURLY_METRICS),
+      this.redis.hincrby(dayKey, event.type, 1),
+      this.redis.hincrby(dayKey, `severity:${event.severity}`, 1),
+      this.redis.expire(dayKey, REDIS_TTL.SECURITY_DAILY_METRICS),
+    ]);
   }
 
   private generateId(): string {

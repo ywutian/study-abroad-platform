@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { Profile, Prisma, Visibility, Role } from '@prisma/client';
 import {
@@ -59,7 +60,7 @@ export class ProfileCrudService {
     });
 
     if (profile) {
-      await this.redis.setJSON(cacheKey, profile, 300); // 5 min TTL
+      await this.redis.setJSON(cacheKey, profile, REDIS_TTL.PROFILE);
     }
 
     return profile;

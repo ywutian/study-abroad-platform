@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, SchoolPolicyDimension, SchoolTier } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PredictionService } from '../prediction/prediction.service';
 import {
   CaseComparisonResult,
@@ -46,7 +47,7 @@ import { ApplicationAnalysisWorkflowService } from './application-analysis-workf
 import { ProfileApplicationAnalysisV2Service } from './profile-application-analysis-v2.service';
 
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v1';
-const ANALYSIS_CACHE_TTL_SECONDS = 3600;
+const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const MAX_FOCUS_SCHOOLS = 5;
 const ANALYSIS_SCHOOL_SELECT = {
   id: true,

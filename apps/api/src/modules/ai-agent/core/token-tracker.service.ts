@@ -171,35 +171,36 @@ export class TokenTrackerService implements OnModuleInit {
     const dateKey = now.toISOString().split('T')[0];
     const monthKey = dateKey.substring(0, 7);
 
-    const client = this.redis.getClient();
+    // withClient 在 Redis 不可用或出错时抛出 → 命中内存降级（行为不变，但被计入监控）
+    try {
+      await this.redis.withClient(
+        'pipeline',
+        `token:daily:${userId}`,
+        async (client) => {
+          // 使用 Redis pipeline 原子操作
+          const pipeline = client.pipeline();
 
-    if (client && this.redis.connected) {
-      try {
-        // 使用 Redis pipeline 原子操作
-        const pipeline = client.pipeline();
+          // 日统计
+          const dailyKey = `token:daily:${userId}:${dateKey}`;
+          pipeline.hincrby(dailyKey, 'tokens', usage.totalTokens);
+          pipeline.hincrbyfloat(dailyKey, 'cost', usage.estimatedCost);
+          pipeline.hincrby(dailyKey, 'calls', 1);
+          pipeline.expire(dailyKey, 86400 * 2); // 2天过期
 
-        // 日统计
-        const dailyKey = `token:daily:${userId}:${dateKey}`;
-        pipeline.hincrby(dailyKey, 'tokens', usage.totalTokens);
-        pipeline.hincrbyfloat(dailyKey, 'cost', usage.estimatedCost);
-        pipeline.hincrby(dailyKey, 'calls', 1);
-        pipeline.expire(dailyKey, 86400 * 2); // 2天过期
+          // 月统计
+          const monthlyKey = `token:monthly:${userId}:${monthKey}`;
+          pipeline.hincrby(monthlyKey, 'tokens', usage.totalTokens);
+          pipeline.hincrbyfloat(monthlyKey, 'cost', usage.estimatedCost);
+          pipeline.hincrby(monthlyKey, 'calls', 1);
+          pipeline.expire(monthlyKey, 86400 * 35); // 35天过期
 
-        // 月统计
-        const monthlyKey = `token:monthly:${userId}:${monthKey}`;
-        pipeline.hincrby(monthlyKey, 'tokens', usage.totalTokens);
-        pipeline.hincrbyfloat(monthlyKey, 'cost', usage.estimatedCost);
-        pipeline.hincrby(monthlyKey, 'calls', 1);
-        pipeline.expire(monthlyKey, 86400 * 35); // 35天过期
-
-        await pipeline.exec();
-      } catch (err) {
-        this.logger.debug(
-          `Redis trackUsage failed, using fallback: ${String(err)}`,
-        );
-        this.trackUsageFallback(userId, usage, dateKey, monthKey);
-      }
-    } else {
+          await pipeline.exec();
+        },
+      );
+    } catch (err) {
+      this.logger.debug(
+        `Redis trackUsage failed, using fallback: ${String(err)}`,
+      );
       this.trackUsageFallback(userId, usage, dateKey, monthKey);
     }
 
@@ -296,35 +297,34 @@ export class TokenTrackerService implements OnModuleInit {
     const dateKey = now.toISOString().split('T')[0];
     const monthKey = dateKey.substring(0, 7);
 
-    const client = this.redis.getClient();
-
     let daily = { tokens: 0, cost: 0, calls: 0 };
     let monthly = { tokens: 0, cost: 0, calls: 0 };
 
-    if (client && this.redis.connected) {
-      try {
-        const [dailyData, monthlyData] = await Promise.all([
-          client.hgetall(`token:daily:${userId}:${dateKey}`),
-          client.hgetall(`token:monthly:${userId}:${monthKey}`),
-        ]);
+    try {
+      const [dailyData, monthlyData] = await this.redis.withClient(
+        'read',
+        `token:daily:${userId}`,
+        (client) =>
+          Promise.all([
+            client.hgetall(`token:daily:${userId}:${dateKey}`),
+            client.hgetall(`token:monthly:${userId}:${monthKey}`),
+          ]),
+      );
 
-        daily = {
-          tokens: parseInt(dailyData.tokens || '0'),
-          cost: parseFloat(dailyData.cost || '0'),
-          calls: parseInt(dailyData.calls || '0'),
-        };
-        monthly = {
-          tokens: parseInt(monthlyData.tokens || '0'),
-          cost: parseFloat(monthlyData.cost || '0'),
-          calls: parseInt(monthlyData.calls || '0'),
-        };
-      } catch (err) {
-        this.logger.debug(
-          `Redis getUsageStats failed, using fallback: ${String(err)}`,
-        );
-        return this.getUsageStatsFallback(userId, quota);
-      }
-    } else {
+      daily = {
+        tokens: parseInt(dailyData.tokens || '0'),
+        cost: parseFloat(dailyData.cost || '0'),
+        calls: parseInt(dailyData.calls || '0'),
+      };
+      monthly = {
+        tokens: parseInt(monthlyData.tokens || '0'),
+        cost: parseFloat(monthlyData.cost || '0'),
+        calls: parseInt(monthlyData.calls || '0'),
+      };
+    } catch (err) {
+      this.logger.debug(
+        `Redis getUsageStats failed, using fallback: ${String(err)}`,
+      );
       return this.getUsageStatsFallback(userId, quota);
     }
 

@@ -10,6 +10,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { LLMService } from '../core/llm.service';
 import { PredictionService } from '../../prediction/prediction.service';
 import { RecommendationService } from '../../recommendation/recommendation.service';
@@ -73,18 +74,14 @@ export class RecommendationToolsService implements IToolHandlerProvider {
     }
 
     try {
-      // Check cache (24h TTL) for consistent results
+      // Check cache (24h TTL) for consistent results. `get` returns null on a
+      // miss or any Redis error, so a cache miss just proceeds to fresh gen.
       const cacheKey = `rec:${userId}:${args.count || 15}:${args.preference || 'none'}`;
-      const client = this.redis?.getClient();
-      if (client) {
-        try {
-          const cached = await client.get(cacheKey);
-          if (cached) {
-            this.logger.debug(`recommend_schools cache hit for ${userId}`);
-            return JSON.parse(cached);
-          }
-        } catch {
-          // Cache miss or Redis error — proceed with fresh generation
+      if (this.redis) {
+        const cached = await this.redis.get(cacheKey);
+        if (cached) {
+          this.logger.debug(`recommend_schools cache hit for ${userId}`);
+          return JSON.parse(cached);
         }
       }
 
@@ -114,19 +111,12 @@ export class RecommendationToolsService implements IToolHandlerProvider {
         totalCount: result.recommendations?.length || 0,
       };
 
-      // Cache for 24 hours
-      if (client) {
-        try {
-          await client.set(
-            cacheKey,
-            JSON.stringify(formattedResult),
-            'EX',
-            86400,
-          );
-        } catch {
-          // Cache write failure is non-critical
-        }
-      }
+      // Cache for 24 hours (best-effort; setJSON no-ops when Redis is down)
+      await this.redis?.setJSON(
+        cacheKey,
+        formattedResult,
+        REDIS_TTL.RECOMMENDATION_CACHE,
+      );
 
       return formattedResult;
     } catch (error: any) {

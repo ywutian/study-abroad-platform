@@ -2,17 +2,17 @@
 
 ## Quick Reference
 
-| Command                                         | Purpose                          |
-| ----------------------------------------------- | -------------------------------- |
-| `pnpm api`                                      | Start dev server (port 4101)     |
-| `pnpm --filter api db:generate`                 | Regenerate Prisma client         |
-| `pnpm --filter api db:push`                     | Push schema (dev only)           |
-| `pnpm --filter api db:migrate -- --name <name>` | Create migration                 |
-| `pnpm --filter api db:seed`                     | Seed database                    |
-| `pnpm --filter api db:studio`                   | Prisma Studio (port 5555)        |
-| `pnpm --filter api lint:quality`                | Backend quality checks (7 rules) |
-| `pnpm test`                                     | Run unit tests                   |
-| `pnpm test:e2e`                                 | E2E tests (needs Docker)         |
+| Command                                         | Purpose                           |
+| ----------------------------------------------- | --------------------------------- |
+| `pnpm api`                                      | Start dev server (port 4101)      |
+| `pnpm --filter api db:generate`                 | Regenerate Prisma client          |
+| `pnpm --filter api db:push`                     | Push schema (dev only)            |
+| `pnpm --filter api db:migrate -- --name <name>` | Create migration                  |
+| `pnpm --filter api db:seed`                     | Seed database                     |
+| `pnpm --filter api db:studio`                   | Prisma Studio (port 5555)         |
+| `pnpm --filter api lint:quality`                | Backend quality checks (10 rules) |
+| `pnpm test`                                     | Run unit tests                    |
+| `pnpm test:e2e`                                 | E2E tests (needs Docker)          |
 
 ## Schema
 

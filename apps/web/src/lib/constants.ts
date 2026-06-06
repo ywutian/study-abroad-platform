@@ -17,27 +17,30 @@ export const AI_TIMEOUTS = {
 } as const;
 
 // ── React Query Cache Times ─────────────────────────────────
+// Sourced from the shared QUERY_CACHE_TIERS (single source of truth for web +
+// mobile staleTime). These named aliases preserve the readable web call sites.
+import { QUERY_CACHE_TIERS } from '@study-abroad/shared';
+
 export const STALE_TIME = {
-  /** Infinity — immutable for a session (enums, country filters, ranking-list options).
-   *  Never auto-refetches; only a manual refetch() or cold start re-pulls. */
-  IMMUTABLE: Number.POSITIVE_INFINITY,
+  /** Infinity — immutable for a session (enums, country filters, ranking-list options). */
+  IMMUTABLE: QUERY_CACHE_TIERS.static.staleTime,
   /** 30 min — rarely changing data (school details, rankings) */
-  STATIC: 30 * 60 * 1000,
+  STATIC: QUERY_CACHE_TIERS.reference.staleTime,
   /** 5 min — moderate freshness (lists, profile, AI analysis) */
-  MODERATE: 5 * 60 * 1000,
+  MODERATE: QUERY_CACHE_TIERS.standard.staleTime,
   /** 1 min — dynamic data (forum, notifications) */
-  DYNAMIC: 60 * 1000,
+  DYNAMIC: QUERY_CACHE_TIERS.fresh.staleTime,
   /** 0 — always refetch (chat messages) */
-  REALTIME: 0,
+  REALTIME: QUERY_CACHE_TIERS.realtime.staleTime,
 } as const;
 
 export const GC_TIME = {
   /** 10 min — AI analysis results worth keeping longer */
-  AI_ANALYSIS: 10 * 60 * 1000,
+  AI_ANALYSIS: QUERY_CACHE_TIERS.standard.gcTime,
   /** 30 min — school recommendation cache */
-  SCHOOL_RECOMMENDATION: 30 * 60 * 1000,
+  SCHOOL_RECOMMENDATION: QUERY_CACHE_TIERS.reference.gcTime,
   /** 5 min — default garbage collection */
-  DEFAULT: 5 * 60 * 1000,
+  DEFAULT: QUERY_CACHE_TIERS.realtime.gcTime,
 } as const;
 
 // ── AI Point Costs ──────────────────────────────────────────

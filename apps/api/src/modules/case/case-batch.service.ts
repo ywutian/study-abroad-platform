@@ -37,6 +37,7 @@ import {
   QUALITY_THRESHOLDS,
 } from '../../common/constants/data-formats';
 import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 
 @Injectable()
 export class CaseBatchService {
@@ -285,7 +286,7 @@ export class CaseBatchService {
                   processed: processedCount,
                   total: resolvedItems.length,
                 }),
-                300,
+                REDIS_TTL.SHORT_RESULT,
               ),
               this.logger,
               'import progress update',

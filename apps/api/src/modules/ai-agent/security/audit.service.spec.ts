@@ -36,6 +36,10 @@ describe('AuditService', () => {
           useValue: {
             getClient: jest.fn().mockReturnValue(null),
             connected: false,
+            lpush: jest.fn().mockResolvedValue(0),
+            ltrim: jest.fn().mockResolvedValue(undefined),
+            hincrby: jest.fn().mockResolvedValue(0),
+            expire: jest.fn().mockResolvedValue(undefined),
           },
         },
         {

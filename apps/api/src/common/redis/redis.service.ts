@@ -945,4 +945,162 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       return result === 'OK';
     });
   }
+
+  // 原子计数（用于配额/预算/计费等）
+  async incrby(key: string, amount: number): Promise<number> {
+    return this.safeRecord('atomic', key, 0, () =>
+      this.client!.incrby(key, amount),
+    );
+  }
+
+  // Hash 操作（用于 token-tracker 等按字段累加的计数器）
+  async hincrby(key: string, field: string, amount: number): Promise<number> {
+    return this.safeRecord('atomic', key, 0, () =>
+      this.client!.hincrby(key, field, amount),
+    );
+  }
+
+  async hincrbyfloat(
+    key: string,
+    field: string,
+    amount: number,
+  ): Promise<number> {
+    return this.safeRecord('atomic', key, 0, async () =>
+      Number(await this.client!.hincrbyfloat(key, field, amount)),
+    );
+  }
+
+  async hget(key: string, field: string): Promise<string | null> {
+    return this.safeRecord(
+      'read',
+      key,
+      null,
+      () => this.client!.hget(key, field),
+      (v) => v !== null && v !== undefined,
+    );
+  }
+
+  async hset(key: string, field: string, value: string): Promise<number> {
+    return this.safeRecord('write', key, 0, () =>
+      this.client!.hset(key, field, value),
+    );
+  }
+
+  async hgetall(key: string): Promise<Record<string, string>> {
+    return this.safeRecord(
+      'read',
+      key,
+      {},
+      () => this.client!.hgetall(key),
+      (obj) => Object.keys(obj).length > 0,
+    );
+  }
+
+  async hdel(key: string, ...fields: string[]): Promise<number> {
+    return this.safeRecord('delete', key, 0, () =>
+      this.client!.hdel(key, ...fields),
+    );
+  }
+
+  async rpush(key: string, ...values: string[]): Promise<number> {
+    return this.safeRecord('write', key, 0, () =>
+      this.client!.rpush(key, ...values),
+    );
+  }
+
+  // Sorted Set 操作（用于 rate-limiter 滑动窗口、task-queue 优先级队列等）
+  async zadd(key: string, score: number, member: string): Promise<number> {
+    return this.safeRecord('write', key, 0, async () => {
+      const result = await this.client!.zadd(key, score, member);
+      return typeof result === 'number' ? result : Number(result) || 0;
+    });
+  }
+
+  async zrange(key: string, start: number, stop: number): Promise<string[]> {
+    return this.safeRecord(
+      'read',
+      key,
+      [],
+      () => this.client!.zrange(key, start, stop),
+      (arr) => arr.length > 0,
+    );
+  }
+
+  async zrangebyscore(
+    key: string,
+    min: number | string,
+    max: number | string,
+  ): Promise<string[]> {
+    return this.safeRecord(
+      'read',
+      key,
+      [],
+      () => this.client!.zrangebyscore(key, min, max),
+      (arr) => arr.length > 0,
+    );
+  }
+
+  async zrem(key: string, ...members: string[]): Promise<number> {
+    return this.safeRecord('delete', key, 0, () =>
+      this.client!.zrem(key, ...members),
+    );
+  }
+
+  async zremrangebyscore(
+    key: string,
+    min: number | string,
+    max: number | string,
+  ): Promise<number> {
+    return this.safeRecord('delete', key, 0, () =>
+      this.client!.zremrangebyscore(key, min, max),
+    );
+  }
+
+  async zcard(key: string): Promise<number> {
+    return this.safeRecord('read', key, 0, () => this.client!.zcard(key));
+  }
+
+  // 毫秒精度 TTL（用于滑动窗口等）
+  async pexpire(key: string, milliseconds: number): Promise<void> {
+    await this.safeRecord('write', key, undefined, async () => {
+      await this.client!.pexpire(key, milliseconds);
+    });
+  }
+
+  async pttl(key: string): Promise<number> {
+    // -2 = key does not exist (Redis convention) — a safe "unknown" fallback.
+    return this.safeRecord('read', key, -2, () => this.client!.pttl(key));
+  }
+
+  /**
+   * Metered escape hatch for advanced operations that have no dedicated wrapper
+   * (Lua `eval`, pipelines, multi-step atomic sequences). The whole callback is
+   * timed and recorded as ONE metrics sample under `op`, so these operations are
+   * visible in the cache-health dashboard — closing the observability blind spot
+   * where raw `getClient()` callers silently burned Redis quota (see #274).
+   *
+   * Unlike the `safe*` methods, this RE-THROWS driver errors and throws when
+   * Redis is unavailable, so callers that keep their own in-memory fallback hit
+   * their existing try/catch degradation path unchanged. Prefer a dedicated
+   * wrapper when one fits; reach for this only when the operation genuinely
+   * needs the raw client.
+   */
+  async withClient<T>(
+    op: RedisOpKind,
+    keyLabel: string,
+    fn: (client: RedisClient) => Promise<T>,
+  ): Promise<T> {
+    if (!this.client || !this.connected) {
+      const error = new Error('Redis unavailable');
+      this.metrics.record({ op, key: keyLabel, latencyMs: 0, error });
+      throw error;
+    }
+    const client = this.client;
+    try {
+      return await this.record(op, keyLabel, () => fn(client));
+    } catch (error) {
+      await this.handleOperationError(op, keyLabel, error);
+      throw error;
+    }
+  }
 }

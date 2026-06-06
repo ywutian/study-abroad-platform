@@ -15,6 +15,11 @@ describe('RedisCacheService', () => {
           useValue: {
             getClient: jest.fn().mockReturnValue(null),
             connected: false,
+            del: jest.fn().mockResolvedValue(undefined),
+            // Redis unavailable → withClient throws → memory fallback path
+            withClient: jest
+              .fn()
+              .mockRejectedValue(new Error('Redis unavailable')),
           },
         },
         {

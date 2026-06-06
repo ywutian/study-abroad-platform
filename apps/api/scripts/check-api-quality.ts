@@ -9,6 +9,9 @@
  * 5. Service files without corresponding .spec.ts (warning, full-scan only)
  * 6. Duplicated inline Prisma select blocks in same service (warning)
  * 7. Select-to-mapper field drift in *.constants.ts (warning)
+ * 8. Raw redis.getClient() bypassing metrics/circuit-breaker (error)
+ * 9. Hardcoded Redis TTL instead of REDIS_TTL.* constant (error)
+ * 10. setInterval polling Redis on a fixed <30s cadence — #274 (error)
  *
  * Usage:
  *   npx tsx scripts/check-api-quality.ts           # Check all
@@ -400,6 +403,140 @@ function checkSelectMappingDrift(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+// ── Cache / Redis governance (added 2026-06) ───────────────
+
+/** True when the current line (trailing comment) or the preceding line carries the tag. */
+function hasIgnoreTag(lines: string[], idx: number, tag: string): boolean {
+  const current = lines[idx] ?? '';
+  const prev = idx > 0 ? lines[idx - 1] : '';
+  return current.includes(tag) || prev.includes(tag);
+}
+
+/**
+ * Collect the text BETWEEN the outer parens of a call whose opening `(` is at
+ * `lines[startIdx][openCol]`, tracking paren depth across up to 40 lines.
+ */
+function gatherParenText(
+  lines: string[],
+  startIdx: number,
+  openCol: number,
+): string {
+  let depth = 0;
+  let text = '';
+  const end = Math.min(lines.length, startIdx + 40);
+  for (let i = startIdx; i < end; i++) {
+    const seg = i === startIdx ? lines[i].slice(openCol) : lines[i];
+    for (let c = 0; c < seg.length; c++) {
+      const ch = seg[c];
+      if (ch === '(') {
+        depth++;
+        if (depth === 1) continue; // skip the outer open paren itself
+      } else if (ch === ')') {
+        depth--;
+        if (depth === 0) return text;
+      }
+      if (depth >= 1) text += ch;
+    }
+    if (depth >= 1) text += '\n';
+  }
+  return text;
+}
+
+// Rule 8: raw redis.getClient() bypasses metrics + circuit breaker (#274 blind spot).
+function checkRawRedisGetClient(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (filePath.endsWith('.spec.ts')) return issues;
+  // The canonical client lives here; getClient() is its legitimate accessor.
+  if (filePath.includes('common/redis/')) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim().startsWith('//')) continue;
+    if (hasIgnoreTag(lines, i, '@redis-raw-allowed')) continue;
+    if (/\.getClient\s*\(\s*\)/.test(line)) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-raw-redis-getclient',
+        message:
+          'Raw redis.getClient() bypasses metrics + circuit breaker (the #274 blind spot). Use a RedisService method or redis.withClient(). Suppress with // @redis-raw-allowed.',
+        severity: 'error',
+      });
+    }
+  }
+  return issues;
+}
+
+const REDIS_TTL_METHODS =
+  /this\.redis(?:\?)?\.(setNXStrict|setNX|setJSON|set|pexpire|expire)\s*\(/;
+
+// Rule 9: hardcoded numeric TTL passed to a RedisService write method.
+function checkHardcodedRedisTtl(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (filePath.endsWith('.spec.ts')) return issues;
+  if (filePath.endsWith('redis-ttl.constants.ts')) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim().startsWith('//')) continue;
+    if (hasIgnoreTag(lines, i, '@redis-ttl-allowed')) continue;
+    const m = REDIS_TTL_METHODS.exec(line);
+    if (!m) continue;
+    const openCol = m.index + m[0].length - 1; // the '(' position
+    const args = gatherParenText(lines, i, openCol).trim();
+    // The TTL is the trailing argument; flag a bare numeric literal there.
+    if (/,\s*\d[\d_]*(\s*\*\s*\d[\d_]*)*\s*$/.test(args)) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-hardcoded-redis-ttl',
+        message:
+          'Hardcoded TTL on a Redis write — use REDIS_TTL.* from common/redis/redis-ttl.constants (single source of truth). Suppress with // @redis-ttl-allowed.',
+        severity: 'error',
+      });
+    }
+  }
+  return issues;
+}
+
+const REDIS_OP_TOKEN =
+  /this\.redis(?:\?)?\.|\.getClient\s*\(|\.withClient\s*\(/;
+
+// Rule 10: setInterval polling Redis on a fixed <30s cadence — the #274 quota-burn
+// pattern. Use setTimeout-reschedule with idle backoff instead.
+function checkRedisPollWithoutBackoff(
+  filePath: string,
+  lines: string[],
+): Issue[] {
+  const issues: Issue[] = [];
+  if (filePath.endsWith('.spec.ts')) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim().startsWith('//')) continue;
+    if (hasIgnoreTag(lines, i, '@redis-poll-allowed')) continue;
+    const idx = line.indexOf('setInterval(');
+    if (idx === -1) continue;
+    const openCol = idx + 'setInterval'.length; // points at '('
+    const args = gatherParenText(lines, i, openCol);
+    // Interval is the trailing numeric argument.
+    const m = args.trim().match(/,\s*(\d[\d_]*)\s*$/);
+    if (!m) continue; // dynamic interval (variable) — not the static-burn pattern
+    const intervalMs = Number(m[1].replace(/_/g, ''));
+    if (!Number.isFinite(intervalMs) || intervalMs >= 30_000) continue;
+    if (!REDIS_OP_TOKEN.test(args)) continue; // callback doesn't touch Redis inline
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-redis-poll-without-backoff',
+      message:
+        'setInterval polls Redis on a fixed <30s cadence (the #274 quota-burn pattern). Use setTimeout-reschedule with idle backoff. Suppress with // @redis-poll-allowed.',
+      severity: 'error',
+    });
+  }
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
@@ -425,6 +562,9 @@ function main() {
       ...checkMissingTest(filePath, lines),
       ...checkDuplicatedSelect(filePath, lines),
       ...checkSelectMappingDrift(filePath, lines),
+      ...checkRawRedisGetClient(filePath, lines),
+      ...checkHardcodedRedisTtl(filePath, lines),
+      ...checkRedisPollWithoutBackoff(filePath, lines),
     );
   }
 

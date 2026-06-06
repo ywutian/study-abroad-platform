@@ -12,6 +12,7 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 
 // ==================== 存储接口 ====================
 
@@ -84,16 +85,14 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
   constructor(private redis: RedisService) {}
 
   async getState(key: string): Promise<CircuitBreakerState | null> {
-    const client = this.redis.getClient();
-    if (!client || !this.redis.connected) return null;
-
-    try {
-      const raw = await client.get(`${this.keyPrefix}${key}`);
-      if (raw) {
+    // `get` returns null on a miss OR when Redis is down — both yield null.
+    const raw = await this.redis.get(`${this.keyPrefix}${key}`);
+    if (raw) {
+      try {
         return JSON.parse(raw);
+      } catch (err) {
+        this.logger.debug(`Redis getState parse failed: ${String(err)}`);
       }
-    } catch (err) {
-      this.logger.debug(`Redis getState failed: ${String(err)}`);
     }
     return null;
   }
@@ -103,28 +102,13 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
     state: CircuitBreakerState,
     ttl: number,
   ): Promise<void> {
-    const client = this.redis.getClient();
-    if (!client || !this.redis.connected) return;
-
-    try {
-      await client.set(
-        `${this.keyPrefix}${key}`,
-        JSON.stringify(state),
-        'EX',
-        ttl,
-      );
-    } catch (err) {
-      this.logger.debug(`Redis setState failed: ${String(err)}`);
-    }
+    // set no-ops when Redis is down.
+    await this.redis.set(`${this.keyPrefix}${key}`, JSON.stringify(state), ttl);
   }
 
   async incrementFailures(key: string): Promise<number> {
-    const client = this.redis.getClient();
-    if (!client || !this.redis.connected) return 0;
-
-    try {
-      // 使用 Lua 脚本实现原子递增
-      const script = `
+    // 使用 Lua 脚本实现原子递增
+    const script = `
         local data = redis.call('GET', KEYS[1])
         if not data then
           return 0
@@ -136,12 +120,19 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
         return state.failures
       `;
 
-      const result = await client.eval(
-        script,
-        1,
+    try {
+      // withClient throws when Redis is down/errors → return 0, as before.
+      const result = await this.redis.withClient(
+        'atomic',
         `${this.keyPrefix}${key}`,
-        Date.now().toString(),
-        '300',
+        (client) =>
+          client.eval(
+            script,
+            1,
+            `${this.keyPrefix}${key}`,
+            Date.now().toString(),
+            '300',
+          ),
       );
       return typeof result === 'number' ? result : 0;
     } catch (err) {
@@ -151,14 +142,8 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
   }
 
   async resetFailures(key: string): Promise<void> {
-    const client = this.redis.getClient();
-    if (!client || !this.redis.connected) return;
-
-    try {
-      await client.del(`${this.keyPrefix}${key}`);
-    } catch (err) {
-      this.logger.debug(`Redis resetFailures failed: ${String(err)}`);
-    }
+    // del no-ops when Redis is down.
+    await this.redis.del(`${this.keyPrefix}${key}`);
   }
 }
 
@@ -220,7 +205,7 @@ export class ResilienceService {
   private circuitConfigs: Map<string, CircuitBreakerConfig> = new Map();
 
   // 熔断状态 TTL：5分钟（足够覆盖重置周期）
-  private readonly CIRCUIT_TTL = 300;
+  private readonly CIRCUIT_TTL = REDIS_TTL.CIRCUIT_BREAKER;
 
   constructor(@Optional() private redis: RedisService) {
     // 初始化存储
