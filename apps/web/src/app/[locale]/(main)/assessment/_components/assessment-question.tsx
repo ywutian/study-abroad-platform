@@ -142,7 +142,7 @@ export function AssessmentQuestion({
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
         {/* Question card */}
         <Card className="p-4 sm:p-6">
           <h3 className="mb-4 text-base font-semibold leading-relaxed sm:mb-6 sm:text-lg">

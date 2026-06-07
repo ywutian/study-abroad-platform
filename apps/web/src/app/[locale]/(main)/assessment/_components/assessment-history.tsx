@@ -94,7 +94,7 @@ export function AssessmentHistory({
                   className="cursor-pointer transition-shadow hover:shadow-md"
                   onClick={() => onViewResult(result)}
                 >
-                  <CardContent className="grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                  <CardContent className="grid min-w-0 gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
                     <div className="flex min-w-0 items-center gap-4">
                       <div
                         className={cn(

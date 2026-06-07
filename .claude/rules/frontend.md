@@ -124,5 +124,5 @@ AI Error Boundary: `<AIErrorBoundary feature="...">` wraps AI feature components
 | `no-missing-loading` | warning | `page.tsx` without `loading.tsx` |
 | `no-missing-error-boundary` | warning | Route group without `error.tsx` |
 | `no-tooltip-without-provider` | error | `Tooltip` without `TooltipProvider` |
-| `no-missing-min-w-in-grid-container` | warning | Custom `grid-cols-[…]` without `min-w-0` (overflow root cause PR #214/#215/#217) |
+| `no-missing-min-w-in-grid-container` | error | Custom `grid-cols-[…]` without `min-w-0` (overflow root cause PR #214/#215/#217). Worklist cleared to 0 + promoted to error in closure #3; `min-w-0` only allows shrinking so it's always safe. Suppress with `// @design-system-ignore-next-line` |
 | `no-unguarded-auth-query` | error | Authed `useQuery` (apiClient) on a protected route with no `enabled` — 401 race (#145/#222). Use `useAuthGatedQuery` / `useAuthReady()`; public reads `// @public-query` |

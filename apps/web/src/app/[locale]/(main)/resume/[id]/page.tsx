@@ -964,7 +964,7 @@ export default function ResumeEditPage() {
         <div className="border-b px-4 py-3">
           <Skeleton className="h-8 w-72" />
         </div>
-        <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[250px_minmax(0,1fr)_minmax(360px,42vw)]">
+        <div className="grid min-w-0 flex-1 gap-4 p-4 lg:grid-cols-[250px_minmax(0,1fr)_minmax(360px,42vw)]">
           <Skeleton className="hidden h-full lg:block" />
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, index) => (
@@ -1362,7 +1362,7 @@ export default function ResumeEditPage() {
         </div>
       </header>
 
-      <div className="hidden min-h-0 flex-1 lg:grid lg:grid-cols-[260px_minmax(0,1fr)_minmax(380px,42vw)]">
+      <div className="hidden min-h-0 min-w-0 flex-1 lg:grid lg:grid-cols-[260px_minmax(0,1fr)_minmax(380px,42vw)]">
         <aside className="border-r bg-muted/20">
           <WorkbenchSidebar
             sections={resumeSections}

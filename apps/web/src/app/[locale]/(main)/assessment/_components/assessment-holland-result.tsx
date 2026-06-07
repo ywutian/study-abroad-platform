@@ -100,7 +100,7 @@ export function AssessmentHollandResult({
       </Card>
 
       <Card className="border-primary/15">
-        <CardContent className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
+        <CardContent className="grid min-w-0 gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <h3 className="font-semibold">{t('resultActions.title')}</h3>
             <p className="mt-1 text-sm text-muted-foreground">{t('resultActions.description')}</p>

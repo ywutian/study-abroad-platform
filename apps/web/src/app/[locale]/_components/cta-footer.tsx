@@ -68,7 +68,7 @@ export function CTAFooter() {
 
       <footer className="border-t border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/65">
         <PageContainer variant="marketing" className="py-10 sm:py-12">
-          <div className="grid gap-10 lg:grid-cols-[1.8fr_repeat(4,minmax(0,1fr))]">
+          <div className="grid min-w-0 gap-10 lg:grid-cols-[1.8fr_repeat(4,minmax(0,1fr))]">
             <div>
               <Link href={user ? '/dashboard' : '/'} className="inline-flex items-center gap-3">
                 <LumniMark className="h-11 w-11" iconClassName="h-5 w-5" />

@@ -45,7 +45,7 @@ export function ProblemStatement() {
           ) : null}
         </motion.div>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="mt-10 grid min-w-0 gap-5 lg:grid-cols-[1.15fr_0.85fr]">
           <SignalNoiseVisual reduced={!!prefersReducedMotion} />
           <DecisionQuestionsVisual reduced={!!prefersReducedMotion} />
         </div>

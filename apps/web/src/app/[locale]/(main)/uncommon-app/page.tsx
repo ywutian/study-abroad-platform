@@ -247,7 +247,7 @@ export default function UncommonAppPage() {
 
           <ApplicationReadinessStrip t={t} signals={workspace.readiness} isLoading={isLoading} />
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
             <div className="space-y-6">
               <ApplicationSchoolBoard
                 t={t}
@@ -468,7 +468,7 @@ function ApplicationSchoolRow({
 
   return (
     <div className="rounded-[var(--theme-radius-card)] border bg-background p-4">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
         <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">

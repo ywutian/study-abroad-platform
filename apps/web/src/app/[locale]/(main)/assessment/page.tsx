@@ -533,7 +533,7 @@ export default function AssessmentPage() {
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Tabs
           value={activeTab}
           onValueChange={(v) => handleTabChange(v as AssessmentTab)}
@@ -822,7 +822,7 @@ function AssessmentInsights({
       </Card>
 
       <Card className="border-primary/15">
-        <CardContent className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
+        <CardContent className="grid min-w-0 gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <h3 className="font-semibold">{t('insights.nextStepTitle')}</h3>
             <p className="mt-1 text-sm text-muted-foreground">

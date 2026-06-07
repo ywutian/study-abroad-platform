@@ -109,7 +109,7 @@ export function AgentWorkspace({ className }: AgentWorkspaceProps) {
 
   return (
     <div className={cn('flex min-h-0 flex-1 flex-col gap-4', className)}>
-      <section className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <section className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="rounded-[var(--theme-radius-badge)]">
@@ -136,7 +136,7 @@ export function AgentWorkspace({ className }: AgentWorkspaceProps) {
         </div>
       </section>
 
-      <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+      <section className="grid min-w-0 min-h-0 flex-1 gap-4 xl:grid-cols-[300px_minmax(0,1fr)_340px]">
         <ConversationRail
           selectedConversationId={selectedConversationId}
           onSelectConversation={setSelectedConversationId}
@@ -302,7 +302,7 @@ function ConversationRailItem({
   return (
     <div
       className={cn(
-        'group grid grid-cols-[1fr_auto] gap-2 rounded-md border px-3 py-2.5 text-left transition-colors',
+        'group grid min-w-0 grid-cols-[1fr_auto] gap-2 rounded-md border px-3 py-2.5 text-left transition-colors',
         selected
           ? 'border-primary/35 bg-primary/10'
           : 'border-transparent hover:border-border hover:bg-muted/40'

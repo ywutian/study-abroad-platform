@@ -104,7 +104,7 @@ export default function RankingPage() {
         ]}
       />
 
-      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[380px_1fr] xl:grid-cols-[420px_1fr] 2xl:grid-cols-[480px_1fr]">
+      <div className="grid min-w-0 gap-4 sm:gap-6 lg:grid-cols-[380px_1fr] xl:grid-cols-[420px_1fr] 2xl:grid-cols-[480px_1fr]">
         <WeightConfigPanel
           weights={weights}
           onWeightChange={(key, value) => setWeights((prev) => ({ ...prev, [key]: value }))}

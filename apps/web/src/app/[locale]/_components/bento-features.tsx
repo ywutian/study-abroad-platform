@@ -341,7 +341,7 @@ function MentorVisual() {
   const copy = t.raw('features.visuals.mentor') as MentorVisualCopy;
 
   return (
-    <div className="grid gap-4 rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4 lg:grid-cols-[0.95fr_1.05fr]">
+    <div className="grid min-w-0 gap-4 rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4 lg:grid-cols-[0.95fr_1.05fr]">
       <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-5 py-5 shadow-[var(--landing-shadow-card)]">
         <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
           <Shield className="h-3.5 w-3.5 text-primary" />

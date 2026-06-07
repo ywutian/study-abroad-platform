@@ -904,7 +904,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.95fr)]">
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.95fr)]">
         <Card className="lg:col-start-1 lg:row-start-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -1122,7 +1122,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                   {campusLifeInsight.evidenceRows.map((row, index) => (
                     <div key={row.id}>
                       {index > 0 && <Separator className="mb-3" />}
-                      <div className="grid gap-3 text-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_auto] lg:items-center">
+                      <div className="grid min-w-0 gap-3 text-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_auto] lg:items-center">
                         <div>
                           <p className="font-medium">{row.label}</p>
                           <p className="text-muted-foreground">{row.value}</p>
@@ -1168,7 +1168,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
         </CardContent>
       </Card>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)]">
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)]">
         <SchoolCommunityRatingCard
           schoolId={school.id}
           summary={

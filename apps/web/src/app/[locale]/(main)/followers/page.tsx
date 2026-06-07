@@ -281,7 +281,7 @@ export default function FollowersPage() {
         ]}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <main className="min-w-0 space-y-4">
           <section className="space-y-4 rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)] sm:p-5">
             <Tabs
@@ -487,7 +487,7 @@ function SocialToolbar({
         })}
       </TabsList>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_auto_auto_auto]">
+      <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(240px,1fr)_auto_auto_auto]">
         <div className="relative min-w-0">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -711,7 +711,7 @@ function RelationRow({
   return (
     <article
       className={cn(
-        'grid gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:border-primary/25 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-4',
+        'grid min-w-0 gap-3 rounded-md border border-border bg-background p-3 transition-colors hover:border-primary/25 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-4',
         selected && 'border-primary/40 bg-primary/5',
         isBlocked && 'opacity-80'
       )}
@@ -755,7 +755,7 @@ function RelationRow({
             </Badge>
           )}
         </div>
-        <div className="grid gap-2 text-sm text-muted-foreground md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+        <div className="grid min-w-0 gap-2 text-sm text-muted-foreground md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <p className="truncate">
             {item.user.profile?.targetMajor || item.user.profile?.bio || item.user.email}
           </p>

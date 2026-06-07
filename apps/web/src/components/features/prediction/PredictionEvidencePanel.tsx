@@ -10,7 +10,7 @@ export function PredictionEvidencePanel() {
   const t = useTranslations('prediction.evidence');
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+    <div className="grid min-w-0 gap-4 lg:grid-cols-[1fr_1fr]">
       <Card className="py-0">
         <CardContent className="space-y-4 p-4">
           <div>

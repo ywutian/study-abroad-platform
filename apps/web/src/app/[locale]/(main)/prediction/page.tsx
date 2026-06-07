@@ -445,7 +445,7 @@ export default function PredictionPage() {
         ) : activeTab === 'evidence' ? (
           <PredictionEvidencePanel />
         ) : (
-          <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+          <div className="grid min-w-0 gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
             <div className="xl:sticky xl:top-24 xl:self-start">
               <SchoolSelectorCard
                 selectedSchools={selectedSchools}

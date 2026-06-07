@@ -604,8 +604,20 @@ function checkGridMinW(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (!filePath.endsWith('.tsx')) return issues;
 
+  let inBlockComment = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    // Skip multi-line `{/* … */}` / `/* … */` blocks — they often document an
+    // old grid template as prose (e.g. chat/page.tsx), which is not real markup.
+    if (inBlockComment) {
+      if (line.includes('*/')) inBlockComment = false;
+      continue;
+    }
+    const open = line.indexOf('/*');
+    if (open !== -1 && line.indexOf('*/', open) === -1) {
+      inBlockComment = true;
+      continue;
+    }
     if (isCommentLine(line)) continue;
     if (!CUSTOM_GRID_TEMPLATE_PATTERN.test(line)) continue;
 
@@ -620,8 +632,10 @@ function checkGridMinW(filePath: string, lines: string[]): Issue[] {
       line: i + 1,
       rule: 'no-missing-min-w-in-grid-container',
       message:
-        'Custom CSS Grid template without `min-w-0` on the grid container — long content in any cell can push the container past its parent width (see PR #214/#215/#217). Add `min-w-0` to the same className.',
-      severity: 'warning',
+        'Custom CSS Grid template without `min-w-0` on the grid container — long content in any cell can push the container past its parent width (see PR #214/#215/#217). Add `min-w-0` to the same className. Suppress with // @design-system-ignore-next-line.',
+      // PROMOTED to error 2026-06: worklist cleared to 0 (closure #3). min-w-0
+      // only allows shrinking (can't break layout), so this is always-safe to add.
+      severity: 'error',
     });
   }
   return issues;
