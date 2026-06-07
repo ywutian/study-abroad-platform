@@ -475,6 +475,15 @@ export class PredictionTransformerService {
         (school as any).oosAcceptanceRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
+      // Dead-wire fix (#349 follow-up): the counselor geoMultiplier in-state branch
+      // reads SchoolInput.inStateAcceptanceRate, but it was only mapped into
+      // extractSchoolMetrics() — so the data-grounded in-state path was unreachable
+      // and every in-state prediction fell back to the flagship-ratio proxy.
+      inStateAcceptanceRate: captureField(
+        'inStateAcceptanceRate',
+        (school as any).inStateAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
       transferAcceptanceRate: captureField(
         'transferAcceptanceRate',
         (school as any).transferAcceptanceRate,

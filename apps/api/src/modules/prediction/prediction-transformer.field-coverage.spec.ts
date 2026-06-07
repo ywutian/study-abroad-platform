@@ -99,22 +99,11 @@ const ALLOWLIST: Record<InputKind, Record<string, string>> = {
  */
 const KNOWN_DEAD_WIRES: Record<InputKind, Record<string, string>> = {
   ProfileInput: {},
-  SchoolInput: {
-    // #316 (commit 50696fce, 2026-05-31) added geoMultiplier's PRIMARY
-    // data-grounded in-state branch reading `school.inStateAcceptanceRate`, AND
-    // added a `inStateAcceptanceRate:` mapping — but to extractSchoolMetrics()
-    // (which builds SchoolMetrics for the STATISTICAL engine), NOT to
-    // schoolToInput() (which builds the SchoolInput the COUNSELOR engine
-    // consumes). The column IS populated in prod (seed-instate-rate-2026-05-31
-    // + migration), so geoMultiplier's "real per-school data beats the
-    // flagship-ratio proxy" branch (counselor-modifiers.ts ~L1182-1215) is dead
-    // at runtime: it always falls through to the STATE_IN_STATE_OVER_OVERALL
-    // fallback. Same class as yieldRate/stateOfResidence. Fix = add
-    // `inStateAcceptanceRate: captureField('inStateAcceptanceRate', ...)` to
-    // schoolToInput(), then remove this quarantine entry.
-    inStateAcceptanceRate:
-      'wired into extractSchoolMetrics (SchoolMetrics) not schoolToInput (SchoolInput) in #316',
-  },
+  // inStateAcceptanceRate was quarantined here (#316 mapped it into
+  // extractSchoolMetrics, not schoolToInput) and is now FIXED — schoolToInput
+  // maps it, so the data-grounded geoMultiplier in-state branch is live. Empty =
+  // zero tolerated dead-wires.
+  SchoolInput: {},
 };
 
 interface Extracted {
