@@ -92,6 +92,14 @@ run_seed "m3-global-baselines" ./prisma/seed-global-admit-baselines.js
 #     idempotent (skips if value already set), so safe to re-run.
 run_seed "ea-ed2-backfill" ./prisma/seeds/backfill-has-ea-ed2.js --apply
 
+# 16. Data-integrity corrections — null contaminated intl / early-round rates so
+#     the counselor falls back to its heuristic instead of a wrong data-driven
+#     multiplier. MUST run LAST: the closure overlay (step 1) re-applies raw
+#     prod values, so corrections have to come after it. Mirrors seed.ts (dev).
+#     Enforced by scripts/audit-prediction-data-integrity.ts (CI prediction gate).
+run_seed "intl-rate-correction" ./prisma/seed-intl-rate-correction.js
+run_seed "round-rate-correction" ./prisma/seed-round-rate-correction.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------

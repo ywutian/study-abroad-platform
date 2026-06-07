@@ -616,6 +616,18 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
+      # Data-integrity corrections — null contaminated intl / early-round rates.
+      # MUST run after the closure overlay (which re-applies raw prod values),
+      # mirroring migrate.sh's last step, so the gate DB matches prod + the audit
+      # below verifies the whole pipeline stayed clean.
+      - name: Apply data-integrity corrections
+        working-directory: apps/api
+        run: |
+          pnpm exec tsx prisma/seed-intl-rate-correction.ts
+          pnpm exec tsx prisma/seed-round-rate-correction.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
       - name: Verify prediction launch reports
         run: |
           pnpm --filter api verify:counselor-coverage
@@ -623,6 +635,7 @@ jobs:
           pnpm --filter api verify:prediction-launch
           pnpm --filter api verify:profile-signal-coverage
           pnpm --filter api audit:counselor-vs-cases
+          pnpm --filter api audit:prediction-data-integrity
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
           REDIS_URL: redis://localhost:6379

@@ -65,15 +65,19 @@ export async function correctIntlRates(
 
   const nulled: IntlCorrectionResult['nulled'] = [];
   for (const s of schools) {
-    // Without an overall rate we cannot validate; leave the value untouched.
-    if (s.acceptanceRate == null) continue;
-    const overall = Number(s.acceptanceRate);
     const intl = Number(s.intlAcceptanceRate);
 
     let reason: string | null = null;
-    if (intl < 1 && overall >= 1) {
-      reason = 'scale-mismatch (fraction vs percent)';
-    } else if (intl >= overall - 0.5) {
+    if (intl < 1) {
+      // Unambiguous scale error, independent of overall — a real international
+      // admit rate is never <1% (UC Santa Cruz / UC Merced stored 0.81, i.e. the
+      // FRACTION 81% misread as 0.81%). These have a null overall, which the old
+      // `overall == null -> continue` skip let slip through.
+      reason = 'scale-mismatch (fraction stored as percent)';
+    } else if (s.acceptanceRate == null) {
+      // No overall rate → can't validate directionality; leave non-scale values.
+      continue;
+    } else if (intl >= Number(s.acceptanceRate) - 0.5) {
       reason = 'intl>=overall (relabel or enrollment-% leak)';
     }
     if (!reason) continue;
@@ -82,7 +86,12 @@ export async function correctIntlRates(
       where: { id: s.id },
       data: { intlAcceptanceRate: null },
     });
-    nulled.push({ name: s.name, intl, overall, reason });
+    nulled.push({
+      name: s.name,
+      intl,
+      overall: Number(s.acceptanceRate ?? 0),
+      reason,
+    });
   }
 
   return { scanned: schools.length, nulled };
