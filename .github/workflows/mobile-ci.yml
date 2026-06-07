@@ -40,7 +40,7 @@ jobs:
           PID_LINT=$!
           pnpm --filter study-abroad-mobile exec tsc --noEmit &
           PID_TSC=$!
-          pnpm --filter study-abroad-mobile exec jest --ci --coverage --passWithNoTests --forceExit &
+          pnpm --filter study-abroad-mobile exec jest --ci --coverage --forceExit &
           PID_TEST=$!
           wait $PID_LINT || exit 1
           wait $PID_TSC || exit 1

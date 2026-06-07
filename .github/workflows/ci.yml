@@ -233,7 +233,7 @@ jobs:
 
       - name: Run API tests
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
-        run: pnpm --filter api exec jest --coverage --passWithNoTests --forceExit
+        run: pnpm --filter api exec jest --coverage --forceExit
 
       - name: Upload API coverage
         if: needs.detect-changes.outputs.api == 'true' || github.event_name == 'push'
@@ -253,7 +253,7 @@ jobs:
         # `exec jest` (not `test -- …`) so jest receives the flags instead of reading
         # them as a test-path pattern; `--filter mobile` matched no project (the package
         # is `study-abroad-mobile`), so this step had been a silent no-op in CI.
-        run: pnpm --filter study-abroad-mobile exec jest --passWithNoTests --forceExit
+        run: pnpm --filter study-abroad-mobile exec jest --forceExit
 
   # ── E2E Tests ─────────────────────────────────────────────
   e2e:
