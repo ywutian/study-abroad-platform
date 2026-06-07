@@ -24,6 +24,7 @@ echo "🛡️  Checking root guardrails..."
 pnpm lint:coverage-ratchet || exit 1
 pnpm lint:audit-gate || exit 1
 pnpm lint:deploy-drift || exit 1
+pnpm lint:seed-parity || exit 1
 
 # Step 3: Migration safety check (only if migration files changed)
 CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1)
