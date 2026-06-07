@@ -430,7 +430,7 @@ export function EssayWorkbench({
 
   return (
     <>
-      <div className="hidden gap-4 lg:grid lg:grid-cols-[300px_minmax(0,1fr)_380px]">
+      <div className="hidden min-w-0 gap-4 lg:grid lg:grid-cols-[300px_minmax(0,1fr)_380px]">
         {queue}
         {editor}
         {insights}

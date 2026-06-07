@@ -331,7 +331,7 @@ export default function ThemeDebugWorkbench() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           <ThemeCertificationMatrix
             data={certificationData}

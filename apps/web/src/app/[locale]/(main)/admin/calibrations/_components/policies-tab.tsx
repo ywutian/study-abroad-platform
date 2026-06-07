@@ -217,7 +217,7 @@ export function PoliciesTab() {
       </Card>
 
       {selectedPolicy && (
-        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid min-w-0 gap-4 xl:grid-cols-[1.1fr_0.9fr]">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">

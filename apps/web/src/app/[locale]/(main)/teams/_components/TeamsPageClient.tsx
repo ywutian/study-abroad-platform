@@ -842,7 +842,7 @@ export function TeamsPageClient() {
         </TabsList>
 
         <TabsContent value="public" className="mt-6">
-          <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -1055,7 +1055,7 @@ export function TeamsPageClient() {
         </TabsContent>
 
         <TabsContent value="private" className="mt-6">
-          <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -1520,7 +1520,7 @@ export function TeamsPageClient() {
 
         <TabsContent value="my-team" className="mt-6">
           <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="grid min-w-0 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
               <DisplaySettingsCard
                 t={t}
                 currentCard={currentCard}

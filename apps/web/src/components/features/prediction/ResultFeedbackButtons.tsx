@@ -128,7 +128,7 @@ export function ResultFeedbackButtons({
         <p className="text-overline text-muted-foreground">{t('outcomeLabelSection')}</p>
         <p className="text-xs text-muted-foreground">{t('outcomeLabelHint')}</p>
       </div>
-      <div className="grid gap-2 sm:grid-cols-[120px_1fr]">
+      <div className="grid min-w-0 gap-2 sm:grid-cols-[120px_1fr]">
         <label className="text-xs text-muted-foreground">
           {t('outcomeRoundLabel')}
           <select

@@ -349,7 +349,7 @@ export function SchoolSelectionTab({
       </CardHeader>
       <CardContent>
         {targetSchools.length > 0 && (
-          <div className="mb-4 grid gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-4 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))]">
+          <div className="mb-4 grid min-w-0 gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-4 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))]">
             <div>
               <div className="text-sm font-semibold">
                 {t('profile.schoolSelection.portfolioSummary')}

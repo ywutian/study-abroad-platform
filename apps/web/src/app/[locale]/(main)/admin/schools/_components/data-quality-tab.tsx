@@ -190,7 +190,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
             </Card>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+          <div className="grid min-w-0 gap-4 lg:grid-cols-[1.2fr_1fr]">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">

@@ -158,7 +158,7 @@ export function PredictionHistoryTab({
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedItem(item)}
-                  className="grid w-full gap-3 p-4 text-left transition-colors hover:bg-muted/40 lg:grid-cols-[minmax(0,1.2fr)_130px_120px_160px_120px]"
+                  className="grid w-full min-w-0 gap-3 p-4 text-left transition-colors hover:bg-muted/40 lg:grid-cols-[minmax(0,1.2fr)_130px_120px_160px_120px]"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

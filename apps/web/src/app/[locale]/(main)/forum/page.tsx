@@ -241,7 +241,7 @@ export default function ForumPage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_300px]">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_300px]">
         <div className="hidden lg:block">
           <div className="sticky top-16 max-h-[calc(100dvh-4.5rem)] overflow-y-auto pr-1">
             {sidebar}

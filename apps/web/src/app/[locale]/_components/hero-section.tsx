@@ -96,7 +96,7 @@ export function HeroSection() {
       {isDense && <DeerMoonWatermark />}
 
       <PageContainer variant="marketing" className="relative">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
+        <div className="grid min-w-0 items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -288,7 +288,7 @@ function MobileLumniCommandPreview({ visual }: { visual: HeroVisualId }) {
         </div>
       </div>
 
-      <div className="relative mt-3 grid grid-cols-[104px_1fr] gap-3">
+      <div className="relative mt-3 grid min-w-0 grid-cols-[104px_1fr] gap-3">
         <div
           className={cn(
             'flex min-h-[150px] items-center justify-center rounded-md border',
@@ -546,7 +546,7 @@ function PremiumHeroConsole({
                 }
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  'grid items-center gap-4 rounded-2xl border bg-[color:var(--landing-surface)]/72 px-5 py-4 shadow-[var(--landing-shadow-card)] transition duration-300 sm:grid-cols-[1fr_auto_auto]',
+                  'grid min-w-0 items-center gap-4 rounded-2xl border bg-[color:var(--landing-surface)]/72 px-5 py-4 shadow-[var(--landing-shadow-card)] transition duration-300 sm:grid-cols-[1fr_auto_auto]',
                   activeRow === index
                     ? 'border-[color:var(--ds-primary)]/35 ring-1 ring-[color:var(--ds-primary)]/12'
                     : 'border-[color:var(--landing-border)]'
@@ -732,7 +732,7 @@ function CommandCenterHero({
             </div>
           </div>
 
-          <div className="grid min-h-[520px] grid-cols-[0.88fr_1.12fr] gap-4 p-4">
+          <div className="grid min-w-0 min-h-[520px] grid-cols-[0.88fr_1.12fr] gap-4 p-4">
             <div className="relative flex flex-col justify-between overflow-hidden rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-inset)] p-5">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,var(--lumni-moon-soft),transparent_35%)]" />
               <div className="relative flex items-start justify-between gap-4">
@@ -794,7 +794,7 @@ function CommandCenterHero({
                     }
                     transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
                     className={cn(
-                      'grid grid-cols-[1fr_auto] items-center gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--lumni-hero-panel)] px-4 py-3 shadow-sm transition',
+                      'grid min-w-0 grid-cols-[1fr_auto] items-center gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--lumni-hero-panel)] px-4 py-3 shadow-sm transition',
                       activeRow === index
                         ? 'border-[color:var(--ds-primary)]/40 ring-2 ring-[color:var(--ds-primary)]/10'
                         : 'border-[color:var(--lumni-hero-line)]'
@@ -813,7 +813,7 @@ function CommandCenterHero({
                 ))}
               </div>
 
-              <div className="grid grid-cols-[0.85fr_1.15fr] gap-3">
+              <div className="grid min-w-0 grid-cols-[0.85fr_1.15fr] gap-3">
                 <div className="rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] p-4">
                   <div className="text-2xs uppercase tracking-[0.2em] text-[color:var(--lumni-hero-muted)]">
                     {copy.tasksLabel}
@@ -885,7 +885,7 @@ function CompactRows({ copy, dark = false }: { copy: HeroConsoleCopy; dark?: boo
         <div
           key={row.name}
           className={cn(
-            'grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3',
+            'grid min-w-0 grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3',
             dark
               ? 'border-white/10 bg-white/[0.06] text-white'
               : 'border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)]'
@@ -1042,7 +1042,7 @@ function FramerOrbitHero({
     <div className="relative mx-auto w-full max-w-[650px]">
       <div className="relative overflow-hidden rounded-[var(--theme-radius-card)] border border-[#171717] bg-[#030303] p-6 text-white shadow-[0_32px_90px_rgba(0,0,0,0.28)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(101,116,255,0.42),transparent_26%),radial-gradient(circle_at_88%_70%,rgba(231,111,138,0.28),transparent_30%)]" />
-        <div className="relative grid min-h-[520px] grid-cols-[0.9fr_1.1fr] gap-5">
+        <div className="relative grid min-w-0 min-h-[520px] grid-cols-[0.9fr_1.1fr] gap-5">
           <div className="flex flex-col justify-between rounded-[var(--theme-radius-card)] border border-white/10 bg-white/[0.06] p-5">
             <div>
               <div className="text-2xs uppercase tracking-[0.26em] text-white/44">
@@ -1093,7 +1093,7 @@ function LovableAuraHero({
           <h2 className="mx-auto mt-6 max-w-[440px] text-center text-4xl font-semibold tracking-tight text-[#151515]">
             {copy.title}
           </h2>
-          <div className="mt-7 grid grid-cols-[0.92fr_1.08fr] gap-5">
+          <div className="mt-7 grid min-w-0 grid-cols-[0.92fr_1.08fr] gap-5">
             <div className="rounded-[var(--theme-radius-card)] border border-black/10 bg-white/86 p-5 shadow-xl">
               <BrandSeal className="mx-auto h-44 w-44" markClassName="text-[#201915]" />
               <div className="mt-5 text-center">
@@ -1129,7 +1129,7 @@ function BeigeEditorialHero({
     <div className="relative mx-auto w-full max-w-[630px]">
       <div className="relative overflow-hidden rounded-[var(--theme-radius-card)] border border-[#d8c8b2] bg-[#f7f1e6] p-7 text-[#1d1813] shadow-[0_24px_70px_rgba(70,52,30,0.16)]">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(29,24,19,0.045)_1px,transparent_1px),linear-gradient(rgba(29,24,19,0.035)_1px,transparent_1px)] bg-[size:44px_44px]" />
-        <div className="relative grid min-h-[520px] grid-cols-[0.82fr_1.18fr] gap-5">
+        <div className="relative grid min-w-0 min-h-[520px] grid-cols-[0.82fr_1.18fr] gap-5">
           <div className="flex flex-col justify-between border-r border-[#d8c8b2] pr-5">
             <div>
               <div className="text-2xs uppercase tracking-[0.28em] text-[#7a6a58]">
@@ -1168,7 +1168,7 @@ function CommandMinimalHero({
   return (
     <div className="relative mx-auto w-full max-w-[640px]">
       <div className="relative rounded-[var(--theme-radius-card)] border border-[color:var(--landing-border)] bg-white p-4 shadow-[var(--landing-shadow-elevated)]">
-        <div className="grid min-h-[520px] grid-cols-[84px_1fr] gap-4">
+        <div className="grid min-w-0 min-h-[520px] grid-cols-[84px_1fr] gap-4">
           <div className="flex flex-col items-center justify-between rounded-[var(--theme-radius-card)] border border-[color:var(--landing-border)] bg-[#fbfcfd] py-4">
             <BrandSeal className="h-14 w-14" />
             <div className="flex flex-col gap-2">
@@ -1412,7 +1412,7 @@ function DenseListPane({ copy, reduced }: { copy: DenseCockpitCopy; reduced: boo
         {copy.list.rows.map((row, index) => (
           <div
             key={row.name}
-            className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] items-center gap-3 rounded-lg bg-[color:var(--landing-surface-muted)]/50 px-3 py-2.5 ring-1 ring-inset ring-[color:var(--landing-border)]"
+            className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] items-center gap-3 rounded-lg bg-[color:var(--landing-surface-muted)]/50 px-3 py-2.5 ring-1 ring-inset ring-[color:var(--landing-border)]"
             style={{
               animation: reduced
                 ? undefined
@@ -1493,7 +1493,7 @@ function DenseEssayPane({
   disclosure: HeroVisualSceneProps['disclosure'];
 }) {
   return (
-    <div className="lumni-fade-in grid h-full grid-cols-[1fr_220px] gap-3 p-3.5">
+    <div className="lumni-fade-in grid h-full min-w-0 grid-cols-[1fr_220px] gap-3 p-3.5">
       <div className="rounded-lg bg-[color:var(--landing-surface-muted)]/50 p-3.5 ring-1 ring-inset ring-[color:var(--landing-border)]">
         <div className="mb-2 font-mono text-2xs text-[var(--landing-muted)]">
           {copy.essay.promptLabel}

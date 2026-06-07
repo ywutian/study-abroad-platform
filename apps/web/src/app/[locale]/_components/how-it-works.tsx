@@ -112,7 +112,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
         </div>
       </div>
 
-      <div className="grid gap-6 px-4 py-5 lg:grid-cols-[1.1fr_0.9fr] lg:px-6 lg:py-6">
+      <div className="grid min-w-0 gap-6 px-4 py-5 lg:grid-cols-[1.1fr_0.9fr] lg:px-6 lg:py-6">
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-3">
             {copy.cards.map((card, index) => {
@@ -130,7 +130,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
           </div>
 
           <div className="overflow-hidden rounded-xl border border-[color:var(--landing-border)]">
-            <div className="grid grid-cols-[1.3fr_0.8fr_1fr] gap-3 border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/72 px-4 py-3 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+            <div className="grid min-w-0 grid-cols-[1.3fr_0.8fr_1fr] gap-3 border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/72 px-4 py-3 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
               {copy.columns.map((column) => (
                 <span key={column}>{column}</span>
               ))}
@@ -139,7 +139,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
               {rows.map((row) => (
                 <div
                   key={row.school}
-                  className="grid grid-cols-[1.3fr_0.8fr_1fr] gap-3 px-4 py-3 text-sm"
+                  className="grid min-w-0 grid-cols-[1.3fr_0.8fr_1fr] gap-3 px-4 py-3 text-sm"
                 >
                   <span className="font-medium text-[var(--landing-fg)]">{row.school}</span>
                   <AdmissionTierBadge tier={row.tier} />

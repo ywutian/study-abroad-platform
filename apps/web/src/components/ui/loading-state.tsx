@@ -237,7 +237,7 @@ export function ProfileSkeleton({ className }: { className?: string }) {
       </div>
 
       {/* Editor */}
-      <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <div className="hidden space-y-2 lg:block">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} width="100%" height={48} />

@@ -96,7 +96,7 @@ export function AssessmentIntro({
   return (
     <div className="space-y-6">
       <Card className="border-primary/15 bg-[color:var(--theme-card-bg)]">
-        <CardContent className="grid gap-5 p-5 lg:grid-cols-[1fr_320px] lg:items-center">
+        <CardContent className="grid min-w-0 gap-5 p-5 lg:grid-cols-[1fr_320px] lg:items-center">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1">
