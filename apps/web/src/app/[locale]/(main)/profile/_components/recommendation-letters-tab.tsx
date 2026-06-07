@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { profileRoutes } from '@study-abroad/shared';
 import { motion } from 'framer-motion';
 import { Mail, Plus, Pencil, Trash2, Save, Loader2 } from 'lucide-react';
@@ -87,6 +88,7 @@ export function RecommendationLettersTab() {
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<RecommendationLetter | null>(null);
+  const authReady = useAuthReady();
 
   const schema = useMemo(() => createRecommendationLetterSchema(t), [t]);
   const form = useForm<RecommendationLetterFormValues>({
@@ -97,6 +99,7 @@ export function RecommendationLettersTab() {
   const { data: letters = [] } = useQuery<RecommendationLetter[]>({
     queryKey: ['recommendation-letters'],
     queryFn: () => apiClient.get(profileRoutes.recommendationLetters()),
+    enabled: authReady,
   });
 
   const invalidateProfileDependents = () => {

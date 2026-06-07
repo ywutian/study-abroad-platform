@@ -71,6 +71,18 @@ vi.mock('sonner', () => ({
   },
 }));
 
+// Authed queries now gate on useAuthReady() (isInitialized && accessToken) — the
+// test store must be "ready" or the queries never fire.
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: (
+    selector: (state: {
+      user: { id: string } | null;
+      accessToken: string | null;
+      isInitialized: boolean;
+    }) => unknown
+  ) => selector({ user: { id: 'user-1' }, accessToken: 'token-1', isInitialized: true }),
+}));
+
 const defaultProfile = {
   id: 'profile-1',
   gpa: 3.9,

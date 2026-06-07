@@ -21,6 +21,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { notificationRoutes } from '@study-abroad/shared';
 import { qk, cachePolicy } from '@/lib/query';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 
 import { PageContainer } from '@/components/layout';
 import { PageHeader } from '@/components/layout/page-header';
@@ -35,6 +36,7 @@ export default function NotificationsPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [isClientReady, setIsClientReady] = useState(false);
+  const authReady = useAuthReady();
 
   useEffect(() => {
     setIsClientReady(true);
@@ -48,6 +50,7 @@ export default function NotificationsPage() {
         params: { limit: 50 },
       }),
     ...cachePolicy.realtime,
+    enabled: authReady,
   });
 
   // Fetch unread count
@@ -56,6 +59,7 @@ export default function NotificationsPage() {
     queryFn: () => apiClient.get<{ count: number }>(notificationRoutes.unreadCount()),
     refetchInterval: 30000,
     ...cachePolicy.realtime,
+    enabled: authReady,
   });
   const unreadCount = unreadData?.count || 0;
   const displayNotifications = isClientReady ? notifications : [];

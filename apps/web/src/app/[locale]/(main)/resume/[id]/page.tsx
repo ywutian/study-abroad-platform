@@ -41,6 +41,7 @@ import { toast } from 'sonner';
 
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { cn } from '@/lib/utils';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
@@ -372,6 +373,7 @@ export default function ResumeEditPage() {
   const resumeId = params.id as string;
   const router = useRouter();
   const queryClient = useQueryClient();
+  const authReady = useAuthReady();
   const sectionSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const resumeSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
@@ -414,6 +416,7 @@ export default function ResumeEditPage() {
   } = useQuery({
     queryKey: ['resume', resumeId],
     queryFn: () => apiClient.get<Resume>(resumeRoutes.byId(resumeId)),
+    enabled: authReady,
   });
 
   const { data: latestReview } = useQuery({

@@ -13,6 +13,7 @@ const { push, clipboardWriteText, toastSuccess, toastError, authState } = vi.hoi
   authState: {
     user: { id: 'user-1' } as { id: string } | null,
     accessToken: 'token-1' as string | null,
+    isInitialized: true,
   },
 }));
 
@@ -23,7 +24,11 @@ vi.mock('next-intl', () => ({
 
 vi.mock('@/stores/auth', () => ({
   useAuthStore: (
-    selector: (state: { user: { id: string } | null; accessToken: string | null }) => unknown
+    selector: (state: {
+      user: { id: string } | null;
+      accessToken: string | null;
+      isInitialized: boolean;
+    }) => unknown
   ) => selector(authState),
 }));
 

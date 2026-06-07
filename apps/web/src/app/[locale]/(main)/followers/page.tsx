@@ -44,9 +44,9 @@ import { ApiError } from '@/lib/api/api-error';
 import { useDebounce } from '@/hooks/useDebounce';
 import { UI_TIMERS } from '@/lib/constants';
 import { qk, cachePolicy } from '@/lib/query';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores';
 import { PageContainer } from '@/components/layout';
 import { PageHeader } from '@/components/layout/page-header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -105,7 +105,7 @@ export default function FollowersPage() {
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
+  const authReady = useAuthReady();
   const [activeTab, setActiveTab] = useState<SocialRelationType>('followers');
   const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState<SocialRelationSort>('recent');
@@ -139,7 +139,7 @@ export default function FollowersPage() {
   const overviewQuery = useQuery({
     queryKey: qk.social.overview(),
     queryFn: () => apiClient.get<SocialOverview>(chatRoutes.socialOverview()),
-    enabled: !!user,
+    enabled: authReady,
   });
 
   const relationsQuery = useQuery({
@@ -163,7 +163,7 @@ export default function FollowersPage() {
           role,
         },
       }),
-    enabled: !!user,
+    enabled: authReady,
     placeholderData: keepPreviousData,
     ...cachePolicy.standard,
   });

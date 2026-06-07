@@ -17,6 +17,7 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { FadeInView } from '@/components/ui/motion';
 import { Progress } from '@/components/ui/progress';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { apiClient } from '@/lib/api';
@@ -87,6 +88,7 @@ export default function DashboardPage() {
   const { registerTour, startTour, hasCompletedTour } = useTour();
   const [isHydrated, setIsHydrated] = useState(false);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const authReady = useAuthReady();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -124,6 +126,7 @@ export default function DashboardPage() {
     // global 5-min staleTime to 30s so users see fresh data without
     // hammering the API on every focus.
     staleTime: 30_000,
+    enabled: authReady,
   });
 
   // Consume pendingOnboarding from sessionStorage (fallback from registration)

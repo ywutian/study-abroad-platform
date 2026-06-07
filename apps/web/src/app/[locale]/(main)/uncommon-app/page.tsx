@@ -38,6 +38,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { qk } from '@/lib/query';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -69,6 +70,7 @@ type TFunction = (key: string, values?: Record<string, string | number>) => stri
 export default function UncommonAppPage() {
   const t = useTranslations('uncommonApp');
   const queryClient = useQueryClient();
+  const authReady = useAuthReady();
 
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(
     () => queryClient.getQueryData<AIAnalysis>(PROFILE_ANALYSIS_KEY) ?? null
@@ -79,26 +81,31 @@ export default function UncommonAppPage() {
   const { data: schoolList, isLoading: listLoading } = useQuery({
     queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get<SchoolListItem[]>(schoolListRoutes.list()),
+    enabled: authReady,
   });
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', 'me'],
     queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
+    enabled: authReady,
   });
 
   const { data: timelines, isLoading: timelinesLoading } = useQuery({
     queryKey: ['timelines'],
     queryFn: () => apiClient.get<TimelineResponse[]>(API_ROUTES.TIMELINES),
+    enabled: authReady,
   });
 
   const { data: recommendationPreflight } = useQuery<RecommendationPreflight>({
     queryKey: ['recommendation', 'preflight'],
     queryFn: () => apiClient.get(recommendationRoutes.preflight()),
+    enabled: authReady,
   });
 
   const { data: recommendationHistory } = useQuery<RecommendationResult[]>({
     queryKey: ['recommendation', 'history'],
     queryFn: () => apiClient.get(recommendationRoutes.history()),
+    enabled: authReady,
   });
 
   const latestRecommendations =

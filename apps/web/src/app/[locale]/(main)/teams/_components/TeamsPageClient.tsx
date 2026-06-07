@@ -33,6 +33,7 @@ import {
 import { PageContainer, PageHeader } from '@/components/layout';
 import { apiClient } from '@/lib/api';
 import { qk } from '@/lib/query';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -173,6 +174,7 @@ export function TeamsPageClient() {
   const authUserId = useAuthStore((state) => state.user?.id ?? null);
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthenticated = Boolean(accessToken);
+  const authReady = useAuthReady();
 
   const copy = {
     publicTab: t('recruitment.copy.publicTab'),
@@ -274,19 +276,19 @@ export function TeamsPageClient() {
   const { data: myCommunityContextsData, isLoading: myCommunityContextsLoading } = useQuery({
     queryKey: qk.teams.communityContexts(),
     queryFn: () => apiClient.get<RecruitmentContextDto>(teamRoutes.communityContexts()),
-    enabled: !!accessToken,
+    enabled: authReady,
   });
 
   const { data: myRecruitments, isLoading: myRecruitmentsLoading } = useQuery({
     queryKey: qk.teams.recruitmentsMy(),
     queryFn: () => apiClient.get<MyRecruitmentsResponse>(teamRoutes.myRecruitments()),
-    enabled: !!accessToken,
+    enabled: authReady,
   });
 
   const { data: resumesData } = useQuery({
     queryKey: ['resumes', 'options'],
     queryFn: () => apiClient.get<ResumeOption[]>(resumeRoutes.list()),
-    enabled: !!accessToken,
+    enabled: authReady,
   });
 
   const currentTeamEntry = useMemo(() => {

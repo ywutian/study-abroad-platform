@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { userRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/layout/page-header';
@@ -50,20 +51,21 @@ export default function ReferralPage() {
   const tAria = useTranslations('common.aria');
   const format = useFormatter();
   const { user } = useAuthStore();
+  const authReady = useAuthReady();
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
 
   // Fetch referral data
   const { data: referralData, isLoading: isLoadingReferral } = useQuery({
     queryKey: ['referral'],
     queryFn: () => apiClient.get<ReferralData>(userRoutes.referral()),
-    enabled: !!user,
+    enabled: authReady,
   });
 
   // Fetch referral list
   const { data: referralList, isLoading: isLoadingList } = useQuery({
     queryKey: ['referral-list'],
     queryFn: () => apiClient.get<ReferralListData>(userRoutes.referrals()),
-    enabled: !!user,
+    enabled: authReady,
   });
   const referrals = Array.isArray(referralList?.referrals) ? referralList.referrals : [];
 

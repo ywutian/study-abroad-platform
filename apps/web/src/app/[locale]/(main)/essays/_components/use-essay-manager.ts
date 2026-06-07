@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import {
   useEssayReview,
   useEssayPolish,
@@ -48,6 +49,7 @@ export function useEssayManager(
 ) {
   const t = useTranslations();
   const queryClient = useQueryClient();
+  const authReady = useAuthReady();
 
   const [selectedEssay, setSelectedEssay] = useState<Essay | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -149,6 +151,7 @@ export function useEssayManager(
   const { data: essays, isLoading } = useQuery({
     queryKey: ['essays'],
     queryFn: () => apiClient.get<Essay[]>(profileRoutes.essays()),
+    enabled: authReady,
   });
 
   useEffect(() => {
