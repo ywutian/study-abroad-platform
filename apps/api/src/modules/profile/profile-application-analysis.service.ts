@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PredictionService } from '../prediction/prediction.service';
+import { resolveEffectiveTier } from '../school-list/school-list.constants';
 import {
   CaseComparisonResult,
   PredictionHistoricalService,
@@ -1164,7 +1165,7 @@ function buildPortfolioAnalysis(
     .filter((item) => !item.round)
     .map((item) => item.school.nameZh || item.school.name)
     .slice(0, 5);
-  const balance = resolvePortfolioBalance(schoolListItems);
+  const balance = resolvePortfolioBalance(schoolListItems, predictionMap);
   const isZh = locale === 'zh';
 
   if (state === 'noTargetSchools') {
@@ -1260,19 +1261,29 @@ function buildPortfolioAnalysis(
 
 function resolvePortfolioBalance(
   schoolListItems: LoadedSchoolListItem[],
+  predictionMap: Map<string, LoadedPrediction>,
 ): PortfolioBalance {
   if (schoolListItems.length < 3) return 'insufficient';
 
-  const counts = schoolListItems.reduce(
-    (acc, item) => {
-      acc[item.tier] += 1;
-      return acc;
-    },
-    { REACH: 0, TARGET: 0, SAFETY: 0 } as Record<
-      'REACH' | 'TARGET' | 'SAFETY',
-      number
-    >,
-  );
+  // Count by EFFECTIVE tier (engine prediction wins for PREDICTED rows; MANUAL
+  // wins; a PREDICTED row with no usable prediction is a stale TARGET placeholder
+  // and is EXCLUDED). Uses the resolveEffectiveTier SSOT so this legacy v1 path
+  // matches v2's resolveEffectiveTierCounts — closes the raw-`item.tier` recurrence
+  // vector (#271 → #289 → #330) that otherwise let placeholders fake a balanced list.
+  const counts = { REACH: 0, TARGET: 0, SAFETY: 0 } as Record<
+    'REACH' | 'TARGET' | 'SAFETY',
+    number
+  >;
+  for (const item of schoolListItems) {
+    const predictionTier = predictionMap.get(item.schoolId)?.tier ?? null;
+    const { tier, tierIsEstimated } = resolveEffectiveTier(
+      item.tier,
+      item.tierSource,
+      predictionTier,
+    );
+    if (tierIsEstimated) continue; // stale PREDICTED placeholder — not a signal
+    counts[tier] += 1;
+  }
 
   if (counts.REACH >= counts.TARGET + counts.SAFETY) return 'reachHeavy';
   if (counts.SAFETY >= counts.REACH + counts.TARGET) return 'safetyHeavy';
