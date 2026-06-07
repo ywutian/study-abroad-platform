@@ -71,6 +71,7 @@
     "audit:coverage": "tsx scripts/audit-school-data-coverage.ts",
     "audit:verified-cds": "tsx scripts/audit-verified-cds-coverage.ts",
     "audit:full-field-coverage": "tsx scripts/audit-full-field-coverage.ts",
+    "audit:prediction-data-integrity": "tsx scripts/audit-prediction-data-integrity.ts",
     "audit:platform-data-closure": "tsx scripts/platform-data-closure-audit.ts",
     "audit:database-schema-compatibility": "tsx scripts/database-schema-compatibility-worklist.ts",
     "audit:database-schema-alignment-plan": "tsx scripts/database-schema-alignment-plan.ts",
