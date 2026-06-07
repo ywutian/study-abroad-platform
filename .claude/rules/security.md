@@ -35,3 +35,8 @@ globs: ["**/auth/**", "**/guards/**", "**/vault/**", "**/common/guards/**", "**/
 
 - End-to-end encryption (AES-256 with IV)
 - Encryption key derived from userId
+
+## Dependency CVEs
+
+- CI hard-fails on **high** via `pnpm audit --audit-level=high`; `pnpm lint:audit-gate` (in `lint:all`) keeps that gate from being softened (no `|| true` / `continue-on-error` / relaxed level).
+- Fix high/critical by upgrading or pinning via root `pnpm.overrides` (narrowest range). Full process: `docs/SECURITY_DEPS.md`.
