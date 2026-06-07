@@ -143,22 +143,23 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 ## Skills (`.claude/skills/`)
 
-12 skills covering 起手 → 决策 → 上线 → 审查 full dev cycle:
+13 skills covering 起手 → 决策 → 上线 → 审查 full dev cycle:
 
-| Skill                             | Purpose                                                                                |
-| --------------------------------- | -------------------------------------------------------------------------------------- |
-| `/review`                         | Post-generation sensor — runs relevant agents on changed files                         |
-| `/create-module`                  | Scaffold NestJS backend module (controller + service + dto + BRIEF.md)                 |
-| `/create-feature-page`            | Scaffold Next.js feature page (PageHeader + i18n + loading + dark mode + min-w-0)      |
-| `/add-endpoint`                   | Add REST endpoint (DTO, throttle, swagger, tests)                                      |
-| `/migrate-schema`                 | Prisma schema change zero-downtime (nullable-or-default + consumer scan + destructive) |
-| `/feedback-triage`                | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release)          |
-| `/multi-agent-debate`             | Big/ambiguous redesign — parallel debate -> synthesize -> batched implement            |
-| `/iterate-prompt-with-blind-eval` | LLM prompt quality iteration (5 persona blind eval + multi-persona gate)               |
-| `/perf-loop`                      | Performance methodology (measure → 1 hypothesis → minimal fix → same-query benchmark)  |
-| `/canary-rollout`                 | Feature flag 0%→5%→25%→100% staged rollout with monitor gates + rollback triggers      |
-| `/audit-drift`                    | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                          |
-| `/workflow-receipt`               | Generate structured audit receipt after agent workflow                                 |
+| Skill                             | Purpose                                                                                                                           |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `/review`                         | Post-generation sensor — runs relevant agents on changed files                                                                    |
+| `/close-the-loop`                 | Turn a recurring bug into one that can't recur — recurrence check → root cause → guardrail (lint/test/SSOT/type) → prove it fires |
+| `/create-module`                  | Scaffold NestJS backend module (controller + service + dto + BRIEF.md)                                                            |
+| `/create-feature-page`            | Scaffold Next.js feature page (PageHeader + i18n + loading + dark mode + min-w-0)                                                 |
+| `/add-endpoint`                   | Add REST endpoint (DTO, throttle, swagger, tests)                                                                                 |
+| `/migrate-schema`                 | Prisma schema change zero-downtime (nullable-or-default + consumer scan + destructive)                                            |
+| `/feedback-triage`                | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release)                                                     |
+| `/multi-agent-debate`             | Big/ambiguous redesign — parallel debate -> synthesize -> batched implement                                                       |
+| `/iterate-prompt-with-blind-eval` | LLM prompt quality iteration (5 persona blind eval + multi-persona gate)                                                          |
+| `/perf-loop`                      | Performance methodology (measure → 1 hypothesis → minimal fix → same-query benchmark)                                             |
+| `/canary-rollout`                 | Feature flag 0%→5%→25%→100% staged rollout with monitor gates + rollback triggers                                                 |
+| `/audit-drift`                    | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                                                                     |
+| `/workflow-receipt`               | Generate structured audit receipt after agent workflow                                                                            |
 
 ## Rules Index
 
