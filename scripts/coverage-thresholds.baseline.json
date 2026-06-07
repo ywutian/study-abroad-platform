@@ -1,6 +1,6 @@
 {
   "_comment": "Coverage-threshold FLOOR per app. check-coverage-ratchet.ts fails if any app's configured coverageThreshold drops below these. Raising is free; LOWERING requires editing this baseline in the same PR — turning the historically-silent 'fix(ci): lower coverage thresholds' drift into an explicit, reviewable change. To lock a higher floor after adding tests, bump both the config and this file.",
   "api": { "statements": 38, "branches": 25, "functions": 34, "lines": 39 },
-  "mobile": { "statements": 5, "branches": 3, "functions": 4, "lines": 5 },
+  "mobile": { "statements": 24, "branches": 22, "functions": 20, "lines": 25 },
   "web": { "statements": 10, "branches": 10, "functions": 10, "lines": 10 }
 }

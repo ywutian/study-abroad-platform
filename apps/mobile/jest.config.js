@@ -25,12 +25,17 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   testPathIgnorePatterns: ['/node_modules/', '/.expo/'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
+  // Floor set just below ACTUAL coverage (stmts 25.7 / br 23.4 / fn 21.1 / ln 26.3
+  // as of closure #2 follow-up) — the old 3-5% floor was meaningless (it was the
+  // threshold, never the real coverage; 29 suites / 321 tests already cover ~1/4).
+  // ~1-2pt buffer absorbs run variance. Ratcheted via
+  // scripts/coverage-thresholds.baseline.json — raise as coverage grows, never lower.
   coverageThreshold: {
     global: {
-      branches: 3,
-      functions: 4,
-      lines: 5,
-      statements: 5,
+      branches: 22,
+      functions: 20,
+      lines: 25,
+      statements: 24,
     },
   },
 };
