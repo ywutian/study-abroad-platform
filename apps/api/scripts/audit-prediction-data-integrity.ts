@@ -69,23 +69,31 @@ async function main() {
     v == null ? null : Number(v as never);
   let hard = 0;
 
-  // INTL: must be more competitive than overall
+  // INTL: scale-sanity ONLY (fraction-stored-as-percent), NOT directionality.
+  // The former `intl >= overall` rule had real exceptions — revenue-seeking
+  // publics (UC Davis, Ohio State, Rutgers, UMN) legitimately admit international
+  // students at HIGHER rates than overall — so it produced 62/212 false-positives
+  // and cannot be a zero-FP gate (this script's own header excludes OOS
+  // directionality for exactly this reason; INTL has the same exception class).
+  // Whether a specific intl>=overall value is an enrollment-% leak vs a real
+  // public rate is a data-QUALITY review (correctIntlRates), not a hard invariant.
+  // Flag only UNAMBIGUOUS scale errors, mirroring ROUND: a real international
+  // admit rate is never <1% and can never exceed 100%.
   {
     const rows: Row[] = [];
     let checked = 0;
     for (const s of schools) {
-      const overall = num(s.acceptanceRate);
       const intl = num(s.intlAcceptanceRate);
-      if (intl == null || overall == null) continue;
+      if (intl == null) continue;
       checked++;
-      if (intl >= overall - 0.5)
+      if (intl < 1 || intl > 100)
         rows.push({
           name: s.name,
           rank: s.usNewsRank ?? 999,
-          detail: `intl ${intl.toFixed(1)}% >= overall ${overall.toFixed(1)}%`,
+          detail: `intl ${intl.toFixed(2)}% outside [1, 100] (scale error: fraction stored as percent?)`,
         });
     }
-    hard += report('INTL more-competitive', rows, checked);
+    hard += report('INTL scale-sane', rows, checked);
   }
 
   // ROUND: no early rate below 1% (scale-error guard)
