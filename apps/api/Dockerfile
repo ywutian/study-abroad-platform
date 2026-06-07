@@ -81,6 +81,8 @@ RUN cd apps/api && npx tsc \
     prisma/seed-assessment.ts \
     prisma/seed-hook-stats.ts \
     prisma/seed-global-admit-baselines.ts \
+    prisma/seed-intl-rate-correction.ts \
+    prisma/seed-round-rate-correction.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma
