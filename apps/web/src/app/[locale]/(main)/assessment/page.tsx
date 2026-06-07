@@ -32,6 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import type {
@@ -77,6 +78,7 @@ export default function AssessmentPage() {
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const authReady = useAuthReady();
 
   const activeAssessmentType: ApiAssessmentType | null =
     activeTab === 'mbti' ? 'MBTI' : activeTab === 'holland' ? 'HOLLAND' : null;
@@ -84,11 +86,13 @@ export default function AssessmentPage() {
   const summaryQuery = useQuery<AssessmentSummary>({
     queryKey: ['assessment-summary'],
     queryFn: () => apiClient.get(assessmentRoutes.summary()),
+    enabled: authReady,
   });
 
   const profileQuery = useQuery<ProfileSnapshot>({
     queryKey: ['profile', 'assessment-target-major'],
     queryFn: () => apiClient.get(profileRoutes.me()),
+    enabled: authReady,
   });
 
   const mbtiQuery = useQuery<Assessment>({

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { qk } from '@/lib/query';
 import { API_ROUTES, schoolListRoutes, timelineRoutes } from '@study-abroad/shared';
 import { Button } from '@/components/ui/button';
@@ -76,6 +77,7 @@ export default function TimelinePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const authReady = useAuthReady();
 
   const initialTab = resolveTimelineTab(searchParams.get('tab'));
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
@@ -115,12 +117,14 @@ export default function TimelinePage() {
   const { data: timelinesRaw, isLoading: timelinesLoading } = useQuery<unknown>({
     queryKey: ['timelines'],
     queryFn: () => apiClient.get(API_ROUTES.TIMELINES),
+    enabled: authReady,
   });
   const timelines = useMemo(() => listFromResponse<TimelineResponse>(timelinesRaw), [timelinesRaw]);
 
   const { data: globalEventsRaw } = useQuery<unknown>({
     queryKey: ['global-events'],
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/global-events`),
+    enabled: authReady,
   });
   const globalEvents = useMemo(
     () => listFromResponse<GlobalEvent>(globalEventsRaw),
@@ -130,6 +134,7 @@ export default function TimelinePage() {
   const { data: personalEventsRaw, isLoading: personalLoading } = useQuery<unknown>({
     queryKey: ['personal-events'],
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/personal-events`),
+    enabled: authReady,
   });
   const personalEvents = useMemo(
     () => listFromResponse<PersonalEventResponse>(personalEventsRaw),
@@ -139,6 +144,7 @@ export default function TimelinePage() {
   const { data: schoolListItemsRaw } = useQuery<unknown>({
     queryKey: qk.schoolList.all,
     queryFn: () => apiClient.get(schoolListRoutes.list()),
+    enabled: authReady,
   });
   const schoolListItems = useMemo(
     () =>

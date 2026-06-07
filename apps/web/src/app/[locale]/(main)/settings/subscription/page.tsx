@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { API_ROUTES, subscriptionRoutes } from '@study-abroad/shared';
 
 // UI-specific props (icon, color, gradient) stay in frontend
@@ -68,15 +69,18 @@ export default function SubscriptionPage() {
   const t = useTranslations('subscription');
   const tCommon = useTranslations('common');
   const format = useFormatter();
+  const authReady = useAuthReady();
 
   const { data: subscription } = useQuery<SubscriptionData>({
     queryKey: ['subscription-me'],
     queryFn: () => apiClient.get(`${API_ROUTES.SUBSCRIPTIONS}/me`),
+    enabled: authReady,
   });
 
   const { data: billingHistory = [] } = useQuery<BillingHistoryItem[]>({
     queryKey: ['billing-history'],
     queryFn: () => apiClient.get(`${API_ROUTES.SUBSCRIPTIONS}/billing-history`),
+    enabled: authReady,
   });
 
   const currentPlan = subscription?.plan?.toLowerCase() ?? 'free';

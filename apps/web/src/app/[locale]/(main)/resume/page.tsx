@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { resumeRoutes } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -82,6 +83,7 @@ export default function ResumePage() {
   const tc = useTranslations('common');
   const router = useRouter();
   const queryClient = useQueryClient();
+  const authReady = useAuthReady();
   const [createOpen, setCreateOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<ResumeType>('COLLEGE_APPLICATION');
@@ -90,6 +92,7 @@ export default function ResumePage() {
   const { data: resumes, isLoading } = useQuery({
     queryKey: ['resumes'],
     queryFn: () => apiClient.get<ResumeItem[]>(resumeRoutes.list()),
+    enabled: authReady,
   });
   const resumeItems = Array.isArray(resumes) ? resumes : [];
 

@@ -11,6 +11,7 @@ globs: ["apps/web/**"]
 - Refresh token in **httpOnly cookie** — inaccessible to JS
 - Only `AuthInitializer` owns the refresh interval — not `setAuthFromLogin`
 - `apiClient` unwraps `response.data` automatically — component code receives inner object
+- **Authed queries MUST gate on auth-readiness** — a `useQuery` that fires before `AuthInitializer` restores the in-memory token 401-races (#145/#222). Use `useAuthGatedQuery` (`@/hooks/use-auth-gated-query`) or `enabled: useAuthReady() && …`; never a bare authed `useQuery`. `no-unguarded-auth-query` enforces this on protected routes.
 
 ## API Proxy
 
@@ -124,3 +125,4 @@ AI Error Boundary: `<AIErrorBoundary feature="...">` wraps AI feature components
 | `no-missing-error-boundary` | warning | Route group without `error.tsx` |
 | `no-tooltip-without-provider` | error | `Tooltip` without `TooltipProvider` |
 | `no-missing-min-w-in-grid-container` | warning | Custom `grid-cols-[…]` without `min-w-0` (overflow root cause PR #214/#215/#217) |
+| `no-unguarded-auth-query` | error | Authed `useQuery` (apiClient) on a protected route with no `enabled` — 401 race (#145/#222). Use `useAuthGatedQuery` / `useAuthReady()`; public reads `// @public-query` |

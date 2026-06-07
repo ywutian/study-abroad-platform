@@ -45,6 +45,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
+import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { AgentType, essayPromptRoutes } from '@study-abroad/shared';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import { RankingBadge } from '@/components/ui/ranking-badge';
@@ -125,11 +126,13 @@ function SchoolEssayPrompts({ schoolId }: { schoolId: string }) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const authReady = useAuthReady();
 
   const { data: prompts, isLoading } = useQuery<EssayPrompt[]>({
     queryKey: ['essay-prompts-by-school', schoolId],
     queryFn: () => apiClient.get(essayPromptRoutes.bySchool(schoolId)),
     staleTime: 5 * 60 * 1000,
+    enabled: authReady,
   });
 
   if (isLoading) {

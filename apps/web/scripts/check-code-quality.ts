@@ -770,6 +770,119 @@ function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Iss
   return issues;
 }
 
+// ── Auth-readiness gating (the 401-race loop, #145/#222) ────
+
+const AUTH_QUERY_EXEMPT_FILES = [
+  '/lib/query/',
+  '/hooks/use-auth-gated-query',
+  '/hooks/use-list-query',
+  '/stores/',
+  '.test.',
+  '.spec.',
+];
+
+// Protected route segments (mirror of proxy.ts PROTECTED_PATTERNS, minus /admin).
+// On these routes the user is GUARANTEED authenticated (proxy redirects anon to
+// login), so every apiClient query is auth-required and gating is always safe —
+// zero false positives, unlike public pages (schools/hall/cases) which mix
+// public + authed reads. This is exactly the surface where the 401 race recurred
+// (#145 prediction, #222 chat). Public pages + shared hooks + /admin remain a
+// tracked follow-up worklist (`pnpm lint:recurrence` / not yet error-gated).
+const AUTH_PROTECTED_ROUTE_SEGMENTS = [
+  'profile',
+  'dashboard',
+  'essays',
+  'resume',
+  'assessment',
+  'prediction',
+  'chat',
+  'settings',
+  'notifications',
+  'timeline',
+  'vault',
+  'uncommon-app',
+  'followers',
+];
+
+function isProtectedRouteFile(filePath: string): boolean {
+  const p = filePath.replace(/\\/g, '/');
+  return AUTH_PROTECTED_ROUTE_SEGMENTS.some((seg) => p.includes(`/(main)/${seg}/`));
+}
+
+function isPublicQueryIgnored(lines: string[], index: number): boolean {
+  const cur = lines[index] ?? '';
+  const prev = index > 0 ? lines[index - 1] : '';
+  return cur.includes('@public-query') || prev.includes('@public-query');
+}
+
+/** Capture a call's text from the hook name until its parens balance. */
+function gatherCallBlock(
+  lines: string[],
+  startIdx: number,
+  startCol: number,
+  maxLines = 40
+): string {
+  let depth = 0;
+  let started = false;
+  let text = '';
+  const end = Math.min(lines.length, startIdx + maxLines);
+  for (let i = startIdx; i < end; i++) {
+    const seg = i === startIdx ? lines[i].slice(startCol) : lines[i];
+    for (const ch of seg) {
+      if (ch === '(') {
+        depth++;
+        started = true;
+      } else if (ch === ')') {
+        depth--;
+      }
+      text += ch;
+      if (started && depth === 0) return text;
+    }
+    text += '\n';
+  }
+  return text;
+}
+
+/**
+ * Authenticated `useQuery`/`useInfiniteQuery` (queryFn hits apiClient) that has
+ * NO `enabled` fires on mount before the access token is restored → 401 race.
+ * The fix is `useAuthGatedQuery` or `enabled: useAuthReady() && …`. Public
+ * endpoints opt out with `// @public-query`. Only "no enabled at all" is flagged
+ * (the real on-mount race) — any deliberate `enabled` is left alone to keep this
+ * precise and error-level.
+ */
+function checkUnguardedAuthQuery(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (isExempt(filePath, AUTH_QUERY_EXEMPT_FILES)) return issues;
+  // Error-gated only on protected routes (always-authed, zero false positives).
+  if (!isProtectedRouteFile(filePath)) return issues;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line)) continue;
+    const m = line.match(/\b(useQuery|useInfiniteQuery)\s*[<(]/);
+    if (!m || m.index === undefined) continue;
+    if (isPublicQueryIgnored(lines, i)) continue;
+    const block = gatherCallBlock(lines, i, m.index);
+    // Only authed queries (apiClient-backed) — skip external/manual fetches.
+    if (!/apiClient\.(get|post|put|patch|delete)\b/.test(block)) continue;
+    // Precise + zero-false-positive: flag only queries with NO `enabled` at all —
+    // the unambiguous "fires on mount before the token is ready" race. A query
+    // with any deliberate `enabled` (auth gate, `false`, or another condition) is
+    // left alone here; the rarer "non-auth `enabled` still races" variant needs
+    // guard-var standardization first and is a tracked follow-up.
+    if (/\benabled\s*:/.test(block)) continue;
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-unguarded-auth-query',
+      message:
+        'Authenticated useQuery has no `enabled` guard — it fires before the access token is restored (401 race, #145/#222). Use `useAuthGatedQuery`, or add `enabled: useAuthReady() && …`.',
+      severity: 'error',
+    });
+  }
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
@@ -808,7 +921,8 @@ function main() {
       ...checkTooltipWithoutProvider(filePath, content),
       ...checkInlineListQueryKey(filePath, lines),
       ...checkDynamicStaleTimeOnList(filePath, lines),
-      ...checkListQueryNeedsKeepPrevious(filePath, lines)
+      ...checkListQueryNeedsKeepPrevious(filePath, lines),
+      ...checkUnguardedAuthQuery(filePath, lines)
     );
   }
 
