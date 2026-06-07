@@ -18,6 +18,19 @@
  *   tsx scripts/check-recurrence.ts --json          # machine-readable output
  *
  * Advisory by default (exit 0) — it is a nudge, not a gate. Use --strict to gate.
+ *
+ * Known blind spots (a recurring class can hide from this per-file detector):
+ *   1. No `git log --follow` — a `git mv` resets a file's fix-count, so churn
+ *      before a rename is invisible (e.g. middleware.ts -> proxy.ts dropped from
+ *      7 to 2). `--follow` only works for single-path queries, so a real fix
+ *      needs `-M --name-status` rename-chain stitching, not a flag.
+ *   2. Per-file grouping is blind to a class fixed by ADDING A NEW FILE each time
+ *      (e.g. the prediction scale-error class, fixed via a new correction seed
+ *      per incident — 1 commit each, so it never crosses the per-file threshold).
+ *   3. Cross-file theme: a root cause fixed once in each of N files stays below
+ *      the per-file threshold on every file. Cluster commit SUBJECTS by theme to
+ *      catch these (and reverts / fixes mislabeled under feat|chore|refactor,
+ *      which the fix-type subject regex also misses).
  */
 
 import { execSync } from 'child_process';

@@ -61,6 +61,8 @@ jobs:
               - 'packages/shared/**'
             ci:
               - '.github/workflows/**'
+              - '.github/deploy-config.json'
+              - 'scripts/**'
               - 'turbo.json'
               - 'package.json'
 
