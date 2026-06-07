@@ -1,0 +1,11 @@
+{
+  "_comment": "Canonical GCP Cloud Run deploy constants — the single declared source of truth. Every deploy workflow (.github/workflows/*) must use these exact values; check-deploy-config-drift.ts enforces it so the config can't silently diverge between CI / staging / preview / job workflows (the recurring 'sync deploy config' drift). Changing a value here means updating it in every workflow in the SAME PR. Per-environment secret names (database-url-*, etc.) intentionally differ and are NOT enforced here.",
+  "vpcConnector": "study-abroad-connector",
+  "artifactRegistry": "study-abroad/api",
+  "regionSecret": "GCP_REGION",
+  "projectSecret": "GCP_PROJECT_ID",
+  "services": {
+    "prod": "study-abroad-api",
+    "staging": "study-abroad-api-staging"
+  }
+}
