@@ -9,7 +9,7 @@ globs: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.tsx", "**/*.e2e-spec.ts"]
 
 - **Prisma mock**: New Prisma models require adding corresponding model mock to all `PrismaService` mocks
 - **Zustand selector mock**: `jest.fn((selector) => selector ? selector(state) : state)`
-- **Coverage thresholds**: New app starts at 3-5%, increase gradually
+- **Coverage thresholds — one-way ratchet**: per-app `coverageThreshold` (jest) / `thresholds` (vitest) must stay **≥** `scripts/coverage-thresholds.baseline.json`. `pnpm lint:coverage-ratchet` (in `lint:all`) blocks silent lowering; raise freely, and after adding tests run `pnpm lint:coverage-ratchet --update` to lock the higher floor. Lowering requires editing the baseline in the same PR (explicit + reviewed). Never re-add `--passWithNoTests` to a CI jest run — it lets a zero-test run pass and neuters the floor.
 
 ## Test File Conventions
 
