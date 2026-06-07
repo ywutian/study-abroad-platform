@@ -5,7 +5,7 @@
 | Command                               | Purpose                            |
 | ------------------------------------- | ---------------------------------- |
 | `pnpm web`                            | Start dev server (port 4100)       |
-| `pnpm --filter web lint:quality`      | Frontend quality checks (13 rules) |
+| `pnpm --filter web lint:quality`      | Frontend quality checks (15 rules) |
 | `pnpm --filter web lint:i18n`         | i18n consistency checks            |
 | `pnpm --filter web exec tsc --noEmit` | TypeScript check                   |
 

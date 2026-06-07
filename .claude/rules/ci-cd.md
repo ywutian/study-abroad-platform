@@ -25,14 +25,15 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 1. Prettier + ESLint on staged `.ts/.tsx`
 2. gitleaks secret scan (if installed)
 3. i18n checks (when `apps/web/src/` changed)
-4. Frontend quality checks (8 rules, when `apps/web/src/` changed)
-5. Backend quality checks (7 rules, when `apps/api/src/` changed)
+4. Frontend quality checks (15 rules, when `apps/web/src/` changed)
+5. Backend quality checks (10 rules, when `apps/api/src/` changed)
 
 ### Pre-push (~20-50s)
 1. Prisma generate (ensures client matches schema)
 2. Smart verification gate (`verify-gate.ts`) — typecheck, tests, lint:routes, lint:i18n
-3. Migration safety (conditional — only if `prisma/migrations/` changed)
-4. Dependency audit (`pnpm audit --audit-level=high`)
+3. Root guardrails (`lint:coverage-ratchet` + `lint:audit-gate` + `lint:deploy-drift`)
+4. Migration safety (conditional — only if `prisma/migrations/` changed)
+5. Dependency audit (`pnpm audit --audit-level=high`)
 
 ## CI <-> Local Check Mapping
 
@@ -51,7 +52,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 ```bash
 pnpm lint:all              # ESLint + quality + i18n + routes + integration
 pnpm lint:routes           # API route consistency
-pnpm lint:integration      # Cross-layer (16 rules)
+pnpm lint:integration      # Cross-layer (18 rules)
 pnpm prepush               # Typecheck + tests (same as hook)
 pnpm check                 # lint:all + test (full CI equiv)
 pnpm lint:dead-code        # Knip unused files/exports/deps
