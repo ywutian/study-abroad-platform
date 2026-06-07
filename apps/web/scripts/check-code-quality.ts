@@ -641,6 +641,13 @@ function checkGridMinW(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+// NOTE: a `flex justify-between` overflow lint was prototyped and dropped — there
+// is no usable threshold: broad (flex+justify-between, no mitigation) = 430 hits,
+// `flex-1` without min-w-0 = 210, both dominated by harmless rows; tightening to
+// near-zero over-fits. The flex-overflow vector isn't cleanly lintable, so it
+// stays covered by the dev-only OverflowDetector + the documented convention.
+// (The grid variant IS precise and is enforced at error by checkGridMinW above.)
+
 function checkUndefinedDsVar(
   filePath: string,
   lines: string[],

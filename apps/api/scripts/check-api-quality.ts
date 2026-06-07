@@ -6,7 +6,8 @@
  * 2. AI endpoints without @Throttle decorator (warning)
  * 3. Generic throw new Error() in service files (warning)
  * 4. DTO @IsString() fields without @MaxLength() (warning)
- * 5. Service files without corresponding .spec.ts (warning, full-scan only)
+ * 5. Service files without corresponding .spec.ts (error for NEW services in
+ *    --staged/pre-commit; warning for the existing backlog on full-scan)
  * 6. Duplicated inline Prisma select blocks in same service (warning)
  * 7. Select-to-mapper field drift in *.constants.ts (warning)
  * 8. Raw redis.getClient() bypassing metrics/circuit-breaker (error)
@@ -66,6 +67,29 @@ function getStagedFiles(): string[] {
     return [];
   }
 }
+
+/** Newly-ADDED staged files (diff-filter=A) — used so no-missing-test only
+ *  blocks brand-new services at pre-commit, not edits to the existing backlog. */
+function getAddedStagedFiles(): Set<string> {
+  const { execSync } = require('child_process');
+  try {
+    const output = execSync('git diff --cached --name-only --diff-filter=A', {
+      encoding: 'utf8',
+    });
+    return new Set<string>(
+      output
+        .split('\n')
+        .filter(
+          (f: string) => f.startsWith('apps/api/src/') && f.endsWith('.ts'),
+        )
+        .map((f: string) => path.resolve(__dirname, '../../..', f)),
+    );
+  } catch {
+    return new Set<string>();
+  }
+}
+
+const addedStagedFiles = stagedOnly ? getAddedStagedFiles() : new Set<string>();
 
 function relativePath(filePath: string): string {
   return path.relative(path.resolve(__dirname, '../../..'), filePath);
@@ -240,8 +264,10 @@ function checkMissingMaxLength(filePath: string, lines: string[]): Issue[] {
 function checkMissingTest(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (!filePath.endsWith('.service.ts')) return issues;
-  // Skip in staged mode — this check is for full-scan only
-  if (stagedOnly) return issues;
+  // Staged mode (pre-commit): only enforce on NEWLY ADDED services — editing an
+  // existing untested service (the backlog) must not be blocked. Full-scan (CI)
+  // reports the whole backlog as a warning.
+  if (stagedOnly && !addedStagedFiles.has(filePath)) return issues;
   // Exempt infrastructure/utility files
   if (filePath.includes('/common/')) return issues;
   // Exempt tiny files (< 50 lines)
@@ -260,8 +286,12 @@ function checkMissingTest(filePath: string, lines: string[]): Issue[] {
       file: relativePath(filePath),
       line: 1,
       rule: 'no-missing-test',
-      message: `Service has no corresponding .spec.ts test file.`,
-      severity: 'warning',
+      // Error for a NEW service at pre-commit (staged); warning for the existing
+      // backlog at full-scan so CI isn't blocked by it.
+      message: stagedOnly
+        ? `New service has no .spec.ts — add a sibling test (or __tests__/${baseName}.spec.ts).`
+        : `Service has no corresponding .spec.ts test file.`,
+      severity: stagedOnly ? 'error' : 'warning',
     });
   }
   return issues;

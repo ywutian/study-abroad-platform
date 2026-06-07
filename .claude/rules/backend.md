@@ -89,7 +89,7 @@ Rules JSON: `{ "roles": ["ADMIN"], "userIds": ["uuid"], "percentage": 50 }`. Eva
 | `no-unthrottled-ai` | warning | AI route without `@Throttle*` |
 | `no-generic-throw` | warning | `throw new Error()` in services |
 | `no-missing-maxlength` | warning | `@IsString()` without `@MaxLength()` |
-| `no-missing-test` | warning | Service without `.spec.ts` |
+| `no-missing-test` | error (staged) / warning (full-scan) | NEW service without `.spec.ts` blocks at pre-commit; existing backlog stays a full-scan warning |
 | `no-duplicated-select` | warning | Same select block repeated 2+ times |
 | `no-select-mapping-drift` | warning | SELECT field not in mapper |
 | `no-raw-redis-getclient` | error | `redis.getClient()` bypassing metrics/circuit-breaker — use a wrapper or `redis.withClient()` (suppress `// @redis-raw-allowed`) |
