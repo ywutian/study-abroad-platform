@@ -119,31 +119,29 @@ describe('CounselorEngineService — CDS-band monotonicity (regression guard for
       recruitedAthlete?: boolean;
       urmStatus?: string;
     } = {},
-  ): ProfileInput =>
-    ({
-      gpa: 3.7,
-      gpaScale: 4,
-      testScores: [{ type: 'SAT', score: 1450 }],
-      activities: [],
-      awards: [],
-      isInternational: false,
-      ...overrides,
-    }) as ProfileInput;
+  ): ProfileInput => ({
+    gpa: 3.7,
+    gpaScale: 4,
+    testScores: [{ type: 'SAT', score: 1450 }],
+    activities: [],
+    awards: [],
+    isInternational: false,
+    ...overrides,
+  });
 
   const school = (
     overrides: Partial<SchoolInput & { acceptanceRate: number }> = {},
-  ): SchoolInput & { acceptanceRate: number } =>
-    ({
-      id: 'school-band-test',
-      name: 'Band Test University',
-      acceptanceRate: 0.45,
-      sat25: 1300,
-      satAvg: 1400,
-      sat75: 1500,
-      isPrivate: false,
-      needBlindInternational: false,
-      ...overrides,
-    }) as SchoolInput & { acceptanceRate: number };
+  ): SchoolInput & { acceptanceRate: number } => ({
+    id: 'school-band-test',
+    name: 'Band Test University',
+    acceptanceRate: 0.45,
+    sat25: 1300,
+    satAvg: 1400,
+    sat75: 1500,
+    isPrivate: false,
+    needBlindInternational: false,
+    ...overrides,
+  });
 
   const compute = async (
     p: ProfileInput,
