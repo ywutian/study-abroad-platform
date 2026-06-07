@@ -29,7 +29,8 @@ globs: ["**/auth/**", "**/guards/**", "**/vault/**", "**/common/guards/**", "**/
 
 ## CSP
 
-- `unsafe-inline`/`unsafe-eval` only in development; production must not include them
+- **`'unsafe-eval'` is dev-only — production must NEVER include it** (prod uses the narrower `'wasm-unsafe-eval'`). Pinned by `lib/security/csp.test.ts`.
+- `'unsafe-inline'` IS allowed in prod `script-src`/`style-src`: Next.js App Router emits inline hydration/RSC scripts that can't be nonced together with next-intl middleware (decided in #fdadba28). CSP logic lives in `lib/security/csp.ts`.
 
 ## Vault
 
