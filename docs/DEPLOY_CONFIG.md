@@ -1,0 +1,51 @@
+# Deploy Configuration
+
+GCP Cloud Run deploy config got fixed 10+ times — VPC connector, Cloud SQL,
+secrets, Cloud Run flags — across **five** workflows that each inline the same
+constants, including an explicit _"sync deploy config between CI and manual
+workflow"_. The shared values kept drifting because nothing tied them together.
+
+## Single source of truth
+
+`.github/deploy-config.json` declares the canonical shared constants:
+
+| Key                                  | Value                                           | Used by                                            |
+| ------------------------------------ | ----------------------------------------------- | -------------------------------------------------- |
+| `vpcConnector`                       | `study-abroad-connector`                        | every `--vpc-connector` flag                       |
+| `artifactRegistry`                   | `study-abroad/api`                              | every `…-docker.pkg.dev/$PROJECT/<here>` image     |
+| `regionSecret`                       | `GCP_REGION`                                    | every `--region` (via `${{ secrets.GCP_REGION }}`) |
+| `projectSecret`                      | `GCP_PROJECT_ID`                                | project id                                         |
+| `services.prod` / `services.staging` | `study-abroad-api` / `study-abroad-api-staging` | `gcloud run deploy` target                         |
+
+Deploy workflows (`ci.yml`, `deploy-staging.yml`, `preview.yml`,
+`preview-cleanup.yml`, `school-media-backfill.yml`) still inline these values in
+their `gcloud` commands — but `check-deploy-config-drift.ts` enforces that every
+inline value matches the canonical source, so they can no longer diverge.
+
+## Guardrail
+
+`pnpm lint:deploy-drift` (in `lint:all`) asserts, across all deploy workflows:
+
+- the VPC connector name matches `vpcConnector`,
+- the Artifact Registry image matches `artifactRegistry`,
+- the region comes from `${{ secrets.GCP_REGION }}` — **never a hardcoded region**.
+
+Read-only over the YAML — zero deploy risk, runs locally.
+
+## Changing deploy config safely
+
+1. Update the value in `.github/deploy-config.json` AND in every workflow that
+   references it, in the **same PR**. `pnpm lint:deploy-drift` fails if you miss one.
+2. **Per-environment secret names** (`database-url-proxy` vs `database-url-proxy-staging`,
+   etc.) intentionally differ per env and are NOT drift-checked.
+3. For risky command changes (new flags, VPC/Cloud SQL wiring), prefer a
+   `gcloud run deploy --dry-run` (or deploy to **staging** first) before prod —
+   this config cannot be fully validated locally.
+
+## Not done here (deliberate)
+
+This pass did **not** rewrite the deploy commands into a shared composite action
+(`gcloud run deploy` logic is unverifiable without real GCP credentials, so a
+blind rewrite would risk breaking prod deploys). The drift guard + single source
+close the actual recurrence — _config silently diverging_ — without that risk. A
+composite-action consolidation is a sensible, separately-verified follow-up.

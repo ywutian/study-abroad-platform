@@ -114,6 +114,7 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 | 留学业务逻辑 (school, prediction, recommendation) | `docs/DATA_SOURCES.md`                                      |
 | 缓存/Redis (`common/redis/`, `lib/query/`)        | `docs/CACHING_ARCHITECTURE.md`                              |
 | 部署/运维                                         | `docs/DEPLOYMENT_STRATEGY.md` + `docs/RUNBOOK.md`           |
+| 部署配置 (`.github/workflows/*` GCP)              | `docs/DEPLOY_CONFIG.md` (single source + drift guard)       |
 
 ## Hooks (自动强制执行)
 
