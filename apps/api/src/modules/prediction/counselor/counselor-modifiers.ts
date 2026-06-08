@@ -782,13 +782,18 @@ export function roundMultiplier(
     overallRate != null
   ) {
     if (eaRate < overallRate) {
+      // Non-binding EA legitimately runs at or below the overall (RD-blended) rate
+      // at many schools — no binding-yield boost + early-pool self-selection
+      // (Georgetown REA, USC, Northeastern, UVA, UF, UGA … ~44% of schools with a
+      // published EA rate). NOT a data anomaly. Treat as neutral (EA is a free
+      // option → no penalty) with an honest label.
       return {
         multiplier: 1.0,
         label:
           r === 'EA'
-            ? 'Early Action (school data anomaly)'
-            : 'Restrictive Early Action (school data anomaly)',
-        evidence: `Published ${r} admit rate is below the overall admit rate; using neutral until the source row is reviewed.`,
+            ? 'Early Action (no admit-rate advantage)'
+            : 'Restrictive Early Action (no admit-rate advantage)',
+        evidence: `${r} admits ${(eaRate * 100).toFixed(1)}% vs ${(overallRate * 100).toFixed(1)}% overall — early applying confers no admit-rate advantage at this school (common for non-binding ${r}); treated as neutral.`,
         impact: 'neutral',
       };
     }
