@@ -40,6 +40,7 @@ interface ResumeExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profileData: any; // Profile data from API
+  targetSchoolNames?: string[]; // user's target-school names, from the profile page
 }
 
 const TEMPLATE_OPTIONS = [
@@ -65,7 +66,12 @@ const MODULE_OPTIONS = [
   { id: 'targetSchools', labelKey: 'resume.modules.targetSchools', icon: Target },
 ];
 
-export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeExportDialogProps) {
+export function ResumeExportDialog({
+  open,
+  onOpenChange,
+  profileData,
+  targetSchoolNames,
+}: ResumeExportDialogProps) {
   const t = useTranslations();
   const [isExporting, setIsExporting] = useState(false);
   const [options, setOptions] = useState<ResumeExportOptions>({
@@ -124,9 +130,9 @@ export function ResumeExportDialog({ open, onOpenChange, profileData }: ResumeEx
         year: a.year,
         description: a.description,
       })),
-      targetSchools: [], // TODO: 从 target schools 获取
+      targetSchools: targetSchoolNames ?? [],
     };
-  }, [profileData]);
+  }, [profileData, targetSchoolNames]);
 
   // 检查是否有足够数据导出
   const hasEnoughData = useMemo(() => {
