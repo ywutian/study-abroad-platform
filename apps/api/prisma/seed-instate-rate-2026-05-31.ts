@@ -217,12 +217,9 @@ export const IN_STATE_CORRECTIONS: InStateCorrection[] = [
     source: 'https://www.towson.edu/ir/documents/cds_c_2526.pdf',
     note: 'Official Towson CDS 2025-2026 Section C1 residency table (Fall 2025): in-state admitted 12,418/15,452=80.37%; out-of-state 3,914/4,880=80.20%; overall 16,735/20,772=80.57% (residency-sum 80.33%). DB o',
   },
-  {
-    nameNorm: 'university of hawaii at manoa',
-    overallRate: 86.6,
-    source: 'CDS 2024-25 C1',
-    note: 'DB overall 69.7 stale; CDS 2024-25 overall 86.6 (16,722 applied / 14,481 admitted).',
-  },
+  // NOTE: University of Hawaii at Manoa's overall-rate correction (69.7% stale ->
+  // 86.6%, CDS 2024-25) moved to seed-audit-corrections-2026-05-31.ts — that is
+  // where overall-anchor corrections belong; this file is in-state rates only.
 ];
 
 export async function applyInStateRates(

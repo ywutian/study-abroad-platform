@@ -97,9 +97,10 @@ export const AUDIT_CORRECTIONS: ReadonlyArray<Correction> = [
   },
   {
     nameNorm: 'university of hawaii at manoa',
-    set: { acceptanceRate: 69.7 },
-    source: 'UH Manoa CDS 2023-24 C1 (13,388/19,217 = 69.67%)',
-    note: 'Anchor was 86.6% (~17pp high).',
+    set: { acceptanceRate: 86.6 },
+    source:
+      'UH Manoa CDS 2024-25 C1 (14,481/16,722 = 86.60%); NCES IPEDS 141574 corroborates',
+    note: "Was 69.7% (CDS 2023-24, one cycle stale). Fall 2024 genuinely jumped to 86.6% — apps fell ~13% (19,217->16,722) while admits rose ~8% (13,388->14,481). This is the single source for Hawaii's overall; supersedes the duplicate overallRate override removed from seed-instate-rate-2026-05-31.",
   },
   {
     nameNorm: 'university of vermont',
