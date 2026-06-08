@@ -4,8 +4,13 @@
  * published in-state÷overall directly (PRIMARY path) instead of the state-map+damping
  * proxy. Non-UC publics only — UC campuses use CDS resident-band anchors (handled separately).
  * Each value sourced from the school's official CDS section C / IR residency table.
+ *
+ * Run standalone (also to apply against prod via migrate.sh run_seed):
+ *   npx tsx apps/api/prisma/seed-instate-rate-2026-05-31.ts
  */
-import type { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+
+const standalonePrisma = new PrismaClient();
 
 type InStateCorrection = {
   nameNorm: string;
@@ -220,7 +225,9 @@ export const IN_STATE_CORRECTIONS: InStateCorrection[] = [
   },
 ];
 
-export async function applyInStateRates(prisma: PrismaClient): Promise<number> {
+export async function applyInStateRates(
+  prisma: PrismaClient = standalonePrisma,
+): Promise<number> {
   let n = 0;
   for (const c of IN_STATE_CORRECTIONS) {
     const data: Record<string, number> = {};
@@ -235,4 +242,19 @@ export async function applyInStateRates(prisma: PrismaClient): Promise<number> {
     n += r.count;
   }
   return n;
+}
+
+async function main() {
+  const n = await applyInStateRates();
+  console.log(
+    `🏠 In-state rates: updated ${n} school row(s) from ${IN_STATE_CORRECTIONS.length} corrections.`,
+  );
+  await standalonePrisma.$disconnect();
+}
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error('❌ in-state rates failed:', (e as Error).message);
+    process.exit(1);
+  });
 }

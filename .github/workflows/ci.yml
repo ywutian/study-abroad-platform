@@ -618,16 +618,25 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
-      # Data-integrity corrections — null only SCALE errors (intl <1% / >100%,
-      # early-round <1%). MUST run after the closure overlay (which re-applies raw
-      # values), mirroring migrate.sh's last step, so the gate DB matches prod and
-      # the audit below verifies the whole pipeline stayed clean. Intl >= overall is
-      # KEPT (verified real revenue-public rates), so calibration is unaffected.
+      # Data-integrity corrections. MUST run after the closure overlay (which
+      # re-applies raw values), mirroring migrate.sh's last steps, so the gate DB
+      # matches prod and the audit below verifies the whole pipeline stayed clean.
+      #   • intl/round — null only SCALE errors (intl <1% / >100%, early-round
+      #     <1%). Intl >= overall is KEPT (verified real revenue-public rates), so
+      #     calibration is unaffected.
+      #   • audit/instate — set REAL verified rates: the audit anchors (e.g. CU
+      #     Boulder 18.47%→80.5%) and per-school inStateAcceptanceRate. These run
+      #     inside seed.ts too, but the overlay above RE-OVERRIDES them with raw
+      #     payload values, so they MUST be re-applied here to win — exactly as
+      #     migrate.sh step 17 does in prod. Order mirrors seed.ts
+      #     (intl→round→audit→instate).
       - name: Apply data-integrity corrections
         working-directory: apps/api
         run: |
           pnpm exec tsx prisma/seed-intl-rate-correction.ts
           pnpm exec tsx prisma/seed-round-rate-correction.ts
+          pnpm exec tsx prisma/seed-audit-corrections-2026-05-31.ts
+          pnpm exec tsx prisma/seed-instate-rate-2026-05-31.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
