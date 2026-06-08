@@ -92,6 +92,14 @@ run_seed "m3-global-baselines" ./prisma/seed-global-admit-baselines.js
 #     idempotent (skips if value already set), so safe to re-run.
 run_seed "ea-ed2-backfill" ./prisma/seeds/backfill-has-ea-ed2.js --apply
 
+# 16. Data-integrity corrections — null only SCALE errors (intl <1% / >100%,
+#     early-round <1%) so the counselor falls back instead of using a corrupt
+#     multiplier. MUST run LAST (after the closure overlay re-applies raw values).
+#     intl >= overall is KEPT (verified real revenue-public rates, not leaks).
+#     Enforced by scripts/audit-prediction-data-integrity.ts (CI prediction gate).
+run_seed "intl-rate-correction" ./prisma/seed-intl-rate-correction.js
+run_seed "round-rate-correction" ./prisma/seed-round-rate-correction.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------
