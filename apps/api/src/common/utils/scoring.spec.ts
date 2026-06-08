@@ -655,6 +655,12 @@ describe('calculateOverallScore', () => {
     ).toBeCloseTo(1, 4);
   });
 
+  // SKIPPED: documents an unimplemented feature, not a passing assertion.
+  // calculateOverallScore accepts + normalizes essayQualityScore (see the two
+  // tests below) but does NOT weight it into the overall score yet — essay has
+  // no entry in SCORING_WEIGHTS, so a 10/10 essay yields the same overall as no
+  // essay (un-skipping fails: withGreatEssay === baseline). Un-skip once essay
+  // weighting is added to SCORING_WEIGHTS.
   it.skip('should boost overall when essayQualityScore is high (10/10)', () => {
     const profile: ProfileMetrics = {
       gpa: 3.7,

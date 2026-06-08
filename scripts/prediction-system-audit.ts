@@ -461,11 +461,7 @@ async function buildModuleInventory(prisma: PrismaClient): Promise<ModuleInvento
     {
       module: 'prediction',
       outputKind: 'Served personal admit probability, tier, confidence, factors',
-      sourceBoundary: [
-        'v3-enterprise served',
-        'v5-ml-primary feature-flag/shadow',
-        'legacy fusion',
-      ],
+      sourceBoundary: ['v3-enterprise served (deterministic counselor engine)', 'legacy fusion'],
       eligibleForFormalAccuracy: true,
       notes: [
         'Formal accuracy claim must use verified ADMITTED/REJECTED outcomes only.',

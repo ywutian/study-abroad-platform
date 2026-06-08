@@ -3,7 +3,11 @@ import { MemoryType, EntityType } from '@prisma/client';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { PredictionResultDto } from './dto';
 
-const MODEL_VERSION = 'v5-ml-primary';
+// Tag written onto memory records (write-only — never read back as a filter).
+// Must match prediction.service.ts / prediction-persistence DEFAULT_MODEL_VERSION
+// ('v3-enterprise'). The 'v5-ml-primary' ML path was deleted 2026-05-07; the
+// served engine is the deterministic counselor engine, surfaced as v3-enterprise.
+const MODEL_VERSION = 'v3-enterprise';
 
 /**
  * Memory system integration for prediction context and recording.
