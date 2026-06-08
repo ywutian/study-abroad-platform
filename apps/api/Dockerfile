@@ -40,7 +40,8 @@ RUN pnpm --filter api build
 #
 # Two passes: (1) prisma/seeds/**/*.ts (preserves the closure-agents/
 # and essay-harvest/ subdirectory layout under prisma/seeds/),
-# (2) the four top-level prisma/seed-*.ts files.
+# (2) the top-level prisma/seed-*.ts files (must match migrate.sh run_seed;
+#     enforced by scripts/check-seed-pipeline-parity.ts).
 RUN cd apps/api && npx tsc \
     prisma/seeds/seed-prediction-closure.ts \
     prisma/seeds/load-cds-bands.ts \
@@ -83,6 +84,8 @@ RUN cd apps/api && npx tsc \
     prisma/seed-global-admit-baselines.ts \
     prisma/seed-intl-rate-correction.ts \
     prisma/seed-round-rate-correction.ts \
+    prisma/seed-audit-corrections-2026-05-31.ts \
+    prisma/seed-instate-rate-2026-05-31.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma

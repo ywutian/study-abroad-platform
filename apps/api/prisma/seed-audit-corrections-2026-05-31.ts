@@ -52,10 +52,12 @@ export const AUDIT_CORRECTIONS: ReadonlyArray<Correction> = [
       acceptanceRate: 80.5,
       oosAcceptanceRate: null,
       intlAcceptanceRate: null,
+      edAcceptanceRate: null,
+      eaAcceptanceRate: null,
     },
     source:
       'College Scorecard / CDS 2024-25 (54,756 applied / 44,053 admitted = 80.5%)',
-    note: 'Anchor was 18.47% (~4x too low, mislabeled). OOS 24.25% and intl 7.02% were enrollment-share figures mislabeled as admit rates → nulled.',
+    note: 'Anchor was 18.47% (~4x too low, mislabeled). OOS 24.25%, intl 7.02%, ED 31.81% and EA 20.57% were enrollment-share/yield figures mislabeled as admit rates → nulled. The wrong 18.47% anchor masked the ED/EA as plausible early boosts; against the real 80.5% overall they are impossibly low, and CU Boulder offers EA (hasEarlyAction) not ED at all.',
   },
   {
     nameNorm: 'new mexico state university',

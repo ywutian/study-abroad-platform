@@ -100,6 +100,18 @@ run_seed "ea-ed2-backfill" ./prisma/seeds/backfill-has-ea-ed2.js --apply
 run_seed "intl-rate-correction" ./prisma/seed-intl-rate-correction.js
 run_seed "round-rate-correction" ./prisma/seed-round-rate-correction.js
 
+# 17. Published-source data corrections — set REAL verified rates (unlike step 16
+#     which only NULLs scale errors). MUST run after step 1 (closure overlay) so
+#     the overlay's raw values don't re-override these; mirrors seed.ts order
+#     (intl→round→audit→instate). Without these two, prod served the WRONG anchor
+#     for ~25 schools (audit-corrections, e.g. CU Boulder 18.47%→80.5%) and a NULL
+#     inStateAcceptanceRate for every public (geo modifier's PRIMARY input → prod
+#     silently fell back to the state-map proxy). seed.ts/CI applied them; prod did
+#     not — closing that seed-fidelity gap. Parity enforced by
+#     scripts/check-seed-pipeline-parity.ts (each .js here needs a compiled .ts).
+run_seed "audit-corrections" ./prisma/seed-audit-corrections-2026-05-31.js
+run_seed "instate-rates" ./prisma/seed-instate-rate-2026-05-31.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------

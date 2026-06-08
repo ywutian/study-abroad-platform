@@ -1,8 +1,8 @@
 {
   "$schema": "Manual classifications for verify-counselor-data-quality manualReview entries.",
-  "version": 1,
-  "lastUpdated": "2026-05-27",
-  "lastReviewedBy": "closure-loop-fix",
+  "version": 2,
+  "lastUpdated": "2026-06-07",
+  "lastReviewedBy": "seed-fidelity-pr (RPI ED-below-overall, verified RPI Class of 2028)",
   "valid_classifications": [
     "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
     "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
@@ -517,6 +517,14 @@
       "reason": "round_rate_below_overall",
       "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
       "notes": "USF ED 49.41% vs overall 61.71% (ratio 0.80). Niche Jesuit private — overall AR includes broad RD pool; ED pool is more rigorous (similar to Fordham pattern)."
+    },
+    {
+      "schoolId": "cmnwr8inf000uz0tic8a7s8is",
+      "schoolName": "Rensselaer Polytechnic Institute",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "RPI ED 58% vs overall 67.25% (ratio 0.86). Real per RPI Class of 2028 (139/240 = 57.9%, corrected in seed-audit-corrections-2026-05-31). RPI's overall AR is already high (~67%), so binding ED is not a competitive lever and admits slightly below the overall rate (same near-AR pattern as Denver / USF). Surfaced once seed-fidelity wiring made the audit ED value win over the stale overlay value (69.09%)."
     }
   ]
 }
