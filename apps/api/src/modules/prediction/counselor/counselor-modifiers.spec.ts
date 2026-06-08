@@ -212,14 +212,15 @@ describe('counselor modifiers launch guards', () => {
       expect(result.label).toContain('school-published');
     });
 
-    it('neutralizes published round rates below overall admit rate', () => {
+    it('treats EA below overall as neutral (non-binding EA confers no advantage — not a data anomaly)', () => {
       const result = roundMultiplier(
         'EA',
         baseSchool({ acceptanceRate: 0.1, eaAcceptanceRate: 0.05 }),
       );
 
       expect(result.multiplier).toBe(1);
-      expect(result.label).toContain('data anomaly');
+      expect(result.label).toContain('no admit-rate advantage');
+      expect(result.label).not.toContain('anomaly');
     });
 
     it('neutralizes unsupported rounds before heuristic fallback', () => {

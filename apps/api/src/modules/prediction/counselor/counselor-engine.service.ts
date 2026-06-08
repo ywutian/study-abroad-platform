@@ -29,7 +29,7 @@ import {
  *   1. Anchor on the school's published CDS admit rate (via `cds-bands-v1` table
  *      when (school, gpa-band, test-band) cell exists; else `school.acceptanceRate`)
  *   2. Apply 8 deterministic modifiers (GPA, test, round, hooks, geography, intl, major)
- *   3. Clip to [anchor × 0.3, anchor × 2.5] then [0.02, 0.98]
+ *   3. Clip to [anchor × 0.1, min(0.98, anchor × 2.5)]
  *
  * Mathematical guarantee: no prediction can deviate from the school baseline by
  * more than 2.5× or less than 0.3×. UCM at 49% (when published rate is ~88%)
@@ -413,7 +413,7 @@ export class CounselorEngineService {
           value: probability,
           role: 'guardrail',
           detail:
-            'Final probability constrained to [anchor × 0.3, anchor × 2.5] and [0.02, 0.98].',
+            'Final probability constrained to [anchor × 0.1, min(0.98, anchor × 2.5)].',
         },
       ],
       profileSignals: (modifierResults.profileContext as any)?.profileSignals,
