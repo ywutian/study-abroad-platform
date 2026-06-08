@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowRight, FileText, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowRight, FileText, Lightbulb, PenLine } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/lib/i18n/navigation';
@@ -56,9 +56,9 @@ export function DashboardEssayCoach({ data }: { data?: DashboardEssayCoach | nul
             aria-hidden="true"
           >
             {data.type === 'polish' ? (
-              <Wand2 className="h-4 w-4 text-primary" />
+              <PenLine className="h-4 w-4 text-primary" />
             ) : (
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
             )}
           </span>
 

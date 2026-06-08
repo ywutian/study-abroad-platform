@@ -11,7 +11,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Coins, Loader2, Sparkles, History, Check, X } from 'lucide-react';
+import { Coins, Loader2, Award, History, Check, X } from 'lucide-react';
 import type { RedemptionType, RedemptionCatalogItem } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -68,18 +68,13 @@ export default function PointsCenterPage() {
           toast.error(t('redeemError'));
           setConfirmItem(null);
         },
-      },
+      }
     );
   };
 
   return (
     <PageContainer>
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-        icon={Coins}
-        color="amber"
-      />
+      <PageHeader title={t('title')} description={t('description')} icon={Coins} color="amber" />
 
       {/* Balance */}
       <Card className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-900/50">
@@ -95,7 +90,7 @@ export default function PointsCenterPage() {
               </p>
             ) : null}
           </div>
-          <Sparkles className="h-10 w-10 shrink-0 text-amber-400" />
+          <Award className="h-10 w-10 shrink-0 text-amber-400" />
         </CardContent>
       </Card>
 
@@ -113,9 +108,7 @@ export default function PointsCenterPage() {
               <Card key={item.type} className="flex flex-col">
                 <CardContent className="flex flex-1 flex-col gap-3 p-4">
                   <p className="font-semibold">{t(`types.${item.type}`)}</p>
-                  <p className="flex-1 text-body-sm text-muted-foreground">
-                    {item.description}
-                  </p>
+                  <p className="flex-1 text-body-sm text-muted-foreground">{item.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
                       <Coins className="h-4 w-4" />
@@ -163,7 +156,7 @@ export default function PointsCenterPage() {
                         h.status === 'FULFILLED' &&
                           'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
                         h.status === 'CANCELLED' &&
-                          'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
+                          'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
                       )}
                     >
                       {h.status === 'FULFILLED' && <Check className="mr-1 h-3 w-3" />}

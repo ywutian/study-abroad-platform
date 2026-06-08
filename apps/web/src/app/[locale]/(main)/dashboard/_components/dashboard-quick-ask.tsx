@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Check, ExternalLink, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, ExternalLink, HelpCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
@@ -103,7 +103,7 @@ export function DashboardQuickAsk({ personalizedSuggestions }: DashboardQuickAsk
     <div className="rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-3 shadow-[var(--theme-card-shadow)]">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="flex flex-1 items-center gap-2 rounded-[var(--theme-radius-control,0.5rem)] border border-border bg-[color:var(--theme-control-bg)] px-3 py-2 transition-colors focus-within:border-primary/50">
-          <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+          <HelpCircle className="h-4 w-4 shrink-0 text-primary" />
           <input
             type="text"
             value={value}

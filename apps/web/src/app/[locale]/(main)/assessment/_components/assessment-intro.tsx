@@ -10,7 +10,6 @@ import {
   FileClock,
   GraduationCap,
   Lightbulb,
-  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -100,7 +99,7 @@ export function AssessmentIntro({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1">
-                <Sparkles className="h-3.5 w-3.5" />
+                <Compass className="h-3.5 w-3.5" />
                 {t('overview.badge')}
               </Badge>
               {summary?.historyCount ? (

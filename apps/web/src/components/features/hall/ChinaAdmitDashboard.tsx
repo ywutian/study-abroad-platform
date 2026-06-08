@@ -22,7 +22,7 @@ import {
   Minus,
   Info,
   Target,
-  Sparkles,
+  MessageCircle,
 } from 'lucide-react';
 import type { DifficultySignal, DifficultySignalEntry } from '@study-abroad/shared';
 import { AgentType } from '@study-abroad/shared';
@@ -210,7 +210,7 @@ export function ChinaAdmitDashboard() {
               })
             }
           >
-            <Sparkles className="h-4 w-4" />
+            <MessageCircle className="h-4 w-4" />
             {tx('askAi')}
           </Button>
           <Button size="sm" className="gap-1.5" onClick={() => router.push('/prediction')}>

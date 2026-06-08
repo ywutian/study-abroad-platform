@@ -161,18 +161,18 @@ jobs:
       # contributor without the husky hook) can't bypass them.
       #   routes  — client API paths match @Controller() routes
       #   journeys— user-journey path integrity
+      #   icons   — no banned AI-feeling lucide icons / emoji in web UI chrome
       # NOT wired here (and why):
-      #   lint:drift   — inherently local-only: its claude-md/manifest rules
+      #   lint:drift — inherently local-only: its claude-md/manifest rules
       #     inspect .claude/agents + .claude/manifests, which are gitignored
       #     (.gitignore keeps only .claude/skills/), so a fresh CI checkout has
       #     1 agent file / no manifest and the check always errors. Stays a
       #     pre-push check where those files exist.
-      #   quality:icons — has pre-existing violations on main (banned AI-feeling
-      #     lucide icons); wire it once those are fixed.
-      - name: Cross-layer guards (routes / journeys)
+      - name: Cross-layer guards (routes / journeys / icons)
         run: |
           pnpm lint:routes
           pnpm lint:journeys
+          pnpm quality:icons
 
       - name: Dead code check (knip)
         run: pnpm lint:dead-code

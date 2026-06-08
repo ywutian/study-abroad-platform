@@ -18,8 +18,8 @@ import {
   Layers,
   ListChecks,
   School,
-  Sparkles,
   User,
+  Zap,
 } from 'lucide-react';
 
 import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
@@ -321,7 +321,7 @@ export function DashboardCommandCenter({
                 {isEmptyOnboarding ? (
                   <div className="mt-4 flex items-start gap-3">
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border border-primary/25 bg-primary/5">
-                      <Sparkles className="h-5 w-5 text-primary" />
+                      <Zap className="h-5 w-5 text-primary" />
                     </span>
                     <div className="min-w-0">
                       <h2 className="text-xl font-semibold tracking-normal sm:text-2xl">
@@ -465,7 +465,7 @@ export function DashboardCommandCenter({
                               variant="outline"
                               className="mt-2 border-primary/30 bg-primary/10 px-1.5 py-0 text-2xs text-primary"
                             >
-                              <Sparkles className="h-3 w-3" />
+                              <Zap className="h-3 w-3" />
                               {t('runNow')}
                             </Badge>
                           )}

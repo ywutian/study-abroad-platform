@@ -11497,7 +11497,7 @@
   },
   "Outcome": {
     "bannerTitle": "{count} 个学校等你报告录取结果",
-    "bannerDescription": "回来报告 Decision Day 结果，给学弟学妹留下宝贵案例 ✨",
+    "bannerDescription": "回来报告 Decision Day 结果，给学弟学妹留下宝贵案例",
     "predicted": "预测",
     "seeMore": "还有 {count} 个...",
     "reportTitle": "{school} 的录取结果",
@@ -11600,7 +11600,7 @@
       "lowHint": "全局默认 (×4 legacy, ×3 athlete)",
       "cdsBands": "CDS 分位",
       "globalBaselines": "{count} 个 P(category|apply) 先验",
-      "warning": "⚠️ MEDIUM 档的数据是 Claude 根据同档学校 pattern 推断的，需要人工审核。下方展开每个 case 可以看到喂给预测的具体数值。"
+      "warning": "MEDIUM 档的数据是 Claude 根据同档学校 pattern 推断的，需要人工审核。下方展开每个 case 可以看到喂给预测的具体数值。"
     },
     "inputs": {
       "profile": "申请者档案（输入到 M3）",

@@ -17,7 +17,6 @@ import {
   Loader2,
   MessageCircle,
   Save,
-  Sparkles,
   Target,
   Trophy,
 } from 'lucide-react';
@@ -527,7 +526,7 @@ export default function AssessmentPage() {
         ]}
         actions={
           <Button onClick={() => setShowAiPanel(true)} className="gap-2">
-            <Sparkles className="h-4 w-4" />
+            <Compass className="h-4 w-4" />
             {t('aiAssistant.title')}
           </Button>
         }
@@ -774,7 +773,7 @@ function AssessmentInsights({
   return (
     <div className="space-y-5">
       <Alert>
-        <Sparkles className="h-4 w-4" />
+        <Compass className="h-4 w-4" />
         <AlertTitle>{t('insights.title')}</AlertTitle>
         <AlertDescription>{t('insights.description')}</AlertDescription>
       </Alert>
