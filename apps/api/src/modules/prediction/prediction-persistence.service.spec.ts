@@ -213,7 +213,7 @@ describe('PredictionPersistenceService', () => {
     it('should preserve explicit modelVersion when provided', async () => {
       await service.savePrediction('profile-1', 'school-1', {
         ...mockResult,
-        modelVersion: 'v5-ml-primary',
+        modelVersion: 'counselor-cold-start-v1',
       });
 
       const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
@@ -221,9 +221,9 @@ describe('PredictionPersistenceService', () => {
       const snapshotCall = (prisma.predictionSnapshot.create as jest.Mock).mock
         .calls[0][0];
 
-      expect(upsertCall.create.modelVersion).toBe('v5-ml-primary');
-      expect(upsertCall.update.modelVersion).toBe('v5-ml-primary');
-      expect(snapshotCall.data.modelVersion).toBe('v5-ml-primary');
+      expect(upsertCall.create.modelVersion).toBe('counselor-cold-start-v1');
+      expect(upsertCall.update.modelVersion).toBe('counselor-cold-start-v1');
+      expect(snapshotCall.data.modelVersion).toBe('counselor-cold-start-v1');
     });
 
     it('should persist policyVersionId when it exists', async () => {
