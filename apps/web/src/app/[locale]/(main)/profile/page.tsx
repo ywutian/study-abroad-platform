@@ -595,6 +595,7 @@ export default function ProfilePage() {
         open={m.resumeExportOpen}
         onOpenChange={m.setResumeExportOpen}
         profileData={profile}
+        targetSchoolNames={targetSchools.map((s) => s.name).filter(Boolean)}
       />
       <MilestoneCelebration
         type="profile_complete"
