@@ -156,6 +156,24 @@ jobs:
           pnpm lint:deploy-drift
           pnpm lint:seed-parity
 
+      # Cross-layer guards that lint:all runs but the pre-push hook is the only
+      # other enforcer of — wired into CI so a `git push --no-verify` (or a
+      # contributor without the husky hook) can't bypass them.
+      #   routes  — client API paths match @Controller() routes
+      #   journeys— user-journey path integrity
+      # NOT wired here (and why):
+      #   lint:drift   — inherently local-only: its claude-md/manifest rules
+      #     inspect .claude/agents + .claude/manifests, which are gitignored
+      #     (.gitignore keeps only .claude/skills/), so a fresh CI checkout has
+      #     1 agent file / no manifest and the check always errors. Stays a
+      #     pre-push check where those files exist.
+      #   quality:icons — has pre-existing violations on main (banned AI-feeling
+      #     lucide icons); wire it once those are fixed.
+      - name: Cross-layer guards (routes / journeys)
+        run: |
+          pnpm lint:routes
+          pnpm lint:journeys
+
       - name: Dead code check (knip)
         run: pnpm lint:dead-code
         continue-on-error: true
