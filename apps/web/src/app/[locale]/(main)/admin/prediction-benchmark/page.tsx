@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
+  AlertTriangle,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -689,7 +691,11 @@ export default function PredictionBenchmarkPage() {
                 <p className="mt-1 text-2xl font-semibold">
                   {run.testsPassed}/{run.testsTotal}
                   <span className="ml-2 align-middle text-base font-normal text-muted-foreground">
-                    {run.testsPassed === run.testsTotal ? '✅' : '⚠️'}
+                    {run.testsPassed === run.testsTotal ? (
+                      <CheckCircle2 className="inline h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <AlertTriangle className="inline h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    )}
                   </span>
                 </p>
               </CardContent>

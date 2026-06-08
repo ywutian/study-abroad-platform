@@ -30,7 +30,7 @@ import {
   Search,
   Shield,
   SlidersHorizontal,
-  Sparkles,
+  Star,
   UserCheck,
   UserMinus,
   UserPlus,
@@ -931,7 +931,7 @@ function RecommendationPanel({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Star className="h-4 w-4 text-primary" />
             {t('followers.recommended.title')}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">

@@ -16,7 +16,7 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
-  Sparkles,
+  MessageCircle,
   Trash2,
   UserRoundCheck,
 } from 'lucide-react';
@@ -287,7 +287,7 @@ function ConversationRailItem({
   const t = useTranslations('agentChat');
   const locale = useLocale();
   const agentInfo = conversation.agentType ? AGENT_INFO[conversation.agentType] : null;
-  const AgentIcon = agentInfo?.icon ?? Sparkles;
+  const AgentIcon = agentInfo?.icon ?? MessageCircle;
   const title =
     conversation.title ||
     conversation.summary?.slice(0, 52) ||
@@ -365,7 +365,7 @@ function TaskPanel({
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" className="h-8 gap-2" onClick={() => onRunAction(action)}>
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <MessageCircle className="h-3.5 w-3.5" />
                   {t('workspace.actions.askAI')}
                 </Button>
                 <Button asChild variant="outline" size="sm" className="h-8">
