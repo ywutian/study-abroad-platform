@@ -51,6 +51,28 @@ Configured via `REDIS_CACHE_URLS` (or `REDIS_STATE_URLS` / `REDIS_URLS` /
 subsystem only reports `circuitOpen: true` when **every** endpoint has tripped.
 A background loop reconnects every 30s. (History: PR #168.)
 
+### Production endpoint + restore runbook (Upstash)
+
+Prod reads `REDIS_URL` from the GCP Secret Manager secret **`redis-url`**
+(`redis-url-staging` for staging), mounted on Cloud Run `study-abroad-api`
+(us-central1). The app is endpoint-agnostic: a `rediss://` (TLS) URL works with
+**no code change** — env validation accepts it (`z.string().url()`), ioredis
+auto-enables TLS from the `rediss:` scheme (the options block sets only
+behavioral fields, never host/port/tls), and `--vpc-egress=private-ranges-only`
+lets public egress (Upstash) bypass the VPC connector. Redis is **optional** for
+readiness — if it's down, `/health` reports `redis: degraded` but the service
+stays ready (graceful fallback); only rate-limit, brute-force, feature-flag
+cache, and AI-memory hot tier degrade.
+
+To restore Redis (e.g. issue #30 — Memorystore was deleted 2026-04-13):
+
+1. Create an Upstash Redis DB (region `us-east-1` / `global`, TLS on); copy the
+   `rediss://default:<pw>@<host>.upstash.io:6379` URL.
+2. `printf '<url>' | gcloud secrets versions add redis-url --data-file=-`
+3. Roll a new revision so Cloud Run picks up the new secret version:
+   `gcloud run services update study-abroad-api --region us-central1`.
+4. Verify: `curl -s <api>/health | jq '.data.checks.redis'` → `status: "ok"`.
+
 ### TTLs — single source of truth
 
 All TTLs live in `redis-ttl.constants.ts` as `REDIS_TTL.*` (seconds), grouped by
