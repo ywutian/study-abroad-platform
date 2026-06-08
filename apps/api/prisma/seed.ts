@@ -2096,10 +2096,10 @@ export async function main() {
   );
 
   // ========== intlAcceptanceRate data-quality correction ==========
-  // Null contaminated intl rates (enrollment-% / overall-rate leaks) so the
-  // counselor intlMultiplier never emits a wrong boost. Runs after all intl
-  // writers; enforced by scripts/audit-intl-rate-quality.ts. See
-  // docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md.
+  // Null ONLY scale-error intl rates (intl <1% / >100%). intl >= overall is KEPT
+  // (verified real revenue-seeking-public rates, NOT enrollment-% leaks — #355).
+  // Runs after all intl writers; enforced by scripts/audit-prediction-data-integrity.ts.
+  // See docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md.
   const intlCorrection = await correctIntlRates(prisma);
   console.log(
     `  ✅ Intl-rate correction: ${intlCorrection.nulled.length} contaminated value(s) nulled`,
