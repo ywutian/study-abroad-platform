@@ -47,6 +47,12 @@ const SERVER_APP_DIR = path.resolve(NEXT_DIR, 'server/app');
 const BASELINE_PATH = path.resolve(ROOT, 'apps/web/.bundle-baseline.json');
 
 const DEFAULT_THRESHOLD_PCT = 5;
+const ABSOLUTE_ROUTE_BUDGETS = {
+  public: 700 * 1024,
+  auth: 750 * 1024,
+  app: 900 * 1024,
+  admin: 1_100 * 1024,
+} as const;
 
 interface AppBuildManifest {
   pages: Record<string, string[]>;
@@ -185,6 +191,27 @@ function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(2)}MB`;
 }
 
+function absoluteBudgetForRoute(route: string): number {
+  if (route.includes('/admin/')) return ABSOLUTE_ROUTE_BUDGETS.admin;
+  if (
+    route.includes('/(auth)/') ||
+    /\/(login|register|forgot-password|reset-password)/.test(route)
+  ) {
+    return ABSOLUTE_ROUTE_BUDGETS.auth;
+  }
+  if (
+    route === '/page' ||
+    route.includes('/[locale]/page') ||
+    route.includes('/about/') ||
+    route.includes('/privacy/') ||
+    route.includes('/terms/') ||
+    route.includes('/help/')
+  ) {
+    return ABSOLUTE_ROUTE_BUDGETS.public;
+  }
+  return ABSOLUTE_ROUTE_BUDGETS.app;
+}
+
 function main(): void {
   const { seed, threshold } = parseArgs();
 
@@ -233,9 +260,14 @@ function main(): void {
   }
 
   const violations: Array<{ route: string; before: number; after: number; pct: number }> = [];
+  const absoluteViolations: Array<{ route: string; size: number; limit: number }> = [];
   const limit = baseline.thresholdPct ?? threshold;
 
   for (const [route, size] of Object.entries(current)) {
+    const absoluteLimit = absoluteBudgetForRoute(route);
+    if (size > absoluteLimit) {
+      absoluteViolations.push({ route, size, limit: absoluteLimit });
+    }
     const previous = baseline.routes[route];
     if (!previous) continue; // new route — not a regression
     const growthPct = ((size - previous) / previous) * 100;
@@ -244,13 +276,35 @@ function main(): void {
     }
   }
 
-  if (violations.length === 0) {
+  if (violations.length === 0 && absoluteViolations.length === 0) {
     console.log(`✅ Bundle-size check passed (${Object.keys(current).length} routes vs baseline)`);
     console.log(`   Threshold: ${limit}% growth allowed`);
+    console.log(
+      `   Absolute budgets: public ${formatBytes(ABSOLUTE_ROUTE_BUDGETS.public)}, auth ${formatBytes(
+        ABSOLUTE_ROUTE_BUDGETS.auth
+      )}, app ${formatBytes(ABSOLUTE_ROUTE_BUDGETS.app)}, admin ${formatBytes(
+        ABSOLUTE_ROUTE_BUDGETS.admin
+      )}`
+    );
     return;
   }
 
-  console.error(`❌ ${violations.length} route(s) exceeded the bundle-size budget:\n`);
+  if (absoluteViolations.length > 0) {
+    console.error(
+      `❌ ${absoluteViolations.length} route(s) exceeded the absolute first-load JS budget:\n`
+    );
+    for (const v of absoluteViolations.sort((a, b) => b.size - a.size)) {
+      console.error(
+        `  ${v.route}\n` +
+          `    Size:  ${formatBytes(v.size)}\n` +
+          `    Limit: ${formatBytes(v.limit)}\n`
+      );
+    }
+  }
+
+  if (violations.length > 0) {
+    console.error(`❌ ${violations.length} route(s) exceeded the bundle-size growth budget:\n`);
+  }
   for (const v of violations.sort((a, b) => b.pct - a.pct)) {
     console.error(
       `  ${v.route}\n` +

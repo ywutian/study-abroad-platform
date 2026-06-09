@@ -53,6 +53,7 @@
     "lint:drift": "tsx scripts/check-drift.ts",
     "lint:journeys": "tsx scripts/check-journey-paths.ts",
     "lint:bundle": "tsx scripts/check-bundle-size.ts",
+    "lint:release-runtime": "tsx scripts/check-release-runtime.ts",
     "lint:coverage-ratchet": "tsx scripts/check-coverage-ratchet.ts",
     "lint:audit-gate": "tsx scripts/check-audit-gate.ts",
     "lint:deploy-drift": "tsx scripts/check-deploy-config-drift.ts",

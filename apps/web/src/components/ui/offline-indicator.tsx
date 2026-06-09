@@ -84,7 +84,10 @@ export function OfflinePage() {
         <h1 className="text-title mb-2">{t('youAreOffline')}</h1>
         <p className="text-muted-foreground mb-6 max-w-sm">{t('checkConnection')}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            // @release-navigation-allowed: offline retry intentionally performs a full document reload.
+            window.location.reload();
+          }}
           className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
         >
           {tCommon('retry')}

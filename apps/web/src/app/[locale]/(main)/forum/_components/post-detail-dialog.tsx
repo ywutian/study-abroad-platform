@@ -260,6 +260,7 @@ export function PostDetailDialog({
                         <Button
                           variant="outline"
                           onClick={() => {
+                            // @release-navigation-allowed: legacy team notice lives outside the locale router context.
                             window.location.href = '/teams';
                           }}
                         >

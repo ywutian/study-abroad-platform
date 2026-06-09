@@ -163,6 +163,7 @@ function OutcomeCard({ outcome }: { outcome: OutcomeView }) {
       await apiClient.post(outcomeRoutes.uploadEvidence(outcome.id), form);
       toast.success(t('evidenceUploaded'));
       // Re-fetch outcomes
+      // @release-navigation-allowed: evidence upload refreshes server-derived file state after multipart submit.
       window.location.reload();
     } catch {
       toast.error(t('reportError'));

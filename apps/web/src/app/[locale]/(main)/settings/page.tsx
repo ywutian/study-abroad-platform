@@ -100,6 +100,7 @@ export default function SettingsPage() {
 
   const handleLanguageChange = (lang: string) => {
     const newPath = pathname.replace(/^\/[a-z]{2}/, `/${lang}`);
+    // @release-navigation-allowed: settings language switch intentionally reloads the localized document.
     window.location.assign(newPath);
   };
 

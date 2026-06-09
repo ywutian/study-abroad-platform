@@ -139,6 +139,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   };
 
   handleGoHome = () => {
+    // @release-navigation-allowed: class error boundary recovery must escape a possibly corrupted React tree.
     window.location.href = '/';
   };
 

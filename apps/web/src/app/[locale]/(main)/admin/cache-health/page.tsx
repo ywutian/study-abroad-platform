@@ -276,7 +276,9 @@ export default function AdminCacheHealthPage() {
                           </TableCell>
                           <TableCell className="text-right text-sm text-muted-foreground">
                             <Clock className="inline mr-1 h-3 w-3" />
-                            {format.relativeTime(new Date(k.lastSeen))}
+                            {Number.isFinite(new Date(k.lastSeen).getTime())
+                              ? format.relativeTime(new Date(k.lastSeen))
+                              : '—'}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -308,7 +310,9 @@ export default function AdminCacheHealthPage() {
                       {data.recentErrors.map((err, idx) => (
                         <TableRow key={`${err.timestamp}-${idx}`}>
                           <TableCell className="text-sm text-muted-foreground tabular-nums">
-                            {format.relativeTime(new Date(err.timestamp))}
+                            {Number.isFinite(new Date(err.timestamp).getTime())
+                              ? format.relativeTime(new Date(err.timestamp))
+                              : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge
