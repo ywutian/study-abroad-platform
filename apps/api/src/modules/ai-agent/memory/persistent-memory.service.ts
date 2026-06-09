@@ -167,6 +167,7 @@ export class PersistentMemoryService {
     },
     embedding: number[],
   ): Promise<RawMemoryRow> {
+    // governance: parent-scoped — caller updateMemory() validates ownership
     const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
       Prisma.sql`
       UPDATE "Memory" SET
@@ -464,6 +465,7 @@ export class PersistentMemoryService {
     this.logger.warn(
       `updateMemory: embedding unavailable, updating without vector`,
     );
+    // governance: parent-scoped — ownership validated earlier in updateMemory()
     const updated = await this.prisma.memory.update({
       where: { id: memoryId },
       data: {
@@ -489,6 +491,7 @@ export class PersistentMemoryService {
    */
   // 更新记忆重要性
   async updateImportance(memoryId: string, importance: number): Promise<void> {
+    // governance: parent-scoped — store-layer; ownership enforced by the calling service
     await this.prisma.memory.update({
       where: { id: memoryId },
       data: { importance: Math.max(0, Math.min(1, importance)) },
@@ -622,6 +625,7 @@ export class PersistentMemoryService {
   async getConversation(
     conversationId: string,
   ): Promise<ConversationRecord | null> {
+    // governance: parent-scoped — caller (user-data.service) validates userId
     const conversation = await this.prisma.agentConversation.findUnique({
       where: { id: conversationId },
       include: {
@@ -709,6 +713,7 @@ export class PersistentMemoryService {
       updateData.metadata = data.metadata as Prisma.InputJsonValue;
     }
 
+    // governance: parent-scoped — caller (user-data.service) validates userId
     await this.prisma.agentConversation.update({
       where: { id: conversationId },
       data: updateData,
@@ -727,6 +732,7 @@ export class PersistentMemoryService {
   async archiveConversation(conversationId: string): Promise<void> {
     // Note: AgentConversation model lacks isArchived/archivedAt columns;
     // storing archive state in the metadata JSON field as a workaround.
+    // governance: parent-scoped — caller (user-data.service) validates userId
     await this.prisma.agentConversation.update({
       where: { id: conversationId },
       data: {
@@ -752,6 +758,7 @@ export class PersistentMemoryService {
     conversationId: string,
     input: MessageInput,
   ): Promise<MessageRecord> {
+    // governance: parent-scoped — conversationId is user-owned
     const message = await this.prisma.agentMessage.create({
       data: {
         conversationId,
@@ -786,6 +793,7 @@ export class PersistentMemoryService {
     const { limit = 50, before } = options;
 
     // Query DESC + take to get newest N, then reverse for chronological order
+    // governance: parent-scoped — conversationId is user-owned
     const messages = await this.prisma.agentMessage.findMany({
       where: {
         conversationId,
@@ -1353,6 +1361,7 @@ export class PersistentMemoryService {
       ? `AND er."relationType" = '${relationType}'`
       : '';
 
+    // governance: userId validated — recursive CTE filters er."userId"
     const results = await this.prisma.$queryRawUnsafe<
       Array<{
         id: string;

@@ -2,7 +2,17 @@
  * G4: user-data-isolation — Detect Prisma queries missing userId filter in AI agent code.
  *
  * Scope: ai-agent/memory/ + ai-agent/core/
- * Severity: warning (multi-tenant data isolation audit)
+ * Severity: error (multi-tenant data isolation guard)
+ *
+ * A query passes if its context window contains `userId`, OR one of these
+ * governance annotations (each documents WHY a direct userId filter is absent):
+ *   // governance: userId validated   — raw query whose SQL filters userId
+ *   // governance: parent-scoped      — scoped by a user-owned parent entity or
+ *                                       a caller that validates userId
+ *   // governance: admin-scope        — cross-user by design, endpoint-gated by
+ *                                       @Roles(ADMIN)
+ *   // governance: system-scope       — global/non-user data (e.g. routing table)
+ *   // governance: batch-operation    — system maintenance batch over all users
  */
 
 import * as fs from 'fs';
@@ -80,11 +90,13 @@ export function run(): GovernanceIssue[] {
           if (
             !contextWindow.includes('userId') &&
             !contextWindow.includes('// governance: batch-operation') &&
-            !contextWindow.includes('// governance: system-scope')
+            !contextWindow.includes('// governance: system-scope') &&
+            !contextWindow.includes('// governance: parent-scoped') &&
+            !contextWindow.includes('// governance: admin-scope')
           ) {
             issues.push({
               rule: 'user-data-isolation',
-              severity: 'warning',
+              severity: 'error',
               message: `Prisma query without userId filter — potential multi-tenant data leak`,
               file: filePath,
               line: i + 1,
@@ -101,11 +113,13 @@ export function run(): GovernanceIssue[] {
             !contextWindow.includes('userId') &&
             !contextWindow.includes('// governance: userId validated') &&
             !contextWindow.includes('// governance: batch-operation') &&
-            !contextWindow.includes('// governance: system-scope')
+            !contextWindow.includes('// governance: system-scope') &&
+            !contextWindow.includes('// governance: parent-scoped') &&
+            !contextWindow.includes('// governance: admin-scope')
           ) {
             issues.push({
               rule: 'user-data-isolation',
-              severity: 'warning',
+              severity: 'error',
               message: `Raw query without userId filter or governance annotation`,
               file: filePath,
               line: i + 1,
