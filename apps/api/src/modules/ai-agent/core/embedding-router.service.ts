@@ -84,6 +84,7 @@ export class EmbeddingRouterService {
 
       // 2. pgvector nearest-neighbor search
       const vectorStr = `[${queryEmbedding.join(',')}]`;
+      // governance: system-scope — global agent-route embedding table (not user data)
       const results = await this.prisma.$queryRawUnsafe<RawSimilarityRow[]>(
         `SELECT agent_type, 1 - (embedding <=> $1::vector) as similarity
          FROM agent_route_embeddings

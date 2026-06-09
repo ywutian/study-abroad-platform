@@ -669,6 +669,7 @@ export class MemoryConflictService {
     action: 'keep_new' | 'keep_existing' | 'merge',
     mergedContent?: string,
   ): Promise<{ resolved: boolean }> {
+    // governance: admin-scope — admin conflict resolution (endpoint @Roles(ADMIN))
     const memory = await this.prisma.memory.findUnique({
       where: { id: memoryId },
     });
@@ -689,6 +690,7 @@ export class MemoryConflictService {
       case 'keep_new': {
         // Remove pending flag, keep this memory's content
         const { pendingConflict, conflictWith, ...cleanMetadata } = metadata;
+        // governance: admin-scope — admin conflict resolution (endpoint @Roles(ADMIN))
         await this.prisma.memory.update({
           where: { id: memoryId },
           data: {
@@ -700,6 +702,7 @@ export class MemoryConflictService {
         });
         // Delete the conflicting memory if referenced
         if (conflictWithId) {
+          // governance: admin-scope — admin conflict resolution (endpoint @Roles(ADMIN))
           await this.prisma.memory.deleteMany({
             where: { id: conflictWithId },
           });
@@ -709,6 +712,7 @@ export class MemoryConflictService {
 
       case 'keep_existing': {
         // Delete the pending memory, the existing one stays
+        // governance: admin-scope — admin conflict resolution (endpoint @Roles(ADMIN))
         await this.prisma.memory.delete({ where: { id: memoryId } });
         break;
       }
@@ -730,6 +734,7 @@ export class MemoryConflictService {
         });
         // Delete the conflicting memory if referenced
         if (conflictWithId) {
+          // governance: admin-scope — admin conflict resolution (endpoint @Roles(ADMIN))
           await this.prisma.memory.deleteMany({
             where: { id: conflictWithId },
           });
