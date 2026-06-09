@@ -337,6 +337,7 @@ export default function ChatPage() {
   });
 
   const reportMutation = useMutation({
+    // @cache-invalidation-allowed: one-shot report action (toast + close dialog); reporting does not change any displayed cached list/detail
     mutationFn: (data: { targetType: string; targetId: string; reason: string; detail?: string }) =>
       apiClient.post(chatRoutes.report(), data),
     onSuccess: () => {
@@ -349,6 +350,7 @@ export default function ChatPage() {
   const deleteMutation = useMutation({
     mutationFn: (messageId: string) => apiClient.delete(chatRoutes.message(messageId)),
     onSuccess: (_data, messageId) => {
+      // @cache-invalidation-allowed: directly updates the ['messages', conversationId] React Query cache via updateMessageCache (queryClient.setQueryData) instead of invalidating
       if (!selectedConversation) return;
       updateMessageCache(selectedConversation, (old) => {
         if (!old?.pages) return old;
@@ -367,6 +369,7 @@ export default function ChatPage() {
   const recallMutation = useMutation({
     mutationFn: (messageId: string) => apiClient.patch(`${chatRoutes.message(messageId)}/recall`),
     onSuccess: (_data, messageId) => {
+      // @cache-invalidation-allowed: directly updates the ['messages', conversationId] React Query cache via updateMessageCache (queryClient.setQueryData) instead of invalidating
       if (!selectedConversation) return;
       updateMessageCache(selectedConversation, (old) => {
         if (!old?.pages) return old;

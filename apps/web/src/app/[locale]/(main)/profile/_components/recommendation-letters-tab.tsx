@@ -115,6 +115,7 @@ export function RecommendationLettersTab() {
     mutationFn: (data: Record<string, unknown>) =>
       apiClient.post(profileRoutes.recommendationLetters(), data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates recommendation-letters/profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('recLetter.toast.created'));
       closeForm();
@@ -125,6 +126,7 @@ export function RecommendationLettersTab() {
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       apiClient.put(profileRoutes.recommendationLetter(id), data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates recommendation-letters/profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('recLetter.toast.updated'));
       closeForm();
@@ -134,6 +136,7 @@ export function RecommendationLettersTab() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.recommendationLetter(id)),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates recommendation-letters/profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('recLetter.toast.deleted'));
     },

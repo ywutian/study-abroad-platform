@@ -18,6 +18,7 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const mutation = useMutation({
+    // @cache-invalidation-allowed: auth form (forgot-password) — no cached list/detail; onSuccess sets local submitted state
     mutationFn: (email: string) =>
       apiClient.post(authRoutes.forgotPassword(), { email }, { skipAuth: true }),
     onSuccess: () => {

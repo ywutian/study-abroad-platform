@@ -86,6 +86,7 @@ export default function SettingsPage() {
   const deleteAccountMutation = useMutation({
     mutationFn: () => apiClient.delete(userRoutes.me()),
     onSuccess: () => {
+      // @cache-invalidation-allowed: onSuccess logs out and router.push('/login') — account deleted, user leaves the app; no cached list to refresh
       setDeleteDialogOpen(false);
       toast.success(t('settings.toast.accountDeleted'));
       logout();

@@ -154,6 +154,7 @@ export function EssayDebateDialog({
   }, [sessionQuery.data]);
 
   const turnMutation = useMutation<DebateTurnResponse, Error, CreateDebateTurnDto>({
+    // @cache-invalidation-allowed: appends the returned user+AI turn pair to local state (setLocalTurns); the displayed conversation is local-state-driven (sessionQuery only hydrates on open)
     mutationFn: (dto) => apiClient.post<DebateTurnResponse>(essayDebateRoutes.turn(), dto),
     onSuccess: (data) => {
       setLocalTurns((prev) => [...prev, data.userTurn, data.aiTurn]);

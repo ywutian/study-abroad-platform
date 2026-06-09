@@ -58,6 +58,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   const brainstormMutation = useMutation({
+    // @cache-invalidation-allowed: AI brainstorm — writes the result to local state (setResult) + toast; mutates no cached list/detail
     mutationFn: async () => {
       const response = await apiClient.post<BrainstormResult>(
         '/essay-ai/brainstorm',

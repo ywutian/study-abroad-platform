@@ -181,6 +181,7 @@ export default function FollowersPage() {
       }
       setSelectedIds([]);
       setPendingAction(null);
+      // @cache-invalidation-allowed: invalidateSocialQueries() helper invalidates the social overview/relations/followers/following/blocked queries
       invalidateSocialQueries(queryClient);
     },
     onError: (error: unknown) => {

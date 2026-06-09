@@ -122,6 +122,7 @@ export function ReviewQueueTab() {
     mutationFn: ({ id, noteText }: { id: string; noteText?: string }) =>
       apiClient.post(adminRoutes.reviewApprove(id), { note: noteText }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for reviewQueue/reviewStats/adminStats
       toast.success(t('toast.approved'));
       invalidateAll();
       closeDetail();
@@ -135,6 +136,7 @@ export function ReviewQueueTab() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       apiClient.post(adminRoutes.reviewReject(id), { reason }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for reviewQueue/reviewStats/adminStats
       toast.success(t('toast.rejected'));
       invalidateAll();
       closeDetail();
@@ -160,6 +162,7 @@ export function ReviewQueueTab() {
         note: noteText,
       }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for reviewQueue/reviewStats/adminStats
       toast.success(t('toast.editApproved'));
       invalidateAll();
       closeDetail();
@@ -180,6 +183,7 @@ export function ReviewQueueTab() {
       reason?: string;
     }) => apiClient.post(adminRoutes.reviewBatch(), { ids, action, reason }),
     onSuccess: (_data, vars) => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for reviewQueue/reviewStats/adminStats
       toast.success(t('toast.batchSuccess', { count: vars.ids.length }));
       invalidateAll();
       setSelected(new Set());

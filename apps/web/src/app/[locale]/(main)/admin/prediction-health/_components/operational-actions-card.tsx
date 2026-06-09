@@ -95,6 +95,7 @@ export function OperationalActionsCard() {
         dryRun,
       }),
     onSuccess: (response, dryRun) => {
+      // @cache-invalidation-allowed: result shown via local setLastResult state; no in-file useQuery. Loads CDS bands (distinct from the inventory-card metrics that normalize/backfill above explicitly invalidate)
       setLastResult((prev) => ({
         ...prev,
         cdsBands: { dryRun, response },
@@ -108,6 +109,7 @@ export function OperationalActionsCard() {
         dryRun,
       }),
     onSuccess: (response, dryRun) => {
+      // @cache-invalidation-allowed: result shown via local setLastResult state; no in-file useQuery. Backfills case aggregates (distinct from the inventory-card metrics that normalize/backfill above explicitly invalidate)
       setLastResult((prev) => ({
         ...prev,
         caseAggregates: { dryRun, response },
@@ -128,6 +130,7 @@ export function OperationalActionsCard() {
         batchSize: 5000,
       }),
     onSuccess: (response, dryRun) => {
+      // @cache-invalidation-allowed: result shown via local setLastResult state; no in-file useQuery. Backfill rewrites stored PredictionResult rows server-side (distinct from the inventory-card metrics that normalize/backfill above explicitly invalidate)
       setLastResult((prev) => ({
         ...prev,
         counselorBackfill: { dryRun, response },

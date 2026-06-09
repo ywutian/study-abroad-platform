@@ -97,6 +97,7 @@ export default function TeamDetailPage() {
   });
 
   const inviteLinkMutation = useMutation({
+    // @cache-invalidation-allowed: generates an invite token and copies the join link to clipboard (toast only); no cached list/detail changes
     mutationFn: () => apiClient.post<{ token: string }>(teamRoutes.invite(id), {}),
     onSuccess: (data) => {
       const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/teams/join?token=${data.token}`;

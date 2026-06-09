@@ -39,6 +39,7 @@ export default function SecurityPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const changePasswordMutation = useMutation({
+    // @cache-invalidation-allowed: security form (change-password) — toast + clears local fields; no cached list/detail
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
       apiClient.post(authRoutes.changePassword(), data),
     onSuccess: () => {

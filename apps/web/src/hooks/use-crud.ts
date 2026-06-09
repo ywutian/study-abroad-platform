@@ -127,6 +127,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
     mutationFn: (data: TFormData) =>
       apiClient.post(basePath, transformCreate ? transformCreate(data) : data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for the configured queryKey + invalidateKeys
       invalidateAll();
       setState((s) => ({ ...s, isFormOpen: false, selectedItem: null }));
       if (messages.created) toast.success(messages.created);
@@ -141,6 +142,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
     mutationFn: ({ id, data }: { id: string; data: TFormData }) =>
       apiClient.put(`${basePath}/${id}`, transformUpdate ? transformUpdate(data) : data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for the configured queryKey + invalidateKeys
       invalidateAll();
       setState((s) => ({ ...s, isFormOpen: false, selectedItem: null }));
       if (messages.updated) toast.success(messages.updated);
@@ -154,6 +156,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`${basePath}/${id}`),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for the configured queryKey + invalidateKeys
       invalidateAll();
       setState((s) => ({
         ...s,

@@ -233,6 +233,7 @@ export function QuickExperience() {
       });
     },
     onSuccess: (data) => {
+      // @cache-invalidation-allowed: onSuccess redirects via router.push(data.nextRoute ?? '/prediction?autorun=1') — leaves the onboarding dialog; destination page fetches fresh
       handleClose();
       toast.success(t('saved'));
       router.push(data.nextRoute || '/prediction?autorun=1');

@@ -96,6 +96,7 @@ export function MediaAssetsTab() {
         dryRun: false,
       }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for schoolMediaCoverage/schoolMediaAssets/adminSchools
       invalidate();
       toast.success(t('toast.discoveryQueued'));
     },
@@ -104,6 +105,7 @@ export function MediaAssetsTab() {
   const approveMutation = useMutation({
     mutationFn: (assetId: string) => apiClient.put(schoolRoutes.mediaApprove(assetId), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for schoolMediaCoverage/schoolMediaAssets/adminSchools
       invalidate();
       toast.success(t('toast.approved'));
     },
@@ -113,6 +115,7 @@ export function MediaAssetsTab() {
     mutationFn: (assetId: string) =>
       apiClient.put(schoolRoutes.mediaReject(assetId), { reason: 'Rejected from admin queue' }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for schoolMediaCoverage/schoolMediaAssets/adminSchools
       invalidate();
       toast.success(t('toast.rejected'));
     },
@@ -121,6 +124,7 @@ export function MediaAssetsTab() {
   const retryMutation = useMutation({
     mutationFn: (assetId: string) => apiClient.post(schoolRoutes.mediaRetry(assetId), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for schoolMediaCoverage/schoolMediaAssets/adminSchools
       invalidate();
       toast.success(t('toast.retryCompleted'));
     },
@@ -129,6 +133,7 @@ export function MediaAssetsTab() {
   const setPrimaryMutation = useMutation({
     mutationFn: (assetId: string) => apiClient.put(schoolRoutes.mediaSetPrimary(assetId), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for schoolMediaCoverage/schoolMediaAssets/adminSchools
       invalidate();
       toast.success(t('toast.primaryUpdated'));
     },

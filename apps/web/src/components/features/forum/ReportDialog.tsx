@@ -53,6 +53,7 @@ export function ReportDialog({ open, onOpenChange, targetType, targetId }: Repor
       });
     },
     onSuccess: () => {
+      // @cache-invalidation-allowed: one-shot report action (toast + close dialog + reset form); reporting does not change any displayed cached list/detail
       toast.success(t('reportSubmitted'));
       onOpenChange(false);
       setReason('');

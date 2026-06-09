@@ -125,6 +125,7 @@ export function PendingCasesTab() {
   const approveMutation = useMutation({
     mutationFn: (id: string) => apiClient.post(adminRoutes.reviewCaseApprove(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for pendingCases/reviewStats/adminStats
       toast.success(t('toast.approved'));
       invalidateAll();
       setDetailCase(null);
@@ -138,6 +139,7 @@ export function PendingCasesTab() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       apiClient.post(adminRoutes.reviewCaseReject(id), { reason }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for pendingCases/reviewStats/adminStats
       toast.success(t('toast.rejected'));
       invalidateAll();
       setDetailCase(null);
@@ -159,6 +161,7 @@ export function PendingCasesTab() {
       reason?: string;
     }) => apiClient.post(adminRoutes.reviewBatch(), { ids, action, reason }),
     onSuccess: (_data, vars) => {
+      // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for pendingCases/reviewStats/adminStats
       toast.success(t('toast.batchSuccess', { count: vars.ids.length }));
       invalidateAll();
       setSelected(new Set());

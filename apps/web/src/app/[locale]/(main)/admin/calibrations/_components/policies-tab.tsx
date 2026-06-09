@@ -73,6 +73,7 @@ export function PoliciesTab() {
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.predictionWorkflowPolicyCandidate(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePolicies() helper calls queryClient.invalidateQueries for the predictionWorkflowPolicies + gate keys
       toast.success(t('candidateSuccess'));
       invalidatePolicies();
     },
@@ -81,6 +82,7 @@ export function PoliciesTab() {
   const shadowMutation = useMutation({
     mutationFn: (id: string) => apiClient.post(adminRoutes.predictionWorkflowPolicyShadow(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePolicies() helper calls queryClient.invalidateQueries for the predictionWorkflowPolicies + gate keys
       toast.success(t('shadowSuccess'));
       invalidatePolicies();
     },
@@ -90,6 +92,7 @@ export function PoliciesTab() {
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.predictionWorkflowPolicyShadowRefresh(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePolicies() helper calls queryClient.invalidateQueries for the predictionWorkflowPolicies + gate keys
       toast.success(t('shadowRefreshSuccess'));
       invalidatePolicies();
     },
@@ -99,6 +102,7 @@ export function PoliciesTab() {
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.predictionWorkflowPolicyActivate(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePolicies() helper calls queryClient.invalidateQueries for the predictionWorkflowPolicies + gate keys
       toast.success(t('activateSuccess'));
       invalidatePolicies();
     },
@@ -107,6 +111,7 @@ export function PoliciesTab() {
   const rollbackMutation = useMutation({
     mutationFn: () => apiClient.post(adminRoutes.predictionWorkflowPolicyRollback(), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePolicies() helper calls queryClient.invalidateQueries for the predictionWorkflowPolicies + gate keys
       toast.success(t('rollbackSuccess'));
       invalidatePolicies();
     },

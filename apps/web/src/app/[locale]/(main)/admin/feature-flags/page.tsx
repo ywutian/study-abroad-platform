@@ -64,6 +64,7 @@ export default function AdminFeatureFlagsPage() {
   });
 
   const cacheMutation = useMutation({
+    // @cache-invalidation-allowed: clears the server-side Redis flag cache (toast only); the flag's key/enabled/rules/description shown in the adminFeatureFlags table are unchanged
     mutationFn: (id: string) => apiClient.post(adminFeatureFlagRoutes.invalidateCache(id)),
     onSuccess: () => {
       toast.success(t('cacheInvalidated'));

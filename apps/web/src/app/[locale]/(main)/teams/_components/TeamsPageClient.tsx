@@ -591,6 +591,7 @@ export function TeamsPageClient() {
         recruitmentContextId: context.id,
         targetTeamSize: String(context.maxTeamSize),
       }));
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.contextCreated'));
     },
@@ -618,6 +619,7 @@ export function TeamsPageClient() {
       ),
     onSuccess: (context) => {
       setSelectedPrivateContextId(context.id);
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.contextUpdated'));
     },
@@ -629,6 +631,7 @@ export function TeamsPageClient() {
         teamRoutes.communityContextPublish(selectedPrivateContextId)
       ),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.contextPublished'));
     },
@@ -664,6 +667,7 @@ export function TeamsPageClient() {
         setSelectedPublicContextId(nextContextId);
         setTab('public');
       }
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.cardCreated'));
       trackEvent(TEAM_EVENTS.cardCreated, {
@@ -694,6 +698,7 @@ export function TeamsPageClient() {
       }),
     onSuccess: (card) => {
       setEditorContextId(getRecruitmentContextId(card) ?? form.recruitmentContextId);
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.cardUpdated'));
     },
@@ -702,6 +707,7 @@ export function TeamsPageClient() {
   const publishMutation = useMutation({
     mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentPublish(cardId)),
     onSuccess: (_data, cardId) => {
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.cardPublished'));
       trackEvent(TEAM_EVENTS.cardPublished, {
@@ -714,6 +720,7 @@ export function TeamsPageClient() {
   const closeMutation = useMutation({
     mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentClose(cardId)),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.cardClosed'));
     },
@@ -733,6 +740,7 @@ export function TeamsPageClient() {
         consentConfirmed,
       }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       toast.success(t('recruitment.toast.displayUpdated'));
     },
@@ -752,6 +760,7 @@ export function TeamsPageClient() {
         action: payload.action,
       }),
     onSuccess: (data, variables) => {
+      // @cache-invalidation-allowed: invalidateRecruitmentQueries() helper calls queryClient.invalidateQueries for qk.teams.all
       invalidateRecruitmentQueries();
       trackEvent(TEAM_EVENTS.cardSwiped, {
         sourceCardId: variables.sourceCardId,
@@ -776,6 +785,7 @@ export function TeamsPageClient() {
         payload
       ),
     onSuccess: (data, variables) => {
+      // @cache-invalidation-allowed: sends match invites; writes the per-match invitation result to local state (setInviteResultsByMatchId) for inline display — no cached list reflects pending invitations
       setInviteResultsByMatchId((prev) => ({
         ...prev,
         [variables.matchId]: data.invitations,
