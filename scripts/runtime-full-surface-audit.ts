@@ -22,11 +22,23 @@ import {
   type SurfacePlatform,
   type SurfaceType,
 } from './release-gate/full-surface-registry';
+import {
+  RELEASE_RUNTIME_BUDGETS,
+  RELEASE_RUNTIME_HARD_FAIL_STATUSES,
+  RELEASE_RUNTIME_SLOW_STATUSES,
+  normalizeReleaseRuntimeEnvironment,
+  releaseRuntimeBudget,
+  releaseRuntimeLayer,
+  type ReleaseRuntimeBudget,
+  type ReleaseRuntimeEnvironment,
+  type ReleaseRuntimeStatus,
+} from './release-gate/release-runtime-budget';
 import type { ExternalPrerequisite, QualityDimension } from './release-gate/registry';
 
 const execFileAsync = promisify(execFile);
 
-type SurfaceStatus = 'PASS' | 'ISSUE' | 'BROKEN' | 'BLOCKED' | 'SKIPPED';
+type SurfaceStatus = 'PASS' | 'ISSUE' | 'BROKEN' | 'BLOCKED' | 'SKIPPED' | ReleaseRuntimeStatus;
+type RuntimeAuditMode = 'full-surface' | 'release-runtime';
 type FeedbackCategory =
   | 'CODE_BUG'
   | 'DATA_ISSUE'
@@ -41,13 +53,19 @@ type AnySurfaceDefinition =
 
 interface CliArgs {
   auditDate: string;
+  mode: RuntimeAuditMode;
+  environment: ReleaseRuntimeEnvironment;
   evidenceRoot?: string;
   surfaceIdsCsv?: string;
+  batch?: string;
+  platform?: string;
+  persona?: string;
   batchCsv?: string;
   platformCsv?: string;
   personaCsv?: string;
   webBase?: string;
   apiBase?: string;
+  maxLinksPerRoute: number;
   printConfig: boolean;
   forceRerun: boolean;
   summaryOnly: boolean;
@@ -57,6 +75,63 @@ interface SurfaceIssue {
   summary: string;
   rootCause?: string;
   acceptance?: string;
+}
+
+interface ReleaseTimingMetrics {
+  wallMs: number;
+  ttfbMs: number | null;
+  domContentLoadedMs: number | null;
+  firstContentfulPaintMs: number | null;
+  loadMs: number | null;
+}
+
+interface ReleaseApiTiming {
+  url: string;
+  method: string;
+  status?: number;
+  durationMs: number;
+}
+
+interface ReleaseDirectLoadProbe {
+  pass: 'cold' | 'warm' | 'local';
+  url: string;
+  finalUrl: string;
+  httpStatus: number | null;
+  timing: ReleaseTimingMetrics;
+  visibleTextSample: string;
+  stuckLoading: boolean;
+  budgetViolations: string[];
+}
+
+interface ReleaseNavigationProbe {
+  href: string;
+  text: string;
+  ok: boolean;
+  elapsedMs: number;
+  finalUrl: string;
+  failureReason?: string;
+}
+
+interface ReleaseRuntimeDetails {
+  mode: 'release-runtime';
+  environment: ReleaseRuntimeEnvironment;
+  budgetLayer: ReturnType<typeof releaseRuntimeLayer>;
+  budget: ReleaseRuntimeBudget;
+  directLoads: ReleaseDirectLoadProbe[];
+  navigationProbes: ReleaseNavigationProbe[];
+  apiTimings: ReleaseApiTiming[];
+  requestFailures: string[];
+  consoleErrors: string[];
+  pageErrors: string[];
+  networkErrors: RouteNetworkIssue[];
+  classification: {
+    status: ReleaseRuntimeStatus;
+    rootCause: string;
+    guardrail: string;
+    proof: string;
+    owner: string;
+    deadline: string;
+  };
 }
 
 interface FullSurfaceRecord {
@@ -79,6 +154,7 @@ interface FullSurfaceRecord {
   reuseTags: string[];
   shellArtifactsChecked?: RouteShellArtifact[];
   notes?: string[];
+  releaseRuntime?: ReleaseRuntimeDetails;
 }
 
 interface ApiSession {
@@ -154,7 +230,13 @@ const DEV_ONLY_NOISE_PATTERNS = [
   /module factory is not available/i,
   /__nextjs_original-stack-frame/i,
   /download the react devtools/i,
-  /failed to load resource.*favicon/i,
+  // "Failed to load resource: the server responded with a status of NNN" is the
+  // browser's console echo of a network response — it is redundant with the
+  // response/networkErrors channel, which already evaluates the real status
+  // (and ignores only 429 / favicon-proxy / auth-refresh-401). Keeping it here
+  // too would double-count those benign cases as console errors. Genuine HTTP
+  // 4xx/5xx still fail via the network channel.
+  /failed to load resource/i,
   /default-stylesheet\.css/i,
   /a tree hydrated but some attributes[\s\S]*RadioBubbleInput/i,
   /a tree hydrated but some attributes[\s\S]*CheckboxBubbleInput/i,
@@ -175,7 +257,12 @@ function parseArgs(argv: string[]): CliArgs {
   for (let index = 0; index < argv.length; index += 1) {
     const current = argv[index];
     if (!current.startsWith('--')) continue;
-    const key = current.slice(2);
+    const [rawKey, inlineValue] = current.slice(2).split(/=(.*)/s, 2);
+    const key = rawKey;
+    if (inlineValue !== undefined && inlineValue !== '') {
+      values.set(key, inlineValue);
+      continue;
+    }
     const next = argv[index + 1];
     if (!next || next.startsWith('--')) {
       values.set(key, 'true');
@@ -189,13 +276,19 @@ function parseArgs(argv: string[]): CliArgs {
 
   return {
     auditDate: values.get('audit-date') ?? values.get('date') ?? today,
+    mode: values.get('mode') === 'release-runtime' ? 'release-runtime' : 'full-surface',
+    environment: normalizeReleaseRuntimeEnvironment(values.get('environment') ?? 'local'),
     evidenceRoot: values.get('evidence-root') ?? undefined,
     surfaceIdsCsv: values.get('surface-ids') ?? undefined,
+    batch: values.get('batch') ?? undefined,
+    platform: values.get('platform') ?? undefined,
+    persona: values.get('persona') ?? undefined,
     batchCsv: values.get('batch') ?? undefined,
     platformCsv: values.get('platform') ?? undefined,
     personaCsv: values.get('persona') ?? undefined,
     webBase: values.get('web-base') ?? undefined,
     apiBase: values.get('api-base') ?? undefined,
+    maxLinksPerRoute: Number(values.get('max-links-per-route') ?? 5) || 5,
     printConfig: values.get('print-config') === 'true',
     forceRerun: values.get('force-rerun') === 'true' || values.get('force-rerun') === '1',
     summaryOnly: values.get('summary-only') === 'true',
@@ -203,12 +296,20 @@ function parseArgs(argv: string[]): CliArgs {
 }
 
 const CLI_ARGS = parseArgs(process.argv.slice(2));
+const RUNTIME_MODE = CLI_ARGS.mode;
+const RELEASE_RUNTIME_ENVIRONMENT = CLI_ARGS.environment;
 const WEB_BASE = CLI_ARGS.webBase ?? 'http://localhost:4100';
-const API_BASE = CLI_ARGS.apiBase ?? 'http://localhost:4101/api/v1';
+const API_BASE =
+  CLI_ARGS.apiBase ??
+  (RUNTIME_MODE === 'release-runtime'
+    ? `${WEB_BASE.replace(/\/$/, '')}/api/v1`
+    : 'http://localhost:4101/api/v1');
 const AUDIT_DATE = CLI_ARGS.auditDate;
 const EVIDENCE_ROOT = CLI_ARGS.evidenceRoot
   ? path.resolve(ROOT, CLI_ARGS.evidenceRoot)
-  : path.join(ROOT, 'e2e-report', `full-surface-${AUDIT_DATE}`);
+  : RUNTIME_MODE === 'release-runtime'
+    ? path.join(ROOT, 'e2e-report', `release-runtime-${AUDIT_DATE}`, RELEASE_RUNTIME_ENVIRONMENT)
+    : path.join(ROOT, 'e2e-report', `full-surface-${AUDIT_DATE}`);
 const JOURNEY_EVIDENCE_ROOT = path.join(EVIDENCE_ROOT, '_journeys');
 const SURFACE_ID_FILTER_LIST = (CLI_ARGS.surfaceIdsCsv ?? '')
   .split(',')
@@ -371,8 +472,28 @@ function isIgnorableNetworkNoise(url: string, status?: number) {
     /\/favicon\.ico(\?|$)/i.test(url) ||
     /\/__nextjs_original-stack-frame/i.test(url) ||
     /\.map(\?|$)/i.test(url) ||
-    (/\/api\/v1\/auth\/refresh(\?|$)/i.test(url) && (status === 401 || status === 429))
+    // HTTP 429 = rate limiting. The audit drives all 82 routes within one
+    // session, so shared/layout endpoints (users/me, verifications/my,
+    // dashboard) accumulate calls and trip per-user/per-route throttles — an
+    // artifact of rapid automated access, not a release defect (a real user
+    // loads one route). Genuine breakage is 4xx (≠429) / 5xx.
+    status === 429 ||
+    (/\/api\/v1\/auth\/refresh(\?|$)/i.test(url) && status === 401) ||
+    // Decorative school/site favicons proxied through next/image from an
+    // external service (google s2). Unreachable from the CI network sandbox →
+    // 404/5xx; this is an environment limitation, not a release defect.
+    (/\/_next\/image\b/i.test(url) && /favicon|s2%2Ffavicons|google\.com/i.test(url))
   );
+}
+
+function isIgnorableRequestFailure(url: string, text: string) {
+  // net::ERR_ABORTED is a *cancelled* request, never a server/route defect.
+  // The audit navigates with waitUntil:'commit' and tears pages down quickly,
+  // so in-flight chunk prefetches, RSC fetches and background auth/refresh
+  // calls abort by design. Genuine breakage still surfaces as HTTP 4xx/5xx
+  // (response handler), a page.goto throw, or ERR_FAILED / ERR_CONNECTION_* —
+  // none of which are ERR_ABORTED.
+  return isIgnorableNetworkNoise(url) || /net::ERR_ABORTED/i.test(text);
 }
 
 function isIgnorableGuestAuthNoise(surface: RouteSurfaceDefinition, url: string, status?: number) {
@@ -389,8 +510,14 @@ function aggregateStatus(statuses: readonly SurfaceStatus[]): SurfaceStatus {
     PASS: 0,
     SKIPPED: 1,
     ISSUE: 2,
+    COLD_START_ONLY: 2,
+    SLOW_FRONTEND: 3,
+    SLOW_API: 3,
+    BLOCKED_SAMPLE: 4,
     BLOCKED: 3,
-    BROKEN: 4,
+    STUCK_LOADING: 5,
+    NAVIGATION_FAILED: 6,
+    BROKEN: 7,
   };
 
   return statuses.reduce<SurfaceStatus>((current, next) => {
@@ -494,6 +621,24 @@ async function apiLogin(account: Account): Promise<ApiSession> {
   throw new Error(`API login failed for ${account.email}: ${JSON.stringify(lastPayload)}`);
 }
 
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function releaseRuntimeApiLogin(
+  label: string,
+  account: Account
+): Promise<{ session: ApiSession | null; error?: string }> {
+  try {
+    return { session: await apiLogin(account) };
+  } catch (error) {
+    if (RUNTIME_MODE !== 'release-runtime') {
+      throw error;
+    }
+    return { session: null, error: `${label}: ${errorMessage(error)}` };
+  }
+}
+
 function decodeJwtExp(token: string) {
   try {
     const [, payload] = token.split('.');
@@ -553,7 +698,10 @@ async function apiRequest<T>(
   return (json.data ?? json) as T;
 }
 
-async function buildSampleCatalog(applicantSession: ApiSession, adminSession?: ApiSession) {
+async function buildSampleCatalog(
+  applicantSession: ApiSession | null,
+  adminSession?: ApiSession | null
+) {
   const [
     schools,
     cases,
@@ -597,8 +745,10 @@ async function buildSampleCatalog(applicantSession: ApiSession, adminSession?: A
       chatConversations.status === 'fulfilled' ? firstId(chatConversations.value) : undefined,
     adminUserId: adminUsers.status === 'fulfilled' ? firstId(adminUsers.value) : undefined,
   } satisfies SampleCatalog;
+  const canCreateSampleFixtures =
+    RUNTIME_MODE !== 'release-runtime' || RELEASE_RUNTIME_ENVIRONMENT === 'local';
 
-  if (!catalog.resumeId) {
+  if (!catalog.resumeId && canCreateSampleFixtures) {
     try {
       const created = await apiRequest<{ id?: string }>(applicantSession, 'POST', '/resumes', {
         body: {
@@ -623,7 +773,7 @@ async function buildSampleCatalog(applicantSession: ApiSession, adminSession?: A
     }
   }
 
-  if (!catalog.teamId) {
+  if (!catalog.teamId && canCreateSampleFixtures) {
     try {
       const created = await apiRequest<{ id?: string }>(applicantSession, 'POST', '/teams', {
         body: {
@@ -641,7 +791,7 @@ async function buildSampleCatalog(applicantSession: ApiSession, adminSession?: A
     }
   }
 
-  if (!catalog.forumPostId) {
+  if (!catalog.forumPostId && canCreateSampleFixtures) {
     try {
       const categoryId =
         forumCategories.status === 'fulfilled' ? firstId(forumCategories.value) : undefined;
@@ -890,6 +1040,264 @@ async function warmWebRoute(surface: RouteSurfaceDefinition, concretePath: strin
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+function releaseRuntimeDeadline() {
+  return new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function isApiRequestUrl(url: string) {
+  return /\/api\/v1\//.test(url) || url.startsWith(API_BASE);
+}
+
+function releaseBudgetViolations(
+  timing: ReleaseTimingMetrics,
+  budget: ReleaseRuntimeBudget
+): string[] {
+  const violations: string[] = [];
+  if (timing.ttfbMs != null && timing.ttfbMs > budget.ttfbMs) {
+    violations.push(`ttfbMs ${timing.ttfbMs} > ${budget.ttfbMs}`);
+  }
+  if (timing.domContentLoadedMs != null && timing.domContentLoadedMs > budget.domContentLoadedMs) {
+    violations.push(
+      `domContentLoadedMs ${timing.domContentLoadedMs} > ${budget.domContentLoadedMs}`
+    );
+  }
+  if (
+    timing.firstContentfulPaintMs != null &&
+    timing.firstContentfulPaintMs > budget.firstContentfulPaintMs
+  ) {
+    violations.push(
+      `firstContentfulPaintMs ${timing.firstContentfulPaintMs} > ${budget.firstContentfulPaintMs}`
+    );
+  }
+  if (timing.loadMs != null && timing.loadMs > budget.loadMs) {
+    violations.push(`loadMs ${timing.loadMs} > ${budget.loadMs}`);
+  }
+  if (timing.wallMs > budget.loadMs + 2_000) {
+    violations.push(`wallMs ${timing.wallMs} > ${budget.loadMs + 2_000}`);
+  }
+  return violations;
+}
+
+async function collectReleaseTiming(
+  page: Page,
+  startedAtMs: number
+): Promise<ReleaseTimingMetrics> {
+  const wallMs = Date.now() - startedAtMs;
+  const browserTiming = await page
+    .evaluate(() => {
+      const nav = performance.getEntriesByType('navigation')[0] as
+        | PerformanceNavigationTiming
+        | undefined;
+      const fcp = performance.getEntriesByName('first-contentful-paint')[0] as
+        | PerformanceEntry
+        | undefined;
+      return {
+        ttfbMs: nav ? Math.round(nav.responseStart) : null,
+        domContentLoadedMs: nav ? Math.round(nav.domContentLoadedEventEnd) : null,
+        firstContentfulPaintMs: fcp ? Math.round(fcp.startTime) : null,
+        loadMs: nav?.loadEventEnd ? Math.round(nav.loadEventEnd) : null,
+      };
+    })
+    .catch(() => ({
+      ttfbMs: null,
+      domContentLoadedMs: null,
+      firstContentfulPaintMs: null,
+      loadMs: null,
+    }));
+
+  return { wallMs, ...browserTiming };
+}
+
+async function detectReleaseStuckLoading(page: Page) {
+  return await page
+    .evaluate(() => {
+      const text = document.body.innerText.replace(/\s+/g, ' ').trim();
+      const loadingText = /(loading|加载中|正在加载|请稍候|please wait)/i.test(text);
+      const hasMeaningfulSurface = Boolean(
+        document.querySelector('h1, h2, main button, main a[href], main input, main textarea')
+      );
+      const busyCount = document.querySelectorAll('[aria-busy="true"], .animate-pulse').length;
+      return text.length < 20 || (loadingText && !hasMeaningfulSurface) || busyCount > 30;
+    })
+    .catch(() => true);
+}
+
+interface SafeInternalLink {
+  href: string;
+  text: string;
+}
+
+async function collectSafeInternalLinks(page: Page, maxLinks: number): Promise<SafeInternalLink[]> {
+  return await page
+    .evaluate((limit) => {
+      const destructivePattern =
+        /(delete|remove|logout|sign out|submit|pay|purchase|checkout|删除|移除|退出|提交|支付|购买)/i;
+      const links: SafeInternalLink[] = [];
+      const seen = new Set<string>();
+      for (const anchor of Array.from(document.querySelectorAll('a[href]'))) {
+        const element = anchor as HTMLAnchorElement;
+        const rect = element.getBoundingClientRect();
+        const text = element.textContent?.replace(/\s+/g, ' ').trim() || element.href;
+        if (rect.width <= 0 || rect.height <= 0) continue;
+        if (element.target === '_blank' || element.hasAttribute('download')) continue;
+        if (destructivePattern.test(text)) continue;
+
+        let url: URL;
+        try {
+          url = new URL(element.href, window.location.href);
+        } catch {
+          continue;
+        }
+        if (url.origin !== window.location.origin) continue;
+        if (url.pathname.startsWith('/api') || url.pathname.startsWith('/_next')) continue;
+        if (url.pathname === window.location.pathname && url.search === window.location.search) {
+          continue;
+        }
+        const href = `${url.pathname}${url.search}${url.hash}`;
+        if (seen.has(href)) continue;
+        seen.add(href);
+        links.push({ href: url.href, text: text.slice(0, 80) });
+        if (links.length >= limit) break;
+      }
+      return links;
+    }, maxLinks)
+    .catch(() => []);
+}
+
+async function clickSafeInternalLink(
+  page: Page,
+  link: SafeInternalLink,
+  budget: ReleaseRuntimeBudget
+): Promise<ReleaseNavigationProbe> {
+  const beforeUrl = page.url();
+  const startedAt = Date.now();
+  try {
+    await page.evaluate((href) => {
+      const match = Array.from(document.querySelectorAll('a[href]')).find((anchor) => {
+        try {
+          return new URL((anchor as HTMLAnchorElement).href, window.location.href).href === href;
+        } catch {
+          return false;
+        }
+      }) as HTMLAnchorElement | undefined;
+      if (!match) {
+        throw new Error(`safe link disappeared before click: ${href}`);
+      }
+      match.click();
+    }, link.href);
+
+    await Promise.race([
+      page.waitForURL((url) => url.href !== beforeUrl, { timeout: budget.navigationMs }),
+      page.waitForLoadState('domcontentloaded', { timeout: budget.navigationMs }),
+      page.waitForTimeout(budget.navigationMs),
+    ]);
+    await Promise.race([
+      page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => undefined),
+      page.waitForTimeout(800),
+    ]);
+
+    const elapsedMs = Date.now() - startedAt;
+    const finalUrl = page.url();
+    const ok = finalUrl !== beforeUrl && elapsedMs <= budget.navigationMs;
+    return {
+      href: link.href,
+      text: link.text,
+      ok,
+      elapsedMs,
+      finalUrl,
+      ...(ok
+        ? {}
+        : {
+            failureReason:
+              finalUrl === beforeUrl
+                ? 'URL did not change after safe internal link click'
+                : `navigation exceeded ${budget.navigationMs}ms budget`,
+          }),
+    };
+  } catch (error) {
+    return {
+      href: link.href,
+      text: link.text,
+      ok: false,
+      elapsedMs: Date.now() - startedAt,
+      finalUrl: page.url(),
+      failureReason: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+function classifyReleaseRuntime(details: {
+  environment: ReleaseRuntimeEnvironment;
+  budget: ReleaseRuntimeBudget;
+  directLoads: ReleaseDirectLoadProbe[];
+  navigationProbes: ReleaseNavigationProbe[];
+  apiTimings: ReleaseApiTiming[];
+  requestFailures: string[];
+  consoleErrors: string[];
+  pageErrors: string[];
+  networkErrors: RouteNetworkIssue[];
+}): ReleaseRuntimeDetails['classification'] {
+  let status: ReleaseRuntimeStatus = 'PASS';
+  let rootCause = 'Route met release runtime budgets and navigation probes.';
+
+  const warmLoad =
+    details.directLoads.find((probe) => probe.pass === 'warm') ?? details.directLoads[0];
+  const coldLoad = details.directLoads.find((probe) => probe.pass === 'cold');
+  const slowApi = details.apiTimings.some(
+    (timing) => timing.durationMs > details.budget.apiRequestMs
+  );
+
+  if (details.pageErrors.length > 0) {
+    status = 'BROKEN';
+    rootCause = details.pageErrors[0];
+  } else if (details.networkErrors.length > 0 || details.requestFailures.length > 0) {
+    status = 'BROKEN';
+    rootCause =
+      details.networkErrors[0] != null
+        ? `${details.networkErrors[0].method} ${details.networkErrors[0].url} -> ${details.networkErrors[0].status}`
+        : details.requestFailures[0];
+  } else if (details.consoleErrors.length > 0) {
+    status = 'BROKEN';
+    rootCause = details.consoleErrors[0];
+  } else if (details.directLoads.some((probe) => probe.stuckLoading)) {
+    status = 'STUCK_LOADING';
+    rootCause = 'Route stayed in a loading-looking state after the release runtime wait window.';
+  } else if (
+    details.navigationProbes.length > 0 &&
+    details.navigationProbes.every((probe) => !probe.ok)
+  ) {
+    // Fail only when the page can't navigate AT ALL (every sampled safe link
+    // failed) — that's the real "无法跳转" defect. A single flaky link (removed
+    // by a re-render between collect and click) or a non-navigating <a> (filter
+    // control, same-page anchor) must not fail a route whose other links work.
+    status = 'NAVIGATION_FAILED';
+    rootCause =
+      details.navigationProbes.find((probe) => !probe.ok)?.failureReason ??
+      'No safe internal link completed navigation (page cannot navigate).';
+  } else if (
+    details.environment === 'production' &&
+    coldLoad &&
+    coldLoad.budgetViolations.length > 0 &&
+    (!warmLoad || warmLoad.budgetViolations.length === 0)
+  ) {
+    status = 'COLD_START_ONLY';
+    rootCause = `Cold production pass exceeded budget (${coldLoad.budgetViolations.join('; ')}), but warm pass was within budget.`;
+  } else if (warmLoad && warmLoad.budgetViolations.length > 0) {
+    status = slowApi ? 'SLOW_API' : 'SLOW_FRONTEND';
+    rootCause = `${status === 'SLOW_API' ? 'API request latency' : 'Frontend render or bundle cost'} exceeded release runtime budget: ${warmLoad.budgetViolations.join('; ')}.`;
+  }
+
+  return {
+    status,
+    rootCause,
+    guardrail: 'pnpm lint:release-runtime',
+    proof:
+      'Rerun release-runtime audit and gate after the fix; temporary violating summaries must fail the gate.',
+    owner: 'codex',
+    deadline: releaseRuntimeDeadline(),
+  };
 }
 
 async function execBinary(
@@ -1707,6 +2115,338 @@ async function executeWebRouteSurface(surface: RouteSurfaceDefinition, samples: 
   }
 }
 
+async function executeReleaseWebRouteSurface(
+  surface: RouteSurfaceDefinition,
+  samples: SampleCatalog
+) {
+  const resolved = resolveConcreteRoute(surface, samples);
+  const budget = releaseRuntimeBudget(RELEASE_RUNTIME_ENVIRONMENT, surface);
+  const budgetLayer = releaseRuntimeLayer(surface);
+
+  if (!resolved.ok) {
+    const classification: ReleaseRuntimeDetails['classification'] = {
+      status: 'BLOCKED_SAMPLE',
+      rootCause: resolved.reason,
+      guardrail: 'pnpm lint:release-runtime',
+      proof:
+        'Provide stable seed/sample data, rerun release-runtime audit, and confirm this route records PASS.',
+      owner: surface.executionOwner,
+      deadline: releaseRuntimeDeadline(),
+    };
+    await writeRecord({
+      surfaceId: surface.surfaceId,
+      surfaceType: surface.surfaceType,
+      platform: surface.platform,
+      persona: surface.persona,
+      routeOrEntry: surface.routeOrEntry,
+      status: 'BLOCKED_SAMPLE',
+      feedbackCategory: 'DATA_ISSUE',
+      executionOwner: surface.executionOwner,
+      validationType: surface.validationType,
+      qualityDimensionsChecked: surface.qualityDimensions,
+      externalPrerequisites: surface.externalPrerequisites,
+      blockedByExternalPrerequisites: [],
+      userVisibleResult:
+        'The release runtime route could not be exercised because no stable sample parameters were available.',
+      evidence: [],
+      issues: [
+        {
+          summary: resolved.reason,
+          rootCause:
+            'Dynamic route parameter resolution lacks a stable sample in current seed/runtime data',
+          acceptance: 'Provide one stable sample id or seed fixture for this route family',
+        },
+      ],
+      shellArtifactsChecked: surface.routeMetadata.supportingShells,
+      notes: [`source=${surface.routeMetadata.sourcePath}`, `budget_layer=${budgetLayer}`],
+      agentBundle: surface.agentBundle,
+      reuseTags: surface.reuseTags,
+      releaseRuntime: {
+        mode: 'release-runtime',
+        environment: RELEASE_RUNTIME_ENVIRONMENT,
+        budgetLayer,
+        budget,
+        directLoads: [],
+        navigationProbes: [],
+        apiTimings: [],
+        requestFailures: [],
+        consoleErrors: [],
+        pageErrors: [],
+        networkErrors: [],
+        classification,
+      },
+    });
+    return;
+  }
+
+  const directLoads: ReleaseDirectLoadProbe[] = [];
+  const navigationProbes: ReleaseNavigationProbe[] = [];
+  const apiTimings: ReleaseApiTiming[] = [];
+  const requestFailures: string[] = [];
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  const networkErrors: RouteNetworkIssue[] = [];
+  const passes: ReleaseDirectLoadProbe['pass'][] =
+    RELEASE_RUNTIME_ENVIRONMENT === 'production' ? ['cold', 'warm'] : ['local'];
+  const targetUrl = `${WEB_BASE}${resolved.concretePath}`;
+  let summary: RouteProbeSummary | null = null;
+  let browser: Browser | null = null;
+  let context: BrowserContext | null = null;
+  let page: Page | null = null;
+
+  try {
+    browser = await chromium.launch({ headless: true });
+    const opened = await openRoutePage(browser, surface);
+    context = opened.context;
+    page = opened.page;
+    const requestStartedAt = new Map<string, number>();
+
+    page.on('pageerror', (error) => {
+      const message = error.message || String(error);
+      if (!isDevOnlyNoise(message)) pageErrors.push(message);
+    });
+    page.on('console', (message) => {
+      if (message.type() !== 'error') return;
+      const text = message.text();
+      if (!isDevOnlyNoise(text)) consoleErrors.push(text);
+    });
+    page.on('request', (request) => {
+      if (isApiRequestUrl(request.url())) {
+        requestStartedAt.set(`${request.method()} ${request.url()}`, Date.now());
+      }
+    });
+    page.on('requestfailed', (request) => {
+      const failure = request.failure();
+      const text = `${request.method()} ${request.url()} failed${failure?.errorText ? `: ${failure.errorText}` : ''}`;
+      if (!isDevOnlyNoise(text) && !isIgnorableRequestFailure(request.url(), text)) {
+        requestFailures.push(text);
+      }
+    });
+    page.on('response', (response) => {
+      const status = response.status();
+      const url = response.url();
+      const key = `${response.request().method()} ${url}`;
+      const startedAt = requestStartedAt.get(key);
+      if (startedAt && isApiRequestUrl(url)) {
+        apiTimings.push({
+          url,
+          method: response.request().method(),
+          status,
+          durationMs: Date.now() - startedAt,
+        });
+        requestStartedAt.delete(key);
+      }
+      if (status < 400) return;
+      if (
+        isIgnorableNetworkNoise(url, status) ||
+        isIgnorableGuestAuthNoise(surface, url, status) ||
+        isDevOnlyNoise(url)
+      ) {
+        return;
+      }
+      networkErrors.push({
+        url,
+        status,
+        statusText: response.statusText(),
+        method: response.request().method(),
+      });
+    });
+
+    for (const pass of passes) {
+      await appendTrace(surface.surfaceId, 'release-runtime:navigate', {
+        pass,
+        concretePath: resolved.concretePath,
+      });
+      const startedAt = Date.now();
+      const response = await page.goto(targetUrl, {
+        waitUntil: 'commit',
+        timeout: Math.max(25_000, budget.loadMs + 10_000),
+      });
+      await Promise.race([
+        page.waitForLoadState('domcontentloaded', { timeout: Math.max(5_000, budget.loadMs) }),
+        page.waitForSelector('body', { timeout: Math.max(5_000, budget.loadMs) }),
+        page.waitForTimeout(Math.max(2_000, budget.loadMs)),
+      ]);
+      await Promise.race([
+        page.waitForLoadState('networkidle', { timeout: 3_000 }).catch(() => undefined),
+        page.waitForTimeout(1_200),
+      ]);
+
+      const timing = await collectReleaseTiming(page, startedAt);
+      summary = await summarizePage(page);
+      const stuckLoading = await detectReleaseStuckLoading(page);
+      directLoads.push({
+        pass,
+        url: targetUrl,
+        finalUrl: page.url(),
+        httpStatus: response?.status() ?? null,
+        timing,
+        visibleTextSample: summary.textSample,
+        stuckLoading,
+        budgetViolations: releaseBudgetViolations(timing, budget),
+      });
+    }
+
+    const routeRoot = routePath(surface, resolved.concretePath);
+    const entryShot = path.join(routeRoot, '01-release-entry.png');
+    await screenshot(page, entryShot);
+    const links = await collectSafeInternalLinks(page, CLI_ARGS.maxLinksPerRoute);
+    const navigationStartUrl = page.url();
+    for (const link of links) {
+      await page.goto(navigationStartUrl, { waitUntil: 'commit', timeout: budget.navigationMs });
+      await Promise.race([
+        page.waitForLoadState('domcontentloaded', { timeout: 3_000 }).catch(() => undefined),
+        page.waitForTimeout(500),
+      ]);
+      navigationProbes.push(await clickSafeInternalLink(page, link, budget));
+    }
+
+    const resultShot = path.join(routeRoot, '02-release-result.png');
+    await screenshot(page, resultShot, true);
+    const detailsForClassification = {
+      environment: RELEASE_RUNTIME_ENVIRONMENT,
+      budget,
+      directLoads,
+      navigationProbes,
+      apiTimings,
+      requestFailures,
+      consoleErrors,
+      pageErrors,
+      networkErrors,
+    };
+    const classification = classifyReleaseRuntime(detailsForClassification);
+    const releaseRuntime: ReleaseRuntimeDetails = {
+      mode: 'release-runtime',
+      environment: RELEASE_RUNTIME_ENVIRONMENT,
+      budgetLayer,
+      budget,
+      directLoads,
+      navigationProbes,
+      apiTimings,
+      requestFailures,
+      consoleErrors,
+      pageErrors,
+      networkErrors,
+      classification,
+    };
+    const releaseRuntimePath = path.join(routeRoot, 'release-runtime.json');
+    const pageSummaryPath = path.join(routeRoot, 'page-summary.json');
+    await writeJson(releaseRuntimePath, releaseRuntime);
+    await writeJson(pageSummaryPath, summary ?? {});
+
+    const issues: SurfaceIssue[] =
+      classification.status === 'PASS'
+        ? []
+        : [
+            {
+              summary: classification.rootCause,
+              rootCause: classification.rootCause,
+              acceptance:
+                'Route must pass release runtime budgets, avoid runtime errors, and complete safe internal navigation probes.',
+            },
+          ];
+
+    await writeRecord({
+      surfaceId: surface.surfaceId,
+      surfaceType: surface.surfaceType,
+      platform: surface.platform,
+      persona: surface.persona,
+      routeOrEntry: surface.routeOrEntry,
+      status: classification.status,
+      feedbackCategory:
+        classification.status === 'PASS' ? defaultFeedbackCategory(surface) : 'CODE_BUG',
+      executionOwner: surface.executionOwner,
+      validationType: surface.validationType,
+      qualityDimensionsChecked: surface.qualityDimensions,
+      externalPrerequisites: surface.externalPrerequisites,
+      blockedByExternalPrerequisites: [],
+      userVisibleResult: routeVisibleResult(
+        resolved.concretePath,
+        summary ?? {
+          title: '',
+          heading: '',
+          primaryAction: '',
+          textSample: '',
+        }
+      ),
+      evidence: [rel(entryShot), rel(resultShot), rel(pageSummaryPath), rel(releaseRuntimePath)],
+      issues,
+      shellArtifactsChecked: surface.routeMetadata.supportingShells,
+      notes: [
+        `concrete_path=${resolved.concretePath}`,
+        `budget_layer=${budgetLayer}`,
+        `navigation_probes=${navigationProbes.length}`,
+        `api_requests=${apiTimings.length}`,
+      ],
+      agentBundle: surface.agentBundle,
+      reuseTags: surface.reuseTags,
+      releaseRuntime,
+    });
+  } catch (error) {
+    const errorText = error instanceof Error ? error.stack || error.message : String(error);
+    const errorPath = path.join(
+      routePath(surface, resolved.concretePath),
+      'release-route-error.txt'
+    );
+    const classification: ReleaseRuntimeDetails['classification'] = {
+      status: 'NAVIGATION_FAILED',
+      rootCause: errorText.split('\n')[0],
+      guardrail: 'pnpm lint:release-runtime',
+      proof: 'Rerun release-runtime audit and confirm route reaches a stable user-visible state.',
+      owner: surface.executionOwner,
+      deadline: releaseRuntimeDeadline(),
+    };
+    const releaseRuntime: ReleaseRuntimeDetails = {
+      mode: 'release-runtime',
+      environment: RELEASE_RUNTIME_ENVIRONMENT,
+      budgetLayer,
+      budget,
+      directLoads,
+      navigationProbes,
+      apiTimings,
+      requestFailures,
+      consoleErrors,
+      pageErrors,
+      networkErrors,
+      classification,
+    };
+    await writeText(errorPath, `${errorText}\n`);
+    await writeRecord({
+      surfaceId: surface.surfaceId,
+      surfaceType: surface.surfaceType,
+      platform: surface.platform,
+      persona: surface.persona,
+      routeOrEntry: surface.routeOrEntry,
+      status: 'NAVIGATION_FAILED',
+      feedbackCategory: 'CODE_BUG',
+      executionOwner: surface.executionOwner,
+      validationType: surface.validationType,
+      qualityDimensionsChecked: surface.qualityDimensions,
+      externalPrerequisites: surface.externalPrerequisites,
+      blockedByExternalPrerequisites: [],
+      userVisibleResult:
+        'The release runtime route failed before a stable user-visible state was reached.',
+      evidence: [rel(errorPath)],
+      issues: [
+        {
+          summary: classification.rootCause,
+          rootCause: 'Release runtime navigation failed before the route could be measured',
+          acceptance: 'Route should open and emit release-runtime timing evidence',
+        },
+      ],
+      shellArtifactsChecked: surface.routeMetadata.supportingShells,
+      notes: [`concrete_path=${resolved.concretePath}`, `budget_layer=${budgetLayer}`],
+      agentBundle: surface.agentBundle,
+      reuseTags: surface.reuseTags,
+      releaseRuntime,
+    });
+  } finally {
+    await page?.close().catch(() => undefined);
+    await context?.close().catch(() => undefined);
+    await browser?.close().catch(() => undefined);
+  }
+}
+
 async function executeMobileRouteSurface(surface: RouteSurfaceDefinition, samples: SampleCatalog) {
   const resolved = resolveConcreteRoute(surface, samples);
   if (!resolved.ok) {
@@ -1882,6 +2622,12 @@ async function executeMobileRouteSurface(surface: RouteSurfaceDefinition, sample
 }
 
 async function executeRouteSurface(surface: RouteSurfaceDefinition, samples: SampleCatalog) {
+  if (RUNTIME_MODE === 'release-runtime') {
+    if (surface.platform === 'web') {
+      await executeReleaseWebRouteSurface(surface, samples);
+    }
+    return;
+  }
   if (surface.platform === 'web') {
     await executeWebRouteSurface(surface, samples);
     return;
@@ -1890,11 +2636,14 @@ async function executeRouteSurface(surface: RouteSurfaceDefinition, samples: Sam
 }
 
 async function environmentHealth() {
+  const apiHealthUrl = API_BASE.replace(/\/api\/v1\/?$/, '/health');
+  const truncateForLog = (text: string, max = 400) =>
+    text.length > max ? `${text.slice(0, max)}... [truncated ${text.length - max} chars]` : text;
   const checks = await Promise.allSettled([
     fetch(`${WEB_BASE}`).then((response) => response.status),
-    fetch(`http://localhost:4101/health`).then(async (response) => ({
+    fetch(apiHealthUrl).then(async (response) => ({
       status: response.status,
-      body: await response.text(),
+      body: truncateForLog(await response.text()),
     })),
   ]);
 
@@ -1933,6 +2682,12 @@ function surfaceExecutionPriority(surfaceType: SurfaceType) {
   }
 }
 
+function renderHealthStatus(check: { available: boolean; status?: number; error?: string }) {
+  return check.available
+    ? `available (${check.status ?? 'unknown'})`
+    : `unavailable (${check.error})`;
+}
+
 async function writeRunArtifacts(
   registry: FullSurfaceRegistry,
   surfaces: readonly AnySurfaceDefinition[],
@@ -1942,13 +2697,10 @@ async function writeRunArtifacts(
     .map((surface) => RECORDS.get(surface.surfaceId))
     .filter((record): record is FullSurfaceRecord => Boolean(record))
     .sort((left, right) => left.surfaceId.localeCompare(right.surfaceId));
-  const counts = records.reduce<Record<SurfaceStatus, number>>(
-    (acc, record) => {
-      acc[record.status] += 1;
-      return acc;
-    },
-    { PASS: 0, ISSUE: 0, BROKEN: 0, BLOCKED: 0, SKIPPED: 0 }
-  );
+  const counts = records.reduce<Record<string, number>>((acc, record) => {
+    acc[record.status] = (acc[record.status] ?? 0) + 1;
+    return acc;
+  }, {});
   const selected = {
     batch: BATCH_FILTER.size > 0 ? [...BATCH_FILTER] : null,
     platform: PLATFORM_FILTER.size > 0 ? [...PLATFORM_FILTER] : null,
@@ -1988,16 +2740,16 @@ async function writeRunArtifacts(
     `| routes | ${selectedCounts(surfaces).route} |`,
     `| capabilities | ${selectedCounts(surfaces).capability} |`,
     `| journeys | ${selectedCounts(surfaces).journey} |`,
-    `| PASS | ${counts.PASS} |`,
-    `| ISSUE | ${counts.ISSUE} |`,
-    `| BROKEN | ${counts.BROKEN} |`,
-    `| BLOCKED | ${counts.BLOCKED} |`,
-    `| SKIPPED | ${counts.SKIPPED} |`,
+    `| PASS | ${counts.PASS ?? 0} |`,
+    `| ISSUE | ${counts.ISSUE ?? 0} |`,
+    `| BROKEN | ${counts.BROKEN ?? 0} |`,
+    `| BLOCKED | ${counts.BLOCKED ?? 0} |`,
+    `| SKIPPED | ${counts.SKIPPED ?? 0} |`,
     '',
     '## Environment',
     '',
-    `- web: ${health.web.available ? `available (${health.web.status})` : `unavailable (${health.web.error})`}`,
-    `- api: ${health.api.available ? `available (${health.api.status})` : `unavailable (${health.api.error})`}`,
+    `- web: ${renderHealthStatus(health.web)}`,
+    `- api: ${renderHealthStatus(health.api)}`,
     '',
     '## Selected Surface IDs',
     '',
@@ -2005,6 +2757,93 @@ async function writeRunArtifacts(
     '',
   ].join('\n');
   await writeText(path.join(EVIDENCE_ROOT, 'runtime-summary.md'), `${markdown}\n`);
+
+  if (RUNTIME_MODE === 'release-runtime') {
+    const releaseRecords = records.filter((record) => record.platform === 'web');
+    const closureLedger = releaseRecords
+      .filter((record) => record.status !== 'PASS')
+      .map((record) => ({
+        surfaceId: record.surfaceId,
+        route: record.routeOrEntry,
+        status: record.status,
+        owner: record.releaseRuntime?.classification.owner ?? record.executionOwner,
+        rootCause:
+          record.releaseRuntime?.classification.rootCause ??
+          record.issues[0]?.rootCause ??
+          record.issues[0]?.summary ??
+          'Unknown release runtime failure',
+        guardrail: record.releaseRuntime?.classification.guardrail ?? 'pnpm lint:release-runtime',
+        proof:
+          record.releaseRuntime?.classification.proof ??
+          'Rerun release-runtime audit and gate after fixing this route.',
+        deadline: record.releaseRuntime?.classification.deadline ?? releaseRuntimeDeadline(),
+        evidence: record.evidence,
+      }));
+    const hardFailStatuses = new Set<string>(RELEASE_RUNTIME_HARD_FAIL_STATUSES);
+    const slowStatuses = new Set<string>(RELEASE_RUNTIME_SLOW_STATUSES);
+    const releaseSummary = {
+      schemaVersion: '2026-06-08.v1',
+      mode: RUNTIME_MODE,
+      environment: RELEASE_RUNTIME_ENVIRONMENT,
+      auditDate: AUDIT_DATE,
+      generatedAt: new Date().toISOString(),
+      registryVersion: registry.version,
+      webBase: WEB_BASE,
+      apiBase: API_BASE,
+      evidenceRoot: rel(EVIDENCE_ROOT),
+      routeCount: releaseRecords.length,
+      expectedWebRouteCount: registry.counts.webStandaloneRoutes,
+      statusCounts: counts,
+      budgets: RELEASE_RUNTIME_BUDGETS[RELEASE_RUNTIME_ENVIRONMENT],
+      hardFailStatuses: [...hardFailStatuses],
+      slowStatuses: [...slowStatuses],
+      records: releaseRecords.map((record) => ({
+        surfaceId: record.surfaceId,
+        route: record.routeOrEntry,
+        persona: record.persona,
+        status: record.status,
+        evidence: record.evidence,
+        releaseRuntime: record.releaseRuntime,
+      })),
+      closureLedger,
+    };
+    await writeJson(path.join(EVIDENCE_ROOT, 'release-runtime-summary.json'), releaseSummary);
+
+    const releaseMarkdown = [
+      `# Release Runtime Summary · ${AUDIT_DATE} · ${RELEASE_RUNTIME_ENVIRONMENT}`,
+      '',
+      '| metric | value |',
+      '| --- | --- |',
+      `| web_base | ${WEB_BASE} |`,
+      `| api_base | ${API_BASE} |`,
+      `| routes_recorded | ${releaseRecords.length}/${registry.counts.webStandaloneRoutes} |`,
+      `| PASS | ${counts.PASS ?? 0} |`,
+      `| BROKEN | ${counts.BROKEN ?? 0} |`,
+      `| NAVIGATION_FAILED | ${counts.NAVIGATION_FAILED ?? 0} |`,
+      `| STUCK_LOADING | ${counts.STUCK_LOADING ?? 0} |`,
+      `| SLOW_FRONTEND | ${counts.SLOW_FRONTEND ?? 0} |`,
+      `| SLOW_API | ${counts.SLOW_API ?? 0} |`,
+      `| COLD_START_ONLY | ${counts.COLD_START_ONLY ?? 0} |`,
+      `| BLOCKED_SAMPLE | ${counts.BLOCKED_SAMPLE ?? 0} |`,
+      '',
+      '## Closure Ledger',
+      '',
+      closureLedger.length === 0
+        ? 'All recorded web routes passed release runtime gates.'
+        : '| surface | status | root cause | owner | deadline |',
+      ...(closureLedger.length === 0
+        ? []
+        : [
+            '| --- | --- | --- | --- | --- |',
+            ...closureLedger.map(
+              (item) =>
+                `| ${item.surfaceId} | ${item.status} | ${item.rootCause.replace(/\|/g, '/').slice(0, 160)} | ${item.owner} | ${item.deadline} |`
+            ),
+          ]),
+      '',
+    ].join('\n');
+    await writeText(path.join(EVIDENCE_ROOT, 'release-runtime-summary.md'), `${releaseMarkdown}\n`);
+  }
 }
 
 async function loadExistingRecordsForSelectedSurfaces(surfaces: readonly AnySurfaceDefinition[]) {
@@ -2022,28 +2861,42 @@ async function loadExistingRecordsForSelectedSurfaces(surfaces: readonly AnySurf
 
 async function main() {
   const registry = buildFullSurfaceRegistry();
-  const surfaces = selectedSurfaces(registry).sort((left, right) => {
-    const priorityDiff =
-      surfaceExecutionPriority(left.surfaceType) - surfaceExecutionPriority(right.surfaceType);
-    if (priorityDiff !== 0) {
-      return priorityDiff;
-    }
-    return left.surfaceId.localeCompare(right.surfaceId);
-  });
+  const baseSurfaces =
+    RUNTIME_MODE === 'release-runtime' ? registry.routeInventory.web : selectedSurfaces(registry);
+  const surfaces = baseSurfaces
+    .filter((surface) => {
+      if (SURFACE_ID_FILTER.size > 0 && !SURFACE_ID_FILTER.has(surface.surfaceId)) return false;
+      if (BATCH_FILTER.size > 0 && !BATCH_FILTER.has(surface.agentBundle)) return false;
+      if (PLATFORM_FILTER.size > 0 && !PLATFORM_FILTER.has(surface.platform)) return false;
+      if (PERSONA_FILTER.size > 0 && !PERSONA_FILTER.has(surface.persona)) return false;
+      return true;
+    })
+    .sort((left, right) => {
+      const priorityDiff =
+        surfaceExecutionPriority(left.surfaceType) - surfaceExecutionPriority(right.surfaceType);
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+      return left.surfaceId.localeCompare(right.surfaceId);
+    });
   const health = await environmentHealth();
 
   if (CLI_ARGS.printConfig) {
     console.log(
       JSON.stringify(
         {
+          mode: RUNTIME_MODE,
+          releaseEnvironment: RELEASE_RUNTIME_ENVIRONMENT,
           auditDate: AUDIT_DATE,
           registryVersion: registry.version,
           fullSurfaceRegistryVersion: FULL_SURFACE_REGISTRY_VERSION,
           evidenceRoot: rel(EVIDENCE_ROOT),
+          webBase: WEB_BASE,
+          apiBase: API_BASE,
           selectedSurfaceCount: surfaces.length,
           selectedCounts: selectedCounts(surfaces),
           selectedSurfaceIds: surfaces.map((surface) => surface.surfaceId),
-          environment: health,
+          environmentHealth: health,
         },
         null,
         2
@@ -2058,9 +2911,13 @@ async function main() {
 
   await ensureDir(EVIDENCE_ROOT);
   await writeJson(path.join(EVIDENCE_ROOT, 'runtime-config.json'), {
+    mode: RUNTIME_MODE,
+    environment: RELEASE_RUNTIME_ENVIRONMENT,
     auditDate: AUDIT_DATE,
     registryVersion: registry.version,
     evidenceRoot: rel(EVIDENCE_ROOT),
+    webBase: WEB_BASE,
+    apiBase: API_BASE,
     selectedSurfaceIds: surfaces.map((surface) => surface.surfaceId),
     selectedCounts: selectedCounts(surfaces),
     filters: {
@@ -2079,7 +2936,6 @@ async function main() {
     return;
   }
 
-  const applicantSession = await apiLogin(ACCOUNTS.applicant!);
   const needsAdminSession = surfaces.some(
     (surface) =>
       (surface.surfaceType === 'route' &&
@@ -2090,7 +2946,23 @@ async function main() {
         surface.agentBundle === 'batch-4-admin-data-security-mcp') ||
       (surface.surfaceType === 'journey' && surface.persona === 'admin')
   );
-  const adminSession = needsAdminSession ? await apiLogin(ACCOUNTS.admin!) : undefined;
+  const authDiagnostics: Record<string, { ok: boolean; userId?: string; error?: string }> = {};
+  const applicantLogin = await releaseRuntimeApiLogin('applicant', ACCOUNTS.applicant!);
+  const applicantSession = applicantLogin.session;
+  authDiagnostics.applicant = applicantSession
+    ? { ok: true, userId: applicantSession.user.id }
+    : { ok: false, error: applicantLogin.error };
+
+  const adminLogin = needsAdminSession
+    ? await releaseRuntimeApiLogin('admin', ACCOUNTS.admin!)
+    : { session: null, error: undefined };
+  const adminSession = adminLogin.session;
+  if (needsAdminSession) {
+    authDiagnostics.admin = adminSession
+      ? { ok: true, userId: adminSession.user.id }
+      : { ok: false, error: adminLogin.error };
+  }
+  await writeJson(path.join(EVIDENCE_ROOT, 'runtime-auth.json'), authDiagnostics);
   const samples = await buildSampleCatalog(applicantSession, adminSession);
   await writeJson(path.join(EVIDENCE_ROOT, 'sample-catalog.json'), samples);
 

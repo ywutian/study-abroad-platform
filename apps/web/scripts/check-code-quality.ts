@@ -14,6 +14,8 @@
  * 10. Undefined --ds-* references in web source
  * 11. Custom CSS Grid template (grid-cols-[...]) without min-w-0
  *     on the grid container itself (PR #214/#215/#217 root cause)
+ * 12. Release navigation safety: no bare window.location navigation or
+ *     hardcoded locale routes without an explicit release-runtime waiver
  *
  * Usage:
  *   npx tsx scripts/check-code-quality.ts           # Check all
@@ -172,6 +174,14 @@ function isCachePolicyIgnored(lines: string[], index: number): boolean {
   return index > 0 && lines[index - 1].includes('@cache-policy-ignore-next-line');
 }
 
+function isReleaseNavigationIgnored(lines: string[], index: number): boolean {
+  const cur = lines[index] ?? '';
+  const prev = index > 0 ? lines[index - 1] : '';
+  return (
+    cur.includes('@release-navigation-allowed') || prev.includes('@release-navigation-allowed')
+  );
+}
+
 const FORBIDDEN_SHADOW_PATTERNS = [
   /shadow-\[[^\]]*oklch\([^)]*[ _]0\.(?:1\d|[2-9]\d?)[^)]*\)[^\]]*\]/,
   /box-shadow:\s*[^;]*oklch\([^)]*[ _]0\.(?:1\d|[2-9]\d?)[^)]*\)/,
@@ -200,6 +210,10 @@ const ARBITRARY_RADIUS_PATTERNS = [
 const DECORATIVE_ROTATE_PATTERNS = [
   /transform:\s*[^;]*\brotate\(\s*-?(?:[1-9]|[1-3]\d|4[0-4])(?:\.\d+)?\s*deg\b/,
 ];
+const RELEASE_WINDOW_NAVIGATION_PATTERN =
+  /\b(?:window\.location\.href\s*=|window\.location\.(?:assign|replace|reload)\s*\()/;
+const HARDCODED_LOCALE_NAVIGATION_PATTERN =
+  /(?:router\.(?:push|replace)|redirect|href=)\s*(?:\(|=)?\s*\{?\s*['"`]\/(?:en|zh)(?:\/|\?|#|['"`])/;
 const DS_ALIAS_NAMES = [
   '--primary',
   '--primary-foreground',
@@ -904,6 +918,43 @@ function checkUnguardedAuthQuery(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+// ── Release navigation guardrails ──────────────────────────
+
+function checkReleaseNavigationSafety(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (!filePath.endsWith('.tsx') && !filePath.endsWith('.ts')) return issues;
+  if (filePath.includes('.test.') || filePath.includes('.spec.')) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isReleaseNavigationIgnored(lines, i)) continue;
+
+    if (RELEASE_WINDOW_NAVIGATION_PATTERN.test(line)) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-bare-window-location-navigation',
+        message:
+          'Bare window.location navigation bypasses next-intl routing/progress and can look like a stuck release transition. Use next-intl router/Link, or add // @release-navigation-allowed with the reload/escape reason.',
+        severity: 'error',
+      });
+    }
+
+    if (HARDCODED_LOCALE_NAVIGATION_PATTERN.test(line)) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-hardcoded-locale-navigation',
+        message:
+          'Hardcoded /en or /zh navigation bypasses next-intl locale handling. Navigate with locale-less hrefs plus next-intl router/Link.',
+        severity: 'error',
+      });
+    }
+  }
+
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
@@ -943,7 +994,8 @@ function main() {
       ...checkInlineListQueryKey(filePath, lines),
       ...checkDynamicStaleTimeOnList(filePath, lines),
       ...checkListQueryNeedsKeepPrevious(filePath, lines),
-      ...checkUnguardedAuthQuery(filePath, lines)
+      ...checkUnguardedAuthQuery(filePath, lines),
+      ...checkReleaseNavigationSafety(filePath, lines)
     );
   }
 

@@ -79,6 +79,13 @@ import { FeatureFlagGuard } from './common/feature-flags';
             limit: config.get<number>('THROTTLE_LIMIT') ?? 100,
           },
         ],
+        // Test-only escape hatch: the release-runtime CI job drives every route
+        // as a single session, which trips per-user throttles (incl. strict
+        // per-route @Throttle decorators) and floods the page audit with 429s.
+        // Honoured ONLY when THROTTLE_DISABLED=true is explicitly set — the GCP
+        // production deploy never sets it, so throttling stays fully active in
+        // prod. Keeps the release-runtime audit measuring real page behaviour.
+        skipIf: () => process.env.THROTTLE_DISABLED === 'true',
       }),
     }),
     EventEmitterModule.forRoot(),

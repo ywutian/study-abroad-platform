@@ -425,6 +425,144 @@ jobs:
           path: e2e-report/
           retention-days: 7
 
+  release-runtime:
+    name: Web Release Runtime Gate
+    runs-on: ubuntu-latest
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.shared == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: studyabroad_release_runtime
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Generate Prisma Client
+        run: pnpm --filter api exec prisma generate
+
+      - name: Enable pgvector extension
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d studyabroad_release_runtime -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+      - name: Apply migrations
+        run: pnpm --filter api exec prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_release_runtime?schema=public
+
+      # First build of shared package: the prisma seed script imports from
+      # @study-abroad/shared/dist/utils via require() (CJS resolution), so dist/
+      # must exist before `prisma db seed`. Mirrors the e2e / gold-fixtures jobs.
+      - name: Build shared package (initial — for seed script)
+        run: pnpm --filter @study-abroad/shared build
+
+      - name: Seed database
+        # Base seed (schools + demo@example.com + admin@example.com) then the
+        # full demo seed, which creates the audit's applicant user
+        # alice.zhang@demo.studyabroad.com (VERIFIED, onboardingCompleted) with
+        # rich profile/essay/prediction data. Without db:seed:demo the audit's
+        # applicant login 401s and every protected route fails the gate.
+        run: |
+          pnpm --filter api exec prisma db seed
+          pnpm --filter api db:seed:demo
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_release_runtime?schema=public
+
+      - name: Build API and Web
+        run: |
+          pnpm --filter api build
+          NEXT_PUBLIC_API_URL=http://localhost:4101 pnpm --filter web build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_release_runtime?schema=public
+
+      - name: Start local production services
+        run: |
+          pnpm --filter api start:prod > /tmp/release-runtime-api.log 2>&1 &
+          pnpm --filter web start > /tmp/release-runtime-web.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:4101/health >/dev/null 2>&1 && curl -fsS http://localhost:4100 >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API log:"
+          cat /tmp/release-runtime-api.log || true
+          echo "Web log:"
+          cat /tmp/release-runtime-web.log || true
+          exit 1
+        env:
+          NODE_ENV: production
+          PORT: 4101
+          NEXT_PUBLIC_API_URL: http://localhost:4101
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_release_runtime?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key-for-ci-e2e-testing
+          JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci
+          JWT_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+          # NODE_ENV=production triggers env.validation's prod-required checks
+          # (VAULT_ENCRYPTION_KEY / CORS_ORIGINS / FRONTEND_URL) — supply test
+          # values so `api start:prod` boots. Cookies get Secure:true in prod,
+          # but the audit re-adds them to the browser as secure:false, so http
+          # localhost auth still works.
+          VAULT_ENCRYPTION_KEY: test-only-vault-encryption-key-release-runtime-do-not-use
+          CORS_ORIGINS: http://localhost:4100
+          FRONTEND_URL: http://localhost:4100
+          # Disable rate limiting for the audit only: one session drives all 81
+          # routes and would otherwise self-throttle (429) on shared/layout
+          # endpoints. Prod never sets this, so throttling stays active there.
+          THROTTLE_DISABLED: 'true'
+
+      - name: Run release runtime audit
+        run: pnpm full-surface:run -- --mode=release-runtime --environment=local --web-base=http://localhost:4100 --api-base=http://localhost:4101/api/v1 --force-rerun
+        env:
+          CI: true
+
+      - name: Gate release runtime evidence
+        run: pnpm lint:release-runtime -- --environment=local --max-age-hours=2
+
+      - name: Upload release runtime evidence
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: release-runtime-evidence
+          path: e2e-report/release-runtime-*/
+          retention-days: 14
+
   application-analysis-governance:
     name: Application Analysis Governance
     runs-on: ubuntu-latest

@@ -316,6 +316,7 @@ class ApiClient {
   private redirectToLogin(): void {
     if (typeof window !== 'undefined') {
       const locale = window.location.pathname.split('/')[1] || 'zh';
+      // @release-navigation-allowed: non-React API client escape hatch after refresh failure.
       window.location.href = `/${locale}/login`;
     }
   }

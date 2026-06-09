@@ -100,9 +100,23 @@ export default function AdminUserDetailPage() {
   }
 
   const counts = user._count ?? { admissionCases: 0, reviewsGiven: 0 };
-  const todayUsage = usage?.today ?? { tokens: 0, cost: 0, calls: 0 };
-  const monthUsage = usage?.month ?? { tokens: 0, cost: 0, calls: 0 };
-  const remainingUsage = usage?.remaining ?? { daily: 0, monthly: 0 };
+  // Coerce per-field (not just the top-level object): the API may return a
+  // partial today/month/remaining (e.g. a user with no AI usage), and a missing
+  // sub-field would otherwise crash `.toLocaleString()` / `.toFixed()`.
+  const todayUsage = {
+    tokens: usage?.today?.tokens ?? 0,
+    cost: usage?.today?.cost ?? 0,
+    calls: usage?.today?.calls ?? 0,
+  };
+  const monthUsage = {
+    tokens: usage?.month?.tokens ?? 0,
+    cost: usage?.month?.cost ?? 0,
+    calls: usage?.month?.calls ?? 0,
+  };
+  const remainingUsage = {
+    daily: usage?.remaining?.daily ?? 0,
+    monthly: usage?.remaining?.monthly ?? 0,
+  };
 
   return (
     <>

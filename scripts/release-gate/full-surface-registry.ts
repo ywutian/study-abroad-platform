@@ -590,9 +590,17 @@ function buildMobileRouteSurface(filePath: string): RouteSurfaceDefinition {
 }
 
 function discoverWebRoutes() {
-  return walkFiles(WEB_APP_ROOT, (filePath) => filePath.endsWith(`${path.sep}page.tsx`)).map(
-    buildWebRouteSurface
-  );
+  return walkFiles(WEB_APP_ROOT, (filePath) => filePath.endsWith(`${path.sep}page.tsx`))
+    .filter(
+      // app/[locale]/qa/* is an e2e visual-test harness: each page calls
+      // notFound() unless ENABLE_E2E_FIXTURES==='true' and renders from a
+      // shared fixture (not product data), so it 404s in any normal/production
+      // runtime. It is not user-facing release surface — it's exercised by the
+      // e2e visual specs (application-analysis-render/visual) — so exclude it
+      // from the full-surface registry (and thus the release-runtime gate).
+      (filePath) => !filePath.includes(`${path.sep}qa${path.sep}`)
+    )
+    .map(buildWebRouteSurface);
 }
 
 function discoverMobileRoutes() {

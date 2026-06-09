@@ -575,6 +575,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                       <p className="text-sm text-muted-foreground mb-4">
                         {t('detail.ai.costHint')}
                       </p>
+                      {/* @release-navigation-allowed: unauthenticated AI CTA escapes a nested dialog state. */}
                       <Button onClick={() => (window.location.href = '/login')}>
                         {t('detail.ai.loginButton')}
                       </Button>
