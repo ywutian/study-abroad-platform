@@ -580,6 +580,7 @@ export default function ResumeEditPage() {
   });
 
   const importProfilePreviewMutation = useMutation({
+    // @cache-invalidation-allowed: preview-only — writes the importable section ids to local state (setProfileImportSectionIds); the apply step (importProfileMutation) does setQueryData + invalidate
     mutationFn: () =>
       apiClient.post<ResumeImportPreview>(resumeRoutes.importProfilePreview(resumeId)),
     onSuccess: (preview) => {
@@ -624,6 +625,7 @@ export default function ResumeEditPage() {
     mutationFn: (snapshotId: string) =>
       apiClient.post<Resume>(resumeRoutes.snapshotRestore(resumeId, snapshotId)),
     onSuccess: (data) => {
+      // @cache-invalidation-allowed: directly writes the restored resume into the ['resume', resumeId] cache via queryClient.setQueryData instead of invalidating
       queryClient.setQueryData(['resume', resumeId], data);
       toast.success(t('workbench.toasts.snapshotRestored'));
     },
@@ -823,6 +825,7 @@ export default function ResumeEditPage() {
   });
 
   const aiOptimizeMutation = useMutation({
+    // @cache-invalidation-allowed: AI optimize — writes the suggested result to local state (setOptimizeState) for preview; applied later via a separate mutation, no cached list/detail changes here
     mutationFn: (payload: { sectionId: string; itemId?: string }) =>
       apiClient.post<BulletOptimizeResult>(
         resumeRoutes.aiOptimize(resumeId),
@@ -836,6 +839,7 @@ export default function ResumeEditPage() {
   });
 
   const aiSuggestMutation = useMutation({
+    // @cache-invalidation-allowed: AI suggest — writes the suggested content to local state (setSuggestionState) for preview; applied later via a separate mutation, no cached list/detail changes here
     mutationFn: (sectionType: string) =>
       apiClient.post<ContentSuggestionResult>(
         resumeRoutes.aiSuggestContent(resumeId),

@@ -114,6 +114,7 @@ export function ExperimentsTab({
         policyVersionId: linkedPolicyId || undefined,
       }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(t('experiments.created'));
       invalidate();
       setVersion('');
@@ -124,6 +125,7 @@ export function ExperimentsTab({
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowExperimentShadow(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(t('experiments.shadowSuccess'));
       invalidate();
     },
@@ -133,6 +135,7 @@ export function ExperimentsTab({
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowExperimentCanary(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(t('experiments.canarySuccess'));
       invalidate();
     },
@@ -142,6 +145,7 @@ export function ExperimentsTab({
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowExperimentEvaluate(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(t('experiments.evaluateSuccess'));
       invalidate();
     },
@@ -151,6 +155,7 @@ export function ExperimentsTab({
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowExperimentActivate(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(t('experiments.activateSuccess'));
       invalidate();
     },
@@ -160,6 +165,7 @@ export function ExperimentsTab({
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowExperimentRetire(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(t('experiments.retireSuccess'));
       invalidate();
     },
@@ -172,6 +178,7 @@ export function ExperimentsTab({
         {}
       ),
     onSuccess: (summary) => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the experiments/evaluations/gates keys
       toast.success(
         t('experiments.sweepSuccess', {
           activated: summary.activated.length,
@@ -184,6 +191,7 @@ export function ExperimentsTab({
   });
 
   const recourseMutation = useMutation({
+    // @cache-invalidation-allowed: preview-only — writes result to local React state (setRecoursePreview), no cached list/detail
     mutationFn: () =>
       apiClient.post<ApplicationAnalysisRecoursePreview>(
         adminRoutes.applicationAnalysisWorkflowRecoursePreview(),
@@ -196,6 +204,7 @@ export function ExperimentsTab({
   });
 
   const uncertaintyMutation = useMutation({
+    // @cache-invalidation-allowed: preview-only — writes result to local React state (setUncertaintyPreview), no cached list/detail
     mutationFn: () =>
       apiClient.post<ApplicationAnalysisUncertaintyPreview>(
         adminRoutes.applicationAnalysisWorkflowUncertaintyPreview(),

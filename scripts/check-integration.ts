@@ -1246,14 +1246,22 @@ function checkCacheInvalidation(): Issue[] {
         }
 
         if (braceCount <= 0 && mutationBlock.length > 10) {
-          // End of mutation block
-          if (isWriteMutation && !mutationBlock.includes('invalidateQueries')) {
+          // End of mutation block.
+          // Escape hatch: a `// @cache-invalidation-allowed: <reason>` comment
+          // inside the mutation block documents why no invalidateQueries is
+          // needed (full-page reload, redirect, parent refetch, no cached list,
+          // etc.) — mirrors the @*-allowed suppression convention elsewhere.
+          if (
+            isWriteMutation &&
+            !mutationBlock.includes('invalidateQueries') &&
+            !mutationBlock.includes('@cache-invalidation-allowed')
+          ) {
             issues.push({
               rule: 'cache-invalidation-audit',
               severity: 'warning',
               file: rel(file),
               line: mutationStart,
-              message: `useMutation with write operation but no invalidateQueries in onSuccess`,
+              message: `useMutation with write operation but no invalidateQueries in onSuccess (suppress with // @cache-invalidation-allowed: <reason>)`,
             });
           }
           inMutation = false;

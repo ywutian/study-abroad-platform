@@ -65,6 +65,7 @@ export default function RankingPage() {
   });
 
   const saveMutation = useMutation({
+    // @cache-invalidation-allowed: one-shot save (toast + reset form); saved rankings are not listed via any React Query cache (the in-file ranking.calculate query is unaffected)
     mutationFn: (data: { name: string; isPublic: boolean } & RankingWeights) =>
       apiClient.post(rankingRoutes.list(), data),
     onSuccess: () => {

@@ -186,6 +186,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
 
   // AI分析mutation
   const analyzeMutation = useMutation({
+    // @cache-invalidation-allowed: AI analyze action (toast only); result is not persisted to a cache shown here, and the in-file essay-gallery-detail query is unaffected
     mutationFn: () =>
       apiClient.post<AnalysisResult>(essayAiRoutes.galleryAnalyze(essayId), {
         schoolName: essay?.school?.name,

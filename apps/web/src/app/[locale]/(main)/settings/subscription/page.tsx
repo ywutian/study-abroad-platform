@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -70,6 +70,7 @@ export default function SubscriptionPage() {
   const tCommon = useTranslations('common');
   const format = useFormatter();
   const authReady = useAuthReady();
+  const queryClient = useQueryClient();
 
   const { data: subscription } = useQuery<SubscriptionData>({
     queryKey: ['subscription-me'],
@@ -89,6 +90,8 @@ export default function SubscriptionPage() {
     mutationFn: (plan: string) => apiClient.post(subscriptionRoutes.subscribe(), { plan }),
     onSuccess: () => {
       toast.success(t('upgradeSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['subscription-me'] });
+      queryClient.invalidateQueries({ queryKey: ['billing-history'] });
     },
   });
 

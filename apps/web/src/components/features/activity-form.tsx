@@ -270,6 +270,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
   });
 
   const refineMutation = useMutation({
+    // @cache-invalidation-allowed: AI refine — writes the suggestion into the form field via form.setValue; no cached list/detail changes (save happens via updateMutation which invalidates)
     mutationFn: (activityId: string) =>
       apiClient.post<{ refined: string; tips: string }>(
         `/profiles/me/activities/${activityId}/refine`
@@ -288,6 +289,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
   });
 
   const generateCommonAppMutation = useMutation({
+    // @cache-invalidation-allowed: AI generate — writes the result into the form field via form.setValue; no cached list/detail changes (save happens via updateMutation which invalidates)
     mutationFn: (activityId: string) =>
       apiClient.post<{ commonAppDescription: string }>(
         `/profiles/me/activities/${activityId}/generate-common-app-description`,

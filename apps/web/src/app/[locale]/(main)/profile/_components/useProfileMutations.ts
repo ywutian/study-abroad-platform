@@ -88,6 +88,7 @@ export function useProfileMutations() {
   const updateMutation = useMutation({
     mutationFn: (data: ProfileUpdatePayload) => apiClient.put(profileRoutes.me(), data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('common.success'));
     },
@@ -96,6 +97,7 @@ export function useProfileMutations() {
   const deleteScoreMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.testScore(id)),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('profile.toast.scoreDeleted'));
     },
@@ -104,6 +106,7 @@ export function useProfileMutations() {
   const deleteActivityMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.activity(id)),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('profile.toast.activityDeleted'));
     },
@@ -113,6 +116,7 @@ export function useProfileMutations() {
     mutationFn: (activityIds: string[]) =>
       apiClient.put(`${profileRoutes.activities()}/reorder`, { ids: activityIds }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
     },
   });
@@ -128,6 +132,7 @@ export function useProfileMutations() {
         summary: string;
       }>,
     onSuccess: (data) => {
+      // @cache-invalidation-allowed: AI-sort preview — writes suggested order to local state (setAiSortResult); applied later via reorderActivitiesMutation which does invalidate
       setAiSortResult(data);
     },
   });
@@ -135,6 +140,7 @@ export function useProfileMutations() {
   const deleteAwardMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.award(id)),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('profile.toast.awardDeleted'));
     },
@@ -179,6 +185,7 @@ export function useProfileMutations() {
       order?: number;
     }) => apiClient.post(`${profileRoutes.me()}/semester-gpas`, data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('profile.semesterGpaAdded'));
     },
@@ -198,6 +205,7 @@ export function useProfileMutations() {
       order?: number;
     }) => apiClient.put(`${profileRoutes.me()}/semester-gpas/${id}`, data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('profile.semesterGpaUpdated'));
     },
@@ -206,6 +214,7 @@ export function useProfileMutations() {
   const deleteSemesterGpaMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/semester-gpas/${id}`),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateProfileDependents() helper invalidates profile/dashboard/profile-ai-analysis/prediction queries
       invalidateProfileDependents();
       toast.success(t('profile.semesterGpaDeleted'));
     },

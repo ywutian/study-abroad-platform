@@ -153,6 +153,7 @@ export function EssayWorkbench({
         reason: t('essays.workbench.versions.manualReason'),
       }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: onSuccess refetches the affected revisionsQuery (essay-revisions) instead of invalidating
       revisionsQuery.refetch();
       toast.success(t('essays.workbench.toast.snapshotSaved'));
     },
@@ -195,6 +196,7 @@ export function EssayWorkbench({
         }
       ),
     onSuccess: () => {
+      // @cache-invalidation-allowed: onSuccess refetches the affected suggestionsQuery (essay-suggestions) instead of invalidating
       suggestionsQuery.refetch();
       toast.success(t('essays.workbench.toast.suggestionRejected'));
     },

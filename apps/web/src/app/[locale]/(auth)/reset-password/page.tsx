@@ -36,6 +36,7 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
 
   const mutation = useMutation({
+    // @cache-invalidation-allowed: auth form (reset-password) — no cached list/detail; onSuccess sets local success state
     mutationFn: (data: { token: string; newPassword: string }) =>
       apiClient.post(authRoutes.resetPassword(), data, { skipAuth: true }),
     onSuccess: () => {

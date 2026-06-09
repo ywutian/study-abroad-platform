@@ -96,6 +96,7 @@ export function ChallengeTab() {
   });
 
   const submitMutation = useMutation({
+    // @cache-invalidation-allowed: writes the guess result/score to local state (setResult); the hall-challenge query is intentionally refreshed only on "new challenge" (handleNewChallenge)
     mutationFn: (guessData: Record<string, string>) =>
       apiClient.post<ChallengeResult>(`${hallRoutes.swipe()}/challenge`, { guesses: guessData }),
     onSuccess: (data) => {

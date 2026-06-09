@@ -33,11 +33,13 @@ export function DataCollectionTab({ onSwitchTab }: Props) {
   const t = useTranslations('admin.dataReview.pipeline');
 
   const scrapeMutation = useMutation({
+    // @cache-invalidation-allowed: fire-and-forget background job trigger (toast only); no in-file useQuery reflects the queued scrape immediately
     mutationFn: () => apiClient.post(adminRoutes.essayScraperPipelineStart(), {}),
     onSuccess: () => toast.success(t('scrapeStarted')),
   });
 
   const syncMutation = useMutation({
+    // @cache-invalidation-allowed: fire-and-forget background job trigger (toast only); no in-file useQuery reflects the queued sync immediately
     mutationFn: () => apiClient.post(adminRoutes.dataSyncTrigger(), {}),
     onSuccess: () => toast.success(t('syncStarted')),
   });

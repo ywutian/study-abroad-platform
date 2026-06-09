@@ -18,6 +18,7 @@ export const essayAiKeys = {
 
 export function useEssayReview(onSuccess?: (data: EssayReview) => void) {
   return useMutation({
+    // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess; mutates no cached list/detail
     mutationFn: (data: { essayId: string; schoolName?: string; major?: string }) =>
       apiClient.post<EssayReview>(essayAiRoutes.review(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
@@ -29,6 +30,7 @@ export function useEssayReview(onSuccess?: (data: EssayReview) => void) {
 
 export function useEssayPolish(onSuccess?: (data: PolishResult) => void) {
   return useMutation({
+    // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess; mutates no cached list/detail
     mutationFn: (data: {
       essayId: string;
       content?: string;
@@ -44,6 +46,7 @@ export function useEssayPolish(onSuccess?: (data: PolishResult) => void) {
 
 export function useEssaySuggestEdits(onSuccess?: (data: EssaySuggestEditsResult) => void) {
   return useMutation({
+    // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess (essay-workbench refetches suggestions/revisions there); mutates no cached list/detail here
     mutationFn: (data: {
       essayId: string;
       style?: 'formal' | 'vivid' | 'concise';
@@ -59,6 +62,7 @@ export function useEssaySuggestEdits(onSuccess?: (data: EssaySuggestEditsResult)
 
 export function useEssayRewrite(onSuccess?: (data: RewriteResult) => void) {
   return useMutation({
+    // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess; mutates no cached list/detail
     mutationFn: (data: { paragraph: string; instruction?: string }) =>
       apiClient.post<RewriteResult>(essayAiRoutes.rewriteParagraph(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
@@ -70,6 +74,7 @@ export function useEssayRewrite(onSuccess?: (data: RewriteResult) => void) {
 
 export function useEssayContinue(onSuccess?: (data: ContinueResult) => void) {
   return useMutation({
+    // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess; mutates no cached list/detail
     mutationFn: (data: { content: string; prompt?: string; direction?: string }) =>
       apiClient.post<ContinueResult>(essayAiRoutes.continueWriting(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
@@ -81,6 +86,7 @@ export function useEssayContinue(onSuccess?: (data: ContinueResult) => void) {
 
 export function useEssayOpening(onSuccess?: (data: OpeningResult) => void) {
   return useMutation({
+    // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess; mutates no cached list/detail
     mutationFn: (data: { prompt: string; background?: string }) =>
       apiClient.post<OpeningResult>(essayAiRoutes.generateOpening(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,

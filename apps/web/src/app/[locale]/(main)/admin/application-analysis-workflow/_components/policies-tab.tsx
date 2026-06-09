@@ -39,6 +39,7 @@ export function PoliciesTab({ policies }: { policies: ApplicationAnalysisPolicyV
         ruleBundleVersion,
       }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the policy/gate/evaluation keys
       toast.success(t('policies.created'));
       invalidate();
       setVersion('');
@@ -49,6 +50,7 @@ export function PoliciesTab({ policies }: { policies: ApplicationAnalysisPolicyV
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowPolicyCandidate(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the policy/gate/evaluation keys
       toast.success(t('policies.candidateSuccess'));
       invalidate();
     },
@@ -58,6 +60,7 @@ export function PoliciesTab({ policies }: { policies: ApplicationAnalysisPolicyV
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowPolicyShadow(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the policy/gate/evaluation keys
       toast.success(t('policies.shadowSuccess'));
       invalidate();
     },
@@ -67,6 +70,7 @@ export function PoliciesTab({ policies }: { policies: ApplicationAnalysisPolicyV
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowPolicyShadowRefresh(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the policy/gate/evaluation keys
       toast.success(t('policies.shadowRefreshSuccess'));
       invalidate();
     },

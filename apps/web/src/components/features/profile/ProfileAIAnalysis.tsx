@@ -72,6 +72,7 @@ export function ProfileAIAnalysis({
   const [feedbackState, setFeedbackState] = useState<'HELPFUL' | 'NOT_HELPFUL' | null>(null);
 
   const feedbackMutation = useMutation({
+    // @cache-invalidation-allowed: one-shot feedback action — writes the sentiment to local state (setFeedbackState); the profile-ai-analysis query is unaffected by feedback
     mutationFn: (sentiment: 'HELPFUL' | 'NOT_HELPFUL') =>
       apiClient.post(
         profileRoutes.aiAnalysisFeedback(),

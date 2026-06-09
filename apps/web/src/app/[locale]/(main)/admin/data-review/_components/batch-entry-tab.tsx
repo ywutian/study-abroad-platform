@@ -68,6 +68,7 @@ export function BatchEntryTab() {
       });
     },
     onSuccess: () => {
+      // @cache-invalidation-allowed: one-shot batch import — resets local form state (setRows) + toast; no in-file useQuery. Imported cases surface in the pendingCases query owned by the sibling pending-cases-tab.tsx, refetched when that tab mounts
       toast.success(t('submitSuccess', { count: validCount }));
       setRows([createEmptyRow()]);
     },

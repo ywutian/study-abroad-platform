@@ -118,6 +118,7 @@ export function FlagFormDialog({ open, onOpenChange, editingFlag, onSaved }: Fla
       rules?: Record<string, unknown>;
     }) => apiClient.post(adminFeatureFlagRoutes.list(), data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: onSaved() callback invalidates the parent's adminFeatureFlags query (see feature-flags/page.tsx)
       onOpenChange(false);
       toast.success(t('created'));
       onSaved();
@@ -128,6 +129,7 @@ export function FlagFormDialog({ open, onOpenChange, editingFlag, onSaved }: Fla
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       apiClient.put(adminFeatureFlagRoutes.byId(id), data),
     onSuccess: () => {
+      // @cache-invalidation-allowed: onSaved() callback invalidates the parent's adminFeatureFlags query (see feature-flags/page.tsx)
       onOpenChange(false);
       toast.success(t('updated'));
       onSaved();

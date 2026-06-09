@@ -111,6 +111,7 @@ export function useSchoolRanking(schoolIds: string[]) {
 /** AI 排名分析 */
 export function useAiAnalysis() {
   return useMutation({
+    // @cache-invalidation-allowed: AI ranking-analysis hook — returns generated analysis to the caller; mutates no cached list/detail
     mutationFn: (schoolId: string) =>
       apiClient.post<AiAnalysisResult>(`${API_ROUTES.HALLS}/ranking-analysis`, { schoolId }),
   });

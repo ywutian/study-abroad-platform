@@ -60,6 +60,7 @@ export function ActivateRollbackTab({
     mutationFn: (id: string) =>
       apiClient.post(adminRoutes.applicationAnalysisWorkflowPolicyActivate(id), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the policy/gate/evaluation keys
       toast.success(t('activate.activateSuccess'));
       invalidate();
     },
@@ -68,12 +69,14 @@ export function ActivateRollbackTab({
   const rollbackMutation = useMutation({
     mutationFn: () => apiClient.post(adminRoutes.applicationAnalysisWorkflowPolicyRollback(), {}),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidate() helper calls queryClient.invalidateQueries for the policy/gate/evaluation keys
       toast.success(t('activate.rollbackSuccess'));
       invalidate();
     },
   });
 
   const recourseMutation = useMutation({
+    // @cache-invalidation-allowed: preview-only — writes result to local React state (setRecoursePreview), no cached list/detail
     mutationFn: () =>
       apiClient.post<ApplicationAnalysisRecoursePreview>(
         adminRoutes.applicationAnalysisWorkflowRecoursePreview(),
@@ -83,6 +86,7 @@ export function ActivateRollbackTab({
   });
 
   const uncertaintyMutation = useMutation({
+    // @cache-invalidation-allowed: preview-only — writes result to local React state (setUncertaintyPreview), no cached list/detail
     mutationFn: () =>
       apiClient.post<ApplicationAnalysisUncertaintyPreview>(
         adminRoutes.applicationAnalysisWorkflowUncertaintyPreview(),
