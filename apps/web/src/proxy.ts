@@ -25,6 +25,8 @@ const PROTECTED_PATTERNS = [
   '/vault',
   '/uncommon-app',
   '/followers',
+  '/outcomes', // user outcome reporting (API is JWT + @CurrentUser scoped; this adds an edge redirect)
+  '/counselor', // counselor pattern pages (API additionally role-gated @Roles)
   // Admin routes also have role checks via ADMIN_PATTERNS; keeping /admin here
   // lets integration audits recognize that admin API pages are authenticated.
   '/admin',
