@@ -655,13 +655,13 @@ describe('calculateOverallScore', () => {
     ).toBeCloseTo(1, 4);
   });
 
-  // SKIPPED: documents an unimplemented feature, not a passing assertion.
-  // calculateOverallScore accepts + normalizes essayQualityScore (see the two
-  // tests below) but does NOT weight it into the overall score yet — essay has
-  // no entry in SCORING_WEIGHTS, so a 10/10 essay yields the same overall as no
-  // essay (un-skipping fails: withGreatEssay === baseline). Un-skip once essay
-  // weighting is added to SCORING_WEIGHTS.
-  it.skip('should boost overall when essayQualityScore is high (10/10)', () => {
+  // GUARD (was it.skip): essayQualityScore is accepted + normalized (see the two
+  // tests below) but is deliberately NOT weighted into the overall score — it has
+  // no entry in SCORING_WEIGHTS. This locks that contract: if someone wires essay
+  // weighting in without updating SCORING_WEIGHTS + the prediction calibration,
+  // this test breaks and forces a conscious product decision (see scoring/score.ts
+  // calculateOverallScoreDetailed: rawScore = academic+activity+award only).
+  it('does NOT weight essayQualityScore into the overall score (by design)', () => {
     const profile: ProfileMetrics = {
       gpa: 3.7,
       gpaScale: 4.0,
@@ -680,10 +680,9 @@ describe('calculateOverallScore', () => {
       { ...profile, essayQualityScore: 2 },
       {},
     );
-    // Great essay (10/10) should raise overall
-    expect(withGreatEssay).toBeGreaterThan(baseline);
-    // Weak essay (2/10) should lower overall vs no-essay baseline
-    expect(withWeakEssay).toBeLessThan(baseline);
+    // Essay quality must not move the overall score (no SCORING_WEIGHTS.essay).
+    expect(withGreatEssay).toBe(baseline);
+    expect(withWeakEssay).toBe(baseline);
   });
 
   it('should accept essayQualityScore on legacy 0-100 scale', () => {
