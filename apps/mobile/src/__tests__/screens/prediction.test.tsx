@@ -337,6 +337,33 @@ describe('PredictionScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/find-college');
   });
 
+  it('blocks "Add Prediction" when the profile is not eligible (canRunPrediction=false)', async () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '1', email: 'test@example.com', role: 'USER' },
+      isAuthenticated: true,
+    });
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/predictions/dashboard')) {
+        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+      }
+      if (url.includes('/profiles/me/completeness')) {
+        // Known-ineligible profile (no GPA / no target school yet).
+        return Promise.resolve({ score: 40, canRunPrediction: false });
+      }
+      if (url.includes('/school-lists')) return Promise.resolve([{ schoolId: 's1' }]);
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    // Wait until the ineligible state resolves (the blocked hint renders).
+    await waitFor(() => expect(getByText('prediction.predictionBlockedHint')).toBeTruthy());
+    fireEvent.press(getByText('prediction.addPrediction'));
+
+    // The gate stops the doomed request before it 412s — no predict POST is sent
+    // (mirrors web, where the button is disabled when the profile is ineligible).
+    expect(apiClient.post).not.toHaveBeenCalled();
+  });
+
   it('caps "Add Prediction" at the backend max (10) when the saved list is longer', async () => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
       user: { id: '1', email: 'test@example.com', role: 'USER' },
