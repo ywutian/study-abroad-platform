@@ -40,3 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Generated service-worker artifacts must never be committed (the Feb-2026
+# tracked copies went stale and shadowed reality). public/sw.js itself IS
+# tracked on purpose — it's a hand-written self-destroying kill-switch, not a
+# build artifact (see the 2026-06 sw-pinning incident notes in src/proxy.ts).
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map

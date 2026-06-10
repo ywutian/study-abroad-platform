@@ -104,7 +104,15 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // sw.js / workbox-*.js / manifest.json / robots.txt / sitemap*.xml MUST stay
+  // excluded: the proxy otherwise 307-locale-redirects them, and browsers
+  // reject redirected service-worker scripts — every previously-installed SW
+  // gets pinned forever with its stale precache (the 2026-06 "页面无法跳转"
+  // incident: visitors from the Jan–Mar window could no longer navigate after
+  // deploys, while clean profiles worked). Redirected robots/sitemap also hid
+  // the site from crawlers. Guarded by proxy.matcher.test.ts + the
+  // release-runtime CI assert step ("Assert root public assets bypass proxy").
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sw\\.js|workbox-.*\\.js|manifest\\.json|robots\\.txt|sitemap.*\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 import { withSentryConfig } from '@sentry/nextjs';
-import withPWA from '@ducanh2912/next-pwa';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
@@ -150,35 +149,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-// PWA 配置
-const pwaConfig = withPWA({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  workboxOptions: {
-    skipWaiting: true,
-    disableDevLogs: true,
-    runtimeCaching: [
-      {
-        urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: 'static-images',
-          expiration: { maxEntries: 64, maxAgeSeconds: 30 * 24 * 60 * 60 },
-        },
-      },
-      {
-        urlPattern: /^https:\/\/api\..*/i,
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'api-cache',
-          networkTimeoutSeconds: 10,
-          expiration: { maxEntries: 32, maxAgeSeconds: 24 * 60 * 60 },
-        },
-      },
-    ],
-  },
-});
+// PWA: deliberately REMOVED (2026-06, sw-pinning incident).
+// next-pwa was a webpack-hook plugin; `next build` runs Turbopack, so no sw.js
+// was generated in production builds anyway — the PWA was already dead. The
+// only service workers in the wild are stale pinned ones from the Jan–Mar 2026
+// window (installed when builds were webpack and the proxy matcher didn't
+// intercept /sw.js). public/sw.js is now a STATIC, tracked self-destroying
+// kill-switch: pinned browsers fetch it on their SW update check, it installs,
+// unregisters itself, wipes caches, and reloads its clients. Do NOT re-add a
+// precaching service worker without reading the incident notes in
+// src/proxy.ts (matcher comment) and src/proxy.matcher.test.ts.
 
 const sentryConfig = {
   // Suppress source map upload logs during build
@@ -206,10 +186,9 @@ const sentryConfig = {
 // Bundle 分析：ANALYZE=true pnpm --filter web build
 const analyzeBundles = withBundleAnalyzer({ enabled: process.env.ANALYZE === 'true' });
 
-// 组合配置：Intl -> PWA -> BundleAnalyzer -> Sentry
+// 组合配置：Intl -> BundleAnalyzer -> Sentry
 const configWithIntl = withNextIntl(nextConfig);
-const configWithPWA = pwaConfig(configWithIntl);
-const configWithAnalyzer = analyzeBundles(configWithPWA);
+const configWithAnalyzer = analyzeBundles(configWithIntl);
 
 export default process.env.SENTRY_DSN
   ? withSentryConfig(configWithAnalyzer, sentryConfig)
