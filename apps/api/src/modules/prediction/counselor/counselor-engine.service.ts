@@ -28,7 +28,9 @@ import {
  * Mirrors how an admissions counselor estimates odds:
  *   1. Anchor on the school's published CDS admit rate (via `cds-bands-v1` table
  *      when (school, gpa-band, test-band) cell exists; else `school.acceptanceRate`)
- *   2. Apply 8 deterministic modifiers (GPA, test, round, hooks, geography, intl, major)
+ *   2. Apply 11 bounded, published-coefficient modifiers (GPA-band, test-band,
+ *      round, legacy hook, first-gen, athlete, URM, geography, international,
+ *      major, profile-context)
  *   3. Clip to [anchor × 0.1, min(0.98, anchor × 2.5)]
  *
  * Mathematical guarantee: no prediction can deviate from the school baseline by

@@ -176,17 +176,20 @@ const CONFIDENCE_INTERVAL_WIDTH = {
 // ============================================
 
 /**
- * Multi-engine ensemble prediction service for college admissions.
+ * Prediction orchestrator for college admissions.
  *
- * Combines three prediction engines (statistical, AI, and historical case-matching)
- * using dynamic weighted fusion. Integrates with the memory system for context-aware
- * predictions and records results for calibration feedback loops.
+ * The served probability path is the deterministic Counselor engine
+ * ({@link CounselorEngineService}): anchor on the school's published CDS admit
+ * rate, then apply bounded, published-coefficient modifiers — see that service
+ * for the full method and its mathematical guarantees. There is no champion /
+ * shadow ML model; the ML/v5 platform services were deleted 2026-05-07.
  *
- * Engine weight allocation varies by data availability:
- * - Full data: stats 0.25, AI 0.40, historical 0.35
- * - No history: stats 0.35, AI 0.65
- * - No AI: stats 0.45, historical 0.55
- * - Stats only: stats 1.0
+ * Legacy fusion engines (statistical / AI / historical case-matching) remain in
+ * the module for preview/ablation and historical analysis only — they are NOT on
+ * the served path (counselor mode is always on).
+ *
+ * Integrates the memory system for context and records verified outcomes for
+ * calibration feedback loops.
  */
 @Injectable()
 export class PredictionService {
@@ -960,7 +963,7 @@ export class PredictionService {
   // ==================== 主预测方法 ====================
 
   /**
-   * Run the full multi-engine ensemble prediction pipeline for one or more schools.
+   * Run the served prediction pipeline (Counselor engine) for one or more schools.
    *
    * Pipeline stages:
    * 1. Load Profile (with testScores, activities, awards) and School records from DB
@@ -1038,8 +1041,8 @@ export class PredictionService {
   }
 
   /**
-   * Preview prediction — run the full multi-engine pipeline against a
-   * caller-supplied ProfileInput without touching any persistence layer.
+   * Preview prediction — run the prediction pipeline against a caller-supplied
+   * ProfileInput without touching any persistence layer.
    *
    * Skips: Redis lock, points charging, DB profile load, memory context,
    * Redis cache (read and write), PredictionResult upsert, memory recording.

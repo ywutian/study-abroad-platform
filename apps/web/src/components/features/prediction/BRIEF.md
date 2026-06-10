@@ -18,7 +18,6 @@ Admission probability prediction for US colleges — school selection, multi-eng
 - RateBreakdownPanel — acceptance rate context
 - PredictionHistoryPanel — prediction version history
 - ResultFeedbackButtons — user feedback on prediction accuracy
-- AiContextActions — CTAs to discuss results with AI agent
 
 ## Data Flow
 

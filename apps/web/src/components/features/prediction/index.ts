@@ -16,7 +16,6 @@ export { RecommendedSchoolsBlock } from './RecommendedSchoolsBlock';
 export { ResultFeedbackButtons } from './ResultFeedbackButtons';
 export { PredictionHistoryPanel } from './PredictionHistoryPanel';
 export { RateBreakdownPanel } from './RateBreakdownPanel';
-export { AiContextActions } from './AiContextActions';
 export { PredictionExplanationStream } from './PredictionExplanationStream';
 export { PredictionPortfolioSummaryStream } from './PredictionPortfolioSummaryStream';
 
