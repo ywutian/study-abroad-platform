@@ -277,6 +277,12 @@ export default function PredictionScreen() {
     },
   });
 
+  // Mirror the web gate: when the profile is known-ineligible (no GPA / no target
+  // school), block the run instead of firing a request the backend will 412 on.
+  // Only when canRunPrediction is explicitly false — undefined (loading / old
+  // cache) falls through to the backend 412 backstop, exactly like web.
+  const profileBlocksPrediction = profileCompleteness?.canRunPrediction === false;
+
   // "Add prediction": run predictions across the target list, or send the user to
   // build that list first (find-college) when it's still empty. The backend caps a
   // single request at 10 schools (@ArrayMaxSize), so predict the first 10 and tell
@@ -284,6 +290,10 @@ export default function PredictionScreen() {
   // validator string and nothing runs.
   const handleAddPrediction = useCallback(() => {
     if (predictMutation.isPending) return;
+    if (profileBlocksPrediction) {
+      toast.info(t('prediction.predictionBlockedHint'));
+      return;
+    }
     if (schoolListIds.length === 0) {
       router.push('/find-college' as Href);
       return;
@@ -293,7 +303,7 @@ export default function PredictionScreen() {
       toast.info(t('prediction.maxSchoolsNotice', { count: MAX_PER_RUN }));
     }
     predictMutation.mutate(schoolListIds.slice(0, MAX_PER_RUN));
-  }, [predictMutation, schoolListIds, toast, t]);
+  }, [predictMutation, profileBlocksPrediction, schoolListIds, toast, t]);
 
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -324,7 +334,7 @@ export default function PredictionScreen() {
       case 'safety':
         return t('prediction.recommendation.safety');
       case 'unavailable':
-        return 'Unavailable';
+        return t('prediction.tierUnavailable');
       default:
         return rec;
     }
@@ -819,6 +829,7 @@ export default function PredictionScreen() {
         <AnimatedButton
           onPress={handleAddPrediction}
           loading={predictMutation.isPending}
+          disabled={profileBlocksPrediction}
           style={styles.addButton}
           leftIcon={
             <Ionicons name="add-circle-outline" size={20} color={colors.primaryForeground} />
