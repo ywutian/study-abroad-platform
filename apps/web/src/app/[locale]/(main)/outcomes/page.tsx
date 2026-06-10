@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { GraduationCap, Trophy, Upload, ShieldCheck } from 'lucide-react';
 import { outcomeRoutes } from '@study-abroad/shared';
@@ -12,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api';
+import { useAuthGatedQuery } from '@/hooks/use-auth-gated-query';
 import { toast } from 'sonner';
 
 interface OutcomeView {
@@ -57,12 +57,12 @@ interface MyStats {
 export default function OutcomesPage() {
   const t = useTranslations('Outcome');
 
-  const { data: outcomes } = useQuery<OutcomeView[]>({
+  const { data: outcomes } = useAuthGatedQuery<OutcomeView[]>({
     queryKey: ['outcomes', 'mine'],
     queryFn: () => apiClient.get<OutcomeView[]>(outcomeRoutes.myList()),
   });
 
-  const { data: stats } = useQuery<MyStats>({
+  const { data: stats } = useAuthGatedQuery<MyStats>({
     queryKey: ['outcomes', 'stats'],
     queryFn: () => apiClient.get<MyStats>(outcomeRoutes.myStats()),
   });
