@@ -837,6 +837,7 @@ const AUTH_PROTECTED_ROUTE_SEGMENTS = [
   'vault',
   'uncommon-app',
   'followers',
+  'outcomes',
 ];
 
 function isProtectedRouteFile(filePath: string): boolean {
