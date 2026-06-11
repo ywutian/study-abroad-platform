@@ -838,6 +838,7 @@ const AUTH_PROTECTED_ROUTE_SEGMENTS = [
   'uncommon-app',
   'followers',
   'outcomes',
+  'counselor',
 ];
 
 function isProtectedRouteFile(filePath: string): boolean {
@@ -887,6 +888,47 @@ function gatherCallBlock(
  * (the real on-mount race) — any deliberate `enabled` is left alone to keep this
  * precise and error-level.
  */
+/**
+ * SSOT guard: AUTH_PROTECTED_ROUTE_SEGMENTS must mirror proxy.ts PROTECTED_PATTERNS
+ * — the top-level single-segment protected routes, minus `/admin` (its own
+ * ADMIN_PATTERNS gate) and sub-path routes like `/teams/create` (parent `/teams`
+ * is public). Drift = a proxy-protected route whose authed queries the
+ * `no-unguarded-auth-query` rule silently skips → a 401-race blind spot (exactly
+ * how `/outcomes` and `/counselor` slipped through). Keeping the two lists in sync
+ * means a newly proxy-protected route cannot become a blind spot.
+ */
+function checkAuthSegmentsSync(): Issue[] {
+  const proxyPath = path.join(WEB_SRC, 'proxy.ts');
+  if (!fs.existsSync(proxyPath)) return [];
+  const proxySrc = fs.readFileSync(proxyPath, 'utf8');
+  const block = proxySrc.match(/PROTECTED_PATTERNS\s*=\s*\[([\s\S]*?)\]/);
+  if (!block) return [];
+  const patterns = [...block[1].matchAll(/'(\/[^']+)'/g)].map((m) => m[1]);
+  const expected = patterns
+    .filter((p) => p !== '/admin')
+    .filter((p) => p.split('/').filter(Boolean).length === 1)
+    .map((p) => p.slice(1))
+    .sort();
+  const actual = [...AUTH_PROTECTED_ROUTE_SEGMENTS].sort();
+  const missing = expected.filter((s) => !actual.includes(s));
+  const extra = actual.filter((s) => !expected.includes(s));
+  if (missing.length === 0 && extra.length === 0) return [];
+  const parts: string[] = [];
+  if (missing.length) parts.push(`missing ${missing.map((s) => `'${s}'`).join(', ')}`);
+  if (extra.length) parts.push(`unexpected ${extra.map((s) => `'${s}'`).join(', ')}`);
+  return [
+    {
+      file: relativePath(path.join(__dirname, 'check-code-quality.ts')),
+      line: 0,
+      rule: 'auth-segments-out-of-sync',
+      severity: 'error',
+      message: `AUTH_PROTECTED_ROUTE_SEGMENTS drifted from proxy.ts PROTECTED_PATTERNS (${parts.join(
+        '; '
+      )}). A proxy-protected route missing here is a 401-race blind spot (no-unguarded-auth-query skips it). Update AUTH_PROTECTED_ROUTE_SEGMENTS to match proxy.ts.`,
+    },
+  ];
+}
+
 function checkUnguardedAuthQuery(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (isExempt(filePath, AUTH_QUERY_EXEMPT_FILES)) return issues;
@@ -999,6 +1041,9 @@ function main() {
       ...checkReleaseNavigationSafety(filePath, lines)
     );
   }
+
+  // Global cross-file guard (not per-file): the two protected-route SSOT lists.
+  allIssues.push(...checkAuthSegmentsSync());
 
   const errors = allIssues.filter((i) => i.severity === 'error');
   const warnings = allIssues.filter((i) => i.severity === 'warning');
