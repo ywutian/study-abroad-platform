@@ -205,13 +205,6 @@ export interface PredictionResult {
     major: string;
   };
   crossEngineConsistency?: number;
-
-  // v5 ML-Primary fields (optional, backward compatible)
-  pipelineTier?: number;
-  calibrationMethod?: string;
-  baseRate?: number;
-  hookShifts?: Array<{ hookType: string; logOddsShift: number; source: string }>;
-  quotaDisclosure?: string;
 }
 
 export interface MajorBreakdown {
