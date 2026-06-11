@@ -435,39 +435,6 @@ export class PredictionResultDto {
     dimensionsAvailable: number;
     improvementTip?: string;
   };
-
-  // === v5 ML-Primary fields (all optional for backward compatibility) ===
-
-  @ApiPropertyOptional({ description: 'ML pipeline tier used (0-4)' })
-  pipelineTier?: number;
-
-  @ApiPropertyOptional({
-    description: 'Calibration method applied',
-    enum: ['platt', 'beta', 'none'],
-  })
-  calibrationMethod?: string;
-
-  @ApiPropertyOptional({
-    description: 'School base rate used as anchor (0-1)',
-    example: 0.034,
-  })
-  baseRate?: number;
-
-  @ApiPropertyOptional({
-    description: 'Hook adjustments applied in log-odds space',
-    type: 'array',
-    items: { type: 'object' },
-  })
-  hookShifts?: Array<{
-    hookType: string;
-    logOddsShift: number;
-    source: string;
-  }>;
-
-  @ApiPropertyOptional({
-    description: 'Quota-related disclosure message for the user',
-  })
-  quotaDisclosure?: string;
 }
 
 export class PredictionResponseDto {
