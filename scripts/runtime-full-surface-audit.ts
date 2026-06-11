@@ -1205,9 +1205,14 @@ async function clickSafeInternalLink(
       page.waitForLoadState('domcontentloaded', { timeout: budget.navigationMs }),
       page.waitForTimeout(budget.navigationMs),
     ]);
+    // Wait for the clicked navigation to actually settle before returning. The old
+    // `waitForTimeout(800)` returned while a slow target page (e.g. /prediction) was
+    // still mid-navigation, so the next loop iteration's page.goto raced it and
+    // Playwright rejected with "interrupted by another navigation" — the recurring
+    // nav-probe flake. Wait for load (or networkidle) up to the navigation budget.
     await Promise.race([
-      page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => undefined),
-      page.waitForTimeout(800),
+      page.waitForLoadState('load', { timeout: budget.navigationMs }).catch(() => undefined),
+      page.waitForLoadState('networkidle', { timeout: budget.navigationMs }).catch(() => undefined),
     ]);
 
     const elapsedMs = Date.now() - startedAt;
@@ -2305,7 +2310,18 @@ async function executeReleaseWebRouteSurface(
     const links = await collectSafeInternalLinks(page, CLI_ARGS.maxLinksPerRoute);
     const navigationStartUrl = page.url();
     for (const link of links) {
-      await page.goto(navigationStartUrl, { waitUntil: 'commit', timeout: budget.navigationMs });
+      // A previous iteration's click may still be settling; if its navigation
+      // collides with this goto, let it finish and retry once. Only the
+      // navigation-race error is swallowed — real failures still propagate.
+      try {
+        await page.goto(navigationStartUrl, { waitUntil: 'commit', timeout: budget.navigationMs });
+      } catch (err) {
+        if (!/interrupted by another navigation/i.test(String(err))) throw err;
+        await page
+          .waitForLoadState('load', { timeout: budget.navigationMs })
+          .catch(() => undefined);
+        await page.goto(navigationStartUrl, { waitUntil: 'commit', timeout: budget.navigationMs });
+      }
       await Promise.race([
         page.waitForLoadState('domcontentloaded', { timeout: 3_000 }).catch(() => undefined),
         page.waitForTimeout(500),
