@@ -1,26 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  PredictionPolicyService,
-  LEGACY_PREDICTION_POLICY_VERSION,
-} from './prediction-policy.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PredictionPolicyService } from './prediction-policy.service';
+import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
 
 describe('PredictionPolicyService', () => {
   let service: PredictionPolicyService;
-  let prisma: { predictionPolicyVersion: { findFirst: jest.Mock } };
 
   beforeEach(async () => {
-    prisma = {
-      predictionPolicyVersion: {
-        findFirst: jest.fn().mockResolvedValue(null),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PredictionPolicyService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [PredictionPolicyService],
     }).compile();
 
     service = module.get(PredictionPolicyService);
@@ -28,29 +15,24 @@ describe('PredictionPolicyService', () => {
 
   // ====================================================
   // resolveServedPolicyVersionId
+  //
+  // The served path is counselor-only (the ML/v5 path was deleted 2026-05-07),
+  // so the served policy version IS the counselor engine's own rule version —
+  // it must never echo a dead ML-era DB policy label. This is the regression
+  // guard for the `v5-ml-primary` incident, where a stale ACTIVE DB row got
+  // stamped onto counselor predictions because the label was DB-derived.
   // ====================================================
   describe('resolveServedPolicyVersionId', () => {
-    it('should return active policy ID when one exists', async () => {
-      prisma.predictionPolicyVersion.findFirst.mockResolvedValue({
-        id: 'policy-v4',
-      });
-      const result = await service.resolveServedPolicyVersionId();
-      expect(result).toBe('policy-v4');
+    it('returns the counselor engine rule version', () => {
+      expect(service.resolveServedPolicyVersionId()).toBe(
+        COUNSELOR_RULE_VERSION,
+      );
     });
 
-    it('should return legacy version when no active policy', async () => {
-      prisma.predictionPolicyVersion.findFirst.mockResolvedValue(null);
-      const result = await service.resolveServedPolicyVersionId();
-      expect(result).toBe(LEGACY_PREDICTION_POLICY_VERSION);
-    });
-
-    it('should query with correct ordering', async () => {
-      await service.resolveServedPolicyVersionId();
-      expect(prisma.predictionPolicyVersion.findFirst).toHaveBeenCalledWith({
-        where: { status: 'ACTIVE' },
-        orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
-        select: { id: true },
-      });
+    it('never returns a dead ML/v3-era policy label (v5-ml-primary regression guard)', () => {
+      const served = service.resolveServedPolicyVersionId();
+      expect(served).not.toMatch(/ml-primary|v5|v3-enterprise/i);
+      expect(served).toContain('counselor');
     });
   });
 

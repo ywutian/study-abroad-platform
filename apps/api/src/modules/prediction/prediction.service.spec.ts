@@ -216,7 +216,7 @@ describe('PredictionService counselor primary', () => {
           useValue: {
             resolveServedPolicyVersionId: jest
               .fn()
-              .mockResolvedValue('policy-v1'),
+              .mockReturnValue('policy-v1'),
             buildTracePayload: jest.fn().mockReturnValue({
               policyVersionId: 'policy-v1',
               cohortKey: 'US__US_HS',

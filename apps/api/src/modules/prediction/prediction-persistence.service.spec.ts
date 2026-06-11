@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionResultDto } from './dto';
+import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
 
 describe('PredictionPersistenceService', () => {
   let service: PredictionPersistenceService;
@@ -208,6 +209,43 @@ describe('PredictionPersistenceService', () => {
         .calls[0][0];
       expect(upsertCall.create.modelVersion).toBe('v3-enterprise');
       expect(upsertCall.update.modelVersion).toBe('v3-enterprise');
+    });
+
+    it('self-heals the counselor served-policy lineage instead of throwing (v5-ml-primary regression)', async () => {
+      // The served path stamps policyVersionId = the engine rule version, which
+      // is NOT a hand-seeded DB row. Persistence must self-heal it (like legacy),
+      // NOT throw MissingPredictionPolicyVersionError as it would for the stale
+      // v5-ml-primary id.
+      (
+        prisma.predictionPolicyVersion.findUnique as jest.Mock
+      ).mockResolvedValue(null);
+      (prisma.predictionPolicyVersion.upsert as jest.Mock).mockResolvedValue({
+        id: COUNSELOR_RULE_VERSION,
+      });
+
+      await expect(
+        service.savePrediction('profile-1', 'school-1', {
+          ...mockResult,
+          policyVersionId: COUNSELOR_RULE_VERSION,
+        }),
+      ).resolves.toBeDefined();
+
+      // counselor policy row upserted ACTIVE → FK satisfied, no throw
+      expect(prisma.predictionPolicyVersion.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: COUNSELOR_RULE_VERSION },
+          create: expect.objectContaining({
+            id: COUNSELOR_RULE_VERSION,
+            version: COUNSELOR_RULE_VERSION,
+            status: 'ACTIVE',
+          }),
+        }),
+      );
+      const counselorUpsert = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      expect(counselorUpsert.create.policyVersionId).toBe(
+        COUNSELOR_RULE_VERSION,
+      );
     });
 
     it('should preserve explicit modelVersion when provided', async () => {

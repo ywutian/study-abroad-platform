@@ -149,7 +149,8 @@
       "fast-xml-builder": ">=1.1.7",
       "@babel/plugin-transform-modules-systemjs": ">=7.29.4",
       "zod": "3.25.76",
-      "shell-quote": ">=1.8.4"
+      "shell-quote": ">=1.8.4",
+      "@grpc/grpc-js": ">=1.14.4"
     }
   },
   "dependencies": {

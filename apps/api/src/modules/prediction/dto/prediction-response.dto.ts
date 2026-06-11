@@ -308,14 +308,15 @@ export class PredictionResultDto {
   cachedAt?: string;
 
   @ApiPropertyOptional({
-    description: 'Model version',
-    example: 'v3-enterprise',
+    description: 'Counselor engine rule version that produced this prediction',
+    example: 'counselor-cold-start-v1.8-profile-signals',
   })
   modelVersion?: string;
 
   @ApiPropertyOptional({
-    description: 'Served prediction policy version',
-    example: 'legacy-v3-enterprise',
+    description:
+      'Served policy version — equals the counselor engine rule version (the served path is counselor-only)',
+    example: 'counselor-cold-start-v1.8-profile-signals',
   })
   servedPolicyVersionId?: string;
 
