@@ -52,6 +52,7 @@ import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { router } from 'expo-router';
 import PredictionScreen, { mapDashboardToPredictions } from '@/screens/prediction/PredictionScreen';
+import type { PredictionDashboardData } from '@study-abroad/shared';
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -226,16 +227,20 @@ describe('PredictionScreen', () => {
   });
 
   it('maps confidence reasoning and freshness metadata from dashboard payload', () => {
-    const mockDashboard = {
+    const mockDashboard: PredictionDashboardData = {
       totalSchools: 1,
+      tierDistribution: { reach: 0, match: 1, safety: 0 },
       avgProbability: 0.53,
+      confidenceBreakdown: { low: 0, medium: 0, high: 1 },
       predictions: [
         {
           schoolId: 's1',
-          school: { name: 'Northwestern' },
+          school: { id: 'sch_nw', name: 'Northwestern' },
           probability: 0.53,
-          tier: 'match' as const,
-          confidence: 'high' as const,
+          tier: 'match',
+          confidence: 'high',
+          factors: [],
+          suggestions: [],
           confidenceReason: 'Balanced historical and profile coverage',
           sourceSummary: [
             { label: 'Historical fit', detail: 'Strong cohort match' },

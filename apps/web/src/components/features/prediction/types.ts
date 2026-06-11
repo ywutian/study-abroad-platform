@@ -13,6 +13,7 @@ export type {
   PredictionPublicExplanation,
   PredictionResult,
   PredictionResponse,
+  PredictionDashboardData,
   PredictionComparison,
   EngineScores,
   TierType,

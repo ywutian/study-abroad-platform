@@ -235,3 +235,37 @@ export interface PredictionResponse {
   /** Set when user selected any UC school and backend expanded to all 9 UC campuses */
   ucComparisonExpanded?: boolean;
 }
+
+/**
+ * `GET /predictions/dashboard` shape — the served aggregate of a user's
+ * predictions. Single source of truth for the dashboard contract: the backend
+ * getDashboard return type, the web usePredictionDashboard hook, and the mobile
+ * prediction screen all reference THIS type, so a backend shape change is caught
+ * at compile time on every consumer.
+ *
+ * The per-prediction item reuses PredictionResult's precise field types but omits
+ * `schoolName` (the dashboard sends a `school` object instead) and pins the
+ * dashboard-specific fields (`school`, numeric `probability`, `updatedAt`).
+ */
+export interface PredictionDashboardData {
+  totalSchools: number;
+  tierDistribution: { reach: number; match: number; safety: number };
+  avgProbability: number;
+  confidenceBreakdown: { low: number; medium: number; high: number };
+  predictions: Array<
+    Omit<PredictionResult, 'schoolName'> & {
+      schoolId: string;
+      school: {
+        id: string;
+        name: string;
+        nameZh?: string;
+        usNewsRank?: number;
+        acceptanceRate?: number | null;
+        intlAcceptanceRate?: number | null;
+        needBlindInternational?: boolean | null;
+      } | null;
+      probability: number;
+      updatedAt: string;
+    }
+  >;
+}

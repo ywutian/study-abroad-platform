@@ -47,6 +47,7 @@ import {
 import {
   API_ROUTES,
   type AIAnalysisResult,
+  type PredictionDashboardData,
   detectInternationalStatus,
   formatPercentValue,
   predictionRoutes,
@@ -79,31 +80,8 @@ interface PredictionResultItem {
   updatedAt?: string;
 }
 
-interface DashboardResponse {
-  totalSchools: number;
-  avgProbability: number;
-  predictions: Array<{
-    schoolId: string;
-    school: {
-      name: string;
-      nameZh?: string;
-      acceptanceRate?: number | null;
-      intlAcceptanceRate?: number | null;
-      needBlindInternational?: boolean | null;
-    } | null;
-    probability: number | null;
-    tier: 'reach' | 'match' | 'safety' | 'unavailable';
-    confidence: 'low' | 'medium' | 'high';
-    roundContext?: string | null;
-    confidenceReason?: string;
-    sourceSummary?: Array<{ label: string; detail?: string }>;
-    uncertaintyReasons?: string[];
-    updatedAt?: string;
-  }>;
-}
-
 export function mapDashboardToPredictions(
-  dashboard: DashboardResponse | undefined,
+  dashboard: PredictionDashboardData | undefined,
   isInternational: boolean
 ): PredictionResultItem[] {
   if (!dashboard?.predictions) return [];
@@ -243,7 +221,7 @@ export default function PredictionScreen() {
     refetch,
   } = useQuery({
     queryKey: qk.predictions.dashboard,
-    queryFn: () => apiClient.get<DashboardResponse>(`${API_ROUTES.PREDICTIONS}/dashboard`),
+    queryFn: () => apiClient.get<PredictionDashboardData>(`${API_ROUTES.PREDICTIONS}/dashboard`),
     enabled: isAuthenticated,
   });
 

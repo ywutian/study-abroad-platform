@@ -21,7 +21,16 @@ import { PredictionService } from './prediction.service';
 import { SchoolService } from '../school/school.service';
 import { CurrentLocale, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import type { SupportedLocale } from '@study-abroad/shared';
+import type {
+  SupportedLocale,
+  PredictionDashboardData,
+  TierType,
+  ConfidenceLevel,
+  PredictionFactor,
+  PredictionSourceSummary,
+  PredictionPublicExplanation,
+  PredictionOutcomeLabel,
+} from '@study-abroad/shared';
 import {
   ThrottleAI,
   ThrottleSensitive,
@@ -249,7 +258,7 @@ export class PredictionController {
   async getDashboard(
     @CurrentUser() user: CurrentUserPayload,
     @CurrentLocale() locale: SupportedLocale,
-  ) {
+  ): Promise<PredictionDashboardData> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },
     });
@@ -280,17 +289,21 @@ export class PredictionController {
       where: { id: { in: schoolIds } },
       select: SCHOOL_PREDICTION_CONTEXT_SELECT,
     });
+    // Map to the dashboard's consumed shape only (web reads id/name/nameZh/usNewsRank,
+    // mobile reads name/acceptanceRate/intlAcceptanceRate/needBlindInternational,
+    // readStoredPublicExplanation reads name/nameZh/acceptanceRate) — not the full
+    // SCHOOL_PREDICTION_CONTEXT_SELECT, so the response matches the shared
+    // PredictionDashboardData contract instead of over-fetching.
     const schoolMap = new Map(
       schools.map((s) => [
         s.id,
         {
-          ...s,
+          id: s.id,
+          name: s.name,
+          nameZh: s.nameZh ?? undefined,
+          usNewsRank: s.usNewsRank ?? undefined,
           acceptanceRate: clampPercentRate((s as any).acceptanceRate),
           intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
-          intlStudentPct:
-            (s as any).intlStudentPct != null
-              ? Number((s as any).intlStudentPct)
-              : undefined,
           needBlindInternational: (s as any).needBlindInternational ?? null,
         },
       ]),
@@ -321,9 +334,7 @@ export class PredictionController {
       confidenceBreakdown,
       predictions: predictions.map((p) => ({
         ...((): {
-          latestOutcomeLabel?: ReturnType<
-            PredictionReportingService['mapLatestOutcomeLabel']
-          >;
+          latestOutcomeLabel?: PredictionOutcomeLabel;
         } => {
           const canonical = this.reportingService.resolveCanonicalOutcome(
             p.outcomeLabelRecords,
@@ -331,7 +342,7 @@ export class PredictionController {
           return {
             latestOutcomeLabel: this.reportingService.mapLatestOutcomeLabel(
               canonical.displayRecord,
-            ),
+            ) as PredictionOutcomeLabel | undefined,
           };
         })(),
         id: p.id,
@@ -342,28 +353,41 @@ export class PredictionController {
         probabilityHigh: p.probabilityHigh
           ? Number(p.probabilityHigh)
           : undefined,
-        tier: p.tier,
-        confidence: p.confidence,
-        confidenceReason: p.confidenceReason,
+        // DB row → serialized dashboard contract: tier/confidence are stored as
+        // their enum strings, factors/sourceSummary as JSON, nullable columns as
+        // null (the contract uses undefined), updatedAt as a Date (serialized to
+        // an ISO string). Cast/normalize each to the PredictionDashboardData shape.
+        tier: p.tier as TierType,
+        confidence: p.confidence as ConfidenceLevel,
+        confidenceReason: p.confidenceReason ?? undefined,
         publicExplanation: readStoredPublicExplanation(
           p,
           locale,
           schoolMap.get(p.schoolId),
-        ),
-        cohortKey: p.cohortKey,
-        roundContext: p.applicationRound,
-        sourceSummary: p.sourceSummary,
-        uncertaintyReasons: p.uncertaintyReasons,
+        ) as PredictionPublicExplanation,
+        cohortKey: p.cohortKey ?? undefined,
+        roundContext: p.applicationRound ?? undefined,
+        sourceSummary:
+          (p.sourceSummary as PredictionSourceSummary[] | null) ?? undefined,
+        uncertaintyReasons:
+          (p.uncertaintyReasons as string[] | null) ?? undefined,
         servedPolicyVersionId: p.policyVersionId ?? undefined,
         predictionMethod:
           (p.servedTrace as any)?.engine === 'counselor'
             ? 'counselor'
             : 'fusion',
-        source: p.source,
-        factors: Array.isArray(p.factors) ? p.factors : [],
-        suggestions: Array.isArray(p.suggestions) ? p.suggestions : [],
-        modelVersion: p.modelVersion,
-        updatedAt: p.updatedAt,
+        source: p.source ?? undefined,
+        factors: (Array.isArray(p.factors)
+          ? p.factors
+          : []) as unknown as PredictionFactor[],
+        suggestions: (Array.isArray(p.suggestions)
+          ? p.suggestions
+          : []) as unknown as string[],
+        modelVersion: p.modelVersion ?? undefined,
+        updatedAt:
+          p.updatedAt instanceof Date
+            ? p.updatedAt.toISOString()
+            : String(p.updatedAt),
       })),
     };
   }

@@ -8,9 +8,15 @@ import type {
   PredictionOutcomeLabel,
   PredictionResponse,
   PredictionResult,
+  PredictionDashboardData,
   PredictionPublicExplanation,
   PredictionSourceSummary,
 } from '@/components/features/prediction/types';
+
+// Re-export the dashboard contract so `@/hooks/use-prediction` stays the import
+// site for dashboard consumers (e.g. DashboardSummary) now that the shape is
+// defined once in shared (single source of truth across api/web/mobile).
+export type { PredictionDashboardData } from '@/components/features/prediction/types';
 
 // ============================================
 // Query Keys
@@ -67,25 +73,6 @@ export interface SchoolPredictionData {
     usNewsRank?: number;
     acceptanceRate?: number;
   } | null;
-}
-
-export interface PredictionDashboardData {
-  totalSchools: number;
-  tierDistribution: { reach: number; match: number; safety: number };
-  avgProbability: number;
-  confidenceBreakdown: { low: number; medium: number; high: number };
-  predictions: Array<
-    PredictionResult & {
-      schoolId: string;
-      school: { id: string; name: string; nameZh?: string; usNewsRank?: number };
-      probability: number;
-      tier?: string;
-      confidence?: string;
-      source?: string;
-      modelVersion?: string;
-      updatedAt: string;
-    }
-  >;
 }
 
 export interface PredictionHistorySnapshot {
