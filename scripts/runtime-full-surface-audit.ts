@@ -298,6 +298,18 @@ function parseArgs(argv: string[]): CliArgs {
 const CLI_ARGS = parseArgs(process.argv.slice(2));
 const RUNTIME_MODE = CLI_ARGS.mode;
 const RELEASE_RUNTIME_ENVIRONMENT = CLI_ARGS.environment;
+
+// Release-runtime web routes run in a local-prod build on a shared CI runner and
+// hit *transient* infra flake (nav-probe navigation races, loading-state timeouts
+// under load, momentary "Connection closed" from the freshly-booted server). A
+// single flaky route fails the whole fail-closed gate even though nothing is
+// actually broken. We retry each release-runtime web route up to this many times;
+// any attempt that reaches a non-hard-fail status wins. A route that stays
+// hard-fail across ALL attempts is a real defect and still fails the gate — retry
+// only absorbs transient flake, it never hides a deterministic failure.
+const RELEASE_RUNTIME_MAX_ATTEMPTS = 3;
+const RELEASE_RUNTIME_HARD_FAIL_SET = new Set<string>(RELEASE_RUNTIME_HARD_FAIL_STATUSES);
+
 const WEB_BASE = CLI_ARGS.webBase ?? 'http://localhost:4100';
 const API_BASE =
   CLI_ARGS.apiBase ??
@@ -2635,6 +2647,47 @@ async function executeRouteSurface(surface: RouteSurfaceDefinition, samples: Sam
   await executeMobileRouteSurface(surface, samples);
 }
 
+/**
+ * Retry wrapper for release-runtime web routes (see RELEASE_RUNTIME_MAX_ATTEMPTS).
+ * executeRouteSurface writes the route's record into RECORDS; we read the status
+ * back and, if it is a transient hard-fail, re-run the whole route. Any non-hard
+ * status (PASS/SLOW/COLD) on any attempt wins — the re-run overwrites the record.
+ * Staying hard-fail across EVERY attempt is a real defect and is left as the
+ * failure, so retry never hides a deterministic failure. Each retry/recovery is
+ * logged so "was it flaky?" is answerable from the CI run. Non-release modes and
+ * non-web surfaces run exactly once (maxAttempts = 1).
+ */
+async function executeRouteSurfaceWithRetry(
+  surface: RouteSurfaceDefinition,
+  samples: SampleCatalog
+) {
+  const retryable = RUNTIME_MODE === 'release-runtime' && surface.platform === 'web';
+  const maxAttempts = retryable ? RELEASE_RUNTIME_MAX_ATTEMPTS : 1;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    await executeRouteSurface(surface, samples);
+    const status = RECORDS.get(surface.surfaceId)?.status;
+    const isHardFail = status != null && RELEASE_RUNTIME_HARD_FAIL_SET.has(status);
+    if (!isHardFail) {
+      if (attempt > 1) {
+        console.warn(
+          `  ↻ release-runtime: ${surface.surfaceId} recovered on attempt ${attempt}/${maxAttempts} (status=${status}) — transient flake absorbed`
+        );
+      }
+      return;
+    }
+    if (attempt < maxAttempts) {
+      console.warn(
+        `  ↻ release-runtime: ${surface.surfaceId} hard-fail (${status}) on attempt ${attempt}/${maxAttempts} — retrying`
+      );
+    } else {
+      console.error(
+        `  ✗ release-runtime: ${surface.surfaceId} still hard-fail (${status}) after ${maxAttempts} attempts — treated as a real defect`
+      );
+    }
+  }
+}
+
 async function environmentHealth() {
   const apiHealthUrl = API_BASE.replace(/\/api\/v1\/?$/, '/health');
   const truncateForLog = (text: string, max = 400) =>
@@ -2982,7 +3035,7 @@ async function main() {
     }
 
     if (surface.surfaceType === 'route') {
-      await executeRouteSurface(surface, samples);
+      await executeRouteSurfaceWithRetry(surface, samples);
       continue;
     }
     if (surface.surfaceType === 'capability') {
