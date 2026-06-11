@@ -7,6 +7,7 @@ import {
   LEGACY_PREDICTION_POLICY_NAME,
   LEGACY_PREDICTION_POLICY_VERSION,
 } from './prediction-policy.constants';
+import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
 
 const DEFAULT_MODEL_VERSION = 'v3-enterprise';
 
@@ -69,6 +70,38 @@ export class PredictionPersistenceService {
     return policy.id;
   }
 
+  /**
+   * Self-heal the canonical counselor served-policy row, mirroring
+   * `ensureLegacyPolicyVersion`. The served path stamps every counselor
+   * prediction with `servedPolicyVersionId = COUNSELOR_RULE_VERSION` (see
+   * PredictionPolicyService.resolveServedPolicyVersionId), and that value is
+   * also the DB foreign key `PredictionResult.policyVersionId`, so the matching
+   * PredictionPolicyVersion row must exist for persistence to satisfy lineage.
+   * Upserting it here keeps fresh DBs and production self-consistent with zero
+   * manual migration — the row is created the first time a counselor prediction
+   * is persisted, and reactivated if it had been retired.
+   */
+  private async ensureCounselorPolicyVersion(): Promise<string> {
+    const policy = await this.prisma.predictionPolicyVersion.upsert({
+      where: { id: COUNSELOR_RULE_VERSION },
+      update: { status: 'ACTIVE' },
+      create: {
+        id: COUNSELOR_RULE_VERSION,
+        policyKey: 'default',
+        version: COUNSELOR_RULE_VERSION,
+        name: 'Counselor Cold-Start (served engine)',
+        status: 'ACTIVE',
+        description:
+          'Canonical served policy version mirroring the deterministic counselor engine. Auto-maintained — never hand-edit.',
+        notes: '[system-backfill:counselor-served-lineage]',
+        activatedAt: new Date(),
+      },
+      select: { id: true },
+    });
+
+    return policy.id;
+  }
+
   private async resolvePersistedPolicyVersionId(
     policyVersionId?: string,
   ): Promise<string | undefined> {
@@ -87,6 +120,10 @@ export class PredictionPersistenceService {
 
     if (policyVersionId === LEGACY_PREDICTION_POLICY_VERSION) {
       return this.ensureLegacyPolicyVersion();
+    }
+
+    if (policyVersionId === COUNSELOR_RULE_VERSION) {
+      return this.ensureCounselorPolicyVersion();
     }
 
     this.logger.error(

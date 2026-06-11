@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
-import { LEGACY_PREDICTION_POLICY_VERSION } from './prediction-policy.constants';
+import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
 
 export { LEGACY_PREDICTION_POLICY_VERSION } from './prediction-policy.constants';
 const CHINA_CODES = new Set(['CN', 'CHN', 'CHINA', 'PRC']);
@@ -56,16 +55,29 @@ export interface PredictionTracePayload {
 
 @Injectable()
 export class PredictionPolicyService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async resolveServedPolicyVersionId(): Promise<string> {
-    const active = await this.prisma.predictionPolicyVersion.findFirst({
-      where: { status: 'ACTIVE' },
-      orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
-      select: { id: true },
-    });
-
-    return active?.id ?? LEGACY_PREDICTION_POLICY_VERSION;
+  /**
+   * The served policy-version label stamped on every prediction's
+   * `servedPolicyVersionId`.
+   *
+   * The served path is counselor-only — the ML/v5 path was deleted 2026-05-07,
+   * there is no champion/shadow model serving users. So the served policy
+   * version IS the counselor engine's own rule version, NOT whatever row
+   * happens to carry `status='ACTIVE'` in PredictionPolicyVersion.
+   *
+   * Coupling this label to the DB ACTIVE row is exactly what produced the
+   * `v5-ml-primary` regression: a 2026-04-23 ML-era row was left ACTIVE after
+   * the ML code was deleted, so counselor predictions got stamped with a dead
+   * ML policy name. Returning the engine's own version makes the label
+   * structurally incapable of drifting from the engine that produced it — the
+   * guard test pins `servedPolicyVersionId === COUNSELOR_RULE_VERSION`, and an
+   * engine bump (v1.8 → v1.9) carries the served label along automatically.
+   *
+   * The PredictionPolicyVersion table + its admin/shadow/workflow tooling are
+   * retained as historical audit and scaffolding for any future policy-driven
+   * serving experiments; they simply no longer drive this served label.
+   */
+  resolveServedPolicyVersionId(): string {
+    return COUNSELOR_RULE_VERSION;
   }
 
   resolveCohortKey(profile: ProfileInput): string {

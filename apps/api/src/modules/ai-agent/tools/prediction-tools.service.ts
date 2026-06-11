@@ -135,7 +135,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
         ? snapshot.sourceSummary
         : undefined,
       uncertaintyReasons: snapshot.uncertaintyReasons ?? undefined,
-      servedPolicyVersionId: snapshot.policyVersionId ?? undefined,
+      // servedPolicyVersionId omitted — internal policy gate detail (parity with formatPrediction)
       source: snapshot.source ?? undefined,
       modelVersion: snapshot.modelVersion ?? undefined,
       createdAt: snapshot.createdAt,

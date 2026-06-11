@@ -1104,7 +1104,7 @@ export class PredictionService {
 
     const profileMetrics = this.transformer.extractProfileMetrics(profileInput);
     const policyVersionId = this.policyService
-      ? await this.policyService.resolveServedPolicyVersionId()
+      ? this.policyService.resolveServedPolicyVersionId()
       : MODEL_VERSION;
     const plattParams = await this.getPlattCalibration();
 
@@ -1460,7 +1460,7 @@ export class PredictionService {
     const profileMetrics = this.extractProfileMetrics(profileInput);
     const profileHash = this.hashProfileData(profile);
     const policyVersionId = this.policyService
-      ? await this.policyService.resolveServedPolicyVersionId()
+      ? this.policyService.resolveServedPolicyVersionId()
       : MODEL_VERSION;
 
     // Phase 1.5: 加载 Platt 校准参数（如果有足够校准数据）
