@@ -42,6 +42,7 @@ overrides:
   '@babel/plugin-transform-modules-systemjs': '>=7.29.4'
   zod: 3.25.76
   shell-quote: '>=1.8.4'
+  '@grpc/grpc-js': '>=1.14.4'
 
 importers:
   .:
@@ -4324,10 +4325,10 @@ packages:
         integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==,
       }
 
-  '@grpc/grpc-js@1.14.3':
+  '@grpc/grpc-js@1.14.4':
     resolution:
       {
-        integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==,
+        integrity: sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ==,
       }
     engines: { node: '>=12.10.0' }
 
@@ -30089,7 +30090,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@grpc/grpc-js@1.14.3':
+  '@grpc/grpc-js@1.14.4':
     dependencies:
       '@grpc/proto-loader': 0.8.0
       '@js-sdsl/ordered-map': 4.4.2
@@ -31462,7 +31463,7 @@ snapshots:
 
   '@opentelemetry/exporter-logs-otlp-grpc@0.217.0(@opentelemetry/api@1.9.0)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/otlp-exporter-base': 0.217.0(@opentelemetry/api@1.9.0)
@@ -31492,7 +31493,7 @@ snapshots:
 
   '@opentelemetry/exporter-metrics-otlp-grpc@0.217.0(@opentelemetry/api@1.9.0)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-metrics-otlp-http': 0.217.0(@opentelemetry/api@1.9.0)
@@ -31531,7 +31532,7 @@ snapshots:
 
   '@opentelemetry/exporter-trace-otlp-grpc@0.217.0(@opentelemetry/api@1.9.0)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/otlp-exporter-base': 0.217.0(@opentelemetry/api@1.9.0)
@@ -32140,7 +32141,7 @@ snapshots:
 
   '@opentelemetry/otlp-grpc-exporter-base@0.217.0(@opentelemetry/api@1.9.0)':
     dependencies:
-      '@grpc/grpc-js': 1.14.3
+      '@grpc/grpc-js': 1.14.4
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.7.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/otlp-exporter-base': 0.217.0(@opentelemetry/api@1.9.0)
