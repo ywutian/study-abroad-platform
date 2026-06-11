@@ -37,12 +37,6 @@ describe('PredictionController', () => {
     },
   ];
 
-  const mockCalibration = {
-    totalPredictions: 100,
-    accuracy: 0.82,
-    brierScore: 0.15,
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PredictionController],
@@ -63,7 +57,6 @@ describe('PredictionController', () => {
             }),
             getPredictionHistory: jest.fn().mockResolvedValue(mockHistory),
             reportActualResult: jest.fn().mockResolvedValue(undefined),
-            getCalibrationData: jest.fn().mockResolvedValue(mockCalibration),
           },
         },
         {
@@ -284,15 +277,6 @@ describe('PredictionController', () => {
           result: 'ADMITTED',
         }),
       ).rejects.toThrow('Numeric prediction not found');
-    });
-  });
-
-  describe('getCalibration', () => {
-    it('should return calibration data', async () => {
-      const result = await controller.getCalibration();
-
-      expect(predictionService.getCalibrationData).toHaveBeenCalled();
-      expect(result).toEqual(mockCalibration);
     });
   });
 });

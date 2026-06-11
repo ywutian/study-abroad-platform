@@ -2835,9 +2835,4 @@ export class PredictionService {
       options,
     );
   }
-
-  /** @deprecated Use PredictionReportingService.getCalibrationData() directly */
-  async getCalibrationData() {
-    return this.reportingService.getCalibrationData();
-  }
 }
