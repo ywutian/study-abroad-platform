@@ -19,10 +19,9 @@ import {
 import type { Response } from 'express';
 import { PredictionService } from './prediction.service';
 import { SchoolService } from '../school/school.service';
-import { CurrentLocale, CurrentUser, Roles } from '../../common/decorators';
+import { CurrentLocale, CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import type { SupportedLocale } from '@study-abroad/shared';
-import { Role } from '@prisma/client';
 import {
   ThrottleAI,
   ThrottleSensitive,
@@ -243,13 +242,6 @@ export class PredictionController {
       predictionResultId,
       body,
     );
-  }
-
-  @Get('calibration')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get model calibration data (admin)' })
-  async getCalibration() {
-    return this.predictionService.getCalibrationData();
   }
 
   @Get('dashboard')
