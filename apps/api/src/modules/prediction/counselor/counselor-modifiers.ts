@@ -1,5 +1,5 @@
 /**
- * Counselor Engine — 8 deterministic modifiers
+ * Counselor Engine — 11 bounded, published-coefficient modifiers
  *
  * Each modifier is a pure function `(profile, school, context?) → ModifierResult`
  * that returns:
