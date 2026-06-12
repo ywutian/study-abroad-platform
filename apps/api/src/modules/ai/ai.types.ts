@@ -1,3 +1,5 @@
+import type { AIAnalysisResult } from '@study-abroad/shared';
+
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -197,6 +199,22 @@ export interface ApplicationAnalysisResponseV2 {
   fairnessDisclosure?: FairnessDisclosure;
   debug?: ApplicationAnalysisDebugInfo;
 }
+
+// ── Three-layer contract guard (cf. prediction dashboard SSOT, PR #384) ──
+// `ApplicationAnalysisResponseV2` (this API-layer type) and the shared
+// `AIAnalysisResult` that web + mobile consume are two parallel definitions.
+// These bidirectional assignability checks turn ANY structural drift between
+// them into a COMPILE error, so a field added/changed on one side can't silently
+// reach the other — `apiClient.get<T>` does no runtime validation (see MEMORY
+// apiclient_no_runtime_validation).
+const _v2SatisfiesSharedContract = (
+  response: ApplicationAnalysisResponseV2,
+): AIAnalysisResult => response;
+const _sharedContractSatisfiesV2 = (
+  response: AIAnalysisResult,
+): ApplicationAnalysisResponseV2 => response;
+void _v2SatisfiesSharedContract;
+void _sharedContractSatisfiesV2;
 
 export type ApplicationAnalysisStatus = 'fresh' | 'cached' | 'degraded';
 
