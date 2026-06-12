@@ -82,6 +82,28 @@ export type SmokeReport = {
   results: StepResult[];
 };
 
+// Enterprise guard for the v5-ml-primary regression: the served policy version
+// must track the counselor engine (COUNSELOR_RULE_VERSION = 'counselor-cold-start-*'),
+// never a dead ML/legacy label. The old check only asserted PRESENCE — a
+// stale-but-present 'v5-ml-primary' sailed straight through. This asserts VALUE,
+// so a drift fails the CI Prediction Gate instead of hiding for weeks.
+const DEAD_POLICY_LABEL = /v5-ml-primary|ml-primary|legacy-v3|v3-enterprise/i;
+function assertCounselorPolicy(value: string | undefined, where: string): void {
+  if (!value) {
+    throw new Error(`${where} is missing servedPolicyVersionId`);
+  }
+  if (DEAD_POLICY_LABEL.test(value)) {
+    throw new Error(
+      `${where} servedPolicyVersionId is a DEAD policy label "${value}" (v5-ml-primary regression) — expected the counselor engine rule version`
+    );
+  }
+  if (!value.startsWith('counselor')) {
+    throw new Error(
+      `${where} servedPolicyVersionId "${value}" does not track the counselor engine (expected to start with "counselor")`
+    );
+  }
+}
+
 export async function runPredictionStabilitySmoke(
   partialOptions: Partial<SmokeCliOptions> = {}
 ): Promise<SmokeReport> {
@@ -210,9 +232,7 @@ export async function runPredictionStabilitySmoke(
     if (!(firstResult.probability > 0 && firstResult.probability < 1)) {
       throw new Error(`Invalid probability ${String(firstResult.probability)}`);
     }
-    if (!firstResult.servedPolicyVersionId) {
-      throw new Error('Prediction result is missing servedPolicyVersionId');
-    }
+    assertCounselorPolicy(firstResult.servedPolicyVersionId, 'Prediction result');
     record(
       'predict',
       'PASS',
@@ -232,9 +252,7 @@ export async function runPredictionStabilitySmoke(
     if (!dashboardPrediction) {
       throw new Error('Dashboard is missing the persisted prediction');
     }
-    if (!dashboardPrediction.servedPolicyVersionId) {
-      throw new Error('Dashboard prediction is missing servedPolicyVersionId');
-    }
+    assertCounselorPolicy(dashboardPrediction.servedPolicyVersionId, 'Dashboard prediction');
     record(
       'dashboard_persist',
       'PASS',
@@ -269,9 +287,7 @@ export async function runPredictionStabilitySmoke(
     if (!historyItem?.latestOutcomeLabel) {
       throw new Error('Prediction history is missing latestOutcomeLabel after report');
     }
-    if (!historyItem.servedPolicyVersionId) {
-      throw new Error('Prediction history is missing servedPolicyVersionId');
-    }
+    assertCounselorPolicy(historyItem.servedPolicyVersionId, 'Prediction history');
     record(
       'history_outcome',
       'PASS',
