@@ -1200,9 +1200,19 @@ async function clickSafeInternalLink(
       match.click();
     }, link.href);
 
+    // Wait for the URL to actually change. The clicked link is almost always a
+    // Next.js App Router <Link> — client-side routing via history.pushState, which
+    // is async and fires NO load/domcontentloaded event. The old race included
+    // waitForLoadState('domcontentloaded'), which resolves IMMEDIATELY on an
+    // already-loaded page, so the race returned BEFORE pushState ran and the
+    // finalUrl check below raced the route transition → 'URL did not change'. That
+    // is the home-page NAVIGATION_FAILED flake that escaped the #379 retry floor
+    // (all 3 attempts lost the same race; a manual re-run went green). Let
+    // waitForURL drive; the timeout is the genuine-no-navigation backstop.
     await Promise.race([
-      page.waitForURL((url) => url.href !== beforeUrl, { timeout: budget.navigationMs }),
-      page.waitForLoadState('domcontentloaded', { timeout: budget.navigationMs }),
+      page
+        .waitForURL((url) => url.href !== beforeUrl, { timeout: budget.navigationMs })
+        .catch(() => undefined),
       page.waitForTimeout(budget.navigationMs),
     ]);
     // Wait for the clicked navigation to actually settle before returning. The old
