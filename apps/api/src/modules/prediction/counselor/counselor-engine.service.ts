@@ -347,7 +347,12 @@ export class CounselorEngineService {
         name: mr.label,
         impact: mr.impact,
         weight: Math.abs(mr.multiplier - 1.0),
-        detail: `${mr.evidence} (×${mr.multiplier.toFixed(2)})`,
+        // detail is user-facing prose. The raw multiplier lives in `weight`
+        // (magnitude) + `impact` (direction) for the UI bar/sort — never append
+        // a `(×N.NN)` coefficient here: it leaks engineering jargon into the
+        // student/parent-facing factor card AND the application-analysis
+        // narrative (normalizeFactorStrings consumes this verbatim).
+        detail: mr.evidence,
       });
     }
     // Surface the geometric-mean combination when both academic dimensions
@@ -358,14 +363,14 @@ export class CounselorEngineService {
       (modifierResults.gpaBand.multiplier !== 1.0 ||
         modifierResults.testBand.multiplier !== 1.0)
     ) {
-      const naive =
-        modifierResults.gpaBand.multiplier *
-        modifierResults.testBand.multiplier;
       factors.push({
-        name: 'Combined academic signal (geometric mean)',
+        name: 'Combined academic signal',
         impact: 'neutral',
         weight: 0,
-        detail: `GPA ×${modifierResults.gpaBand.multiplier.toFixed(2)} and test ×${modifierResults.testBand.multiplier.toFixed(2)} are co-evaluated as ×${academicProduct.toFixed(2)} (geometric mean) instead of ×${naive.toFixed(2)} (product) to avoid double-penalizing consistent profiles.`,
+        // User-facing prose — explain the concept (GPA + test evaluated
+        // together, not double-counted), never the raw ×N.NN coefficients,
+        // which read as engineering jargon to a student/parent.
+        detail: `Your GPA and test scores are weighed together as one combined academic signal rather than penalized separately, so a gap isn't counted twice.`,
       });
     }
     // Add the final clamp note if the raw value was clipped — operational
