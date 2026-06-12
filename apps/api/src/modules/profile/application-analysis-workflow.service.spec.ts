@@ -380,6 +380,48 @@ describe('ApplicationAnalysisWorkflowService', () => {
     expect(redis.delByPrefix).toHaveBeenCalledWith('ai:profile-analysis:');
   });
 
+  it('blocks activation when analysisVersion has no deployed engine (v5-ml-primary class guard)', async () => {
+    // gate-ready policy, but its analysisVersion labels an engine that isn't
+    // deployed — a gold replay can be generated under ANY label by the same
+    // engine, so the gate alone can't catch this. The deployed-engine binding
+    // must reject it (cf. ADR-0022).
+    const policy = createPolicy({
+      status: 'SHADOW',
+      analysisVersion: 'application-analysis-v3',
+    });
+    (
+      prisma.applicationAnalysisPolicyVersion.findUnique as jest.Mock
+    ).mockResolvedValue(policy);
+    (prisma.applicationAnalysisEvaluationRun.findFirst as jest.Mock)
+      .mockResolvedValueOnce({
+        id: 'eval-shadow',
+        metrics: {
+          policyCorrectnessRate: 0.97,
+          weakStateCorrectnessRate: 0.99,
+          fabricatedInsightCount: 0,
+          actionabilityMean: 4.4,
+          contractParityPass: true,
+          webRenderPass: true,
+          mobileRenderPass: true,
+          journeyPassRate: 1,
+          unknownPolicyRate: 0.18,
+        },
+        policyVersion: {
+          id: policy.id,
+          policyKey: policy.policyKey,
+          version: policy.version,
+          status: policy.status,
+          analysisVersion: policy.analysisVersion,
+        },
+      })
+      .mockResolvedValueOnce(null);
+
+    await expect(service.activatePolicy(ACTOR_ID, 'policy-1')).rejects.toThrow(
+      /no deployed engine/,
+    );
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
   it('rolls back to the previous retired policy', async () => {
     (prisma.applicationAnalysisPolicyVersion.findFirst as jest.Mock)
       .mockResolvedValueOnce(

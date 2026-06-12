@@ -3522,6 +3522,23 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
+    // Bind the served label to a deployed engine. The gate above only proves the
+    // analysisVersion has a passing gold replay — but a replay can be generated
+    // under ANY label by the same engine, so without this an admin could activate
+    // a policy whose analysisVersion has no deployed engine, mislabelling every
+    // served meta.analysisVersion (the prediction v5-ml-primary class of bug, see
+    // ADR-0022). DEPLOYED_ANALYSIS_VERSIONS must stay in sync with the v1/v2
+    // services' DEFAULT_ANALYSIS_VERSION.
+    const DEPLOYED_ANALYSIS_VERSIONS = [
+      'application-analysis-v1',
+      'application-analysis-v2',
+    ];
+    if (!DEPLOYED_ANALYSIS_VERSIONS.includes(policy.analysisVersion)) {
+      throw new ConflictException(
+        `Policy promotion blocked: analysisVersion "${policy.analysisVersion}" has no deployed engine (expected one of ${DEPLOYED_ANALYSIS_VERSIONS.join(', ')})`,
+      );
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.applicationAnalysisPolicyVersion.updateMany({
         where: { policyKey: policy.policyKey, status: 'ACTIVE' },
