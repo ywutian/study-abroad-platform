@@ -1035,5 +1035,47 @@ describe('CounselorEngineService', () => {
       );
       expect(clampNote).toBeDefined();
     });
+
+    it('never leaks a raw "(×N.NN)" coefficient into a user-facing factor detail', async () => {
+      // factor.detail renders verbatim in the student/parent-facing prediction
+      // card AND feeds the application-analysis narrative
+      // (normalizeFactorStrings). The multiplier belongs in `weight` (magnitude)
+      // + `impact` (direction), never in the prose. Regression guard for the
+      // engine double-append + the evidence self-append leaks (ED/EA/OOS/
+      // in-state/intl/major modifier lines). Natural-prose forms like "~1.8× the
+      // overall rate" are fine — only the parenthetical "(×N.NN)" / "(N.NN×
+      // ratio)" engineering coefficient is the leak.
+      const elite = await service.compute(
+        profile({
+          isInternational: true,
+          gpa: 3.95,
+          testScores: [{ type: 'SAT', score: 1560 }],
+        }),
+        school({
+          acceptanceRate: 0.07,
+          intlAcceptanceRate: 0.05, // school-published intl rate → intl line
+          edAcceptanceRate: 0.16, // school-published ED rate → ED line
+          hasEarlyDecision: true,
+          sat25: 1500,
+          sat75: 1570,
+        }),
+        'ED',
+      );
+      const inStatePublic = await service.compute(
+        profile({ gpa: 3.8, highSchoolLocation: 'CA' as any }),
+        school({
+          state: 'CA',
+          acceptanceRate: 0.4,
+          inStateAcceptanceRate: 0.55, // → in-state published line
+          oosAcceptanceRate: 0.3, // → OOS line for a non-resident run
+        }),
+      );
+
+      // Guard would be vacuous if no non-anchor modifier ever fired.
+      expect(elite.factors.length).toBeGreaterThan(1);
+      for (const f of [...elite.factors, ...inStatePublic.factors]) {
+        expect(f.detail).not.toMatch(/\(×|× ratio\)/);
+      }
+    });
   });
 });

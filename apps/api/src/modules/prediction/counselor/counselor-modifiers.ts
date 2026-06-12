@@ -771,7 +771,7 @@ export function roundMultiplier(
           r === 'ED2'
             ? 'Early Decision 2 (school-published)'
             : 'Early Decision (school-published)',
-        evidence: `This school admits ${(roundRate * 100).toFixed(1)}% of ${r} applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+        evidence: `This school admits ${(roundRate * 100).toFixed(1)}% of ${r} applicants vs ${(overallRate * 100).toFixed(1)}% overall`,
         impact: 'positive',
       };
     }
@@ -805,7 +805,7 @@ export function roundMultiplier(
         r === 'EA'
           ? 'Early Action (school-published)'
           : 'Restrictive Early Action (school-published)',
-      evidence: `This school admits ${(eaRate * 100).toFixed(1)}% of ${r === 'EA' ? 'EA' : 'REA/SCEA'} applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+      evidence: `This school admits ${(eaRate * 100).toFixed(1)}% of ${r === 'EA' ? 'EA' : 'REA/SCEA'} applicants vs ${(overallRate * 100).toFixed(1)}% overall`,
       impact: 'positive',
     };
   }
@@ -839,7 +839,7 @@ export function roundMultiplier(
         r === 'ED2'
           ? 'Early Decision 2 (yield-informed estimate)'
           : 'Early Decision (yield-informed estimate)',
-      evidence: `No published ${r} admit rate; estimated from this school's ${(yieldFrac * 100).toFixed(0)}% CDS yield — lower yield implies a larger ED boost (×${multiplier.toFixed(2)}).`,
+      evidence: `No published ${r} admit rate; estimated from this school's ${(yieldFrac * 100).toFixed(0)}% CDS yield — lower yield implies a larger ED boost.`,
       impact: 'positive',
     };
   }
@@ -1179,7 +1179,7 @@ export function geoMultiplier(
     return {
       multiplier: ratio,
       label: 'Out-of-state (school data)',
-      evidence: `Out-of-state admit-rate data is ~${(oosRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (×${ratio.toFixed(2)})`,
+      evidence: `Out-of-state admit-rate data is ~${(oosRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall`,
       impact: ratio >= 0.95 ? 'neutral' : 'negative',
     };
   }
@@ -1214,7 +1214,7 @@ export function geoMultiplier(
       return {
         multiplier: ratio,
         label: 'In-state at public university',
-        evidence: `${schoolState} residents are admitted at ~${(inStateRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (×${ratio.toFixed(2)}, school-published in-state rate).`,
+        evidence: `${schoolState} residents are admitted at ~${(inStateRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (school-published in-state rate).`,
         impact: 'positive',
       };
     }
@@ -1341,7 +1341,7 @@ export function intlMultiplier(
     return {
       multiplier: clamped,
       label: 'International (school-published intl rate)',
-      evidence: `This school admits ~${(intlRate * 100).toFixed(0)}% of international applicants vs ~${(overallRate * 100).toFixed(0)}% overall (×${clamped.toFixed(2)})`,
+      evidence: `This school admits ~${(intlRate * 100).toFixed(0)}% of international applicants vs ~${(overallRate * 100).toFixed(0)}% overall`,
       impact: clamped >= 0.95 ? 'neutral' : 'negative',
     };
   }
@@ -1949,7 +1949,7 @@ export function majorMultiplier(
     return {
       multiplier: clamped,
       label: `Major: ${profile.targetMajor} (more selective)`,
-      evidence: `${profile.targetMajor} at this school admits ~${(programAcceptanceRate * 100).toFixed(0)}% vs ${(schoolRate * 100).toFixed(0)}% overall (${clamped.toFixed(2)}× ratio)`,
+      evidence: `${profile.targetMajor} at this school admits ~${(programAcceptanceRate * 100).toFixed(0)}% vs ${(schoolRate * 100).toFixed(0)}% overall`,
       impact: 'negative',
     };
   }

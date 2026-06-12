@@ -2714,13 +2714,24 @@ export class PredictionService {
             : 'As a reach school, highlight your uniqueness and knowledge of the school in your essays',
         );
       }
-      const edKw = isZh ? '早申' : 'ED';
-      if (!suggestions.some((s) => s.includes(edKw))) {
-        suggestions.push(
-          isZh
-            ? `考虑通过ED/EA早申请以最大化录取机会${summerNames ? `，同时利用暑期参加 ${summerNames} 等学术项目增强竞争力` : ''}`
-            : `Consider applying Early Decision to maximize admission chances${summerNames ? `, and strengthen your profile through summer programs like ${summerNames}` : ''}`,
+      // Early-round advice must match what THIS school actually offers — never
+      // hardcode "Early Decision". MIT/Caltech/Georgetown run (Restrictive)
+      // Early Action only (non-binding); the UC system has no early round at
+      // all. Telling an MIT applicant to "apply ED" is a factual error that
+      // erodes trust. buildEarlyRoundSuggestion() branches on the school flags
+      // and returns null when there's no early round to suggest.
+      const mentionsEarly = (s: string) =>
+        isZh
+          ? /早申|提前|ED|EA/.test(s)
+          : /\bED\b|\bEA\b|early decision|early action/i.test(s);
+      if (!suggestions.some(mentionsEarly)) {
+        const earlyTip = this.buildEarlyRoundSuggestion(
+          school,
+          profile,
+          summerNames,
+          isZh,
         );
+        if (earlyTip) suggestions.push(earlyTip);
       }
     } else if (tier === 'match') {
       const matchKw = isZh ? '优势' : 'strength';
@@ -2761,13 +2772,33 @@ export class PredictionService {
       }
     }
 
-    // 数据不足时的建议
+    // Low confidence → name the SPECIFIC profile gaps as ONE actionable nudge.
+    // The "why the data support level is low" explanation already lives in
+    // confidenceSummary (buildConfidenceSummary); repeating a vague "data is
+    // limited — complete your profile" here is redundant noise that crowds out
+    // real next-steps. Only fire when there's a concrete soft-factor gap (the
+    // SAT/ACT gap is covered separately below).
     if (confidence === 'low') {
-      suggestions.push(
-        isZh
-          ? '当前预测数据不足，建议完善个人档案以获得更准确的预测结果'
-          : 'Prediction data is limited — complete your profile for more accurate results',
-      );
+      const softGaps = [
+        (profile.activities?.length ?? 0) === 0
+          ? isZh
+            ? '课外活动'
+            : 'activities'
+          : null,
+        (profile.awards?.length ?? 0) === 0
+          ? isZh
+            ? '奖项荣誉'
+            : 'awards'
+          : null,
+      ].filter(Boolean) as string[];
+      const profileKw = isZh ? '档案' : 'profile';
+      if (softGaps.length && !suggestions.some((s) => s.includes(profileKw))) {
+        suggestions.push(
+          isZh
+            ? `补充${softGaps.join('、')}等档案信息，模型才能评估你的软实力，预测会更贴合`
+            : `Add ${softGaps.join(' and ')} to your profile so the model can weigh your soft factors for a closer estimate`,
+        );
+      }
     }
 
     // Profile 缺失项建议
@@ -2783,6 +2814,69 @@ export class PredictionService {
     }
 
     return suggestions.slice(0, 5); // 最多5条
+  }
+
+  /**
+   * Build a factually-correct early-round suggestion for a reach school.
+   *
+   * The bug this fixes: the reach branch used to hardcode "apply Early Decision"
+   * for every reach school. That is wrong for the many top schools that offer
+   * NO binding ED — MIT, Caltech, Stanford, the Ivies (Restrictive) Early Action
+   * is non-binding; the UC system has no early round at all. Telling an MIT
+   * applicant to "apply ED" is a verifiable factual error.
+   *
+   * Branches on the school's actual early-round flags:
+   *  - ED offered          → recommend binding ED (biggest reach boost), with a
+   *                          financial-aid caveat for international / need-aid
+   *                          applicants (binding admit = no aid comparison).
+   *  - EA / REA only        → recommend non-binding Early Action (signal interest).
+   *  - both known-absent    → return null (no early round → no suggestion, no noise).
+   *  - unknown              → soft conditional phrasing that cannot be wrong.
+   */
+  private buildEarlyRoundSuggestion(
+    school: SchoolInput,
+    profile: ProfileInput,
+    summerNames: string,
+    isZh: boolean,
+  ): string | null {
+    const summerTail = summerNames
+      ? isZh
+        ? `，同时利用暑期参加 ${summerNames} 等学术项目增强竞争力`
+        : `, and strengthen your profile through summer programs like ${summerNames}`
+      : '';
+    const bindingAidCaveat =
+      profile.isInternational || profile.needsFinancialAid
+        ? isZh
+          ? '（注意 ED 具有约束力，若你需要比较各校助学金方案，绑定录取会让你失去议价空间，需谨慎）'
+          : ' (note ED is binding, so if you need to compare financial-aid offers a binding admit removes that flexibility)'
+        : '';
+
+    if (school.hasEarlyDecision === true) {
+      return isZh
+        ? `作为冲刺校，可考虑用 ED（提前决定，绑定）申请以最大化录取机会${bindingAidCaveat}${summerTail}`
+        : `As a reach, consider Early Decision (binding) to maximize your admission odds${bindingAidCaveat}${summerTail}`;
+    }
+
+    if (school.hasRestrictiveEa === true || school.hasEarlyAction === true) {
+      const eaLabel = school.hasRestrictiveEa
+        ? isZh
+          ? '限制性提前行动（REA/SCEA）'
+          : 'Restrictive Early Action'
+        : isZh
+          ? '提前行动（EA）'
+          : 'Early Action';
+      return isZh
+        ? `作为冲刺校，这所学校提供${eaLabel}（不绑定），可提前申请以展示兴趣、且不影响你比较其他录取${summerTail}`
+        : `As a reach, this school offers ${eaLabel} (non-binding) — applying early can signal interest without committing you${summerTail}`;
+    }
+
+    if (school.hasEarlyDecision === false && school.hasEarlyAction === false) {
+      return null;
+    }
+
+    return isZh
+      ? `作为冲刺校，若这所学校设有提前申请轮次（ED/EA），可考虑用它来提升录取机会${summerTail}`
+      : `As a reach, if this school offers an early round (ED/EA), consider using it to improve your odds${summerTail}`;
   }
 
   // ==================== Persistence & Reporting (delegated) ====================

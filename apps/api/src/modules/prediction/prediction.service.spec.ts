@@ -347,4 +347,103 @@ describe('PredictionService counselor primary', () => {
     expect(persistenceService.savePrediction).not.toHaveBeenCalled();
     expect(cacheService.saveToCache).not.toHaveBeenCalled();
   });
+
+  describe('served suggestions: factual early-round + low-confidence specificity', () => {
+    const baseProfile = (overrides: Record<string, unknown> = {}) =>
+      ({
+        targetMajor: 'Computer Science',
+        testScores: [{ type: 'SAT', score: 1500 }],
+        activities: [],
+        awards: [],
+        ...overrides,
+      }) as any;
+
+    const earlyTip = (school: Record<string, unknown>, profile: any) =>
+      (service as any).buildEarlyRoundSuggestion(school, profile, '', false) as
+        | string
+        | null;
+
+    const callSuggest = (
+      tier: 'reach' | 'match' | 'safety',
+      confidence: 'low' | 'medium' | 'high',
+      profile: any,
+      school: Record<string, unknown>,
+    ) =>
+      (service as any).generateSuggestions(
+        tier,
+        confidence,
+        profile,
+        school,
+        undefined,
+        'en',
+      ) as string[];
+
+    // ---- fix ②: early-round advice must match what the school actually offers ----
+    it('recommends non-binding Early Action — never ED — for an EA-only school (MIT)', () => {
+      const tip = earlyTip(
+        { hasEarlyDecision: false, hasEarlyAction: true },
+        baseProfile({ isInternational: true }),
+      );
+      expect(tip).toMatch(/Early Action/i);
+      expect(tip).not.toMatch(/Early Decision/i);
+    });
+
+    it('recommends binding ED with an aid caveat for international applicants at an ED school', () => {
+      const tip = earlyTip(
+        { hasEarlyDecision: true },
+        baseProfile({ isInternational: true }),
+      );
+      expect(tip).toMatch(/Early Decision/i);
+      expect((tip ?? '').toLowerCase()).toContain('binding');
+      expect((tip ?? '').toLowerCase()).toContain('financial-aid');
+    });
+
+    it('does NOT attach the binding-aid caveat for a domestic full-pay applicant', () => {
+      const tip = earlyTip({ hasEarlyDecision: true }, baseProfile());
+      expect(tip).toMatch(/Early Decision/i);
+      expect((tip ?? '').toLowerCase()).not.toContain('financial-aid');
+    });
+
+    it('invents no early round when the school offers none (UC system)', () => {
+      const tip = earlyTip(
+        { hasEarlyDecision: false, hasEarlyAction: false },
+        baseProfile(),
+      );
+      expect(tip).toBeNull();
+    });
+
+    it('reach suggestions for an EA-only school never tell the applicant to apply ED', () => {
+      const joined = callSuggest('reach', 'high', baseProfile(), {
+        hasEarlyDecision: false,
+        hasEarlyAction: true,
+        acceptanceRate: 4,
+      }).join(' || ');
+      expect(joined).not.toMatch(/Early Decision/i);
+      expect(joined).toMatch(/Early Action/i);
+    });
+
+    // ---- fix ③: low-confidence noise → specific actionable gaps ----
+    it('drops the vague "data is limited / complete your profile" line at low confidence', () => {
+      const suggestions = callSuggest(
+        'reach',
+        'low',
+        baseProfile({
+          activities: [{ category: 'STEM', role: 'Lead' }],
+          awards: [{ level: 'NATIONAL' }],
+        }),
+        { hasEarlyAction: true, acceptanceRate: 4 },
+      );
+      expect(suggestions.join(' ')).not.toMatch(
+        /data is limited|complete your profile/i,
+      );
+    });
+
+    it('names the specific missing soft factors at low confidence instead of a generic nudge', () => {
+      const joined = callSuggest('match', 'low', baseProfile(), {
+        acceptanceRate: 40,
+      }).join(' ');
+      expect(joined).toMatch(/activities|awards/i);
+      expect(joined).toContain('profile');
+    });
+  });
 });
