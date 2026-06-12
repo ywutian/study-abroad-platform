@@ -420,6 +420,13 @@ export class ProfileApplicationAnalysisV2Service {
     const stepTimingsMs: Record<string, number> = {};
     const validationErrors: string[] = [];
     const promptHashes: Record<string, string> = {};
+    // Track LLM health so a systemic failure (bad key, wrong model, provider
+    // outage) surfaces as `degraded` instead of silently serving the
+    // deterministic floor as a healthy `fresh` result. The catch blocks below
+    // always push a deterministic card, so schoolResults.length is NOT a usable
+    // failure signal — these counters are.
+    let llmCallsAttempted = 0;
+    let llmCallsFailed = 0;
 
     if (!snapshot.profile || !hasMinimumProfileEvidence(snapshot.profile)) {
       const response = this.buildInsufficientResponse({
@@ -594,6 +601,7 @@ export class ProfileApplicationAnalysisV2Service {
         continue;
       }
 
+      llmCallsAttempted += 1;
       try {
         const llmResponse = await this.llmService.call(
           schoolSystemPrompt,
@@ -608,7 +616,10 @@ export class ProfileApplicationAnalysisV2Service {
           {
             model: DEFAULT_MODEL,
             temperature: 0.2,
-            maxTokens: 1200,
+            // Headroom for the richer, personalized narrative the strengthened
+            // prompts now request — a truncated JSON would fail extraction and
+            // silently fall back to the deterministic floor.
+            maxTokens: 1500,
             userId: snapshot.profile.userId,
             timeoutMs: 30000,
           },
@@ -654,6 +665,7 @@ export class ProfileApplicationAnalysisV2Service {
         stepTimingsMs[`school_analyst:${policyEntry.schoolId}`] =
           schoolStep.latencyMs ?? 0;
       } catch (error) {
+        llmCallsFailed += 1;
         const message =
           error instanceof Error ? error.message : 'School analysis failed';
         validationErrors.push(message);
@@ -734,6 +746,7 @@ export class ProfileApplicationAnalysisV2Service {
       stepIds.push(portfolioStep.id);
       stepTimingsMs.portfolio_synthesizer = portfolioStep.latencyMs ?? 0;
     } else {
+      llmCallsAttempted += 1;
       try {
         const llmResponse = await this.llmService.call(
           portfolioSystemPrompt,
@@ -748,7 +761,10 @@ export class ProfileApplicationAnalysisV2Service {
           {
             model: DEFAULT_MODEL,
             temperature: 0.2,
-            maxTokens: 1200,
+            // Headroom for the richer, personalized narrative the strengthened
+            // prompts now request — a truncated JSON would fail extraction and
+            // silently fall back to the deterministic floor.
+            maxTokens: 1500,
             userId: snapshot.profile.userId,
             timeoutMs: 30000,
           },
@@ -785,6 +801,7 @@ export class ProfileApplicationAnalysisV2Service {
         stepIds.push(portfolioStep.id);
         stepTimingsMs.portfolio_synthesizer = portfolioStep.latencyMs ?? 0;
       } catch (error) {
+        llmCallsFailed += 1;
         const message =
           error instanceof Error ? error.message : 'Portfolio synthesis failed';
         validationErrors.push(message);
@@ -835,12 +852,23 @@ export class ProfileApplicationAnalysisV2Service {
       );
     }
 
+    // Systemic LLM failure: every live LLM call (all school analysts + the
+    // portfolio synthesizer) failed, so the entire narrative is the
+    // deterministic floor with zero AI contribution. The catch blocks keep
+    // schoolResults non-empty, so this would otherwise be reported as a healthy
+    // `fresh` result — masking a bad key / wrong model / provider outage. Surface
+    // it as `degraded` so it isn't cached, the UI can flag the simplified output,
+    // and monitoring sees the DEGRADED run.
+    const { isDegraded, degradedReason } = resolveAnalysisDegradation({
+      llmCallsAttempted,
+      llmCallsFailed,
+      validationErrorCount: validationErrors.length,
+      schoolResultCount: schoolResults.length,
+    });
+
     const response = this.enrichApplicantResponse(
       {
-        status:
-          validationErrors.length > 0 && schoolResults.length === 0
-            ? 'degraded'
-            : 'fresh',
+        status: isDegraded ? 'degraded' : 'fresh',
         meta: {
           analysisVersion: snapshot.analysisVersion,
           state,
@@ -852,10 +880,7 @@ export class ProfileApplicationAnalysisV2Service {
           runId,
           traceId,
           debugEnabled: Boolean(options.debug),
-          degradedReason:
-            validationErrors.length > 0 && schoolResults.length === 0
-              ? 'schoolAnalysisFailed'
-              : undefined,
+          degradedReason,
         },
         profileSummary,
         portfolioSummary: normalizedPortfolio.portfolioSummary,
@@ -1481,8 +1506,62 @@ function ensureStringArray(value: unknown): string[] {
     .slice(0, 6);
 }
 
-function mergeStringLists(primary: string[], fallback: string[]): string[] {
-  return dedupeStrings([...primary, ...fallback]).slice(0, 5);
+/**
+ * Merge the LLM's narrative (primary) with the deterministic builder output
+ * (fallback). The deterministic builders are a SAFETY FLOOR, not a co-author:
+ * once the LLM has produced enough distinct items, padding the list with generic
+ * deterministic template lines ("the focus schools now have usable predictions")
+ * only dilutes a good response. So we serve the LLM's items as-is once it cleared
+ * a minimum bar, and backfill from the deterministic fallback only when the LLM
+ * came back sparse or empty (timeout, partial parse, conservative answer) —
+ * preserving the floor without drowning the personalized output.
+ */
+export function mergeStringLists(
+  primary: string[],
+  fallback: string[],
+  minItems = 2,
+): string[] {
+  const llm = dedupeStrings(primary);
+  if (llm.length >= minItems) return llm.slice(0, 5);
+  return dedupeStrings([...llm, ...fallback]).slice(0, 5);
+}
+
+/**
+ * Decide whether an analysis run should be reported as `degraded` and why.
+ *
+ * Two failure modes collapse the analysis to the deterministic floor with no
+ * real AI contribution, and BOTH must surface (instead of a healthy-looking
+ * `fresh`) so the result isn't cached, the UI can flag the simplified output,
+ * and monitoring sees the DEGRADED run:
+ *  - schoolAnalysisFailed: validation errors AND not a single school card was
+ *    produced — there is nothing to analyze.
+ *  - llmUnavailable: every live LLM call attempted (school analysts + the
+ *    portfolio synthesizer) failed — a systemic bad key / wrong model / provider
+ *    outage. The per-school catch always pushes a deterministic card, so the
+ *    school-result count is NOT a usable signal for this; the attempt/failure
+ *    counts are.
+ *
+ * Deterministic-mode replays never attempt an LLM call (llmCallsAttempted === 0),
+ * so they can never trip `llmUnavailable` — the gold/governance path is unaffected.
+ */
+export function resolveAnalysisDegradation(input: {
+  llmCallsAttempted: number;
+  llmCallsFailed: number;
+  validationErrorCount: number;
+  schoolResultCount: number;
+}): { isDegraded: boolean; degradedReason?: string } {
+  const noSchoolResults =
+    input.validationErrorCount > 0 && input.schoolResultCount === 0;
+  if (noSchoolResults) {
+    return { isDegraded: true, degradedReason: 'schoolAnalysisFailed' };
+  }
+  const llmSystemicallyDown =
+    input.llmCallsAttempted > 0 &&
+    input.llmCallsFailed === input.llmCallsAttempted;
+  if (llmSystemicallyDown) {
+    return { isDegraded: true, degradedReason: 'llmUnavailable' };
+  }
+  return { isDegraded: false };
 }
 
 function normalizeRecourse(value: unknown): RecourseGuidance | undefined {
