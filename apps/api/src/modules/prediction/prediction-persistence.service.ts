@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionResultDto } from './dto';
 import {
@@ -244,11 +245,27 @@ export class PredictionPersistenceService {
         predictionSnapshotId: snapshot.id,
       };
     } catch (error) {
+      // Persistence is best-effort (the served response is already returned), but
+      // a SILENT swallow is exactly how the v5-ml-primary FK regression hid for
+      // weeks — the dropped write only surfaced when an end-to-end test found the
+      // dashboard empty. Report every swallowed failure to Sentry so it is
+      // visible + alertable instead of dying in a log nobody reads.
       if (error instanceof MissingPredictionPolicyVersionError) {
         this.logger.error(error.message);
+        Sentry.captureException(error, {
+          tags: {
+            area: 'prediction-persistence',
+            reason: 'unresolved-policy-lineage',
+          },
+          extra: { profileId, schoolId },
+        });
         return {};
       }
       this.logger.warn('Failed to save prediction to database', error);
+      Sentry.captureException(error, {
+        tags: { area: 'prediction-persistence', reason: 'save-failed' },
+        extra: { profileId, schoolId },
+      });
       return {};
     }
   }

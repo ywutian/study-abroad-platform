@@ -3,6 +3,9 @@ import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionResultDto } from './dto';
 import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
+import * as Sentry from '@sentry/node';
+
+jest.mock('@sentry/node');
 
 describe('PredictionPersistenceService', () => {
   let service: PredictionPersistenceService;
@@ -179,6 +182,23 @@ describe('PredictionPersistenceService', () => {
       await expect(
         service.savePrediction('profile-1', 'school-1', mockResult),
       ).resolves.not.toThrow();
+    });
+
+    it('reports a swallowed persist failure to Sentry (no more silent drops — v5-ml-primary lesson)', async () => {
+      (prisma.predictionResult.upsert as jest.Mock).mockRejectedValue(
+        new Error('FK constraint violation P2003'),
+      );
+
+      await service.savePrediction('profile-1', 'school-1', mockResult);
+
+      // The failure is still swallowed (best-effort persistence), but it must be
+      // REPORTED, not silent — that silence is how the v5-ml-primary FK drop hid.
+      expect(Sentry.captureException).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({
+          tags: expect.objectContaining({ area: 'prediction-persistence' }),
+        }),
+      );
     });
 
     it('should not throw when snapshot creation fails', async () => {
