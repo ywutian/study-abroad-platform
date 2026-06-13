@@ -26,7 +26,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
 2. gitleaks secret scan (if installed)
 3. i18n checks (when `apps/web/src/` changed)
 4. Frontend quality checks (15 rules, when `apps/web/src/` changed)
-5. Backend quality checks (10 rules, when `apps/api/src/` changed)
+5. Backend quality checks (12 rules, when `apps/api/src/` changed)
 
 ### Pre-push (~20-50s)
 1. Prisma generate (ensures client matches schema)

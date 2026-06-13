@@ -95,6 +95,8 @@ Rules JSON: `{ "roles": ["ADMIN"], "userIds": ["uuid"], "percentage": 50 }`. Eva
 | `no-raw-redis-getclient` | error | `redis.getClient()` bypassing metrics/circuit-breaker — use a wrapper or `redis.withClient()` (suppress `// @redis-raw-allowed`) |
 | `no-hardcoded-redis-ttl` | error | Numeric TTL literal on a Redis write — use `REDIS_TTL.*` from `common/redis/redis-ttl.constants` (suppress `// @redis-ttl-allowed`) |
 | `no-redis-poll-without-backoff` | error | `setInterval` polling Redis on a fixed <30s cadence (the #274 quota-burn) — use setTimeout-reschedule + backoff (suppress `// @redis-poll-allowed`) |
+| `no-magic-arraysize` | error (staged) / warning (full-scan) | Numeric `@ArrayMaxSize(N)` literal on a user-facing DTO array — use a shared cap constant (`packages/shared`) so FE+BE caps can't drift (the #396–398 silent-400 class). Suppress a deliberate fixed-set cap with `// @arraysize-literal-allowed` |
+| `no-uncapped-array` | error (staged) / warning (full-scan) | User-facing DTO array field (`@IsArray`) with NO `@ArrayMaxSize` → a user can POST an unbounded array (DoS / payload bloat). Add `@ArrayMaxSize(<shared const>)` (the #399 close). Skips `/modules/admin/`, `batch`/`bulk` filenames, `/distillation/`; suppress with `// @arraysize-uncapped-allowed` |
 
 ## Deep Dive
 
