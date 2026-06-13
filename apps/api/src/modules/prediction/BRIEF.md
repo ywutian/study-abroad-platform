@@ -22,7 +22,7 @@ Two writers share these tables; `authority` prevents cross-writer collisions.
 - `AUTHORITATIVE` — full pipeline via `PredictionPersistenceService`
 - `PREVIEW` — `SchoolListService.syncQuickMatchToPrediction`
 
-PREVIEW must never overwrite AUTHORITATIVE. Enforced at: (1) `school-list.service.ts` skip-on-authority-match; (2) `check-integration.ts` rule `prediction-write-must-declare-authority`; (3) persistence/school-list/chinese-outcome-teacher specs.
+PREVIEW must never overwrite AUTHORITATIVE. Enforced at: (1) `SchoolListService` (school-list module) skip-on-authority-match; (2) the `lint:integration` rule `prediction-write-must-declare-authority`; (3) persistence/school-list/chinese-outcome-teacher specs.
 
 Consumer rule: any read feeding stats / training / distillation / UI trend **must** filter `authority: 'AUTHORITATIVE'`. PREVIEW never writes `PredictionSnapshot` (no snapshot pollution).
 
