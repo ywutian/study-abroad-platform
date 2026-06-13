@@ -10,7 +10,7 @@
 | `pnpm --filter api db:migrate -- --name <name>` | Create migration                  |
 | `pnpm --filter api db:seed`                     | Seed database                     |
 | `pnpm --filter api db:studio`                   | Prisma Studio (port 5555)         |
-| `pnpm --filter api lint:quality`                | Backend quality checks (10 rules) |
+| `pnpm --filter api lint:quality`                | Backend quality checks (12 rules) |
 | `pnpm test`                                     | Run unit tests                    |
 | `pnpm test:e2e`                                 | E2E tests (needs Docker)          |
 
