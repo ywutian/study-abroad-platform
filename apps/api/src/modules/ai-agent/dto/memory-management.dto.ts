@@ -283,6 +283,7 @@ export class SchoolPreferencesDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  // @arraysize-literal-allowed: internal memory preference, not a user-facing free-form list
   @ArrayMaxSize(10, { message: 'Region preference不能超过10个' })
   regions?: string[];
 

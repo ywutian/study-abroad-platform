@@ -261,6 +261,59 @@ function checkMissingMaxLength(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+/**
+ * no-magic-arraysize: a numeric @ArrayMaxSize literal on a user-facing DTO array
+ * field should be a named shared constant (SSOT in packages/shared) so the cap is
+ * single-sourced with the client and cannot silently drift — the root cause of the
+ * #396/#397 silent-400 bug class (prediction 10 vs timeline 50; recommendation /
+ * team caps the frontend could exceed with no guard). Enum-bounded arrays are
+ * skipped (the enum already bounds them). Suppress a deliberate fixed-set cap with
+ * // @arraysize-literal-allowed. Error for NEW code (staged), warning for the
+ * existing backlog (full-scan) — same ratchet as no-missing-test.
+ */
+function checkMagicArraySize(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (!filePath.endsWith('.dto.ts')) return issues;
+  // Admin / bulk-import / batch-moderation endpoints have their own batch UIs +
+  // high caps and are not user-curated lists — literals are fine there.
+  if (filePath.includes('/modules/admin/')) return issues;
+  const base = filePath.split('/').pop() ?? '';
+  if (/(^|[-.])(batch|bulk)/.test(base)) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim().startsWith('//')) continue;
+    // Only a numeric literal cap — a named-constant reference is the desired state.
+    if (!/@ArrayMaxSize\(\s*\d/.test(line)) continue;
+    if (hasIgnoreTag(lines, i, '@arraysize-literal-allowed')) continue;
+
+    // Skip enum-bounded arrays: @IsEnum(..., { each: true }) already bounds the
+    // array to the small fixed enum set, so the numeric cap can't be exceeded.
+    let isEnumBounded = false;
+    for (
+      let j = Math.max(0, i - 5);
+      j <= Math.min(lines.length - 1, i + 5);
+      j++
+    ) {
+      if (/@IsEnum\b/.test(lines[j])) {
+        isEnumBounded = true;
+        break;
+      }
+    }
+    if (isEnumBounded) continue;
+
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-magic-arraysize',
+      message:
+        'Numeric @ArrayMaxSize literal on a user-facing DTO array. Use a named shared cap constant (packages/shared) so it is single-sourced with the client and cannot silently drift (the #396/#397 silent-400 class). Suppress a deliberate fixed-set cap with // @arraysize-literal-allowed.',
+      severity: stagedOnly ? 'error' : 'warning',
+    });
+  }
+  return issues;
+}
+
 function checkMissingTest(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (!filePath.endsWith('.service.ts')) return issues;
@@ -589,6 +642,7 @@ function main() {
       ...checkUnthrottledAI(filePath, lines),
       ...checkGenericThrow(filePath, lines),
       ...checkMissingMaxLength(filePath, lines),
+      ...checkMagicArraySize(filePath, lines),
       ...checkMissingTest(filePath, lines),
       ...checkDuplicatedSelect(filePath, lines),
       ...checkSelectMappingDrift(filePath, lines),

@@ -190,6 +190,7 @@ export class CreatePostDto {
   @ApiPropertyOptional({ type: [ForumImageInputDto] })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: post images, UI upload-capped
   @ArrayMaxSize(6)
   @ValidateNested({ each: true })
   @Type(() => ForumImageInputDto)

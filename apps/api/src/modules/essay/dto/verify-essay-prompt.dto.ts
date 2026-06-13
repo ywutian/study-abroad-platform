@@ -28,6 +28,7 @@ export class BatchVerifyDto {
   @ApiProperty({ description: 'Essay ID list', type: [String] })
   @IsArray()
   @ArrayMinSize(1)
+  // @arraysize-literal-allowed: admin batch verify, bounded id list
   @ArrayMaxSize(500)
   @IsString({ each: true })
   @MaxLength(50, { each: true })

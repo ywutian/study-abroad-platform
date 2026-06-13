@@ -57,6 +57,7 @@ export class PredictionPortfolioSummaryStreamRequestDto {
   })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: roster-derived from the user's own prediction results, not free-form
   @ArrayMaxSize(100)
   @IsString({ each: true })
   @MaxLength(500, { each: true })

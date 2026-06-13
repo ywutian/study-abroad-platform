@@ -301,6 +301,7 @@ export class OnboardingDto {
   @ApiPropertyOptional({ type: [OnboardingTestScoreDto] })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: onboarding section, frontend-bounded nested-object list
   @ArrayMaxSize(6)
   @ValidateNested({ each: true })
   @Type(() => OnboardingTestScoreDto)
@@ -309,6 +310,7 @@ export class OnboardingDto {
   @ApiPropertyOptional({ type: [OnboardingActivityDto] })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: onboarding section, frontend-bounded nested-object list
   @ArrayMaxSize(3)
   @ValidateNested({ each: true })
   @Type(() => OnboardingActivityDto)
@@ -317,6 +319,7 @@ export class OnboardingDto {
   @ApiPropertyOptional({ type: [OnboardingAwardDto] })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: onboarding section, frontend-bounded nested-object list
   @ArrayMaxSize(3)
   @ValidateNested({ each: true })
   @Type(() => OnboardingAwardDto)
@@ -325,6 +328,7 @@ export class OnboardingDto {
   @ApiPropertyOptional({ type: [OnboardingTargetSchoolDto] })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: onboarding section, frontend-bounded nested-object list
   @ArrayMaxSize(10)
   @ValidateNested({ each: true })
   @Type(() => OnboardingTargetSchoolDto)
