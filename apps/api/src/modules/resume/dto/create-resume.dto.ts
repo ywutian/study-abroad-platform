@@ -7,7 +7,9 @@ import {
   MaxLength,
   IsObject,
   IsArray,
+  ArrayMaxSize,
 } from 'class-validator';
+import { MAX_RESUME_TARGET_KEYWORDS } from '@study-abroad/shared';
 
 export class ResumeTargetContextDto {
   @IsOptional() @IsString() @MaxLength(500) targetSchool?: string;
@@ -24,6 +26,7 @@ export class ResumeTargetContextDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_RESUME_TARGET_KEYWORDS)
   keywords?: string[];
 }
 

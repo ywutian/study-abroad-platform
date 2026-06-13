@@ -405,6 +405,8 @@ export class CreateSchoolDto {
     type: [String],
   })
   @IsOptional()
+  // @arraysize-uncapped-allowed: POST /schools is @Roles(ADMIN)-gated school-catalog tooling
+  // (no user/mobile consumer sends this field) — not a user-submitted list.
   @IsArray()
   @IsString({ each: true })
   campusSafetyServices?: string[];

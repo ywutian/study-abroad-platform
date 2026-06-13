@@ -6,12 +6,17 @@ import {
   IsBoolean,
   IsDateString,
   IsArray,
+  ArrayMaxSize,
   Min,
   Max,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import {
+  MAX_ACTIVITY_GRADE_LEVELS,
+  MAX_REORDER_IDS,
+} from '@study-abroad/shared';
 
 const ACTIVITY_CATEGORIES = [
   'ACADEMIC',
@@ -98,6 +103,7 @@ export class CreateActivityDto {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
+  @ArrayMaxSize(MAX_ACTIVITY_GRADE_LEVELS)
   gradeLevels?: number[];
 
   @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: 'Time period' })
@@ -193,6 +199,7 @@ export class UpdateActivityDto {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
+  @ArrayMaxSize(MAX_ACTIVITY_GRADE_LEVELS)
   gradeLevels?: number[];
 
   @ApiPropertyOptional({ enum: ACTIVITY_TIMING, description: 'Time period' })
@@ -221,5 +228,6 @@ export class ReorderIdsDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_REORDER_IDS)
   ids: string[];
 }

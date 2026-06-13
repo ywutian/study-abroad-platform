@@ -39,6 +39,8 @@ export class BatchUpdatePointActionsDto {
     type: [PointActionUpdate],
     description: 'Batch update point values',
   })
+  // @arraysize-uncapped-allowed: PUT /admin/points/actions is @Roles(ADMIN)-gated config tooling,
+  // bounded by the fixed point-action enum set — not a user-submitted list.
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PointActionUpdate)

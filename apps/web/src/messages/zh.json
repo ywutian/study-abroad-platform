@@ -1902,6 +1902,7 @@
       "legacy": "校友关系 (Legacy)",
       "legacyPlaceholder": "例如：哈佛、斯坦福",
       "legacyHint": "如有校友关系，请输入学校名称，用逗号分隔",
+      "legacyTooMany": "最多只能添加 {max} 个校友关系，请减少后重试。",
       "selectCountry": "选择国家",
       "selectEducationSystem": "选择教育体系",
       "countries": {
@@ -6860,6 +6861,7 @@
       "mainAccountNote": "主账户信息"
     },
     "saveError": "保存失败",
+    "tooManyTags": "最多只能添加 {max} 个标签，请减少后重试。",
     "deleteError": "删除失败"
   },
   "recommendation": {

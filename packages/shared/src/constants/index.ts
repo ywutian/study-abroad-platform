@@ -202,6 +202,40 @@ export const MAX_ROLE_PRESETS = 8;
 // so a full matched team can always be invited (raised from an unintentional 10).
 export const MAX_TEAM_INVITEES = 100;
 
+// --- Uncapped-array sweep (2026-06) — fields that had @IsArray but NO @ArrayMaxSize,
+// so a user could POST an arbitrarily large array (DoS / payload bloat / silent 400).
+// Free-form text inputs additionally get a client-side guard; the rest are server-side
+// ceilings where the UI bound was cosmetic/bypassable. ---
+// Profile (PUT /profiles/me, POST/PUT /profiles/me/activities, reorder)
+export const MAX_LEGACY_AFFILIATIONS = 20; // free-form comma <Input> — client must guard
+export const MAX_REGION_PREFERENCES = 20; // defensive ceiling (no active form input)
+export const MAX_ACTIVITY_GRADE_LEVELS = 4; // grades 9–12; FE checkbox-bounded
+export const MAX_REORDER_IDS = 100; // reorder builds a per-id $transaction — server ceiling
+// Vault / Forum tags — free-form tag inputs; client must guard
+export const MAX_VAULT_TAGS = 50;
+export const MAX_FORUM_POST_TAGS = 10; // mirrors the existing images cap (6) on the same DTO
+// Resume builder (POST /resumes, /resume/evidence, /targets, sections, import)
+export const MAX_RESUME_TARGET_KEYWORDS = 20;
+export const MAX_RESUME_EVIDENCE_TAGS = 50;
+export const MAX_RESUME_EVIDENCE_SKILLS = 50;
+export const MAX_RESUME_PROOF_LINKS = 10; // 1000 chars each — payload-bloat vector
+export const MAX_RESUME_SECTION_EVIDENCE_REFS = 50;
+export const MAX_RESUME_SECTION_IDS = 50; // reorder; realistic section count ~14
+export const MAX_RESUME_IMPORT_SECTIONS = 50;
+export const MAX_RESUME_IMPORT_EVIDENCE = 100;
+// Case submission (POST /cases — authed, not admin)
+export const MAX_CASE_TEST_SCORES = 10;
+export const MAX_CASE_ACTIVITIES = 50;
+export const MAX_CASE_AWARDS = 50;
+// Assessment answers — bound to the server question count; generous ceiling
+export const MAX_ASSESSMENT_ANSWERS = 200;
+// AI memory queries — enum arrays via query string (bypasses the body limit); tight cap
+export const MAX_MEMORY_QUERY_TYPES = 12;
+// Case submission metadata string lists (tags / apSubjects / demographicTags)
+export const MAX_CASE_METADATA_TAGS = 50;
+// AI school-preference value lists (size / type) — small fixed-vocab preference sets
+export const MAX_SCHOOL_PREFERENCE_VALUES = 10;
+
 // 订阅计划
 export * from './subscription';
 

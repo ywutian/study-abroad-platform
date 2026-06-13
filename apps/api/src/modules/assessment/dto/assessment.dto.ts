@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsArray,
+  ArrayMaxSize,
   IsEnum,
   ValidateNested,
   MaxLength,
@@ -11,6 +12,7 @@ import {
   Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { MAX_ASSESSMENT_ANSWERS } from '@study-abroad/shared';
 
 export enum AssessmentTypeEnum {
   MBTI = 'MBTI',
@@ -39,6 +41,7 @@ export class SubmitAssessmentDto {
 
   @ApiProperty({ type: [SubmitAnswerDto] })
   @IsArray()
+  @ArrayMaxSize(MAX_ASSESSMENT_ANSWERS)
   @ValidateNested({ each: true })
   @Type(() => SubmitAnswerDto)
   answers: SubmitAnswerDto[];
@@ -47,6 +50,7 @@ export class SubmitAssessmentDto {
 export class SaveAssessmentDraftDto {
   @ApiProperty({ type: [SubmitAnswerDto] })
   @IsArray()
+  @ArrayMaxSize(MAX_ASSESSMENT_ANSWERS)
   @ValidateNested({ each: true })
   @Type(() => SubmitAnswerDto)
   answers: SubmitAnswerDto[];

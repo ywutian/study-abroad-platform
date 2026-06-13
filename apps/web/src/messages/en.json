@@ -1918,6 +1918,7 @@
       "legacy": "Legacy (Alumni Connection)",
       "legacyPlaceholder": "e.g. Harvard, Stanford",
       "legacyHint": "Enter school names separated by commas if you have alumni connections",
+      "legacyTooMany": "You can add at most {max} legacy affiliations — please reduce and try again.",
       "selectCountry": "Select country",
       "selectEducationSystem": "Select education system",
       "countries": {
@@ -6881,6 +6882,7 @@
       "mainAccountNote": "Main account info"
     },
     "saveError": "Failed to save",
+    "tooManyTags": "You can add at most {max} tags — please reduce and try again.",
     "deleteError": "Failed to delete"
   },
   "recommendation": {

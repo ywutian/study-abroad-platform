@@ -8,13 +8,16 @@ import {
   Max,
   IsObject,
   MaxLength,
+  ArrayMaxSize,
 } from 'class-validator';
+import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
 
 export class SetTargetSchoolsDto {
   @ApiProperty({ description: 'School ID list', type: [String] })
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_SCHOOLS_PER_BATCH)
   schoolIds: string[];
 
   @ApiPropertyOptional({

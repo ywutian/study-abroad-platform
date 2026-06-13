@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
+  ArrayMaxSize,
   IsBoolean,
   IsObject,
   IsDateString,
@@ -23,6 +24,12 @@ import {
   HighSchoolType,
   EducationSystem,
 } from '@prisma/client';
+import {
+  MAX_CASE_TEST_SCORES,
+  MAX_CASE_ACTIVITIES,
+  MAX_CASE_AWARDS,
+  MAX_CASE_METADATA_TAGS,
+} from '@study-abroad/shared';
 
 // ============ Nested Validation Classes ============
 
@@ -242,6 +249,7 @@ export class CreateCaseDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_CASE_METADATA_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional({
@@ -263,6 +271,7 @@ export class CreateCaseDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CaseTestScoreDto)
+  @ArrayMaxSize(MAX_CASE_TEST_SCORES)
   testScores?: CaseTestScoreDto[];
 
   @ApiPropertyOptional({
@@ -273,6 +282,7 @@ export class CreateCaseDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CaseActivityDto)
+  @ArrayMaxSize(MAX_CASE_ACTIVITIES)
   activities?: CaseActivityDto[];
 
   @ApiPropertyOptional({
@@ -283,6 +293,7 @@ export class CreateCaseDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CaseAwardDto)
+  @ArrayMaxSize(MAX_CASE_AWARDS)
   awards?: CaseAwardDto[];
 
   @ApiPropertyOptional({ description: 'AP course count' })
@@ -300,6 +311,7 @@ export class CreateCaseDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(200, { each: true })
+  @ArrayMaxSize(MAX_CASE_METADATA_TAGS)
   apSubjects?: string[];
 
   @ApiPropertyOptional({ description: 'IB total score' })
@@ -346,6 +358,7 @@ export class CreateCaseDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_CASE_METADATA_TAGS)
   demographicTags?: string[];
 
   @ApiPropertyOptional({

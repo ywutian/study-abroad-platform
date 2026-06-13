@@ -6,10 +6,15 @@ import {
   IsBoolean,
   IsObject,
   IsArray,
+  ArrayMaxSize,
   MaxLength,
   IsInt,
   Min,
 } from 'class-validator';
+import {
+  MAX_RESUME_SECTION_EVIDENCE_REFS,
+  MAX_RESUME_SECTION_IDS,
+} from '@study-abroad/shared';
 
 const SECTION_TYPES = [
   'HEADER',
@@ -53,6 +58,7 @@ export class CreateSectionDto {
   @ApiPropertyOptional({ description: 'Evidence references for this section' })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(MAX_RESUME_SECTION_EVIDENCE_REFS)
   evidenceRefs?: Array<Record<string, unknown>>;
 }
 
@@ -77,6 +83,7 @@ export class UpdateSectionDto {
   @ApiPropertyOptional({ description: 'Evidence references for this section' })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(MAX_RESUME_SECTION_EVIDENCE_REFS)
   evidenceRefs?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ description: 'Section visibility' })
@@ -90,5 +97,6 @@ export class ReorderSectionsDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_RESUME_SECTION_IDS)
   sectionIds: string[];
 }

@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { MAX_VAULT_TAGS } from '@study-abroad/shared';
 import { apiClient as api } from '@/lib/api';
 import type { VaultItemType, VaultItemDetail, CredentialData, ApiResponse } from './vault-types';
 import { typeIcons, typeColors, VAULT_ITEM_TYPES } from './vault-constants';
@@ -98,13 +99,17 @@ export function VaultCreateDialog({
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter' && formTagInput.trim()) {
         e.preventDefault();
+        if (formTags.length >= MAX_VAULT_TAGS) {
+          toast.error(t('tooManyTags', { max: MAX_VAULT_TAGS }));
+          return;
+        }
         if (!formTags.includes(formTagInput.trim())) {
           setFormTags((prev) => [...prev, formTagInput.trim()]);
         }
         setFormTagInput('');
       }
     },
-    [formTagInput, formTags]
+    [formTagInput, formTags, t]
   );
 
   const removeTag = useCallback((tag: string) => {

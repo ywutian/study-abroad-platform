@@ -322,6 +322,80 @@ function checkMagicArraySize(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+/**
+ * no-uncapped-array: a user-facing request DTO array field (@IsArray()) with NO
+ * @ArrayMaxSize lets a user POST an arbitrarily large array — DoS / payload bloat /
+ * silent downstream failure. The sibling of no-magic-arraysize: that rule makes
+ * existing caps SSOT constants; this one ensures the cap EXISTS at all. Found by the
+ * 2026-06 unbounded-array sweep (the angle every prior @ArrayMaxSize-keyed audit was
+ * blind to). Add @ArrayMaxSize(<shared cap constant>), or suppress a deliberate
+ * uncapped field with // @arraysize-uncapped-allowed (e.g. an admin endpoint living
+ * inside a feature module, which the /modules/admin/ skip can't see). Enum-bounded
+ * arrays are NOT skipped — @IsEnum({each}) bounds the element VALUE set, not the
+ * array LENGTH (repeated values still overflow). error on staged / warning on
+ * full-scan — same ratchet as no-magic-arraysize.
+ */
+function checkUncappedArray(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  const isDtoFile =
+    filePath.endsWith('.dto.ts') || /\/dto\/[^/]+\.ts$/.test(filePath);
+  if (!isDtoFile || filePath.endsWith('.spec.ts')) return issues;
+  if (filePath.includes('/modules/admin/')) return issues;
+  // The distillation subtree is an internal ML teacher/ingestion pipeline mounted
+  // at @Controller('admin/predictions/distillation') @Roles(ADMIN) — never a
+  // user-submitted request, analogous to the /modules/admin/ skip above.
+  if (filePath.includes('/distillation/')) return issues;
+  const base = filePath.split('/').pop() ?? '';
+  if (/(^|[-.])(batch|bulk)/.test(base)) return issues;
+
+  // A class property declaration: `name: Type;` / `name?: Type = x;` ending in `;`
+  // (object-literal keys inside @ApiProperty end in `,`, so they are excluded).
+  const isPropDecl = (raw: string): boolean => {
+    const t = raw.trim();
+    return /^[\w]+[?!]?\s*[:!][^;]*;\s*$/.test(t) && !t.startsWith('@');
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    if (!/@IsArray\s*\(/.test(lines[i])) continue;
+    if (lines[i].trim().startsWith('//')) continue;
+
+    // The property this decorator block belongs to (first prop decl below).
+    let propLine = -1;
+    for (let j = i + 1; j < Math.min(lines.length, i + 18); j++) {
+      if (isPropDecl(lines[j])) {
+        propLine = j;
+        break;
+      }
+    }
+    if (propLine === -1) continue;
+
+    // The block start: walk up to just after the previous property declaration.
+    let start = i;
+    for (let j = i - 1; j >= 0 && j >= i - 18; j--) {
+      if (isPropDecl(lines[j])) break;
+      start = j;
+    }
+
+    let hasCap = false;
+    let ignore = false;
+    for (let j = start; j <= propLine; j++) {
+      if (/@ArrayMaxSize\s*\(/.test(lines[j])) hasCap = true;
+      if (lines[j].includes('@arraysize-uncapped-allowed')) ignore = true;
+    }
+    if (hasCap || ignore) continue;
+
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-uncapped-array',
+      message:
+        'User-facing DTO array field (@IsArray) with no @ArrayMaxSize — a user can POST an unbounded array (DoS / payload bloat / silent 400, the #396/#397/#398 class). Add @ArrayMaxSize(<shared cap constant>), or suppress a deliberate uncapped field (e.g. admin-gated inside a feature module) with // @arraysize-uncapped-allowed.',
+      severity: stagedOnly ? 'error' : 'warning',
+    });
+  }
+  return issues;
+}
+
 function checkMissingTest(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (!filePath.endsWith('.service.ts')) return issues;
@@ -662,6 +736,7 @@ function main() {
       ...checkGenericThrow(filePath, lines),
       ...checkMissingMaxLength(filePath, lines),
       ...checkMagicArraySize(filePath, lines),
+      ...checkUncappedArray(filePath, lines),
       ...checkMissingTest(filePath, lines),
       ...checkDuplicatedSelect(filePath, lines),
       ...checkSelectMappingDrift(filePath, lines),

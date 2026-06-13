@@ -1,6 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { MAX_LEGACY_AFFILIATIONS } from '@study-abroad/shared';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -224,12 +226,20 @@ export function DemographicsTab({ control }: DemographicsTabProps) {
                   value={field.value.join(', ')}
                   onChange={(e) => {
                     const val = e.target.value;
-                    const arr = val
+                    let arr = val
                       ? val
                           .split(',')
                           .map((s) => s.trim())
                           .filter(Boolean)
                       : [];
+                    if (arr.length > MAX_LEGACY_AFFILIATIONS) {
+                      toast.error(
+                        t('profile.demographics.legacyTooMany', {
+                          max: MAX_LEGACY_AFFILIATIONS,
+                        })
+                      );
+                      arr = arr.slice(0, MAX_LEGACY_AFFILIATIONS);
+                    }
                     field.onChange(arr);
                   }}
                 />
