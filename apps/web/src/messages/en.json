@@ -2595,6 +2595,7 @@
     "searchPlaceholder": "Search schools...",
     "searchSchoolsDesc": "Search and select schools to estimate",
     "selectSchoolsFirst": "Please select schools first",
+    "tooManySchools": "You can predict at most {max} schools at once — please reduce your selection and try again.",
     "startPrediction": "Start Estimate",
     "noSchoolsFound": "No schools found",
     "selectedCount": "{count} selected",

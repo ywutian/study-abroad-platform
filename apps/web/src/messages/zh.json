@@ -2579,6 +2579,7 @@
     "searchPlaceholder": "搜索学校...",
     "searchSchoolsDesc": "搜索并选择想要测算的学校",
     "selectSchoolsFirst": "请先选择学校",
+    "tooManySchools": "单次最多测算 {max} 所学校，请减少选择后重试",
     "startPrediction": "开始测算",
     "noSchoolsFound": "未找到学校",
     "selectedCount": "已选 {count} 所",

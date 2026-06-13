@@ -23,7 +23,12 @@ import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
+import {
+  schoolListRoutes,
+  schoolRoutes,
+  profileRoutes,
+  MAX_SCHOOLS_PER_BATCH,
+} from '@study-abroad/shared';
 import type { ProfileReadinessV1 } from '@study-abroad/shared';
 import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { usePredictionDashboard, useRunPrediction } from '@/hooks/use-prediction';
@@ -234,6 +239,13 @@ export default function PredictionPage() {
     // REPLACE the selection with all 9 UC ids, silently dropping non-UC schools
     // like MIT, and 400'd when the user hadn't saved all 9 UCs.)
     const schoolIdsToUse = hasAnyUc ? Array.from(new Set([...selectedIds, ...ucIds])) : selectedIds;
+    // Backend caps a single prediction request at MAX_SCHOOLS_PER_BATCH (shared
+    // SSOT, enforced by PredictionRequestDto). Surface a toast instead of letting
+    // the request 400 silently — the count includes UC cross-campus expansion.
+    if (schoolIdsToUse.length > MAX_SCHOOLS_PER_BATCH) {
+      toast.error(t('prediction.tooManySchools', { max: MAX_SCHOOLS_PER_BATCH }));
+      return;
+    }
     if (hasAnyUc) {
       setUcExpandedFrom([...selectedSchools]);
     } else {

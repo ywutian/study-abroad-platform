@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { CalendarClock, ChevronRight } from 'lucide-react';
 import { outcomeRoutes } from '@study-abroad/shared';
 
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
+import { useAuthGatedQuery } from '@/hooks/use-auth-gated-query';
 
 import { ReportOutcomeModal } from './report-outcome-modal';
 
@@ -31,7 +31,9 @@ export function OutcomePendingBanner() {
   const t = useTranslations('Outcome');
   const [selectedPrediction, setSelectedPrediction] = useState<PendingDecision | null>(null);
 
-  const { data: pending } = useQuery<PendingDecision[]>({
+  // Auth-gated: don't fire before AuthInitializer restores the in-memory token,
+  // otherwise this authed query 401-races on first paint (#145/#222 class).
+  const { data: pending } = useAuthGatedQuery<PendingDecision[]>({
     queryKey: ['pending-decisions'],
     queryFn: () => apiClient.get<PendingDecision[]>(outcomeRoutes.pendingDecisions()),
     staleTime: 5 * 60 * 1000, // 5 min
