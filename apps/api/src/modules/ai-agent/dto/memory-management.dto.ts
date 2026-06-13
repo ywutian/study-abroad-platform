@@ -19,6 +19,11 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import {
+  MAX_MEMORY_QUERY_TYPES,
+  MAX_SCHOOL_PREFERENCE_VALUES,
+  MAX_REORDER_IDS,
+} from '@study-abroad/shared';
 
 // ==================== 枚举 ====================
 
@@ -56,6 +61,7 @@ export class QueryMemoriesDto {
   @IsOptional()
   @IsArray()
   @IsEnum(MemoryTypeEnum, { each: true })
+  @ArrayMaxSize(MAX_MEMORY_QUERY_TYPES)
   types?: MemoryTypeEnum[];
 
   @ApiPropertyOptional()
@@ -219,6 +225,7 @@ export class QueryEntitiesDto {
   @IsOptional()
   @IsArray()
   @IsEnum(EntityTypeEnum, { each: true })
+  @ArrayMaxSize(MAX_MEMORY_QUERY_TYPES)
   types?: EntityTypeEnum[];
 
   @ApiPropertyOptional()
@@ -301,6 +308,7 @@ export class SchoolPreferencesDto {
     each: true,
     message: '学校规模必须是 small, medium, large 之一',
   })
+  @ArrayMaxSize(MAX_SCHOOL_PREFERENCE_VALUES)
   size?: string[];
 
   @ApiPropertyOptional({
@@ -318,6 +326,7 @@ export class SchoolPreferencesDto {
     message:
       'School type必须是 public, private, lac, research, comprehensive 之一',
   })
+  @ArrayMaxSize(MAX_SCHOOL_PREFERENCE_VALUES)
   type?: string[];
 }
 
@@ -508,6 +517,7 @@ export class BatchDeleteMemoriesDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_REORDER_IDS)
   ids: string[];
 }
 

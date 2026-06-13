@@ -30,6 +30,8 @@ export class ScrapeSchoolDto {
     isArray: true,
   })
   @IsOptional()
+  // @arraysize-uncapped-allowed: POST /admin/essay-scraper/scrape is @Roles-gated admin tooling;
+  // sources is the small fixed SourceType enum set.
   @IsArray()
   @IsEnum(SourceType, { each: true })
   sources?: SourceType[];

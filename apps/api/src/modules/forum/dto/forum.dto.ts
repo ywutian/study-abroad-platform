@@ -15,6 +15,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { MAX_FORUM_POST_TAGS } from '@study-abroad/shared';
 
 // ============ Enums ============
 
@@ -185,6 +186,7 @@ export class CreatePostDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_FORUM_POST_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional({ type: [ForumImageInputDto] })
@@ -239,6 +241,7 @@ export class UpdatePostDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_FORUM_POST_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional()

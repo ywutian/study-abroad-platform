@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
+import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
 
 // Hall §7 Decision B: CreateReviewDto, ReportReviewDto, QualificationAnswerDto,
 // SubmitQualificationDto and ReviewCoachRequestDto were removed when the
@@ -33,6 +34,8 @@ export class CreateUserListDto {
   category?: string;
 
   @ApiProperty({ description: 'List items', type: [Object] })
+  // @arraysize-uncapped-allowed: curated-list editor on POST/PATCH /halls/lists is
+  // @Roles(OPERATOR|ADMIN|SUPER_ADMIN)-gated (admin tooling, not a user-submitted list).
   @IsArray()
   items: unknown[];
 
@@ -62,6 +65,8 @@ export class UpdateUserListDto {
   category?: string;
 
   @ApiPropertyOptional({ description: 'List items', type: [Object] })
+  // @arraysize-uncapped-allowed: same admin-gated curated-list editor as CreateUserListDto.items
+  // (POST/PATCH /halls/lists, @Roles(OPERATOR|ADMIN|SUPER_ADMIN)).
   @IsOptional()
   @IsArray()
   items?: unknown[];
@@ -88,6 +93,7 @@ export class BatchRankingDto {
   @IsArray()
   @IsString({ each: true })
   @ArrayMinSize(1)
+  @ArrayMaxSize(MAX_SCHOOLS_PER_BATCH)
   schoolIds: string[];
 }
 

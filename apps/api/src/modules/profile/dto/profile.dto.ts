@@ -9,6 +9,7 @@ import {
   Min,
   Max,
   MaxLength,
+  ArrayMaxSize,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
@@ -16,6 +17,8 @@ import { BudgetTier, EducationSystem, Visibility } from '@prisma/client';
 import {
   APPLICATION_ROUND_VALUES,
   normalizeApplicationRound,
+  MAX_LEGACY_AFFILIATIONS,
+  MAX_REGION_PREFERENCES,
 } from '@study-abroad/shared';
 
 const GRADES = [
@@ -132,6 +135,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @ArrayMaxSize(MAX_REGION_PREFERENCES)
   regionPref?: string[];
 
   @ApiPropertyOptional({ enum: BudgetTier, description: 'Budget tier' })
@@ -227,6 +231,7 @@ export class UpdateProfileDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_LEGACY_AFFILIATIONS)
   legacy?: string[];
 
   @ApiPropertyOptional({ description: 'Intended major' })

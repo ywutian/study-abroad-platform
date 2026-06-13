@@ -3,10 +3,12 @@ import {
   IsOptional,
   IsEnum,
   IsArray,
+  ArrayMaxSize,
   MinLength,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { MAX_VAULT_TAGS } from '@study-abroad/shared';
 import { VaultItemType } from '../../../common/types/enums';
 
 // ============================================
@@ -40,6 +42,7 @@ export class CreateVaultItemDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_VAULT_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional()
@@ -78,6 +81,7 @@ export class UpdateVaultItemDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_VAULT_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional()
@@ -197,5 +201,6 @@ export class ImportVaultItemDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_VAULT_TAGS)
   tags?: string[];
 }

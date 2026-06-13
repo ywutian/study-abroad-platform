@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsDateString,
@@ -15,6 +16,15 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  MAX_RESUME_EVIDENCE_TAGS,
+  MAX_RESUME_EVIDENCE_SKILLS,
+  MAX_RESUME_PROOF_LINKS,
+  MAX_RESUME_TARGET_KEYWORDS,
+  MAX_RESUME_SECTION_IDS,
+  MAX_RESUME_IMPORT_SECTIONS,
+  MAX_RESUME_IMPORT_EVIDENCE,
+} from '@study-abroad/shared';
 
 const EVIDENCE_KINDS = [
   'EDUCATION',
@@ -106,6 +116,7 @@ export class CreateResumeEvidenceDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_RESUME_EVIDENCE_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional()
@@ -113,6 +124,7 @@ export class CreateResumeEvidenceDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_RESUME_EVIDENCE_SKILLS)
   skills?: string[];
 
   @ApiPropertyOptional()
@@ -125,6 +137,7 @@ export class CreateResumeEvidenceDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(1000, { each: true })
+  @ArrayMaxSize(MAX_RESUME_PROOF_LINKS)
   proofLinks?: string[];
 
   @ApiPropertyOptional()
@@ -212,6 +225,7 @@ export class CreateResumeTargetDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_RESUME_TARGET_KEYWORDS)
   keywords?: string[];
 
   @ApiPropertyOptional()
@@ -263,6 +277,7 @@ export class ApplyProfileImportDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
+  @ArrayMaxSize(MAX_RESUME_SECTION_IDS)
   sectionIds?: string[];
 
   @ApiPropertyOptional({ description: 'Snapshot label before import' })
@@ -376,6 +391,7 @@ class ResumeUploadEvidenceDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_RESUME_EVIDENCE_TAGS)
   tags?: string[];
 
   @ApiPropertyOptional()
@@ -383,6 +399,7 @@ class ResumeUploadEvidenceDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(100, { each: true })
+  @ArrayMaxSize(MAX_RESUME_EVIDENCE_SKILLS)
   skills?: string[];
 
   @ApiPropertyOptional()
@@ -397,6 +414,7 @@ export class ApplyResumeUploadImportDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ResumeUploadSectionDto)
+  @ArrayMaxSize(MAX_RESUME_IMPORT_SECTIONS)
   sections?: ResumeUploadSectionDto[];
 
   @ApiPropertyOptional({ type: [ResumeUploadEvidenceDto] })
@@ -404,6 +422,7 @@ export class ApplyResumeUploadImportDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ResumeUploadEvidenceDto)
+  @ArrayMaxSize(MAX_RESUME_IMPORT_EVIDENCE)
   evidence?: ResumeUploadEvidenceDto[];
 
   @ApiPropertyOptional({ description: 'Snapshot label before import' })
