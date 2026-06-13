@@ -6871,8 +6871,10 @@
     "preferencesDesc": "设置您的选校偏好以获取更精准的推荐",
     "regions": "目标地区",
     "regionsPlaceholder": "输入目标地区...",
+    "tooManyRegions": "最多选择 {max} 个地区，请减少后重试",
     "majors": "目标专业",
     "majorsPlaceholder": "输入目标专业...",
+    "tooManyMajors": "最多选择 {max} 个专业，请减少后重试",
     "budget": "预算范围",
     "budgetPlaceholder": "选择预算范围",
     "budgetOptions": {
@@ -7726,7 +7728,12 @@
         "matched": "互相右滑，已创建群聊",
         "contextCreated": "社区活动已创建",
         "contextUpdated": "社区活动已更新",
-        "contextPublished": "社区活动已发布"
+        "contextPublished": "社区活动已发布",
+        "tooManyOfferRoles": "可提供的角色最多 {max} 个，请减少后重试",
+        "tooManyNeedRoles": "需要的角色最多 {max} 个，请减少后重试",
+        "tooManySkillTags": "技能标签最多 {max} 个，请减少后重试",
+        "tooManyLanguages": "语言最多 {max} 种，请减少后重试",
+        "tooManyRolePresets": "角色预设最多 {max} 个，请减少后重试"
       },
       "copy": {
         "publicTab": "官方",

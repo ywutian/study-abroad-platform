@@ -4,6 +4,10 @@ import type {
   SchoolPublicMedia,
 } from '@study-abroad/shared';
 import {
+  MAX_PREFERRED_REGIONS,
+  MAX_PREFERRED_MAJORS,
+} from '@study-abroad/shared';
+import {
   IsOptional,
   IsArray,
   IsString,
@@ -37,18 +41,18 @@ export class SchoolRecommendationRequestDto {
   @IsOptional()
   @IsString({ each: true })
   @MaxLength(500, { each: true })
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(MAX_PREFERRED_REGIONS)
   preferredRegions?: string[];
 
   @ApiPropertyOptional({
     type: [String],
     description: 'Intended major',
-    maxItems: 10,
+    maxItems: MAX_PREFERRED_MAJORS,
   })
   @IsArray()
   @IsOptional()
   @IsString({ each: true })
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(MAX_PREFERRED_MAJORS)
   preferredMajors?: string[];
 
   @ApiPropertyOptional({ enum: BudgetRange, description: 'Budget range' })

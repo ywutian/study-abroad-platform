@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { Shield, Smile, Lightbulb, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { GenerateRecommendationDto } from '@/hooks/use-recommendation';
-import type { RecommendationPreflight } from '@study-abroad/shared';
+import {
+  MAX_PREFERRED_REGIONS,
+  MAX_PREFERRED_MAJORS,
+  type RecommendationPreflight,
+} from '@study-abroad/shared';
 
 interface RecommendationFormProps {
   onGenerate: (dto: GenerateRecommendationDto) => void;
@@ -30,9 +35,31 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const regionList = regions
+      ? regions
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+    const majorList = majors
+      ? majors
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+    // Pre-validate against the shared cap so an over-limit list shows a toast
+    // instead of 400'ing silently at the backend ValidationPipe (#396 bug class).
+    if (regionList && regionList.length > MAX_PREFERRED_REGIONS) {
+      toast.error(t('tooManyRegions', { max: MAX_PREFERRED_REGIONS }));
+      return;
+    }
+    if (majorList && majorList.length > MAX_PREFERRED_MAJORS) {
+      toast.error(t('tooManyMajors', { max: MAX_PREFERRED_MAJORS }));
+      return;
+    }
     onGenerate({
-      preferredRegions: regions ? regions.split(',').map((s) => s.trim()) : undefined,
-      preferredMajors: majors ? majors.split(',').map((s) => s.trim()) : undefined,
+      preferredRegions: regionList,
+      preferredMajors: majorList,
       budget: budget || undefined,
       schoolCount,
       additionalPreferences: additionalPreferences || undefined,

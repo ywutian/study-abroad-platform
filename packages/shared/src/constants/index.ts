@@ -175,6 +175,33 @@ export const MAX_PAGE_SIZE = 100;
  */
 export const MAX_SCHOOLS_PER_BATCH = 100;
 
+/**
+ * Per-field array caps for user-submitted multi-value inputs. Each is the single
+ * source of truth shared by the backend DTO (`@ArrayMaxSize`) and the client(s):
+ * the client pre-validates and shows a graceful message instead of letting an
+ * over-limit array hit the validation pipe and 400 silently (the #396 bug class).
+ *
+ * Two flavours:
+ *  - Fixed-set / roster-derived sources → the cap is sized to the source so the
+ *    full set is always valid (regions/majors match the 15-chip mobile pickers;
+ *    invitees match the ≤100 team-size ceiling). No client guard needed.
+ *  - Free-form comma inputs → the cap is the deliberate product limit; the client
+ *    must pre-validate and surface an over-limit toast (no silent truncation).
+ */
+// Recommendation preferences — mobile renders 15 fixed chips for each, so the cap
+// matches the picker (raised from an unintentional 10 that 400'd a full selection).
+export const MAX_PREFERRED_REGIONS = 15;
+export const MAX_PREFERRED_MAJORS = 15;
+// Team recruitment / community-context — free-form comma inputs; caps are product
+// limits and the client must guard against them.
+export const MAX_RECRUITMENT_ROLES = 8; // offerRoles, needRoles
+export const MAX_RECRUITMENT_SKILL_TAGS = 10;
+export const MAX_TEAM_LANGUAGES = 5; // recruitment + community-context languages
+export const MAX_ROLE_PRESETS = 8;
+// Match invitees — roster-derived; sized to the ≤100 team-size ceiling (@Max(100))
+// so a full matched team can always be invited (raised from an unintentional 10).
+export const MAX_TEAM_INVITEES = 100;
+
 // 订阅计划
 export * from './subscription';
 
