@@ -524,7 +524,7 @@ export function QuickExperience() {
                   <CompactList
                     title={t('activitiesTitle')}
                     onAdd={() =>
-                      activities.length < 3 && setActivities((prev) => [...prev, emptyActivity()])
+                      setActivities((prev) => (prev.length < 3 ? [...prev, emptyActivity()] : prev))
                     }
                     canAdd={activities.length < 3}
                   >
@@ -602,7 +602,9 @@ export function QuickExperience() {
 
                   <CompactList
                     title={t('awardsTitle')}
-                    onAdd={() => awards.length < 3 && setAwards((prev) => [...prev, emptyAward()])}
+                    onAdd={() =>
+                      setAwards((prev) => (prev.length < 3 ? [...prev, emptyAward()] : prev))
+                    }
                     canAdd={awards.length < 3}
                   >
                     {awards.map((award, index) => (

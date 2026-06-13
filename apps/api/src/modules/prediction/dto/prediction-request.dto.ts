@@ -53,12 +53,14 @@ export class PredictionPortfolioSummaryStreamRequestDto {
     description: 'Prediction result IDs to summarize',
     required: false,
     type: [String],
-    maxItems: 100,
+    maxItems: MAX_SCHOOLS_PER_BATCH,
   })
   @IsOptional()
   @IsArray()
-  // @arraysize-literal-allowed: roster-derived from the user's own prediction results, not free-form
-  @ArrayMaxSize(100)
+  // Single-sourced with the batch roster cap (same constant as schoolIds above):
+  // the FE portfolio roster is derived from the MAX_SCHOOLS_PER_BATCH-bounded
+  // results list, so the two caps must not drift (the #396/#397 silent-400 class).
+  @ArrayMaxSize(MAX_SCHOOLS_PER_BATCH)
   @IsString({ each: true })
   @MaxLength(500, { each: true })
   predictionResultIds?: string[];
