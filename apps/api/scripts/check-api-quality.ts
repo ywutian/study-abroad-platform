@@ -261,6 +261,67 @@ function checkMissingMaxLength(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+/**
+ * no-magic-arraysize: a numeric @ArrayMaxSize literal on a user-facing DTO array
+ * field should be a named shared constant (SSOT in packages/shared) so the cap is
+ * single-sourced with the client and cannot silently drift — the root cause of the
+ * #396/#397 silent-400 bug class (prediction 10 vs timeline 50; recommendation /
+ * team caps the frontend could exceed with no guard). Enum-bounded arrays are
+ * skipped (the enum already bounds them). Suppress a deliberate fixed-set cap with
+ * // @arraysize-literal-allowed. Error for NEW code (staged), warning for the
+ * existing backlog (full-scan) — same ratchet as no-missing-test.
+ */
+function checkMagicArraySize(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  // Scan request DTOs: *.dto.ts anywhere, PLUS any *.ts directly under a /dto/
+  // directory so class definitions in dto/index.ts barrels are not invisible
+  // (e.g. hall VerifiedDashboardQueryDto.schoolIds lived in a barrel and slipped
+  // the old `.dto.ts`-only filter). Skip *.spec.ts.
+  const isDtoFile =
+    filePath.endsWith('.dto.ts') || /\/dto\/[^/]+\.ts$/.test(filePath);
+  if (!isDtoFile || filePath.endsWith('.spec.ts')) return issues;
+  // Admin / bulk-import / batch-moderation endpoints have their own batch UIs +
+  // high caps and are not user-curated lists — literals are fine there.
+  if (filePath.includes('/modules/admin/')) return issues;
+  const base = filePath.split('/').pop() ?? '';
+  if (/(^|[-.])(batch|bulk)/.test(base)) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim().startsWith('//')) continue;
+    // Only a numeric literal cap — a named-constant reference is the desired state.
+    if (!/@ArrayMaxSize\(\s*\d/.test(line)) continue;
+    if (hasIgnoreTag(lines, i, '@arraysize-literal-allowed')) continue;
+
+    // Skip enum-bounded arrays: @IsEnum(..., { each: true }) or
+    // @IsIn([...fixed set], { each: true }) already bound each element to a small
+    // fixed value set, so a numeric cap is a deliberate fixed-set bound, not a
+    // user-curated free-form list.
+    let isEnumBounded = false;
+    for (
+      let j = Math.max(0, i - 5);
+      j <= Math.min(lines.length - 1, i + 5);
+      j++
+    ) {
+      if (/@IsEnum\b/.test(lines[j]) || /@IsIn\b/.test(lines[j])) {
+        isEnumBounded = true;
+        break;
+      }
+    }
+    if (isEnumBounded) continue;
+
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-magic-arraysize',
+      message:
+        'Numeric @ArrayMaxSize literal on a user-facing DTO array. Use a named shared cap constant (packages/shared) so it is single-sourced with the client and cannot silently drift (the #396/#397 silent-400 class). Suppress a deliberate fixed-set cap with // @arraysize-literal-allowed.',
+      severity: stagedOnly ? 'error' : 'warning',
+    });
+  }
+  return issues;
+}
+
 function checkMissingTest(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (!filePath.endsWith('.service.ts')) return issues;
@@ -437,9 +498,20 @@ function checkSelectMappingDrift(filePath: string, lines: string[]): Issue[] {
 
 /** True when the current line (trailing comment) or the preceding line carries the tag. */
 function hasIgnoreTag(lines: string[], idx: number, tag: string): boolean {
-  const current = lines[idx] ?? '';
-  const prev = idx > 0 ? lines[idx - 1] : '';
-  return current.includes(tag) || prev.includes(tag);
+  // Tag may be inline on the decorator line, OR anywhere in the contiguous
+  // comment block immediately above it — so a multi-line justification works and
+  // the tag need not sit on the single line directly above the decorator. Stops
+  // at the first non-comment line, so a tag can't leak across an unrelated
+  // decorator.
+  if ((lines[idx] ?? '').includes(tag)) return true;
+  for (let j = idx - 1; j >= 0; j--) {
+    const line = (lines[j] ?? '').trim();
+    const isComment =
+      line.startsWith('//') || line.startsWith('*') || line.startsWith('/*');
+    if (!isComment) break;
+    if (line.includes(tag)) return true;
+  }
+  return false;
 }
 
 /**
@@ -589,6 +661,7 @@ function main() {
       ...checkUnthrottledAI(filePath, lines),
       ...checkGenericThrow(filePath, lines),
       ...checkMissingMaxLength(filePath, lines),
+      ...checkMagicArraySize(filePath, lines),
       ...checkMissingTest(filePath, lines),
       ...checkDuplicatedSelect(filePath, lines),
       ...checkSelectMappingDrift(filePath, lines),

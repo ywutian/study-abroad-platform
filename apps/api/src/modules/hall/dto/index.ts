@@ -113,6 +113,9 @@ export class VerifiedDashboardQueryDto {
   )
   @IsArray()
   @IsString({ each: true })
+  // @arraysize-literal-allowed: optional dashboard filter (default empty → top-30); current
+  // consumers send an empty list, and a populated source would be the bounded compare picker — a
+  // deliberate generous 50 cap, not a user-curated free-form list.
   @ArrayMaxSize(50)
   @MaxLength(64, { each: true })
   schoolIds: string[] = [];

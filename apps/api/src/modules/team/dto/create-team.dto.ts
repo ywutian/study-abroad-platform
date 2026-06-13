@@ -57,6 +57,7 @@ export class CreateTeamDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(50, { each: true })
+  // @arraysize-literal-allowed: team tags, frontend-capped fixed list
   @ArrayMaxSize(10)
   tags?: string[];
 }

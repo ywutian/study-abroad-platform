@@ -90,6 +90,7 @@ export class SocialBulkDto {
   @ApiProperty({ type: [String], maxItems: 50 })
   @IsArray()
   @ArrayMinSize(1)
+  // @arraysize-literal-allowed: bulk action over an already-bounded selection, not a curated list
   @ArrayMaxSize(50)
   @IsString({ each: true })
   @MaxLength(200, { each: true })

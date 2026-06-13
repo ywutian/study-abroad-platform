@@ -1062,7 +1062,7 @@ describe('CounselorEngineService', () => {
         'ED',
       );
       const inStatePublic = await service.compute(
-        profile({ gpa: 3.8, highSchoolLocation: 'CA' as any }),
+        profile({ gpa: 3.8, highSchoolLocation: 'CA' }),
         school({
           state: 'CA',
           acceptanceRate: 0.4,

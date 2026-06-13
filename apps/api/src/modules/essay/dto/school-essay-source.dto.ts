@@ -121,6 +121,7 @@ export class ConfirmSaveDto {
   })
   @IsOptional()
   @IsArray()
+  // @arraysize-literal-allowed: admin essay-source confirm, bounded by the fetched candidate list
   @ArrayMaxSize(500)
   @IsInt({ each: true })
   @Min(0, { each: true })
