@@ -14,6 +14,7 @@ import {
   Max,
   MaxLength,
 } from 'class-validator';
+import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
 
 export enum ApplicationRound {
   ED = 'ED',
@@ -274,10 +275,15 @@ export class TaskResponseDto {
 // ============ Generate Timeline DTO ============
 
 export class GenerateTimelineDto {
-  @ApiProperty({ type: [String], description: 'School ID list' })
+  @ApiProperty({
+    type: [String],
+    description: 'School ID list',
+    minItems: 1,
+    maxItems: MAX_SCHOOLS_PER_BATCH,
+  })
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(50)
+  @ArrayMaxSize(MAX_SCHOOLS_PER_BATCH)
   @IsString({ each: true })
   @MaxLength(500, { each: true })
   @IsNotEmpty({ each: true })

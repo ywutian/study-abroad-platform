@@ -9,6 +9,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
 
 export class PredictionRequestDto {
   @ApiProperty({
@@ -16,11 +17,11 @@ export class PredictionRequestDto {
     example: ['school-id-1', 'school-id-2'],
     type: [String],
     minItems: 1,
-    maxItems: 10,
+    maxItems: MAX_SCHOOLS_PER_BATCH,
   })
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(MAX_SCHOOLS_PER_BATCH)
   @IsString({ each: true })
   @MaxLength(500, { each: true })
   @IsNotEmpty({ each: true })

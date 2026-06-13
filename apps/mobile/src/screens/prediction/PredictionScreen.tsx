@@ -48,6 +48,7 @@ import {
   API_ROUTES,
   type AIAnalysisResult,
   type PredictionDashboardData,
+  MAX_SCHOOLS_PER_BATCH,
   detectInternationalStatus,
   formatPercentValue,
   predictionRoutes,
@@ -263,9 +264,9 @@ export default function PredictionScreen() {
 
   // "Add prediction": run predictions across the target list, or send the user to
   // build that list first (find-college) when it's still empty. The backend caps a
-  // single request at 10 schools (@ArrayMaxSize), so predict the first 10 and tell
-  // the user when their list is longer — otherwise the whole batch 400s with a raw
-  // validator string and nothing runs.
+  // single request at MAX_SCHOOLS_PER_BATCH schools (shared SSOT, @ArrayMaxSize), so
+  // predict up to that many and tell the user when their list is even longer —
+  // otherwise the whole batch 400s with a raw validator string and nothing runs.
   const handleAddPrediction = useCallback(() => {
     if (predictMutation.isPending) return;
     if (profileBlocksPrediction) {
@@ -276,11 +277,10 @@ export default function PredictionScreen() {
       router.push('/find-college' as Href);
       return;
     }
-    const MAX_PER_RUN = 10;
-    if (schoolListIds.length > MAX_PER_RUN) {
-      toast.info(t('prediction.maxSchoolsNotice', { count: MAX_PER_RUN }));
+    if (schoolListIds.length > MAX_SCHOOLS_PER_BATCH) {
+      toast.info(t('prediction.maxSchoolsNotice', { count: MAX_SCHOOLS_PER_BATCH }));
     }
-    predictMutation.mutate(schoolListIds.slice(0, MAX_PER_RUN));
+    predictMutation.mutate(schoolListIds.slice(0, MAX_SCHOOLS_PER_BATCH));
   }, [predictMutation, profileBlocksPrediction, schoolListIds, toast, t]);
 
   const [refreshing, setRefreshing] = useState(false);

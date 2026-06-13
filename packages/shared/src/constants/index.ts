@@ -148,6 +148,33 @@ export const POINTS_ENABLED = false;
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
 
+/**
+ * Max schools a single batch operation may target in one request — shared by the
+ * prediction endpoint (`POST /predictions`) and timeline batch generation
+ * (`POST /timelines/generate`). This is the single source of truth for that cap:
+ * the backend DTOs enforce it (`@ArrayMaxSize`) and the frontend pre-validates
+ * against it so an over-limit selection shows a toast instead of a silent 400.
+ *
+ * Set to 100 to comfortably cover a full school list plus UC cross-campus
+ * expansion (≤9) while still bounding cost. The served prediction path is the
+ * deterministic counselor engine (no per-school LLM, internal CONCURRENCY=3), so
+ * 100 schools complete in seconds. Previously this was an unintentional 10
+ * (prediction) vs 50 (timeline) divergence — the root cause of the over-limit
+ * 400s when a user predicted a large school list.
+ *
+ * This is a guard on the INCOMING request array, not a hard served-count ceiling:
+ * `POST /predictions` expands a UC selection to the user's owned campuses AFTER
+ * DTO validation, so the effective served count can reach ~MAX + (UC campuses − 1)
+ * ≈ 108. That is intended headroom (every expanded id is owned, so it never 400s).
+ *
+ * Tripwire before raising this much further: one run holds a per-profile lock
+ * (`runPredictionWithLock`, TTL ≈ 120s, not renewed) and runs under the ~120s AI
+ * request timeout. At 100 the deterministic path finishes in ~7–15s (wide margin),
+ * but a substantially higher cap (or a per-school I/O regression) would erode it —
+ * add lock renewal / raise the TTL above the realistic worst-case run time first.
+ */
+export const MAX_SCHOOLS_PER_BATCH = 100;
+
 // 订阅计划
 export * from './subscription';
 

@@ -53,6 +53,7 @@ import { useAuthStore } from '@/stores';
 import { router } from 'expo-router';
 import PredictionScreen, { mapDashboardToPredictions } from '@/screens/prediction/PredictionScreen';
 import type { PredictionDashboardData } from '@study-abroad/shared';
+import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -369,11 +370,13 @@ describe('PredictionScreen', () => {
     expect(apiClient.post).not.toHaveBeenCalled();
   });
 
-  it('caps "Add Prediction" at the backend max (10) when the saved list is longer', async () => {
+  it('runs the full saved list when it is within the batch cap', async () => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
       user: { id: '1', email: 'test@example.com', role: 'USER' },
       isAuthenticated: true,
     });
+    // 11 schools used to be truncated to 10 by the old client-side cap; with the
+    // raised shared cap (MAX_SCHOOLS_PER_BATCH) the whole list is now predicted.
     const elevenSchools = Array.from({ length: 11 }, (_, i) => ({ schoolId: `s${i}` }));
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/predictions/dashboard')) {
@@ -392,8 +395,35 @@ describe('PredictionScreen', () => {
     const predictCall = (apiClient.post as jest.Mock).mock.calls.find((c) =>
       String(c[0]).includes('/predictions')
     );
-    // Sliced to 10 — never sends the full 11 (which would 400 on @ArrayMaxSize(10)).
-    expect(predictCall?.[1]?.schoolIds).toHaveLength(10);
+    expect(predictCall?.[1]?.schoolIds).toHaveLength(11);
+  });
+
+  it('caps "Add Prediction" at MAX_SCHOOLS_PER_BATCH when the saved list is longer', async () => {
+    (useAuthStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '1', email: 'test@example.com', role: 'USER' },
+      isAuthenticated: true,
+    });
+    const tooManySchools = Array.from({ length: MAX_SCHOOLS_PER_BATCH + 1 }, (_, i) => ({
+      schoolId: `s${i}`,
+    }));
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes('/predictions/dashboard')) {
+        return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
+      }
+      if (url.includes('/school-lists')) return Promise.resolve(tooManySchools);
+      return Promise.resolve({});
+    });
+
+    const { getByText } = renderWithProviders(<PredictionScreen />);
+    await waitFor(() => expect(getByText('prediction.empty.hasSchools')).toBeTruthy());
+    fireEvent.press(getByText('prediction.addPrediction'));
+
+    await waitFor(() => expect(apiClient.post).toHaveBeenCalled());
+    const predictCall = (apiClient.post as jest.Mock).mock.calls.find((c) =>
+      String(c[0]).includes('/predictions')
+    );
+    // Sliced to the cap — never sends the full over-limit list (which would 400).
+    expect(predictCall?.[1]?.schoolIds).toHaveLength(MAX_SCHOOLS_PER_BATCH);
   });
 
   it('shows explanation copy for estimate, data support, and tier semantics', async () => {
