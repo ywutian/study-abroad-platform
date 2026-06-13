@@ -6892,8 +6892,10 @@
     "preferencesDesc": "Set your preferences for more accurate recommendations",
     "regions": "Target Regions",
     "regionsPlaceholder": "Enter target regions...",
+    "tooManyRegions": "You can select at most {max} regions — please reduce and try again.",
     "majors": "Target Majors",
     "majorsPlaceholder": "Enter target majors...",
+    "tooManyMajors": "You can select at most {max} majors — please reduce and try again.",
     "budget": "Budget Range",
     "budgetPlaceholder": "Select budget range",
     "budgetOptions": {
@@ -7747,7 +7749,12 @@
         "matched": "It matched and opened a group chat",
         "contextCreated": "Community context created",
         "contextUpdated": "Community context updated",
-        "contextPublished": "Community context published"
+        "contextPublished": "Community context published",
+        "tooManyOfferRoles": "You can offer at most {max} roles — please reduce and try again.",
+        "tooManyNeedRoles": "You can request at most {max} roles — please reduce and try again.",
+        "tooManySkillTags": "You can add at most {max} skill tags — please reduce and try again.",
+        "tooManyLanguages": "You can add at most {max} languages — please reduce and try again.",
+        "tooManyRolePresets": "You can add at most {max} role presets — please reduce and try again."
       },
       "copy": {
         "publicTab": "Public",

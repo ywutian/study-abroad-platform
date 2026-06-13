@@ -14,6 +14,8 @@ import {
   getRecruitmentContextId,
   getRecruitmentContextName,
   resumeRoutes,
+  MAX_RECRUITMENT_ROLES,
+  MAX_RECRUITMENT_SKILL_TAGS,
 } from '@study-abroad/shared';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import { EmptyState, Loading, Segment, Select } from '@/components/ui';
@@ -192,6 +194,40 @@ export default function TeamsScreen() {
       invalidate();
     },
   });
+
+  // Pre-validate the free-form comma inputs against the shared @ArrayMaxSize caps so
+  // an over-limit list shows a toast instead of 400'ing silently at the backend
+  // ValidationPipe (#396 bug class). Mirrors the web TeamsPageClient guard.
+  const submitCard = () => {
+    if (splitList(form.offerRoles).length > MAX_RECRUITMENT_ROLES) {
+      toast.show({
+        type: 'error',
+        message: t('teams.recruitment.toast.tooManyOfferRoles', { max: MAX_RECRUITMENT_ROLES }),
+      });
+      return;
+    }
+    if (splitList(form.needRoles).length > MAX_RECRUITMENT_ROLES) {
+      toast.show({
+        type: 'error',
+        message: t('teams.recruitment.toast.tooManyNeedRoles', { max: MAX_RECRUITMENT_ROLES }),
+      });
+      return;
+    }
+    if (splitList(form.skillTags).length > MAX_RECRUITMENT_SKILL_TAGS) {
+      toast.show({
+        type: 'error',
+        message: t('teams.recruitment.toast.tooManySkillTags', {
+          max: MAX_RECRUITMENT_SKILL_TAGS,
+        }),
+      });
+      return;
+    }
+    if (currentCard) {
+      updateMutation.mutate();
+    } else {
+      createMutation.mutate();
+    }
+  };
 
   const publishMutation = useMutation({
     mutationFn: (cardId: string) => teamService.publishRecruitment(cardId),
@@ -456,9 +492,7 @@ export default function TeamsScreen() {
                           ? t('teams.recruitment.action.saveCard')
                           : t('teams.recruitment.action.createCard')
                       }
-                      onPress={() =>
-                        currentCard ? updateMutation.mutate() : createMutation.mutate()
-                      }
+                      onPress={submitCard}
                     >
                       <Text style={[styles.primaryLabel, { color: colors.primaryForeground }]}>
                         {currentCard

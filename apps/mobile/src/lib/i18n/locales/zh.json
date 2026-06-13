@@ -2050,7 +2050,10 @@
         "cardPublished": "组队卡已发布",
         "displayUpdated": "展示配置已更新",
         "matched": "匹配成功，已创建群聊",
-        "swipeRecorded": "已记录划卡"
+        "swipeRecorded": "已记录划卡",
+        "tooManyOfferRoles": "可提供的角色最多 {{max}} 个，请减少后重试",
+        "tooManyNeedRoles": "需要的角色最多 {{max}} 个，请减少后重试",
+        "tooManySkillTags": "技能标签最多 {{max}} 个，请减少后重试"
       }
     }
   },

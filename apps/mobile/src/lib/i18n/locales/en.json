@@ -2050,7 +2050,10 @@
         "cardPublished": "Recruitment card published",
         "displayUpdated": "Display settings updated",
         "matched": "Matched and created a group chat",
-        "swipeRecorded": "Swipe recorded"
+        "swipeRecorded": "Swipe recorded",
+        "tooManyOfferRoles": "You can offer at most {{max}} roles — please reduce and try again.",
+        "tooManyNeedRoles": "You can request at most {{max}} roles — please reduce and try again.",
+        "tooManySkillTags": "You can add at most {{max}} skill tags — please reduce and try again."
       }
     }
   },

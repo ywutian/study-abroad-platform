@@ -11,6 +11,10 @@ import {
   getRecruitmentContextName,
   resumeRoutes,
   teamRoutes,
+  MAX_RECRUITMENT_ROLES,
+  MAX_RECRUITMENT_SKILL_TAGS,
+  MAX_TEAM_LANGUAGES,
+  MAX_ROLE_PRESETS,
   type InviteMatchMembersResponseDto,
   type MatchPoolDto,
   type RecruitmentContextDto,
@@ -704,6 +708,52 @@ export function TeamsPageClient() {
     },
   });
 
+  // Pre-validate the free-form comma inputs against the shared @ArrayMaxSize caps
+  // so an over-limit list shows a specific toast instead of 400'ing silently at the
+  // backend ValidationPipe (#396 bug class). Caps are the deliberate product limit.
+  const ensureRecruitmentCaps = (): boolean => {
+    if (toArray(form.offerRoles).length > MAX_RECRUITMENT_ROLES) {
+      toast.error(t('recruitment.toast.tooManyOfferRoles', { max: MAX_RECRUITMENT_ROLES }));
+      return false;
+    }
+    if (toArray(form.needRoles).length > MAX_RECRUITMENT_ROLES) {
+      toast.error(t('recruitment.toast.tooManyNeedRoles', { max: MAX_RECRUITMENT_ROLES }));
+      return false;
+    }
+    if (toArray(form.skillTags).length > MAX_RECRUITMENT_SKILL_TAGS) {
+      toast.error(t('recruitment.toast.tooManySkillTags', { max: MAX_RECRUITMENT_SKILL_TAGS }));
+      return false;
+    }
+    if (toArray(form.languages).length > MAX_TEAM_LANGUAGES) {
+      toast.error(t('recruitment.toast.tooManyLanguages', { max: MAX_TEAM_LANGUAGES }));
+      return false;
+    }
+    return true;
+  };
+
+  const handleCreateRecruitment = () => {
+    if (ensureRecruitmentCaps()) createRecruitmentMutation.mutate();
+  };
+  const handleUpdateRecruitment = () => {
+    if (ensureRecruitmentCaps()) updateRecruitmentMutation.mutate();
+  };
+
+  const handleSubmitCommunityContext = () => {
+    if (toArray(communityForm.rolePresets).length > MAX_ROLE_PRESETS) {
+      toast.error(t('recruitment.toast.tooManyRolePresets', { max: MAX_ROLE_PRESETS }));
+      return;
+    }
+    if (toArray(communityForm.languages).length > MAX_TEAM_LANGUAGES) {
+      toast.error(t('recruitment.toast.tooManyLanguages', { max: MAX_TEAM_LANGUAGES }));
+      return;
+    }
+    if (selectedPrivateContextId) {
+      updateCommunityContextMutation.mutate();
+    } else {
+      createCommunityContextMutation.mutate();
+    }
+  };
+
   const publishMutation = useMutation({
     mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentPublish(cardId)),
     onSuccess: (_data, cardId) => {
@@ -992,8 +1042,8 @@ export function TeamsPageClient() {
                     currentCard={currentCard}
                     currentContextLabel={currentContextLabel}
                     currentContextMeta={currentContextMeta}
-                    onCreate={() => createRecruitmentMutation.mutate()}
-                    onUpdate={() => updateRecruitmentMutation.mutate()}
+                    onCreate={handleCreateRecruitment}
+                    onUpdate={handleUpdateRecruitment}
                     onPublish={() => currentCard && publishMutation.mutate(currentCard.id)}
                     onClose={() => currentCard && closeMutation.mutate(currentCard.id)}
                     createPending={createRecruitmentMutation.isPending}
@@ -1294,11 +1344,7 @@ export function TeamsPageClient() {
 
                       <div className="flex flex-wrap gap-3">
                         <Button
-                          onClick={() =>
-                            selectedPrivateContextId
-                              ? updateCommunityContextMutation.mutate()
-                              : createCommunityContextMutation.mutate()
-                          }
+                          onClick={handleSubmitCommunityContext}
                           disabled={
                             createCommunityContextMutation.isPending ||
                             updateCommunityContextMutation.isPending ||
@@ -1334,8 +1380,8 @@ export function TeamsPageClient() {
                 currentCard={currentCard}
                 currentContextLabel={currentContextLabel}
                 currentContextMeta={currentContextMeta}
-                onCreate={() => createRecruitmentMutation.mutate()}
-                onUpdate={() => updateRecruitmentMutation.mutate()}
+                onCreate={handleCreateRecruitment}
+                onUpdate={handleUpdateRecruitment}
                 onPublish={() => currentCard && publishMutation.mutate(currentCard.id)}
                 onClose={() => currentCard && closeMutation.mutate(currentCard.id)}
                 createPending={createRecruitmentMutation.isPending}

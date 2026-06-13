@@ -22,6 +22,13 @@ import {
   TeamRecruitmentSwipeAction,
 } from '@prisma/client';
 import { Type } from 'class-transformer';
+import {
+  MAX_RECRUITMENT_ROLES,
+  MAX_RECRUITMENT_SKILL_TAGS,
+  MAX_TEAM_LANGUAGES,
+  MAX_ROLE_PRESETS,
+  MAX_TEAM_INVITEES,
+} from '@study-abroad/shared';
 
 export class CreateRecruitmentDto {
   @ApiPropertyOptional({ description: 'Existing backing team id' })
@@ -77,7 +84,7 @@ export class CreateRecruitmentDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(50, { each: true })
-  @ArrayMaxSize(8)
+  @ArrayMaxSize(MAX_RECRUITMENT_ROLES)
   offerRoles?: string[];
 
   @ApiPropertyOptional({ type: [String] })
@@ -85,7 +92,7 @@ export class CreateRecruitmentDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(50, { each: true })
-  @ArrayMaxSize(8)
+  @ArrayMaxSize(MAX_RECRUITMENT_ROLES)
   needRoles?: string[];
 
   @ApiPropertyOptional({ type: [String] })
@@ -93,7 +100,7 @@ export class CreateRecruitmentDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(50, { each: true })
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(MAX_RECRUITMENT_SKILL_TAGS)
   skillTags?: string[];
 
   @ApiPropertyOptional({ enum: RecruitmentAvailabilityBand })
@@ -123,7 +130,7 @@ export class CreateRecruitmentDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(30, { each: true })
-  @ArrayMaxSize(5)
+  @ArrayMaxSize(MAX_TEAM_LANGUAGES)
   languages?: string[];
 
   @ApiPropertyOptional({ enum: RecruitmentIntentMode })
@@ -223,7 +230,7 @@ export class CreateCommunityContextDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(50, { each: true })
-  @ArrayMaxSize(8)
+  @ArrayMaxSize(MAX_ROLE_PRESETS)
   rolePresets?: string[];
 
   @ApiProperty()
@@ -245,7 +252,7 @@ export class CreateCommunityContextDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(30, { each: true })
-  @ArrayMaxSize(5)
+  @ArrayMaxSize(MAX_TEAM_LANGUAGES)
   languages?: string[];
 }
 
@@ -369,7 +376,7 @@ export class InviteMatchMembersDto {
   @IsArray()
   @IsString({ each: true })
   @MaxLength(200, { each: true })
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(MAX_TEAM_INVITEES)
   inviteeIds: string[];
 
   @ApiPropertyOptional()
