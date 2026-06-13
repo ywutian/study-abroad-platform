@@ -627,7 +627,7 @@ export class ProfileApplicationAnalysisV2Service {
         const parsed = extractJsonFromLlm<Record<string, unknown>>(
           llmResponse.content,
         );
-        const normalized = this.normalizeSchoolAnalysis(deterministic, parsed);
+        const normalized = normalizeSchoolAnalysis(deterministic, parsed);
         validationErrors.push(...normalized.validationErrors);
         const mergedSchool = {
           ...deterministic,
@@ -772,7 +772,7 @@ export class ProfileApplicationAnalysisV2Service {
         const parsed = extractJsonFromLlm<Record<string, unknown>>(
           llmResponse.content,
         );
-        normalizedPortfolio = this.normalizePortfolioSynthesis(
+        normalizedPortfolio = normalizePortfolioSynthesis(
           fallbackPortfolio,
           fallbackActionPlan,
           parsed,
@@ -1096,102 +1096,9 @@ export class ProfileApplicationAnalysisV2Service {
     });
   }
 
-  private normalizeSchoolAnalysis(
-    deterministic: ApplicationAnalysisSchoolResult,
-    parsed: Record<string, unknown>,
-  ): NormalizedSchoolAnalysisResponse {
-    const { evidenceIds, validationErrors } = filterAllowedEvidenceIds(
-      deterministic.evidenceIds,
-      ensureStringArray(parsed.evidenceIds),
-    );
-
-    return {
-      assessment: {
-        summary:
-          ensureString(parsed.summary) ?? deterministic.assessment.summary,
-        whyThisIsHard: mergeStringLists(
-          ensureStringArray(parsed.whyThisIsHard),
-          deterministic.assessment.whyThisIsHard,
-        ),
-        compensatingStrengths: mergeStringLists(
-          ensureStringArray(parsed.compensatingStrengths),
-          deterministic.assessment.compensatingStrengths,
-        ),
-        topGaps: mergeStringLists(
-          ensureStringArray(parsed.topGaps),
-          deterministic.assessment.topGaps,
-        ),
-        nextActions: mergeStringLists(
-          ensureStringArray(parsed.nextActions),
-          deterministic.assessment.nextActions,
-        ),
-        historicalSignals: mergeStringLists(
-          ensureStringArray(parsed.historicalSignals),
-          deterministic.assessment.historicalSignals,
-        ),
-        hardStopRisks: mergeStringLists(
-          ensureStringArray(parsed.hardStopRisks),
-          deterministic.assessment.hardStopRisks,
-        ),
-      },
-      recourse: normalizeRecourse(parsed.recourse),
-      uncertainty: normalizeUncertainty(
-        parsed.uncertainty,
-        deterministic.prediction,
-      ),
-      evidenceIds,
-      unknowns: mergeStringLists(
-        ensureStringArray(parsed.unknowns),
-        deterministic.unknowns,
-      ),
-      validationErrors,
-    };
-  }
-
-  private normalizePortfolioSynthesis(
-    fallbackSummary: ApplicationAnalysisPortfolioSummary,
-    fallbackActionPlan: AnalysisActionPlan,
-    parsed: Record<string, unknown>,
-  ): NormalizedPortfolioResponse {
-    const { balance: normalizedBalance, validationErrors } =
-      normalizeBalanceValue(
-        ensureString(parsed.balance),
-        fallbackSummary.balance,
-      );
-
-    return {
-      portfolioSummary: {
-        verdict: ensureString(parsed.verdict) ?? fallbackSummary.verdict,
-        balance: normalizedBalance,
-        keyReasons: mergeStringLists(
-          ensureStringArray(parsed.keyReasons),
-          fallbackSummary.keyReasons,
-        ),
-        riskBoundaries: mergeStringLists(
-          ensureStringArray(parsed.riskBoundaries),
-          fallbackSummary.riskBoundaries,
-        ),
-      },
-      actionPlan: {
-        now: mergeStringLists(
-          ensureStringArray(readRecordArray(parsed.actionPlan, 'now')),
-          fallbackActionPlan.now,
-        ),
-        next90Days: mergeStringLists(
-          ensureStringArray(readRecordArray(parsed.actionPlan, 'next90Days')),
-          fallbackActionPlan.next90Days,
-        ),
-        beforeSubmission: mergeStringLists(
-          ensureStringArray(
-            readRecordArray(parsed.actionPlan, 'beforeSubmission'),
-          ),
-          fallbackActionPlan.beforeSubmission,
-        ),
-      },
-      unknowns: ensureStringArray(parsed.unknowns),
-      validationErrors,
-    };
-  }
+  // normalizeSchoolAnalysis / normalizePortfolioSynthesis are pure merge helpers
+  // extracted to module scope (below, exported) so the LLM-surfaces-over-floor
+  // contract is unit-testable without the full live pipeline.
 
   private evaluateReplayResponse(response: ApplicationAnalysisResponseV2) {
     const schools =
@@ -1504,6 +1411,114 @@ function ensureStringArray(value: unknown): string[] {
     .map((item) => (typeof item === 'string' ? item.trim() : ''))
     .filter(Boolean)
     .slice(0, 6);
+}
+
+/**
+ * Merge the LLM school-analyst output (`parsed`) over the deterministic floor.
+ * LLM-first by contract: `summary` uses the LLM's when present (`?? deterministic`)
+ * and every list is `mergeStringLists(LLM, deterministic)` (LLM leads, floor only
+ * backfills when sparse). Pure — exported so the surfaces-over-floor contract is
+ * unit-testable without the live LLM pipeline.
+ */
+export function normalizeSchoolAnalysis(
+  deterministic: ApplicationAnalysisSchoolResult,
+  parsed: Record<string, unknown>,
+): NormalizedSchoolAnalysisResponse {
+  const { evidenceIds, validationErrors } = filterAllowedEvidenceIds(
+    deterministic.evidenceIds,
+    ensureStringArray(parsed.evidenceIds),
+  );
+
+  return {
+    assessment: {
+      summary: ensureString(parsed.summary) ?? deterministic.assessment.summary,
+      whyThisIsHard: mergeStringLists(
+        ensureStringArray(parsed.whyThisIsHard),
+        deterministic.assessment.whyThisIsHard,
+      ),
+      compensatingStrengths: mergeStringLists(
+        ensureStringArray(parsed.compensatingStrengths),
+        deterministic.assessment.compensatingStrengths,
+      ),
+      topGaps: mergeStringLists(
+        ensureStringArray(parsed.topGaps),
+        deterministic.assessment.topGaps,
+      ),
+      nextActions: mergeStringLists(
+        ensureStringArray(parsed.nextActions),
+        deterministic.assessment.nextActions,
+      ),
+      historicalSignals: mergeStringLists(
+        ensureStringArray(parsed.historicalSignals),
+        deterministic.assessment.historicalSignals,
+      ),
+      hardStopRisks: mergeStringLists(
+        ensureStringArray(parsed.hardStopRisks),
+        deterministic.assessment.hardStopRisks,
+      ),
+    },
+    recourse: normalizeRecourse(parsed.recourse),
+    uncertainty: normalizeUncertainty(
+      parsed.uncertainty,
+      deterministic.prediction,
+    ),
+    evidenceIds,
+    unknowns: mergeStringLists(
+      ensureStringArray(parsed.unknowns),
+      deterministic.unknowns,
+    ),
+    validationErrors,
+  };
+}
+
+/**
+ * Merge the LLM portfolio-synthesizer output over the deterministic fallback.
+ * Same LLM-first contract as normalizeSchoolAnalysis (`verdict`/`balance` use the
+ * LLM when valid; lists merge LLM-first). Pure + exported for the same reason.
+ */
+export function normalizePortfolioSynthesis(
+  fallbackSummary: ApplicationAnalysisPortfolioSummary,
+  fallbackActionPlan: AnalysisActionPlan,
+  parsed: Record<string, unknown>,
+): NormalizedPortfolioResponse {
+  const { balance: normalizedBalance, validationErrors } =
+    normalizeBalanceValue(
+      ensureString(parsed.balance),
+      fallbackSummary.balance,
+    );
+
+  return {
+    portfolioSummary: {
+      verdict: ensureString(parsed.verdict) ?? fallbackSummary.verdict,
+      balance: normalizedBalance,
+      keyReasons: mergeStringLists(
+        ensureStringArray(parsed.keyReasons),
+        fallbackSummary.keyReasons,
+      ),
+      riskBoundaries: mergeStringLists(
+        ensureStringArray(parsed.riskBoundaries),
+        fallbackSummary.riskBoundaries,
+      ),
+    },
+    actionPlan: {
+      now: mergeStringLists(
+        ensureStringArray(readRecordArray(parsed.actionPlan, 'now')),
+        fallbackActionPlan.now,
+      ),
+      next90Days: mergeStringLists(
+        ensureStringArray(readRecordArray(parsed.actionPlan, 'next90Days')),
+        fallbackActionPlan.next90Days,
+      ),
+      beforeSubmission: mergeStringLists(
+        ensureStringArray(
+          readRecordArray(parsed.actionPlan, 'beforeSubmission'),
+        ),
+        fallbackActionPlan.beforeSubmission,
+      ),
+    },
+    unknowns: ensureStringArray(parsed.unknowns),
+    validationErrors,
+  };
 }
 
 /**
