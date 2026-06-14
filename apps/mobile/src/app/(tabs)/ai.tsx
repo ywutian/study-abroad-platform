@@ -19,6 +19,7 @@ import Markdown from 'react-native-markdown-display';
 import * as Haptics from 'expo-haptics';
 import { Card, CardContent, Badge, Button, Loading } from '@/components/ui';
 import { Segment } from '@/components/ui/Tabs';
+import { AI_REQUEST_TIMEOUT_MS } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
@@ -211,7 +212,7 @@ export default function AIScreen() {
             },
             // AI agent + Cloud Run cold start routinely exceeds the 15s default;
             // no auto-retry (it would re-charge quota and hit the concurrency cap).
-            { timeout: 60000, retries: 0 }
+            { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0 }
           );
           const responseText =
             result.message || result.response?.message || t('ai.chat.noResponse');
@@ -287,7 +288,7 @@ export default function AIScreen() {
               }>(
                 '/ai-agent/chat',
                 { message: text, conversationId: null, stream: false },
-                { timeout: 60000, retries: 0, signal: controller.signal }
+                { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0, signal: controller.signal }
               );
               updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
             }

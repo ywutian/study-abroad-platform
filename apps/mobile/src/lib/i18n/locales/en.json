@@ -1037,6 +1037,7 @@
   },
   "applicationAnalysis": {
     "title": "Application Analysis",
+    "unknowns": "Unknowns",
     "subtitle": "School-aware strategy built from your profile, predictions, and historical evidence.",
     "loading": {
       "description": "Building the latest school-aware application analysis."

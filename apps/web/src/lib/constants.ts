@@ -5,11 +5,16 @@
  *   (a) used in 2+ files, OR
  *   (b) meaningful AI / business config the team may tune.
  */
+import { AI_REQUEST_TIMEOUT_MS } from '@study-abroad/shared';
 
 // ── AI Request Timeouts ──────────────────────────────────────
 export const AI_TIMEOUTS = {
-  /** Long-running AI requests (essay review, prediction, recommendation, resume AI review) */
-  AI_REQUEST: 120_000,
+  /**
+   * Long-running AI requests (essay review, prediction, recommendation, resume
+   * AI review, application analysis). Sourced from the shared SSOT so the client
+   * timeout can never drift below the server's AI budget (FE/BE drift class).
+   */
+  AI_REQUEST: AI_REQUEST_TIMEOUT_MS,
   /** SSE stream chunk idle timeout */
   SSE_CHUNK: 60_000,
   /** Default API request timeout */

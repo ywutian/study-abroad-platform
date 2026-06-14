@@ -268,8 +268,8 @@ export default function ProfileAnalysisScreen() {
       </Section>
 
       {analysis.unknowns.length ? (
-        <Section title="Unknowns">
-          <ListBlock title="Unknowns" items={analysis.unknowns} />
+        <Section title={t('applicationAnalysis.unknowns')}>
+          <ListBlock title={t('applicationAnalysis.unknowns')} items={analysis.unknowns} />
         </Section>
       ) : null}
     </ScrollView>

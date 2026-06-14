@@ -1037,6 +1037,7 @@
   },
   "applicationAnalysis": {
     "title": "申请分析",
+    "unknowns": "待确认项",
     "subtitle": "基于档案、预测与历史证据生成的学校级申请策略。",
     "loading": {
       "description": "正在生成最新的学校级申请分析。"

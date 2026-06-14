@@ -587,6 +587,40 @@ export function buildFallbackActionPlan(
   };
 }
 
+/**
+ * Map an internal unknown code (e.g. `testingPolicy`) to a human-readable,
+ * locale-aware label before it reaches a user-facing string. Without this the
+ * UI shows raw field-name jargon like "Still unresolved: testingPolicy".
+ * Falls back to a de-camelCased form so a future code never leaks raw.
+ */
+export function humanizeUnknownLabel(code: string, locale: string): string {
+  const isZh = locale === 'zh';
+  const labels: Record<string, { en: string; zh: string }> = {
+    testingPolicy: { en: 'standardized-test policy', zh: '标化考试政策' },
+    intlAidPolicy: {
+      en: 'international financial-aid policy',
+      zh: '国际生资助政策',
+    },
+    roundContext: { en: 'application round', zh: '申请轮次' },
+    // Emitted by the degraded / insufficient-profile serve paths
+    // (buildInsufficientResponse) — first-party codes, must stay mapped so a
+    // zh user never sees a mixed-language "仍有未确认项：prediction unavailable".
+    predictionUnavailable: { en: 'admission prediction', zh: '录取概率预测' },
+    insufficientProfileData: {
+      en: 'core profile information',
+      zh: '核心档案信息',
+    },
+  };
+  const known = labels[code];
+  if (known) return isZh ? known.zh : known.en;
+  // Fallback: split camelCase / snake_case into spaced words.
+  return code
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .toLowerCase()
+    .trim();
+}
+
 export function buildApplicantFacingSummary(input: {
   locale: string;
   status: ApplicationAnalysisStatus;
@@ -618,9 +652,10 @@ export function buildApplicantFacingSummary(input: {
   const topRisks = dedupeStrings([
     ...input.portfolioSummary.riskBoundaries,
     ...schoolCards.flatMap((school) => school.assessment.hardStopRisks),
-    ...input.unknowns.map((unknown) =>
-      isZh ? `仍有未确认项：${unknown}` : `Still unresolved: ${unknown}`,
-    ),
+    ...input.unknowns.map((unknown) => {
+      const label = humanizeUnknownLabel(unknown, input.locale);
+      return isZh ? `仍有未确认项：${label}` : `Still unresolved: ${label}`;
+    }),
   ]).slice(0, 5);
   const nextActions = dedupeStrings([
     ...input.actionPlan.now,
@@ -1252,13 +1287,16 @@ function buildEvidenceSummary(
     ...schools.flatMap((school) => school.policyCard.unknowns),
   ])
     .slice(0, 2)
-    .map((unknown) => ({
-      type: 'UNKNOWN' as const,
-      label: isZh ? '待确认项' : 'Unknown',
-      detail: isZh
-        ? `仍需人工确认：${unknown}`
-        : `Still requires confirmation: ${unknown}`,
-    }));
+    .map((unknown) => {
+      const readable = humanizeUnknownLabel(unknown, locale);
+      return {
+        type: 'UNKNOWN' as const,
+        label: isZh ? '待确认项' : 'Unknown',
+        detail: isZh
+          ? `仍需人工确认：${readable}`
+          : `Still requires confirmation: ${readable}`,
+      };
+    });
 
   return [
     ...predictionFacts,

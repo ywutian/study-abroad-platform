@@ -131,6 +131,21 @@ describe('TimeoutMiddleware', () => {
     expect(res.status).toHaveBeenCalledWith(408);
   });
 
+  // Regression: the application-analysis endpoint fans out N sequential
+  // LLM calls (one per target school + portfolio synthesis) and routinely
+  // exceeds the 30s default. It must inherit the 120s AI timeout even though
+  // its path lives under /profiles/, not /ai/. See #393/#395 verify run.
+  it('should use AI timeout for /profiles/me/ai-analysis', () => {
+    const { req, res, next } = createMocks('/api/v1/profiles/me/ai-analysis');
+    middleware.use(req, res, next);
+
+    jest.advanceTimersByTime(30_000);
+    expect(res.status).not.toHaveBeenCalled(); // would have 408'd on the default
+
+    jest.advanceTimersByTime(90_000); // total 120s
+    expect(res.status).toHaveBeenCalledWith(408);
+  });
+
   it('should use AI timeout for resume AI review endpoints containing /ai/', () => {
     const { req, res, next } = createMocks(
       '/api/v1/resumes/abc123/ai/review',
@@ -144,6 +159,67 @@ describe('TimeoutMiddleware', () => {
     jest.advanceTimersByTime(90_000); // total 120s
     expect(res.status).toHaveBeenCalledWith(408);
   });
+
+  // ---------------------------------------------------------------------
+  // SSOT coverage: EVERY @ThrottleAI route that makes a synchronous LLM call
+  // on the request path must inherit the 120s AI budget. The matcher (middleware)
+  // can't read @ThrottleAI metadata at runtime, so this table is the guardrail —
+  // it fails if a path segment is dropped from AI_ENDPOINT_URL_SEGMENTS. When you
+  // add an LLM endpoint, add a row here and the segment to the SSOT array.
+  // These are the routes the #393/#395 sibling-sweep adversarially verified.
+  // ---------------------------------------------------------------------
+  const AI_ROUTES: Array<[string, string]> = [
+    ['/api/v1/profiles/me/ai-analysis', 'GET'],
+    ['/api/v1/profiles/me/ai-analysis/feedback', 'POST'],
+    ['/api/v1/essay-ai/polish', 'POST'],
+    ['/api/v1/essay-ai/review', 'POST'],
+    ['/api/v1/essay-ai/gallery/abc/analyze', 'POST'],
+    ['/api/v1/essay-debate/turn', 'POST'],
+    ['/api/v1/profiles/me/activities/ai-sort', 'POST'],
+    ['/api/v1/profiles/me/activities/abc/refine', 'POST'],
+    [
+      '/api/v1/profiles/me/activities/abc/generate-common-app-description',
+      'POST',
+    ],
+    ['/api/v1/halls/ranking-analysis', 'POST'],
+    ['/api/v1/ai-agent/chat', 'POST'],
+    ['/api/v1/resumes/abc/ai/review', 'POST'],
+    ['/api/v1/predictions', 'POST'],
+    ['/api/v1/recommendations', 'POST'],
+  ];
+
+  it.each(AI_ROUTES)('grants the 120s AI budget to %s (%s)', (path, method) => {
+    const { req, res, next } = createMocks(path, method);
+    middleware.use(req, res, next);
+
+    jest.advanceTimersByTime(30_000);
+    expect(res.status).not.toHaveBeenCalled(); // would 408 on the 30s default
+
+    jest.advanceTimersByTime(90_000); // total 120s
+    expect(res.status).toHaveBeenCalledWith(408);
+  });
+
+  // Negative cases: non-LLM routes (even @ThrottleAI rate-limited ones with no
+  // LLM call, and the fast sibling of an AI route) must keep the 30s default so
+  // the matcher doesn't silently over-broaden into a blanket 120s.
+  const NON_AI_ROUTES: Array<[string, string]> = [
+    ['/api/v1/halls/ranking', 'POST'], // deterministic batch ranking, not ranking-analysis
+    ['/api/v1/assessments/abc/submit', 'POST'], // @ThrottleAI rate-limit only, no LLM
+    ['/api/v1/school-lists', 'POST'], // @ThrottleAI rate-limit only, no LLM
+    ['/api/v1/profiles/me', 'PUT'],
+    ['/api/v1/schools', 'GET'],
+  ];
+
+  it.each(NON_AI_ROUTES)(
+    'keeps the 30s default for non-LLM route %s (%s)',
+    (path, method) => {
+      const { req, res, next } = createMocks(path, method);
+      middleware.use(req, res, next);
+
+      jest.advanceTimersByTime(30_000);
+      expect(res.status).toHaveBeenCalledWith(408); // 408s at the 30s default
+    },
+  );
 
   // -----------------------------------------------------------------------
   // Auth endpoint timeout (60s)
