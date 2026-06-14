@@ -3,9 +3,9 @@
 # ============================================
 FROM node:20-alpine AS builder
 
-# Install pnpm and openssl
+# Install pnpm and openssl (upgrade the base libs to stay off the Trivy HIGH CVE list)
 RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
-RUN apk add --no-cache openssl
+RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
 
 WORKDIR /app
 
@@ -105,8 +105,11 @@ RUN cp -r /app/packages/shared/dist /prod/node_modules/@study-abroad/shared/dist
 # ============================================
 FROM node:20-alpine AS runner
 
-# Install openssl for Prisma
-RUN apk add --no-cache openssl
+# Install openssl for Prisma — `--upgrade` bumps the base image's already-installed
+# libcrypto3/libssl3/openssl past Trivy HIGH CVEs (e.g. CVE-2026-45447, fixed 3.5.7-r0).
+# A plain `apk add openssl` leaves the vulnerable base packages in place; this is the
+# image that ships + gets scanned, so it must carry the patched libs.
+RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
