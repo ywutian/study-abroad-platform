@@ -76,7 +76,17 @@ export class PredictionTransformerService {
       toRecord(toRecord(school.metadata).provenance)[field],
     );
     if (!provenance) {
-      return { value: undefined };
+      // Absent provenance metadata is NOT a quality signal. The vast majority of
+      // catalog schools carry no per-field provenance entry (the same gap the
+      // `testingPolicy` exemption above documents) — on prod, 227/242 rated
+      // schools have a real `acceptanceRate` with no `provenance.acceptanceRate`.
+      // Nulling the value here silently dropped the counselor's PRIMARY anchor,
+      // collapsing every non-CDS school to tier 4 ("数据不足"). The gate/local DB
+      // never caught it because `seed.ts` seeds provenance that the prod
+      // closure-overlay pipeline does not. Use the value (un-weighted); the
+      // explicit heuristic/terminal/stale/low-tier checks below still reject data
+      // whose provenance MARKS it untrustworthy.
+      return { value: transform ? transform(value) : (value as unknown as R) };
     }
 
     const weight = TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];
