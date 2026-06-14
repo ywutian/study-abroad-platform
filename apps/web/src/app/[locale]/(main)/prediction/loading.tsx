@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PredictionLoading() {
   return (
-    <PageContainer variant="workbench">
+    <PageContainer variant="workbench" className="lg:h-auto lg:overflow-visible">
       {/* Header + snapshot + tabs */}
       <div className="shrink-0 space-y-3">
         <div className="space-y-2">
@@ -15,7 +15,7 @@ export default function PredictionLoading() {
       </div>
 
       {/* Three-column workbench — mirrors the real layout so nothing reflows on resolve */}
-      <div className="mt-4 grid min-w-0 gap-4 lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_minmax(360px,460px)]">
+      <div className="mt-4 grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_minmax(360px,460px)]">
         {/* COL 1 — school selector */}
         <div className="min-w-0">
           <div className="space-y-4 rounded-[var(--theme-radius-card)] border bg-card p-4">
