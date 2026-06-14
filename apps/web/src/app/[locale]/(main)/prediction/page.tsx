@@ -71,6 +71,18 @@ interface SchoolListItemApi {
 // first visible row.
 const TIER_RANK: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
 
+// The page scrolls with the normal browser scrollbar (COL2 drives its height).
+// COL1 (selector) and COL3 (detail) are sticky side panels — they ride along
+// instead of getting their own scroll boxes. A panel only grows an (unobtrusive,
+// thin) internal scrollbar in the rare case its content exceeds the viewport,
+// e.g. one very tall school detail. This is what replaced the viewport-locked
+// "three internal scrollbars" workbench feel. Scrollbar utility classes are
+// applied unprefixed (inert without overflow) since they're custom, not Tailwind.
+const STICKY_PANEL =
+  'scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent ' +
+  'lg:sticky lg:self-start lg:top-[var(--app-header-h,6.5rem)] ' +
+  'lg:max-h-[calc(100dvh-var(--app-header-h,6.5rem))] lg:overflow-y-auto';
+
 export default function PredictionPage() {
   const t = useTranslations();
   const searchParams = useSearchParams();
@@ -453,7 +465,7 @@ export default function PredictionPage() {
 
   return (
     <AIErrorBoundary feature="prediction">
-      <PageContainer variant="workbench">
+      <PageContainer variant="workbench" className="lg:h-auto lg:overflow-visible">
         <div className="shrink-0">
           <PredictionHeader dataCompleteness={responseMetadata.dataCompleteness} />
           <ProfileSnapshotBar
@@ -490,40 +502,38 @@ export default function PredictionPage() {
         </div>
 
         {activeTab === 'history' ? (
-          <div className="min-w-0 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+          <div className="min-w-0">
             <PredictionHistoryTab
               onRefreshSchool={handleRefreshSchool}
               refreshingSchoolId={refreshingSchoolId}
             />
           </div>
         ) : activeTab === 'evidence' ? (
-          <div className="min-w-0 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+          <div className="min-w-0">
             <PredictionEvidencePanel />
           </div>
         ) : (
           <>
-            <div className="grid min-w-0 gap-4 lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_minmax(360px,460px)]">
-              {/* COL 1 — school selector */}
-              <div className="min-w-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden">
-                <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
-                  <SchoolSelectorCard
-                    selectedSchools={selectedSchools}
-                    onAdd={handleAddSchool}
-                    onRemove={handleRemoveSchool}
-                    onPredict={handlePredict}
-                    isPredicting={predictMutation.isPending}
-                    profileBlocked={profileBlocksPrediction}
-                    predictionTiers={predictionTierBySchoolId}
-                    hasPredictions={formalPredictedCount > 0}
-                    compact
-                    className="mb-0"
-                  />
-                </div>
+            <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_minmax(360px,460px)]">
+              {/* COL 1 — school selector (sticky side panel) */}
+              <div className={`min-w-0 ${STICKY_PANEL} lg:pr-1`}>
+                <SchoolSelectorCard
+                  selectedSchools={selectedSchools}
+                  onAdd={handleAddSchool}
+                  onRemove={handleRemoveSchool}
+                  onPredict={handlePredict}
+                  isPredicting={predictMutation.isPending}
+                  profileBlocked={profileBlocksPrediction}
+                  predictionTiers={predictionTierBySchoolId}
+                  hasPredictions={formalPredictedCount > 0}
+                  compact
+                  className="mb-0"
+                />
               </div>
 
-              {/* COL 2 — scan surface */}
-              <div className="min-w-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden">
-                <div className="min-w-0 space-y-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
+              {/* COL 2 — scan surface (natural flow — drives the page height) */}
+              <div className="min-w-0">
+                <div className="min-w-0 space-y-4">
                   {/* Data completeness checklist for sparse profiles.
                   When the profile is below the prediction-eligibility bar the
                   card switches to a "blocked" variant that lists the exact
@@ -647,22 +657,20 @@ export default function PredictionPage() {
                 </div>
               </div>
 
-              {/* COL 3 — detail / analysis surface (desktop) */}
-              <div className="hidden min-w-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden">
-                <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pl-1">
-                  {isDesktop && selectedResult ? (
-                    <PredictionDetailPane
-                      result={selectedResult}
-                      onResultReported={handleResultReported}
-                      onRefresh={handleRefreshSchool}
-                      isRefreshing={refreshingSchoolId === selectedResult.schoolId}
-                      isInternational={isInternational}
-                      dataCompleteness={responseMetadata.dataCompleteness}
-                    />
-                  ) : (
-                    <DetailEmptyPrompt hasResults={results.length > 0} />
-                  )}
-                </div>
+              {/* COL 3 — detail / analysis surface (desktop, sticky side panel) */}
+              <div className={`hidden min-w-0 lg:block ${STICKY_PANEL} lg:pl-1`}>
+                {isDesktop && selectedResult ? (
+                  <PredictionDetailPane
+                    result={selectedResult}
+                    onResultReported={handleResultReported}
+                    onRefresh={handleRefreshSchool}
+                    isRefreshing={refreshingSchoolId === selectedResult.schoolId}
+                    isInternational={isInternational}
+                    dataCompleteness={responseMetadata.dataCompleteness}
+                  />
+                ) : (
+                  <DetailEmptyPrompt hasResults={results.length > 0} />
+                )}
               </div>
             </div>
 
