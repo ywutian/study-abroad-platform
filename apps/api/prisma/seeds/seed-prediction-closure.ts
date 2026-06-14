@@ -82,10 +82,23 @@ async function main() {
   let schoolApplied = 0;
   let schoolUnmatched = 0;
   for (const entry of payload.schools) {
-    const school = await prisma.school.findUnique({
+    let school = await prisma.school.findUnique({
       where: { nameNorm: entry.nameNorm },
       select: { id: true, metadata: true },
     });
+    // Fallback: catalog name/normalization drift between the payload's nameNorm
+    // and the row's stored nameNorm (e.g. a school seeded by an older catalog, or
+    // a payload short-name like "Macalester" vs row "Macalester College"). Match
+    // by exact name or an alias entry. This only ADDS matches it would otherwise
+    // skip — it never re-targets an already-nameNorm-matched school — so it can't
+    // mis-apply data. It is the difference between "school exists on prod with a
+    // null acceptanceRate" silently staying 数据不足 vs getting its rate.
+    if (!school) {
+      school = await prisma.school.findFirst({
+        where: { OR: [{ name: entry.name }, { aliases: { has: entry.name } }] },
+        select: { id: true, metadata: true },
+      });
+    }
     if (!school) {
       schoolUnmatched++;
       console.warn(`  UNMATCHED school: ${entry.name} (${entry.nameNorm})`);

@@ -144,3 +144,32 @@ if [ "${GALLERY_COUNT}" -lt 50 ] 2>/dev/null; then
   exit 42
 fi
 echo "✓ Gallery count OK (>= 50)."
+
+# ----------------------------------------------------------------------------
+# Sanity check: School.acceptanceRate coverage. The counselor prediction engine
+# returns insufficient_data ("数据不足") for any school without a CDS band OR a
+# non-null acceptanceRate. If this count collapses, the closure overlay (step 1)
+# didn't populate the catalog's rates and the prediction page shows 数据不足 for
+# almost every school. WARNING-only for now (does not block an otherwise-healthy
+# deploy); flip to a hard exit once the catalog-rate seeding is guaranteed.
+# ----------------------------------------------------------------------------
+echo "=== Sanity check: schools with acceptanceRate ==="
+RATE_COUNT=$(node -e "
+const {PrismaClient}=require('@prisma/client');
+const p=new PrismaClient();
+(async()=>{
+  const total = await p.school.count();
+  const rated = await p.school.count({where:{acceptanceRate:{not:null}}});
+  console.log(rated + '/' + total);
+  await p.\$disconnect();
+})().catch(e=>{console.error('count failed:',e.message);process.exit(0)});
+" 2>&1 | tail -n1)
+echo "Schools with acceptanceRate: ${RATE_COUNT}"
+RATED_ONLY=$(echo "${RATE_COUNT}" | cut -d/ -f1)
+if [ "${RATED_ONLY}" -lt 150 ] 2>/dev/null; then
+  echo "WARNING: only ${RATE_COUNT} schools have acceptanceRate (expected >= 150)."
+  echo "         The prediction page will show 数据不足 for most schools — the closure"
+  echo "         overlay did not populate the catalog's rates on this DB."
+else
+  echo "✓ acceptanceRate coverage OK (${RATE_COUNT})."
+fi
