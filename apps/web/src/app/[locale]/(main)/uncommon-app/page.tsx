@@ -44,6 +44,7 @@ import { AI_TIMEOUTS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
+import { ProfileAIAnalysis } from '@/components/features/profile/ProfileAIAnalysis';
 import type { TimelineResponse } from '@/types/timeline';
 
 import type {
@@ -267,6 +268,15 @@ export default function UncommonAppPage() {
                 isGeneratingRecommendations={isGeneratingRecommendations}
                 onAction={handleAction}
               />
+
+              {analysis ? (
+                <ProfileAIAnalysis
+                  analysis={analysis}
+                  autoFetch={false}
+                  isFetching={isAnalyzing}
+                  onRefresh={() => profileAnalysisMutation.mutate()}
+                />
+              ) : null}
             </div>
 
             <ApplicationHealthPanel

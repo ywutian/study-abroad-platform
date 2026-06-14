@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import {
   API_ROUTES,
+  getApplicationAnalysisRenderFixture,
   profileRoutes,
   recommendationRoutes,
   schoolListRoutes,
@@ -62,6 +63,16 @@ vi.mock('@/lib/api', () => ({
     post: vi.fn(),
     delete: vi.fn(),
   },
+  // ProfileAIAnalysis (now mounted in the workspace) reads STALE_TIME.MODERATE
+  // when constructing its useQuery options object — evaluated even with
+  // enabled:false, so the mock must expose it or the component throws at render.
+  STALE_TIME: {
+    IMMUTABLE: Infinity,
+    STATIC: 1_800_000,
+    MODERATE: 300_000,
+    DYNAMIC: 60_000,
+    REALTIME: 0,
+  },
 }));
 
 vi.mock('sonner', () => ({
@@ -114,12 +125,31 @@ describe('UncommonAppPage', () => {
   let mockSchoolList: unknown[];
   let mockProfile: Record<string, unknown>;
   let mockTimelines: unknown[];
+  let mockAnalysisResponse: unknown;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockSchoolList = [];
     mockProfile = defaultProfile;
     mockTimelines = [];
+    mockAnalysisResponse = {
+      overallVerdict: 'canonical-analysis',
+      overallScore: 80,
+      tier: 'top30',
+      sections: {
+        academic: { status: 'green', score: 8, feedback: 'Academic' },
+        testScores: { status: 'yellow', score: 6, feedback: 'Testing' },
+        activities: { status: 'green', score: 8, feedback: 'Activities' },
+        awards: { status: 'yellow', score: 5, feedback: 'Awards' },
+      },
+      suggestions: {
+        majors: [],
+        competitions: [],
+        activities: [],
+        summerPrograms: [],
+        timeline: [],
+      },
+    };
 
     vi.mocked(apiClient.get).mockImplementation((path: string) => {
       if (path === schoolListRoutes.list()) {
@@ -132,24 +162,7 @@ describe('UncommonAppPage', () => {
         return Promise.resolve(mockTimelines);
       }
       if (path === profileRoutes.aiAnalysis()) {
-        return Promise.resolve({
-          overallVerdict: 'canonical-analysis',
-          overallScore: 80,
-          tier: 'top30',
-          sections: {
-            academic: { status: 'green', score: 8, feedback: 'Academic' },
-            testScores: { status: 'yellow', score: 6, feedback: 'Testing' },
-            activities: { status: 'green', score: 8, feedback: 'Activities' },
-            awards: { status: 'yellow', score: 5, feedback: 'Awards' },
-          },
-          suggestions: {
-            majors: [],
-            competitions: [],
-            activities: [],
-            summerPrograms: [],
-            timeline: [],
-          },
-        });
+        return Promise.resolve(mockAnalysisResponse);
       }
       if (path === recommendationRoutes.preflight()) {
         return Promise.resolve({
@@ -228,6 +241,31 @@ describe('UncommonAppPage', () => {
     await waitFor(() => {
       expect(screen.getByText('canonical-analysis')).toBeInTheDocument();
     });
+  });
+
+  // Regression guard: the workbench redesign once mounted only the portfolio
+  // summary, leaving the per-school analysis (analysis.schools[]) fetched but
+  // rendered nowhere — "analysis complete, but I can't see the analysis".
+  it('renders the full per-school analysis detail once advice is generated', async () => {
+    const fixture = getApplicationAnalysisRenderFixture('001-uc-berkeley-blind-en');
+    expect(fixture).toBeDefined();
+    mockAnalysisResponse = fixture!.analysis;
+
+    renderPage();
+
+    // Detail view is absent until the user explicitly generates advice.
+    expect(screen.queryByTestId('analysis-root')).not.toBeInTheDocument();
+
+    const adviceButtons = screen.getAllByRole('button', {
+      name: /workspace\.actions\.generate-advice/,
+    });
+    fireEvent.click(adviceButtons[adviceButtons.length - 1]);
+
+    // The structured per-school card (why-hard / strengths / gaps / next actions)
+    // must now be in the document — not just the portfolio verdict.
+    const schoolCards = await screen.findAllByTestId('analysis-school-card');
+    expect(schoolCards.length).toBeGreaterThan(0);
+    expect(screen.getByTestId('analysis-root')).toBeInTheDocument();
   });
 
   it('keeps candidate-school generation as a manual secondary action', async () => {
