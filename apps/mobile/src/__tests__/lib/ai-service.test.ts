@@ -5,7 +5,7 @@ jest.mock('@/lib/api/client', () => ({
   },
 }));
 
-import { API_ROUTES, AgentType } from '@study-abroad/shared';
+import { AI_REQUEST_TIMEOUT_MS, API_ROUTES, AgentType } from '@study-abroad/shared';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { aiService } from '@/lib/api/services/ai';
@@ -57,7 +57,7 @@ describe('aiService.chat', () => {
           source: 'prediction_page',
         }),
       }),
-      { timeout: 60000 }
+      { timeout: AI_REQUEST_TIMEOUT_MS }
     );
   });
 
@@ -67,7 +67,7 @@ describe('aiService.chat', () => {
     await aiService.profileAnalysis();
 
     expect(apiClient.get).toHaveBeenCalledWith(profileRoutes.aiAnalysis(), {
-      timeout: 60000,
+      timeout: AI_REQUEST_TIMEOUT_MS,
     });
   });
 });

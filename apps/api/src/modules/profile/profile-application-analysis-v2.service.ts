@@ -33,6 +33,7 @@ import {
   buildPortfolioSummary,
   buildProfileSummary,
   hasMinimumProfileEvidence,
+  humanizeUnknownLabel,
   LoadedPrediction,
   LoadedProfile,
   LoadedSchoolListItem,
@@ -205,9 +206,28 @@ export class ProfileApplicationAnalysisV2Service {
       unknowns: response.unknowns,
     });
 
+    // Humanize the raw internal unknown codes (e.g. `testingPolicy`) at this single
+    // serve boundary — it covers the fresh / cached / degraded paths — so the wire
+    // contract carries readable, localized labels for EVERY consumer. Web and mobile
+    // render `unknowns` and `schools[]/schoolCards[].unknowns` verbatim, so without
+    // this the camelCase codes leak straight to users. The persisted snapshot keeps
+    // raw codes; the prose builders (topRisks / evidenceSummary) humanize separately
+    // from `policyCard.unknowns`, so this never double-processes them.
+    const humanizedSchools = response.schools.map((school) => ({
+      ...school,
+      unknowns: school.unknowns.map((code) =>
+        humanizeUnknownLabel(code, locale),
+      ),
+    }));
+
     return {
       ...response,
       ...summary,
+      unknowns: response.unknowns.map((code) =>
+        humanizeUnknownLabel(code, locale),
+      ),
+      schools: humanizedSchools,
+      schoolCards: humanizedSchools,
     };
   }
 

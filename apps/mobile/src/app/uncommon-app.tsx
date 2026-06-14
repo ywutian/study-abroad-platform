@@ -21,6 +21,7 @@ import Markdown from 'react-native-markdown-display';
 import { AnimatedCard, Badge, Loading, ProgressBar } from '@/components/ui';
 import { CardContent } from '@/components/ui/Card';
 import {
+  AI_REQUEST_TIMEOUT_MS,
   API_ROUTES,
   profileRoutes,
   recommendationRoutes,
@@ -205,7 +206,9 @@ export default function UncommonAppScreen() {
 
   const analysisMutation = useMutation({
     mutationFn: () =>
-      apiClient.get<AIAnalysisResult>(profileRoutes.aiAnalysis(), { timeout: 60000 }),
+      apiClient.get<AIAnalysisResult>(profileRoutes.aiAnalysis(), {
+        timeout: AI_REQUEST_TIMEOUT_MS,
+      }),
     onSuccess: (data) => {
       setGeneratedAnalysis(data);
       queryClient.setQueryData(['profile-ai-analysis'], data);
@@ -225,7 +228,7 @@ export default function UncommonAppScreen() {
           additionalPreferences:
             'Build a balanced application portfolio with reach, match, and safety options.',
         },
-        { timeout: 60000 }
+        { timeout: AI_REQUEST_TIMEOUT_MS }
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk.recommendation.history() });

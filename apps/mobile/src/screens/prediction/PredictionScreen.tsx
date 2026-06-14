@@ -45,6 +45,7 @@ import {
   fontFamily,
 } from '@/utils/theme';
 import {
+  AI_REQUEST_TIMEOUT_MS,
   API_ROUTES,
   type AIAnalysisResult,
   type PredictionDashboardData,
@@ -246,7 +247,11 @@ export default function PredictionScreen() {
   // 运行预测
   const predictMutation = useMutation({
     mutationFn: (schoolIds: string[]) =>
-      apiClient.post(API_ROUTES.PREDICTIONS, { schoolIds }, { timeout: 60000, retries: 0 }),
+      apiClient.post(
+        API_ROUTES.PREDICTIONS,
+        { schoolIds },
+        { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0 }
+      ),
     onSuccess: () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       refetch();

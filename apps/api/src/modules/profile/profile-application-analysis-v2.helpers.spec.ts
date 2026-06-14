@@ -9,6 +9,7 @@ import type {
 import {
   buildPolicyCard,
   buildPortfolioSummary,
+  humanizeUnknownLabel,
 } from './profile-application-analysis-v2.helpers';
 
 function makeSchoolListItem(
@@ -192,6 +193,54 @@ describe('buildPolicyCard', () => {
     expect(card.sources).toEqual([]);
     expect(card.evidenceIds).toEqual([]);
     expect(card.policySourceQuality).toBe('UNKNOWN');
+  });
+});
+
+describe('humanizeUnknownLabel — no raw field-name jargon reaches users', () => {
+  it('maps known unknown codes to readable English labels', () => {
+    expect(humanizeUnknownLabel('testingPolicy', 'en')).toBe(
+      'standardized-test policy',
+    );
+    expect(humanizeUnknownLabel('intlAidPolicy', 'en')).toBe(
+      'international financial-aid policy',
+    );
+    expect(humanizeUnknownLabel('roundContext', 'en')).toBe(
+      'application round',
+    );
+  });
+
+  it('maps known unknown codes to readable Chinese labels', () => {
+    expect(humanizeUnknownLabel('testingPolicy', 'zh')).toBe('标化考试政策');
+    expect(humanizeUnknownLabel('intlAidPolicy', 'zh')).toBe('国际生资助政策');
+    expect(humanizeUnknownLabel('roundContext', 'zh')).toBe('申请轮次');
+  });
+
+  // The degraded / insufficient-profile serve path emits these first-party codes;
+  // they must be mapped (not fall to the English-only de-camelCase fallback) so a
+  // zh user never sees a mixed-language "仍有未确认项：prediction unavailable".
+  it('maps the degraded-path codes in both locales (no mixed-language leak)', () => {
+    expect(humanizeUnknownLabel('predictionUnavailable', 'en')).toBe(
+      'admission prediction',
+    );
+    expect(humanizeUnknownLabel('predictionUnavailable', 'zh')).toBe(
+      '录取概率预测',
+    );
+    expect(humanizeUnknownLabel('insufficientProfileData', 'en')).toBe(
+      'core profile information',
+    );
+    expect(humanizeUnknownLabel('insufficientProfileData', 'zh')).toBe(
+      '核心档案信息',
+    );
+    // Neither code should ever surface raw camelCase to a user.
+    expect(humanizeUnknownLabel('predictionUnavailable', 'zh')).not.toMatch(
+      /[a-zA-Z]/,
+    );
+  });
+
+  it('never leaks raw camelCase for an unmapped code (de-camelCased fallback)', () => {
+    const result = humanizeUnknownLabel('someFutureField', 'en');
+    expect(result).toBe('some future field');
+    expect(result).not.toContain('someFutureField');
   });
 });
 

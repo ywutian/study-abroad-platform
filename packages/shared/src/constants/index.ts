@@ -236,6 +236,28 @@ export const MAX_CASE_METADATA_TAGS = 50;
 // AI school-preference value lists (size / type) — small fixed-vocab preference sets
 export const MAX_SCHOOL_PREFERENCE_VALUES = 10;
 
+/**
+ * Single source of truth for the AI request timeout budget (ms), shared by:
+ *  - the API `TimeoutMiddleware` (server-side 408 budget for AI endpoints — its
+ *    env override `AI_REQUEST_TIMEOUT_MS` falls back to this value),
+ *  - the web `apiClient` (`AI_TIMEOUTS.AI_REQUEST`),
+ *  - the mobile `apiClient` per-request `timeout` on every AI call.
+ *
+ * Keeping client and server on one constant prevents the FE/BE drift class where
+ * a client aborts BEFORE the server finishes (mobile was hardcoded to 60_000 —
+ * half this — so a multi-school application analysis the server completes within
+ * budget was cut off client-side; see the #393/#395 timeout review). The client
+ * timeout must be >= the server budget so the server's 408 is authoritative.
+ *
+ * Sized for the heaviest served AI path — application analysis fans out up to
+ * MAX_FOCUS_SCHOOLS (5) sequential per-school LLM calls + a portfolio synthesis
+ * call (~33s observed for 3 schools, ~50–55s worst case for 5).
+ */
+export const AI_REQUEST_TIMEOUT_MS = 120_000;
+
+/** Fast AI-adjacent writes (e.g. analysis feedback POST) — a plain DB write, not an LLM call. */
+export const AI_FEEDBACK_TIMEOUT_MS = 15_000;
+
 // 订阅计划
 export * from './subscription';
 

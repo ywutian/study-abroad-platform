@@ -35,7 +35,7 @@ import {
   borderRadius,
   fontFamily,
 } from '@/utils/theme';
-import { essayAiRoutes, profileRoutes } from '@study-abroad/shared';
+import { AI_REQUEST_TIMEOUT_MS, essayAiRoutes, profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 
@@ -180,7 +180,11 @@ export default function EssayEditorScreen() {
   // AI mutations
   const reviewMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIReviewResult>(essayAiRoutes.review(), { essayId: id }, { timeout: 60000 }),
+      apiClient.post<AIReviewResult>(
+        essayAiRoutes.review(),
+        { essayId: id },
+        { timeout: AI_REQUEST_TIMEOUT_MS }
+      ),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('review');
@@ -190,7 +194,11 @@ export default function EssayEditorScreen() {
 
   const polishMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AIPolishResult>(essayAiRoutes.polish(), { essayId: id }, { timeout: 60000 }),
+      apiClient.post<AIPolishResult>(
+        essayAiRoutes.polish(),
+        { essayId: id },
+        { timeout: AI_REQUEST_TIMEOUT_MS }
+      ),
     onSuccess: (data) => {
       setAiResult(data);
       setActiveTool('polish');
@@ -203,7 +211,7 @@ export default function EssayEditorScreen() {
       apiClient.post<AIBrainstormResult>(
         essayAiRoutes.brainstorm(),
         { topic: title || content.slice(0, 200) },
-        { timeout: 60000 }
+        { timeout: AI_REQUEST_TIMEOUT_MS }
       ),
     onSuccess: (data) => {
       setAiResult(data);
@@ -217,7 +225,7 @@ export default function EssayEditorScreen() {
       apiClient.post<AIContinueResult>(
         '/essay-ai/continue-writing',
         { essayId: id, content },
-        { timeout: 60000 }
+        { timeout: AI_REQUEST_TIMEOUT_MS }
       ),
     onSuccess: (data) => {
       setAiResult(data);
@@ -231,7 +239,7 @@ export default function EssayEditorScreen() {
       apiClient.post<AIOpeningResult>(
         '/essay-ai/generate-opening',
         { prompt: title },
-        { timeout: 60000 }
+        { timeout: AI_REQUEST_TIMEOUT_MS }
       ),
     onSuccess: (data) => {
       setAiResult(data);
@@ -245,7 +253,7 @@ export default function EssayEditorScreen() {
       apiClient.post<AIRewriteResult>(
         '/essay-ai/rewrite-paragraph',
         { paragraph: instructions },
-        { timeout: 60000 }
+        { timeout: AI_REQUEST_TIMEOUT_MS }
       ),
     onSuccess: (data) => {
       setAiResult(data);

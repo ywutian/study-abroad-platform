@@ -333,13 +333,18 @@ describe('ProfileAIAnalysis', () => {
       },
       overallVerdict: 'School-level analysis is temporarily unavailable.',
       schools: [],
-      unknowns: ['testingPolicy'],
+      // The backend humanizes raw unknown codes at the serve boundary
+      // (humanizeUnknownLabel), so the wire contract carries readable labels —
+      // the component renders them verbatim. Raw camelCase like `testingPolicy`
+      // must never reach the user.
+      unknowns: ['standardized-test policy'],
     });
 
     expect(
       screen.getByText('School-level analysis is temporarily unavailable.')
     ).toBeInTheDocument();
-    expect(screen.getByText('testingPolicy')).toBeInTheDocument();
+    expect(screen.getByText('standardized-test policy')).toBeInTheDocument();
+    expect(screen.queryByText('testingPolicy')).not.toBeInTheDocument();
   });
 
   it('does not fetch analysis when autoFetch is disabled', () => {
