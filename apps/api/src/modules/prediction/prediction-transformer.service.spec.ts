@@ -154,10 +154,18 @@ describe('PredictionTransformerService', () => {
       expect(input.averagePredictionWeight).toBe(1);
     });
 
-    it('should exclude school anchor values when provenance is missing', () => {
+    it('USES school anchor values when provenance metadata is absent (real catalog data, no audit trail)', () => {
+      // Regression guard: nulling the value here previously dropped acceptanceRate
+      // for 227/242 PROD schools (which carry a real rate but no per-field
+      // provenance entry — the gate/local DB never caught it because seed.ts seeds
+      // provenance the prod closure-overlay pipeline does not). That collapsed the
+      // counselor anchor to tier 4 ("数据不足") for every non-CDS school. Absent
+      // provenance is NOT a quality signal — only provenance that EXPLICITLY marks
+      // data heuristic/terminal/stale/low-tier is rejected (see the tests below).
       const input = service.schoolToInput(schoolWithAcceptanceRate());
 
-      expect(input.acceptanceRate).toBeUndefined();
+      expect(input.acceptanceRate).toBe(4);
+      // No provenance entry → no trust weight recorded (defaults to full at use).
       expect(input.fieldTrustWeights?.acceptanceRate).toBeUndefined();
     });
 
