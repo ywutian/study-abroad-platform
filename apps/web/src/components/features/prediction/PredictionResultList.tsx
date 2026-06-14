@@ -53,7 +53,14 @@ export function PredictionResultList({ results, selectedId, onSelect }: Predicti
       </div>
 
       {grouped.map(({ tier, items }) => (
-        <PredictionResultTierGroup key={tier} tier={tier} count={items.length}>
+        // The "数据不足/unavailable" bucket (often dozens of schools with no public
+        // data) is collapsed by default so it doesn't bury the real results.
+        <PredictionResultTierGroup
+          key={tier}
+          tier={tier}
+          count={items.length}
+          defaultOpen={tier !== 'unavailable'}
+        >
           {items.map((result) => (
             <PredictionResultRow
               key={result.schoolId}
