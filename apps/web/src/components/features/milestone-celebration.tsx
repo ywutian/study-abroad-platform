@@ -118,9 +118,12 @@ export function MilestoneCelebration({
       {show && (
         <motion.div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          // pointerEvents snaps to 'none' the instant this z-[100] overlay starts
+          // closing, so it doesn't keep eating clicks across the whole screen
+          // during the ~200ms exit fade ("button does nothing" after a celebration).
+          initial={{ opacity: 0, pointerEvents: 'none' }}
+          animate={{ opacity: 1, pointerEvents: 'auto' }}
+          exit={{ opacity: 0, pointerEvents: 'none' }}
         >
           {/* 背景遮罩 */}
           <motion.div
