@@ -71,14 +71,15 @@ interface SchoolListItemApi {
 // first visible row.
 const TIER_RANK: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
 
-// The page scrolls with the normal browser scrollbar (COL2 drives its height).
-// COL1 (selector) and COL3 (detail) are sticky side panels — they ride along
-// instead of getting their own scroll boxes. A panel only grows an (unobtrusive,
-// thin) internal scrollbar in the rare case its content exceeds the viewport,
-// e.g. one very tall school detail. This is what replaced the viewport-locked
-// "three internal scrollbars" workbench feel. Scrollbar utility classes are
-// applied unprefixed (inert without overflow) since they're custom, not Tailwind.
-const STICKY_PANEL =
+// The whole page scrolls with the ONE native browser scrollbar. COL1 (the short
+// selector) is the only sticky side panel — it rides along. It is structurally
+// shorter than the viewport (its school list is a bounded card), so its fallback
+// overflow basically never triggers. COL2 (list) and COL3 (detail) are plain
+// document flow: the taller one defines the page height and the browser scrollbar
+// scrolls it — so the tall detail is NEVER trapped in an internal box scrollbar.
+// (Scrollbar utility classes are unprefixed — inert without overflow — since
+// they're custom, not Tailwind responsive variants.)
+const STICKY_SELECTOR =
   'scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent ' +
   'lg:sticky lg:self-start lg:top-[var(--app-header-h,6.5rem)] ' +
   'lg:max-h-[calc(100dvh-var(--app-header-h,6.5rem))] lg:overflow-y-auto';
@@ -138,6 +139,11 @@ export default function PredictionPage() {
   const [refreshingSchoolId, setRefreshingSchoolId] = useState<string | null>(null);
   const [ucExpandedFrom, setUcExpandedFrom] = useState<SchoolSearchItem[] | null>(null);
   const isDesktop = useIsDesktop();
+  // Desktop detail surface — scrolled into view + focused on a USER selection.
+  const detailRef = useRef<HTMLDivElement>(null);
+  const userSelectedRef = useRef(false);
+  const selectedIdRef = useRef<string | null>(null);
+  const [detailAnnouncement, setDetailAnnouncement] = useState('');
 
   // Data fetching
   const { data: dashboardData } = usePredictionDashboard(canFetchProtectedData);
@@ -322,6 +328,12 @@ export default function PredictionPage() {
   ]);
 
   const handleSelectSchool = useCallback((schoolId: string) => {
+    // Arm the scroll/focus gate only on a REAL change. Re-clicking the current
+    // row is a no-op `setSelectedId`, which would otherwise leave the gate armed
+    // to fire later on an unrelated re-render (stale focus-steal).
+    if (schoolId !== selectedIdRef.current) {
+      userSelectedRef.current = true;
+    }
     setSelectedId(schoolId);
   }, []);
 
@@ -340,6 +352,29 @@ export default function PredictionPage() {
     () => results.find((r) => r.schoolId === selectedId) ?? null,
     [results, selectedId]
   );
+
+  // On a USER selection (desktop), bring the now-unpinned detail into view, move
+  // focus into it, and announce it — but only when it isn't already comfortably
+  // visible, so clicking a top row never triggers a pointless jump. Auto-selection
+  // (e.g. the default top pick on load) does NOT scroll or steal focus.
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+    if (!userSelectedRef.current) return;
+    userSelectedRef.current = false;
+    if (!isDesktop || !selectedId) return;
+    const el = detailRef.current;
+    if (!el) return;
+    if (selectedResult?.schoolName) {
+      setDetailAnnouncement(t('prediction.detailAnnounce', { school: selectedResult.schoolName }));
+    }
+    const rect = el.getBoundingClientRect();
+    const offscreen = rect.top < 8 || rect.top > window.innerHeight * 0.5;
+    if (offscreen) {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+    }
+    el.focus({ preventScroll: true });
+  }, [selectedId, isDesktop, selectedResult, t]);
 
   // Keep selection valid. On desktop the detail pane is always visible, so
   // auto-select the top row when nothing valid is selected. On mobile the detail
@@ -501,6 +536,11 @@ export default function PredictionPage() {
           </Tabs>
         </div>
 
+        {/* a11y: announce which school's analysis the detail surface now shows */}
+        <div className="sr-only" role="status" aria-live="polite">
+          {detailAnnouncement}
+        </div>
+
         {activeTab === 'history' ? (
           <div className="min-w-0">
             <PredictionHistoryTab
@@ -515,8 +555,8 @@ export default function PredictionPage() {
         ) : (
           <>
             <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_minmax(360px,460px)]">
-              {/* COL 1 — school selector (sticky side panel) */}
-              <div className={`min-w-0 ${STICKY_PANEL} lg:pr-1`}>
+              {/* COL 1 — school selector (the one sticky side panel) */}
+              <div className={`min-w-0 ${STICKY_SELECTOR} lg:pr-1`}>
                 <SchoolSelectorCard
                   selectedSchools={selectedSchools}
                   onAdd={handleAddSchool}
@@ -657,8 +697,16 @@ export default function PredictionPage() {
                 </div>
               </div>
 
-              {/* COL 3 — detail / analysis surface (desktop, sticky side panel) */}
-              <div className={`hidden min-w-0 lg:block ${STICKY_PANEL} lg:pl-1`}>
+              {/* COL 3 — detail / analysis surface. Flows with the page (NOT
+                  pinned, NO max-h / overflow) so a tall detail is scrolled by the
+                  one browser scrollbar, never an internal box scrollbar. NEVER add
+                  max-h + overflow here — that is the scrollbar users rejected. */}
+              <div
+                ref={detailRef}
+                id="prediction-detail-pane"
+                tabIndex={-1}
+                className="hidden min-w-0 scroll-mt-[var(--app-header-h,6.5rem)] outline-none lg:block lg:pl-1"
+              >
                 {isDesktop && selectedResult ? (
                   <PredictionDetailPane
                     result={selectedResult}

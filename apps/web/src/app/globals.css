@@ -1587,6 +1587,9 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      /* Cancel the global `html { scroll-behavior: smooth }` for vestibular
+         users — any JS scrollIntoView falls back to an instant jump. */
+      scroll-behavior: auto !important;
     }
   }
 
