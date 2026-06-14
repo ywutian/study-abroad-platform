@@ -609,7 +609,7 @@ export class ProfileApplicationAnalysisV2Service {
     // Non-null here (guarded by the `!snapshot.profile` early-return above);
     // captured so the per-school closure keeps the narrowing the old in-scope
     // serial loop relied on (matches the existing `as LoadedProfile` usage).
-    const analysisProfile = snapshot.profile as LoadedProfile;
+    const analysisProfile = snapshot.profile;
 
     // Run the independent per-school analyst steps with bounded concurrency.
     // (Was a serial for-loop: 5 schools × 30s + the 30s portfolio step could sum
