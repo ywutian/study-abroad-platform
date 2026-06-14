@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
+import { getApiLocale } from '@/lib/api/client';
+import { toBcp47 } from '@/lib/i18n/locale-utils';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { env } from '@/lib/env';
 
@@ -42,11 +44,18 @@ export function usePredictionLlmStream() {
       setCached(false);
       setIsStreaming(true);
 
+      // Match apiClient: send the UI locale so the backend's @CurrentLocale()
+      // streams the LLM answer in the right language. Without these headers a
+      // raw fetch falls through to Accept-Language → English on a zh UI.
+      const locale = getApiLocale();
+
       const doRequest = async (authToken: string | null) =>
         fetch(`${STREAM_API_URL}/api/v1${path}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-Locale': locale,
+            'Accept-Language': toBcp47(locale),
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
           credentials: 'include',

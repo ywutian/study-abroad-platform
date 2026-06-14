@@ -28,7 +28,14 @@ const API_I18N = {
   },
 } as const;
 
-function getApiLocale(): SupportedLocale {
+/**
+ * Resolve the locale to send to the API (path locale → stored user locale →
+ * browser language). Exported so raw-`fetch` callers that bypass `apiClient`
+ * (e.g. SSE streams in `usePredictionLlmStream`) can send the SAME `X-Locale`
+ * the backend's `@CurrentLocale()` reads — otherwise they silently fall through
+ * to `Accept-Language` and the LLM answers in the wrong language.
+ */
+export function getApiLocale(): SupportedLocale {
   if (typeof window === 'undefined') return 'zh';
   const pathLocale = window.location.pathname.split('/')[1];
   const userLocale = useAuthStore.getState().user?.locale;
