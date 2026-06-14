@@ -57,6 +57,7 @@ import { apiClient } from '@/lib/api';
 import { type Locale, localeNames } from '@/lib/i18n/config';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
+import { SafeLink } from '@/components/common/safe-link';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 
@@ -659,7 +660,10 @@ export function Header() {
               const active = isActive(item.href);
               const Icon = item.icon;
               return (
-                <Link
+                // SafeLink: if a soft navigation hangs (stuck loading.tsx / stale RSC /
+                // failed prefetch — the "点 tab 没反应" class), it hard-navigates after a
+                // timeout so the tab is never a dead click.
+                <SafeLink
                   key={item.href}
                   href={item.href}
                   className={cn(
@@ -680,7 +684,7 @@ export function Header() {
                   {active && (
                     <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
                   )}
-                </Link>
+                </SafeLink>
               );
             })}
 

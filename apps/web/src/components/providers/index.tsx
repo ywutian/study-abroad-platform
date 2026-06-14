@@ -9,6 +9,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { OfflineIndicator } from '@/components/ui/offline-indicator';
+import { StaleAssetReloader } from '@/components/common/stale-asset-reloader';
 import { TourProvider } from '@/components/features/onboarding/tour-provider';
 import { FeedbackWidget } from '@/components/features/feedback/feedback-widget';
 import { OverflowDetector } from '@/components/dev/overflow-detector';
@@ -61,6 +62,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   <ThemeAppearanceManager />
                   <HeroVisualManager />
                   <AuthInitializer>{children}</AuthInitializer>
+                  {/* Hard-reload a tab whose chunks/RSC went stale after a deploy
+                      so a "dead" navigation recovers instead of silently hanging. */}
+                  <StaleAssetReloader />
                   <Toaster position="top-center" richColors />
                   <OfflineIndicator />
                   <FeedbackWidget />
