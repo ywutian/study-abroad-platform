@@ -60,8 +60,13 @@ interface CommandPaletteProps {
 }
 
 const backdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
+  // Drive pointerEvents off the variant so the full-screen overlay stops
+  // capturing clicks the instant it starts closing — otherwise the inset-0
+  // container lingers (opacity fading) for the ~200ms exit and silently eats
+  // any click on the page beneath it ("button does nothing" right after Esc/Cmd+K).
+  // pointerEvents is a discrete prop: Framer snaps it to the target immediately.
+  hidden: { opacity: 0, pointerEvents: 'none' as const },
+  visible: { opacity: 1, pointerEvents: 'auto' as const },
 };
 
 const panelVariants = {

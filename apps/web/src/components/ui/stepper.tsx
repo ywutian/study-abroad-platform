@@ -406,9 +406,11 @@ export function SuccessAnimation({ show, title, description, onComplete }: Succe
       {show && (
         <motion.div
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          // Snap pointerEvents off during the exit fade so this success overlay
+          // doesn't keep blocking clicks across the screen for ~200ms after it hides.
+          initial={{ opacity: 0, pointerEvents: 'none' }}
+          animate={{ opacity: 1, pointerEvents: 'auto' }}
+          exit={{ opacity: 0, pointerEvents: 'none' }}
           onAnimationComplete={() => {
             setTimeout(() => onComplete?.(), 1500);
           }}
