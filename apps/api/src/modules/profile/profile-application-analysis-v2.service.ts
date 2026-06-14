@@ -53,6 +53,43 @@ const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
+// The per-school analyst LLM steps are independent, so run them with bounded
+// concurrency instead of serially. Serially, MAX_FOCUS_SCHOOLS (5) steps × the
+// per-step timeout + the portfolio step could reach ~180s and blow the 120s
+// TimeoutMiddleware budget → 408 on prod (slow deepseek proxy hits each ceiling).
+// K=4 covers the 5 focus schools in ~one wave while staying gentle on the proxy.
+const SCHOOL_ANALYST_CONCURRENCY = 4;
+// Tighter than the portfolio step (30s): a stuck school gives up to its
+// deterministic floor sooner. deepseek p50 for a 1500-token completion is well
+// under this; only true stalls hit it.
+const SCHOOL_ANALYST_TIMEOUT_MS = 22_000;
+
+/**
+ * Map over `items` running `fn` with at most `limit` in flight at once,
+ * preserving input order in the result. No external dependency; used to bound
+ * concurrent LLM calls (avoid both serial-timeout pileup and unbounded fan-out
+ * at the proxy).
+ */
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let cursor = 0;
+  const worker = async (): Promise<void> => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await fn(items[index]);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, () => worker()),
+  );
+  return results;
+}
+
 interface GetAnalysisOptions {
   debug?: boolean;
   mode?: 'deterministic' | 'live';
@@ -569,13 +606,34 @@ export class ProfileApplicationAnalysisV2Service {
     stepTimingsMs.policy_normalizer = policyStep.latencyMs ?? 0;
 
     const schoolResults: ApplicationAnalysisSchoolResult[] = [];
+    // Non-null here (guarded by the `!snapshot.profile` early-return above);
+    // captured so the per-school closure keeps the narrowing the old in-scope
+    // serial loop relied on (matches the existing `as LoadedProfile` usage).
+    const analysisProfile = snapshot.profile as LoadedProfile;
 
-    for (const policyEntry of policyCards) {
+    // Run the independent per-school analyst steps with bounded concurrency.
+    // (Was a serial for-loop: 5 schools × 30s + the 30s portfolio step could sum
+    // to ~180s and blow the 120s request budget → 408 on prod with the slow
+    // deepseek proxy.) Order-preserving; each step still fails soft to its
+    // deterministic floor on timeout/error.
+    const analyzeSchool = async (
+      policyEntry: (typeof policyCards)[number],
+    ): Promise<{
+      school: ApplicationAnalysisSchoolResult;
+      attempted: number;
+      failed: number;
+      validationErrors: string[];
+      stepId: string;
+      stepKey: string;
+      stepTimingMs: number;
+      promptHashKey: string;
+      promptHash: string;
+    }> => {
       const deterministic = buildDeterministicSchoolResult(
         policyEntry.item,
         predictionMap.get(policyEntry.schoolId),
         snapshot.historyBySchool[policyEntry.schoolId] ?? null,
-        snapshot.profile,
+        analysisProfile,
         policyEntry.policyCard,
         snapshot.locale,
       );
@@ -601,13 +659,13 @@ export class ProfileApplicationAnalysisV2Service {
       const promptHash = hashString(
         `${schoolSystemPrompt}\n${schoolUserPrompt}`,
       );
-      promptHashes[`school:${policyEntry.schoolId}`] = promptHash;
+      const promptHashKey = `school:${policyEntry.schoolId}`;
+      const stepKey = `school_analyst:${policyEntry.schoolId}`;
 
       if (mode === 'deterministic') {
-        schoolResults.push(deterministic);
         const schoolStep = await this.recordStep({
           runId,
-          stepName: `school_analyst:${policyEntry.schoolId}`,
+          stepName: stepKey,
           status: 'SKIPPED',
           normalizedInput: toJson(schoolPromptInput),
           normalizedOutput: toJson(deterministic),
@@ -615,13 +673,19 @@ export class ProfileApplicationAnalysisV2Service {
           promptHash,
           validationErrors: toJson([]),
         });
-        stepIds.push(schoolStep.id);
-        stepTimingsMs[`school_analyst:${policyEntry.schoolId}`] =
-          schoolStep.latencyMs ?? 0;
-        continue;
+        return {
+          school: deterministic,
+          attempted: 0,
+          failed: 0,
+          validationErrors: [],
+          stepId: schoolStep.id,
+          stepKey,
+          stepTimingMs: schoolStep.latencyMs ?? 0,
+          promptHashKey,
+          promptHash,
+        };
       }
 
-      llmCallsAttempted += 1;
       try {
         const llmResponse = await this.llmService.call(
           schoolSystemPrompt,
@@ -640,15 +704,14 @@ export class ProfileApplicationAnalysisV2Service {
             // prompts now request — a truncated JSON would fail extraction and
             // silently fall back to the deterministic floor.
             maxTokens: 1500,
-            userId: snapshot.profile.userId,
-            timeoutMs: 30000,
+            userId: analysisProfile.userId,
+            timeoutMs: SCHOOL_ANALYST_TIMEOUT_MS,
           },
         );
         const parsed = extractJsonFromLlm<Record<string, unknown>>(
           llmResponse.content,
         );
         const normalized = normalizeSchoolAnalysis(deterministic, parsed);
-        validationErrors.push(...normalized.validationErrors);
         const mergedSchool = {
           ...deterministic,
           assessment: normalized.assessment,
@@ -663,11 +726,10 @@ export class ProfileApplicationAnalysisV2Service {
             ...normalized.unknowns,
           ]),
         };
-        schoolResults.push(mergedSchool);
 
         const schoolStep = await this.recordStep({
           runId,
-          stepName: `school_analyst:${policyEntry.schoolId}`,
+          stepName: stepKey,
           status:
             normalized.validationErrors.length > 0
               ? 'COMPLETED_WITH_WARNINGS'
@@ -681,18 +743,23 @@ export class ProfileApplicationAnalysisV2Service {
           latencyMs: Date.now() - llmStart,
           validationErrors: toJson(normalized.validationErrors),
         });
-        stepIds.push(schoolStep.id);
-        stepTimingsMs[`school_analyst:${policyEntry.schoolId}`] =
-          schoolStep.latencyMs ?? 0;
+        return {
+          school: mergedSchool,
+          attempted: 1,
+          failed: 0,
+          validationErrors: normalized.validationErrors,
+          stepId: schoolStep.id,
+          stepKey,
+          stepTimingMs: schoolStep.latencyMs ?? 0,
+          promptHashKey,
+          promptHash,
+        };
       } catch (error) {
-        llmCallsFailed += 1;
         const message =
           error instanceof Error ? error.message : 'School analysis failed';
-        validationErrors.push(message);
-        schoolResults.push(deterministic);
         const schoolStep = await this.recordStep({
           runId,
-          stepName: `school_analyst:${policyEntry.schoolId}`,
+          stepName: stepKey,
           status: 'FAILED',
           model: DEFAULT_MODEL,
           normalizedInput: toJson(schoolPromptInput),
@@ -703,10 +770,33 @@ export class ProfileApplicationAnalysisV2Service {
           error: message,
           validationErrors: toJson([message]),
         });
-        stepIds.push(schoolStep.id);
-        stepTimingsMs[`school_analyst:${policyEntry.schoolId}`] =
-          schoolStep.latencyMs ?? 0;
+        return {
+          school: deterministic,
+          attempted: 1,
+          failed: 1,
+          validationErrors: [message],
+          stepId: schoolStep.id,
+          stepKey,
+          stepTimingMs: schoolStep.latencyMs ?? 0,
+          promptHashKey,
+          promptHash,
+        };
       }
+    };
+
+    const perSchoolResults = await mapWithConcurrency(
+      policyCards,
+      SCHOOL_ANALYST_CONCURRENCY,
+      analyzeSchool,
+    );
+    for (const result of perSchoolResults) {
+      schoolResults.push(result.school);
+      llmCallsAttempted += result.attempted;
+      llmCallsFailed += result.failed;
+      validationErrors.push(...result.validationErrors);
+      stepIds.push(result.stepId);
+      stepTimingsMs[result.stepKey] = result.stepTimingMs;
+      promptHashes[result.promptHashKey] = result.promptHash;
     }
 
     const fallbackPortfolio = buildPortfolioSummary(
