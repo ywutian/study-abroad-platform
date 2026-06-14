@@ -2523,6 +2523,11 @@
     "decisionSignals": "Key read",
     "nextAction": "Next action",
     "viewBasis": "View basis",
+    "viewAnalysisFor": "View analysis for {school}",
+    "detailPaneTitle": "School analysis",
+    "detailEmptyTitle": "Select a school",
+    "detailEmptyDesc": "Pick a school from the list to see its full analysis.",
+    "detailEmptyNoResults": "Run an estimate, then pick a school here to see the details.",
     "technicalDetails": "View calculation basis",
     "llmExplanation": {
       "title": "Counselor explanation",

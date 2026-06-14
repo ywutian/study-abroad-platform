@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calculator, CheckCircle, Loader2, RefreshCw, School, Search, X } from 'lucide-react';
 import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import { useSchoolSearch } from '@/hooks/use-school-search';
+import { TIER_CONFIG } from './constants';
 import type { SchoolSearchItem, TierType } from './types';
 
 interface SchoolSelectorCardProps {
@@ -197,12 +198,7 @@ export function SchoolSelectorCard({
                         {tier && tier !== 'unavailable' && (
                           <Badge
                             variant="outline"
-                            className={cn(
-                              'h-5 px-1.5 text-2xs',
-                              tier === 'reach' && 'border-rose-500/25 text-rose-600',
-                              tier === 'match' && 'border-amber-500/30 text-amber-600',
-                              tier === 'safety' && 'border-emerald-500/30 text-emerald-600'
-                            )}
+                            className={cn('h-5 px-1.5 text-2xs', TIER_CONFIG[tier].badge)}
                           >
                             {t(`prediction.tier.${tier}`)}
                           </Badge>

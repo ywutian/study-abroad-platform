@@ -1,12 +1,22 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PortfolioDiagnosisCard } from './PortfolioDiagnosisCard';
 import { ProfileSnapshotBar } from './ProfileSnapshotBar';
+import { PredictionResultList } from './PredictionResultList';
+import type { PredictionResult } from './types';
 
 const messages = {
   prediction: {
+    results: 'Estimate Results',
+    viewAnalysisFor: 'View analysis for {school}',
+    tier: {
+      reach: 'Reach',
+      match: 'Match',
+      safety: 'Safety',
+      unavailable: 'Unknown',
+    },
     profileSnapshot: {
       title: 'Profile snapshot',
       subtitle: 'This estimate uses these application details first.',
@@ -119,5 +129,59 @@ describe('prediction workbench UI', () => {
     expect(screen.getByText('3/0/1')).toBeInTheDocument();
     expect(screen.getByText('Needs tuning')).toBeInTheDocument();
     expect(screen.getByText(/Reach schools are about 75%/)).toBeInTheDocument();
+  });
+});
+
+function makeResult(over: Partial<PredictionResult>): PredictionResult {
+  return {
+    schoolId: 'x',
+    schoolName: 'X',
+    probability: 0.3,
+    probabilityLow: 0.2,
+    probabilityHigh: 0.4,
+    tier: 'match',
+    factors: [],
+    suggestions: [],
+    ...over,
+  } as unknown as PredictionResult;
+}
+
+describe('PredictionResultList (workbench master list)', () => {
+  const results = [
+    makeResult({ schoolId: 'r1', schoolName: 'Reach U', tier: 'reach', probability: 0.1 }),
+    makeResult({ schoolId: 'm1', schoolName: 'Match A', tier: 'match', probability: 0.4 }),
+    makeResult({ schoolId: 'm2', schoolName: 'Match B', tier: 'match', probability: 0.3 }),
+    makeResult({ schoolId: 's1', schoolName: 'Safety U', tier: 'safety', probability: 0.8 }),
+  ];
+
+  it('groups results by tier and renders every school as a fixed row', () => {
+    renderWithIntl(
+      <PredictionResultList results={results} selectedId={null} onSelect={() => {}} />
+    );
+
+    // Every school is a row.
+    ['Reach U', 'Match A', 'Match B', 'Safety U'].forEach((name) =>
+      expect(screen.getByText(name)).toBeInTheDocument()
+    );
+    // Total count badge + the match group's count of 2 prove the grouping.
+    expect(screen.getByText('4')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('drives selection — clicking a row reports its school id', () => {
+    const onSelect = vi.fn();
+    renderWithIntl(
+      <PredictionResultList results={results} selectedId={null} onSelect={onSelect} />
+    );
+
+    fireEvent.click(screen.getByText('Match A'));
+    expect(onSelect).toHaveBeenCalledWith('m1');
+  });
+
+  it('marks the selected row with aria-pressed', () => {
+    renderWithIntl(<PredictionResultList results={results} selectedId="m2" onSelect={() => {}} />);
+
+    const selectedRow = screen.getByRole('button', { name: 'View analysis for Match B' });
+    expect(selectedRow).toHaveAttribute('aria-pressed', 'true');
   });
 });

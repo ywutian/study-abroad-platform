@@ -2507,6 +2507,11 @@
     "decisionSignals": "关键判断",
     "nextAction": "下一步",
     "viewBasis": "查看依据",
+    "viewAnalysisFor": "查看 {school} 的分析",
+    "detailPaneTitle": "学校分析",
+    "detailEmptyTitle": "选择一所学校",
+    "detailEmptyDesc": "从列表中选择一所学校，查看完整分析。",
+    "detailEmptyNoResults": "先运行测算，然后在此选择学校查看详情。",
     "technicalDetails": "查看计算依据",
     "llmExplanation": {
       "title": "顾问解释",

@@ -1,274 +1,69 @@
 'use client';
 
-import { useState, useMemo, useDeferredValue, useRef } from 'react';
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3 } from 'lucide-react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { StaggerContainer, StaggerItem } from '@/components/ui/motion';
-import { cn } from '@/lib/utils';
-import { TIER_CONFIG } from './constants';
-import { PredictionResultCard } from './PredictionResultCard';
+import { PredictionResultRow } from './PredictionResultRow';
+import { PredictionResultTierGroup } from './PredictionResultTierGroup';
 import type { PredictionResult, TierType } from './types';
 
 interface PredictionResultListProps {
   results: PredictionResult[];
-  expandedId: string | null;
-  onToggleExpand: (schoolId: string) => void;
-  onResultReported?: (schoolId: string, result: string) => void;
-  onRefresh?: (schoolId: string) => void;
-  refreshingSchoolId?: string | null;
-  isInternational?: boolean;
-  dataCompleteness?: number;
+  selectedId: string | null;
+  onSelect: (schoolId: string) => void;
 }
 
-type SortBy = 'probability' | 'delta' | 'tier' | 'updatedAt';
-type FilterTier = TierType | 'all';
+// Reach first (most attention), then match, safety, and finally the schools we
+// couldn't estimate. Within a group, higher probability sorts first.
+const TIER_ORDER: TierType[] = ['reach', 'match', 'safety', 'unavailable'];
 
-const TIER_ORDER: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
-
-const VIRTUALIZATION_THRESHOLD = 15;
-
-export function PredictionResultList({
-  results,
-  expandedId,
-  onToggleExpand,
-  onResultReported,
-  onRefresh,
-  refreshingSchoolId,
-  isInternational,
-  dataCompleteness,
-}: PredictionResultListProps) {
+/**
+ * The "scan" surface of the workbench: every predicted school as a compact,
+ * fixed-shape row, grouped by tier. Selecting a row drives the detail pane.
+ *
+ * This list deliberately renders ONLY {@link PredictionResultRow}s — no
+ * expandable cards, no async sub-panels, no height animation and no nested
+ * `overflow-auto` virtualizer. That is what structurally kills the old
+ * overlap/clip bug: there is no variable-height content here for a windowed
+ * surface to mis-measure. The column that wraps this list owns the scroll.
+ */
+export function PredictionResultList({ results, selectedId, onSelect }: PredictionResultListProps) {
   const t = useTranslations('prediction');
-  const [sortBy, setSortBy] = useState<SortBy>('probability');
-  const [filterTier, setFilterTier] = useState<FilterTier>('all');
 
-  // Defer sort/filter for responsive UI during rapid toggling
-  const deferredSortBy = useDeferredValue(sortBy);
-  const deferredFilterTier = useDeferredValue(filterTier);
-
-  const filteredAndSorted = useMemo(() => {
-    let items =
-      deferredFilterTier === 'all' ? results : results.filter((r) => r.tier === deferredFilterTier);
-
-    items = [...items].sort((a, b) => {
-      switch (deferredSortBy) {
-        case 'probability':
-          return (b.probability ?? -1) - (a.probability ?? -1);
-        case 'tier':
-          return (TIER_ORDER[a.tier] ?? 3) - (TIER_ORDER[b.tier] ?? 3);
-        case 'delta':
-          return ((b as any).probabilityDelta ?? -999) - ((a as any).probabilityDelta ?? -999);
-        case 'updatedAt':
-          return (
-            new Date((b as any).updatedAt ?? 0).getTime() -
-            new Date((a as any).updatedAt ?? 0).getTime()
-          );
-        default:
-          return 0;
-      }
-    });
-
-    return items;
-  }, [results, deferredSortBy, deferredFilterTier]);
-
-  const tierCounts = useMemo(() => {
-    const counts: Record<'reach' | 'match' | 'safety', number> = {
-      reach: 0,
-      match: 0,
-      safety: 0,
-    };
-    results.forEach((r) => {
-      if (r.tier === 'reach' || r.tier === 'match' || r.tier === 'safety') {
-        counts[r.tier]++;
-      }
-    });
-    return counts;
+  const grouped = useMemo(() => {
+    return TIER_ORDER.map((tier) => {
+      const items = results
+        .filter((r) => (r.tier ?? 'unavailable') === tier)
+        .sort((a, b) => (b.probability ?? -1) - (a.probability ?? -1));
+      return { tier, items };
+    }).filter((g) => g.items.length > 0);
   }, [results]);
 
-  const useVirtual = filteredAndSorted.length > VIRTUALIZATION_THRESHOLD;
-
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-subtitle flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
           {t('results')}
         </h2>
-
-        {/* Sort controls */}
-        <div
-          className="flex items-center gap-1"
-          role="group"
-          aria-label={t('sort.probability').replace(/^By /, 'Sort by ')}
-        >
-          {(['probability', 'delta', 'tier', 'updatedAt'] as SortBy[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setSortBy(s)}
-              aria-pressed={sortBy === s}
-              aria-label={t(`sort.${s}`)}
-            >
-              <Badge
-                variant={sortBy === s ? 'default' : 'outline'}
-                className="cursor-pointer text-xs"
-              >
-                {t(`sort.${s}`)}
-              </Badge>
-            </button>
-          ))}
-        </div>
+        <Badge variant="secondary" className="shrink-0 tabular-nums">
+          {results.length}
+        </Badge>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex gap-2 flex-wrap" role="group" aria-label="Filter by tier">
-        <button
-          onClick={() => setFilterTier('all')}
-          aria-pressed={filterTier === 'all'}
-          aria-label={`${t('filter.all')} (${results.length})`}
-        >
-          <Badge
-            variant={filterTier === 'all' ? 'default' : 'outline'}
-            className="cursor-pointer text-xs"
-          >
-            {t('filter.all')} ({results.length})
-          </Badge>
-        </button>
-        {(['reach', 'match', 'safety'] as Array<Exclude<TierType, 'unavailable'>>).map((tier) => {
-          const config = TIER_CONFIG[tier];
-          return (
-            <button
-              key={tier}
-              onClick={() => setFilterTier(filterTier === tier ? 'all' : tier)}
-              aria-pressed={filterTier === tier}
-              aria-label={`${t(`tier.${tier}`)} (${tierCounts[tier]})`}
-            >
-              <Badge
-                variant="outline"
-                className={cn('cursor-pointer text-xs', filterTier === tier && config.badge)}
-              >
-                {t(`tier.${tier}`)} ({tierCounts[tier]})
-              </Badge>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Screen reader announcement */}
-      <div className="sr-only" aria-live="polite" role="status">
-        {t('resultsAnnouncement', { count: filteredAndSorted.length, sort: t(`sort.${sortBy}`) })}
-      </div>
-
-      {/* Result cards — virtualized for large lists, staggered for small */}
-      {useVirtual ? (
-        <VirtualizedResultList
-          items={filteredAndSorted}
-          expandedId={expandedId}
-          onToggleExpand={onToggleExpand}
-          onResultReported={onResultReported}
-          onRefresh={onRefresh}
-          refreshingSchoolId={refreshingSchoolId}
-          isInternational={isInternational}
-          dataCompleteness={dataCompleteness}
-        />
-      ) : (
-        <StaggerContainer staggerDelay={0.05} className="space-y-4">
-          {filteredAndSorted.map((result) => (
-            <StaggerItem key={result.schoolId}>
-              <PredictionResultCard
-                result={result}
-                isExpanded={expandedId === result.schoolId}
-                onToggleExpand={() => onToggleExpand(result.schoolId)}
-                onResultReported={onResultReported}
-                onRefresh={onRefresh}
-                isRefreshing={refreshingSchoolId === result.schoolId}
-                isInternational={isInternational}
-                dataCompleteness={dataCompleteness}
-              />
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
-      )}
-
-      {filteredAndSorted.length === 0 && results.length > 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">{t('noResultsForFilter')}</p>
-      )}
-    </div>
-  );
-}
-
-/** Windowed rendering for large result sets */
-function VirtualizedResultList({
-  items,
-  expandedId,
-  onToggleExpand,
-  onResultReported,
-  onRefresh,
-  refreshingSchoolId,
-  isInternational,
-  dataCompleteness,
-}: {
-  items: PredictionResult[];
-  expandedId: string | null;
-  onToggleExpand: (id: string) => void;
-  onResultReported?: (schoolId: string, result: string) => void;
-  onRefresh?: (schoolId: string) => void;
-  refreshingSchoolId?: string | null;
-  isInternational?: boolean;
-  dataCompleteness?: number;
-}) {
-  const parentRef = useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: items.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: (index) => {
-      // Expanded cards are taller
-      return items[index].schoolId === expandedId ? 600 : 200;
-    },
-    overscan: 3,
-    gap: 16,
-  });
-
-  return (
-    <div ref={parentRef} className="max-h-[70vh] overflow-auto">
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
-          const result = items[virtualItem.index];
-          return (
-            <div
+      {grouped.map(({ tier, items }) => (
+        <PredictionResultTierGroup key={tier} tier={tier} count={items.length}>
+          {items.map((result) => (
+            <PredictionResultRow
               key={result.schoolId}
-              data-index={virtualItem.index}
-              ref={virtualizer.measureElement}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-            >
-              <PredictionResultCard
-                result={result}
-                isExpanded={expandedId === result.schoolId}
-                onToggleExpand={() => onToggleExpand(result.schoolId)}
-                onResultReported={onResultReported}
-                onRefresh={onRefresh}
-                isRefreshing={refreshingSchoolId === result.schoolId}
-                isInternational={isInternational}
-                dataCompleteness={dataCompleteness}
-              />
-            </div>
-          );
-        })}
-      </div>
+              result={result}
+              isSelected={selectedId === result.schoolId}
+              onSelect={() => onSelect(result.schoolId)}
+            />
+          ))}
+        </PredictionResultTierGroup>
+      ))}
     </div>
   );
 }
