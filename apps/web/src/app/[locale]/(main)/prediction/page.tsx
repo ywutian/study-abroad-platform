@@ -39,11 +39,14 @@ import {
   PortfolioDiagnosisCard,
   PredictionPortfolioSummaryStream,
   PredictionResultList,
+  PredictionDetailPane,
   RecommendedSchoolsBlock,
   PredictionEvidencePanel,
 } from '@/components/features/prediction';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useIsDesktop } from '@/hooks/use-media-query';
 import type {
   PredictionResult,
   PredictionResponse,
@@ -62,6 +65,11 @@ interface SchoolListItemApi {
     acceptanceRate?: number;
   };
 }
+
+// Same order the list renders rows (reach → match → safety → unavailable, then
+// probability desc) so "the top result" the detail pane auto-selects matches the
+// first visible row.
+const TIER_RANK: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
 
 export default function PredictionPage() {
   const t = useTranslations();
@@ -114,9 +122,10 @@ export default function PredictionPage() {
   }>({});
 
   // UI state
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [refreshingSchoolId, setRefreshingSchoolId] = useState<string | null>(null);
   const [ucExpandedFrom, setUcExpandedFrom] = useState<SchoolSearchItem[] | null>(null);
+  const isDesktop = useIsDesktop();
 
   // Data fetching
   const { data: dashboardData } = usePredictionDashboard(canFetchProtectedData);
@@ -300,9 +309,38 @@ export default function PredictionPage() {
     t,
   ]);
 
-  const handleToggleExpand = useCallback((schoolId: string) => {
-    setExpandedId((prev) => (prev === schoolId ? null : schoolId));
+  const handleSelectSchool = useCallback((schoolId: string) => {
+    setSelectedId(schoolId);
   }, []);
+
+  // The row that should be selected by default (top of the list).
+  const topResult = useMemo(() => {
+    if (results.length === 0) return null;
+    return [...results].sort((a, b) => {
+      const ta = TIER_RANK[a.tier] ?? 3;
+      const tb = TIER_RANK[b.tier] ?? 3;
+      if (ta !== tb) return ta - tb;
+      return (b.probability ?? -1) - (a.probability ?? -1);
+    })[0];
+  }, [results]);
+
+  const selectedResult = useMemo(
+    () => results.find((r) => r.schoolId === selectedId) ?? null,
+    [results, selectedId]
+  );
+
+  // Keep selection valid. On desktop the detail pane is always visible, so
+  // auto-select the top row when nothing valid is selected. On mobile the detail
+  // is a tap-to-open drawer, so we only CLEAR a stale selection — never auto-open.
+  useEffect(() => {
+    const stillValid = selectedId != null && results.some((r) => r.schoolId === selectedId);
+    if (stillValid) return;
+    if (isDesktop && results.length > 0) {
+      setSelectedId(topResult?.schoolId ?? null);
+    } else if (selectedId != null) {
+      setSelectedId(null);
+    }
+  }, [results, selectedId, isDesktop, topResult]);
 
   // Update local result with reported actual result
   const handleResultReported = useCallback((schoolId: string, reportedResult: string) => {
@@ -415,191 +453,263 @@ export default function PredictionPage() {
 
   return (
     <AIErrorBoundary feature="prediction">
-      <PageContainer maxWidth="default">
-        <PredictionHeader dataCompleteness={responseMetadata.dataCompleteness} />
-        <ProfileSnapshotBar
-          profile={profileData}
-          completeness={profileCompleteness}
-          hasProfileGaps={hasProfileGaps}
-          firstMissingLabel={
-            firstMissingProfileItem
-              ? t(`prediction.dataChecklist.${firstMissingProfileItem.key}`)
-              : undefined
-          }
-        />
+      <PageContainer variant="workbench">
+        <div className="shrink-0">
+          <PredictionHeader dataCompleteness={responseMetadata.dataCompleteness} />
+          <ProfileSnapshotBar
+            profile={profileData}
+            completeness={profileCompleteness}
+            hasProfileGaps={hasProfileGaps}
+            firstMissingLabel={
+              firstMissingProfileItem
+                ? t(`prediction.dataChecklist.${firstMissingProfileItem.key}`)
+                : undefined
+            }
+          />
 
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as 'workspace' | 'history' | 'evidence')}
-          className="mb-4"
-        >
-          <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
-            <TabsTrigger value="workspace" className="gap-1.5">
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              {t('prediction.tabs.workspace')}
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-1.5">
-              <History className="h-3.5 w-3.5" />
-              {t('prediction.tabs.history')}
-            </TabsTrigger>
-            <TabsTrigger value="evidence" className="gap-1.5">
-              <Lightbulb className="h-3.5 w-3.5" />
-              {t('prediction.tabs.evidence')}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as 'workspace' | 'history' | 'evidence')}
+            className="mb-4"
+          >
+            <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+              <TabsTrigger value="workspace" className="gap-1.5">
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                {t('prediction.tabs.workspace')}
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-1.5">
+                <History className="h-3.5 w-3.5" />
+                {t('prediction.tabs.history')}
+              </TabsTrigger>
+              <TabsTrigger value="evidence" className="gap-1.5">
+                <Lightbulb className="h-3.5 w-3.5" />
+                {t('prediction.tabs.evidence')}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
         {activeTab === 'history' ? (
-          <PredictionHistoryTab
-            onRefreshSchool={handleRefreshSchool}
-            refreshingSchoolId={refreshingSchoolId}
-          />
+          <div className="min-w-0 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            <PredictionHistoryTab
+              onRefreshSchool={handleRefreshSchool}
+              refreshingSchoolId={refreshingSchoolId}
+            />
+          </div>
         ) : activeTab === 'evidence' ? (
-          <PredictionEvidencePanel />
+          <div className="min-w-0 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            <PredictionEvidencePanel />
+          </div>
         ) : (
-          <div className="grid min-w-0 gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-            <div className="xl:sticky xl:top-24 xl:self-start">
-              <SchoolSelectorCard
-                selectedSchools={selectedSchools}
-                onAdd={handleAddSchool}
-                onRemove={handleRemoveSchool}
-                onPredict={handlePredict}
-                isPredicting={predictMutation.isPending}
-                profileBlocked={profileBlocksPrediction}
-                predictionTiers={predictionTierBySchoolId}
-                hasPredictions={formalPredictedCount > 0}
-                compact
-                className="mb-0"
-              />
-            </div>
+          <>
+            <div className="grid min-w-0 gap-4 lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)_minmax(360px,460px)]">
+              {/* COL 1 — school selector */}
+              <div className="min-w-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden">
+                <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
+                  <SchoolSelectorCard
+                    selectedSchools={selectedSchools}
+                    onAdd={handleAddSchool}
+                    onRemove={handleRemoveSchool}
+                    onPredict={handlePredict}
+                    isPredicting={predictMutation.isPending}
+                    profileBlocked={profileBlocksPrediction}
+                    predictionTiers={predictionTierBySchoolId}
+                    hasPredictions={formalPredictedCount > 0}
+                    compact
+                    className="mb-0"
+                  />
+                </div>
+              </div>
 
-            <div className="min-w-0 space-y-4">
-              {/* Data completeness checklist for sparse profiles.
+              {/* COL 2 — scan surface */}
+              <div className="min-w-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden">
+                <div className="min-w-0 space-y-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
+                  {/* Data completeness checklist for sparse profiles.
                   When the profile is below the prediction-eligibility bar the
                   card switches to a "blocked" variant that lists the exact
                   blockers (GPA / basic info / target schools) instead of the
                   softer "run now, refine later" copy. */}
-              {profileData && (hasProfileGaps || profileBlocksPrediction) && (
-                <div className="rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 p-3">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground">
-                        {profileBlocksPrediction
-                          ? t('prediction.dataChecklistBlockedTitle')
-                          : t('prediction.dataChecklistTitle')}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {profileBlocksPrediction
-                          ? t('prediction.dataChecklistBlockedDesc')
-                          : t('prediction.dataChecklistDesc')}
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {profileBlocksPrediction
-                          ? predictionBlockers.map((blocker) => (
-                              <div
-                                key={blocker}
-                                className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border border-warning/35 bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
-                              >
-                                <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-                                <span>{t(`prediction.predictionBlocker.${blocker}`)}</span>
-                              </div>
-                            ))
-                          : profileChecklist
-                              .filter((item) => !item.complete)
-                              .map((item) => (
-                                <div
-                                  key={item.key}
-                                  className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
-                                >
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                  <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
-                                </div>
-                              ))}
+                  {profileData && (hasProfileGaps || profileBlocksPrediction) && (
+                    <div className="rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 p-3">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground">
+                            {profileBlocksPrediction
+                              ? t('prediction.dataChecklistBlockedTitle')
+                              : t('prediction.dataChecklistTitle')}
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {profileBlocksPrediction
+                              ? t('prediction.dataChecklistBlockedDesc')
+                              : t('prediction.dataChecklistDesc')}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {profileBlocksPrediction
+                              ? predictionBlockers.map((blocker) => (
+                                  <div
+                                    key={blocker}
+                                    className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border border-warning/35 bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
+                                  >
+                                    <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                                    <span>{t(`prediction.predictionBlocker.${blocker}`)}</span>
+                                  </div>
+                                ))
+                              : profileChecklist
+                                  .filter((item) => !item.complete)
+                                  .map((item) => (
+                                    <div
+                                      key={item.key}
+                                      className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
+                                    >
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                      <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
+                                    </div>
+                                  ))}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="shrink-0 border-warning/35 text-warning"
+                        >
+                          <Link href="/profile">{t('prediction.completeProfile')}</Link>
+                        </Button>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="shrink-0 border-warning/35 text-warning"
-                    >
-                      <Link href="/profile">{t('prediction.completeProfile')}</Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {(activeSnapshotPredictions.length > 0 || selectedSchools.length > 0) && (
-                <PortfolioDiagnosisCard
-                  predictions={activeSnapshotPredictions}
-                  selectedCount={selectedSchools.length}
-                />
-              )}
+                  {(activeSnapshotPredictions.length > 0 || selectedSchools.length > 0) && (
+                    <PortfolioDiagnosisCard
+                      predictions={activeSnapshotPredictions}
+                      selectedCount={selectedSchools.length}
+                    />
+                  )}
 
-              {results.length > 0 && <PredictionPortfolioSummaryStream results={results} />}
+                  {results.length > 0 && <PredictionPortfolioSummaryStream results={results} />}
 
-              {Boolean(ucIdsData?.schoolIds?.length) && (
-                <div className="flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleUcPredict}
-                    disabled={predictMutation.isPending}
-                  >
-                    {predictMutation.isPending
-                      ? t('prediction.loading.analyzing')
-                      : t('prediction.ucOneClick')}
-                  </Button>
-                </div>
-              )}
-
-              {results.length > 0 ? (
-                <>
-                  {ucExpandedFrom && (
-                    <div className="mb-4 flex items-start gap-3 rounded-[var(--theme-radius-card)] border border-primary/20 bg-[color:var(--theme-control-selected-bg)] p-3">
-                      <Info className="h-4 w-4 mt-1 text-primary shrink-0" />
-                      <div className="flex-1 text-sm">
-                        <p className="text-foreground">{t('prediction.ucExpandedDesc')}</p>
-                      </div>
+                  {Boolean(ucIdsData?.schoolIds?.length) && (
+                    <div className="flex justify-end">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleCollapseUc}
-                        className="shrink-0 border-primary/35 text-primary"
+                        onClick={handleUcPredict}
+                        disabled={predictMutation.isPending}
                       >
-                        {t('prediction.ucCollapseToOriginal')}
+                        {predictMutation.isPending
+                          ? t('prediction.loading.analyzing')
+                          : t('prediction.ucOneClick')}
                       </Button>
                     </div>
                   )}
-                  <PredictionResultList
-                    results={results}
-                    expandedId={expandedId}
-                    onToggleExpand={handleToggleExpand}
-                    onResultReported={handleResultReported}
-                    onRefresh={handleRefreshSchool}
-                    refreshingSchoolId={refreshingSchoolId}
-                    isInternational={isInternational}
-                    dataCompleteness={responseMetadata.dataCompleteness}
-                  />
-                  <AIErrorBoundary feature="recommendation">
-                    <RecommendedSchoolsBlock />
-                  </AIErrorBoundary>
-                </>
-              ) : (
-                !predictMutation.isPending &&
-                selectedSchools.length === 0 && (
-                  <EmptyState
-                    type="first-time"
-                    title={t('prediction.startPrediction')}
-                    description={t('prediction.emptyHint')}
-                  />
-                )
-              )}
+
+                  {predictMutation.isPending && results.length === 0 ? (
+                    <div className="rounded-[var(--theme-radius-card)] border bg-card p-8 text-center text-sm text-muted-foreground">
+                      {t('prediction.loading.analyzing')}
+                    </div>
+                  ) : results.length > 0 ? (
+                    <>
+                      {ucExpandedFrom && (
+                        <div className="mb-4 flex items-start gap-3 rounded-[var(--theme-radius-card)] border border-primary/20 bg-[color:var(--theme-control-selected-bg)] p-3">
+                          <Info className="h-4 w-4 mt-1 text-primary shrink-0" />
+                          <div className="flex-1 text-sm">
+                            <p className="text-foreground">{t('prediction.ucExpandedDesc')}</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCollapseUc}
+                            className="shrink-0 border-primary/35 text-primary"
+                          >
+                            {t('prediction.ucCollapseToOriginal')}
+                          </Button>
+                        </div>
+                      )}
+                      <PredictionResultList
+                        results={results}
+                        selectedId={selectedId}
+                        onSelect={handleSelectSchool}
+                      />
+                      <AIErrorBoundary feature="recommendation">
+                        <RecommendedSchoolsBlock />
+                      </AIErrorBoundary>
+                    </>
+                  ) : (
+                    selectedSchools.length === 0 && (
+                      <EmptyState
+                        type="first-time"
+                        title={t('prediction.startPrediction')}
+                        description={t('prediction.emptyHint')}
+                      />
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* COL 3 — detail / analysis surface (desktop) */}
+              <div className="hidden min-w-0 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden">
+                <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pl-1">
+                  {isDesktop && selectedResult ? (
+                    <PredictionDetailPane
+                      result={selectedResult}
+                      onResultReported={handleResultReported}
+                      onRefresh={handleRefreshSchool}
+                      isRefreshing={refreshingSchoolId === selectedResult.schoolId}
+                      isInternational={isInternational}
+                      dataCompleteness={responseMetadata.dataCompleteness}
+                    />
+                  ) : (
+                    <DetailEmptyPrompt hasResults={results.length > 0} />
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile / tablet — detail opens in a bottom drawer */}
+            {!isDesktop && (
+              <Sheet
+                open={selectedId != null}
+                onOpenChange={(open) => {
+                  if (!open) setSelectedId(null);
+                }}
+              >
+                <SheetContent side="bottom" className="h-[90dvh] overflow-y-auto rounded-t-xl p-4">
+                  <SheetHeader className="px-0 pt-0 text-left">
+                    <SheetTitle className="min-w-0 truncate">
+                      {selectedResult?.schoolName ?? t('prediction.detailPaneTitle')}
+                    </SheetTitle>
+                  </SheetHeader>
+                  {selectedResult && (
+                    <PredictionDetailPane
+                      result={selectedResult}
+                      onResultReported={handleResultReported}
+                      onRefresh={handleRefreshSchool}
+                      isRefreshing={refreshingSchoolId === selectedResult.schoolId}
+                      isInternational={isInternational}
+                      dataCompleteness={responseMetadata.dataCompleteness}
+                    />
+                  )}
+                </SheetContent>
+              </Sheet>
+            )}
+          </>
         )}
       </PageContainer>
     </AIErrorBoundary>
+  );
+}
+
+/** Placeholder shown in the desktop detail column when no school is selected. */
+function DetailEmptyPrompt({ hasResults }: { hasResults: boolean }) {
+  const t = useTranslations();
+  return (
+    <div className="flex h-full min-h-[300px] flex-col items-center justify-center rounded-[var(--theme-radius-card)] border border-dashed bg-muted/20 p-8 text-center">
+      <LayoutDashboard className="mb-3 h-8 w-8 text-muted-foreground/60" />
+      <p className="text-sm font-medium text-foreground">{t('prediction.detailEmptyTitle')}</p>
+      <p className="mt-1 max-w-[26ch] text-xs text-muted-foreground">
+        {hasResults ? t('prediction.detailEmptyDesc') : t('prediction.detailEmptyNoResults')}
+      </p>
+    </div>
   );
 }
