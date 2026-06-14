@@ -1157,7 +1157,12 @@ jobs:
             ghcr.io/${{ github.repository }}/api:latest
             ghcr.io/${{ github.repository }}/api:${{ github.sha }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # ignore-error: a transient GHA cache-export hiccup ("error writing layer
+          # blob: not_found") must not red the build — the image still builds, pushes,
+          # and gets Trivy-scanned. Keeps mode=max cache reuse; only export failures
+          # become non-fatal (observed flaking the job on run 27487900061, needing a
+          # manual re-run — make the gate trustworthy rather than rely on re-runs).
+          cache-to: type=gha,mode=max,ignore-error=true
 
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@master
