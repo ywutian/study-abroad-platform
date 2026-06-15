@@ -32,6 +32,24 @@ one-time fix; the goal here is a consistent, enforced _process_.
 3. Re-run `pnpm install` + `pnpm audit --audit-level=high` until clean.
 4. Add a brief comment on the override if the reason isn't obvious.
 
+## When an override genuinely can't be applied (`auditConfig.ignoreGhsas`)
+
+Last resort, **not** a substitute for an override. Only when ALL of:
+
+- the advisory is **not exploitable in our usage** (e.g. a dev-server-only or
+  Windows-only flaw in a dep we only use at build/test time), AND
+- a `pnpm.overrides` pin **does not take effect** (a real pnpm resolution bug —
+  prove it: range + exact + `--force` all leave the vulnerable version resolved).
+
+Then ignore the single GHSA in `pnpm.auditConfig.ignoreGhsas` (NOT `ignoreCves`,
+NOT a `--audit-level` relaxation — the CI gate stays hard for every other high;
+`check-audit-gate.ts` still passes because it guards the gate command, not this
+list). Each entry MUST be documented here with the reason + a removal trigger.
+
+| GHSA                  | Package        | Why ignored                                                                                                                                                                                                                                                                                                                    | Remove when                                                                                                                                                      |
+| --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GHSA-fx2h-pf6j-xcff` | `vite` (8.0.x) | Windows-only `server.fs.deny` **dev-server** bypass. `vite` here is a **test-only** transitive of `vitest`/`@vitejs/plugin-react`; the vite dev server is never run (web app builds with Next.js). pnpm 10.22 won't apply a `vite` override to this peer-contextualized transitive (range + exact + `--force` all keep 8.0.8). | `vitest`/`@vitejs/plugin-react` bump their `vite` to ≥8.0.16, or pnpm fixes the override resolution — then drop this entry and confirm `pnpm audit` stays green. |
+
 ## Dependabot
 
 `.github/dependabot.yml` opens weekly npm + GitHub-Actions update PRs. **Major
