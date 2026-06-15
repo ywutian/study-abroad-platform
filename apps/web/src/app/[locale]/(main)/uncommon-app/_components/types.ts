@@ -2,13 +2,8 @@ import type React from 'react';
 import type { AIAnalysisResult } from '@study-abroad/shared';
 import type { SchoolRanking } from '@/lib/utils/ranking';
 
-export enum AgentType {
-  ORCHESTRATOR = 'orchestrator',
-  ESSAY = 'essay',
-  SCHOOL = 'school',
-  PROFILE = 'profile',
-  TIMELINE = 'timeline',
-}
+/** next-intl translator alias shared across the workspace components. */
+export type TFunction = (key: string, values?: Record<string, string | number>) => string;
 
 export interface SchoolRecommendation {
   name: string;
@@ -17,26 +12,6 @@ export interface SchoolRecommendation {
   description?: string;
   tier?: string;
   fit?: string;
-}
-
-export interface AgentResponseData {
-  schools?: SchoolRecommendation[];
-  analysis?: {
-    strengths?: string[];
-    weaknesses?: string[];
-    improvements?: string[];
-    activities?: string[];
-    timeline?: Array<{ date: string; task: string }>;
-    improvement?: number;
-  };
-}
-
-export interface AgentResponse {
-  message: string;
-  agentType: AgentType;
-  toolsUsed?: string[];
-  suggestions?: string[];
-  data?: AgentResponseData;
 }
 
 export interface SchoolListItem {

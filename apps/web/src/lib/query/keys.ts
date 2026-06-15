@@ -51,6 +51,14 @@ export const qk = {
   // ── Saved school list (canonical, plural) ──────────────────────────
   schoolList,
 
+  // ── Profile (application analysis) ─────────────────────────────────
+  // Shared so the /uncommon-app workspace (setQueryData / getQueryData /
+  // invalidate) and the ProfileAIAnalysis component (useQuery) can never drift
+  // to different string keys — the dual-fetch-ownership hazard.
+  profile: {
+    aiAnalysis: ['profile-ai-analysis'] as const,
+  },
+
   // ── Schools catalog (browse) ───────────────────────────────────────
   schools: {
     all: ['schools'] as const,
