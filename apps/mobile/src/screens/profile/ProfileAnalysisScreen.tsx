@@ -18,6 +18,7 @@ import {
   Loading,
 } from '@/components/ui';
 import { aiService } from '@/lib/api/services/ai';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import {
   borderRadius,
@@ -66,7 +67,7 @@ export default function ProfileAnalysisScreen() {
     isRefetching,
     refetch,
   } = useQuery({
-    queryKey: ['profile-ai-analysis'],
+    queryKey: qk.profile.aiAnalysis(),
     queryFn: () => aiService.profileAnalysis(),
     enabled: isAuthenticated,
   });
