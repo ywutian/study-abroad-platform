@@ -4,37 +4,62 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function UncommonAppLoading() {
   return (
-    <PageContainer>
+    <PageContainer maxWidth="7xl">
       {/* Header */}
       <div className="mb-6 space-y-2">
         <Skeleton className="h-8 w-52" />
         <Skeleton className="h-5 w-72" />
       </div>
 
-      {/* Step indicators */}
-      <div className="flex items-center gap-2 mb-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <Skeleton className="h-8 w-8 rounded-full" />
-            {i < 3 && <Skeleton className="h-0.5 w-12" />}
-          </div>
-        ))}
-      </div>
+      <div className="space-y-5">
+        {/* Next-action bar */}
+        <Skeleton className="h-24 rounded-[var(--theme-radius-card)]" />
 
-      {/* Main content */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-4 w-64" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-48 w-full rounded-lg" />
-          <div className="flex gap-3 justify-end">
-            <Skeleton className="h-10 w-24 rounded-md" />
-            <Skeleton className="h-10 w-24 rounded-md" />
+        {/* Readiness strip (4-up) */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((item) => (
+            <Skeleton key={item} className="h-20 rounded-[var(--theme-radius-card)]" />
+          ))}
+        </div>
+
+        {/* Two-column workbench: school board + advisor | health rail */}
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-64" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[0, 1, 2].map((item) => (
+                  <Skeleton key={item} className="h-28 rounded-[var(--theme-radius-card)]" />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-56" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-32 w-full rounded-[var(--theme-radius-card)]" />
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+
+          <Card className="h-fit">
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[0, 1, 2, 3].map((item) => (
+                <Skeleton key={item} className="h-24 rounded-[var(--theme-radius-card)]" />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </PageContainer>
   );
 }

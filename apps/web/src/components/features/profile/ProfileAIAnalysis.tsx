@@ -21,6 +21,7 @@ import type {
 } from '@study-abroad/shared';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { qk } from '@/lib/query';
 import { AI_TIMEOUTS, GC_TIME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +41,16 @@ interface ProfileAIAnalysisProps {
   isFetching?: boolean;
   onRefresh?: () => void;
   compact?: boolean;
+  /**
+   * Self-fetch the analysis when no `analysis` prop is supplied. Defaults to
+   * `false`: the owning surface (e.g. the /uncommon-app workspace) drives the
+   * fetch and feeds `analysis` in. Opt in only for standalone mounts that have
+   * no external owner — leaving it on by default caused a second, redundant
+   * fetch of a 60s+ AI endpoint whenever a consumer forgot to pass the prop.
+   */
   autoFetch?: boolean;
+  /** Extra actions rendered in the card header, left of the refresh button. */
+  headerActions?: ReactNode;
 }
 
 export function ProfileAIAnalysis({
@@ -50,12 +60,13 @@ export function ProfileAIAnalysis({
   isFetching: externalFetching,
   onRefresh,
   compact = false,
-  autoFetch = true,
+  autoFetch = false,
+  headerActions,
 }: ProfileAIAnalysisProps) {
   const t = useTranslations('applicationAnalysis');
   const shouldFetch = analysis === undefined && autoFetch;
   const query = useQuery({
-    queryKey: ['profile-ai-analysis'],
+    queryKey: qk.profile.aiAnalysis,
     queryFn: () =>
       apiClient.get<AIAnalysisResult>(profileRoutes.aiAnalysis(), {
         timeout: AI_TIMEOUTS.AI_REQUEST,
@@ -105,7 +116,7 @@ export function ProfileAIAnalysis({
     return (
       <Card className={cn(className)}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-primary" />
             {t('title')}
           </CardTitle>
@@ -132,7 +143,7 @@ export function ProfileAIAnalysis({
     return (
       <Card className={cn(className)}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-destructive" />
             {t('title')}
           </CardTitle>
@@ -163,7 +174,7 @@ export function ProfileAIAnalysis({
     return (
       <Card className={cn(className)}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-primary" />
             {t('title')}
           </CardTitle>
@@ -187,7 +198,7 @@ export function ProfileAIAnalysis({
     return (
       <Card className={cn(className)}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             <ClipboardCheck className="h-5 w-5 text-primary" />
             {t('title')}
           </CardTitle>
@@ -226,20 +237,21 @@ export function ProfileAIAnalysis({
       <CardHeader className="space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5 text-primary" />
               {t('title')}
               <Lightbulb className="h-4 w-4 text-primary" />
             </CardTitle>
             <CardDescription>{t('subtitle')}</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge
               className={cn('font-medium', FRESHNESS_STYLES[freshness])}
               data-testid="analysis-freshness-badge"
             >
               {t(`freshness.${freshness}`)}
             </Badge>
+            {headerActions}
             <Button
               variant="ghost"
               size="icon"
@@ -289,7 +301,7 @@ export function ProfileAIAnalysis({
       <CardContent className={cn('space-y-6', summaryOnly && 'space-y-4')}>
         <section className="space-y-3" data-testid="analysis-section-profileContext">
           <SectionHeading icon={ShieldCheck} title={t('profileContext')} />
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid min-w-0 gap-3 md:grid-cols-2">
             <InfoCard
               label={t('applicantType.title')}
               value={t(`applicantType.${resolved.profileSummary.applicantType}`)}
@@ -347,7 +359,7 @@ export function ProfileAIAnalysis({
             testId="analysis-top-reasons"
           />
           <ListCard title={t('topRisks')} items={topRisks} compact testId="analysis-top-risks" />
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid min-w-0 gap-3 md:grid-cols-2">
             <InfoCard
               label={t('confidenceSummary')}
               value={confidenceSummary}
@@ -416,7 +428,7 @@ export function ProfileAIAnalysis({
 
             <section className="space-y-3" data-testid="analysis-section-actionPlan">
               <SectionHeading icon={CheckCircle2} title={t('actionPlan.title')} />
-              <div className="grid gap-4 lg:grid-cols-3">
+              <div className="grid min-w-0 gap-4 lg:grid-cols-3">
                 <ListCard
                   title={t('actionPlan.now')}
                   items={nextActions}
@@ -497,10 +509,10 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
       data-school-name={school.schoolName}
       data-school-tier={school.tier}
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-2">
+      <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-semibold">{school.schoolName}</h3>
+            <h3 className="text-lg font-semibold break-words">{school.schoolName}</h3>
             <Badge variant="outline">{t(`schoolTier.${school.tier}`)}</Badge>
             {school.round ? <Badge variant="secondary">{school.round}</Badge> : null}
           </div>
@@ -545,7 +557,7 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
         <ListCard
           title={t('schoolCards.whyHard')}
           items={school.assessment.whyThisIsHard}
@@ -564,7 +576,7 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
         />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
         {school.assessment.historicalSignals.length > 0 && (
           <ListCard
             title={t('schoolCards.historical')}
@@ -580,7 +592,7 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
       </div>
 
       {(school.recourse || school.uncertainty || school.policyCard.standardDeadline) && (
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
           <ListCard
             title={t('schoolCards.recourse')}
             items={

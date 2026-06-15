@@ -14,6 +14,7 @@ import { apiClient } from '@/lib/api';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
 }));
 
 vi.mock('@/components/layout', () => ({
@@ -132,24 +133,10 @@ describe('UncommonAppPage', () => {
     mockSchoolList = [];
     mockProfile = defaultProfile;
     mockTimelines = [];
-    mockAnalysisResponse = {
-      overallVerdict: 'canonical-analysis',
-      overallScore: 80,
-      tier: 'top30',
-      sections: {
-        academic: { status: 'green', score: 8, feedback: 'Academic' },
-        testScores: { status: 'yellow', score: 6, feedback: 'Testing' },
-        activities: { status: 'green', score: 8, feedback: 'Activities' },
-        awards: { status: 'yellow', score: 5, feedback: 'Awards' },
-      },
-      suggestions: {
-        majors: [],
-        competitions: [],
-        activities: [],
-        summerPrograms: [],
-        timeline: [],
-      },
-    };
+    // The served endpoint returns a v2 AIAnalysisResult — use the canonical
+    // shared render fixture so tests exercise the real ProfileAIAnalysis path.
+    mockAnalysisResponse =
+      getApplicationAnalysisRenderFixture('001-uc-berkeley-blind-en')?.analysis ?? null;
 
     vi.mocked(apiClient.get).mockImplementation((path: string) => {
       if (path === schoolListRoutes.list()) {
@@ -238,9 +225,8 @@ describe('UncommonAppPage', () => {
       );
     });
 
-    await waitFor(() => {
-      expect(screen.getByText('canonical-analysis')).toBeInTheDocument();
-    });
+    // The analysis surface renders only after the explicit fetch resolves.
+    expect(await screen.findByTestId('analysis-root')).toBeInTheDocument();
   });
 
   // Regression guard: the workbench redesign once mounted only the portfolio
@@ -253,8 +239,9 @@ describe('UncommonAppPage', () => {
 
     renderPage();
 
-    // Detail view is absent until the user explicitly generates advice.
+    // Before advice: the control card (generate CTA) is shown, the detail is not.
     expect(screen.queryByTestId('analysis-root')).not.toBeInTheDocument();
+    expect(screen.getByText('workspace.advisor.emptyTitle')).toBeInTheDocument();
 
     const adviceButtons = screen.getAllByRole('button', {
       name: /workspace\.actions\.generate-advice/,
@@ -266,6 +253,13 @@ describe('UncommonAppPage', () => {
     const schoolCards = await screen.findAllByTestId('analysis-school-card');
     expect(schoolCards.length).toBeGreaterThan(0);
     expect(screen.getByTestId('analysis-root')).toBeInTheDocument();
+
+    // The control card and the full analysis are mutually exclusive — the verdict
+    // renders exactly once (no AdvisorSummaryCard duplication).
+    expect(screen.queryByText('workspace.advisor.emptyTitle')).not.toBeInTheDocument();
+
+    // PDF export is re-wired into the analysis header (was lost with the dead stepper).
+    expect(screen.getByRole('button', { name: /exportReport/ })).toBeInTheDocument();
   });
 
   it('keeps candidate-school generation as a manual secondary action', async () => {
