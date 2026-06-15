@@ -170,7 +170,7 @@ export default function UncommonAppScreen() {
   });
 
   const [generatedAnalysis, setGeneratedAnalysis] = useState<AIAnalysisResult | null>(null);
-  const cachedAnalysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
+  const cachedAnalysis = queryClient.getQueryData<AIAnalysisResult>(qk.profile.aiAnalysis());
   const applicationAnalysis = generatedAnalysis ?? cachedAnalysis ?? null;
 
   const profileScore = useMemo(() => {
@@ -211,7 +211,7 @@ export default function UncommonAppScreen() {
       }),
     onSuccess: (data) => {
       setGeneratedAnalysis(data);
-      queryClient.setQueryData(['profile-ai-analysis'], data);
+      queryClient.setQueryData(qk.profile.aiAnalysis(), data);
       toast.success(t('uncommonApp.dashboard.analysisGenerated'));
     },
     onError: () => {

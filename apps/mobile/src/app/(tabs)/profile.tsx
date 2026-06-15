@@ -27,6 +27,7 @@ import {
   type AIAnalysisResult,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import {
   useColors,
@@ -73,7 +74,7 @@ export default function ProfileScreen() {
     enabled: isAuthenticated,
   });
 
-  const analysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
+  const analysis = queryClient.getQueryData<AIAnalysisResult>(qk.profile.aiAnalysis());
 
   // Calculate profile completion (memoized to avoid recalculation on every render).
   // Also resolves the first incomplete section so "Complete profile" jumps the

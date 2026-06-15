@@ -227,7 +227,7 @@ export default function PredictionScreen() {
     enabled: isAuthenticated,
   });
 
-  const applicationAnalysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
+  const applicationAnalysis = queryClient.getQueryData<AIAnalysisResult>(qk.profile.aiAnalysis());
 
   const intlContext = detectInternationalStatus(profile ?? {});
   const predictions = mapDashboardToPredictions(dashboardData, intlContext.isInternational);
