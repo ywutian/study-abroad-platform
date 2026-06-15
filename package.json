@@ -113,7 +113,7 @@
       "sharp"
     ],
     "overrides": {
-      "form-data": ">=4.0.0",
+      "form-data": ">=4.0.6",
       "lodash": "4.18.1",
       "qs": ">=6.14.1",
       "tar": ">=7.5.10",
@@ -128,7 +128,7 @@
       "serialize-javascript": ">=7.0.3",
       "@isaacs/brace-expansion": ">=5.0.1",
       "basic-ftp": ">=5.3.0",
-      "protobufjs": ">=7.5.6 <8",
+      "protobufjs": ">=7.6.1 <8",
       "rollup": ">=4.59.0",
       "glob@>=11.0.0 <11.1.0": ">=11.1.0",
       "jws@4.0.0": ">=4.0.1",
@@ -151,7 +151,15 @@
       "zod": "3.25.76",
       "shell-quote": ">=1.8.4",
       "@grpc/grpc-js": ">=1.14.4",
-      "esbuild@>=0.17.0 <0.28.1": ">=0.28.1"
+      "esbuild@>=0.17.0 <0.28.1": ">=0.28.1",
+      "ws@>=6.0.0 <6.2.4": ">=6.2.4",
+      "ws@>=7.0.0 <7.5.11": ">=7.5.11",
+      "ws@>=8.0.0 <8.21.0": ">=8.21.0"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-fx2h-pf6j-xcff"
+      ]
     }
   },
   "dependencies": {
