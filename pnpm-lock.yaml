@@ -41,6 +41,7 @@ overrides:
   fast-xml-builder: '>=1.1.7'
   '@babel/plugin-transform-modules-systemjs': '>=7.29.4'
   zod: 3.25.76
+  knip>zod: ^4.1.11
   shell-quote: '>=1.8.4'
   '@grpc/grpc-js': '>=1.14.4'
   esbuild@>=0.17.0 <0.28.1: '>=0.28.1'
@@ -26540,6 +26541,12 @@ packages:
         integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==,
       }
 
+  zod@4.4.3:
+    resolution:
+      {
+        integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==,
+      }
+
   zustand@5.0.10:
     resolution:
       {
@@ -40768,7 +40775,7 @@ snapshots:
       tinyglobby: 0.2.17
       unbash: 3.0.0
       yaml: 2.9.0
-      zod: 3.25.76
+      zod: 4.4.3
 
   lan-network@0.1.7: {}
 
@@ -46082,6 +46089,8 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.4.3: {}
 
   zustand@5.0.10(@types/react@19.1.17)(immer@11.1.4)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0)):
     optionalDependencies:
