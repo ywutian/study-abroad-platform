@@ -11,8 +11,23 @@
     "socket.io-client"
   ],
   "ignoreBinaries": ["tsx", "docker-compose", "wrangler"],
-  "exclude": ["enumMembers", "classMembers"],
+  "exclude": [
+    "enumMembers",
+    "exports",
+    "types",
+    "nsExports",
+    "nsTypes",
+    "duplicates",
+    "dependencies",
+    "unlisted",
+    "binaries",
+    "unresolved"
+  ],
   "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.ts", "e2e/**/*.ts", "*.config.{js,mjs,ts}"],
+      "project": ["scripts/**/*.ts", "e2e/**/*.ts"]
+    },
     "apps/api": {
       "entry": [
         "src/main.ts",
@@ -25,7 +40,12 @@
         "src/**/*.middleware.ts",
         "src/**/*.gateway.ts",
         "src/**/*.decorator.ts",
-        "src/**/*.strategy.ts"
+        "src/**/*.strategy.ts",
+        "src/mcp-server.ts",
+        "src/cli/**/*.ts",
+        "src/tracing.ts",
+        "prisma/seed*.ts",
+        "prisma/seeds/**/*.ts"
       ],
       "project": ["src/**/*.ts"],
       "ignoreDependencies": ["@nestjs/bullmq", "bullmq", "@sentry/nestjs"]
