@@ -159,6 +159,7 @@ export const chatRoutes = {
 
 export const predictionRoutes = {
   predict: () => API_ROUTES.PREDICTIONS,
+  preview: () => `${API_ROUTES.PREDICTIONS}/preview`,
   history: () => `${API_ROUTES.PREDICTIONS}/history`,
   result: (schoolId: string) => `${API_ROUTES.PREDICTIONS}/${schoolId}/result`,
   report: (schoolId: string) => `${API_ROUTES.PREDICTIONS}/${schoolId}/result`,
@@ -225,11 +226,13 @@ export const subscriptionRoutes = {
 };
 
 export const timelineRoutes = {
-  mine: () => `${API_ROUTES.TIMELINES}/mine`,
-  personal: () => `${API_ROUTES.TIMELINES}/personal`,
-  global: () => `${API_ROUTES.TIMELINES}/global`,
+  mine: () => API_ROUTES.TIMELINES,
+  personal: () => `${API_ROUTES.TIMELINES}/personal-events`,
+  global: () => `${API_ROUTES.TIMELINES}/global-events`,
   tasks: () => `${API_ROUTES.TIMELINES}/tasks`,
   taskToggle: (id: string) => `${API_ROUTES.TIMELINES}/tasks/${id}/toggle`,
+  personalTasks: () => `${API_ROUTES.TIMELINES}/personal-tasks`,
+  personalTaskToggle: (id: string) => `${API_ROUTES.TIMELINES}/personal-tasks/${id}/toggle`,
   overview: () => `${API_ROUTES.TIMELINES}/overview`,
 };
 

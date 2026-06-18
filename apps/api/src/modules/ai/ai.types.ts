@@ -283,9 +283,18 @@ export interface AnalysisMeta {
   focusSchoolCount: number;
   schoolsWithPredictions: number;
   generatedAt: string;
+  predictionContext?: ApplicationAnalysisPredictionContext;
   runId?: string;
   exposureId?: string;
   experimentalVersions?: ExperimentalVersionSummary[];
+}
+
+export interface ApplicationAnalysisPredictionContext {
+  source: 'prediction-engine';
+  generatedAt: string;
+  predictionResultIds: string[];
+  missingSchoolIds: string[];
+  staleSchoolIds: string[];
 }
 
 export interface AnalysisProfileContext {
@@ -314,6 +323,7 @@ export interface PortfolioAnalysis {
 }
 
 export interface TargetSchoolPredictionSnapshot {
+  predictionResultId?: string;
   probability: number;
   probabilityLow?: number;
   probabilityHigh?: number;

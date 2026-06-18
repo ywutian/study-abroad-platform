@@ -38,6 +38,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   PredictionRequestDto,
+  PredictionPreviewRequestDto,
   PredictionResponseDto,
   PredictionExplanationStreamRequestDto,
   PredictionPortfolioSummaryStreamRequestDto,
@@ -106,6 +107,34 @@ export class PredictionController {
     private readonly feedbackService: PredictionFeedbackService,
     private readonly explanationService: PredictionExplanationService,
   ) {}
+
+  @Post('preview')
+  @ApiOperation({
+    summary: 'Preview admission predictions for a what-if scenario (read-only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Read-only preview successful. Results are not persisted and do not enter calibration.',
+  })
+  async preview(
+    @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
+    @Body() data: PredictionPreviewRequestDto,
+  ) {
+    const startTime = Date.now();
+    const output = await this.predictionService.previewForUser(
+      user.id,
+      data.schoolIds,
+      data.scenario,
+      locale,
+    );
+
+    return {
+      ...output,
+      processingTime: Date.now() - startTime,
+    };
+  }
 
   @Post()
   @ApiOperation({

@@ -6,6 +6,8 @@ import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import type {
   PredictionOutcomeLabel,
+  PredictionPreviewRequest,
+  PredictionPreviewResponse,
   PredictionResponse,
   PredictionResult,
   PredictionDashboardData,
@@ -26,6 +28,7 @@ export const predictionKeys = {
   school: (id: string) => [...predictionKeys.all, 'school', id] as const,
   dashboard: () => [...predictionKeys.all, 'dashboard'] as const,
   history: () => [...predictionKeys.all, 'history'] as const,
+  preview: () => [...predictionKeys.all, 'preview'] as const,
 };
 
 // ============================================
@@ -179,6 +182,17 @@ export function useRunPrediction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: predictionKeys.all });
     },
+  });
+}
+
+/** Run a read-only what-if preview. Does not write prediction history. */
+export function usePreviewPrediction() {
+  return useMutation<PredictionPreviewResponse, Error, PredictionPreviewRequest>({
+    mutationFn: (dto) =>
+      apiClient.post<PredictionPreviewResponse>(predictionRoutes.preview(), dto, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
+      }),
   });
 }
 

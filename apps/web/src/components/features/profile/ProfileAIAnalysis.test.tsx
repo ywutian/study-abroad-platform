@@ -113,6 +113,12 @@ const messages = {
       SAFETY: 'Safety',
     },
     schoolCards: {
+      sourceBadge: 'From Chance Engine',
+      addToTimeline: 'Add to timeline',
+      addingToTimeline: 'Adding...',
+      addedToTimeline: 'Added to timeline',
+      timelineError: 'Could not add this action',
+      reportOutcome: 'Report outcome',
       probability: 'Admission probability',
       probabilityUnavailable: 'Unavailable',
       confidence: 'Confidence',
@@ -142,6 +148,9 @@ const messages = {
     },
     actionPlan: {
       title: 'Action plan',
+      addTopAction: 'Add top action to timeline',
+      timelineEventTitle: 'Strategy Advisor actions',
+      timelineEventDescription: 'Actions added from Strategy Advisor.',
       now: 'Now',
       next90Days: 'Next 90 days',
       beforeSubmission: 'Before submission',

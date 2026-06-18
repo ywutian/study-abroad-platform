@@ -98,6 +98,7 @@ describe('DashboardService', () => {
             follow: { count: jest.fn() },
             admissionCase: { count: jest.fn() },
             predictionResult: { count: jest.fn() },
+            predictionOutcomeLabelRecord: { count: jest.fn() },
             applicationTimeline: { findMany: jest.fn(), groupBy: jest.fn() },
             pointHistory: { findMany: jest.fn() },
             schoolListItem: {
@@ -191,6 +192,9 @@ describe('DashboardService', () => {
     (prisma.assessmentResult.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.schoolRecommendation.count as jest.Mock).mockResolvedValue(0);
     (prisma.verificationRequest.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.predictionOutcomeLabelRecord.count as jest.Mock).mockResolvedValue(
+      0,
+    );
     (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ count: 0n }]);
   }
 
@@ -883,6 +887,12 @@ describe('DashboardService', () => {
         recommendationCount: 0,
         verificationStatus: 'unverified',
         chatUnread: 0,
+        closedLoop: {
+          missingTimelineCount: 9,
+          pendingTimelineTaskCount: 3,
+          pendingOutcomeCount: 4,
+          verifiedOutcomeCount: 0,
+        },
       });
     });
 

@@ -55,6 +55,15 @@ describe('PredictionController', () => {
               dataCompleteness: 0.8,
               memoryContext: {},
             }),
+            previewForUser: jest.fn().mockResolvedValue({
+              preview: true,
+              scenario: { gpa: 3.9 },
+              results: mockPredictionResults.map((result) => ({
+                ...result,
+                authority: 'PREVIEW',
+              })),
+              dataCompleteness: 0.8,
+            }),
             getPredictionHistory: jest.fn().mockResolvedValue(mockHistory),
             reportActualResult: jest.fn().mockResolvedValue(undefined),
           },
@@ -195,6 +204,28 @@ describe('PredictionController', () => {
       );
       expect(calledWith).not.toContain('uc-9');
       expect(calledWith).toHaveLength(2);
+    });
+  });
+
+  describe('preview', () => {
+    it('runs a read-only what-if preview without requiring a profile lookup in the controller', async () => {
+      const dto = {
+        schoolIds: ['school-1'],
+        scenario: { gpa: 3.9, applicationRound: 'EA' },
+      };
+
+      const result = await controller.preview(mockUser, 'zh', dto);
+
+      expect(predictionService.previewForUser).toHaveBeenCalledWith(
+        'user-1',
+        ['school-1'],
+        dto.scenario,
+        'zh',
+      );
+      expect(result.preview).toBe(true);
+      expect(result.results[0].authority).toBe('PREVIEW');
+      expect(result.processingTime).toBeGreaterThanOrEqual(0);
+      expect(prisma.profile.findUnique).not.toHaveBeenCalled();
     });
   });
 

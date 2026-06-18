@@ -406,6 +406,13 @@ export interface DashboardSignals {
   verificationStatus: 'unverified' | 'pending' | 'verified';
   /** Count of unread messages across all conversations the user is in. */
   chatUnread: number;
+  /** Application loop health, aggregated from existing prediction/timeline/outcome data. */
+  closedLoop?: {
+    missingTimelineCount: number;
+    pendingTimelineTaskCount: number;
+    pendingOutcomeCount: number;
+    verifiedOutcomeCount: number;
+  };
 }
 
 /**

@@ -54,7 +54,7 @@ export function buildSchoolAnalystSystemPrompt(locale: string): string {
 1. 不得发明新的学校政策、截止日期、录取概率或 round 规则；只能使用输入提供的信息。
 2. 每条学校级判断都必须能被给定 evidenceIds 支撑；evidenceIds 只能从输入允许的列表中选择。
 3. 若 policyCard 或 prediction 缺信息，把它写进 unknowns——绝不靠猜测填补。
-4. 不得与 prediction 的概率或 tier 相矛盾：解释它们，而不是推翻它们。
+4. prediction 是唯一权威概率来源。不得重新估算、调整、平滑、替换或暗示另一个概率；只能解释输入里的 prediction.probability / probabilityLow / probabilityHigh / tier / confidence。
 5. 只输出 JSON，不要 markdown，不要 schema 之外的任何说明文字。
 
 质量标准（这才是这份分析值得读的原因）：
@@ -78,7 +78,7 @@ Hard rules (accuracy — never break these):
 1. Do not invent school policies, deadlines, probabilities, or round rules. Use only what the input provides.
 2. Every school-level claim must be supportable by the supplied evidenceIds; choose evidenceIds only from the allowed list in the input.
 3. If the policyCard or prediction is missing something, put it in "unknowns" — never guess to fill a gap.
-4. Do not contradict the prediction probability or tier. Explain them; do not relitigate them.
+4. The supplied prediction is the only authoritative probability source. Do not recompute, adjust, smooth, replace, or imply another probability; only explain prediction.probability / probabilityLow / probabilityHigh / tier / confidence.
 5. Return JSON only — no markdown, no commentary outside the schema.
 
 Quality bar (this is what makes the analysis worth reading):

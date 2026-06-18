@@ -68,6 +68,7 @@ export type LoadedSchoolListItem = Prisma.SchoolListItemGetPayload<{
 
 export type LoadedPrediction = Prisma.PredictionResultGetPayload<{
   select: {
+    id: true;
     schoolId: true;
     probability: true;
     probabilityLow: true;
@@ -475,6 +476,7 @@ export function buildDeterministicSchoolResult(
     round: item.round ?? profile.applicationRound ?? undefined,
     prediction: prediction
       ? {
+          predictionResultId: prediction.id,
           probability: roundNumber(toNumber(prediction.probability) ?? 0, 4),
           probabilityLow: toOptionalRoundedNumber(prediction.probabilityLow, 4),
           probabilityHigh: toOptionalRoundedNumber(

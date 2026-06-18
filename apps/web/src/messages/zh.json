@@ -2319,7 +2319,7 @@
     }
   },
   "prediction": {
-    "title": "录取概率评估",
+    "title": "录取概率工作台",
     "noResult": "未获取到预测结果",
     "successMessage": "已完成 {count} 所学校的测算",
     "selectSchools": "选择目标院校",
@@ -2422,6 +2422,11 @@
         "healthy": "本批结果较新，可以继续比较单校原因。"
       }
     },
+    "strategyCta": {
+      "title": "需要完整申请方案？",
+      "description": "录取概率工作台负责概率判断；选校组合、轮次、材料和时间线请到申请策略报告查看。",
+      "action": "打开申请策略报告"
+    },
     "evidence": {
       "howTitle": "预测如何生成",
       "howDesc": "工作台会结合学校数据、个人档案信号和历史上下文，形成用于规划的个人预估。",
@@ -2433,6 +2438,29 @@
       "personalEstimate": "主百分比是你的个人预估，不是学校公开录取率。",
       "dataSupport": "数据参考程度描述证据质量，不代表概率高低。",
       "subjectiveFactors": "文书、面试、推荐信和学校当年偏好仍会影响结果。"
+    },
+    "whatIf": {
+      "title": "情景模拟",
+      "subtitle": "预览 GPA、标化或申请轮次变化可能怎样影响估算。",
+      "previewBadge": "模拟",
+      "gpa": "GPA",
+      "gpaScale": "满分",
+      "sat": "SAT",
+      "act": "ACT",
+      "major": "专业",
+      "majorPlaceholder": "计算机科学",
+      "round": "轮次",
+      "currentRound": "当前",
+      "grade": "年级",
+      "testOptional": "本次模拟按不提交标化处理",
+      "run": "模拟",
+      "running": "模拟中...",
+      "reset": "重置情景",
+      "notSaved": "模拟结果不会写入历史，也不能上报最终结果。",
+      "selectSchools": "请先选择至少一所学校",
+      "success": "已模拟 {count} 所学校",
+      "error": "模拟失败，请重试",
+      "moreResults": "另有 {count} 条模拟结果"
     },
     "emptyHint": "选择学校并开始测算，查看您的个人录取概率",
     "runPrediction": "开始测算",
@@ -4096,8 +4124,8 @@
     }
   },
   "applicationAnalysis": {
-    "title": "申请分析",
-    "subtitle": "基于档案、预测与历史证据生成的学校级申请策略",
+    "title": "申请策略报告",
+    "subtitle": "基于档案、录取概率工作台、学校政策与历史证据生成的申请策略",
     "loading": {
       "title": "正在分析你的申请",
       "description": "系统正在整合档案、预测结果与历史案例，生成学校级策略判断。"
@@ -4117,7 +4145,7 @@
     "overallScore": "综合评分",
     "focusSchools": "重点学校",
     "profileContext": "申请语境",
-    "schoolListDiagnosis": "学校清单诊断",
+    "schoolListDiagnosis": "选校组合策略",
     "foundationReview": "基础档案诊断",
     "riskBoundaries": "风险边界",
     "topReasons": "核心依据",
@@ -4223,6 +4251,12 @@
       "SAFETY": "保底"
     },
     "schoolCards": {
+      "sourceBadge": "来自录取概率工作台",
+      "addToTimeline": "加入时间线",
+      "addingToTimeline": "添加中...",
+      "addedToTimeline": "已加入时间线",
+      "timelineError": "添加行动失败",
+      "reportOutcome": "上报结果",
       "probability": "录取概率",
       "probabilityUnavailable": "暂无",
       "confidence": "置信度",
@@ -4252,6 +4286,9 @@
     },
     "actionPlan": {
       "title": "行动计划",
+      "addTopAction": "将首要行动加入时间线",
+      "timelineEventTitle": "申请策略报告行动",
+      "timelineEventDescription": "从申请策略报告加入的行动。",
       "now": "现在",
       "next90Days": "未来 90 天",
       "beforeSubmission": "提交前"

@@ -1,13 +1,19 @@
 import {
   IsArray,
   IsBoolean,
+  IsIn,
+  IsNumber,
   IsString,
   IsOptional,
   IsNotEmpty,
   ArrayMaxSize,
   ArrayMinSize,
   MaxLength,
+  Max,
+  Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
 
@@ -35,6 +41,113 @@ export class PredictionRequestDto {
   @IsOptional()
   @IsBoolean()
   forceRefresh?: boolean;
+}
+
+export class PredictionPreviewScenarioDto {
+  @ApiProperty({
+    description: 'Simulated GPA value',
+    required: false,
+    minimum: 0,
+    maximum: 5,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(5)
+  gpa?: number;
+
+  @ApiProperty({
+    description: 'Simulated GPA scale',
+    required: false,
+    minimum: 1,
+    maximum: 5,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  gpaScale?: number;
+
+  @ApiProperty({
+    description: 'Simulated SAT total score',
+    required: false,
+    minimum: 400,
+    maximum: 1600,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(400)
+  @Max(1600)
+  satScore?: number;
+
+  @ApiProperty({
+    description: 'Simulated ACT composite score',
+    required: false,
+    minimum: 1,
+    maximum: 36,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(36)
+  actScore?: number;
+
+  @ApiProperty({ description: 'Simulated target major', required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  targetMajor?: string;
+
+  @ApiProperty({ description: 'Simulated applicant grade', required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  grade?: string;
+
+  @ApiProperty({
+    description: 'Whether the simulated run should apply test optional',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  applyingTestOptional?: boolean;
+
+  @ApiProperty({
+    description: 'Simulated application round',
+    required: false,
+    enum: ['RD', 'ED', 'ED2', 'EA', 'REA', 'SCEA', 'ROLLING'],
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['RD', 'ED', 'ED2', 'EA', 'REA', 'SCEA', 'ROLLING'])
+  @MaxLength(20)
+  applicationRound?: string;
+}
+
+export class PredictionPreviewRequestDto {
+  @ApiProperty({
+    description: 'School IDs to simulate against',
+    type: [String],
+    minItems: 1,
+    maxItems: MAX_SCHOOLS_PER_BATCH,
+  })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(MAX_SCHOOLS_PER_BATCH)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  @IsNotEmpty({ each: true })
+  schoolIds: string[];
+
+  @ApiProperty({
+    description: 'Optional what-if scenario. This does not mutate the profile.',
+    required: false,
+    type: () => PredictionPreviewScenarioDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PredictionPreviewScenarioDto)
+  scenario?: PredictionPreviewScenarioDto;
 }
 
 export class PredictionExplanationStreamRequestDto {

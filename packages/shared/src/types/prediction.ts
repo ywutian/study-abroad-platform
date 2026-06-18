@@ -236,6 +236,27 @@ export interface PredictionResponse {
   ucComparisonExpanded?: boolean;
 }
 
+export interface PredictionPreviewScenario {
+  gpa?: number;
+  gpaScale?: number;
+  satScore?: number;
+  actScore?: number;
+  targetMajor?: string;
+  grade?: string;
+  applyingTestOptional?: boolean;
+  applicationRound?: string;
+}
+
+export interface PredictionPreviewRequest {
+  schoolIds: string[];
+  scenario?: PredictionPreviewScenario;
+}
+
+export interface PredictionPreviewResponse extends PredictionResponse {
+  preview: true;
+  scenario: PredictionPreviewScenario;
+}
+
 /**
  * `GET /predictions/dashboard` shape — the served aggregate of a user's
  * predictions. Single source of truth for the dashboard contract: the backend
