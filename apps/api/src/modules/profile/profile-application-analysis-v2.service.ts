@@ -1043,9 +1043,14 @@ export class ProfileApplicationAnalysisV2Service {
     return {
       source: 'prediction-engine',
       generatedAt,
-      predictionResultIds: snapshot.predictions.map(
-        (prediction) => prediction.id,
-      ),
+      // Gold-case fixture snapshots predate predictionContext and carry no
+      // `id` on their predictions (only the live buildSnapshotForUser select
+      // sets it). Drop nullish ids so this stays a real `string[]` of
+      // PredictionResult IDs — otherwise the exported render fixture serializes
+      // `undefined` to `null` and breaks the `string[]` contract (governance).
+      predictionResultIds: snapshot.predictions
+        .map((prediction) => prediction.id)
+        .filter((id): id is string => typeof id === 'string'),
       missingSchoolIds: focusSchoolIds.filter(
         (schoolId) => !predictedSchoolIds.has(schoolId),
       ),
