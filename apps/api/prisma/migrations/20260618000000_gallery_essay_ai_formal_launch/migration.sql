@@ -53,7 +53,10 @@ CREATE INDEX "GalleryEssayAIInteraction_userEssayId_createdAt_idx" ON "GalleryEs
 CREATE INDEX "GalleryEssayAIInteraction_essayAIResultId_idx" ON "GalleryEssayAIInteraction"("essayAIResultId");
 CREATE INDEX "GalleryEssayAIInteraction_pointsHistoryId_idx" ON "GalleryEssayAIInteraction"("pointsHistoryId");
 CREATE INDEX "GalleryEssayAIInteraction_refundPointHistoryId_idx" ON "GalleryEssayAIInteraction"("refundPointHistoryId");
-CREATE UNIQUE INDEX "GalleryEssayAIInteraction_userId_admissionCaseId_type_clientRequestId_key" ON "GalleryEssayAIInteraction"("userId", "admissionCaseId", "type", "clientRequestId");
+-- Index name matches Prisma's canonical 63-char truncation of the @@unique
+-- (the full name is 71 chars; Postgres would silently truncate it to a name
+-- that drifts from schema.prisma — see prisma migrate diff).
+CREATE UNIQUE INDEX "GalleryEssayAIInteraction_userId_admissionCaseId_type_clien_key" ON "GalleryEssayAIInteraction"("userId", "admissionCaseId", "type", "clientRequestId");
 
 CREATE UNIQUE INDEX "GalleryEssayAIInteractionFeedback_interactionId_key" ON "GalleryEssayAIInteractionFeedback"("interactionId");
 CREATE INDEX "GalleryEssayAIInteractionFeedback_userId_createdAt_idx" ON "GalleryEssayAIInteractionFeedback"("userId", "createdAt");
