@@ -4144,6 +4144,9 @@
     "unknowns": "未知项",
     "overallScore": "综合评分",
     "focusSchools": "重点学校",
+    "predictionContext": {
+      "staleHint": "{count} 所学校的预测已过期或缺失，去刷新"
+    },
     "profileContext": "申请语境",
     "schoolListDiagnosis": "选校组合策略",
     "foundationReview": "基础档案诊断",

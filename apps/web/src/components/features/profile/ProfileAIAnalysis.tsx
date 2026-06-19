@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/lib/i18n/navigation';
 import {
   AlertTriangle,
   CalendarPlus,
@@ -219,6 +220,13 @@ export function ProfileAIAnalysis({
 
   const freshness = resolved.status ?? 'fresh';
   const state = resolved.meta.state ?? 'ready';
+  // Surface the prediction-freshness signal that was previously computed
+  // (meta.predictionContext) but never read — schools whose backing
+  // prediction is stale (>30d) or missing, with a path to re-run.
+  const predictionContext = resolved.meta.predictionContext;
+  const stalePredictionCount =
+    (predictionContext?.staleSchoolIds?.length ?? 0) +
+    (predictionContext?.missingSchoolIds?.length ?? 0);
   const overallVerdict = resolved.overallVerdict?.trim()
     ? resolved.overallVerdict
     : resolved.portfolioSummary.verdict;
@@ -283,6 +291,16 @@ export function ProfileAIAnalysis({
               </p>
               {resolved.meta.degradedReason ? (
                 <p className="text-sm text-muted-foreground">{resolved.meta.degradedReason}</p>
+              ) : null}
+              {stalePredictionCount > 0 ? (
+                <Link
+                  href="/prediction"
+                  className="inline-flex w-fit items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-sm text-amber-800 transition-colors hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/50"
+                >
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <span>{t('predictionContext.staleHint', { count: stalePredictionCount })}</span>
+                  <RefreshCw className="h-3.5 w-3.5 shrink-0" />
+                </Link>
               ) : null}
             </div>
             <div className="flex shrink-0 items-center gap-3 rounded-xl bg-background/80 px-4 py-3">
