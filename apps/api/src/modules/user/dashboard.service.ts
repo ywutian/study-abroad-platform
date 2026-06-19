@@ -129,8 +129,6 @@ export class DashboardService {
       recommendationCount,
       latestVerificationRow,
       chatUnreadRows,
-      pendingOutcomeCount,
-      verifiedOutcomeCount,
     ] = await Promise.all([
       // 2026-05 Phase 1.5 #15: every sub-query is wrapped in `safe(...)`
       // so a single transient failure doesn't 500 the whole dashboard.
@@ -505,29 +503,6 @@ export class DashboardService {
         'chat-unread',
         [] as Array<{ count: bigint }>,
       ),
-
-      safe(
-        this.prisma.predictionResult.count({
-          where: {
-            profile: { userId },
-            authority: 'AUTHORITATIVE',
-            outcomeLabelRecords: { none: {} },
-          },
-        }),
-        'pending-outcome-count',
-        0,
-      ),
-
-      safe(
-        this.prisma.predictionOutcomeLabelRecord.count({
-          where: {
-            predictionResult: { profile: { userId } },
-            status: { in: ['COUNSELOR_VERIFIED', 'DOCUMENT_VERIFIED'] },
-          },
-        }),
-        'verified-outcome-count',
-        0,
-      ),
     ]);
 
     // 计算档案完成度（传入选校数据用于权重计算）
@@ -769,12 +744,6 @@ export class DashboardService {
         recommendationCount,
         latestVerificationRow,
         chatUnreadRows,
-        closedLoop: {
-          missingTimelineCount: workbench.metrics.missingTimelineCount,
-          pendingTimelineTaskCount: pendingTaskCount,
-          pendingOutcomeCount,
-          verifiedOutcomeCount,
-        },
       }),
       // 2026-05 Phase 2.7 #31: personalized QuickAsk chips.
       // Built server-side from profile.targetMajor + first school in
@@ -860,7 +829,6 @@ export class DashboardService {
     recommendationCount: number;
     latestVerificationRow: { status: string } | null;
     chatUnreadRows: Array<{ count: bigint }>;
-    closedLoop?: DashboardSignals['closedLoop'];
   }): DashboardSignals {
     // 1. Assessment: pick latest MBTI + latest Holland; extract code
     //    from `result` JSON (LLM stores as `{ code: 'INTJ', ... }` or
@@ -916,7 +884,6 @@ export class DashboardService {
       recommendationCount: input.recommendationCount,
       verificationStatus,
       chatUnread: Number(input.chatUnreadRows[0]?.count ?? 0),
-      closedLoop: input.closedLoop,
     };
   }
 

@@ -887,12 +887,6 @@ describe('DashboardService', () => {
         recommendationCount: 0,
         verificationStatus: 'unverified',
         chatUnread: 0,
-        closedLoop: {
-          missingTimelineCount: 9,
-          pendingTimelineTaskCount: 3,
-          pendingOutcomeCount: 4,
-          verifiedOutcomeCount: 0,
-        },
       });
     });
 

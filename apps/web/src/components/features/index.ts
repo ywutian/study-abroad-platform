@@ -61,6 +61,7 @@ export { EssayPromptManager } from './admin/essay-prompt-manager';
 export { EssayCaseReviewManager } from './admin/essay-case-review-manager';
 export { BulkImportDialog } from './admin/bulk-import-dialog';
 export { EssayPipelineDashboard } from './admin/essay-pipeline-dashboard';
+export { AdminGalleryAiMetrics } from './admin/admin-gallery-ai-metrics';
 
 // Teams components
 export { TeamCard } from './teams/TeamCard';

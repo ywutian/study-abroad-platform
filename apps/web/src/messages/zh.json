@@ -4144,6 +4144,9 @@
     "unknowns": "未知项",
     "overallScore": "综合评分",
     "focusSchools": "重点学校",
+    "predictionContext": {
+      "staleHint": "{count} 所学校的预测已过期或缺失，去刷新"
+    },
     "profileContext": "申请语境",
     "schoolListDiagnosis": "选校组合策略",
     "foundationReview": "基础档案诊断",
@@ -11445,6 +11448,40 @@
     "rejected": "拒绝",
     "waitlisted": "候补",
     "tabPipeline": "采集管道",
+    "tabGalleryAi": "范文库 AI",
+    "galleryAi": {
+      "loadFailed": "加载范文库 AI 指标失败",
+      "refresh": "刷新",
+      "interactions": "交互总数",
+      "questions": "问答",
+      "compares": "对比",
+      "helpfulRate": "有帮助率",
+      "failureRate": "失败率",
+      "avgTokens": "平均 tokens",
+      "succeeded": "成功",
+      "failed": "失败",
+      "refunded": "已退款",
+      "feedbackByCategory": "负反馈原因分布",
+      "noNegative": "暂无负反馈",
+      "recentNotHelpful": "最近的「没帮助」反馈",
+      "noNotes": "暂无负反馈",
+      "noteEmpty": "（未填写备注）",
+      "topFailingEssays": "失败最多的范文",
+      "noFailures": "暂无失败",
+      "failedOfTotal": "{failed} 次失败 / 共 {total} 次",
+      "missingCoverage": "{total} 篇公开范文中有 {missing} 篇缺少范文拆解",
+      "category": {
+        "wrong_evidence": "证据不准",
+        "too_generic": "太泛",
+        "template_like": "像模板",
+        "cost_not_worth": "费用不值",
+        "other": "其他"
+      },
+      "type": {
+        "question": "问答",
+        "compare": "对比"
+      }
+    },
     "caseStats": {
       "pending": "待审核",
       "verified": "已通过",
