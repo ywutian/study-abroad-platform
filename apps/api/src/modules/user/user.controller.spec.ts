@@ -101,6 +101,7 @@ describe('UserController', () => {
         {
           provide: PointsConfigService,
           useValue: {
+            isEnabled: jest.fn().mockResolvedValue(true),
             getAllRules: jest.fn().mockResolvedValue(mockPointRules),
           },
         },
@@ -218,6 +219,8 @@ describe('UserController', () => {
       const result = await controller.getPointRules();
 
       expect(pointsConfigService.getAllRules).toHaveBeenCalled();
+      expect(pointsConfigService.isEnabled).toHaveBeenCalled();
+      expect(result.enabled).toBe(true);
       expect(result.earn).toHaveLength(1);
       expect(result.spend).toHaveLength(1);
       expect(result.earn[0].action).toBe('SHARE_CASE');

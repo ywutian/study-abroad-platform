@@ -35,6 +35,8 @@ export enum PointAction {
   AI_ESSAY_REVIEW = 'AI_ESSAY_REVIEW',
   AI_ESSAY_BRAINSTORM = 'AI_ESSAY_BRAINSTORM',
   AI_ESSAY_GALLERY = 'AI_ESSAY_GALLERY',
+  AI_ESSAY_GALLERY_ASK = 'AI_ESSAY_GALLERY_ASK',
+  AI_ESSAY_COMPARE = 'AI_ESSAY_COMPARE',
   AI_SCHOOL_RECOMMENDATION = 'AI_SCHOOL_RECOMMENDATION',
   AI_ACTIVITY_REFINE = 'AI_ACTIVITY_REFINE',
   // Phase 2 V1 (PR1) — one user "argue back" turn against AI essay feedback.
@@ -217,6 +219,18 @@ const POINT_ACTION_REGISTRY: Record<
     settingKey: SETTING_KEYS.POINTS_ACTION_AI_ESSAY_GALLERY,
     defaultPoints: -20,
     description: '文书范例分析',
+    type: 'spend',
+  },
+  [PointAction.AI_ESSAY_GALLERY_ASK]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_AI_ESSAY_GALLERY_ASK,
+    defaultPoints: -5,
+    description: '围绕范文提问',
+    type: 'spend',
+  },
+  [PointAction.AI_ESSAY_COMPARE]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_AI_ESSAY_COMPARE,
+    defaultPoints: -15,
+    description: '用范文对比我的文书',
     type: 'spend',
   },
   [PointAction.AI_SCHOOL_RECOMMENDATION]: {

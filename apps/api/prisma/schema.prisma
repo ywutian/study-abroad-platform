@@ -633,6 +633,8 @@ model User {
   swipeStats   SwipeStats?
   pointHistory PointHistory[]
   payments     Payment[]
+  galleryEssayAIInteractions         GalleryEssayAIInteraction[]
+  galleryEssayAIInteractionFeedbacks GalleryEssayAIInteractionFeedback[]
 
   // Peer review system (互评)
   peerReviewsGiven    PeerReview[] @relation("ReviewsGiven")
@@ -1281,9 +1283,10 @@ model Essay {
   inspirationCase   AdmissionCase? @relation(name: "EssayInspiration", fields: [inspirationCaseId], references: [id], onDelete: SetNull)
 
   // AI results
-  aiResults   EssayAIResult[]
-  revisions   EssayRevision[]
-  suggestions EssaySuggestion[]
+  aiResults                  EssayAIResult[]
+  galleryCompareInteractions GalleryEssayAIInteraction[] @relation("GalleryEssayAIUserEssay")
+  revisions                  EssayRevision[]
+  suggestions                EssaySuggestion[]
 
   // Phase 2 V1 — debate sessions against AI feedback on this draft.
   debateSessions EssayDebateSession[] @relation(name: "EssayDebates")
@@ -2876,6 +2879,9 @@ model AdmissionCase {
   // Reverse — student essays that cite this case as their starting point.
   inspiredEssays Essay[] @relation(name: "EssayInspiration")
 
+  // Personalized gallery AI interactions grounded in this public case.
+  galleryAIInteractions GalleryEssayAIInteraction[]
+
   // Phase 2 V1 — debate sessions against this case's AI paragraph commentary.
   debateSessions EssayDebateSession[] @relation(name: "AdmissionCaseDebates")
 
@@ -3792,6 +3798,9 @@ model PointHistory {
   points   Int
   metadata Json?
 
+  galleryChargeInteractions GalleryEssayAIInteraction[] @relation("GalleryEssayAIChargePointHistory")
+  galleryRefundInteractions GalleryEssayAIInteraction[] @relation("GalleryEssayAIRefundPointHistory")
+
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -4444,8 +4453,80 @@ model EssayAIResult {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  galleryCompareInteractions GalleryEssayAIInteraction[] @relation("GalleryEssayAIResult")
+
   @@index([essayId])
   @@index([type])
+}
+
+model GalleryEssayAIInteraction {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admissionCaseId String
+  admissionCase   AdmissionCase @relation(fields: [admissionCaseId], references: [id], onDelete: Cascade)
+
+  type           String
+  status         String  @default("PENDING")
+  locale         String  @default("zh")
+  question       String? @db.Text
+  paragraphIndex Int?
+  selectedText   String? @db.Text
+  focus          String?
+  clientRequestId String?
+
+  userEssayId String?
+  userEssay   Essay?  @relation("GalleryEssayAIUserEssay", fields: [userEssayId], references: [id], onDelete: SetNull)
+
+  essayAIResultId String?
+  essayAIResult   EssayAIResult? @relation("GalleryEssayAIResult", fields: [essayAIResultId], references: [id], onDelete: SetNull)
+
+  input         Json?
+  output        Json?
+  evidence      Json?
+  tokensUsed    Int     @default(0)
+  pointsAction  String?
+  pointsCharged Int?
+  pointsHistoryId String?
+  pointsHistory   PointHistory? @relation("GalleryEssayAIChargePointHistory", fields: [pointsHistoryId], references: [id], onDelete: SetNull)
+  refundPointHistoryId String?
+  refundPointHistory   PointHistory? @relation("GalleryEssayAIRefundPointHistory", fields: [refundPointHistoryId], references: [id], onDelete: SetNull)
+  refundStatus  String?
+  errorMessage  String? @db.Text
+
+  feedback GalleryEssayAIInteractionFeedback?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, admissionCaseId, createdAt])
+  @@index([userId, type, createdAt])
+  @@index([admissionCaseId, type, createdAt])
+  @@index([status, createdAt])
+  @@index([userEssayId, createdAt])
+  @@index([essayAIResultId])
+  @@index([pointsHistoryId])
+  @@index([refundPointHistoryId])
+  @@unique([userId, admissionCaseId, type, clientRequestId])
+}
+
+model GalleryEssayAIInteractionFeedback {
+  id            String                    @id @default(cuid())
+  interactionId String                    @unique
+  interaction   GalleryEssayAIInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sentiment String
+  category  String?
+  notes     String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([sentiment, createdAt])
+  @@index([category, createdAt])
 }
 
 // ============================================

@@ -62,13 +62,22 @@ export interface EssayDetail {
   isAnonymous: boolean;
 }
 
+export type EssayDimension = 'hook' | 'structure' | 'voice' | 'insight' | 'fit' | 'detail';
+
+export interface EssayHighlight {
+  text: string;
+  dimension: EssayDimension;
+}
+
 export interface ParagraphAnalysis {
   paragraphIndex: number;
   paragraphText: string;
   score: number;
   status: 'excellent' | 'good' | 'needs_work';
   comment: string;
-  highlights: string[];
+  // v2 (2026-06-18): objects with a dimension tag (was `string[]`). Render
+  // defensively — offline-persisted results may still hold the legacy shape.
+  highlights: EssayHighlight[];
   suggestions: string[];
 }
 

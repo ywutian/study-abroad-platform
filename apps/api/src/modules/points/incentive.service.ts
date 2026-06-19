@@ -45,10 +45,16 @@ export class PointsService {
     action: PointAction | string,
     metadata?: Record<string, unknown>,
     pointsOverride?: number,
-  ): Promise<{ success: boolean; newBalance: number; message?: string }> {
+  ): Promise<{
+    success: boolean;
+    newBalance: number;
+    message?: string;
+    pointHistoryId?: string;
+    points?: number;
+  }> {
     const enabled = await this.pointsConfig.isEnabled();
     if (!enabled) {
-      return { success: true, newBalance: 0 };
+      return { success: true, newBalance: 0, points: 0 };
     }
 
     // Get dynamic point value from config, or use override (for variable-value actions like swipe)
@@ -75,7 +81,11 @@ export class PointsService {
           `Configured zero-point: ${String(action)} (userId=${userId}) — skipping write`,
         );
       }
-      return { success: true, newBalance: await this.getUserPoints(userId) };
+      return {
+        success: true,
+        newBalance: await this.getUserPoints(userId),
+        points: 0,
+      };
     }
 
     const currentPoints = await this.getUserPoints(userId);
@@ -97,7 +107,7 @@ export class PointsService {
     });
 
     // 记录积分变动
-    await this.prisma.pointHistory.create({
+    const pointHistory = await this.prisma.pointHistory.create({
       data: {
         userId,
         action: String(action),
@@ -113,6 +123,8 @@ export class PointsService {
     return {
       success: true,
       newBalance: updated.points,
+      pointHistoryId: pointHistory.id,
+      points: pointValue,
     };
   }
 
@@ -124,7 +136,7 @@ export class PointsService {
     userId: string,
     action: PointAction,
     metadata?: Record<string, unknown>,
-  ): Promise<{ newBalance: number }> {
+  ): Promise<{ newBalance: number; pointHistoryId?: string; points?: number }> {
     const result = await this.adjustPoints(userId, action, metadata);
     if (!result.success) {
       const pointValue = await this.pointsConfig.getPointValue(action);
@@ -132,7 +144,11 @@ export class PointsService {
         `积分不足，需要 ${Math.abs(pointValue)} 积分`,
       );
     }
-    return { newBalance: result.newBalance };
+    return {
+      newBalance: result.newBalance,
+      pointHistoryId: result.pointHistoryId,
+      points: result.points,
+    };
   }
 
   /**
@@ -142,9 +158,13 @@ export class PointsService {
     userId: string,
     action: PointAction,
     metadata?: Record<string, unknown>,
-  ): Promise<{ newBalance: number }> {
+  ): Promise<{ newBalance: number; pointHistoryId?: string; points?: number }> {
     const result = await this.adjustPoints(userId, action, metadata);
-    return { newBalance: result.newBalance };
+    return {
+      newBalance: result.newBalance,
+      pointHistoryId: result.pointHistoryId,
+      points: result.points,
+    };
   }
 
   /**
@@ -154,7 +174,7 @@ export class PointsService {
     userId: string,
     action: PointAction,
     metadata?: Record<string, unknown>,
-  ): Promise<{ newBalance: number }> {
+  ): Promise<{ newBalance: number; pointHistoryId?: string; points?: number }> {
     // Get the absolute value and make it positive for refund
     const pointValue = await this.pointsConfig.getPointValue(action);
     const refundAmount = Math.abs(pointValue);
@@ -164,7 +184,11 @@ export class PointsService {
       { ...metadata, reason: 'service_error' },
       refundAmount,
     );
-    return { newBalance: result.newBalance };
+    return {
+      newBalance: result.newBalance,
+      pointHistoryId: result.pointHistoryId,
+      points: result.points,
+    };
   }
 
   /**

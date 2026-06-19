@@ -41,6 +41,8 @@ export const SETTING_KEYS = {
   POINTS_ACTION_AI_ESSAY_REVIEW: 'points_action_AI_ESSAY_REVIEW',
   POINTS_ACTION_AI_ESSAY_BRAINSTORM: 'points_action_AI_ESSAY_BRAINSTORM',
   POINTS_ACTION_AI_ESSAY_GALLERY: 'points_action_AI_ESSAY_GALLERY',
+  POINTS_ACTION_AI_ESSAY_GALLERY_ASK: 'points_action_AI_ESSAY_GALLERY_ASK',
+  POINTS_ACTION_AI_ESSAY_COMPARE: 'points_action_AI_ESSAY_COMPARE',
   POINTS_ACTION_AI_SCHOOL_RECOMMENDATION:
     'points_action_AI_SCHOOL_RECOMMENDATION',
   POINTS_ACTION_AI_ACTIVITY_REFINE: 'points_action_AI_ACTIVITY_REFINE',
@@ -226,6 +228,17 @@ const DEFAULT_SETTINGS: Record<
   [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_GALLERY]: {
     value: '-20',
     description: 'Points consumed for essay gallery analysis',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_GALLERY_ASK]: {
+    value: '-5',
+    description: 'Points consumed for asking a question about a gallery essay',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_COMPARE]: {
+    value: '-15',
+    description:
+      'Points consumed for comparing a user essay with a gallery essay',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_SCHOOL_RECOMMENDATION]: {

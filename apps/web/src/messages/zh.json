@@ -5178,6 +5178,18 @@
           "continuation": "续写"
         }
       },
+      "galleryCompare": {
+        "title": "来自范文对比",
+        "source": "范文对比",
+        "historyHint": "最近多条对比结果会保留在这里，方便回看证据和修改动作。",
+        "count": "{count} 条",
+        "referenceSignals": "可借鉴点",
+        "gapAnalysis": "我的差距",
+        "overlapWarnings": "相似风险",
+        "revisionActions": "下一步修改",
+        "evidence": "证据来源",
+        "viewReference": "回到原范文"
+      },
       "review": {
         "emptyTitle": "还没有评分",
         "emptyDesc": "运行 AI 评分后，这里会显示亮点、不足和下一步。",
@@ -6138,9 +6150,44 @@
       "selfReflectionTitle": "作者反思",
       "tabs": {
         "original": "文书原文",
-        "aiReview": "AI逐段点评"
+        "aiReview": "AI逐段点评",
+        "learningNotes": "范文拆解"
       },
       "background": "背景信息",
+      "learningNotes": {
+        "title": "公开学习笔记",
+        "sharedHint": "这是一份基于公开范文生成的共享拆解，所有用户看到的内容一致，不扣积分。真正的 AI 价值放在围绕这篇文书提问，或用它对比你的草稿。",
+        "askAction": "问这篇文书",
+        "compareAction": "对比我的文书",
+        "fallbackHint": "当前语言暂无缓存，已显示 {locale} 拆解",
+        "locales": {
+          "zh": "中文",
+          "en": "英文"
+        },
+        "unavailableTitle": "这篇范文暂未生成拆解",
+        "unavailableDesc": "你仍然可以围绕原文提问，或用它作为参照对比自己的文书。"
+      },
+      "points": {
+        "cost": "提交后消耗 {points} 积分",
+        "disabled": "当前积分系统关闭，本次不会扣分"
+      },
+      "personalizedTools": {
+        "unavailable": "个性化文书工具暂时维护中，请稍后再试。",
+        "maintenanceHint": "个性化提问和对比工具暂时维护中，公开拆解仍可正常阅读。"
+      },
+      "feedback": {
+        "prompt": "这次结果有帮助吗？",
+        "helpful": "有帮助",
+        "notHelpful": "没帮助",
+        "saved": "反馈已记录",
+        "reasons": {
+          "wrong_evidence": "证据不准",
+          "too_generic": "太泛",
+          "template_like": "像模板",
+          "cost_not_worth": "费用不值",
+          "other": "其他"
+        }
+      },
       "ai": {
         "loginRequired": "登录后可使用AI逐段点评",
         "costHint": "消耗20积分，获取专业招生官视角的逐段分析",
@@ -6167,7 +6214,86 @@
         "score": "分",
         "highlights": "亮点",
         "suggestions": "建议",
-        "disagreeButton": "不同意？告诉我为什么 →"
+        "dimensions": {
+          "hook": "开头钩子",
+          "structure": "结构",
+          "voice": "个人声音",
+          "insight": "洞见",
+          "fit": "契合",
+          "detail": "细节"
+        },
+        "disagreeButton": "不同意？告诉我为什么 →",
+        "askAboutParagraph": "追问这条拆解 →"
+      },
+      "qa": {
+        "title": "问这篇文书",
+        "placeholder": "比如：为什么这个开头有效？这一段能借鉴什么结构？",
+        "submit": "发送问题",
+        "thinking": "思考中...",
+        "answerReady": "回答已生成",
+        "evidence": "引用证据",
+        "selectedText": "本次会围绕选中文本追问",
+        "history": "最近问答",
+        "failed": "这次问答失败，积分已退回。",
+        "paragraphQuestion": "第 {num} 段的拆解还能怎么理解？",
+        "quick": {
+          "structure": "这篇文书的结构为什么有效？",
+          "opening": "开头如何抓住读者？",
+          "copyRisk": "哪些地方不能照抄？",
+          "fit": "这篇适合哪类申请者学习？"
+        }
+      },
+      "compare": {
+        "title": "用范文对比我的文书",
+        "selectEssay": "选择你的草稿",
+        "noPrompt": "未填写题目",
+        "submit": "开始对比",
+        "comparing": "对比中...",
+        "resultReady": "对比结果已生成",
+        "noDraftTitle": "你还没有文书草稿",
+        "noDraftDesc": "可以先用这道题目创建一篇草稿，再回来做范文对比。",
+        "focus": "选择对比重点",
+        "focusOptions": {
+          "structure": "结构",
+          "theme": "主题",
+          "voice": "声音",
+          "schoolFit": "学校契合",
+          "revisionPlan": "修改计划"
+        },
+        "referenceSignals": "可借鉴点",
+        "gapAnalysis": "我的差距",
+        "overlapWarnings": "相似/抄袭风险",
+        "overlapRisk": {
+          "label": "相似度风险",
+          "levels": {
+            "low": "低",
+            "medium": "中",
+            "high": "高"
+          },
+          "disclaimer": "这是 AI 给出的信号，不是抄袭判决，也不代表任何学校的检测结果。"
+        },
+        "revisionActions": "修改动作",
+        "evidence": "证据来源",
+        "openWorkbench": "前往文书工作台",
+        "history": "最近对比",
+        "historyBadge": "范文对比",
+        "failed": "这次对比失败，积分已退回。"
+      },
+      "citation": {
+        "label": "正在原文中显示引用证据",
+        "counter": "证据 {index} / {total}",
+        "jump": "在原文中查看",
+        "prev": "上一条证据",
+        "next": "下一条证据",
+        "clear": "清除高亮",
+        "verified": "引文已在来源中校验",
+        "notFound": "未在原文中找到"
+      },
+      "evidenceSources": {
+        "essay": "范文原文",
+        "learning_notes": "范文拆解",
+        "case_context": "案例背景",
+        "user_essay": "我的文书"
       }
     },
     "quickTags": {
@@ -7837,6 +7963,11 @@
       "advanced": "高级",
       "expert": "专家",
       "master": "大师"
+    },
+    "earnToast": {
+      "title": "你获得了 +{points} 积分",
+      "description": "用它解锁范文库 AI 问答和对比。",
+      "cta": "立即使用"
     },
     "rules": {
       "title": "积分规则",

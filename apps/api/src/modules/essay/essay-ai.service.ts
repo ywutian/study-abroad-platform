@@ -40,14 +40,65 @@ import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service'
 import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
+import type {
+  EssayDimension,
+  GalleryLearningHighlight,
+} from '@study-abroad/shared';
 
 /**
  * Versions the gallery `aiAnalysisCache[locale]` payload. Bump this when
  * `buildParagraphAnalysisSystemPrompt` / `validateParagraphAnalysis` change
  * shape — cached rows with a stale version are silently bypassed and lazily
  * refreshed by the precompute script.
+ *
+ * v2 (2026-06-18): paragraph `highlights` became `{ text, dimension }[]`
+ * (was `string[]`) to drive inline dimension-tagged annotation.
  */
-export const PARAGRAPH_PROMPT_VERSION = 'v1';
+export const PARAGRAPH_PROMPT_VERSION = 'v2';
+
+const ESSAY_DIMENSIONS: readonly EssayDimension[] = [
+  'hook',
+  'structure',
+  'voice',
+  'insight',
+  'fit',
+  'detail',
+];
+
+function coerceEssayDimension(value: unknown): EssayDimension {
+  return typeof value === 'string' &&
+    (ESSAY_DIMENSIONS as readonly string[]).includes(value)
+    ? (value as EssayDimension)
+    : 'detail';
+}
+
+/**
+ * Normalize LLM-returned paragraph highlights into `{ text, dimension }[]`.
+ * Tolerant of the legacy `string[]` shape (coerced to `dimension: 'detail'`)
+ * so any stale payload still renders without crashing.
+ */
+export function normalizeLearningHighlights(
+  value: unknown,
+): GalleryLearningHighlight[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item): GalleryLearningHighlight | null => {
+      if (typeof item === 'string') {
+        const text = item.trim();
+        return text ? { text, dimension: 'detail' } : null;
+      }
+      if (item && typeof item === 'object' && !Array.isArray(item)) {
+        const obj = item as Record<string, unknown>;
+        const text = typeof obj.text === 'string' ? obj.text.trim() : '';
+        return text
+          ? { text, dimension: coerceEssayDimension(obj.dimension) }
+          : null;
+      }
+      return null;
+    })
+    .filter((h): h is GalleryLearningHighlight => h !== null)
+    .slice(0, 6);
+}
 
 @Injectable()
 export class EssayAiService {
@@ -1091,7 +1142,7 @@ export class EssayAiService {
         status: p?.status || status,
         comment:
           p?.comment || (locale === 'zh' ? '暂无评价' : 'No comment available'),
-        highlights: Array.isArray(p?.highlights) ? p.highlights : [],
+        highlights: normalizeLearningHighlights(p?.highlights),
         suggestions: Array.isArray(p?.suggestions) ? p.suggestions : [],
       };
     };
@@ -1160,7 +1211,7 @@ export interface ParagraphComment {
   score: number; // 1-10
   status: 'excellent' | 'good' | 'needs_work';
   comment: string;
-  highlights: string[]; // 亮点词句
+  highlights: GalleryLearningHighlight[]; // 亮点词句 + 维度标签
   suggestions: string[];
 }
 

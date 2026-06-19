@@ -1,6 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { essayAiRoutes } from '@study-abroad/shared';
+import type {
+  GalleryEssayCompareRequest,
+  GalleryEssayCompareResponse,
+  GalleryEssayQuestionRequest,
+  GalleryEssayQuestionResponse,
+} from '@study-abroad/shared';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import type {
   EssayReview,
@@ -89,6 +95,36 @@ export function useEssayOpening(onSuccess?: (data: OpeningResult) => void) {
     // @cache-invalidation-allowed: AI generation hook — returns generated content to the caller's onSuccess; mutates no cached list/detail
     mutationFn: (data: { prompt: string; background?: string }) =>
       apiClient.post<OpeningResult>(essayAiRoutes.generateOpening(), data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
+      }),
+    onSuccess,
+  });
+}
+
+export function useGalleryEssayQuestion(
+  essayId: string,
+  onSuccess?: (data: GalleryEssayQuestionResponse) => void
+) {
+  return useMutation({
+    // @cache-invalidation-allowed: gallery essay Q&A persists interaction history; callers refetch affected history when needed
+    mutationFn: (data: GalleryEssayQuestionRequest) =>
+      apiClient.post<GalleryEssayQuestionResponse>(essayAiRoutes.galleryQuestion(essayId), data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
+      }),
+    onSuccess,
+  });
+}
+
+export function useGalleryEssayCompare(
+  essayId: string,
+  onSuccess?: (data: GalleryEssayCompareResponse) => void
+) {
+  return useMutation({
+    // @cache-invalidation-allowed: compare persists EssayAIResult history; callers decide when to refetch history
+    mutationFn: (data: GalleryEssayCompareRequest) =>
+      apiClient.post<GalleryEssayCompareResponse>(essayAiRoutes.galleryCompare(essayId), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),

@@ -1526,7 +1526,15 @@
         "endingImpact": "结尾影响力",
         "paragraphReview": "逐段点评",
         "highlights": "亮点",
-        "suggestions": "建议"
+        "suggestions": "建议",
+        "dimensions": {
+          "hook": "开头钩子",
+          "structure": "结构",
+          "voice": "个人声音",
+          "insight": "洞见",
+          "fit": "契合",
+          "detail": "细节"
+        }
       },
       "noContent": "暂无内容"
     },

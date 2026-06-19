@@ -13,7 +13,7 @@ describe('PointsService', () => {
       update: jest.fn(),
     },
     pointHistory: {
-      create: jest.fn().mockResolvedValue({}),
+      create: jest.fn().mockResolvedValue({ id: 'point-history-1' }),
       findMany: jest.fn(),
     },
     caseView: {
@@ -74,7 +74,7 @@ describe('PointsService', () => {
         PointAction.SUBMIT_CASE,
       );
 
-      expect(result).toEqual({ success: true, newBalance: 0 });
+      expect(result).toEqual({ success: true, newBalance: 0, points: 0 });
       expect(mockPrisma.user.update).not.toHaveBeenCalled();
     });
 
@@ -91,6 +91,8 @@ describe('PointsService', () => {
 
       expect(result.success).toBe(true);
       expect(result.newBalance).toBe(150);
+      expect(result.pointHistoryId).toBe('point-history-1');
+      expect(result.points).toBe(50);
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
         data: { points: { increment: 50 } },
@@ -133,6 +135,7 @@ describe('PointsService', () => {
 
       expect(result.success).toBe(true);
       expect(result.newBalance).toBe(100);
+      expect(result.points).toBe(0);
       expect(mockPrisma.user.update).not.toHaveBeenCalled();
     });
 
@@ -166,6 +169,8 @@ describe('PointsService', () => {
       );
 
       expect(result.newBalance).toBe(80);
+      expect(result.pointHistoryId).toBe('point-history-1');
+      expect(result.points).toBe(-20);
     });
 
     it('should throw BadRequestException when insufficient points', async () => {

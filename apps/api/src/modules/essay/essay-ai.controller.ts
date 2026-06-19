@@ -25,6 +25,9 @@ import {
   EssaySuggestEditsRequestDto,
   EssaySuggestEditsResponseDto,
   AnalyzeGalleryEssayDto,
+  GalleryEssayCompareDto,
+  GalleryEssayInteractionFeedbackDto,
+  GalleryEssayQuestionDto,
   RewriteParagraphDto,
   ContinueWritingDto,
   GenerateOpeningDto,
@@ -284,6 +287,107 @@ export class EssayAiController {
   @ApiOperation({ summary: 'Get single public essay details' })
   async getGalleryEssayDetail(@Param('essayId') essayId: string) {
     return this.essayGalleryService.getGalleryEssayDetail(essayId);
+  }
+
+  @Get('gallery/:essayId/learning-notes')
+  @Public()
+  @ApiOperation({
+    summary:
+      'Get free cached learning notes for a public essay without LLM usage',
+  })
+  async getGalleryLearningNotes(
+    @Param('essayId') essayId: string,
+    @Query('locale') locale?: string,
+  ) {
+    return this.essayGalleryService.getGalleryLearningNotes(
+      essayId,
+      locale === 'en' ? 'en' : 'zh',
+    );
+  }
+
+  @Get('gallery/:essayId/interactions')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Get current user history for personalized gallery essay AI',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'question | compare',
+  })
+  @ApiQuery({ name: 'limit', required: false })
+  async getGalleryEssayInteractions(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('essayId') essayId: string,
+    @Query('type') type?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.essayGalleryService.listGalleryEssayInteractions(
+      user.id,
+      essayId,
+      {
+        type,
+        limit: limit ? parseInt(limit, 10) : undefined,
+      },
+    );
+  }
+
+  @Post('gallery/interactions/:interactionId/feedback')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Upsert helpful/not helpful feedback for gallery essay AI',
+  })
+  async submitGalleryEssayInteractionFeedback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('interactionId') interactionId: string,
+    @Body() body: GalleryEssayInteractionFeedbackDto,
+  ) {
+    return this.essayGalleryService.submitGalleryInteractionFeedback(
+      user.id,
+      interactionId,
+      body,
+    );
+  }
+
+  @Post('gallery/:essayId/questions')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Ask a grounded question about a public gallery essay',
+  })
+  async askGalleryEssay(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('essayId') essayId: string,
+    @Body() body: GalleryEssayQuestionDto,
+  ) {
+    return this.essayGalleryService.askGalleryEssay(
+      user.id,
+      essayId,
+      body,
+      user.locale,
+    );
+  }
+
+  @Post('gallery/:essayId/compare')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary:
+      'Compare a user-owned essay against a public gallery essay reference',
+  })
+  async compareGalleryEssay(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('essayId') essayId: string,
+    @Body() body: GalleryEssayCompareDto,
+  ) {
+    return this.essayGalleryService.compareGalleryEssay(
+      user.id,
+      essayId,
+      body,
+      user.locale,
+    );
   }
 
   @Post('gallery/:essayId/analyze')
