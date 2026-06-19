@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { EssayGalleryService } from './essay-gallery.service';
-import { EssayAiService } from './essay-ai.service';
+import { EssayAiService, PARAGRAPH_PROMPT_VERSION } from './essay-ai.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsService } from '../points/incentive.service';
+import { LLMService } from '../ai-agent/core/llm.service';
 
 jest.mock('../points/refund.helper', () => ({
   safeRefund: jest.fn().mockResolvedValue(undefined),
@@ -24,6 +25,25 @@ describe('EssayGalleryService', () => {
       // `admissionCase.update` after a fresh LLM analysis lands.
       update: jest.fn().mockResolvedValue({}),
     },
+    essay: {
+      findFirst: jest.fn(),
+      update: jest.fn(),
+    },
+    essayAIResult: {
+      create: jest.fn(),
+    },
+    galleryEssayAIInteraction: {
+      create: jest.fn(),
+      update: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      aggregate: jest.fn(),
+    },
+    galleryEssayAIInteractionFeedback: {
+      upsert: jest.fn(),
+      groupBy: jest.fn(),
+    },
   };
 
   const mockEssayAiService = {
@@ -31,7 +51,15 @@ describe('EssayGalleryService', () => {
   };
 
   const mockIncentiveService = {
-    charge: jest.fn().mockResolvedValue({ newBalance: 80 }),
+    charge: jest.fn().mockResolvedValue({
+      newBalance: 80,
+      pointHistoryId: 'point-history-1',
+      points: -5,
+    }),
+  };
+
+  const mockLLMService = {
+    chatSimpleGuarded: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -41,10 +69,41 @@ describe('EssayGalleryService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: EssayAiService, useValue: mockEssayAiService },
         { provide: PointsService, useValue: mockIncentiveService },
+        { provide: LLMService, useValue: mockLLMService },
       ],
     }).compile();
 
     service = module.get<EssayGalleryService>(EssayGalleryService);
+    mockIncentiveService.charge.mockResolvedValue({
+      newBalance: 80,
+      pointHistoryId: 'point-history-1',
+      points: -5,
+    });
+    (safeRefund as jest.Mock).mockResolvedValue({
+      newBalance: 85,
+      pointHistoryId: 'refund-history-1',
+      points: 5,
+    });
+    mockPrisma.galleryEssayAIInteraction.create.mockResolvedValue({
+      id: 'interaction-1',
+    });
+    mockPrisma.galleryEssayAIInteraction.findFirst.mockResolvedValue(null);
+    mockPrisma.galleryEssayAIInteraction.update.mockResolvedValue({});
+    mockPrisma.galleryEssayAIInteraction.findMany.mockResolvedValue([]);
+    mockPrisma.galleryEssayAIInteraction.count.mockResolvedValue(0);
+    mockPrisma.galleryEssayAIInteraction.aggregate.mockResolvedValue({
+      _avg: { tokensUsed: 0 },
+    });
+    mockPrisma.galleryEssayAIInteractionFeedback.groupBy.mockResolvedValue([]);
+    mockPrisma.galleryEssayAIInteractionFeedback.upsert.mockResolvedValue({
+      id: 'feedback-1',
+      interactionId: 'interaction-1',
+      sentiment: 'HELPFUL',
+      category: null,
+      notes: null,
+      createdAt: new Date('2026-06-18T00:00:00.000Z'),
+      updatedAt: new Date('2026-06-18T00:00:00.000Z'),
+    });
   });
 
   afterEach(() => {
@@ -312,6 +371,767 @@ describe('EssayGalleryService', () => {
     });
   });
 
+  describe('getGalleryLearningNotes', () => {
+    it('should return cached notes without charging points or calling LLM', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-notes',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'Paragraph one.\n\nParagraph two.',
+        gpaRange: null,
+        satRange: null,
+        school: { id: 's1', name: 'MIT', usNewsRank: 1 },
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: {
+          en: {
+            promptVersion: PARAGRAPH_PROMPT_VERSION,
+            generatedAt: '2026-05-01T00:00:00.000Z',
+            payload: {
+              paragraphs: [
+                {
+                  paragraphIndex: 0,
+                  paragraphText: 'Paragraph one.',
+                  score: 8,
+                  status: 'good',
+                  comment: 'Clear setup',
+                  highlights: [{ text: 'specific', dimension: 'detail' }],
+                  suggestions: [],
+                },
+              ],
+              overallScore: 86,
+              structure: {
+                hasStrongOpening: true,
+                hasClarity: true,
+                hasGoodConclusion: true,
+                feedback: 'Solid structure',
+              },
+              summary: 'Shared learning note',
+            },
+          },
+        },
+      });
+
+      const result = await service.getGalleryLearningNotes('case-notes', 'en');
+
+      expect(result.status).toBe('ready');
+      expect(result.cached).toBe(true);
+      expect(result.requestedLocale).toBe('en');
+      expect(result.sourceLocale).toBe('en');
+      expect(result.fallbackUsed).toBe(false);
+      expect(result.payload?.overallScore).toBe(86);
+      expect(mockIncentiveService.charge).not.toHaveBeenCalled();
+      expect(mockLLMService.chatSimpleGuarded).not.toHaveBeenCalled();
+    });
+
+    it('should fallback to the alternate locale when current locale cache is missing', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-fallback',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'Paragraph one.',
+        gpaRange: null,
+        satRange: null,
+        school: null,
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: {
+          zh: {
+            promptVersion: PARAGRAPH_PROMPT_VERSION,
+            generatedAt: '2026-05-01T00:00:00.000Z',
+            payload: {
+              paragraphs: [],
+              overallScore: 90,
+              structure: {
+                hasStrongOpening: true,
+                hasClarity: true,
+                hasGoodConclusion: true,
+                feedback: '结构清楚',
+              },
+              summary: '共享拆解',
+            },
+          },
+        },
+      });
+
+      const result = await service.getGalleryLearningNotes(
+        'case-fallback',
+        'en',
+      );
+
+      expect(result.status).toBe('ready');
+      expect(result.requestedLocale).toBe('en');
+      expect(result.sourceLocale).toBe('zh');
+      expect(result.fallbackUsed).toBe(true);
+      expect(result.payload?.overallScore).toBe(90);
+    });
+
+    it('should return unavailable when no current cache exists', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-miss',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'Essay content',
+        gpaRange: null,
+        satRange: null,
+        school: null,
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+
+      const result = await service.getGalleryLearningNotes('case-miss', 'en');
+
+      expect(result).toEqual({
+        essayId: 'case-miss',
+        status: 'unavailable',
+        promptVersion: PARAGRAPH_PROMPT_VERSION,
+        cached: false,
+        requestedLocale: 'en',
+        fallbackUsed: false,
+      });
+      expect(mockIncentiveService.charge).not.toHaveBeenCalled();
+      expect(mockLLMService.chatSimpleGuarded).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('askGalleryEssay', () => {
+    it('should charge points and return a grounded answer with evidence', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-ask',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'A vivid opening.\n\nA reflective ending.',
+        gpaRange: null,
+        satRange: null,
+        school: { id: 's1', name: 'MIT', usNewsRank: 1 },
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+      mockLLMService.chatSimpleGuarded.mockResolvedValue(
+        JSON.stringify({
+          answer: 'The opening works because it starts with a concrete scene.',
+          evidence: [
+            {
+              source: 'essay',
+              quote: 'A vivid opening.',
+              paragraphIndex: 0,
+              note: 'Concrete opening signal',
+            },
+          ],
+          followUps: ['How can I write a similar opening without copying?'],
+        }),
+      );
+
+      const result = await service.askGalleryEssay(
+        'user-1',
+        'case-ask',
+        { question: 'Why does the opening work?' },
+        'en',
+      );
+
+      expect(mockIncentiveService.charge).toHaveBeenCalledWith(
+        'user-1',
+        'AI_ESSAY_GALLERY_ASK',
+        expect.objectContaining({
+          galleryEssayId: 'case-ask',
+          interactionType: 'question',
+        }),
+      );
+      expect(result.answer).toContain('opening');
+      expect(result.evidence).toHaveLength(1);
+      expect(result.evidence[0].source).toBe('essay');
+      expect(result.interactionId).toBe('interaction-1');
+      expect(mockPrisma.galleryEssayAIInteraction.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            userId: 'user-1',
+            admissionCaseId: 'case-ask',
+            type: 'question',
+            status: 'PENDING',
+          }),
+        }),
+      );
+      expect(mockPrisma.galleryEssayAIInteraction.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'interaction-1' },
+          data: expect.objectContaining({
+            status: 'SUCCEEDED',
+            refundStatus: 'NOT_NEEDED',
+          }),
+        }),
+      );
+    });
+
+    it('should reuse a succeeded interaction for the same client request id without charging again', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-ask',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'A vivid opening.',
+        gpaRange: null,
+        satRange: null,
+        school: null,
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+      mockPrisma.galleryEssayAIInteraction.findFirst.mockResolvedValue({
+        id: 'interaction-existing',
+        admissionCaseId: 'case-ask',
+        type: 'question',
+        status: 'SUCCEEDED',
+        locale: 'en',
+        question: 'Why does this work?',
+        paragraphIndex: null,
+        selectedText: null,
+        focus: null,
+        userEssayId: null,
+        essayAIResultId: null,
+        output: {
+          answer: 'Because it opens with a concrete detail.',
+          followUps: ['How can I adapt the structure?'],
+        },
+        evidence: [
+          {
+            source: 'essay',
+            quote: 'A vivid opening.',
+            verified: true,
+          },
+        ],
+        tokensUsed: 88,
+        pointsAction: 'AI_ESSAY_GALLERY_ASK',
+        pointsCharged: 5,
+        pointsHistoryId: 'point-history-1',
+        refundPointHistoryId: null,
+        refundStatus: 'NOT_NEEDED',
+        errorMessage: null,
+        feedback: null,
+        createdAt: new Date('2026-06-18T00:00:00.000Z'),
+        updatedAt: new Date('2026-06-18T00:00:00.000Z'),
+      });
+
+      const result = await service.askGalleryEssay(
+        'user-1',
+        'case-ask',
+        {
+          question: 'Why does this work?',
+          clientRequestId: 'request-1',
+        },
+        'en',
+      );
+
+      expect(result.interactionId).toBe('interaction-existing');
+      expect(result.answer).toContain('concrete detail');
+      expect(mockIncentiveService.charge).not.toHaveBeenCalled();
+      expect(mockLLMService.chatSimpleGuarded).not.toHaveBeenCalled();
+      expect(
+        mockPrisma.galleryEssayAIInteraction.create,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should refund and mark interaction failed when the LLM call fails', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-ask-fail',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'A vivid opening.',
+        gpaRange: null,
+        satRange: null,
+        school: null,
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+      mockPrisma.galleryEssayAIInteraction.create.mockResolvedValue({
+        id: 'interaction-failed',
+      });
+      mockLLMService.chatSimpleGuarded.mockRejectedValue(new Error('LLM down'));
+
+      await expect(
+        service.askGalleryEssay(
+          'user-1',
+          'case-ask-fail',
+          { question: 'Why does this work?' },
+          'en',
+        ),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(safeRefund).toHaveBeenCalledWith(
+        mockIncentiveService,
+        'user-1',
+        'AI_ESSAY_GALLERY_ASK',
+        expect.anything(),
+        expect.objectContaining({
+          galleryEssayId: 'case-ask-fail',
+          interactionId: 'interaction-failed',
+        }),
+      );
+      expect(mockPrisma.galleryEssayAIInteraction.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'interaction-failed' },
+          data: expect.objectContaining({
+            status: 'FAILED',
+            refundStatus: 'REFUNDED',
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('compareGalleryEssay', () => {
+    it('should enforce ownership before comparing', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-compare',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'Reference essay content',
+        gpaRange: null,
+        satRange: null,
+        school: null,
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+      mockPrisma.essay.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.compareGalleryEssay(
+          'user-1',
+          'case-compare',
+          { userEssayId: 'essay-other' },
+          'en',
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockIncentiveService.charge).not.toHaveBeenCalled();
+      expect(mockLLMService.chatSimpleGuarded).not.toHaveBeenCalled();
+      expect(safeRefund).not.toHaveBeenCalled();
+    });
+
+    it('should create gallery_compare history without modifying the user essay', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-compare',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'Reference essay content',
+        gpaRange: null,
+        satRange: null,
+        school: { id: 's1', name: 'MIT', usNewsRank: 1 },
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+      mockPrisma.essay.findFirst.mockResolvedValue({
+        id: 'essay-1',
+        title: 'My draft',
+        prompt: 'Prompt',
+        content: 'My essay draft content',
+        wordCount: 4,
+        schoolId: null,
+      });
+      mockLLMService.chatSimpleGuarded.mockResolvedValue(
+        JSON.stringify({
+          referenceSignals: ['Uses a concrete narrative arc'],
+          gapAnalysis: ['Your draft needs a clearer turning point'],
+          overlapWarnings: ['Low wording overlap; keep your own examples'],
+          overlapRisk: 'high',
+          overlapRiskReason: 'Several near-identical phrases detected',
+          revisionActions: ['Add one specific scene', 'Clarify the reflection'],
+          evidence: [
+            {
+              source: 'essay',
+              quote: 'Reference essay content',
+              paragraphIndex: 0,
+              note: 'Reference signal',
+            },
+            {
+              source: 'user_essay',
+              quote: 'My essay draft content',
+              note: 'User draft signal',
+            },
+          ],
+        }),
+      );
+      mockPrisma.essayAIResult.create.mockResolvedValue({ id: 'ai-result-1' });
+      mockPrisma.galleryEssayAIInteraction.create.mockResolvedValue({
+        id: 'interaction-compare-1',
+      });
+
+      const result = await service.compareGalleryEssay(
+        'user-1',
+        'case-compare',
+        { userEssayId: 'essay-1', focus: 'structure' },
+        'en',
+      );
+
+      expect(mockIncentiveService.charge).toHaveBeenCalledWith(
+        'user-1',
+        'AI_ESSAY_COMPARE',
+        expect.objectContaining({
+          galleryEssayId: 'case-compare',
+          userEssayId: 'essay-1',
+          interactionType: 'compare',
+          focus: 'structure',
+        }),
+      );
+      expect(mockPrisma.essayAIResult.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            essayId: 'essay-1',
+            type: 'gallery_compare',
+          }),
+        }),
+      );
+      expect(mockPrisma.essay.update).not.toHaveBeenCalled();
+      expect(result.resultId).toBe('ai-result-1');
+      expect(result.interactionId).toBe('interaction-compare-1');
+      expect(result.revisionActions).toContain('Add one specific scene');
+      expect(result.overlapRisk).toBe('high');
+      expect(result.overlapRiskReason).toContain('near-identical');
+      expect(mockPrisma.galleryEssayAIInteraction.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'interaction-compare-1' },
+          data: expect.objectContaining({
+            status: 'SUCCEEDED',
+            essayAIResultId: 'ai-result-1',
+          }),
+        }),
+      );
+    });
+
+    it('should default overlapRisk to low when the LLM omits or garbles it', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-compare',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Prompt',
+        essayContent: 'Reference essay content',
+        gpaRange: null,
+        satRange: null,
+        school: { id: 's1', name: 'MIT', usNewsRank: 1 },
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: null,
+      });
+      mockPrisma.essay.findFirst.mockResolvedValue({
+        id: 'essay-1',
+        title: 'My draft',
+        prompt: 'Prompt',
+        content: 'My essay draft content',
+        wordCount: 4,
+        schoolId: null,
+      });
+      mockLLMService.chatSimpleGuarded.mockResolvedValue(
+        JSON.stringify({
+          referenceSignals: ['Uses a concrete narrative arc'],
+          gapAnalysis: ['Needs a clearer turning point'],
+          overlapWarnings: [],
+          overlapRisk: 'catastrophic', // invalid band → must fall back to low
+          revisionActions: ['Add one specific scene'],
+          evidence: [
+            {
+              source: 'essay',
+              quote: 'Reference essay content',
+              paragraphIndex: 0,
+              note: 'Reference signal',
+            },
+          ],
+        }),
+      );
+      mockPrisma.essayAIResult.create.mockResolvedValue({ id: 'ai-result-2' });
+      mockPrisma.galleryEssayAIInteraction.create.mockResolvedValue({
+        id: 'interaction-compare-2',
+      });
+
+      const result = await service.compareGalleryEssay(
+        'user-1',
+        'case-compare',
+        { userEssayId: 'essay-1' },
+        'en',
+      );
+
+      expect(result.overlapRisk).toBe('low');
+      expect(result.overlapRiskReason).toBeUndefined();
+    });
+  });
+
+  describe('gallery AI interactions history and feedback', () => {
+    it('should list current user interactions with stored outputs and feedback', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({ id: 'case-1' });
+      mockPrisma.galleryEssayAIInteraction.findMany.mockResolvedValue([
+        {
+          id: 'interaction-1',
+          userId: 'user-1',
+          admissionCaseId: 'case-1',
+          type: 'question',
+          status: 'SUCCEEDED',
+          locale: 'en',
+          question: 'Why does the opening work?',
+          paragraphIndex: 0,
+          selectedText: null,
+          focus: null,
+          userEssayId: null,
+          essayAIResultId: null,
+          output: {
+            answer: 'Because it opens with a concrete scene.',
+            followUps: ['How can I avoid copying?'],
+          },
+          evidence: [
+            {
+              source: 'essay',
+              quote: 'A vivid opening.',
+              paragraphIndex: 0,
+            },
+          ],
+          tokensUsed: 123,
+          pointsAction: 'AI_ESSAY_GALLERY_ASK',
+          refundStatus: 'NOT_NEEDED',
+          errorMessage: null,
+          createdAt: new Date('2026-06-18T00:00:00.000Z'),
+          updatedAt: new Date('2026-06-18T00:01:00.000Z'),
+          feedback: {
+            id: 'feedback-1',
+            interactionId: 'interaction-1',
+            userId: 'user-1',
+            sentiment: 'HELPFUL',
+            category: null,
+            notes: null,
+            createdAt: new Date('2026-06-18T00:02:00.000Z'),
+            updatedAt: new Date('2026-06-18T00:02:00.000Z'),
+          },
+        },
+      ]);
+      mockPrisma.galleryEssayAIInteraction.count.mockResolvedValue(1);
+
+      const result = await service.listGalleryEssayInteractions(
+        'user-1',
+        'case-1',
+        { type: 'question', limit: 10 },
+      );
+
+      expect(result.total).toBe(1);
+      expect(result.items[0]).toEqual(
+        expect.objectContaining({
+          id: 'interaction-1',
+          essayId: 'case-1',
+          type: 'question',
+          status: 'SUCCEEDED',
+          answer: 'Because it opens with a concrete scene.',
+          tokensUsed: 123,
+          feedback: expect.objectContaining({ sentiment: 'HELPFUL' }),
+        }),
+      );
+      expect(result.items[0].evidence).toHaveLength(1);
+    });
+
+    it('should upsert helpful feedback for the owner of an interaction', async () => {
+      mockPrisma.galleryEssayAIInteraction.findFirst.mockResolvedValue({
+        id: 'interaction-1',
+      });
+      mockPrisma.galleryEssayAIInteractionFeedback.upsert.mockResolvedValue({
+        id: 'feedback-1',
+        interactionId: 'interaction-1',
+        userId: 'user-1',
+        sentiment: 'NOT_HELPFUL',
+        category: 'too_generic',
+        notes: 'Needs more specific evidence',
+        createdAt: new Date('2026-06-18T00:00:00.000Z'),
+        updatedAt: new Date('2026-06-18T00:00:00.000Z'),
+      });
+
+      const result = await service.submitGalleryInteractionFeedback(
+        'user-1',
+        'interaction-1',
+        {
+          sentiment: 'NOT_HELPFUL',
+          category: 'too_generic',
+          notes: 'Needs more specific evidence',
+        },
+      );
+
+      expect(
+        mockPrisma.galleryEssayAIInteractionFeedback.upsert,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { interactionId: 'interaction-1' },
+          create: expect.objectContaining({
+            userId: 'user-1',
+            sentiment: 'NOT_HELPFUL',
+            category: 'too_generic',
+          }),
+          update: expect.objectContaining({
+            sentiment: 'NOT_HELPFUL',
+            category: 'too_generic',
+          }),
+        }),
+      );
+      expect(result.sentiment).toBe('NOT_HELPFUL');
+      expect(result.category).toBe('too_generic');
+    });
+
+    it('should aggregate admin metrics for usage, feedback, tokens, and learning-note coverage', async () => {
+      mockPrisma.galleryEssayAIInteraction.count
+        .mockResolvedValueOnce(10)
+        .mockResolvedValueOnce(6)
+        .mockResolvedValueOnce(4)
+        .mockResolvedValueOnce(8)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(1);
+      mockPrisma.galleryEssayAIInteraction.aggregate.mockResolvedValue({
+        _avg: { tokensUsed: 322 },
+      });
+      mockPrisma.galleryEssayAIInteractionFeedback.groupBy.mockResolvedValue([
+        { sentiment: 'HELPFUL', _count: 3 },
+        { sentiment: 'NOT_HELPFUL', _count: 1 },
+      ]);
+      mockPrisma.admissionCase.findMany.mockResolvedValue([
+        {
+          aiAnalysisCache: {
+            en: {
+              promptVersion: PARAGRAPH_PROMPT_VERSION,
+              generatedAt: '2026-05-01T00:00:00.000Z',
+              payload: {
+                paragraphs: [],
+                overallScore: 88,
+                structure: {
+                  hasStrongOpening: true,
+                  hasClarity: true,
+                  hasGoodConclusion: true,
+                  feedback: 'Solid',
+                },
+                summary: 'Ready',
+              },
+            },
+          },
+        },
+        {
+          aiAnalysisCache: {
+            zh: {
+              promptVersion: 'old',
+              generatedAt: '2026-05-01T00:00:00.000Z',
+              payload: {},
+            },
+          },
+        },
+        { aiAnalysisCache: null },
+      ]);
+
+      const result = await service.getAdminGalleryAiMetrics();
+
+      expect(result.totals).toEqual(
+        expect.objectContaining({
+          interactions: 10,
+          questions: 6,
+          compares: 4,
+          succeeded: 8,
+          failed: 2,
+          refunded: 1,
+          feedback: 4,
+          helpful: 3,
+          notHelpful: 1,
+        }),
+      );
+      expect(result.rates.helpfulRate).toBe(0.75);
+      expect(result.rates.failureRate).toBe(0.2);
+      expect(result.tokens.average).toBe(322);
+      expect(result.learningNotes).toEqual(
+        expect.objectContaining({
+          publicEssayCount: 3,
+          readyCount: 1,
+          missingCount: 2,
+        }),
+      );
+    });
+
+    it('should apply the admin metrics date window to interaction and feedback queries', async () => {
+      mockPrisma.galleryEssayAIInteraction.count.mockResolvedValue(0);
+      mockPrisma.galleryEssayAIInteraction.aggregate.mockResolvedValue({
+        _avg: { tokensUsed: 0 },
+      });
+      mockPrisma.galleryEssayAIInteractionFeedback.groupBy.mockResolvedValue(
+        [],
+      );
+      mockPrisma.admissionCase.findMany.mockResolvedValue([]);
+
+      const result = await service.getAdminGalleryAiMetrics({
+        from: '2026-06-01T00:00:00.000Z',
+        to: '2026-06-30T23:59:59.000Z',
+      });
+
+      expect(result.period).toEqual({
+        from: '2026-06-01T00:00:00.000Z',
+        to: '2026-06-30T23:59:59.000Z',
+      });
+      expect(
+        mockPrisma.galleryEssayAIInteraction.count,
+      ).toHaveBeenNthCalledWith(1, {
+        where: {
+          createdAt: {
+            gte: new Date('2026-06-01T00:00:00.000Z'),
+            lte: new Date('2026-06-30T23:59:59.000Z'),
+          },
+        },
+      });
+      expect(
+        mockPrisma.galleryEssayAIInteractionFeedback.groupBy,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            createdAt: {
+              gte: new Date('2026-06-01T00:00:00.000Z'),
+              lte: new Date('2026-06-30T23:59:59.000Z'),
+            },
+          },
+        }),
+      );
+    });
+  });
+
   describe('analyzeGalleryEssay', () => {
     it('should charge points and return analysis', async () => {
       mockPrisma.admissionCase.findFirst.mockResolvedValue({
@@ -388,7 +1208,7 @@ describe('EssayGalleryService', () => {
         visibility: 'PUBLIC',
         aiAnalysisCache: {
           en: {
-            promptVersion: 'v1',
+            promptVersion: PARAGRAPH_PROMPT_VERSION,
             generatedAt: '2026-05-01T00:00:00.000Z',
             payload: {
               paragraphs: [],
@@ -444,7 +1264,7 @@ describe('EssayGalleryService', () => {
         visibility: 'PUBLIC',
         aiAnalysisCache: {
           en: {
-            promptVersion: 'v1',
+            promptVersion: PARAGRAPH_PROMPT_VERSION,
             generatedAt: '2026-05-01T00:00:00.000Z',
             payload: { overallScore: 88 },
           },

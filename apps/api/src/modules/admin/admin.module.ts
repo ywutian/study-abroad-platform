@@ -24,6 +24,7 @@ import { AdminThemeStyleController } from './admin-theme-style.controller';
 import { AdminCacheHealthController } from './admin-cache-health.controller';
 import { AdminProfileReadinessDeliveryController } from './admin-profile-readiness-delivery.controller';
 import { AdminProfileReadinessDeliveryService } from './admin-profile-readiness-delivery.service';
+import { AdminEssayGalleryAIController } from './admin-essay-gallery-ai.controller';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
@@ -32,6 +33,7 @@ import { SchoolModule } from '../school/school.module';
 import { PredictionModule } from '../prediction/prediction.module';
 import { AuthModule } from '../auth/auth.module';
 import { ProfileModule } from '../profile/profile.module';
+import { EssayModule } from '../essay/essay.module';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { ProfileModule } from '../profile/profile.module';
     SchoolModule,
     PredictionModule,
     ProfileModule,
+    EssayModule,
     AuthModule, // Provides JwtService for AdminProgressGateway
   ],
   controllers: [
@@ -58,6 +61,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminThemeStyleController,
     AdminCacheHealthController,
     AdminProfileReadinessDeliveryController,
+    AdminEssayGalleryAIController,
   ],
   providers: [
     AdminService,

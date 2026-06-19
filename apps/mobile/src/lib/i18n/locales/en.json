@@ -1526,7 +1526,15 @@
         "endingImpact": "Ending Impact",
         "paragraphReview": "Paragraph Review",
         "highlights": "Highlights",
-        "suggestions": "Suggestions"
+        "suggestions": "Suggestions",
+        "dimensions": {
+          "hook": "Hook",
+          "structure": "Structure",
+          "voice": "Voice",
+          "insight": "Insight",
+          "fit": "Fit",
+          "detail": "Detail"
+        }
       },
       "noContent": "No content available"
     },

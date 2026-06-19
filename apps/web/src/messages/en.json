@@ -5199,6 +5199,18 @@
           "continuation": "Continuation"
         }
       },
+      "galleryCompare": {
+        "title": "From reference comparison",
+        "source": "Reference compare",
+        "historyHint": "Recent comparison results stay here so you can revisit evidence and revision actions.",
+        "count": "{count} results",
+        "referenceSignals": "What to learn",
+        "gapAnalysis": "My gaps",
+        "overlapWarnings": "Similarity risk",
+        "revisionActions": "Next revisions",
+        "evidence": "Evidence",
+        "viewReference": "Back to reference"
+      },
       "review": {
         "emptyTitle": "No review yet",
         "emptyDesc": "Run AI review to see strengths, weaknesses, and next steps.",
@@ -6159,9 +6171,44 @@
       "selfReflectionTitle": "Author's reflection",
       "tabs": {
         "original": "Original Essay",
-        "aiReview": "AI Paragraph Review"
+        "aiReview": "AI Paragraph Review",
+        "learningNotes": "Learning Notes"
       },
       "background": "Background Info",
+      "learningNotes": {
+        "title": "Shared Learning Notes",
+        "sharedHint": "These are shared notes generated from the public reference essay. Every user sees the same notes and no points are charged. Personalized AI value now lives in asking about this essay or comparing it with your draft.",
+        "askAction": "Ask About This Essay",
+        "compareAction": "Compare My Essay",
+        "fallbackHint": "No cache in the current language; showing {locale} notes",
+        "locales": {
+          "zh": "Chinese",
+          "en": "English"
+        },
+        "unavailableTitle": "Learning notes are not available yet",
+        "unavailableDesc": "You can still ask questions about the original essay or use it as a reference to compare your own draft."
+      },
+      "points": {
+        "cost": "Costs {points} points when submitted",
+        "disabled": "Points are currently disabled; this will not deduct points"
+      },
+      "personalizedTools": {
+        "unavailable": "Personalized essay tools are temporarily unavailable. Please try again later.",
+        "maintenanceHint": "Personalized Q&A and comparison tools are temporarily unavailable; shared learning notes are still available."
+      },
+      "feedback": {
+        "prompt": "Was this result helpful?",
+        "helpful": "Helpful",
+        "notHelpful": "Not helpful",
+        "saved": "Feedback saved",
+        "reasons": {
+          "wrong_evidence": "Wrong evidence",
+          "too_generic": "Too generic",
+          "template_like": "Template-like",
+          "cost_not_worth": "Not worth the cost",
+          "other": "Other"
+        }
+      },
       "ai": {
         "loginRequired": "Login to use AI paragraph review",
         "costHint": "Costs 20 points for professional admissions officer perspective analysis",
@@ -6188,7 +6235,86 @@
         "score": "Score",
         "highlights": "Highlights",
         "suggestions": "Suggestions",
-        "disagreeButton": "Disagree? Tell me why →"
+        "dimensions": {
+          "hook": "Hook",
+          "structure": "Structure",
+          "voice": "Voice",
+          "insight": "Insight",
+          "fit": "Fit",
+          "detail": "Detail"
+        },
+        "disagreeButton": "Disagree? Tell me why →",
+        "askAboutParagraph": "Ask about this note →"
+      },
+      "qa": {
+        "title": "Ask About This Essay",
+        "placeholder": "For example: why does this opening work? What structure can I learn from this paragraph?",
+        "submit": "Send Question",
+        "thinking": "Thinking...",
+        "answerReady": "Answer generated",
+        "evidence": "Quoted evidence",
+        "selectedText": "This question will use your selected text",
+        "history": "Recent questions",
+        "failed": "This question failed and points were refunded.",
+        "paragraphQuestion": "How should I understand the note for paragraph {num}?",
+        "quick": {
+          "structure": "Why is this essay's structure effective?",
+          "opening": "How does the opening hook the reader?",
+          "copyRisk": "Which parts should I avoid copying?",
+          "fit": "What kind of applicant can learn from this?"
+        }
+      },
+      "compare": {
+        "title": "Compare My Essay With This Reference",
+        "selectEssay": "Choose your draft",
+        "noPrompt": "No prompt entered",
+        "submit": "Start Comparison",
+        "comparing": "Comparing...",
+        "resultReady": "Comparison ready",
+        "noDraftTitle": "You do not have a draft yet",
+        "noDraftDesc": "Create a draft from this prompt first, then come back to compare it with the reference.",
+        "focus": "Choose comparison focus",
+        "focusOptions": {
+          "structure": "Structure",
+          "theme": "Theme",
+          "voice": "Voice",
+          "schoolFit": "School fit",
+          "revisionPlan": "Revision plan"
+        },
+        "referenceSignals": "What to Learn",
+        "gapAnalysis": "My Gaps",
+        "overlapWarnings": "Similarity / Copy Risk",
+        "overlapRisk": {
+          "label": "Similarity risk",
+          "levels": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High"
+          },
+          "disclaimer": "An AI signal, not a plagiarism verdict — it does not reflect any school's detection tool."
+        },
+        "revisionActions": "Revision Actions",
+        "evidence": "Evidence",
+        "openWorkbench": "Open Essay Workbench",
+        "history": "Recent comparisons",
+        "historyBadge": "Reference compare",
+        "failed": "This comparison failed and points were refunded."
+      },
+      "citation": {
+        "label": "Showing quoted evidence in the essay",
+        "counter": "Evidence {index} / {total}",
+        "jump": "Show in the essay",
+        "prev": "Previous evidence",
+        "next": "Next evidence",
+        "clear": "Clear highlight",
+        "verified": "Quote verified in the source",
+        "notFound": "not found in the essay text"
+      },
+      "evidenceSources": {
+        "essay": "Reference essay",
+        "learning_notes": "Learning notes",
+        "case_context": "Case context",
+        "user_essay": "My essay"
       }
     },
     "quickTags": {
@@ -7858,6 +7984,11 @@
       "advanced": "Advanced",
       "expert": "Expert",
       "master": "Master"
+    },
+    "earnToast": {
+      "title": "You earned +{points} points",
+      "description": "Put them to use on the essay gallery AI.",
+      "cta": "Use it now"
     },
     "rules": {
       "title": "Points Rules",

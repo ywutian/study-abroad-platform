@@ -12,6 +12,7 @@ import { OfflineIndicator } from '@/components/ui/offline-indicator';
 import { StaleAssetReloader } from '@/components/common/stale-asset-reloader';
 import { TourProvider } from '@/components/features/onboarding/tour-provider';
 import { FeedbackWidget } from '@/components/features/feedback/feedback-widget';
+import { PointsEarnWatcher } from '@/components/features/points/PointsEarnWatcher';
 import { OverflowDetector } from '@/components/dev/overflow-detector';
 import { useAuthStore, startTokenRefreshInterval, stopTokenRefreshInterval } from '@/stores/auth';
 import { ThemeAppearanceManager } from '@/hooks/use-theme-appearance-overrides';
@@ -62,6 +63,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   <ThemeAppearanceManager />
                   <HeroVisualManager />
                   <AuthInitializer>{children}</AuthInitializer>
+                  {/* Golden-moment points loop: toast a spend CTA the moment a
+                      user's lifetime earned points rises. */}
+                  <PointsEarnWatcher />
                   {/* Hard-reload a tab whose chunks/RSC went stale after a deploy
                       so a "dead" navigation recovers instead of silently hanging. */}
                   <StaleAssetReloader />

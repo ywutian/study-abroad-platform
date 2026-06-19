@@ -163,6 +163,8 @@ export class PrismaService
       this.applicationTask.deleteMany(),
       this.applicationTimeline.deleteMany(),
       this.schoolRecommendation.deleteMany(),
+      this.galleryEssayAIInteractionFeedback.deleteMany(),
+      this.galleryEssayAIInteraction.deleteMany(),
       this.essayAIResult.deleteMany(),
       this.essay.deleteMany(),
       this.predictionResult.deleteMany(),

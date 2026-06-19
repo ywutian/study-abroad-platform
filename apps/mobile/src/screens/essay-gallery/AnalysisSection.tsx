@@ -20,7 +20,13 @@ import {
 } from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import type { AnalysisResult, ParagraphAnalysis, EssayDetail, Colors } from './types';
+import type {
+  AnalysisResult,
+  ParagraphAnalysis,
+  EssayHighlight,
+  EssayDetail,
+  Colors,
+} from './types';
 import { useResultColors, useStatusColors } from './types';
 
 // ---------------------------------------------------------------------------
@@ -134,12 +140,27 @@ const ParagraphReviewCard = React.memo(function ParagraphReviewCard({
               <Text style={[S.highlightsTitle, { color: resultColors.ADMITTED }]}>
                 {t('essayGallery.detail.analysis.highlights')}
               </Text>
-              {paragraph.highlights.map((h, i) => (
-                <View key={i} style={S.bulletItem}>
-                  <Ionicons name="star" size={12} color={resultColors.ADMITTED} />
-                  <Text style={[S.bulletText, { color: c.foreground }]}>{h}</Text>
-                </View>
-              ))}
+              {paragraph.highlights.map((h, i) => {
+                // Defensive: offline-persisted results may hold the legacy
+                // `string` shape instead of `{ text, dimension }`.
+                const raw = h as EssayHighlight | string;
+                const text = typeof raw === 'string' ? raw : (raw?.text ?? '');
+                const dimension = typeof raw === 'string' ? undefined : raw?.dimension;
+                if (!text) return null;
+                return (
+                  <View key={i} style={S.bulletItem}>
+                    <Ionicons name="star" size={12} color={resultColors.ADMITTED} />
+                    <Text style={[S.bulletText, { color: c.foreground }]}>
+                      {text}
+                      {dimension ? (
+                        <Text style={{ color: c.foregroundMuted }}>
+                          {`  ·  ${t(`essayGallery.detail.analysis.dimensions.${dimension}`)}`}
+                        </Text>
+                      ) : null}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
           )}
 

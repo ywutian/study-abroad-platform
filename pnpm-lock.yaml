@@ -9,7 +9,9 @@ overrides:
   lodash: 4.18.1
   qs: '>=6.14.1'
   tar: '>=7.5.10'
-  multer: '>=2.1.1'
+  multer: '>=2.2.0'
+  hono: '>=4.12.25'
+  piscina: '>=4.9.3'
   '@xmldom/xmldom': '>=0.9.10'
   '@expo/plist>@xmldom/xmldom': 0.8.13
   fast-xml-parser: '>=5.5.6'
@@ -27,7 +29,7 @@ overrides:
   sequelize@>=6.0.0 <=6.37.7: '>=6.37.8 <7'
   flatted@<=3.4.1: '>=3.4.2'
   undici@>=5.0.0 <6.24.0: '>=6.24.0 <7'
-  undici@>=7.0.0 <7.24.0: '>=7.24.0 <8'
+  undici@>=7.0.0 <7.28.0: '>=7.28.0 <8'
   socket.io-parser@>=4.0.0 <4.2.6: '>=4.2.6'
   picomatch@^2: '>=2.3.2 <3'
   picomatch@^3: '>=3.0.2 <4'
@@ -3904,7 +3906,7 @@ packages:
       }
     engines: { node: '>=18.14.1' }
     peerDependencies:
-      hono: ^4
+      hono: '>=4.12.25'
 
   '@hookform/resolvers@3.9.1':
     resolution:
@@ -17052,10 +17054,10 @@ packages:
         integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==,
       }
 
-  hono@4.12.9:
+  hono@4.12.26:
     resolution:
       {
-        integrity: sha512-wy3T8Zm2bsEvxKZM5w21VdHDDcwVS1yUFFY6i8UobSsKfFceT7TOwhbhfKsDyx7tYQlmRM5FLpIuYvNFyjctiA==,
+        integrity: sha512-uyZtpnYxM9CmQ7QsQknM4zN8EftNqhON1qYeIKM0Se67CCEe2c44xyGURwB0axX2fBDu1dqHrHAc1hmNT8ITkw==,
       }
     engines: { node: '>=16.9.0' }
 
@@ -20456,10 +20458,10 @@ packages:
         integrity: sha512-UjkUHN0yqp9RWKy0Lplhh+wlpdt9oQBYgULZOiFhV3VclSF1JnSQWZ5r9gORQlNYaUKQoR8itv7g7z1xDDuACA==,
       }
 
-  multer@2.1.1:
+  multer@2.2.0:
     resolution:
       {
-        integrity: sha512-mo+QTzKlx8R7E5ylSXxWzGoXoZbOsRMpyitcht8By2KHvMbf3tjwosZ/Mu/XYU6UuJ3VZnODIrak5ZrPiPyB6A==,
+        integrity: sha512-6rdyFg2kLrMh9Jee7/BMPuV9lEAd7lLW2YUpF9/YxR7njyoUwwQ0ZPh3TaIY50Sw6vlyD2HW3wGOkTS4P79xrQ==,
       }
     engines: { node: '>= 10.16.0' }
 
@@ -21568,11 +21570,12 @@ packages:
       }
     engines: { node: '>= 6' }
 
-  piscina@4.9.2:
+  piscina@5.2.0:
     resolution:
       {
-        integrity: sha512-Fq0FERJWFEUpB4eSY59wSNwXD4RYqR+nR/WiEVcZW8IWfVBxJJafcgTEZDQo8k3w0sUarJ8RyVbbUF4GQ2LGbQ==,
+        integrity: sha512-DszUCKeVN/5G5QKo6jAVHL8fmKnkJvQ0ACiVgY7YGCq3TUB2oznAOayvZPIAdEThvhczkXR+qm3IHsNXpFCYfA==,
       }
+    engines: { node: '>=20.x' }
 
   pkce-challenge@5.0.1:
     resolution:
@@ -25047,13 +25050,6 @@ packages:
         integrity: sha512-sC+b0tB1whOCzbtlx20fx3WgCXwkW627p4EA9uM+/tNNPkSS+eSEld6pAs9nDv7WbY1UUljBMYPtu9BCOrCWKA==,
       }
     engines: { node: '>=18.17' }
-
-  undici@7.24.5:
-    resolution:
-      {
-        integrity: sha512-3IWdCpjgxp15CbJnsi/Y9TCDE7HWVN19j1hmzVhoAkY/+CJx449tVxT5wZc1Gwg8J+P0LWvzlBzxYRnHJ+1i7Q==,
-      }
-    engines: { node: '>=20.18.1' }
 
   undici@7.28.0:
     resolution:
@@ -29230,9 +29226,9 @@ snapshots:
       '@hapi/hoek': 9.3.0
     optional: true
 
-  '@hono/node-server@1.19.11(hono@4.12.9)':
+  '@hono/node-server@1.19.11(hono@4.12.26)':
     dependencies:
-      hono: 4.12.9
+      hono: 4.12.26
 
   '@hookform/resolvers@3.9.1(react-hook-form@7.71.1(react@19.2.3))':
     dependencies:
@@ -29927,7 +29923,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.28.0(zod@3.25.76)':
     dependencies:
-      '@hono/node-server': 1.19.11(hono@4.12.9)
+      '@hono/node-server': 1.19.11(hono@4.12.26)
       ajv: 8.17.1
       ajv-formats: 3.0.1(ajv@8.17.1)
       content-type: 1.0.5
@@ -29937,7 +29933,7 @@ snapshots:
       eventsource-parser: 3.0.6
       express: 5.2.1
       express-rate-limit: 8.3.1(express@5.2.1)
-      hono: 4.12.9
+      hono: 4.12.26
       jose: 6.2.2
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -30221,7 +30217,7 @@ snapshots:
       '@nestjs/core': 11.1.12(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.12)(@nestjs/websockets@11.1.12)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       cors: 2.8.5
       express: 5.2.1
-      multer: 2.1.1
+      multer: 2.2.0
       path-to-regexp: 8.4.0
       tslib: 2.8.1
     transitivePeerDependencies:
@@ -34009,7 +34005,7 @@ snapshots:
       '@xhmikosr/bin-wrapper': 14.2.3
       commander: 8.3.0
       minimatch: 9.0.9
-      piscina: 4.9.2
+      piscina: 5.2.0
       semver: 7.7.4
       slash: 3.0.0
       source-map: 0.7.6
@@ -36251,7 +36247,7 @@ snapshots:
       parse5: 7.3.0
       parse5-htmlparser2-tree-adapter: 7.1.0
       parse5-parser-stream: 7.1.2
-      undici: 7.24.5
+      undici: 7.28.0
       whatwg-mimetype: 4.0.0
 
   chokidar@3.6.0:
@@ -38972,7 +38968,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.12.9: {}
+  hono@4.12.26: {}
 
   hosted-git-info@7.0.2:
     dependencies:
@@ -40362,7 +40358,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.0
-      undici: 7.24.5
+      undici: 7.28.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -41673,7 +41669,7 @@ snapshots:
     optionalDependencies:
       msgpackr-extract: 3.0.3
 
-  multer@2.1.1:
+  multer@2.2.0:
     dependencies:
       append-field: 1.0.0
       busboy: 1.6.0
@@ -42320,7 +42316,7 @@ snapshots:
 
   pirates@4.0.7: {}
 
-  piscina@4.9.2:
+  piscina@5.2.0:
     optionalDependencies:
       '@napi-rs/nice': 1.1.1
 
@@ -44777,8 +44773,6 @@ snapshots:
   undici-types@7.24.6: {}
 
   undici@6.24.1: {}
-
-  undici@7.24.5: {}
 
   undici@7.28.0: {}
 

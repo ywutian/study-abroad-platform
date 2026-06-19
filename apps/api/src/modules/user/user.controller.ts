@@ -138,8 +138,12 @@ export class UserController {
   @Get('me/points/rules')
   @ApiOperation({ summary: 'Get points rules' })
   async getPointRules() {
-    const rules = await this.pointsConfigService.getAllRules();
+    const [enabled, rules] = await Promise.all([
+      this.pointsConfigService.isEnabled(),
+      this.pointsConfigService.getAllRules(),
+    ]);
     return {
+      enabled,
       earn: rules.filter((r) => r.type === 'earn'),
       spend: rules.filter((r) => r.type === 'spend'),
     };

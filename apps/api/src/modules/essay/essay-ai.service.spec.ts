@@ -389,7 +389,13 @@ describe('EssayAiService', () => {
             score: 7,
             status: 'good',
             comment: 'Decent paragraph',
-            highlights: ['Good flow'],
+            // Mixed shapes: a legacy string, a valid tagged highlight, and an
+            // invalid dimension — all must normalize to { text, dimension }.
+            highlights: [
+              'Good flow',
+              { text: 'vivid imagery', dimension: 'voice' },
+              { text: 'tagless', dimension: 'NONSENSE' },
+            ],
             suggestions: ['Add specifics'],
           },
         ],
@@ -416,6 +422,13 @@ describe('EssayAiService', () => {
       expect(result.paragraphs).toHaveLength(1);
       expect(result.overallScore).toBe(70);
       expect(result.structure.hasStrongOpening).toBe(true);
+      // highlights normalize to { text, dimension }; legacy strings and
+      // invalid dimensions fall back to 'detail', valid tags are preserved.
+      expect(result.paragraphs[0].highlights).toEqual([
+        { text: 'Good flow', dimension: 'detail' },
+        { text: 'vivid imagery', dimension: 'voice' },
+        { text: 'tagless', dimension: 'detail' },
+      ]);
     });
   });
 

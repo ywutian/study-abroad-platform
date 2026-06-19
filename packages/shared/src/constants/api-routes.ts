@@ -254,11 +254,22 @@ export const essayAiRoutes = {
   generateOpening: () => `${API_ROUTES.ESSAY_AI}/generate-opening`,
   rewriteParagraph: () => `${API_ROUTES.ESSAY_AI}/rewrite-paragraph`,
   activityDescription: () => `${API_ROUTES.ESSAY_AI}/activity-description`,
+  history: (essayId: string) => `${API_ROUTES.ESSAY_AI}/history/${essayId}`,
   gallery: () => `${API_ROUTES.ESSAY_AI}/gallery`,
   // Rejected/waitlisted feed for the "文书避雷" tab — self-uploaded only.
   galleryRejected: () => `${API_ROUTES.ESSAY_AI}/gallery/rejected`,
   galleryItem: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}`,
+  galleryLearningNotes: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/learning-notes`,
+  galleryInteractions: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/interactions`,
+  galleryQuestion: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/questions`,
+  galleryCompare: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/compare`,
+  galleryInteractionFeedback: (id: string) =>
+    `${API_ROUTES.ESSAY_AI}/gallery/interactions/${id}/feedback`,
   galleryAnalyze: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/analyze`,
+};
+
+export const adminEssayGalleryAIRoutes = {
+  metrics: () => `${API_ROUTES.ADMIN}/essay-gallery-ai/metrics`,
 };
 
 export const counselorRoutes = {

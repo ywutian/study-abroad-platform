@@ -7,8 +7,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
   BookOpen,
+  ChevronDown,
+  ChevronUp,
   Check,
   Clock3,
+  ExternalLink,
   FileText,
   History,
   Loader2,
@@ -21,11 +24,12 @@ import {
   PencilLine,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { useDebounce } from '@/hooks';
 import { useEssayReview, useEssaySuggestEdits } from '@/hooks/use-essay-ai';
-import { profileRoutes } from '@study-abroad/shared';
+import { essayAiRoutes, profileRoutes, type GalleryEssayEvidence } from '@study-abroad/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,6 +67,25 @@ interface EssayWorkbenchProps {
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
+interface EssayAIHistoryItem {
+  id: string;
+  type: string;
+  input?: string;
+  output: string;
+  suggestions?: unknown;
+  createdAt: string;
+}
+
+interface GalleryCompareHistoryOutput {
+  galleryEssayId?: string | null;
+  focus?: string | null;
+  referenceSignals: string[];
+  gapAnalysis: string[];
+  overlapWarnings: string[];
+  revisionActions: string[];
+  evidence: GalleryEssayEvidence[];
+}
+
 function toValidDate(value: unknown) {
   if (!value) return null;
   const date = new Date(value as string | number | Date);
@@ -74,6 +97,77 @@ function getSaveLabel(t: ReturnType<typeof useTranslations>, state: SaveState) {
   if (state === 'saving') return t('essays.workbench.save.saving');
   if (state === 'error') return t('essays.workbench.save.error');
   return t('essays.workbench.save.saved');
+}
+
+function toStringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    : [];
+}
+
+function toEvidenceList(value: unknown): GalleryEssayEvidence[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item): GalleryEssayEvidence | null => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+      const record = item as Record<string, unknown>;
+      const quote = typeof record.quote === 'string' ? record.quote.trim() : '';
+      if (!quote) return null;
+      const source: GalleryEssayEvidence['source'] =
+        record.source === 'essay' ||
+        record.source === 'learning_notes' ||
+        record.source === 'case_context' ||
+        record.source === 'user_essay'
+          ? record.source
+          : 'essay';
+      const evidence: GalleryEssayEvidence = { source, quote };
+      if (typeof record.paragraphIndex === 'number') {
+        evidence.paragraphIndex = record.paragraphIndex;
+      }
+      if (typeof record.note === 'string') {
+        evidence.note = record.note;
+      }
+      return {
+        ...evidence,
+      };
+    })
+    .filter((item): item is GalleryEssayEvidence => Boolean(item));
+}
+
+function parseGalleryCompareOutput(
+  result: EssayAIHistoryItem | null
+): GalleryCompareHistoryOutput | null {
+  if (!result) return null;
+  let parsedInput: Record<string, unknown> = {};
+  try {
+    parsedInput = result.input ? (JSON.parse(result.input) as Record<string, unknown>) : {};
+  } catch {
+    parsedInput = {};
+  }
+  try {
+    const parsed = JSON.parse(result.output) as Record<string, unknown>;
+    return {
+      galleryEssayId:
+        typeof parsedInput.galleryEssayId === 'string' ? parsedInput.galleryEssayId : null,
+      focus: typeof parsedInput.focus === 'string' ? parsedInput.focus : null,
+      referenceSignals: toStringList(parsed.referenceSignals),
+      gapAnalysis: toStringList(parsed.gapAnalysis),
+      overlapWarnings: toStringList(parsed.overlapWarnings),
+      revisionActions: toStringList(parsed.revisionActions),
+      evidence: toEvidenceList(parsed.evidence),
+    };
+  } catch {
+    return {
+      galleryEssayId:
+        typeof parsedInput.galleryEssayId === 'string' ? parsedInput.galleryEssayId : null,
+      focus: typeof parsedInput.focus === 'string' ? parsedInput.focus : null,
+      referenceSignals: [],
+      gapAnalysis: [],
+      overlapWarnings: [],
+      revisionActions: toStringList(result.suggestions),
+      evidence: [],
+    };
+  }
 }
 
 export function EssayWorkbench({
@@ -134,6 +228,17 @@ export function EssayWorkbench({
     queryFn: () => apiClient.get<EssayRevision[]>(profileRoutes.essayRevisions(selectedEssay!.id)),
     enabled: !!selectedEssay,
   });
+
+  const aiHistoryQuery = useQuery({
+    queryKey: ['essay-ai-history', selectedEssay?.id],
+    queryFn: () => apiClient.get<EssayAIHistoryItem[]>(essayAiRoutes.history(selectedEssay!.id)),
+    enabled: !!selectedEssay,
+  });
+
+  const galleryCompareHistory = useMemo(
+    () => aiHistoryQuery.data?.filter((item) => item.type === 'gallery_compare') ?? [],
+    [aiHistoryQuery.data]
+  );
 
   const reviewMutation = useEssayReview((data) => {
     setReviewResult(data);
@@ -409,6 +514,7 @@ export function EssayWorkbench({
       selectedEssay={selectedEssay}
       suggestions={suggestionsQuery.data ?? []}
       suggestionsLoading={suggestionsQuery.isLoading}
+      galleryCompareHistory={galleryCompareHistory}
       revisions={revisionsQuery.data ?? []}
       revisionsLoading={revisionsQuery.isLoading}
       reviewResult={reviewResult}
@@ -577,6 +683,7 @@ function InsightPanel({
   selectedEssay,
   suggestions,
   suggestionsLoading,
+  galleryCompareHistory,
   revisions,
   revisionsLoading,
   reviewResult,
@@ -597,6 +704,7 @@ function InsightPanel({
   selectedEssay: Essay | null;
   suggestions: EssaySuggestion[];
   suggestionsLoading: boolean;
+  galleryCompareHistory: EssayAIHistoryItem[];
   revisions: EssayRevision[];
   revisionsLoading: boolean;
   reviewResult: EssayReview | null;
@@ -615,6 +723,20 @@ function InsightPanel({
   fmt: ReturnType<typeof useFormatter>;
 }) {
   const pendingSuggestions = suggestions.filter((suggestion) => suggestion.status === 'PENDING');
+  const [expandedGalleryCompareId, setExpandedGalleryCompareId] = useState<string | null>(null);
+  const galleryCompares = useMemo(
+    () =>
+      galleryCompareHistory
+        .map((item) => ({
+          item,
+          parsed: parseGalleryCompareOutput(item),
+        }))
+        .filter(
+          (entry): entry is { item: EssayAIHistoryItem; parsed: GalleryCompareHistoryOutput } =>
+            Boolean(entry.parsed)
+        ),
+    [galleryCompareHistory]
+  );
   const formatKind = (kind: string) => {
     const labels: Record<string, string> = {
       rewrite: t('essays.workbench.suggestions.kind.rewrite'),
@@ -678,13 +800,105 @@ function InsightPanel({
         <TabsContent value="suggestions" className="m-0">
           <ScrollArea className="h-[600px] p-4">
             {suggestionsLoading && <Skeleton className="h-32 rounded-md" />}
-            {!suggestionsLoading && pendingSuggestions.length === 0 && (
-              <PanelEmpty
-                icon={<PencilLine className="h-8 w-8" />}
-                title={t('essays.workbench.suggestions.emptyTitle')}
-                description={t('essays.workbench.suggestions.emptyDesc')}
-              />
+            {galleryCompares.length > 0 && (
+              <div className="mb-4 space-y-3 rounded-md border bg-muted/20 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {t('essays.workbench.galleryCompare.title')}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t('essays.workbench.galleryCompare.historyHint')}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {t('essays.workbench.galleryCompare.count', {
+                      count: galleryCompares.length,
+                    })}
+                  </Badge>
+                </div>
+                {galleryCompares.map(({ item, parsed }, index) => {
+                  const isExpanded =
+                    expandedGalleryCompareId === item.id ||
+                    (!expandedGalleryCompareId && index === 0);
+                  return (
+                    <div key={item.id} className="rounded-md border bg-background/70">
+                      <button
+                        type="button"
+                        className="flex w-full items-start justify-between gap-3 p-3 text-left"
+                        onClick={() => setExpandedGalleryCompareId(isExpanded ? '' : item.id)}
+                      >
+                        <div>
+                          <p className="text-xs font-medium">
+                            {t('essays.workbench.galleryCompare.source')}
+                            {parsed.focus ? ` · ${parsed.focus}` : ''}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {fmt.dateTime(new Date(item.createdAt), 'medium')}
+                          </p>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
+                      {isExpanded && (
+                        <div className="border-t p-3 pt-0">
+                          {parsed.referenceSignals.length > 0 && (
+                            <MiniList
+                              title={t('essays.workbench.galleryCompare.referenceSignals')}
+                              items={parsed.referenceSignals}
+                            />
+                          )}
+                          {parsed.gapAnalysis.length > 0 && (
+                            <MiniList
+                              title={t('essays.workbench.galleryCompare.gapAnalysis')}
+                              items={parsed.gapAnalysis}
+                            />
+                          )}
+                          {parsed.overlapWarnings.length > 0 && (
+                            <MiniList
+                              title={t('essays.workbench.galleryCompare.overlapWarnings')}
+                              items={parsed.overlapWarnings}
+                            />
+                          )}
+                          {parsed.revisionActions.length > 0 && (
+                            <MiniList
+                              title={t('essays.workbench.galleryCompare.revisionActions')}
+                              items={parsed.revisionActions}
+                            />
+                          )}
+                          {parsed.evidence.length > 0 && (
+                            <EvidenceMiniList
+                              title={t('essays.workbench.galleryCompare.evidence')}
+                              items={parsed.evidence}
+                            />
+                          )}
+                          {parsed.galleryEssayId && (
+                            <Button asChild size="sm" variant="outline" className="mt-3 gap-1.5">
+                              <Link href={`/cases/essays/${parsed.galleryEssayId}`}>
+                                {t('essays.workbench.galleryCompare.viewReference')}
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
+            {!suggestionsLoading &&
+              pendingSuggestions.length === 0 &&
+              galleryCompares.length === 0 && (
+                <PanelEmpty
+                  icon={<PencilLine className="h-8 w-8" />}
+                  title={t('essays.workbench.suggestions.emptyTitle')}
+                  description={t('essays.workbench.suggestions.emptyDesc')}
+                />
+              )}
             <div className="space-y-3">
               {pendingSuggestions.map((suggestion) => (
                 <div key={suggestion.id} className="rounded-md border p-3">
@@ -810,6 +1024,44 @@ function InsightPanel({
         </TabsContent>
       </Tabs>
     </aside>
+  );
+}
+
+function MiniList({ title, items }: { title: string; items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="mt-3">
+      <p className="mb-1.5 text-xs font-medium text-muted-foreground">{title}</p>
+      <ul className="space-y-1 text-xs text-muted-foreground">
+        {items.map((item, index) => (
+          <li key={index} className="flex items-start gap-2">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+            <span className="leading-relaxed">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function EvidenceMiniList({ title, items }: { title: string; items: GalleryEssayEvidence[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="mt-3">
+      <p className="mb-1.5 text-xs font-medium text-muted-foreground">{title}</p>
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <div key={index} className="rounded-md bg-muted/40 p-2 text-xs">
+            <Badge variant="outline" className="mb-1">
+              {item.source}
+              {item.paragraphIndex !== undefined && ` · P${item.paragraphIndex + 1}`}
+            </Badge>
+            <p className="leading-relaxed text-muted-foreground">&ldquo;{item.quote}&rdquo;</p>
+            {item.note && <p className="mt-1 text-muted-foreground">{item.note}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
