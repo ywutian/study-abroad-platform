@@ -219,4 +219,26 @@ export interface AdminEssayGalleryAIMetricsResponse {
     missingCount: number;
     missingRate: number;
   };
+  // Closes the feedback loop: the `category` users pick on a NOT_HELPFUL
+  // rating now has a consumer (was previously write-only).
+  feedbackByCategory: Array<{
+    category: GalleryEssayFeedbackCategory;
+    count: number;
+  }>;
+  // Consumes the free-text `notes` on negative feedback so it isn't lost —
+  // the actual qualitative signal admins need to triage prompt issues.
+  recentNotHelpful: Array<{
+    interactionId: string;
+    essayId: string;
+    type: GalleryEssayAIInteractionType;
+    category?: GalleryEssayFeedbackCategory | null;
+    notes?: string | null;
+    createdAt: string;
+  }>;
+  // Actionable per-essay drill-down: which gallery essays drive failures.
+  topFailingEssays: Array<{
+    essayId: string;
+    failed: number;
+    total: number;
+  }>;
 }

@@ -16,6 +16,8 @@ import {
   type GalleryEssayInteractionFeedbackRequest,
   type GalleryEssayInteractionFeedbackResponse,
   type GalleryEssayAIInteractionItem,
+  type GalleryEssayAIInteractionType,
+  type GalleryEssayFeedbackCategory,
   type GalleryEssayInteractionsResponse,
   type GalleryEssayQuestionRequest,
   type GalleryEssayQuestionResponse,
@@ -971,6 +973,10 @@ export class EssayGalleryService {
       refunded,
       tokenStats,
       feedbackBySentiment,
+      feedbackByCategoryRaw,
+      recentNotHelpfulRaw,
+      failedByEssay,
+      totalByEssay,
       publicEssays,
     ] = await Promise.all([
       this.prisma.galleryEssayAIInteraction.count({
@@ -1003,6 +1009,36 @@ export class EssayGalleryService {
         where: feedbackWhere,
         _count: true,
       }),
+      // Category breakdown of NOT_HELPFUL ratings — gives `category` a reader.
+      this.prisma.galleryEssayAIInteractionFeedback.groupBy({
+        by: ['category'],
+        where: { ...feedbackWhere, sentiment: 'NOT_HELPFUL' },
+        _count: true,
+      }),
+      // Recent negative feedback with free-text notes (the qualitative signal).
+      this.prisma.galleryEssayAIInteractionFeedback.findMany({
+        where: { ...feedbackWhere, sentiment: 'NOT_HELPFUL' },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        select: {
+          interactionId: true,
+          category: true,
+          notes: true,
+          createdAt: true,
+          interaction: { select: { admissionCaseId: true, type: true } },
+        },
+      }),
+      // Per-essay failure drill-down (actionable: which essays drive failures).
+      this.prisma.galleryEssayAIInteraction.groupBy({
+        by: ['admissionCaseId'],
+        where: { ...interactionWhere, status: 'FAILED' },
+        _count: true,
+      }),
+      this.prisma.galleryEssayAIInteraction.groupBy({
+        by: ['admissionCaseId'],
+        where: interactionWhere,
+        _count: true,
+      }),
       this.prisma.admissionCase.findMany({
         where: CASE_PUBLIC_WHERE,
         select: { aiAnalysisCache: true },
@@ -1021,6 +1057,35 @@ export class EssayGalleryService {
     ).length;
     const publicEssayCount = publicEssays.length;
     const missingCount = Math.max(publicEssayCount - readyCount, 0);
+
+    const feedbackByCategory = feedbackByCategoryRaw
+      .filter((row) => row.category)
+      .map((row) => ({
+        category: row.category as GalleryEssayFeedbackCategory,
+        count: row._count,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const recentNotHelpful = recentNotHelpfulRaw.map((row) => ({
+      interactionId: row.interactionId,
+      essayId: row.interaction.admissionCaseId,
+      type: row.interaction.type as GalleryEssayAIInteractionType,
+      category: (row.category ?? null) as GalleryEssayFeedbackCategory | null,
+      notes: row.notes,
+      createdAt: row.createdAt.toISOString(),
+    }));
+
+    const totalByEssayMap = new Map(
+      totalByEssay.map((row) => [row.admissionCaseId, row._count]),
+    );
+    const topFailingEssays = failedByEssay
+      .map((row) => ({
+        essayId: row.admissionCaseId,
+        failed: row._count,
+        total: totalByEssayMap.get(row.admissionCaseId) ?? row._count,
+      }))
+      .sort((a, b) => b.failed - a.failed)
+      .slice(0, 10);
 
     return {
       generatedAt: new Date().toISOString(),
@@ -1053,6 +1118,9 @@ export class EssayGalleryService {
         missingCount,
         missingRate: publicEssayCount > 0 ? missingCount / publicEssayCount : 0,
       },
+      feedbackByCategory,
+      recentNotHelpful,
+      topFailingEssays,
     };
   }
 

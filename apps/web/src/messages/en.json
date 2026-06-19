@@ -11466,6 +11466,40 @@
     "rejected": "Rejected",
     "waitlisted": "Waitlisted",
     "tabPipeline": "Pipeline",
+    "tabGalleryAi": "Gallery AI",
+    "galleryAi": {
+      "loadFailed": "Failed to load Gallery AI metrics",
+      "refresh": "Refresh",
+      "interactions": "Interactions",
+      "questions": "Questions",
+      "compares": "Compares",
+      "helpfulRate": "Helpful rate",
+      "failureRate": "Failure rate",
+      "avgTokens": "Avg tokens",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "feedbackByCategory": "Negative feedback by reason",
+      "noNegative": "No negative feedback yet",
+      "recentNotHelpful": "Recent not-helpful feedback",
+      "noNotes": "No negative feedback yet",
+      "noteEmpty": "(no note left)",
+      "topFailingEssays": "Top failing essays",
+      "noFailures": "No failures",
+      "failedOfTotal": "{failed} failed / {total} total",
+      "missingCoverage": "Learning Notes missing for {missing} of {total} public essays",
+      "category": {
+        "wrong_evidence": "Wrong evidence",
+        "too_generic": "Too generic",
+        "template_like": "Template-like",
+        "cost_not_worth": "Not worth the cost",
+        "other": "Other"
+      },
+      "type": {
+        "question": "Q&A",
+        "compare": "Compare"
+      }
+    },
     "caseStats": {
       "pending": "Pending Review",
       "verified": "Verified",

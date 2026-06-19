@@ -8,10 +8,11 @@ import {
   EssayCaseReviewManager,
   BulkImportDialog,
   EssayPipelineDashboard,
+  AdminGalleryAiMetrics,
 } from '@/components/features';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { PenTool, Upload, FileText, BookOpen, Workflow } from 'lucide-react';
+import { PenTool, Upload, FileText, BookOpen, Workflow, Sparkles } from 'lucide-react';
 
 export default function AdminEssaysPage() {
   const t = useTranslations('admin');
@@ -49,6 +50,10 @@ export default function AdminEssaysPage() {
                 <Workflow className="h-4 w-4" />
                 {tEssay('tabPipeline')}
               </TabsTrigger>
+              <TabsTrigger value="gallery-ai" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                {tEssay('tabGalleryAi')}
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -74,6 +79,10 @@ export default function AdminEssaysPage() {
 
           <TabsContent value="pipeline">
             <EssayPipelineDashboard />
+          </TabsContent>
+
+          <TabsContent value="gallery-ai">
+            <AdminGalleryAiMetrics />
           </TabsContent>
         </Tabs>
       </div>

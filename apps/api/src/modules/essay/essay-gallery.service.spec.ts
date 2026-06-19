@@ -39,10 +39,12 @@ describe('EssayGalleryService', () => {
       findMany: jest.fn(),
       count: jest.fn(),
       aggregate: jest.fn(),
+      groupBy: jest.fn().mockResolvedValue([]),
     },
     galleryEssayAIInteractionFeedback: {
       upsert: jest.fn(),
       groupBy: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
     },
   };
 
