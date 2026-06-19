@@ -82,6 +82,8 @@ import {
 } from './distillation/types';
 import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
 import type {
+  PredictionPreviewResponse,
+  PredictionPreviewScenario,
   SchoolPredictionDataQuality,
   SchoolPublicMedia,
   SchoolPublicMediaAsset,
@@ -1038,6 +1040,166 @@ export class PredictionService {
       locale,
       false,
     );
+  }
+
+  async previewForUser(
+    userId: string,
+    schoolIds: string[],
+    scenario: PredictionPreviewScenario = {},
+    locale = 'zh',
+  ): Promise<PredictionPreviewResponse> {
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      include: {
+        testScores: true,
+        activities: {
+          orderBy: { order: 'asc' },
+          include: { activityTemplate: true },
+        },
+        awards: { include: { competition: true } },
+        education: { include: { highSchool: true } },
+        semesterGpas: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    if (!profile) {
+      return {
+        preview: true,
+        scenario: this.normalizePreviewScenario(scenario),
+        results: [],
+        dataCompleteness: 0,
+      };
+    }
+
+    const assessmentResults = await this.prisma.assessmentResult.findMany({
+      where: { userId },
+      include: { assessment: { select: { type: true } } },
+      orderBy: { completedAt: 'desc' },
+    });
+    const mbtiResult = assessmentResults.find(
+      (r) => r.assessment.type === 'MBTI',
+    );
+    const hollandResult = assessmentResults.find(
+      (r) => r.assessment.type === 'HOLLAND',
+    );
+    const assessmentData =
+      mbtiResult || hollandResult
+        ? {
+            mbtiType: (mbtiResult?.result as any)?.mbtiType,
+            hollandCodes: (hollandResult?.result as any)?.hollandCodes,
+          }
+        : undefined;
+
+    const normalizedScenario = this.normalizePreviewScenario(scenario);
+    const profileInput = this.applyPreviewScenario(
+      this.profileToInput(profile, assessmentData),
+      normalizedScenario,
+    );
+
+    // Keep the same non-mutating enrichment as served predictions. This only
+    // reads the latest essay AI score and mutates the in-memory preview object.
+    await this.transformer.enrichWithEssayQuality(profileInput, profile.id);
+
+    const output = await this.previewPredict(profileInput, schoolIds, {
+      locale,
+      applicationRound:
+        normalizedScenario.applicationRound ??
+        profile.applicationRound ??
+        undefined,
+      counselorMode: true,
+    });
+
+    return {
+      preview: true,
+      scenario: normalizedScenario,
+      results: output.results.map((result) => {
+        const previewResult = { ...result } as any;
+        delete previewResult.id;
+        previewResult.authority = 'PREVIEW';
+        return previewResult;
+      }),
+      dataCompleteness: output.dataCompleteness,
+    };
+  }
+
+  private normalizePreviewScenario(
+    scenario: PredictionPreviewScenario = {},
+  ): PredictionPreviewScenario {
+    return {
+      ...(typeof scenario.gpa === 'number' ? { gpa: scenario.gpa } : {}),
+      ...(typeof scenario.gpaScale === 'number'
+        ? { gpaScale: scenario.gpaScale }
+        : {}),
+      ...(typeof scenario.satScore === 'number'
+        ? { satScore: scenario.satScore }
+        : {}),
+      ...(typeof scenario.actScore === 'number'
+        ? { actScore: scenario.actScore }
+        : {}),
+      ...(typeof scenario.targetMajor === 'string' &&
+      scenario.targetMajor.trim()
+        ? { targetMajor: scenario.targetMajor.trim() }
+        : {}),
+      ...(typeof scenario.grade === 'string' && scenario.grade.trim()
+        ? { grade: scenario.grade.trim() }
+        : {}),
+      ...(typeof scenario.applyingTestOptional === 'boolean'
+        ? { applyingTestOptional: scenario.applyingTestOptional }
+        : {}),
+      ...(typeof scenario.applicationRound === 'string' &&
+      scenario.applicationRound.trim()
+        ? { applicationRound: scenario.applicationRound.trim().toUpperCase() }
+        : {}),
+    };
+  }
+
+  private applyPreviewScenario(
+    profileInput: ProfileInput,
+    scenario: PredictionPreviewScenario,
+  ): ProfileInput {
+    if (typeof scenario.gpa === 'number') {
+      profileInput.gpa = scenario.gpa;
+    }
+    if (typeof scenario.gpaScale === 'number') {
+      profileInput.gpaScale = scenario.gpaScale;
+    }
+    if (scenario.targetMajor) {
+      profileInput.targetMajor = scenario.targetMajor;
+    }
+    if (scenario.grade) {
+      profileInput.grade = scenario.grade;
+    }
+    if (typeof scenario.applyingTestOptional === 'boolean') {
+      profileInput.applyingTestOptional = scenario.applyingTestOptional;
+    }
+    if (typeof scenario.satScore === 'number') {
+      profileInput.testScores = this.upsertPreviewTestScore(
+        profileInput.testScores,
+        'SAT',
+        scenario.satScore,
+      );
+    }
+    if (typeof scenario.actScore === 'number') {
+      profileInput.testScores = this.upsertPreviewTestScore(
+        profileInput.testScores,
+        'ACT',
+        scenario.actScore,
+      );
+    }
+
+    return profileInput;
+  }
+
+  private upsertPreviewTestScore(
+    scores: ProfileInput['testScores'],
+    type: string,
+    score: number,
+  ): ProfileInput['testScores'] {
+    const normalizedType = type.toUpperCase();
+    return [
+      ...scores.filter((item) => item.type.toUpperCase() !== normalizedType),
+      { type: normalizedType, score },
+    ];
   }
 
   /**

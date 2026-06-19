@@ -37,12 +37,12 @@ import {
   ProfileSnapshotBar,
   SchoolSelectorCard,
   PortfolioDiagnosisCard,
-  PredictionPortfolioSummaryStream,
   PredictionResultList,
   PredictionDetailPane,
   RecommendedSchoolsBlock,
   PredictionEvidencePanel,
 } from '@/components/features/prediction';
+import { PredictionWhatIfPanel } from '@/components/features/prediction/PredictionWhatIfPanel';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -569,6 +569,13 @@ export default function PredictionPage() {
                   compact
                   className="mb-0"
                 />
+                <div className="mt-4">
+                  <PredictionWhatIfPanel
+                    selectedSchools={selectedSchools}
+                    profile={profileData}
+                    disabled={profileBlocksPrediction}
+                  />
+                </div>
               </div>
 
               {/* COL 2 — scan surface (natural flow — drives the page height) */}
@@ -637,7 +644,23 @@ export default function PredictionPage() {
                     />
                   )}
 
-                  {results.length > 0 && <PredictionPortfolioSummaryStream results={results} />}
+                  {results.length > 0 && (
+                    <div className="rounded-[var(--theme-radius-card)] border bg-card p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground">
+                            {t('prediction.strategyCta.title')}
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {t('prediction.strategyCta.description')}
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" asChild className="shrink-0">
+                          <Link href="/uncommon-app">{t('prediction.strategyCta.action')}</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   {Boolean(ucIdsData?.schoolIds?.length) && (
                     <div className="flex justify-end">

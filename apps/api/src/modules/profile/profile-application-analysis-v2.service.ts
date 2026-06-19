@@ -14,6 +14,7 @@ import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import {
   AnalysisActionPlan,
   AnalysisState,
+  ApplicationAnalysisPredictionContext,
   ApplicationAnalysisResponseV2,
   ApplicationAnalysisSchoolResult,
   ApplicationAnalysisPortfolioSummary,
@@ -52,6 +53,7 @@ import {
 const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const PREDICTION_CONTEXT_STALE_AFTER_MS = 1000 * 60 * 60 * 24 * 30;
 
 // The per-school analyst LLM steps are independent, so run them with bounded
 // concurrency instead of serially. Serially, MAX_FOCUS_SCHOOLS (5) steps × the
@@ -446,6 +448,7 @@ export class ProfileApplicationAnalysisV2Service {
     const profileSummary = snapshot.profile
       ? buildProfileSummary(snapshot.profile, snapshot.locale)
       : buildEmptyProfileSummary();
+    const predictionContext = this.buildPredictionContext(snapshot, now);
 
     const runId = persistRun
       ? (
@@ -499,6 +502,7 @@ export class ProfileApplicationAnalysisV2Service {
         focusSchoolCount: snapshot.focusSchools.length,
         targetSchoolCount: snapshot.schoolListItems.length,
         schoolsWithPredictions: snapshot.predictions.length,
+        predictionContext,
       });
       await this.finalizeRun(
         runId,
@@ -524,6 +528,7 @@ export class ProfileApplicationAnalysisV2Service {
         focusSchoolCount: snapshot.focusSchools.length,
         targetSchoolCount: snapshot.schoolListItems.length,
         schoolsWithPredictions: snapshot.predictions.length,
+        predictionContext,
       });
       await this.finalizeRun(
         runId,
@@ -987,6 +992,7 @@ export class ProfileApplicationAnalysisV2Service {
           focusSchoolCount: snapshot.focusSchools.length,
           schoolsWithPredictions: snapshot.predictions.length,
           generatedAt: now,
+          predictionContext,
           runId,
           traceId,
           debugEnabled: Boolean(options.debug),
@@ -1022,6 +1028,40 @@ export class ProfileApplicationAnalysisV2Service {
     );
 
     return response;
+  }
+
+  private buildPredictionContext(
+    snapshot: AnalysisSnapshot,
+    generatedAt: string,
+  ): ApplicationAnalysisPredictionContext {
+    const focusSchoolIds = snapshot.focusSchools.map((item) => item.schoolId);
+    const predictedSchoolIds = new Set(
+      snapshot.predictions.map((prediction) => prediction.schoolId),
+    );
+    const now = Date.parse(generatedAt);
+
+    return {
+      source: 'prediction-engine',
+      generatedAt,
+      // Gold-case fixture snapshots predate predictionContext and carry no
+      // `id` on their predictions (only the live buildSnapshotForUser select
+      // sets it). Drop nullish ids so this stays a real `string[]` of
+      // PredictionResult IDs — otherwise the exported render fixture serializes
+      // `undefined` to `null` and breaks the `string[]` contract (governance).
+      predictionResultIds: snapshot.predictions
+        .map((prediction) => prediction.id)
+        .filter((id): id is string => typeof id === 'string'),
+      missingSchoolIds: focusSchoolIds.filter(
+        (schoolId) => !predictedSchoolIds.has(schoolId),
+      ),
+      staleSchoolIds: snapshot.predictions
+        .filter(
+          (prediction) =>
+            now - prediction.updatedAt.getTime() >
+            PREDICTION_CONTEXT_STALE_AFTER_MS,
+        )
+        .map((prediction) => prediction.schoolId),
+    };
   }
 
   private async buildSnapshotForUser(
@@ -1191,6 +1231,7 @@ export class ProfileApplicationAnalysisV2Service {
         authority: 'AUTHORITATIVE',
       },
       select: {
+        id: true,
         schoolId: true,
         probability: true,
         probabilityLow: true,
@@ -1389,6 +1430,7 @@ export class ProfileApplicationAnalysisV2Service {
     focusSchoolCount: number;
     targetSchoolCount: number;
     schoolsWithPredictions: number;
+    predictionContext: ApplicationAnalysisPredictionContext;
   }): ApplicationAnalysisResponseV2 {
     const verdict =
       input.state === 'noTargetSchools'
@@ -1418,6 +1460,7 @@ export class ProfileApplicationAnalysisV2Service {
           focusSchoolCount: input.focusSchoolCount,
           schoolsWithPredictions: input.schoolsWithPredictions,
           generatedAt: input.generatedAt,
+          predictionContext: input.predictionContext,
           runId: input.runId,
           traceId: input.traceId,
           degradedReason: input.degradedReason,

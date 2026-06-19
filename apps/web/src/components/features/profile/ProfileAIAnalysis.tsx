@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
+  CalendarPlus,
   ClipboardCheck,
   CheckCircle2,
   Clock3,
@@ -19,7 +20,7 @@ import type {
   AnalysisState,
   ApplicationAnalysisSchoolResult,
 } from '@study-abroad/shared';
-import { profileRoutes } from '@study-abroad/shared';
+import { profileRoutes, timelineRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { qk } from '@/lib/query';
 import { AI_TIMEOUTS, GC_TIME } from '@/lib/constants';
@@ -27,6 +28,9 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReportOutcomeModal } from '@/components/features/outcome/report-outcome-modal';
+import type { PersonalEventResponse, TimelineResponse } from '@/types/timeline';
+import { toast } from 'sonner';
 
 const FRESHNESS_STYLES = {
   fresh: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
@@ -264,7 +268,7 @@ export function ProfileAIAnalysis({
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-primary/5 p-4">
+        <div className="rounded-lg border bg-primary/5 p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -401,6 +405,7 @@ export function ProfileAIAnalysis({
 
             <section className="space-y-3" data-testid="analysis-section-actionPlan">
               <SectionHeading icon={CheckCircle2} title={t('actionPlan.title')} />
+              <GlobalActionTimelineButton action={nextActions[0]} />
               <ListCard
                 title={t('actionPlan.now')}
                 items={nextActions}
@@ -428,6 +433,7 @@ export function ProfileAIAnalysis({
 
             <section className="space-y-3" data-testid="analysis-section-actionPlan">
               <SectionHeading icon={CheckCircle2} title={t('actionPlan.title')} />
+              <GlobalActionTimelineButton action={nextActions[0]} />
               <div className="grid min-w-0 gap-4 lg:grid-cols-3">
                 <ListCard
                   title={t('actionPlan.now')}
@@ -496,14 +502,57 @@ export function ProfileAIAnalysis({
 
 function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }) {
   const t = useTranslations('applicationAnalysis');
+  const queryClient = useQueryClient();
+  const [outcomeOpen, setOutcomeOpen] = useState(false);
   const probabilityLabel =
     school.prediction?.probability != null
       ? `${Math.round(school.prediction.probability * 100)}%`
       : t('schoolCards.probabilityUnavailable');
+  const confidenceLabel = school.prediction?.confidence
+    ? t(`confidence.${school.prediction.confidence}`)
+    : null;
+  const updatedLabel = school.prediction?.updatedAt
+    ? formatDate(school.prediction.updatedAt)
+    : null;
+  const firstAction = school.assessment.nextActions[0];
+  const canReportOutcome = Boolean(school.prediction?.predictionResultId);
+
+  const addToTimelineMutation = useMutation({
+    mutationFn: async () => {
+      if (!firstAction) return null;
+      const desiredRound = normalizeTimelineRound(school.round);
+      const timelines = await apiClient.get<TimelineResponse[]>(timelineRoutes.mine());
+      const existing = timelines.find(
+        (timeline) =>
+          timeline.schoolId === school.schoolId &&
+          normalizeTimelineRound(timeline.round) === desiredRound
+      );
+      const timeline =
+        existing ??
+        (await apiClient.post<TimelineResponse>(timelineRoutes.mine(), {
+          schoolId: school.schoolId,
+          round: desiredRound,
+          notes: `Strategy Advisor: ${school.assessment.summary}`,
+        }));
+
+      return apiClient.post(timelineRoutes.tasks(), {
+        timelineId: timeline.id,
+        title: firstAction,
+        type: 'OTHER',
+        description: school.assessment.summary,
+      });
+    },
+    onSuccess: () => {
+      toast.success(t('schoolCards.addedToTimeline'));
+      queryClient.invalidateQueries({ queryKey: ['timelines'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+    },
+    onError: () => toast.error(t('schoolCards.timelineError')),
+  });
 
   return (
     <div
-      className="rounded-2xl border p-4"
+      className="rounded-lg border p-4"
       data-testid="analysis-school-card"
       data-school-id={school.schoolId}
       data-school-name={school.schoolName}
@@ -517,29 +566,17 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
             {school.round ? <Badge variant="secondary">{school.round}</Badge> : null}
           </div>
           <p className="text-sm text-muted-foreground">{school.assessment.summary}</p>
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span>
-              {t('schoolCards.probability')}:{' '}
-              <span className="font-medium text-foreground">{probabilityLabel}</span>
-            </span>
-            {school.prediction?.confidence ? (
-              <span>
-                {t('schoolCards.confidence')}:{' '}
-                <span className="font-medium text-foreground">
-                  {t(`confidence.${school.prediction.confidence}`)}
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className="max-w-full gap-1 text-xs font-normal">
+              <span>{t('schoolCards.sourceBadge')}</span>
+              <span className="font-semibold text-foreground">{probabilityLabel}</span>
+              {confidenceLabel ? <span>· {confidenceLabel}</span> : null}
+              {updatedLabel ? (
+                <span data-testid={`analysis-school-updated-at-${school.schoolId}`}>
+                  · {updatedLabel}
                 </span>
-              </span>
-            ) : null}
-            {school.prediction?.updatedAt ? (
-              <span>
-                {t('schoolCards.updated')}:{' '}
-                <span className="font-medium text-foreground">
-                  <span data-testid={`analysis-school-updated-at-${school.schoolId}`}>
-                    {formatDate(school.prediction.updatedAt)}
-                  </span>
-                </span>
-              </span>
-            ) : null}
+              ) : null}
+            </Badge>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -574,6 +611,27 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
           items={school.assessment.nextActions}
           compact
         />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!firstAction || addToTimelineMutation.isPending}
+          onClick={() => addToTimelineMutation.mutate()}
+        >
+          <CalendarPlus className="mr-1.5 h-3.5 w-3.5" />
+          {addToTimelineMutation.isPending
+            ? t('schoolCards.addingToTimeline')
+            : t('schoolCards.addToTimeline')}
+        </Button>
+        {canReportOutcome ? (
+          <Button type="button" variant="outline" size="sm" onClick={() => setOutcomeOpen(true)}>
+            <ClipboardCheck className="mr-1.5 h-3.5 w-3.5" />
+            {t('schoolCards.reportOutcome')}
+          </Button>
+        ) : null}
       </div>
 
       <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
@@ -633,7 +691,60 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
           />
         </div>
       )}
+      {school.prediction?.predictionResultId ? (
+        <ReportOutcomeModal
+          open={outcomeOpen}
+          onOpenChange={setOutcomeOpen}
+          predictionResultId={school.prediction.predictionResultId}
+          schoolName={school.schoolName}
+          probability={school.prediction.probability}
+          round={school.round ?? school.prediction.roundContext}
+        />
+      ) : null}
     </div>
+  );
+}
+
+function GlobalActionTimelineButton({ action }: { action?: string }) {
+  const t = useTranslations('applicationAnalysis');
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!action) return null;
+      const event = await apiClient.post<PersonalEventResponse>(timelineRoutes.personal(), {
+        title: t('actionPlan.timelineEventTitle'),
+        category: 'MATERIAL',
+        priority: 1,
+        description: t('actionPlan.timelineEventDescription'),
+      });
+      return apiClient.post(timelineRoutes.personalTasks(), {
+        eventId: event.id,
+        title: action,
+      });
+    },
+    onSuccess: () => {
+      toast.success(t('schoolCards.addedToTimeline'));
+      queryClient.invalidateQueries({ queryKey: ['personal-events'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+    },
+    onError: () => toast.error(t('schoolCards.timelineError')),
+  });
+
+  if (!action) return null;
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled={mutation.isPending}
+      onClick={() => mutation.mutate()}
+      className="w-fit"
+    >
+      <CalendarPlus className="mr-1.5 h-3.5 w-3.5" />
+      {mutation.isPending ? t('schoolCards.addingToTimeline') : t('actionPlan.addTopAction')}
+    </Button>
   );
 }
 
@@ -721,4 +832,14 @@ function getStateCopy(t: ReturnType<typeof useTranslations>, state: AnalysisStat
 function formatDate(value?: string) {
   if (!value) return '';
   return new Date(value).toLocaleDateString();
+}
+
+function normalizeTimelineRound(round?: string | null) {
+  const normalized = round?.trim().toUpperCase();
+  if (!normalized) return 'RD';
+  if (normalized === 'ROLLING') return 'Rolling';
+  if (['ED', 'ED2', 'EA', 'REA', 'SCEA', 'RD'].includes(normalized)) {
+    return normalized;
+  }
+  return 'RD';
 }

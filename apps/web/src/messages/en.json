@@ -2335,7 +2335,7 @@
     }
   },
   "prediction": {
-    "title": "Admission Chances",
+    "title": "Chance Engine",
     "noResult": "No prediction result available",
     "successMessage": "Completed estimates for {count} schools",
     "selectSchools": "Select Target Schools",
@@ -2438,6 +2438,11 @@
         "healthy": "This batch is fresh enough to compare individual school reasons."
       }
     },
+    "strategyCta": {
+      "title": "Need the full application plan?",
+      "description": "The Chance Engine handles probability. Use Strategy Advisor for school-list, round, materials, and timeline decisions.",
+      "action": "Open Strategy Advisor"
+    },
     "evidence": {
       "howTitle": "How the estimate is built",
       "howDesc": "The workbench combines school data, profile signals, and historical context into a personal planning estimate.",
@@ -2449,6 +2454,29 @@
       "personalEstimate": "The main percentage is your personal estimate, not the school's public admit rate.",
       "dataSupport": "Data support describes evidence quality, not whether the chance is high.",
       "subjectiveFactors": "Essays, interviews, recommendations, and institutional priorities can still move outcomes."
+    },
+    "whatIf": {
+      "title": "What-if simulator",
+      "subtitle": "Preview how a small profile or round change may move the estimate.",
+      "previewBadge": "Preview",
+      "gpa": "GPA",
+      "gpaScale": "Scale",
+      "sat": "SAT",
+      "act": "ACT",
+      "major": "Major",
+      "majorPlaceholder": "Computer Science",
+      "round": "Round",
+      "currentRound": "Current",
+      "grade": "Grade",
+      "testOptional": "Apply test optional for this preview",
+      "run": "Preview",
+      "running": "Previewing...",
+      "reset": "Reset scenario",
+      "notSaved": "Preview results are not saved to history and cannot receive outcome labels.",
+      "selectSchools": "Select at least one school first",
+      "success": "Previewed {count} schools",
+      "error": "Could not run the preview",
+      "moreResults": "+{count} more preview results"
     },
     "emptyHint": "Select schools and start an estimate to see your personal admission chance",
     "runPrediction": "Start Estimate",
@@ -4112,8 +4140,8 @@
     }
   },
   "applicationAnalysis": {
-    "title": "Application Analysis",
-    "subtitle": "School-aware admissions strategy built from profile, predictions, and historical evidence",
+    "title": "Strategy Advisor",
+    "subtitle": "Application strategy built from your profile, the Chance Engine, school policy, and historical evidence",
     "loading": {
       "title": "Analyzing your application",
       "description": "Building a school-aware strategy view from profile, predictions, and historical evidence."
@@ -4133,7 +4161,7 @@
     "overallScore": "Overall score",
     "focusSchools": "Focus schools",
     "profileContext": "Profile context",
-    "schoolListDiagnosis": "School list diagnosis",
+    "schoolListDiagnosis": "Portfolio strategy",
     "foundationReview": "Foundation review",
     "riskBoundaries": "Risk boundaries",
     "topReasons": "Top reasons",
@@ -4239,6 +4267,12 @@
       "SAFETY": "Safety"
     },
     "schoolCards": {
+      "sourceBadge": "From Chance Engine",
+      "addToTimeline": "Add to timeline",
+      "addingToTimeline": "Adding...",
+      "addedToTimeline": "Added to timeline",
+      "timelineError": "Could not add this action",
+      "reportOutcome": "Report outcome",
       "probability": "Admission probability",
       "probabilityUnavailable": "Unavailable",
       "confidence": "Confidence",
@@ -4268,6 +4302,9 @@
     },
     "actionPlan": {
       "title": "Action plan",
+      "addTopAction": "Add top action to timeline",
+      "timelineEventTitle": "Strategy Advisor actions",
+      "timelineEventDescription": "Actions added from the Strategy Advisor application report.",
       "now": "Now",
       "next90Days": "Next 90 days",
       "beforeSubmission": "Before submission"
