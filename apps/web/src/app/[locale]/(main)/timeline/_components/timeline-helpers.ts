@@ -5,6 +5,7 @@ import type {
   TimelineDetail,
   PersonalEventDetail,
   TabType,
+  TimelineStatus,
 } from '@/types/timeline';
 import type { PersonalEventFormData } from '@/lib/validations/timeline';
 import type { UseMutationResult } from '@tanstack/react-query';
@@ -20,6 +21,24 @@ export type TimelineDisplayRow = Omit<TimelineResponse, 'status'> & { status: st
 export type PersonalEventDisplayRow = Omit<PersonalEventResponse, 'status'> & {
   status: string;
 };
+
+/**
+ * Statuses a user can set on a school-application timeline, paired with their
+ * i18n key under `timeline.statuses.*`. These are the settable subset of
+ * `TimelineStatus` (the display-only 'OVERDUE'/'COMPLETED'/'CANCELLED' values
+ * are excluded).
+ */
+export const SCHOOL_STATUS_OPTIONS: { value: TimelineStatus; key: string }[] = [
+  { value: 'NOT_STARTED', key: 'notStarted' },
+  { value: 'IN_PROGRESS', key: 'inProgress' },
+  { value: 'SUBMITTED', key: 'submitted' },
+  { value: 'ACCEPTED', key: 'accepted' },
+  { value: 'REJECTED', key: 'rejected' },
+  { value: 'WAITLISTED', key: 'waitlisted' },
+  { value: 'WITHDRAWN', key: 'withdrawn' },
+];
+
+export type UpdateTimelineVars = { id: string; status: TimelineStatus };
 
 /** Props shared by components that need date formatting */
 export interface DateHelpers {
@@ -63,6 +82,7 @@ export interface TimelineTabsProps extends DateHelpers, BadgeHelpers {
     school: { id: string; name: string; nameZh?: string };
   }>;
   generateTimelineMutation: UseMutationResult<unknown, Error, string[]>;
+  updateTimelineMutation: UseMutationResult<unknown, Error, UpdateTimelineVars>;
 }
 
 export interface PersonalEventsSectionProps extends DateHelpers, BadgeHelpers {

@@ -7380,6 +7380,7 @@
       "archiveDescription": "Finished, withdrawn, or overdue unfinished school applications",
       "deadline": "Registration Deadline",
       "tasks": "Tasks",
+      "statusLabel": "Application status",
       "loadingTasks": "Loading tasks...",
       "noTasks": "No tasks yet",
       "pendingSchools": "Schools Awaiting Timeline",
@@ -7389,6 +7390,8 @@
       "emptyDescription": "Add schools to generate application timelines. Old-cycle overdue items will stay in Archive."
     },
     "generateSuccess": "Timeline generated successfully",
+    "updateSuccess": "Status updated",
+    "updateError": "Update failed, please try again",
     "taskTypes": {
       "ESSAY": "Essay",
       "DOCUMENT": "Document",
