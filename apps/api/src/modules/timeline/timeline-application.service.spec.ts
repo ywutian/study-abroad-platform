@@ -555,12 +555,93 @@ describe('TimelineApplicationService', () => {
       expect(res.deadline).toEqual(new Date('2026-11-01T00:00:00Z'));
     });
 
-    it('keeps the real past deadline for terminal (submitted) timelines', () => {
+    it('rolls a past deadline for NOT_STARTED timelines too', () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
       const res = service.mapTimelineToResponse(
-        baseTimeline('SUBMITTED', new Date('2026-01-01T00:00:00Z')),
+        baseTimeline('NOT_STARTED', new Date('2026-01-01T00:00:00Z')),
       );
-      expect(res.deadline).toEqual(new Date('2026-01-01T00:00:00Z'));
+      expect(res.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
+    });
+
+    it('returns undefined when the timeline has no deadline', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+      const res = service.mapTimelineToResponse({
+        ...baseTimeline('IN_PROGRESS', new Date('2026-01-01T00:00:00Z')),
+        deadline: null,
+      });
+      expect(res.deadline).toBeUndefined();
+    });
+
+    it.each(['SUBMITTED', 'ACCEPTED', 'REJECTED', 'WAITLISTED', 'WITHDRAWN'])(
+      'keeps the real past deadline for terminal status %s',
+      (status) => {
+        jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+        const res = service.mapTimelineToResponse(
+          baseTimeline(status, new Date('2026-01-01T00:00:00Z')),
+        );
+        expect(res.deadline).toEqual(new Date('2026-01-01T00:00:00Z'));
+      },
+    );
+  });
+
+  describe('getOverview effective-deadline filter', () => {
+    afterEach(() => jest.useRealTimers());
+
+    const row = (
+      id: string,
+      schoolName: string,
+      status: string,
+      deadline: Date,
+    ) => ({
+      id,
+      schoolId: id,
+      schoolName,
+      round: 'RD',
+      deadline,
+      status,
+      progress: 0,
+      priority: 0,
+      notes: null,
+      tasks: [],
+      createdAt: new Date('2025-09-01T00:00:00Z'),
+    });
+
+    it('surfaces a drifted active timeline (rolled) as upcoming and excludes submitted', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([
+        row(
+          'past-active',
+          'MIT',
+          'IN_PROGRESS',
+          new Date('2026-01-01T00:00:00Z'),
+        ),
+        row(
+          'future-active',
+          'Yale',
+          'NOT_STARTED',
+          new Date('2026-11-15T00:00:00Z'),
+        ),
+        row(
+          'past-submitted',
+          'Columbia',
+          'SUBMITTED',
+          new Date('2026-01-02T00:00:00Z'),
+        ),
+      ]);
+      mockPrisma.applicationTask.findMany.mockResolvedValue([]);
+
+      const overview = await service.getOverview('u1');
+      const ids = overview.upcomingDeadlines.map((t) => t.id);
+
+      // Stored deadline drifted into the past but rolls to its next occurrence →
+      // still upcoming. Submitted (terminal) is excluded.
+      expect(ids).toContain('past-active');
+      expect(ids).toContain('future-active');
+      expect(ids).not.toContain('past-submitted');
+      const mit = overview.upcomingDeadlines.find(
+        (t) => t.id === 'past-active',
+      );
+      expect(mit?.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
     });
   });
 });
