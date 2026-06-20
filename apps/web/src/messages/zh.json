@@ -7323,6 +7323,9 @@
       "create": "创建事件",
       "createTitle": "创建个人事件",
       "createSuccess": "事件创建成功，已自动生成子任务",
+      "editTitle": "编辑个人事件",
+      "updateSuccess": "事件已更新",
+      "edit": "编辑",
       "subscribed": "已订阅到个人时间线",
       "alreadySubscribed": "已经订阅过该事件",
       "delete": "删除事件",
@@ -7349,7 +7352,8 @@
         "description": "备注",
         "descriptionPlaceholder": "可选，添加备注信息",
         "cancel": "取消",
-        "submit": "创建"
+        "submit": "创建",
+        "save": "保存"
       }
     },
     "schoolTimelines": {

@@ -7344,6 +7344,9 @@
       "create": "Create Event",
       "createTitle": "Create Personal Event",
       "createSuccess": "Event created with auto-generated subtasks",
+      "editTitle": "Edit Personal Event",
+      "updateSuccess": "Event updated",
+      "edit": "Edit",
       "subscribed": "Subscribed to your personal timeline",
       "alreadySubscribed": "Already subscribed to this event",
       "delete": "Delete Event",
@@ -7370,7 +7373,8 @@
         "description": "Notes",
         "descriptionPlaceholder": "Optional notes about this event",
         "cancel": "Cancel",
-        "submit": "Create"
+        "submit": "Create",
+        "save": "Save"
       }
     },
     "schoolTimelines": {

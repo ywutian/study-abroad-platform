@@ -24,19 +24,32 @@ export function CreateEventDialog({
   eventForm,
   createPersonalEventMutation,
   getCategoryLabel,
+  editingEventId,
+  updatePersonalEventMutation,
 }: CreateEventDialogProps) {
   const t = useTranslations('timeline');
+  const isEditing = !!editingEventId;
+  const pending = isEditing
+    ? updatePersonalEventMutation.isPending
+    : createPersonalEventMutation.isPending;
+
+  const submit = (data: PersonalEventFormData) => {
+    if (isEditing && editingEventId) {
+      updatePersonalEventMutation.mutate({ id: editingEventId, data });
+    } else {
+      createPersonalEventMutation.mutate(data);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[85vh] rounded-t-xl">
         <SheetHeader>
-          <SheetTitle>{t('personalEvents.createTitle')}</SheetTitle>
+          <SheetTitle>
+            {t(isEditing ? 'personalEvents.editTitle' : 'personalEvents.createTitle')}
+          </SheetTitle>
         </SheetHeader>
-        <form
-          onSubmit={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
-          className="overflow-y-auto px-4 space-y-4"
-        >
+        <form onSubmit={eventForm.handleSubmit(submit)} className="overflow-y-auto px-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="event-title">{t('personalEvents.form.title')}</Label>
@@ -95,15 +108,9 @@ export function CreateEventDialog({
             <Button variant="ghost" size="sm" type="button" onClick={() => onOpenChange(false)}>
               {t('personalEvents.form.cancel')}
             </Button>
-            <Button
-              size="sm"
-              disabled={createPersonalEventMutation.isPending}
-              onClick={eventForm.handleSubmit((data) => createPersonalEventMutation.mutate(data))}
-            >
-              {createPersonalEventMutation.isPending && (
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              )}
-              {t('personalEvents.form.submit')}
+            <Button size="sm" disabled={pending} onClick={eventForm.handleSubmit(submit)}>
+              {pending && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+              {t(isEditing ? 'personalEvents.form.save' : 'personalEvents.form.submit')}
             </Button>
           </div>
         </SheetFooter>
