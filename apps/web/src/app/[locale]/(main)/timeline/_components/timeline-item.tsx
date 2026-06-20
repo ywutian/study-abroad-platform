@@ -18,6 +18,7 @@ import {
   SCHOOL_STATUS_OPTIONS,
   type TimelineDisplayRow,
   type UpdateTimelineVars,
+  type AddTaskVars,
 } from './timeline-helpers';
 
 interface TimelineItemProps {
@@ -38,6 +39,9 @@ interface TimelineItemProps {
    * in the archive view, where `status` carries a display-only 'OVERDUE' value.
    */
   updateTimelineMutation?: UseMutationResult<unknown, Error, UpdateTimelineVars>;
+  /** When provided, the expanded panel allows adding/removing tasks (non-archive). */
+  addTaskMutation?: UseMutationResult<unknown, Error, AddTaskVars>;
+  deleteTaskMutation?: UseMutationResult<unknown, Error, string>;
 }
 
 export function TimelineItem({
@@ -54,6 +58,8 @@ export function TimelineItem({
   getStatusBadge,
   setDeleteTarget,
   updateTimelineMutation,
+  addTaskMutation,
+  deleteTaskMutation,
 }: TimelineItemProps) {
   const t = useTranslations('timeline');
   const days = getDaysUntil(tl.deadline);
@@ -160,6 +166,15 @@ export function TimelineItem({
             onDelete={() => setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })}
             deleteLabel={t('deleteTimeline')}
             showTaskType
+            onAddTask={
+              addTaskMutation
+                ? (title) => addTaskMutation.mutate({ timelineId: tl.id, title })
+                : undefined
+            }
+            addTaskPending={addTaskMutation?.isPending}
+            onDeleteTask={
+              deleteTaskMutation ? (taskId) => deleteTaskMutation.mutate(taskId) : undefined
+            }
           />
         </>
       )}

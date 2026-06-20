@@ -57,7 +57,7 @@ import {
   getArchivedDisplayStatus,
   resolveTimelineTab,
 } from './_components/timeline-view-model';
-import type { UpdateTimelineVars } from './_components/timeline-helpers';
+import type { UpdateTimelineVars, AddTaskVars } from './_components/timeline-helpers';
 
 function listFromResponse<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
@@ -210,6 +210,35 @@ export default function TimelinePage() {
       queryClient.invalidateQueries({ queryKey: ['timelines'] });
       queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
       queryClient.invalidateQueries({ queryKey: ['timeline-detail', expandedTimeline] });
+    },
+    onError: () => {
+      toast.error(t('updateError'));
+    },
+  });
+
+  const invalidateTimelineQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['timeline-detail', expandedTimeline] });
+    queryClient.invalidateQueries({ queryKey: ['timelines'] });
+    queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+  };
+
+  const addTaskMutation = useMutation({
+    mutationFn: ({ timelineId, title }: AddTaskVars) =>
+      apiClient.post(timelineRoutes.tasks(), { timelineId, title }),
+    onSuccess: () => {
+      toast.success(t('schoolTimelines.taskAdded'));
+      invalidateTimelineQueries();
+    },
+    onError: () => {
+      toast.error(t('updateError'));
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (taskId: string) => apiClient.delete(`${API_ROUTES.TIMELINES}/tasks/${taskId}`),
+    onSuccess: () => {
+      toast.success(t('deleteSuccess'));
+      invalidateTimelineQueries();
     },
     onError: () => {
       toast.error(t('updateError'));
@@ -497,6 +526,8 @@ export default function TimelinePage() {
                         getStatusBadge={getStatusBadge}
                         setDeleteTarget={setDeleteTarget}
                         updateTimelineMutation={updateTimelineMutation}
+                        addTaskMutation={addTaskMutation}
+                        deleteTaskMutation={deleteTaskMutation}
                       />
                     );
                   }
@@ -543,6 +574,8 @@ export default function TimelinePage() {
               activeTab={activeTab}
               sortedTimelines={[]}
               updateTimelineMutation={updateTimelineMutation}
+              addTaskMutation={addTaskMutation}
+              deleteTaskMutation={deleteTaskMutation}
               expandedTimeline={expandedTimeline}
               setExpandedTimeline={setExpandedTimeline}
               timelineDetail={timelineDetail}
@@ -571,6 +604,8 @@ export default function TimelinePage() {
               activeTab={activeTab}
               sortedTimelines={board.actionableTimelines}
               updateTimelineMutation={updateTimelineMutation}
+              addTaskMutation={addTaskMutation}
+              deleteTaskMutation={deleteTaskMutation}
               expandedTimeline={expandedTimeline}
               setExpandedTimeline={setExpandedTimeline}
               timelineDetail={timelineDetail}
@@ -663,6 +698,8 @@ export default function TimelinePage() {
                 activeTab={activeTab}
                 sortedTimelines={archivedTimelines}
                 updateTimelineMutation={updateTimelineMutation}
+                addTaskMutation={addTaskMutation}
+                deleteTaskMutation={deleteTaskMutation}
                 expandedTimeline={expandedTimeline}
                 setExpandedTimeline={setExpandedTimeline}
                 timelineDetail={timelineDetail}

@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Loader2, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { CheckCircle2, Loader2, Plus, Trash2 } from 'lucide-react';
 import type { TaskResponse } from '@/types/timeline';
 import type { PersonalTaskResponse } from '@/types/timeline';
 import type { UseMutationResult } from '@tanstack/react-query';
@@ -17,6 +19,11 @@ interface TimelineItemDetailProps {
   deleteLabel: string;
   /** Whether to show the task type badge (school timeline tasks have types) */
   showTaskType?: boolean;
+  /** When provided, an "add task" input row is shown below the task list. */
+  onAddTask?: (title: string) => void;
+  addTaskPending?: boolean;
+  /** When provided, each task row gets a delete (trash) button. */
+  onDeleteTask?: (taskId: string) => void;
 }
 
 export function TimelineItemDetail({
@@ -27,8 +34,19 @@ export function TimelineItemDetail({
   onDelete,
   deleteLabel,
   showTaskType = false,
+  onAddTask,
+  addTaskPending = false,
+  onDeleteTask,
 }: TimelineItemDetailProps) {
   const t = useTranslations('timeline');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  const submitNewTask = () => {
+    const trimmed = newTaskTitle.trim();
+    if (!trimmed || !onAddTask) return;
+    onAddTask(trimmed);
+    setNewTaskTitle('');
+  };
 
   return (
     <div className="border-t bg-muted/20 p-4">
@@ -74,6 +92,18 @@ export function TimelineItemDetail({
                   {t(`taskTypes.${task.type}`)}
                 </Badge>
               )}
+              {onDeleteTask && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteTask(task.id);
+                  }}
+                  className="flex-shrink-0 text-muted-foreground/60 hover:text-destructive transition-colors"
+                  aria-label={t('schoolTimelines.deleteTask')}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -81,6 +111,39 @@ export function TimelineItemDetail({
         <div className="text-sm text-muted-foreground text-center py-4">
           {t('schoolTimelines.noTasks')}
         </div>
+      )}
+
+      {onAddTask && (
+        <form
+          className="mt-3 flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitNewTask();
+          }}
+        >
+          <Input
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            placeholder={t('schoolTimelines.addTaskPlaceholder')}
+            className="h-8"
+            onClick={(e) => e.stopPropagation()}
+            maxLength={200}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            className="shrink-0"
+            disabled={addTaskPending || !newTaskTitle.trim()}
+          >
+            {addTaskPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Plus className="h-3.5 w-3.5" />
+            )}
+            <span className="ml-1">{t('schoolTimelines.addTask')}</span>
+          </Button>
+        </form>
       )}
 
       <div className="mt-4 pt-3 border-t flex justify-end">

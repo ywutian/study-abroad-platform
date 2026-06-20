@@ -24,6 +24,8 @@ export function TimelineTabs({
   getStatusBadge,
   getRoundBadge,
   updateTimelineMutation,
+  addTaskMutation,
+  deleteTaskMutation,
 }: TimelineTabsProps) {
   const t = useTranslations('timeline');
 
@@ -63,6 +65,8 @@ export function TimelineTabs({
                 getStatusBadge={getStatusBadge}
                 setDeleteTarget={setDeleteTarget}
                 updateTimelineMutation={isArchive ? undefined : updateTimelineMutation}
+                addTaskMutation={isArchive ? undefined : addTaskMutation}
+                deleteTaskMutation={isArchive ? undefined : deleteTaskMutation}
               />
             ))}
           </CardContent>
