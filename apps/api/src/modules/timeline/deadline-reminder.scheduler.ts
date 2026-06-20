@@ -1,8 +1,9 @@
 /**
  * Deadline Reminder Scheduler
  *
- * Runs daily at 8 AM (Asia/Shanghai). Scans personal events with deadlines
- * in 1, 3, or 7 days and sends batched notifications per user.
+ * Runs daily at 8 AM (Asia/Shanghai). Scans both personal-event deadlines and
+ * un-submitted application (school) deadlines in 1, 3, or 7 days and sends one
+ * batched notification per user (merging both kinds).
  *
  * Deduplication: Redis SET NX with 24h TTL per (userId, days, date).
  */
@@ -58,33 +59,52 @@ export class DeadlineReminderScheduler {
     const targetEnd = new Date(targetStart);
     targetEnd.setHours(23, 59, 59, 999);
 
-    const events = await this.prisma.personalEvent.findMany({
-      where: {
-        deadline: { gte: targetStart, lte: targetEnd },
-        status: { not: 'COMPLETED' },
-      },
-      select: {
-        id: true,
-        title: true,
-        deadline: true,
-        userId: true,
-      },
-    });
+    // Both deadline kinds in this window: personal events + application (school)
+    // deadlines. Application timelines only matter while still un-submitted.
+    const [events, timelines] = await Promise.all([
+      this.prisma.personalEvent.findMany({
+        where: {
+          deadline: { gte: targetStart, lte: targetEnd },
+          status: { not: 'COMPLETED' },
+        },
+        select: { id: true, title: true, userId: true },
+      }),
+      this.prisma.applicationTimeline.findMany({
+        where: {
+          deadline: { gte: targetStart, lte: targetEnd },
+          status: {
+            notIn: [
+              'SUBMITTED',
+              'ACCEPTED',
+              'REJECTED',
+              'WAITLISTED',
+              'WITHDRAWN',
+            ],
+          },
+        },
+        select: { id: true, schoolName: true, round: true, userId: true },
+      }),
+    ]);
 
-    if (events.length === 0) return 0;
+    if (events.length === 0 && timelines.length === 0) return 0;
 
-    // Group by userId
-    const grouped = new Map<string, typeof events>();
-    for (const event of events) {
-      const list = grouped.get(event.userId) || [];
-      list.push(event);
-      grouped.set(event.userId, list);
+    // One reminder per user, merging both deadline kinds into a single label
+    // list so a user gets a single batched notification per window.
+    const grouped = new Map<string, string[]>();
+    const pushLabel = (userId: string, label: string) => {
+      const list = grouped.get(userId) ?? [];
+      list.push(label);
+      grouped.set(userId, list);
+    };
+    for (const event of events) pushLabel(event.userId, event.title);
+    for (const tl of timelines) {
+      pushLabel(tl.userId, `${tl.schoolName}（${tl.round}）`);
     }
 
     let sent = 0;
     const dateStr = targetStart.toISOString().slice(0, 10);
 
-    for (const [userId, userEvents] of grouped) {
+    for (const [userId, labels] of grouped) {
       try {
         // Redis dedup: one reminder per user per day-window per date.
         // setNX returns false only when the key already exists (already sent);
@@ -99,18 +119,18 @@ export class DeadlineReminderScheduler {
           if (!firstSendToday) continue; // Already sent today
         }
 
-        const titles = userEvents.map((e) => `• ${e.title}`).join('\n');
+        const content = labels.map((l) => `• ${l}`).join('\n');
         const title =
-          userEvents.length === 1
-            ? `${userEvents[0].title} 截止日期还有 ${days} 天`
-            : `${userEvents.length} 个截止日期还有 ${days} 天`;
+          labels.length === 1
+            ? `${labels[0]} 截止还有 ${days} 天`
+            : `${labels.length} 个截止日期还有 ${days} 天`;
 
         await this.notificationService.createNotification(
           userId,
           NotificationType.DEADLINE_REMINDER,
           {
             customTitle: title,
-            customContent: titles,
+            customContent: content,
           },
         );
         sent++;
