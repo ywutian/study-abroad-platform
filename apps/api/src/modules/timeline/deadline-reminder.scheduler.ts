@@ -17,6 +17,7 @@ import {
   NotificationService,
   NotificationType,
 } from '../notification/notification.service';
+import { rollAnnualDateForward } from './timeline-date.util';
 
 @Injectable()
 export class DeadlineReminderScheduler {
@@ -61,7 +62,7 @@ export class DeadlineReminderScheduler {
 
     // Both deadline kinds in this window: personal events + application (school)
     // deadlines. Application timelines only matter while still un-submitted.
-    const [events, timelines] = await Promise.all([
+    const [events, activeTimelines] = await Promise.all([
       this.prisma.personalEvent.findMany({
         where: {
           deadline: { gte: targetStart, lte: targetEnd },
@@ -69,9 +70,15 @@ export class DeadlineReminderScheduler {
         },
         select: { id: true, title: true, userId: true },
       }),
+      // Application deadlines recur annually and are rolled forward to their next
+      // occurrence at read time (#436) — the stored column may sit in the past.
+      // Fetch every active (un-submitted) timeline with a deadline and match the
+      // window against the *effective* (rolled) date, so a drifted timeline still
+      // reminds on the date the UI actually shows. (Personal events are one-time
+      // and are NOT rolled, so they keep the direct window filter above.)
       this.prisma.applicationTimeline.findMany({
         where: {
-          deadline: { gte: targetStart, lte: targetEnd },
+          deadline: { not: null },
           status: {
             notIn: [
               'SUBMITTED',
@@ -82,9 +89,21 @@ export class DeadlineReminderScheduler {
             ],
           },
         },
-        select: { id: true, schoolName: true, round: true, userId: true },
+        select: {
+          id: true,
+          schoolName: true,
+          round: true,
+          userId: true,
+          deadline: true,
+        },
       }),
     ]);
+
+    const timelines = activeTimelines.filter((tl) => {
+      if (!tl.deadline) return false;
+      const effective = rollAnnualDateForward(tl.deadline);
+      return effective >= targetStart && effective <= targetEnd;
+    });
 
     if (events.length === 0 && timelines.length === 0) return 0;
 

@@ -16,8 +16,22 @@ describe('DeadlineReminderScheduler', () => {
   const redis = { setNX: jest.fn() };
   const notifications = { createNotification: jest.fn() };
 
+  // Fixed "now" so the 1/3/7-day windows are deterministic.
+  const FIXED_NOW = new Date('2026-06-20T12:00:00Z');
+
+  // A deadline whose effective (rolled) date lands `days` from FIXED_NOW.
+  // `yearsAgo` lets a test store a PAST deadline that must roll forward (#436).
+  const deadlineForWindow = (days: number, yearsAgo = 0) => {
+    const d = new Date(FIXED_NOW);
+    d.setDate(d.getDate() + days);
+    d.setHours(12, 0, 0, 0);
+    d.setFullYear(d.getFullYear() - yearsAgo);
+    return d;
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest.useFakeTimers().setSystemTime(FIXED_NOW);
     prisma.personalEvent.findMany.mockResolvedValue([]);
     prisma.applicationTimeline.findMany.mockResolvedValue([]);
     redis.setNX.mockResolvedValue(true);
@@ -33,6 +47,8 @@ describe('DeadlineReminderScheduler', () => {
     scheduler = moduleRef.get(DeadlineReminderScheduler);
   });
 
+  afterEach(() => jest.useRealTimers());
+
   const runWindow = (days: number) =>
     (
       scheduler as unknown as { processWindow: (d: number) => Promise<number> }
@@ -40,7 +56,13 @@ describe('DeadlineReminderScheduler', () => {
 
   it('includes un-submitted application deadlines in the reminder', async () => {
     prisma.applicationTimeline.findMany.mockResolvedValue([
-      { id: 't1', schoolName: 'MIT', round: 'ED', userId: 'u1' },
+      {
+        id: 't1',
+        schoolName: 'MIT',
+        round: 'ED',
+        userId: 'u1',
+        deadline: deadlineForWindow(3),
+      },
     ]);
 
     const sent = await runWindow(3);
@@ -55,11 +77,61 @@ describe('DeadlineReminderScheduler', () => {
     );
   });
 
+  it('rolls a past stored application deadline forward into the window (#436 consistency)', async () => {
+    // Stored deadline sits a year in the past (the drift case #436 fixes for the
+    // UI); its rolled next-occurrence lands 7 days out, so the reminder must fire.
+    prisma.applicationTimeline.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        schoolName: 'Yale',
+        round: 'RD',
+        userId: 'u1',
+        deadline: deadlineForWindow(7, 1),
+      },
+    ]);
+
+    const sent = await runWindow(7);
+
+    expect(sent).toBe(1);
+    expect(notifications.createNotification).toHaveBeenCalledWith(
+      'u1',
+      NotificationType.DEADLINE_REMINDER,
+      expect.objectContaining({
+        customContent: expect.stringContaining('Yale（RD）'),
+      }),
+    );
+  });
+
+  it('ignores timelines whose effective deadline is outside the window or undated', async () => {
+    prisma.applicationTimeline.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        schoolName: 'Stanford',
+        round: 'REA',
+        userId: 'u1',
+        deadline: deadlineForWindow(20), // effective date 20 days out, not 3
+      },
+      {
+        id: 't2',
+        schoolName: 'NoDate',
+        round: 'RD',
+        userId: 'u1',
+        deadline: null,
+      },
+    ]);
+
+    const sent = await runWindow(3);
+
+    expect(sent).toBe(0);
+    expect(notifications.createNotification).not.toHaveBeenCalled();
+  });
+
   it('only scans application timelines that are still un-submitted', async () => {
     await runWindow(7);
     expect(prisma.applicationTimeline.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
+          deadline: { not: null },
           status: {
             notIn: [
               'SUBMITTED',
@@ -79,7 +151,13 @@ describe('DeadlineReminderScheduler', () => {
       { id: 'e1', title: 'TOEFL', userId: 'u1' },
     ]);
     prisma.applicationTimeline.findMany.mockResolvedValue([
-      { id: 't1', schoolName: 'MIT', round: 'ED', userId: 'u1' },
+      {
+        id: 't1',
+        schoolName: 'MIT',
+        round: 'ED',
+        userId: 'u1',
+        deadline: deadlineForWindow(1),
+      },
     ]);
 
     const sent = await runWindow(1);
@@ -93,7 +171,13 @@ describe('DeadlineReminderScheduler', () => {
 
   it('skips a user already reminded today (Redis dedup)', async () => {
     prisma.applicationTimeline.findMany.mockResolvedValue([
-      { id: 't1', schoolName: 'MIT', round: 'ED', userId: 'u1' },
+      {
+        id: 't1',
+        schoolName: 'MIT',
+        round: 'ED',
+        userId: 'u1',
+        deadline: deadlineForWindow(3),
+      },
     ]);
     redis.setNX.mockResolvedValue(false);
 
