@@ -47,6 +47,7 @@ describe('TimelineApplicationService', () => {
     essayPrompt: {
       findMany: jest.fn().mockResolvedValue([]),
     },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -691,6 +692,49 @@ describe('TimelineApplicationService', () => {
         (t) => t.id === 'past-active',
       );
       expect(mit?.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
+    });
+  });
+
+  // The application-task mutations load the task by id ALONE
+  // (findFirst({ where: { id } })) and enforce ownership in code via
+  // `task.timeline.userId !== userId` — NOT via a DB-level userId filter. These
+  // guardrail tests lock that in: a task on a different user's timeline must be
+  // rejected with NotFoundException and trigger no write, so a future "simplify
+  // to a bare findUnique" can't silently reintroduce a cross-user IDOR with the
+  // suite still green.
+  describe('application-task mutation ownership (IDOR guardrail)', () => {
+    const foreignTask = {
+      id: 'task-x',
+      timelineId: 'tl-foreign',
+      completed: false,
+      timeline: { id: 'tl-foreign', userId: 'other-user' },
+    };
+
+    it('updateTask rejects a foreign-user task and writes nothing', async () => {
+      mockPrisma.applicationTask.findFirst.mockResolvedValue(foreignTask);
+
+      await expect(
+        service.updateTask('user-1', 'task-x', { title: 'hijack' }),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.applicationTask.update).not.toHaveBeenCalled();
+    });
+
+    it('deleteTask rejects a foreign-user task and deletes nothing', async () => {
+      mockPrisma.applicationTask.findFirst.mockResolvedValue(foreignTask);
+
+      await expect(service.deleteTask('user-1', 'task-x')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockPrisma.applicationTask.delete).not.toHaveBeenCalled();
+    });
+
+    it('toggleTaskComplete rejects a foreign-user task and never opens a transaction', async () => {
+      mockPrisma.applicationTask.findFirst.mockResolvedValue(foreignTask);
+
+      await expect(
+        service.toggleTaskComplete('user-1', 'task-x'),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
   });
 });
