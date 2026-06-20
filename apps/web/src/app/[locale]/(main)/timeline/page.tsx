@@ -60,6 +60,7 @@ import {
 import type {
   UpdateTimelineVars,
   AddTaskVars,
+  AddPersonalTaskVars,
   UpdatePersonalEventVars,
   PersonalEventDisplayRow,
 } from './_components/timeline-helpers';
@@ -268,6 +269,36 @@ export default function TimelinePage() {
       queryClient.invalidateQueries({ queryKey: ['personal-event-detail', expandedPersonalEvent] });
       queryClient.invalidateQueries({ queryKey: ['personal-events'] });
       queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+    },
+  });
+
+  const invalidatePersonalEventQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['personal-event-detail', expandedPersonalEvent] });
+    queryClient.invalidateQueries({ queryKey: ['personal-events'] });
+    queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+  };
+
+  const addPersonalTaskMutation = useMutation({
+    mutationFn: ({ eventId, title }: AddPersonalTaskVars) =>
+      apiClient.post(`${API_ROUTES.TIMELINES}/personal-tasks`, { eventId, title }),
+    onSuccess: () => {
+      toast.success(t('schoolTimelines.taskAdded'));
+      invalidatePersonalEventQueries();
+    },
+    onError: () => {
+      toast.error(t('updateError'));
+    },
+  });
+
+  const deletePersonalTaskMutation = useMutation({
+    mutationFn: (taskId: string) =>
+      apiClient.delete(`${API_ROUTES.TIMELINES}/personal-tasks/${taskId}`),
+    onSuccess: () => {
+      toast.success(t('deleteSuccess'));
+      invalidatePersonalEventQueries();
+    },
+    onError: () => {
+      toast.error(t('updateError'));
     },
   });
 
@@ -635,6 +666,8 @@ export default function TimelinePage() {
                       key={`personal-${item.id}`}
                       event={event}
                       onEditEvent={openEditEvent}
+                      addPersonalTaskMutation={addPersonalTaskMutation}
+                      deletePersonalTaskMutation={deletePersonalTaskMutation}
                       expandedPersonalEvent={expandedPersonalEvent}
                       setExpandedPersonalEvent={setExpandedPersonalEvent}
                       personalEventDetail={personalEventDetail}
@@ -740,6 +773,8 @@ export default function TimelinePage() {
             <PersonalEventsSection
               sortedPersonalEvents={board.actionablePersonalEvents}
               onEditEvent={openEditEvent}
+              addPersonalTaskMutation={addPersonalTaskMutation}
+              deletePersonalTaskMutation={deletePersonalTaskMutation}
               expandedPersonalEvent={expandedPersonalEvent}
               setExpandedPersonalEvent={setExpandedPersonalEvent}
               personalEventDetail={personalEventDetail}
@@ -818,6 +853,8 @@ export default function TimelinePage() {
               <PersonalEventsSection
                 sortedPersonalEvents={archivedPersonalEvents}
                 onEditEvent={openEditEvent}
+                addPersonalTaskMutation={addPersonalTaskMutation}
+                deletePersonalTaskMutation={deletePersonalTaskMutation}
                 expandedPersonalEvent={expandedPersonalEvent}
                 setExpandedPersonalEvent={setExpandedPersonalEvent}
                 personalEventDetail={personalEventDetail}
