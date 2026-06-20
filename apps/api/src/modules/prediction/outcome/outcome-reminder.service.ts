@@ -1,10 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { RedisService } from '../../../common/redis/redis.service';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import {
   NotificationService,
   NotificationType,
 } from '../../notification/notification.service';
+
+const OUTCOME_REMINDER_LOCK_KEY = 'outcome-reminder:cron-lock';
 
 /**
  * M6.4: Decision Day Reminder Cron
@@ -13,8 +17,14 @@ import {
  *  1. Finds SchoolDeadlines with `decisionDate` in [-7, +7] day window
  *  2. For each, finds the user's PredictionResults for that school
  *  3. Sends a DEADLINE_REMINDER notification if no outcome has been reported yet
- *  4. Idempotent: tracks last-reminded-at per (user, schoolId, deadline) via
- *     Notification.data — re-sends max once per 3 days
+ *
+ * Multi-instance safety: a Redis single-flight lock (setNXStrict) ensures only
+ * one Cloud Run replica runs the daily scan. De-dup: a per-(user, prediction)
+ * Redis key (REDIS_TTL.OUTCOME_REMINDER_DEDUP) caps re-sends to once per window,
+ * claimed before send and released on failure so a transient error retries on
+ * the next run. (Without these, every replica re-sent every eligible user a
+ * reminder every day across the 14-day window — the bug this cron's old
+ * "idempotent" docstring falsely claimed was handled.)
  */
 @Injectable()
 export class OutcomeReminderService {
@@ -23,6 +33,7 @@ export class OutcomeReminderService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notification: NotificationService,
+    @Optional() private readonly redis?: RedisService,
   ) {}
 
   /**
@@ -35,6 +46,24 @@ export class OutcomeReminderService {
     timeZone: 'UTC',
   })
   async sendDecisionDayReminders(): Promise<void> {
+    // Single-flight across replicas: every Cloud Run instance fires this cron at
+    // 8AM, so without the lock each eligible user gets N duplicate reminders. The
+    // TTL is the single-flight window (no explicit release). setNXStrict returns
+    // false if the lock is held or Redis is down — both correctly skip the run.
+    if (this.redis) {
+      const acquired = await this.redis.setNXStrict(
+        OUTCOME_REMINDER_LOCK_KEY,
+        '1',
+        REDIS_TTL.OUTCOME_REMINDER_CRON_LOCK,
+      );
+      if (!acquired) {
+        this.logger.log(
+          'Outcome reminder cron skipped (lock held by another instance or Redis unavailable).',
+        );
+        return;
+      }
+    }
+
     this.logger.log('Running outcome decision day reminder cron');
 
     const stats = await this.runOnce();
@@ -129,12 +158,6 @@ export class OutcomeReminderService {
         continue;
       }
 
-      // TODO: Add per-user-per-prediction dedup (Redis-backed) to avoid spam.
-      // Notification table does not exist in Prisma schema — NotificationService
-      // uses Redis/in-memory delivery. For MVP we rely on NotificationService's
-      // own dedup behavior. Production should add a OutcomeReminderLog table or
-      // store remindedAt timestamps on PredictionResult.
-
       const school = schoolMap.get(pred.schoolId);
       if (!school) {
         skipped += 1;
@@ -157,6 +180,22 @@ export class OutcomeReminderService {
               ? '明天 / tomorrow'
               : `${Math.abs(daysFromNow)} 天前已截止 / ${Math.abs(daysFromNow)} days ago`;
 
+      // Per-(user, prediction) dedup: claim BEFORE sending so concurrent or
+      // repeat runs within the window don't re-spam; released on failure below so
+      // a transient error retries next run. Fails open when Redis is down.
+      const dedupKey = `outcome-reminded:${userId}:${pred.id}`;
+      if (this.redis) {
+        const firstSend = await this.redis.setNX(
+          dedupKey,
+          '1',
+          REDIS_TTL.OUTCOME_REMINDER_DEDUP,
+        );
+        if (!firstSend) {
+          skipped += 1;
+          continue; // already reminded within the dedup window
+        }
+      }
+
       try {
         await this.notification.createNotification(
           userId,
@@ -177,6 +216,11 @@ export class OutcomeReminderService {
         );
         sent += 1;
       } catch (err) {
+        // Release the claim so the next run retries this user (we claimed before
+        // sending; the send failed, so don't suppress for the dedup window).
+        if (this.redis) {
+          await this.redis.del(dedupKey).catch(() => undefined);
+        }
         this.logger.warn(
           `Failed to send reminder for prediction ${pred.id}: ${err instanceof Error ? err.message : err}`,
         );
