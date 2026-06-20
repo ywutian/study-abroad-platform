@@ -7400,6 +7400,11 @@
     "generateSuccess": "Timeline generated successfully",
     "updateSuccess": "Status updated",
     "updateError": "Update failed, please try again",
+    "loadError": {
+      "title": "Couldn't load your timeline",
+      "description": "Something went wrong fetching your applications and events. Check your connection and try again.",
+      "retry": "Retry"
+    },
     "taskTypes": {
       "ESSAY": "Essay",
       "DOCUMENT": "Document",
@@ -7430,7 +7435,8 @@
       "titleRequired": "Title is required",
       "titleTooLong": "Title must be 200 characters or less",
       "categoryRequired": "Please select a category",
-      "invalidUrl": "Please enter a valid URL"
+      "invalidUrl": "Please enter a valid URL",
+      "dateRequired": "Add a deadline or an event date"
     }
   },
   "forum": {
