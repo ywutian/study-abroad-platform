@@ -23,7 +23,7 @@ export enum ApplicationRound {
   REA = 'REA',
   SCEA = 'SCEA',
   RD = 'RD',
-  ROLLING = 'Rolling',
+  ROLLING = 'ROLLING',
 }
 
 export enum TimelineStatus {
