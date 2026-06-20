@@ -7398,6 +7398,8 @@
       "emptyDescription": "Add schools to generate application timelines. Old-cycle overdue items will stay in Archive."
     },
     "generateSuccess": "Timeline generated successfully",
+    "generatePartial": "Generated {created} timeline(s); {failed} school(s) couldn't be generated",
+    "generateAllFailed": "Couldn't generate timelines for {failed} school(s)",
     "updateSuccess": "Status updated",
     "updateError": "Update failed, please try again",
     "loadError": {

@@ -7377,6 +7377,8 @@
       "emptyDescription": "添加学校后可以生成申请时间线；旧申请季的过期项会进入归档。"
     },
     "generateSuccess": "时间线已生成",
+    "generatePartial": "已生成 {created} 个时间线，{failed} 个学校未能生成",
+    "generateAllFailed": "{failed} 个学校无法生成时间线",
     "updateSuccess": "状态已更新",
     "updateError": "更新失败，请重试",
     "loadError": {
