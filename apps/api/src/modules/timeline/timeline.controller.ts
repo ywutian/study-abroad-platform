@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
+import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { TimelineService } from './timeline.service';
 import {
   CreateTimelineDto,
@@ -57,6 +58,7 @@ export class TimelineController {
   }
 
   @Post('generate')
+  @ThrottleAI() // bounds the O(schools) DB fan-out (up to 100 schools x ~4 queries)
   @ApiOperation({ summary: 'Batch generate timelines' })
   @ApiResponse({ status: 201, type: GenerateTimelinesResultDto })
   async generateTimelines(

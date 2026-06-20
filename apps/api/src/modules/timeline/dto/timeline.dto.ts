@@ -15,6 +15,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
+import { PersonalEventResponseDto } from './personal-event.dto';
 
 export enum ApplicationRound {
   ED = 'ED',
@@ -96,6 +97,8 @@ export class UpdateTimelineDto {
 
   @ApiPropertyOptional()
   @IsInt()
+  @Min(0)
+  @Max(1000)
   @IsOptional()
   priority?: number;
 
@@ -183,6 +186,8 @@ export class CreateTaskDto {
 
   @ApiPropertyOptional({ description: 'Word limit' })
   @IsInt()
+  @Min(0)
+  @Max(100000)
   @IsOptional()
   wordLimit?: number;
 }
@@ -223,6 +228,7 @@ export class UpdateTaskDto {
 
   @ApiPropertyOptional()
   @IsInt()
+  @Min(0)
   @IsOptional()
   sortOrder?: number;
 }
@@ -295,8 +301,8 @@ export class GenerateTimelineFailedItemDto {
   schoolId: string;
 
   @ApiProperty({
-    description: '失败Reason',
-    enum: ['SCHOOL_NOT_FOUND', 'ALREADY_EXISTS', 'INTERNAL_ERROR'],
+    description: 'Failure reason',
+    enum: ['SCHOOL_NOT_FOUND', 'DEADLINE_SOURCE_REQUIRED', 'INTERNAL_ERROR'],
   })
   reason: string;
 }
@@ -345,6 +351,9 @@ export class TimelineOverviewDto {
   @ApiProperty({ description: 'Completed personal events' })
   personalCompleted: number;
 
-  @ApiProperty({ description: 'Upcoming personal events' })
-  upcomingPersonalEvents: any[];
+  @ApiProperty({
+    type: [PersonalEventResponseDto],
+    description: 'Upcoming personal events',
+  })
+  upcomingPersonalEvents: PersonalEventResponseDto[];
 }

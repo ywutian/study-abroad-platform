@@ -6,9 +6,11 @@ import {
   IsInt,
   IsBoolean,
   IsDateString,
+  IsIn,
   Min,
   MaxLength,
 } from 'class-validator';
+import { APPLICATION_ROUND_VALUES } from '@study-abroad/shared';
 
 export class CreateSchoolDeadlineDto {
   @ApiProperty({ description: 'School ID' })
@@ -24,10 +26,13 @@ export class CreateSchoolDeadlineDto {
   @Min(2020)
   year: number;
 
-  @ApiProperty({ description: 'Round: ED, ED2, EA, REA, RD, Rolling' })
+  @ApiProperty({
+    description: 'Round',
+    enum: APPLICATION_ROUND_VALUES,
+  })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(200)
+  @IsIn([...APPLICATION_ROUND_VALUES])
   round: string;
 
   @ApiProperty({ description: 'Application deadline' })
