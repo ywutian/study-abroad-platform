@@ -35,6 +35,10 @@ export const REDIS_TTL = {
   /** Live alert payloads (alert-channel). */
   ALERT_DATA: 7 * DAY,
 
+  // ── 3 days ────────────────────────────────────────────────
+  /** Per-(user, prediction) decision-day reminder re-send cadence (dedup). */
+  OUTCOME_REMINDER_DEDUP: 3 * DAY,
+
   // ── 2 days ────────────────────────────────────────────────
   /** Daily LLM token/cost rollup (token-tracker). */
   DAILY_TOKEN_STATS: 2 * DAY,
@@ -84,6 +88,8 @@ export const REDIS_TTL = {
   DECAY_LOCK: 10 * MINUTE,
   /** Deadline-reminder cron single-flight lock (multi-instance safety). */
   DEADLINE_CRON_LOCK: 10 * MINUTE,
+  /** Outcome decision-day reminder cron single-flight lock. */
+  OUTCOME_REMINDER_CRON_LOCK: 10 * MINUTE,
 
   // ── 5 minutes ─────────────────────────────────────────────
   /** Permission resolution cache. */

@@ -5,6 +5,7 @@ import {
   NotificationService,
   NotificationType,
 } from '../../notification/notification.service';
+import { RedisService } from '../../../common/redis/redis.service';
 
 const mockPrisma = {
   schoolDeadline: { findMany: jest.fn() },
@@ -16,16 +17,26 @@ const mockNotification = {
   createNotification: jest.fn().mockResolvedValue({ id: 'notif1' }),
 };
 
+const mockRedis = {
+  setNX: jest.fn(),
+  setNXStrict: jest.fn(),
+  del: jest.fn(),
+};
+
 describe('OutcomeReminderService', () => {
   let service: OutcomeReminderService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockRedis.setNX.mockResolvedValue(true);
+    mockRedis.setNXStrict.mockResolvedValue(true);
+    mockRedis.del.mockResolvedValue(undefined);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OutcomeReminderService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: NotificationService, useValue: mockNotification },
+        { provide: RedisService, useValue: mockRedis },
       ],
     }).compile();
     service = module.get(OutcomeReminderService);
@@ -155,5 +166,73 @@ describe('OutcomeReminderService', () => {
     expect(stats.candidates).toBe(2);
     expect(stats.sent).toBe(1);
     expect(stats.skipped).toBe(1);
+  });
+
+  it('skips the whole cron when the single-flight lock is held (multi-instance)', async () => {
+    mockRedis.setNXStrict.mockResolvedValue(false);
+
+    await service.sendDecisionDayReminders();
+
+    expect(mockPrisma.schoolDeadline.findMany).not.toHaveBeenCalled();
+    expect(mockNotification.createNotification).not.toHaveBeenCalled();
+  });
+
+  it('skips a user already reminded within the dedup window (Redis dedup)', async () => {
+    mockPrisma.schoolDeadline.findMany.mockResolvedValue([
+      {
+        schoolId: 's1',
+        round: 'EA',
+        decisionDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        year: 2026,
+      },
+    ]);
+    mockPrisma.predictionResult.findMany.mockResolvedValue([
+      {
+        id: 'p1',
+        schoolId: 's1',
+        applicationRound: 'EA',
+        profile: { userId: 'u1' },
+        outcomeLabelRecords: [],
+      },
+    ]);
+    mockPrisma.school.findMany.mockResolvedValue([
+      { id: 's1', name: 'Stanford', nameZh: '斯坦福' },
+    ]);
+    mockRedis.setNX.mockResolvedValue(false); // already reminded this window
+
+    const stats = await service.runOnce();
+
+    expect(stats.sent).toBe(0);
+    expect(stats.skipped).toBe(1);
+    expect(mockNotification.createNotification).not.toHaveBeenCalled();
+  });
+
+  it('releases the dedup claim when the send fails (retry next run)', async () => {
+    mockPrisma.schoolDeadline.findMany.mockResolvedValue([
+      { schoolId: 's1', round: 'EA', decisionDate: new Date(), year: 2026 },
+    ]);
+    mockPrisma.predictionResult.findMany.mockResolvedValue([
+      {
+        id: 'p1',
+        schoolId: 's1',
+        applicationRound: 'EA',
+        profile: { userId: 'u1' },
+        outcomeLabelRecords: [],
+      },
+    ]);
+    mockPrisma.school.findMany.mockResolvedValue([
+      { id: 's1', name: 'MIT', nameZh: null },
+    ]);
+    mockNotification.createNotification.mockRejectedValueOnce(
+      new Error('downstream blip'),
+    );
+
+    const stats = await service.runOnce();
+
+    expect(stats.sent).toBe(0);
+    expect(stats.skipped).toBe(1);
+    expect(mockRedis.del).toHaveBeenCalledWith(
+      expect.stringContaining('outcome-reminded:u1:p1'),
+    );
   });
 });
