@@ -1,5 +1,7 @@
 import React from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { router, type Href } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type {
@@ -109,6 +111,12 @@ export default function ProfileAnalysisScreen() {
   const dataQuality = analysis.meta?.dataQuality ?? 'insufficient';
   const applicantType = analysis.profileSummary.applicantType ?? 'unknown';
   const testStrategy = analysis.profileSummary.testStrategy ?? 'unknown';
+  // Mirror web: surface meta.predictionContext (schools whose backing
+  // prediction is stale/missing) with a tap-through to re-run on /prediction.
+  const predictionContext = analysis.meta?.predictionContext;
+  const stalePredictionCount =
+    (predictionContext?.staleSchoolIds?.length ?? 0) +
+    (predictionContext?.missingSchoolIds?.length ?? 0);
 
   return (
     <ScrollView
@@ -144,6 +152,26 @@ export default function ProfileAnalysisScreen() {
             <Text style={[styles.summaryBody, { color: colors.foregroundMuted }]}>
               {analysis.meta.degradedReason}
             </Text>
+          ) : null}
+          {stalePredictionCount > 0 ? (
+            <TouchableOpacity
+              style={[
+                styles.staleHint,
+                {
+                  backgroundColor: withOpacity(colors.warning, 0.12),
+                  borderColor: withOpacity(colors.warning, 0.3),
+                },
+              ]}
+              onPress={() => router.push('/prediction' as Href)}
+              accessibilityRole="button"
+            >
+              <Ionicons name="refresh-outline" size={14} color={colors.warning} />
+              <Text style={[styles.staleHintText, { color: colors.warning }]}>
+                {t('applicationAnalysis.predictionContext.staleHint', {
+                  count: stalePredictionCount,
+                })}
+              </Text>
+            </TouchableOpacity>
           ) : null}
 
           <View
@@ -523,6 +551,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   summaryBody: { fontSize: fontSize.sm, lineHeight: 20 },
+  staleHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  staleHintText: { fontSize: fontSize.xs, fontWeight: fontWeight.medium },
   metricRow: {
     marginTop: spacing.md,
     borderRadius: borderRadius.lg,

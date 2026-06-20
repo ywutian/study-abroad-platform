@@ -1049,6 +1049,9 @@
     "emptyList": "No items yet",
     "overallScore": "Overall score",
     "focusSchools": "Focus schools",
+    "predictionContext": {
+      "staleHint": "{{count}} school(s) have a stale or missing prediction — re-run"
+    },
     "profileContext": "Profile context",
     "schoolListDiagnosis": "School list diagnosis",
     "freshness": {
