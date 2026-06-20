@@ -360,7 +360,7 @@ describe('TimelineApplicationService', () => {
           include: expect.objectContaining({
             deadlines: expect.objectContaining({
               where: {
-                year: 2026,
+                year: { in: [2026, 2027] },
                 source: { not: 'MANUAL' },
                 notes: { not: null },
               },
@@ -374,6 +374,55 @@ describe('TimelineApplicationService', () => {
       expect(result.failed).toEqual([
         { schoolId: 'school-1', reason: 'DEADLINE_SOURCE_REQUIRED' },
       ]);
+    });
+
+    it('uses next-cycle (applicationYear+1) source-backed deadlines in the off-season', async () => {
+      // May 2026 -> applicationYear 2026, but the active cycle's deadlines are
+      // stored under fall-entry year 2027 (future). Generation must still find
+      // them rather than returning an empty/undated result.
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.school.findUnique.mockResolvedValue({
+        id: 'school-1',
+        name: 'Princeton University',
+        nameZh: '普林斯顿大学',
+        metadata: null,
+        deadlines: [
+          {
+            id: 'dl-next-cycle',
+            round: 'ED',
+            applicationDeadline: new Date('2026-11-01T00:00:00Z'),
+            financialAidDeadline: null,
+            essayPrompts: null,
+            essayCount: null,
+            interviewRequired: false,
+            year: 2027,
+            source: 'WEB_RESEARCH_2026-05:official',
+            notes: 'source: https://admission.princeton.edu/apply',
+          },
+        ],
+      });
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
+      mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          ...mockTimeline,
+          id: 'tl-next-cycle',
+          schoolId: data.schoolId,
+          schoolName: data.schoolName,
+          round: data.round,
+          deadline: data.deadline,
+          tasks: [],
+        }),
+      );
+
+      const result = await service.generateTimelines('user-1', {
+        schoolIds: ['school-1'],
+      });
+
+      expect(result.created).toHaveLength(1);
+      expect(result.created[0].deadline).toEqual(
+        new Date('2026-11-01T00:00:00Z'),
+      );
     });
   });
 

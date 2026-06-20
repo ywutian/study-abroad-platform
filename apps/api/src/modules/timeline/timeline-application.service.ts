@@ -106,6 +106,13 @@ export class TimelineApplicationService {
     const failed: Array<{ schoolId: string; reason: string }> = [];
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
+    // Fall-entry year of the cycle most likely active for new applications. The
+    // seed stores deadlines by fall-entry year (e.g. CYCLE_YEAR 2027 = future
+    // Nov-2026+ dates), so in the off-season (May–Jul) `applicationYear` lands on
+    // the just-finished cycle whose deadlines are all past. We therefore fetch
+    // BOTH this and next year's deadlines below and let selectEffectiveDeadlines
+    // pick the soonest *future* one per round — so generation produces dated
+    // timelines year-round instead of empty results in the off-season.
     const applicationYear =
       currentMonth >= 8 ? now.getFullYear() + 1 : now.getFullYear();
 
@@ -117,7 +124,7 @@ export class TimelineApplicationService {
           include: {
             deadlines: {
               where: {
-                year: applicationYear,
+                year: { in: [applicationYear, applicationYear + 1] },
                 source: { not: 'MANUAL' },
                 notes: { not: null },
               },
@@ -140,7 +147,7 @@ export class TimelineApplicationService {
 
         const effectiveDeadlines = this.selectEffectiveDeadlines(
           (school.deadlines ?? []).filter((deadline) =>
-            this.isSourceBackedCurrentYearDeadline(deadline, applicationYear),
+            this.isSourceBackedPlannableDeadline(deadline, applicationYear),
           ),
           now,
         );
@@ -202,14 +209,17 @@ export class TimelineApplicationService {
     return { created, failed };
   }
 
-  private isSourceBackedCurrentYearDeadline<
+  private isSourceBackedPlannableDeadline<
     T extends { year?: number; source?: string | null; notes?: string | null },
   >(deadline: T, applicationYear: number): boolean {
     const source = deadline.source?.trim().toUpperCase();
     const notes = deadline.notes?.trim() ?? '';
 
+    // Accept the current OR next fall-entry cycle (see the applicationYear note);
+    // selectEffectiveDeadlines then keeps the soonest future deadline per round.
     return (
-      deadline.year === applicationYear &&
+      (deadline.year === applicationYear ||
+        deadline.year === applicationYear + 1) &&
       Boolean(source) &&
       source !== 'MANUAL' &&
       /https?:\/\//i.test(notes)

@@ -202,7 +202,7 @@ describe('TimelineService', () => {
                 : new Date().getFullYear(),
             essayPrompts: null,
             essayCount: null,
-            // Required for isSourceBackedCurrentYearDeadline filter — added
+            // Required for isSourceBackedPlannableDeadline filter — added
             // when the timeline action board rebuild (#155) introduced
             // source-backed verification (`source !== 'MANUAL'` + URL in notes).
             source: 'CDS',
