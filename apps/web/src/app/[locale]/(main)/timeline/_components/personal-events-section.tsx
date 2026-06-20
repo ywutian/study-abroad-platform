@@ -18,6 +18,7 @@ export function PersonalEventItem({
   personalEventDetailLoading,
   togglePersonalTaskMutation,
   setDeleteTarget,
+  onEditEvent,
   formatDate,
   getDaysUntil,
   formatDaysUntil,
@@ -110,6 +111,8 @@ export function PersonalEventItem({
           formatDate={formatDate}
           onDelete={() => setDeleteTarget({ type: 'personalEvent', id: ev.id, name: ev.title })}
           deleteLabel={t('personalEvents.delete')}
+          onEdit={() => onEditEvent(ev)}
+          editLabel={t('personalEvents.edit')}
         />
       )}
     </div>
@@ -124,6 +127,7 @@ export function PersonalEventsSection({
   personalEventDetailLoading,
   togglePersonalTaskMutation,
   setDeleteTarget,
+  onEditEvent,
   formatDate,
   getDaysUntil,
   formatDaysUntil,
@@ -157,6 +161,7 @@ export function PersonalEventsSection({
             personalEventDetailLoading={personalEventDetailLoading}
             togglePersonalTaskMutation={togglePersonalTaskMutation}
             setDeleteTarget={setDeleteTarget}
+            onEditEvent={onEditEvent}
             formatDate={formatDate}
             getDaysUntil={getDaysUntil}
             formatDaysUntil={formatDaysUntil}

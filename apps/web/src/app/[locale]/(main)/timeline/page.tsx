@@ -57,7 +57,12 @@ import {
   getArchivedDisplayStatus,
   resolveTimelineTab,
 } from './_components/timeline-view-model';
-import type { UpdateTimelineVars, AddTaskVars } from './_components/timeline-helpers';
+import type {
+  UpdateTimelineVars,
+  AddTaskVars,
+  UpdatePersonalEventVars,
+  PersonalEventDisplayRow,
+} from './_components/timeline-helpers';
 
 function listFromResponse<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
@@ -97,6 +102,7 @@ export default function TimelinePage() {
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
   const [expandedPersonalEvent, setExpandedPersonalEvent] = useState<string | null>(null);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{
     type: string;
     id: string;
@@ -267,6 +273,55 @@ export default function TimelinePage() {
     },
   });
 
+  const updatePersonalEventMutation = useMutation({
+    mutationFn: ({ id, data }: UpdatePersonalEventVars) =>
+      apiClient.put(`${API_ROUTES.TIMELINES}/personal-events/${id}`, {
+        title: data.title,
+        category: data.category,
+        deadline: data.deadline || undefined,
+        eventDate: data.eventDate || undefined,
+        description: data.description || undefined,
+      }),
+    onSuccess: () => {
+      toast.success(t('personalEvents.updateSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['personal-events'] });
+      queryClient.invalidateQueries({
+        queryKey: ['personal-event-detail', expandedPersonalEvent],
+      });
+      queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+      setShowCreateEvent(false);
+      setEditingEventId(null);
+      eventForm.reset();
+    },
+    onError: () => {
+      toast.error(t('updateError'));
+    },
+  });
+
+  const openCreateEvent = () => {
+    setEditingEventId(null);
+    eventForm.reset({
+      title: '',
+      category: 'COMPETITION',
+      deadline: '',
+      eventDate: '',
+      description: '',
+    });
+    setShowCreateEvent(true);
+  };
+
+  const openEditEvent = (event: PersonalEventDisplayRow) => {
+    eventForm.reset({
+      title: event.title,
+      category: event.category,
+      deadline: event.deadline ? event.deadline.slice(0, 10) : '',
+      eventDate: event.eventDate ? event.eventDate.slice(0, 10) : '',
+      description: event.description ?? '',
+    });
+    setEditingEventId(event.id);
+    setShowCreateEvent(true);
+  };
+
   const subscribeGlobalEventMutation = useMutation({
     mutationFn: (globalEventId: string) =>
       apiClient.post(`${API_ROUTES.TIMELINES}/personal-events/subscribe`, { globalEventId }),
@@ -419,7 +474,7 @@ export default function TimelinePage() {
               variant="outline"
               size="sm"
               className="min-h-10 sm:min-h-9"
-              onClick={() => setShowCreateEvent(true)}
+              onClick={openCreateEvent}
             >
               <Plus className="h-4 w-4 mr-1" />
               {t('personalEvents.create')}
@@ -478,11 +533,7 @@ export default function TimelinePage() {
             <h3 className="text-lg font-semibold mb-2">{t('empty.title')}</h3>
             <p className="text-muted-foreground mb-4 max-w-md">{t('empty.description')}</p>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="min-h-10"
-                onClick={() => setShowCreateEvent(true)}
-              >
+              <Button variant="outline" className="min-h-10" onClick={openCreateEvent}>
                 <Plus className="h-4 w-4 mr-1" />
                 {t('personalEvents.create')}
               </Button>
@@ -538,6 +589,7 @@ export default function TimelinePage() {
                     <PersonalEventItem
                       key={`personal-${item.id}`}
                       event={event}
+                      onEditEvent={openEditEvent}
                       expandedPersonalEvent={expandedPersonalEvent}
                       setExpandedPersonalEvent={setExpandedPersonalEvent}
                       personalEventDetail={personalEventDetail}
@@ -642,6 +694,7 @@ export default function TimelinePage() {
           {board.actionablePersonalEvents.length > 0 ? (
             <PersonalEventsSection
               sortedPersonalEvents={board.actionablePersonalEvents}
+              onEditEvent={openEditEvent}
               expandedPersonalEvent={expandedPersonalEvent}
               setExpandedPersonalEvent={setExpandedPersonalEvent}
               personalEventDetail={personalEventDetail}
@@ -719,6 +772,7 @@ export default function TimelinePage() {
               />
               <PersonalEventsSection
                 sortedPersonalEvents={archivedPersonalEvents}
+                onEditEvent={openEditEvent}
                 expandedPersonalEvent={expandedPersonalEvent}
                 setExpandedPersonalEvent={setExpandedPersonalEvent}
                 personalEventDetail={personalEventDetail}
@@ -752,9 +806,14 @@ export default function TimelinePage() {
 
       <CreateEventDialog
         open={showCreateEvent}
-        onOpenChange={setShowCreateEvent}
+        onOpenChange={(open) => {
+          setShowCreateEvent(open);
+          if (!open) setEditingEventId(null);
+        }}
         eventForm={eventForm}
         createPersonalEventMutation={createPersonalEventMutation}
+        updatePersonalEventMutation={updatePersonalEventMutation}
+        editingEventId={editingEventId}
         getCategoryLabel={getCategoryLabel}
       />
 

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2, Loader2, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle2, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import type { TaskResponse } from '@/types/timeline';
 import type { PersonalTaskResponse } from '@/types/timeline';
 import type { UseMutationResult } from '@tanstack/react-query';
@@ -24,6 +24,9 @@ interface TimelineItemDetailProps {
   addTaskPending?: boolean;
   /** When provided, each task row gets a delete (trash) button. */
   onDeleteTask?: (taskId: string) => void;
+  /** When provided, the footer shows an Edit button (e.g. edit a personal event). */
+  onEdit?: () => void;
+  editLabel?: string;
 }
 
 export function TimelineItemDetail({
@@ -37,6 +40,8 @@ export function TimelineItemDetail({
   onAddTask,
   addTaskPending = false,
   onDeleteTask,
+  onEdit,
+  editLabel,
 }: TimelineItemDetailProps) {
   const t = useTranslations('timeline');
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -146,7 +151,13 @@ export function TimelineItemDetail({
         </form>
       )}
 
-      <div className="mt-4 pt-3 border-t flex justify-end">
+      <div className="mt-4 pt-3 border-t flex justify-end gap-2">
+        {onEdit && (
+          <Button variant="ghost" size="sm" onClick={onEdit}>
+            <Pencil className="h-4 w-4 mr-1" />
+            {editLabel}
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"

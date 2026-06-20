@@ -40,6 +40,7 @@ export const SCHOOL_STATUS_OPTIONS: { value: TimelineStatus; key: string }[] = [
 
 export type UpdateTimelineVars = { id: string; status: TimelineStatus };
 export type AddTaskVars = { timelineId: string; title: string };
+export type UpdatePersonalEventVars = { id: string; data: PersonalEventFormData };
 
 /** Props shared by components that need date formatting */
 export interface DateHelpers {
@@ -96,6 +97,8 @@ export interface PersonalEventsSectionProps extends DateHelpers, BadgeHelpers {
   personalEventDetailLoading: boolean;
   togglePersonalTaskMutation: UseMutationResult<unknown, Error, string>;
   setDeleteTarget: (target: { type: string; id: string; name: string }) => void;
+  /** Opens the event Sheet pre-filled to edit this event (PUT /personal-events/:id). */
+  onEditEvent: (event: PersonalEventDisplayRow) => void;
 }
 
 export interface CreateEventDialogProps {
@@ -104,6 +107,9 @@ export interface CreateEventDialogProps {
   eventForm: UseFormReturn<PersonalEventFormData>;
   createPersonalEventMutation: UseMutationResult<unknown, Error, PersonalEventFormData>;
   getCategoryLabel: (category: string) => string;
+  /** When set, the Sheet is in edit mode and submitting calls update instead of create. */
+  editingEventId: string | null;
+  updatePersonalEventMutation: UseMutationResult<unknown, Error, UpdatePersonalEventVars>;
 }
 
 export interface DeleteConfirmationDialogProps {
