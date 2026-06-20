@@ -40,6 +40,7 @@ export const SCHOOL_STATUS_OPTIONS: { value: TimelineStatus; key: string }[] = [
 
 export type UpdateTimelineVars = { id: string; status: TimelineStatus };
 export type AddTaskVars = { timelineId: string; title: string };
+export type AddPersonalTaskVars = { eventId: string; title: string };
 export type UpdatePersonalEventVars = { id: string; data: PersonalEventFormData };
 
 /** Props shared by components that need date formatting */
@@ -99,6 +100,8 @@ export interface PersonalEventsSectionProps extends DateHelpers, BadgeHelpers {
   setDeleteTarget: (target: { type: string; id: string; name: string }) => void;
   /** Opens the event Sheet pre-filled to edit this event (PUT /personal-events/:id). */
   onEditEvent: (event: PersonalEventDisplayRow) => void;
+  addPersonalTaskMutation: UseMutationResult<unknown, Error, AddPersonalTaskVars>;
+  deletePersonalTaskMutation: UseMutationResult<unknown, Error, string>;
 }
 
 export interface CreateEventDialogProps {
