@@ -19,6 +19,8 @@ import {
 } from '../notification/notification.service';
 import { rollAnnualDateForward } from './timeline-date.util';
 
+const DEADLINE_CRON_LOCK_KEY = 'deadline-reminder:cron-lock';
+
 @Injectable()
 export class DeadlineReminderScheduler {
   private readonly logger = new Logger(DeadlineReminderScheduler.name);
@@ -31,6 +33,26 @@ export class DeadlineReminderScheduler {
 
   @Cron('0 8 * * *', { timeZone: 'Asia/Shanghai' })
   async checkDeadlines() {
+    // Single-flight across instances: Cloud Run runs N replicas and the cron
+    // fires on each at 08:00, so without a lock the scan would run N times. The
+    // lock TTL (not an explicit release) is the single-flight window — short
+    // enough to re-run tomorrow, long enough to outlast one run. setNXStrict
+    // returns false if the lock is held OR Redis is unavailable; both correctly
+    // skip the duplicate/uncoordinated run.
+    if (this.redis) {
+      const acquired = await this.redis.setNXStrict(
+        DEADLINE_CRON_LOCK_KEY,
+        '1',
+        REDIS_TTL.DEADLINE_CRON_LOCK,
+      );
+      if (!acquired) {
+        this.logger.log(
+          'Deadline reminder scan skipped (lock held by another instance or Redis unavailable).',
+        );
+        return;
+      }
+    }
+
     this.logger.log('Starting deadline reminder scan...');
     const windows = [1, 3, 7];
     let totalSent = 0;
@@ -41,7 +63,8 @@ export class DeadlineReminderScheduler {
         totalSent += sent;
       } catch (error) {
         this.logger.error(
-          `Failed to process ${days}-day window: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to process ${days}-day window`,
+          error instanceof Error ? error.stack : String(error),
         );
       }
     }
@@ -53,12 +76,15 @@ export class DeadlineReminderScheduler {
 
   private async processWindow(days: number): Promise<number> {
     const now = new Date();
+    // UTC day boundaries so the window matches the UTC-based rollAnnualDateForward
+    // applied below — otherwise the boundary shifts with the server's TZ (UTC on
+    // Cloud Run, local on a dev box) and edge-of-window deadlines mis-bucket.
     const targetStart = new Date(now);
-    targetStart.setDate(targetStart.getDate() + days);
-    targetStart.setHours(0, 0, 0, 0);
+    targetStart.setUTCDate(targetStart.getUTCDate() + days);
+    targetStart.setUTCHours(0, 0, 0, 0);
 
     const targetEnd = new Date(targetStart);
-    targetEnd.setHours(23, 59, 59, 999);
+    targetEnd.setUTCHours(23, 59, 59, 999);
 
     // Both deadline kinds in this window: personal events + application (school)
     // deadlines. Application timelines only matter while still un-submitted.
@@ -124,11 +150,13 @@ export class DeadlineReminderScheduler {
     const dateStr = targetStart.toISOString().slice(0, 10);
 
     for (const [userId, labels] of grouped) {
+      // Claim-on-success: set the dedup key BEFORE sending (atomic, prevents a
+      // double-send), but release it if the send throws so the next run retries
+      // instead of suppressing this user for a full day on a transient error.
+      const dedupKey = `deadline-reminded:${userId}:${days}:${dateStr}`;
       try {
-        // Redis dedup: one reminder per user per day-window per date.
         // setNX returns false only when the key already exists (already sent);
         // when Redis is down it fails open (true) so reminders still go out.
-        const dedupKey = `deadline-reminded:${userId}:${days}:${dateStr}`;
         if (this.redis) {
           const firstSendToday = await this.redis.setNX(
             dedupKey,
@@ -154,8 +182,12 @@ export class DeadlineReminderScheduler {
         );
         sent++;
       } catch (error) {
-        this.logger.warn(
-          `Failed to send reminder to ${userId}: ${error instanceof Error ? error.message : String(error)}`,
+        if (this.redis) {
+          await this.redis.del(dedupKey).catch(() => undefined);
+        }
+        this.logger.error(
+          `Failed to send deadline reminder to user ${userId} (${days}d)`,
+          error instanceof Error ? error.stack : String(error),
         );
       }
     }

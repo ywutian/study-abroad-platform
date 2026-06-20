@@ -82,6 +82,8 @@ export const REDIS_TTL = {
   COMPACTION_LOCK: 10 * MINUTE,
   /** Memory decay distributed lock. */
   DECAY_LOCK: 10 * MINUTE,
+  /** Deadline-reminder cron single-flight lock (multi-instance safety). */
+  DEADLINE_CRON_LOCK: 10 * MINUTE,
 
   // ── 5 minutes ─────────────────────────────────────────────
   /** Permission resolution cache. */

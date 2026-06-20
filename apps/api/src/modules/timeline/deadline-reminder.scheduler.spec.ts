@@ -13,7 +13,7 @@ describe('DeadlineReminderScheduler', () => {
     personalEvent: { findMany: jest.fn() },
     applicationTimeline: { findMany: jest.fn() },
   };
-  const redis = { setNX: jest.fn() };
+  const redis = { setNX: jest.fn(), setNXStrict: jest.fn(), del: jest.fn() };
   const notifications = { createNotification: jest.fn() };
 
   // Fixed "now" so the 1/3/7-day windows are deterministic.
@@ -35,6 +35,8 @@ describe('DeadlineReminderScheduler', () => {
     prisma.personalEvent.findMany.mockResolvedValue([]);
     prisma.applicationTimeline.findMany.mockResolvedValue([]);
     redis.setNX.mockResolvedValue(true);
+    redis.setNXStrict.mockResolvedValue(true);
+    redis.del.mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -185,5 +187,46 @@ describe('DeadlineReminderScheduler', () => {
 
     expect(sent).toBe(0);
     expect(notifications.createNotification).not.toHaveBeenCalled();
+  });
+
+  it('skips the whole scan when the cron lock is held (multi-instance single-flight)', async () => {
+    redis.setNXStrict.mockResolvedValue(false);
+    prisma.applicationTimeline.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        schoolName: 'MIT',
+        round: 'ED',
+        userId: 'u1',
+        deadline: deadlineForWindow(3),
+      },
+    ]);
+
+    await scheduler.checkDeadlines();
+
+    expect(prisma.applicationTimeline.findMany).not.toHaveBeenCalled();
+    expect(notifications.createNotification).not.toHaveBeenCalled();
+  });
+
+  it('releases the dedup claim when the send fails (claim-on-success retry)', async () => {
+    prisma.applicationTimeline.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        schoolName: 'MIT',
+        round: 'ED',
+        userId: 'u1',
+        deadline: deadlineForWindow(3),
+      },
+    ]);
+    notifications.createNotification.mockRejectedValueOnce(
+      new Error('downstream blip'),
+    );
+
+    const sent = await runWindow(3);
+
+    expect(sent).toBe(0);
+    // The pre-send claim is released so tomorrow's run retries this user.
+    expect(redis.del).toHaveBeenCalledWith(
+      expect.stringContaining('deadline-reminded:u1:3:'),
+    );
   });
 });
