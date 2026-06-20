@@ -39,6 +39,7 @@ export const SCHOOL_STATUS_OPTIONS: { value: TimelineStatus; key: string }[] = [
 ];
 
 export type UpdateTimelineVars = { id: string; status: TimelineStatus };
+export type AddTaskVars = { timelineId: string; title: string };
 
 /** Props shared by components that need date formatting */
 export interface DateHelpers {
@@ -83,6 +84,8 @@ export interface TimelineTabsProps extends DateHelpers, BadgeHelpers {
   }>;
   generateTimelineMutation: UseMutationResult<unknown, Error, string[]>;
   updateTimelineMutation: UseMutationResult<unknown, Error, UpdateTimelineVars>;
+  addTaskMutation: UseMutationResult<unknown, Error, AddTaskVars>;
+  deleteTaskMutation: UseMutationResult<unknown, Error, string>;
 }
 
 export interface PersonalEventsSectionProps extends DateHelpers, BadgeHelpers {
