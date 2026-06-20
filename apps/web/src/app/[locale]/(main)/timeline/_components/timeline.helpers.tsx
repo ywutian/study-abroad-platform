@@ -71,7 +71,7 @@ export function getRoundBadge(round: string): ReactNode {
     EA: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     REA: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
     RD: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    Rolling: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
+    ROLLING: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
   };
   return (
     <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${colors[round] || colors.RD}`}>

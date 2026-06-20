@@ -54,7 +54,7 @@ interface SchoolOption {
   nameZh?: string;
 }
 
-const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'Rolling'];
+const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'];
 const YEARS = [2025, 2026, 2027];
 
 interface DeadlineFormDialogProps {

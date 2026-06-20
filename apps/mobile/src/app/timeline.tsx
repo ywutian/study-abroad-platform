@@ -70,7 +70,7 @@ const ROUND_VARIANTS: Record<string, 'error' | 'default' | 'secondary' | 'succes
   EA: 'default',
   REA: 'default',
   RD: 'secondary',
-  Rolling: 'success',
+  ROLLING: 'success',
 };
 const STATUS_VARIANTS: Record<string, 'secondary' | 'default' | 'success' | 'error' | 'warning'> = {
   NOT_STARTED: 'secondary',

@@ -41,7 +41,7 @@ const ROUND_COLORS: Record<string, string> = {
   EA: 'bg-blue-500/10 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-500/20',
   REA: 'bg-violet-500/10 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400 border-violet-500/20',
   RD: 'bg-emerald-500/10 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-  Rolling:
+  ROLLING:
     'bg-slate-500/10 dark:bg-slate-950/30 text-slate-600 dark:text-slate-400 border-slate-500/20',
 };
 
