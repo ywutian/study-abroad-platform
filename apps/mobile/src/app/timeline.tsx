@@ -43,7 +43,6 @@ import type {
   TimelineStatus,
   TaskResponse,
   TimelineOverview,
-  PersonalEventCategory,
   // PersonalEventDetail carries the optional inline `tasks` this screen reads.
   PersonalEventDetail as PersonalEventResponse,
   GlobalEvent as GlobalEventResponse,
