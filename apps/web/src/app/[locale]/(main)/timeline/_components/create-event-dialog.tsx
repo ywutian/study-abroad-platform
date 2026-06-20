@@ -87,6 +87,11 @@ export function CreateEventDialog({
             <div className="space-y-1.5">
               <Label htmlFor="event-deadline">{t('personalEvents.form.deadline')}</Label>
               <Input id="event-deadline" type="date" {...eventForm.register('deadline')} />
+              {eventForm.formState.errors.deadline && (
+                <p className="text-xs text-destructive">
+                  {eventForm.formState.errors.deadline.message}
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="event-date">{t('personalEvents.form.eventDate')}</Label>

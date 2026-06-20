@@ -7379,6 +7379,11 @@
     "generateSuccess": "时间线已生成",
     "updateSuccess": "状态已更新",
     "updateError": "更新失败，请重试",
+    "loadError": {
+      "title": "无法加载时间线",
+      "description": "获取你的申请和事件时出错了。请检查网络后重试。",
+      "retry": "重试"
+    },
     "taskTypes": {
       "ESSAY": "文书",
       "DOCUMENT": "材料",
@@ -7409,7 +7414,8 @@
       "titleRequired": "请输入标题",
       "titleTooLong": "标题不能超过200个字符",
       "categoryRequired": "请选择分类",
-      "invalidUrl": "请输入有效的网址"
+      "invalidUrl": "请输入有效的网址",
+      "dateRequired": "请填写截止日期或活动日期"
     }
   },
   "forum": {

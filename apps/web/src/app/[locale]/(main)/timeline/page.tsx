@@ -121,7 +121,12 @@ export default function TimelinePage() {
 
   // ============ Queries ============
 
-  const { data: timelinesRaw, isLoading: timelinesLoading } = useQuery<unknown>({
+  const {
+    data: timelinesRaw,
+    isLoading: timelinesLoading,
+    isError: timelinesError,
+    refetch: refetchTimelines,
+  } = useQuery<unknown>({
     queryKey: ['timelines'],
     queryFn: () => apiClient.get(API_ROUTES.TIMELINES),
     enabled: authReady,
@@ -138,7 +143,12 @@ export default function TimelinePage() {
     [globalEventsRaw]
   );
 
-  const { data: personalEventsRaw, isLoading: personalLoading } = useQuery<unknown>({
+  const {
+    data: personalEventsRaw,
+    isLoading: personalLoading,
+    isError: personalError,
+    refetch: refetchPersonal,
+  } = useQuery<unknown>({
     queryKey: ['personal-events'],
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/personal-events`),
     enabled: authReady,
@@ -348,6 +358,7 @@ export default function TimelinePage() {
   // ============ Helpers ============
 
   const isLoading = timelinesLoading || personalLoading;
+  const loadError = timelinesError || personalError;
   const hasTimelines = timelines.length > 0;
   const hasPersonalEvents = personalEvents.length > 0;
   const hasAny = hasTimelines || hasPersonalEvents;
@@ -458,6 +469,40 @@ export default function TimelinePage() {
       <div className="container mx-auto py-6 px-4 max-w-5xl flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
+    );
+  }
+
+  // Distinguish a failed load from a genuinely empty account — otherwise a 500
+  // renders as the "add your first school" empty state.
+  if (loadError) {
+    return (
+      <PageContainer maxWidth="5xl" className="space-y-6">
+        <PageHeader
+          title={t('title')}
+          description={t('description')}
+          icon={Calendar}
+          color="blue"
+        />
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <AlertTriangle className="h-10 w-10 text-destructive/70 mb-3" />
+            <h3 className="text-base font-semibold">{t('loadError.title')}</h3>
+            <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              {t('loadError.description')}
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4 min-h-10"
+              onClick={() => {
+                refetchTimelines();
+                refetchPersonal();
+              }}
+            >
+              {t('loadError.retry')}
+            </Button>
+          </CardContent>
+        </Card>
+      </PageContainer>
     );
   }
 
