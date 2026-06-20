@@ -36,14 +36,19 @@ describe('TimelinePersonalEventService', () => {
     },
     personalTask: {
       findFirst: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
       findMany: jest.fn(),
+      count: jest.fn().mockResolvedValue(0),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       delete: jest.fn(),
     },
     globalEvent: {
       findUnique: jest.fn(),
     },
+    // Runs the callback with the mock as the tx client (interactive-txn paths).
+    $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb(mockPrisma)),
   };
 
   beforeEach(async () => {
@@ -205,13 +210,13 @@ describe('TimelinePersonalEventService', () => {
         completed: false,
         event: { userId: 'user-1' },
       });
-      mockPrisma.personalTask.update.mockResolvedValue({
+      mockPrisma.personalTask.findUniqueOrThrow.mockResolvedValue({
         id: 'task-1',
         eventId: 'evt-1',
         completed: true,
         completedAt: new Date(),
       });
-      mockPrisma.personalTask.findMany.mockResolvedValue([{ completed: true }]);
+      mockPrisma.personalTask.count.mockResolvedValue(1);
       mockPrisma.personalEvent.findUnique.mockResolvedValue({
         status: 'IN_PROGRESS',
       });
