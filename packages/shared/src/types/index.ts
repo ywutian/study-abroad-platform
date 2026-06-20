@@ -23,6 +23,7 @@ export * from './owned-site-assessment';
 export * from './competitor-benchmark';
 export * from './theme-style';
 export * from './dashboard';
+export * from './timeline';
 // Hall refactor Phase 1 — new shared types
 export * from './hall';
 export * from './points';
