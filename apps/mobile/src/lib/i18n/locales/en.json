@@ -1653,7 +1653,16 @@
     "eventTitle": "Title",
     "eventTitlePlaceholder": "Enter event title...",
     "eventCategory": "Category",
-    "eventCategoryPlaceholder": "e.g. SAT, Competition...",
+    "eventCategoryPlaceholder": "Select a category",
+    "category": {
+      "COMPETITION": "Competition",
+      "TEST": "Standardized Test",
+      "SUMMER_PROGRAM": "Summer Program",
+      "INTERNSHIP": "Internship",
+      "ACTIVITY": "Extracurricular",
+      "MATERIAL": "Material Prep",
+      "OTHER": "Other"
+    },
     "eventNotes": "Notes",
     "eventNotesPlaceholder": "Optional notes...",
     "deleteConfirmTitle": "Confirm Deletion",

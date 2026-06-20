@@ -1653,7 +1653,16 @@
     "eventTitle": "标题",
     "eventTitlePlaceholder": "输入事件标题...",
     "eventCategory": "类别",
-    "eventCategoryPlaceholder": "例如 SAT、竞赛...",
+    "eventCategoryPlaceholder": "选择类别",
+    "category": {
+      "COMPETITION": "竞赛",
+      "TEST": "标化考试",
+      "SUMMER_PROGRAM": "夏校/暑期项目",
+      "INTERNSHIP": "实习",
+      "ACTIVITY": "课外活动",
+      "MATERIAL": "材料准备",
+      "OTHER": "其他"
+    },
     "eventNotes": "备注",
     "eventNotesPlaceholder": "可选备注...",
     "deleteConfirmTitle": "确认删除",

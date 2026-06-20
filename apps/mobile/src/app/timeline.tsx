@@ -34,9 +34,10 @@ import {
   Segment,
   Checkbox,
   ConfirmDialog,
+  Select,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES } from '@study-abroad/shared';
+import { API_ROUTES, PERSONAL_EVENT_CATEGORIES } from '@study-abroad/shared';
 import type {
   TimelineResponse,
   TimelineStatus,
@@ -127,7 +128,7 @@ export default function TimelinePage() {
   });
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [eventModal, setEventModal] = useState(false);
-  const [eventForm, setEventForm] = useState({ title: '', category: '', notes: '' });
+  const [eventForm, setEventForm] = useState({ title: '', category: 'OTHER', notes: '' });
   const [deleteDialog, setDeleteDialog] = useState<{
     visible: boolean;
     type: 'timeline' | 'event';
@@ -228,7 +229,7 @@ export default function TimelinePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.timeline.personal() });
       setEventModal(false);
-      setEventForm({ title: '', category: '', notes: '' });
+      setEventForm({ title: '', category: 'OTHER', notes: '' });
       toast.success(t('timeline.eventAdded'));
     },
     onError: (e) => toast.error(e.message),
@@ -541,7 +542,9 @@ export default function TimelinePage() {
                           gap: spacing.sm,
                         }}
                       >
-                        <Badge variant="outline">{ev.category}</Badge>
+                        <Badge variant="outline">
+                          {t(`timeline.category.${ev.category}`, ev.category)}
+                        </Badge>
                         <Text
                           style={[s.name, { color: colors.foreground, flex: 1 }]}
                           numberOfLines={1}
@@ -703,7 +706,7 @@ export default function TimelinePage() {
                           marginTop: 2,
                         }}
                       >
-                        {ge.category}
+                        {t(`timeline.category.${ge.category}`, ge.category)}
                         {d !== null && d >= 0 ? ` - ${t('timeline.daysLeft', { count: d })}` : ''}
                       </Text>
                     </View>
@@ -969,7 +972,7 @@ export default function TimelinePage() {
               if (eventForm.title.trim())
                 addEvent.mutate({
                   title: eventForm.title.trim(),
-                  category: eventForm.category.trim() || 'general',
+                  category: eventForm.category,
                   notes: eventForm.notes.trim() || undefined,
                 });
             }}
@@ -987,11 +990,15 @@ export default function TimelinePage() {
           onChangeText={(v) => setEventForm((p) => ({ ...p, title: v }))}
           autoFocus
         />
-        <Input
+        <Select
           label={t('timeline.eventCategory')}
           placeholder={t('timeline.eventCategoryPlaceholder')}
           value={eventForm.category}
-          onChangeText={(v) => setEventForm((p) => ({ ...p, category: v }))}
+          onChange={(v) => setEventForm((p) => ({ ...p, category: v }))}
+          options={PERSONAL_EVENT_CATEGORIES.map((c) => ({
+            value: c,
+            label: t(`timeline.category.${c}`, c),
+          }))}
         />
         <Input
           label={t('timeline.eventNotes')}
