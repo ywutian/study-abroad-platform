@@ -521,4 +521,46 @@ describe('TimelineApplicationService', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('effectiveDeadline (read-time roll-forward)', () => {
+    afterEach(() => jest.useRealTimers());
+
+    const baseTimeline = (status: string, deadline: Date) => ({
+      id: 't1',
+      schoolId: 's1',
+      schoolName: 'MIT',
+      round: 'RD',
+      deadline,
+      status,
+      progress: 0,
+      priority: 0,
+      notes: null,
+      tasks: [],
+      createdAt: new Date('2025-09-01T00:00:00Z'),
+    });
+
+    it('rolls a past deadline to its next annual occurrence for active timelines', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+      const res = service.mapTimelineToResponse(
+        baseTimeline('IN_PROGRESS', new Date('2026-01-01T00:00:00Z')),
+      );
+      expect(res.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
+    });
+
+    it('leaves a future deadline untouched', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+      const res = service.mapTimelineToResponse(
+        baseTimeline('NOT_STARTED', new Date('2026-11-01T00:00:00Z')),
+      );
+      expect(res.deadline).toEqual(new Date('2026-11-01T00:00:00Z'));
+    });
+
+    it('keeps the real past deadline for terminal (submitted) timelines', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+      const res = service.mapTimelineToResponse(
+        baseTimeline('SUBMITTED', new Date('2026-01-01T00:00:00Z')),
+      );
+      expect(res.deadline).toEqual(new Date('2026-01-01T00:00:00Z'));
+    });
+  });
 });

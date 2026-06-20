@@ -477,14 +477,23 @@ export class TimelineApplicationService {
     });
 
     const now = new Date();
+    // Filter + sort on the *effective* (read-time rolled) deadline so active
+    // timelines whose stored deadline has drifted into the past still surface as
+    // upcoming — consistent with what mapTimelineToResponse renders.
     const upcomingDeadlines = timelines
+      .map((timeline) => ({
+        timeline,
+        effective: this.effectiveDeadline(timeline.deadline, timeline.status),
+      }))
       .filter(
-        (t) =>
-          t.deadline &&
-          t.deadline > now &&
-          t.status !== ApplicationStatus.SUBMITTED,
+        ({ timeline, effective }) =>
+          effective &&
+          effective > now &&
+          timeline.status !== ApplicationStatus.SUBMITTED,
       )
-      .slice(0, 5);
+      .sort((a, b) => a.effective!.getTime() - b.effective!.getTime())
+      .slice(0, 5)
+      .map(({ timeline }) => timeline);
 
     const allTasks = await this.prisma.applicationTask.findMany({
       where: {
@@ -689,6 +698,24 @@ export class TimelineApplicationService {
     });
   }
 
+  /**
+   * Application deadlines recur annually, but the stored value is frozen at
+   * creation — so as time passes it drifts into the past and the UI shows a
+   * stale, already-expired date. For **active** (un-submitted) timelines, roll a
+   * past deadline to its next annual occurrence at read time (mirrors how global
+   * events are surfaced via `withEffectiveRecurringGlobalEvent`). Terminal
+   * statuses (submitted/accepted/rejected/waitlisted/withdrawn) keep the real
+   * historical deadline.
+   */
+  private effectiveDeadline(
+    deadline: Date | null | undefined,
+    status: string,
+  ): Date | undefined {
+    if (!deadline) return undefined;
+    const isActive = status === 'NOT_STARTED' || status === 'IN_PROGRESS';
+    return isActive ? rollAnnualDateForward(deadline) : deadline;
+  }
+
   mapTimelineToResponse(timeline: any): TimelineResponseDto {
     const tasks = timeline.tasks || [];
     return {
@@ -696,7 +723,7 @@ export class TimelineApplicationService {
       schoolId: timeline.schoolId,
       schoolName: timeline.schoolName,
       round: timeline.round as ApplicationRound,
-      deadline: timeline.deadline,
+      deadline: this.effectiveDeadline(timeline.deadline, timeline.status),
       status: timeline.status,
       progress: timeline.progress,
       priority: timeline.priority,
