@@ -3,11 +3,22 @@
 import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
-import type { TimelineDetail } from '@/types/timeline';
+import type { TimelineDetail, TimelineStatus } from '@/types/timeline';
 import type { UseMutationResult } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TimelineItemDetail } from './timeline-item-detail';
-import type { TimelineDisplayRow } from './timeline-helpers';
+import {
+  SCHOOL_STATUS_OPTIONS,
+  type TimelineDisplayRow,
+  type UpdateTimelineVars,
+} from './timeline-helpers';
 
 interface TimelineItemProps {
   timeline: TimelineDisplayRow;
@@ -22,6 +33,11 @@ interface TimelineItemProps {
   getRoundBadge: (round: string) => ReactNode;
   getStatusBadge: (status: string) => ReactNode;
   setDeleteTarget: (target: { type: string; id: string; name: string }) => void;
+  /**
+   * When provided, the expanded panel shows an editable status selector. Omitted
+   * in the archive view, where `status` carries a display-only 'OVERDUE' value.
+   */
+  updateTimelineMutation?: UseMutationResult<unknown, Error, UpdateTimelineVars>;
 }
 
 export function TimelineItem({
@@ -37,6 +53,7 @@ export function TimelineItem({
   getRoundBadge,
   getStatusBadge,
   setDeleteTarget,
+  updateTimelineMutation,
 }: TimelineItemProps) {
   const t = useTranslations('timeline');
   const days = getDaysUntil(tl.deadline);
@@ -102,15 +119,49 @@ export function TimelineItem({
       </div>
 
       {isExpanded && (
-        <TimelineItemDetail
-          tasks={tasks}
-          isLoading={timelineDetailLoading}
-          toggleTaskMutation={toggleTaskMutation}
-          formatDate={formatDate}
-          onDelete={() => setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })}
-          deleteLabel={t('deleteTimeline')}
-          showTaskType
-        />
+        <>
+          {updateTimelineMutation && (
+            <div className="flex items-center gap-2 border-t bg-muted/10 px-4 py-3">
+              <span className="text-sm text-muted-foreground">
+                {t('schoolTimelines.statusLabel')}
+              </span>
+              <Select
+                value={tl.status}
+                onValueChange={(value) =>
+                  updateTimelineMutation.mutate({
+                    id: tl.id,
+                    status: value as TimelineStatus,
+                  })
+                }
+                disabled={updateTimelineMutation.isPending}
+              >
+                <SelectTrigger
+                  className="h-8 w-44"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label={t('schoolTimelines.statusLabel')}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SCHOOL_STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {t(`statuses.${opt.key}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <TimelineItemDetail
+            tasks={tasks}
+            isLoading={timelineDetailLoading}
+            toggleTaskMutation={toggleTaskMutation}
+            formatDate={formatDate}
+            onDelete={() => setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })}
+            deleteLabel={t('deleteTimeline')}
+            showTaskType
+          />
+        </>
       )}
     </div>
   );

@@ -57,6 +57,7 @@ import {
   getArchivedDisplayStatus,
   resolveTimelineTab,
 } from './_components/timeline-view-model';
+import type { UpdateTimelineVars } from './_components/timeline-helpers';
 
 function listFromResponse<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
@@ -198,6 +199,20 @@ export default function TimelinePage() {
       queryClient.invalidateQueries({ queryKey: ['timelines'] });
       queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
       setExpandedTimeline(null);
+    },
+  });
+
+  const updateTimelineMutation = useMutation({
+    mutationFn: ({ id, status }: UpdateTimelineVars) =>
+      apiClient.put(`${API_ROUTES.TIMELINES}/${id}`, { status }),
+    onSuccess: () => {
+      toast.success(t('updateSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['timelines'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline-detail', expandedTimeline] });
+    },
+    onError: () => {
+      toast.error(t('updateError'));
     },
   });
 
@@ -481,6 +496,7 @@ export default function TimelinePage() {
                         getRoundBadge={getRoundBadge}
                         getStatusBadge={getStatusBadge}
                         setDeleteTarget={setDeleteTarget}
+                        updateTimelineMutation={updateTimelineMutation}
                       />
                     );
                   }
@@ -526,6 +542,7 @@ export default function TimelinePage() {
             <TimelineTabs
               activeTab={activeTab}
               sortedTimelines={[]}
+              updateTimelineMutation={updateTimelineMutation}
               expandedTimeline={expandedTimeline}
               setExpandedTimeline={setExpandedTimeline}
               timelineDetail={timelineDetail}
@@ -553,6 +570,7 @@ export default function TimelinePage() {
             <TimelineTabs
               activeTab={activeTab}
               sortedTimelines={board.actionableTimelines}
+              updateTimelineMutation={updateTimelineMutation}
               expandedTimeline={expandedTimeline}
               setExpandedTimeline={setExpandedTimeline}
               timelineDetail={timelineDetail}
@@ -644,6 +662,7 @@ export default function TimelinePage() {
               <TimelineTabs
                 activeTab={activeTab}
                 sortedTimelines={archivedTimelines}
+                updateTimelineMutation={updateTimelineMutation}
                 expandedTimeline={expandedTimeline}
                 setExpandedTimeline={setExpandedTimeline}
                 timelineDetail={timelineDetail}

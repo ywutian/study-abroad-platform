@@ -23,6 +23,7 @@ export function TimelineTabs({
   formatDaysUntil,
   getStatusBadge,
   getRoundBadge,
+  updateTimelineMutation,
 }: TimelineTabsProps) {
   const t = useTranslations('timeline');
 
@@ -61,6 +62,7 @@ export function TimelineTabs({
                 getRoundBadge={getRoundBadge}
                 getStatusBadge={getStatusBadge}
                 setDeleteTarget={setDeleteTarget}
+                updateTimelineMutation={isArchive ? undefined : updateTimelineMutation}
               />
             ))}
           </CardContent>

@@ -7359,6 +7359,7 @@
       "archiveDescription": "已结束、已撤回或过期未完成的学校申请",
       "deadline": "报名截止日",
       "tasks": "任务",
+      "statusLabel": "申请状态",
       "loadingTasks": "加载任务中...",
       "noTasks": "暂无任务",
       "pendingSchools": "待添加时间线的学校",
@@ -7368,6 +7369,8 @@
       "emptyDescription": "添加学校后可以生成申请时间线；旧申请季的过期项会进入归档。"
     },
     "generateSuccess": "时间线已生成",
+    "updateSuccess": "状态已更新",
+    "updateError": "更新失败，请重试",
     "taskTypes": {
       "ESSAY": "文书",
       "DOCUMENT": "材料",
