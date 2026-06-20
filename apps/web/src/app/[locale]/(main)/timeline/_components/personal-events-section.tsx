@@ -3,12 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronDown, ChevronUp, Star } from 'lucide-react';
-import type { PersonalEventsSectionProps } from './timeline-helpers';
-import type { PersonalEventResponse } from '@/types/timeline';
+import type { PersonalEventsSectionProps, PersonalEventDisplayRow } from './timeline-helpers';
 import { TimelineItemDetail } from './timeline-item-detail';
 
 interface PersonalEventItemProps extends Omit<PersonalEventsSectionProps, 'sortedPersonalEvents'> {
-  event: PersonalEventResponse;
+  event: PersonalEventDisplayRow;
 }
 
 export function PersonalEventItem({

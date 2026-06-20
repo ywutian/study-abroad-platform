@@ -3,13 +3,14 @@
 import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
-import type { TimelineResponse, TimelineDetail } from '@/types/timeline';
+import type { TimelineDetail } from '@/types/timeline';
 import type { UseMutationResult } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { TimelineItemDetail } from './timeline-item-detail';
+import type { TimelineDisplayRow } from './timeline-helpers';
 
 interface TimelineItemProps {
-  timeline: TimelineResponse;
+  timeline: TimelineDisplayRow;
   isExpanded: boolean;
   onToggleExpand: () => void;
   timelineDetail: TimelineDetail | undefined;

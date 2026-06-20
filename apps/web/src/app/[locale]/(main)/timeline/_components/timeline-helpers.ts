@@ -10,6 +10,17 @@ import type { PersonalEventFormData } from '@/lib/validations/timeline';
 import type { UseMutationResult } from '@tanstack/react-query';
 import type { UseFormReturn } from 'react-hook-form';
 
+/**
+ * Display rows for the board/archive views. The archive view overwrites `status`
+ * with a UI-only display value ('OVERDUE'), so `status` is widened to `string`
+ * at the display layer only — the shared contract (`TimelineResponse` /
+ * `PersonalEventResponse`) stays strict.
+ */
+export type TimelineDisplayRow = Omit<TimelineResponse, 'status'> & { status: string };
+export type PersonalEventDisplayRow = Omit<PersonalEventResponse, 'status'> & {
+  status: string;
+};
+
 /** Props shared by components that need date formatting */
 export interface DateHelpers {
   formatDate: (dateStr?: string) => string;
@@ -39,7 +50,7 @@ export interface TimelineOverviewProps {
 
 export interface TimelineTabsProps extends DateHelpers, BadgeHelpers {
   activeTab: TabType;
-  sortedTimelines: TimelineResponse[];
+  sortedTimelines: TimelineDisplayRow[];
   expandedTimeline: string | null;
   setExpandedTimeline: (id: string | null) => void;
   timelineDetail: TimelineDetail | undefined;
@@ -55,7 +66,7 @@ export interface TimelineTabsProps extends DateHelpers, BadgeHelpers {
 }
 
 export interface PersonalEventsSectionProps extends DateHelpers, BadgeHelpers {
-  sortedPersonalEvents: PersonalEventResponse[];
+  sortedPersonalEvents: PersonalEventDisplayRow[];
   expandedPersonalEvent: string | null;
   setExpandedPersonalEvent: (id: string | null) => void;
   personalEventDetail: PersonalEventDetail | undefined;

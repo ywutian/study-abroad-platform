@@ -37,6 +37,15 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { API_ROUTES } from '@study-abroad/shared';
+import type {
+  TimelineResponse,
+  TimelineStatus,
+  TaskResponse,
+  TimelineOverview,
+  // PersonalEventDetail carries the optional inline `tasks` this screen reads.
+  PersonalEventDetail as PersonalEventResponse,
+  GlobalEvent as GlobalEventResponse,
+} from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import {
@@ -51,96 +60,6 @@ import {
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-// ── Types ──────────────────────────────────────────────────
-
-enum ApplicationRound {
-  ED = 'ED',
-  ED2 = 'ED2',
-  EA = 'EA',
-  REA = 'REA',
-  RD = 'RD',
-  ROLLING = 'Rolling',
-}
-enum TimelineStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  SUBMITTED = 'SUBMITTED',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-  WAITLISTED = 'WAITLISTED',
-  WITHDRAWN = 'WITHDRAWN',
-}
-enum TaskType {
-  ESSAY = 'ESSAY',
-  DOCUMENT = 'DOCUMENT',
-  TEST = 'TEST',
-  INTERVIEW = 'INTERVIEW',
-  RECOMMENDATION = 'RECOMMENDATION',
-  OTHER = 'OTHER',
-}
-
-interface TimelineResponse {
-  id: string;
-  schoolId: string;
-  schoolName: string;
-  round: ApplicationRound;
-  deadline?: Date;
-  status: TimelineStatus;
-  progress: number;
-  priority: number;
-  notes?: string;
-  tasksTotal: number;
-  tasksCompleted: number;
-  createdAt: Date;
-}
-interface TimelineOverview {
-  totalSchools: number;
-  submitted: number;
-  inProgress: number;
-  notStarted: number;
-  upcomingDeadlines: TimelineResponse[];
-  overdueTasks: TaskResponse[];
-  totalPersonalEvents: number;
-  personalInProgress: number;
-  personalCompleted: number;
-  upcomingPersonalEvents: PersonalEventResponse[];
-}
-interface TaskResponse {
-  id: string;
-  timelineId: string;
-  title: string;
-  type: TaskType;
-  description?: string;
-  dueDate?: Date;
-  completed: boolean;
-  completedAt?: Date;
-  essayPrompt?: string;
-  wordLimit?: number;
-  sortOrder: number;
-}
-interface PersonalEventResponse {
-  id: string;
-  title: string;
-  category: string;
-  deadline?: Date;
-  eventDate?: Date;
-  priority?: number;
-  description?: string;
-  url?: string;
-  notes?: string;
-  tasks: { id: string; eventId: string; title: string; dueDate?: Date; completed: boolean }[];
-  createdAt: Date;
-}
-interface GlobalEventResponse {
-  id: string;
-  title: string;
-  category: string;
-  eventDate: Date;
-  registrationDeadline?: Date;
-  description?: string;
-  url?: string;
 }
 
 // ── Constants ──────────────────────────────────────────────
@@ -391,8 +310,8 @@ export default function TimelinePage() {
 
   const renderHeader = () => {
     const total = timelines?.length ?? 0;
-    const sub = timelines?.filter((x) => x.status === TimelineStatus.SUBMITTED).length ?? 0;
-    const prog = timelines?.filter((x) => x.status === TimelineStatus.IN_PROGRESS).length ?? 0;
+    const sub = timelines?.filter((x) => x.status === 'SUBMITTED').length ?? 0;
+    const prog = timelines?.filter((x) => x.status === 'IN_PROGRESS').length ?? 0;
     const upcoming =
       timelines?.filter((x) => {
         const d = getDaysLeft(x.deadline);
