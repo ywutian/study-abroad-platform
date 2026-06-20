@@ -79,9 +79,12 @@ describe('TimelineService', () => {
             },
             applicationTask: {
               findFirst: jest.fn(),
+              findUniqueOrThrow: jest.fn(),
               findMany: jest.fn(),
+              count: jest.fn().mockResolvedValue(0),
               create: jest.fn(),
               update: jest.fn(),
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
               delete: jest.fn(),
             },
             personalEvent: {
@@ -94,9 +97,12 @@ describe('TimelineService', () => {
             },
             personalTask: {
               findFirst: jest.fn(),
+              findUniqueOrThrow: jest.fn(),
               findMany: jest.fn(),
+              count: jest.fn().mockResolvedValue(0),
               create: jest.fn(),
               update: jest.fn(),
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
               delete: jest.fn(),
             },
             globalEvent: {
@@ -113,6 +119,10 @@ describe('TimelineService', () => {
 
     service = module.get<TimelineService>(TimelineService);
     prismaService = module.get<PrismaService>(PrismaService);
+    // $transaction runs its callback with the mock itself as the tx client, so
+    // the interactive-transaction code paths exercise the same mocked delegates.
+    (prismaService as unknown as { $transaction: jest.Mock }).$transaction =
+      jest.fn((cb: (tx: PrismaService) => unknown) => cb(prismaService));
   });
 
   afterEach(() => {
@@ -500,14 +510,14 @@ describe('TimelineService', () => {
       (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(
         mockTask,
       );
-      (prismaService.applicationTask.update as jest.Mock).mockResolvedValue({
+      (
+        prismaService.applicationTask.findUniqueOrThrow as jest.Mock
+      ).mockResolvedValue({
         ...mockTask,
         completed: true,
         completedAt: new Date(),
       });
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([
-        { ...mockTask, completed: true },
-      ]);
+      (prismaService.applicationTask.count as jest.Mock).mockResolvedValue(1);
       (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
         mockTimeline,
       );
@@ -524,14 +534,14 @@ describe('TimelineService', () => {
         completed: true,
         completedAt: new Date(),
       });
-      (prismaService.applicationTask.update as jest.Mock).mockResolvedValue({
+      (
+        prismaService.applicationTask.findUniqueOrThrow as jest.Mock
+      ).mockResolvedValue({
         ...mockTask,
         completed: false,
         completedAt: null,
       });
-      (prismaService.applicationTask.findMany as jest.Mock).mockResolvedValue([
-        mockTask,
-      ]);
+      (prismaService.applicationTask.count as jest.Mock).mockResolvedValue(1);
       (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
         mockTimeline,
       );
@@ -540,6 +550,36 @@ describe('TimelineService', () => {
 
       expect(result.completed).toBe(false);
       expect(result.completedAt).toBeNull();
+    });
+
+    it('flips atomically inside a transaction with a completed-guard (no lost update)', async () => {
+      (prismaService.applicationTask.findFirst as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+      (
+        prismaService.applicationTask.findUniqueOrThrow as jest.Mock
+      ).mockResolvedValue({ ...mockTask, completed: true });
+      (prismaService.applicationTask.count as jest.Mock).mockResolvedValue(1);
+      (prismaService.applicationTimeline.update as jest.Mock).mockResolvedValue(
+        mockTimeline,
+      );
+
+      await service.toggleTaskComplete(mockUserId, mockTaskId);
+
+      // Recompute runs inside a transaction with the read snapshot.
+      expect(
+        (prismaService as unknown as { $transaction: jest.Mock }).$transaction,
+      ).toHaveBeenCalled();
+      // The flip is guarded on the value we read, so a concurrent toggle can't
+      // also apply (it would match 0 rows).
+      expect(prismaService.applicationTask.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: mockTaskId,
+            completed: mockTask.completed,
+          }),
+        }),
+      );
     });
   });
 });

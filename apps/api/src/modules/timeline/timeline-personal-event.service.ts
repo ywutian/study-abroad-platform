@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ERR } from '../../common/constants/error-messages';
-import { PersonalEventStatus, PersonalEventCategory } from '@prisma/client';
+import {
+  PersonalEventStatus,
+  PersonalEventCategory,
+  Prisma,
+} from '@prisma/client';
 import {
   CreatePersonalEventDto,
   UpdatePersonalEventDto,
@@ -247,22 +251,23 @@ export class TimelinePersonalEventService {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
 
-    const maxOrder = await this.prisma.personalTask.findFirst({
-      where: { eventId: dto.eventId },
-      orderBy: { sortOrder: 'desc' },
-      select: { sortOrder: true },
+    const task = await this.prisma.$transaction(async (tx) => {
+      const maxOrder = await tx.personalTask.findFirst({
+        where: { eventId: dto.eventId },
+        orderBy: { sortOrder: 'desc' },
+        select: { sortOrder: true },
+      });
+      const created = await tx.personalTask.create({
+        data: {
+          eventId: dto.eventId,
+          title: dto.title,
+          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          sortOrder: (maxOrder?.sortOrder || 0) + 1,
+        },
+      });
+      await this.updatePersonalEventProgress(dto.eventId, tx);
+      return created;
     });
-
-    const task = await this.prisma.personalTask.create({
-      data: {
-        eventId: dto.eventId,
-        title: dto.title,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        sortOrder: (maxOrder?.sortOrder || 0) + 1,
-      },
-    });
-
-    await this.updatePersonalEventProgress(dto.eventId);
 
     return this.mapPersonalTaskToResponse(task);
   }
@@ -280,15 +285,21 @@ export class TimelinePersonalEventService {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
-    const updated = await this.prisma.personalTask.update({
-      where: { id: taskId },
-      data: {
-        completed: !task.completed,
-        completedAt: !task.completed ? new Date() : null,
-      },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Conditional flip guards against concurrent toggles both applying.
+      await tx.personalTask.updateMany({
+        where: { id: taskId, completed: task.completed },
+        data: {
+          completed: !task.completed,
+          completedAt: !task.completed ? new Date() : null,
+        },
+      });
+      const fresh = await tx.personalTask.findUniqueOrThrow({
+        where: { id: taskId },
+      });
+      await this.updatePersonalEventProgress(task.eventId, tx);
+      return fresh;
     });
-
-    await this.updatePersonalEventProgress(task.eventId);
 
     return this.mapPersonalTaskToResponse(updated);
   }
@@ -303,21 +314,30 @@ export class TimelinePersonalEventService {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
-    await this.prisma.personalTask.delete({ where: { id: taskId } });
-    await this.updatePersonalEventProgress(task.eventId);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.personalTask.delete({ where: { id: taskId } });
+      await this.updatePersonalEventProgress(task.eventId, tx);
+    });
   }
 
   // ============ Helpers ============
 
-  private async updatePersonalEventProgress(eventId: string): Promise<void> {
-    const tasks = await this.prisma.personalTask.findMany({
-      where: { eventId },
+  // Accepts the active transaction client so the recompute reads the same
+  // snapshot as the mutation (no lost-update race). The recomputed progress
+  // drives the terminal COMPLETED status the reminder scheduler filters on, so a
+  // stale recompute here would wrongly suppress/fire reminders — hence the txn.
+  private async updatePersonalEventProgress(
+    eventId: string,
+    client: Prisma.TransactionClient = this.prisma,
+  ): Promise<void> {
+    const total = await client.personalTask.count({ where: { eventId } });
+
+    if (total === 0) return;
+
+    const completedCount = await client.personalTask.count({
+      where: { eventId, completed: true },
     });
-
-    if (tasks.length === 0) return;
-
-    const completedCount = tasks.filter((t) => t.completed).length;
-    const progress = Math.round((completedCount / tasks.length) * 100);
+    const progress = Math.round((completedCount / total) * 100);
 
     let status: PersonalEventStatus = PersonalEventStatus.NOT_STARTED;
     if (progress === 100) {
@@ -326,7 +346,7 @@ export class TimelinePersonalEventService {
       status = PersonalEventStatus.IN_PROGRESS;
     }
 
-    await this.prisma.personalEvent.update({
+    await client.personalEvent.update({
       where: { id: eventId },
       data: { progress, status },
     });

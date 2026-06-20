@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ERR } from '../../common/constants/error-messages';
-import { ApplicationStatus, type GlobalEvent } from '@prisma/client';
+import { ApplicationStatus, Prisma, type GlobalEvent } from '@prisma/client';
 import { TaskType } from '../../common/types/enums';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import {
@@ -571,26 +571,27 @@ export class TimelineApplicationService {
       throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
 
-    const maxOrder = await this.prisma.applicationTask.findFirst({
-      where: { timelineId: dto.timelineId },
-      orderBy: { sortOrder: 'desc' },
-      select: { sortOrder: true },
+    const task = await this.prisma.$transaction(async (tx) => {
+      const maxOrder = await tx.applicationTask.findFirst({
+        where: { timelineId: dto.timelineId },
+        orderBy: { sortOrder: 'desc' },
+        select: { sortOrder: true },
+      });
+      const created = await tx.applicationTask.create({
+        data: {
+          timelineId: dto.timelineId,
+          title: dto.title,
+          type: (dto.type as TaskType) || TaskType.OTHER,
+          description: dto.description,
+          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          essayPrompt: dto.essayPrompt,
+          wordLimit: dto.wordLimit,
+          sortOrder: (maxOrder?.sortOrder || 0) + 1,
+        },
+      });
+      await this.updateTimelineProgress(dto.timelineId, tx);
+      return created;
     });
-
-    const task = await this.prisma.applicationTask.create({
-      data: {
-        timelineId: dto.timelineId,
-        title: dto.title,
-        type: (dto.type as TaskType) || TaskType.OTHER,
-        description: dto.description,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        essayPrompt: dto.essayPrompt,
-        wordLimit: dto.wordLimit,
-        sortOrder: (maxOrder?.sortOrder || 0) + 1,
-      },
-    });
-
-    await this.updateTimelineProgress(dto.timelineId);
 
     return this.mapTaskToResponse(task);
   }
@@ -609,21 +610,23 @@ export class TimelineApplicationService {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
-    const updated = await this.prisma.applicationTask.update({
-      where: { id: taskId },
-      data: {
-        title: dto.title,
-        type: dto.type as TaskType,
-        description: dto.description,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        completed: dto.completed,
-        completedAt: dto.completed ? new Date() : null,
-        essayId: dto.essayId,
-        sortOrder: dto.sortOrder,
-      },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const u = await tx.applicationTask.update({
+        where: { id: taskId },
+        data: {
+          title: dto.title,
+          type: dto.type as TaskType,
+          description: dto.description,
+          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          completed: dto.completed,
+          completedAt: dto.completed ? new Date() : null,
+          essayId: dto.essayId,
+          sortOrder: dto.sortOrder,
+        },
+      });
+      await this.updateTimelineProgress(task.timelineId, tx);
+      return u;
     });
-
-    await this.updateTimelineProgress(task.timelineId);
 
     return this.mapTaskToResponse(updated);
   }
@@ -638,8 +641,10 @@ export class TimelineApplicationService {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
-    await this.prisma.applicationTask.delete({ where: { id: taskId } });
-    await this.updateTimelineProgress(task.timelineId);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.applicationTask.delete({ where: { id: taskId } });
+      await this.updateTimelineProgress(task.timelineId, tx);
+    });
   }
 
   async toggleTaskComplete(
@@ -655,32 +660,47 @@ export class TimelineApplicationService {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
 
-    const updated = await this.prisma.applicationTask.update({
-      where: { id: taskId },
-      data: {
-        completed: !task.completed,
-        completedAt: !task.completed ? new Date() : null,
-      },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Conditional flip: only flips if `completed` is still what we read, so two
+      // concurrent toggles (the web+mobile dual-consumer) can't both apply a lost
+      // update — the second matches 0 rows and the caller sees the real state.
+      await tx.applicationTask.updateMany({
+        where: { id: taskId, completed: task.completed },
+        data: {
+          completed: !task.completed,
+          completedAt: !task.completed ? new Date() : null,
+        },
+      });
+      const fresh = await tx.applicationTask.findUniqueOrThrow({
+        where: { id: taskId },
+      });
+      await this.updateTimelineProgress(task.timelineId, tx);
+      return fresh;
     });
-
-    await this.updateTimelineProgress(task.timelineId);
 
     return this.mapTaskToResponse(updated);
   }
 
   // ============ Helpers ============
 
-  private async updateTimelineProgress(timelineId: string): Promise<void> {
-    const tasks = await this.prisma.applicationTask.findMany({
-      where: { timelineId },
+  // Accepts the active transaction client so the recompute reads the SAME
+  // snapshot as the mutation that triggered it (no lost-update / stale-progress
+  // race between concurrent task changes). Uses aggregate counts instead of
+  // materializing every task row.
+  private async updateTimelineProgress(
+    timelineId: string,
+    client: Prisma.TransactionClient = this.prisma,
+  ): Promise<void> {
+    const total = await client.applicationTask.count({ where: { timelineId } });
+
+    if (total === 0) return;
+
+    const completedCount = await client.applicationTask.count({
+      where: { timelineId, completed: true },
     });
+    const progress = Math.round((completedCount / total) * 100);
 
-    if (tasks.length === 0) return;
-
-    const completedCount = tasks.filter((t) => t.completed).length;
-    const progress = Math.round((completedCount / tasks.length) * 100);
-
-    const current = await this.prisma.applicationTimeline.findUnique({
+    const current = await client.applicationTimeline.findUnique({
       where: { id: timelineId },
       select: { status: true },
     });
@@ -702,7 +722,7 @@ export class TimelineApplicationService {
           : ApplicationStatus.NOT_STARTED;
     }
 
-    await this.prisma.applicationTimeline.update({
+    await client.applicationTimeline.update({
       where: { id: timelineId },
       data,
     });
