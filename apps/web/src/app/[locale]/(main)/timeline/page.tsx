@@ -6,7 +6,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { useAuthReady } from '@/hooks/use-auth-gated-query';
 import { qk } from '@/lib/query';
-import { API_ROUTES, schoolListRoutes, timelineRoutes } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  schoolListRoutes,
+  timelineRoutes,
+  type GenerateTimelinesResult,
+} from '@study-abroad/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -176,11 +181,22 @@ export default function TimelinePage() {
 
   const generateTimelineMutation = useMutation({
     mutationFn: (schoolIds: string[]) =>
-      apiClient.post(`${API_ROUTES.TIMELINES}/generate`, { schoolIds }),
-    onSuccess: () => {
+      apiClient.post<GenerateTimelinesResult>(`${API_ROUTES.TIMELINES}/generate`, { schoolIds }),
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['timelines'] });
       queryClient.invalidateQueries({ queryKey: ['timeline-overview'] });
-      toast.success(t('generateSuccess'));
+      // Don't claim a blanket success when some schools silently produced
+      // nothing (the dominant case: no official deadline data — #447). Surface
+      // the partial/total failure so the user knows it isn't a bug on their end.
+      const createdCount = result?.created?.length ?? 0;
+      const failedCount = result?.failed?.length ?? 0;
+      if (failedCount > 0 && createdCount > 0) {
+        toast.warning(t('generatePartial', { created: createdCount, failed: failedCount }));
+      } else if (failedCount > 0) {
+        toast.error(t('generateAllFailed', { failed: failedCount }));
+      } else {
+        toast.success(t('generateSuccess'));
+      }
     },
   });
 

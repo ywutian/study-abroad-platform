@@ -165,7 +165,10 @@ export interface TimelineOverview {
 
 export interface GenerateTimelineFailedItem {
   schoolId: string;
-  reason: 'SCHOOL_NOT_FOUND' | 'ALREADY_EXISTS' | 'INTERNAL_ERROR' | string;
+  // Mirrors GenerateTimelineFailedItemDto.reason (apps/api timeline/dto). #447
+  // dropped the never-emitted ALREADY_EXISTS and added DEADLINE_SOURCE_REQUIRED
+  // (the dominant real failure). `| string` keeps clients forward-compatible.
+  reason: 'SCHOOL_NOT_FOUND' | 'DEADLINE_SOURCE_REQUIRED' | 'INTERNAL_ERROR' | string;
 }
 
 export interface GenerateTimelinesResult {
