@@ -6,6 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../common/redis/cron-lock.util';
+import { pingCronHeartbeat } from '../../common/monitoring/cron-heartbeat.util';
 
 const DEADLINE_REFRESH_LOCK_KEY = 'deadline-refresh:cron-lock';
 
@@ -186,13 +187,14 @@ export class DeadlineRefreshScheduler {
     // Single-flight across replicas: otherwise every Cloud Run instance fetches
     // each tentative school's page (N× outbound HTTP) and writes duplicate
     // DEADLINE_NEEDS_REVIEW audit rows.
-    await runWithCronLock(
+    const ran = await runWithCronLock(
       this.redis,
       DEADLINE_REFRESH_LOCK_KEY,
       REDIS_TTL.DEADLINE_REFRESH_CRON_LOCK,
       () => this.runRefresh(),
       this.logger,
     );
+    if (ran) await pingCronHeartbeat('deadline-refresh', this.logger);
   }
 
   private async runRefresh() {

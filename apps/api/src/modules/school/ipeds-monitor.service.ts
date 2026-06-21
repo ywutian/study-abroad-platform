@@ -5,6 +5,7 @@ import { SettingsService, SETTING_KEYS } from '../settings/settings.module';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../common/redis/cron-lock.util';
+import { pingCronHeartbeat } from '../../common/monitoring/cron-heartbeat.util';
 
 const IPEDS_MONITOR_LOCK_KEY = 'ipeds-monitor:cron-lock';
 const IPEDS_FINGERPRINT_KEY = 'ipeds-monitor:last-fingerprint';
@@ -42,7 +43,7 @@ export class IpedsMonitorService {
   @Cron('0 9 * * 1') // 每周一上午 9 点
   async checkForUpdates() {
     // Single-flight across replicas so the admin gets one email, not N.
-    await runWithCronLock(
+    const ran = await runWithCronLock(
       this.redis,
       IPEDS_MONITOR_LOCK_KEY,
       REDIS_TTL.IPEDS_MONITOR_CRON_LOCK,
@@ -68,6 +69,7 @@ export class IpedsMonitorService {
       },
       this.logger,
     );
+    if (ran) await pingCronHeartbeat('ipeds-monitor', this.logger);
   }
 
   private async detectNewData(html: string): Promise<boolean> {
