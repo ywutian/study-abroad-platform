@@ -9,13 +9,11 @@ describe('EssayScraperScheduler', () => {
 
   const mockScraper = {
     getConfiguredSchools: jest.fn().mockResolvedValue([]),
-    scrapeAndLinkCommonApp: jest
-      .fn()
-      .mockResolvedValue({
-        schoolName: 'CommonApp',
-        success: true,
-        essaysFound: 0,
-      }),
+    scrapeAndLinkCommonApp: jest.fn().mockResolvedValue({
+      schoolName: 'CommonApp',
+      success: true,
+      essaysFound: 0,
+    }),
     scrapeSchool: jest
       .fn()
       .mockResolvedValue({ success: true, essaysFound: 0 }),

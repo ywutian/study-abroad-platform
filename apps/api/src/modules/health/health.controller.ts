@@ -107,6 +107,29 @@ export class HealthController {
     };
   }
 
+  /**
+   * Public deep health check reachable through the `/api/v1` proxy — the target
+   * for EXTERNAL uptime monitoring (GCP uptime checks, UptimeRobot, etc.).
+   *
+   * The bare `GET /health` above is excluded from the global `api/v1` prefix
+   * (in-cluster Cloud Run probes hit it directly), so it is NOT reachable via the
+   * public web proxy (`/api/*`). This route's path (`health/check`) is NOT in the
+   * prefix exclude list, so it resolves to `/api/v1/health/check` and is publicly
+   * reachable. It reuses the same DB + Redis checks and 503-on-error contract.
+   */
+  @Get('check')
+  @Public()
+  @ApiOperation({
+    summary: 'Public deep health check for external uptime monitoring',
+  })
+  @ApiResponse({ status: 200, description: 'Service is healthy or degraded' })
+  @ApiResponse({ status: 503, description: 'A core dependency is down' })
+  async externalCheck(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<HealthStatus> {
+    return this.check(res);
+  }
+
   @Get('detailed')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Detailed health check (admin only)' })
