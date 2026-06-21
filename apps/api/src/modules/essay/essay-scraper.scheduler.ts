@@ -1,7 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { EssayScraperService } from './essay-scraper.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { runWithCronLock } from '../../common/redis/cron-lock.util';
+
+const ESSAY_SCRAPER_LOCK_KEY = 'essay-scraper:cron-lock';
 
 /**
  * 文书采集定时调度器
@@ -17,16 +22,30 @@ export class EssayScraperScheduler {
   constructor(
     private scraperService: EssayScraperService,
     private prisma: PrismaService,
+    @Optional() private redis?: RedisService,
   ) {}
 
   /**
    * 每年 8 月 1 日凌晨 3 点 — 申请季前全量采集
    * CommonApp + 各校 supplement + 变化检测
+   *
+   * Single-flight across replicas — without it every Cloud Run instance runs the
+   * full scrape, and the scraper's non-atomic findFirst-then-create races to
+   * insert DUPLICATE EssayPrompt rows. The lock guards the scheduled path only
+   * (manual runPipeline / admin invocation is unaffected).
    */
   @Cron('0 3 1 8 *')
   async annualPreSeasonScrape() {
-    this.logger.log('Scheduled: Pre-season essay scrape starting');
-    await this.runPipeline('SCHEDULED_PRE_SEASON');
+    await runWithCronLock(
+      this.redis,
+      ESSAY_SCRAPER_LOCK_KEY,
+      REDIS_TTL.ESSAY_SCRAPER_CRON_LOCK,
+      async () => {
+        this.logger.log('Scheduled: Pre-season essay scrape starting');
+        await this.runPipeline('SCHEDULED_PRE_SEASON');
+      },
+      this.logger,
+    );
   }
 
   /**
@@ -34,8 +53,18 @@ export class EssayScraperScheduler {
    */
   @Cron('0 3 15 1 *')
   async postRdDeadlineVerify() {
-    this.logger.log('Scheduled: Post-RD deadline verification scrape starting');
-    await this.runPipeline('SCHEDULED_POST_RD');
+    await runWithCronLock(
+      this.redis,
+      ESSAY_SCRAPER_LOCK_KEY,
+      REDIS_TTL.ESSAY_SCRAPER_CRON_LOCK,
+      async () => {
+        this.logger.log(
+          'Scheduled: Post-RD deadline verification scrape starting',
+        );
+        await this.runPipeline('SCHEDULED_POST_RD');
+      },
+      this.logger,
+    );
   }
 
   /**
