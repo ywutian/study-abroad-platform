@@ -71,7 +71,7 @@ describe('IpedsMonitorService', () => {
       });
       global.fetch = jest.fn().mockResolvedValue({
         text: () => Promise.resolve(html),
-      }) as unknown as typeof fetch;
+      });
     });
 
     it('skips the whole check when the single-flight lock is held', async () => {
