@@ -116,86 +116,118 @@ export class TimelineApplicationService {
     const applicationYear =
       currentMonth >= 8 ? now.getFullYear() + 1 : now.getFullYear();
 
-    for (const schoolId of dto.schoolIds) {
-      let createdForSchool = 0;
-      try {
-        const school = await this.prisma.school.findUnique({
-          where: { id: schoolId },
-          include: {
-            deadlines: {
-              where: {
-                year: { in: [applicationYear, applicationYear + 1] },
-                source: { not: 'MANUAL' },
-                notes: { not: null },
-              },
-              orderBy: [{ year: 'desc' }, { applicationDeadline: 'asc' }],
-            },
+    // Batch every read up front — the per-school N+1 (school + existing
+    // timelines + essay prompts, ×N schools, serially) was the fan-out that
+    // forced @ThrottleAI on this endpoint. Now it's a fixed 2–3 queries.
+    const schools = await this.prisma.school.findMany({
+      where: { id: { in: dto.schoolIds } },
+      include: {
+        deadlines: {
+          where: {
+            year: { in: [applicationYear, applicationYear + 1] },
+            source: { not: 'MANUAL' },
+            notes: { not: null },
           },
-        });
+          orderBy: [{ year: 'desc' }, { applicationDeadline: 'asc' }],
+        },
+      },
+    });
+    const schoolById = new Map(schools.map((s) => [s.id, s]));
+    type EffectiveDeadline = (typeof schools)[number]['deadlines'][number];
 
+    const existingTimelines = await this.prisma.applicationTimeline.findMany({
+      where: { userId, schoolId: { in: dto.schoolIds } },
+      select: { schoolId: true, round: true },
+    });
+    const existingRoundsBySchool = new Map<string, Set<string>>();
+    for (const t of existingTimelines) {
+      const set = existingRoundsBySchool.get(t.schoolId) ?? new Set<string>();
+      set.add(t.round);
+      existingRoundsBySchool.set(t.schoolId, set);
+    }
+
+    // First pass (in-memory): resolve each school's effective source-backed
+    // deadlines. Only schools that yield ≥1 deadline need essay prompts — so a
+    // school with no plannable deadlines never triggers a prompt query.
+    const effectiveBySchool = new Map<string, EffectiveDeadline[]>();
+    for (const school of schools) {
+      const effective = this.selectEffectiveDeadlines(
+        (school.deadlines ?? []).filter((deadline) =>
+          this.isSourceBackedPlannableDeadline(deadline, applicationYear),
+        ),
+        now,
+      );
+      if (effective.length > 0) effectiveBySchool.set(school.id, effective);
+    }
+
+    const promptsBySchool = new Map<
+      string,
+      Array<{ prompt: string; wordLimit: number | null }>
+    >();
+    const schoolIdsNeedingPrompts = [...effectiveBySchool.keys()];
+    if (schoolIdsNeedingPrompts.length > 0) {
+      const prompts = await this.prisma.essayPrompt.findMany({
+        where: {
+          schoolId: { in: schoolIdsNeedingPrompts },
+          isActive: true,
+          status: 'VERIFIED',
+          sources: { some: { sourceUrl: { not: null } } },
+        },
+        orderBy: { sortOrder: 'asc' },
+        select: { schoolId: true, prompt: true, wordLimit: true },
+      });
+      for (const p of prompts) {
+        const list = promptsBySchool.get(p.schoolId) ?? [];
+        list.push({ prompt: p.prompt, wordLimit: p.wordLimit });
+        promptsBySchool.set(p.schoolId, list);
+      }
+    }
+
+    // Second pass: create timelines (per-round writes). Per-school try/catch
+    // preserves partial success — one school's failure doesn't abort the batch.
+    // Iterating dto.schoolIds keeps created/failed in the caller's order.
+    for (const schoolId of dto.schoolIds) {
+      try {
+        const school = schoolById.get(schoolId);
         if (!school) {
           failed.push({ schoolId, reason: 'SCHOOL_NOT_FOUND' });
           continue;
         }
 
-        const existingTimelines =
-          await this.prisma.applicationTimeline.findMany({
-            where: { userId, schoolId },
-            select: { round: true },
+        const effectiveDeadlines = effectiveBySchool.get(schoolId);
+        if (!effectiveDeadlines) {
+          failed.push({ schoolId, reason: 'DEADLINE_SOURCE_REQUIRED' });
+          continue;
+        }
+
+        const existingRounds =
+          existingRoundsBySchool.get(schoolId) ?? new Set<string>();
+        const sourceBackedEssayPrompts = promptsBySchool.get(schoolId) ?? [];
+
+        for (const dl of effectiveDeadlines) {
+          if (existingRounds.has(dl.round)) continue;
+
+          const tasks = this.buildSmartTasks(
+            dl.round,
+            sourceBackedEssayPrompts,
+            {
+              interviewRequired: dl.interviewRequired ?? false,
+              financialAidDeadline: dl.financialAidDeadline,
+            },
+          );
+          const timeline = await this.prisma.applicationTimeline.create({
+            data: {
+              userId,
+              schoolId,
+              schoolName: getSchoolDisplayName(school, locale),
+              round: dl.round,
+              deadline: rollAnnualDateForward(dl.applicationDeadline, now),
+              tasks: { create: tasks },
+            },
+            include: { tasks: true },
           });
-        const existingRounds = new Set(existingTimelines.map((t) => t.round));
-
-        const effectiveDeadlines = this.selectEffectiveDeadlines(
-          (school.deadlines ?? []).filter((deadline) =>
-            this.isSourceBackedPlannableDeadline(deadline, applicationYear),
-          ),
-          now,
-        );
-
-        if (effectiveDeadlines.length > 0) {
-          const sourceBackedEssayPrompts =
-            await this.prisma.essayPrompt.findMany({
-              where: {
-                schoolId,
-                isActive: true,
-                status: 'VERIFIED',
-                sources: { some: { sourceUrl: { not: null } } },
-              },
-              orderBy: { sortOrder: 'asc' },
-              select: { prompt: true, wordLimit: true },
-            });
-
-          for (const dl of effectiveDeadlines) {
-            if (existingRounds.has(dl.round)) continue;
-
-            const tasks = this.buildSmartTasks(
-              dl.round,
-              sourceBackedEssayPrompts,
-              {
-                interviewRequired: dl.interviewRequired ?? false,
-                financialAidDeadline: dl.financialAidDeadline,
-              },
-            );
-            const timeline = await this.prisma.applicationTimeline.create({
-              data: {
-                userId,
-                schoolId,
-                schoolName: getSchoolDisplayName(school, locale),
-                round: dl.round,
-                deadline: rollAnnualDateForward(dl.applicationDeadline, now),
-                tasks: { create: tasks },
-              },
-              include: { tasks: true },
-            });
-            created.push(this.mapTimelineToResponse(timeline));
-            createdForSchool += 1;
-            existingRounds.add(dl.round);
-          }
-        } else {
-          failed.push({
-            schoolId,
-            reason: 'DEADLINE_SOURCE_REQUIRED',
-          });
+          created.push(this.mapTimelineToResponse(timeline));
+          existingRounds.add(dl.round);
         }
       } catch (error) {
         this.logger.warn(

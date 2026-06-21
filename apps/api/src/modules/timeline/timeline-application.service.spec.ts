@@ -25,6 +25,7 @@ describe('TimelineApplicationService', () => {
   const mockPrisma = {
     school: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
     applicationTimeline: {
       findUnique: jest.fn(),
@@ -133,26 +134,28 @@ describe('TimelineApplicationService', () => {
   describe('generateTimelines', () => {
     it('rolls expired structured school deadlines to the next application season', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
-      mockPrisma.school.findUnique.mockResolvedValue({
-        id: 'school-1',
-        name: 'Princeton University',
-        nameZh: '普林斯顿大学',
-        metadata: null,
-        deadlines: [
-          {
-            id: 'dl-rd',
-            round: 'RD',
-            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
-            financialAidDeadline: null,
-            essayPrompts: null,
-            essayCount: null,
-            interviewRequired: false,
-            year: 2026,
-            source: 'WEB_RESEARCH_2026-05:official',
-            notes: 'source: https://admission.princeton.edu/apply',
-          },
-        ],
-      });
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'Princeton University',
+          nameZh: '普林斯顿大学',
+          metadata: null,
+          deadlines: [
+            {
+              id: 'dl-rd',
+              round: 'RD',
+              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              financialAidDeadline: null,
+              essayPrompts: null,
+              essayCount: null,
+              interviewRequired: false,
+              year: 2026,
+              source: 'WEB_RESEARCH_2026-05:official',
+              notes: 'source: https://admission.princeton.edu/apply',
+            },
+          ],
+        },
+      ]);
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
       mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
         Promise.resolve({
@@ -181,31 +184,34 @@ describe('TimelineApplicationService', () => {
 
     it('creates school-specific essay tasks only from source-backed verified prompts', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
-      mockPrisma.school.findUnique.mockResolvedValue({
-        id: 'school-1',
-        name: 'Princeton University',
-        nameZh: '普林斯顿大学',
-        metadata: null,
-        deadlines: [
-          {
-            id: 'dl-rd',
-            round: 'RD',
-            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
-            financialAidDeadline: null,
-            essayPrompts: [
-              { prompt: 'Unsourced deadline prompt should not be used' },
-            ],
-            essayCount: 2,
-            interviewRequired: false,
-            year: 2026,
-            source: 'WEB_RESEARCH_2026-05:official',
-            notes: 'source: https://admission.princeton.edu/apply',
-          },
-        ],
-      });
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'Princeton University',
+          nameZh: '普林斯顿大学',
+          metadata: null,
+          deadlines: [
+            {
+              id: 'dl-rd',
+              round: 'RD',
+              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              financialAidDeadline: null,
+              essayPrompts: [
+                { prompt: 'Unsourced deadline prompt should not be used' },
+              ],
+              essayCount: 2,
+              interviewRequired: false,
+              year: 2026,
+              source: 'WEB_RESEARCH_2026-05:official',
+              notes: 'source: https://admission.princeton.edu/apply',
+            },
+          ],
+        },
+      ]);
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
       mockPrisma.essayPrompt.findMany.mockResolvedValue([
         {
+          schoolId: 'school-1',
           prompt: 'Please briefly elaborate on one activity.',
           wordLimit: 150,
         },
@@ -228,13 +234,13 @@ describe('TimelineApplicationService', () => {
 
       expect(mockPrisma.essayPrompt.findMany).toHaveBeenCalledWith({
         where: {
-          schoolId: 'school-1',
+          schoolId: { in: ['school-1'] },
           isActive: true,
           status: 'VERIFIED',
           sources: { some: { sourceUrl: { not: null } } },
         },
         orderBy: { sortOrder: 'asc' },
-        select: { prompt: true, wordLimit: true },
+        select: { schoolId: true, prompt: true, wordLimit: true },
       });
       const createdTasks =
         mockPrisma.applicationTimeline.create.mock.calls[0][0].data.tasks
@@ -255,28 +261,30 @@ describe('TimelineApplicationService', () => {
 
     it('does not create generic school-specific supplemental essay tasks without source-backed prompts', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
-      mockPrisma.school.findUnique.mockResolvedValue({
-        id: 'school-1',
-        name: 'Princeton University',
-        nameZh: '普林斯顿大学',
-        metadata: null,
-        deadlines: [
-          {
-            id: 'dl-rd',
-            round: 'RD',
-            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
-            financialAidDeadline: null,
-            essayPrompts: [
-              { prompt: 'Unsourced deadline prompt should not be used' },
-            ],
-            essayCount: 2,
-            interviewRequired: false,
-            year: 2026,
-            source: 'WEB_RESEARCH_2026-05:official',
-            notes: 'source: https://admission.princeton.edu/apply',
-          },
-        ],
-      });
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'Princeton University',
+          nameZh: '普林斯顿大学',
+          metadata: null,
+          deadlines: [
+            {
+              id: 'dl-rd',
+              round: 'RD',
+              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              financialAidDeadline: null,
+              essayPrompts: [
+                { prompt: 'Unsourced deadline prompt should not be used' },
+              ],
+              essayCount: 2,
+              interviewRequired: false,
+              year: 2026,
+              source: 'WEB_RESEARCH_2026-05:official',
+              notes: 'source: https://admission.princeton.edu/apply',
+            },
+          ],
+        },
+      ]);
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
       mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
       mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
@@ -318,46 +326,49 @@ describe('TimelineApplicationService', () => {
 
     it('skips metadata and default deadline fallbacks when source-backed school deadlines are unavailable', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
-      mockPrisma.school.findUnique.mockResolvedValue({
-        id: 'school-1',
-        name: 'Princeton University',
-        nameZh: '普林斯顿大学',
-        metadata: { deadlines: { rd: 'January 1' } },
-        deadlines: [
-          {
-            id: 'dl-manual',
-            round: 'RD',
-            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
-            financialAidDeadline: null,
-            essayPrompts: null,
-            essayCount: null,
-            interviewRequired: false,
-            year: 2026,
-            source: 'MANUAL',
-            notes: 'source: https://admission.princeton.edu/apply',
-          },
-          {
-            id: 'dl-no-source-url',
-            round: 'EA',
-            applicationDeadline: new Date('2025-11-01T00:00:00Z'),
-            financialAidDeadline: null,
-            essayPrompts: null,
-            essayCount: null,
-            interviewRequired: false,
-            year: 2026,
-            source: 'WEB_RESEARCH_2026-05:official',
-            notes: 'reviewed locally',
-          },
-        ],
-      });
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'Princeton University',
+          nameZh: '普林斯顿大学',
+          metadata: { deadlines: { rd: 'January 1' } },
+          deadlines: [
+            {
+              id: 'dl-manual',
+              round: 'RD',
+              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              financialAidDeadline: null,
+              essayPrompts: null,
+              essayCount: null,
+              interviewRequired: false,
+              year: 2026,
+              source: 'MANUAL',
+              notes: 'source: https://admission.princeton.edu/apply',
+            },
+            {
+              id: 'dl-no-source-url',
+              round: 'EA',
+              applicationDeadline: new Date('2025-11-01T00:00:00Z'),
+              financialAidDeadline: null,
+              essayPrompts: null,
+              essayCount: null,
+              interviewRequired: false,
+              year: 2026,
+              source: 'WEB_RESEARCH_2026-05:official',
+              notes: 'reviewed locally',
+            },
+          ],
+        },
+      ]);
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
 
       const result = await service.generateTimelines('user-1', {
         schoolIds: ['school-1'],
       });
 
-      expect(mockPrisma.school.findUnique).toHaveBeenCalledWith(
+      expect(mockPrisma.school.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
+          where: { id: { in: ['school-1'] } },
           include: expect.objectContaining({
             deadlines: expect.objectContaining({
               where: {
@@ -382,26 +393,28 @@ describe('TimelineApplicationService', () => {
       // stored under fall-entry year 2027 (future). Generation must still find
       // them rather than returning an empty/undated result.
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
-      mockPrisma.school.findUnique.mockResolvedValue({
-        id: 'school-1',
-        name: 'Princeton University',
-        nameZh: '普林斯顿大学',
-        metadata: null,
-        deadlines: [
-          {
-            id: 'dl-next-cycle',
-            round: 'ED',
-            applicationDeadline: new Date('2026-11-01T00:00:00Z'),
-            financialAidDeadline: null,
-            essayPrompts: null,
-            essayCount: null,
-            interviewRequired: false,
-            year: 2027,
-            source: 'WEB_RESEARCH_2026-05:official',
-            notes: 'source: https://admission.princeton.edu/apply',
-          },
-        ],
-      });
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'Princeton University',
+          nameZh: '普林斯顿大学',
+          metadata: null,
+          deadlines: [
+            {
+              id: 'dl-next-cycle',
+              round: 'ED',
+              applicationDeadline: new Date('2026-11-01T00:00:00Z'),
+              financialAidDeadline: null,
+              essayPrompts: null,
+              essayCount: null,
+              interviewRequired: false,
+              year: 2027,
+              source: 'WEB_RESEARCH_2026-05:official',
+              notes: 'source: https://admission.princeton.edu/apply',
+            },
+          ],
+        },
+      ]);
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
       mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
       mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>

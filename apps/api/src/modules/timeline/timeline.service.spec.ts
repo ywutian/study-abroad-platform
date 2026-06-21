@@ -68,6 +68,7 @@ describe('TimelineService', () => {
           useValue: {
             school: {
               findUnique: jest.fn(),
+              findMany: jest.fn(),
             },
             applicationTimeline: {
               findUnique: jest.fn(),
@@ -223,9 +224,10 @@ describe('TimelineService', () => {
           },
         ],
       };
-      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(
-        mockSchoolWithDeadlines,
-      );
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        { ...mockSchoolWithDeadlines, id: 'school-1' },
+        { ...mockSchoolWithDeadlines, id: 'school-2' },
+      ]);
       (
         prismaService.applicationTimeline.findMany as jest.Mock
       ).mockResolvedValue([]);
@@ -241,12 +243,34 @@ describe('TimelineService', () => {
     });
 
     it('should skip existing timelines', async () => {
-      (prismaService.school.findUnique as jest.Mock).mockResolvedValue(
-        mockSchool,
-      );
+      const schoolWithRd = {
+        ...mockSchool,
+        deadlines: [
+          {
+            id: 'dl-rd',
+            schoolId: mockSchoolId,
+            round: 'RD',
+            applicationDeadline: new Date('2027-01-01'),
+            financialAidDeadline: null,
+            year:
+              new Date().getMonth() + 1 >= 8
+                ? new Date().getFullYear() + 1
+                : new Date().getFullYear(),
+            essayPrompts: null,
+            essayCount: null,
+            source: 'CDS',
+            notes: 'https://example.edu/cds/2027',
+            interviewRequired: false,
+          },
+        ],
+      };
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        schoolWithRd,
+      ]);
+      // User already has an RD timeline for this school -> that round is skipped.
       (
-        prismaService.applicationTimeline.findFirst as jest.Mock
-      ).mockResolvedValue(mockTimeline);
+        prismaService.applicationTimeline.findMany as jest.Mock
+      ).mockResolvedValue([{ schoolId: mockSchoolId, round: 'RD' }]);
 
       const result = await service.generateTimelines(mockUserId, {
         schoolIds: [mockSchoolId],
