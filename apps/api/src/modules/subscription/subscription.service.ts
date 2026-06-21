@@ -419,7 +419,16 @@ export class SubscriptionService {
         .createHmac('sha256', webhookSecret)
         .update(JSON.stringify(payload))
         .digest('hex');
-      if (signature !== expectedSignature) {
+      // Constant-time comparison: a plain `!==` leaks timing that can let an
+      // attacker recover the expected HMAC byte-by-byte over many requests.
+      // timingSafeEqual throws on length mismatch, so guard the length first
+      // (a wrong-length signature is trivially invalid anyway).
+      const signatureBuffer = Buffer.from(signature);
+      const expectedBuffer = Buffer.from(expectedSignature);
+      if (
+        signatureBuffer.length !== expectedBuffer.length ||
+        !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+      ) {
         throw new UnauthorizedException('Invalid webhook signature');
       }
     } else if (this.configService.get('NODE_ENV') === 'production') {
