@@ -68,6 +68,8 @@ export const REDIS_TTL = {
   SCHOOL_REC_RESULT: 2 * HOUR,
 
   // ── 1 hour ────────────────────────────────────────────────
+  /** Essay-scraper cron single-flight lock (long async pipeline + clock skew). */
+  ESSAY_SCRAPER_CRON_LOCK: 1 * HOUR,
   /** Individual school detail. */
   SCHOOL_DETAIL: 1 * HOUR,
   /** School list query results. */
