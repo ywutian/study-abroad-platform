@@ -13,6 +13,7 @@ import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { runWithCronLock } from '../../common/redis/cron-lock.util';
 import {
   NotificationService,
   NotificationType,
@@ -33,44 +34,35 @@ export class DeadlineReminderScheduler {
 
   @Cron('0 8 * * *', { timeZone: 'Asia/Shanghai' })
   async checkDeadlines() {
-    // Single-flight across instances: Cloud Run runs N replicas and the cron
-    // fires on each at 08:00, so without a lock the scan would run N times. The
-    // lock TTL (not an explicit release) is the single-flight window — short
-    // enough to re-run tomorrow, long enough to outlast one run. setNXStrict
-    // returns false if the lock is held OR Redis is unavailable; both correctly
-    // skip the duplicate/uncoordinated run.
-    if (this.redis) {
-      const acquired = await this.redis.setNXStrict(
-        DEADLINE_CRON_LOCK_KEY,
-        '1',
-        REDIS_TTL.DEADLINE_CRON_LOCK,
-      );
-      if (!acquired) {
+    // Single-flight across replicas: Cloud Run fires this cron on every instance
+    // at 08:00, so without a lock the scan runs N times. (See runWithCronLock for
+    // the TTL-as-window / fail-closed semantics.)
+    await runWithCronLock(
+      this.redis,
+      DEADLINE_CRON_LOCK_KEY,
+      REDIS_TTL.DEADLINE_CRON_LOCK,
+      async () => {
+        this.logger.log('Starting deadline reminder scan...');
+        const windows = [1, 3, 7];
+        let totalSent = 0;
+
+        for (const days of windows) {
+          try {
+            const sent = await this.processWindow(days);
+            totalSent += sent;
+          } catch (error) {
+            this.logger.error(
+              `Failed to process ${days}-day window`,
+              error instanceof Error ? error.stack : String(error),
+            );
+          }
+        }
+
         this.logger.log(
-          'Deadline reminder scan skipped (lock held by another instance or Redis unavailable).',
+          `Deadline reminder scan complete: ${totalSent} notifications sent`,
         );
-        return;
-      }
-    }
-
-    this.logger.log('Starting deadline reminder scan...');
-    const windows = [1, 3, 7];
-    let totalSent = 0;
-
-    for (const days of windows) {
-      try {
-        const sent = await this.processWindow(days);
-        totalSent += sent;
-      } catch (error) {
-        this.logger.error(
-          `Failed to process ${days}-day window`,
-          error instanceof Error ? error.stack : String(error),
-        );
-      }
-    }
-
-    this.logger.log(
-      `Deadline reminder scan complete: ${totalSent} notifications sent`,
+      },
+      this.logger,
     );
   }
 

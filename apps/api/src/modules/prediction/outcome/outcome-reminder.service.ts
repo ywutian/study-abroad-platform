@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
+import { runWithCronLock } from '../../../common/redis/cron-lock.util';
 import {
   NotificationService,
   NotificationType,
@@ -47,28 +48,20 @@ export class OutcomeReminderService {
   })
   async sendDecisionDayReminders(): Promise<void> {
     // Single-flight across replicas: every Cloud Run instance fires this cron at
-    // 8AM, so without the lock each eligible user gets N duplicate reminders. The
-    // TTL is the single-flight window (no explicit release). setNXStrict returns
-    // false if the lock is held or Redis is down — both correctly skip the run.
-    if (this.redis) {
-      const acquired = await this.redis.setNXStrict(
-        OUTCOME_REMINDER_LOCK_KEY,
-        '1',
-        REDIS_TTL.OUTCOME_REMINDER_CRON_LOCK,
-      );
-      if (!acquired) {
+    // 8AM, so without the lock each eligible user gets N duplicate reminders.
+    // (See runWithCronLock for the TTL-as-window / fail-closed semantics.)
+    await runWithCronLock(
+      this.redis,
+      OUTCOME_REMINDER_LOCK_KEY,
+      REDIS_TTL.OUTCOME_REMINDER_CRON_LOCK,
+      async () => {
+        this.logger.log('Running outcome decision day reminder cron');
+        const stats = await this.runOnce();
         this.logger.log(
-          'Outcome reminder cron skipped (lock held by another instance or Redis unavailable).',
+          `Reminder cron complete: ${stats.candidates} candidates scanned, ${stats.sent} notifications sent, ${stats.skipped} skipped (already reported or recently notified)`,
         );
-        return;
-      }
-    }
-
-    this.logger.log('Running outcome decision day reminder cron');
-
-    const stats = await this.runOnce();
-    this.logger.log(
-      `Reminder cron complete: ${stats.candidates} candidates scanned, ${stats.sent} notifications sent, ${stats.skipped} skipped (already reported or recently notified)`,
+      },
+      this.logger,
     );
   }
 
