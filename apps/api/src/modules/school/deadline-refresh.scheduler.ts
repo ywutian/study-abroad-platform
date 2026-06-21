@@ -1,8 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import * as cheerio from 'cheerio';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { runWithCronLock } from '../../common/redis/cron-lock.util';
+
+const DEADLINE_REFRESH_LOCK_KEY = 'deadline-refresh:cron-lock';
 
 /**
  * DeadlineRefreshScheduler — keeps `SchoolDeadline` rows in sync with the
@@ -167,7 +172,10 @@ interface DeadlineExtraction {
 export class DeadlineRefreshScheduler {
   private readonly logger = new Logger(DeadlineRefreshScheduler.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private redis?: RedisService,
+  ) {}
 
   /**
    * Every Sunday at 02:00 UTC. The August refresh wave happens 2026-08-01
@@ -175,6 +183,19 @@ export class DeadlineRefreshScheduler {
    */
   @Cron('0 2 * * 0')
   async refreshTentativeDeadlines() {
+    // Single-flight across replicas: otherwise every Cloud Run instance fetches
+    // each tentative school's page (N× outbound HTTP) and writes duplicate
+    // DEADLINE_NEEDS_REVIEW audit rows.
+    await runWithCronLock(
+      this.redis,
+      DEADLINE_REFRESH_LOCK_KEY,
+      REDIS_TTL.DEADLINE_REFRESH_CRON_LOCK,
+      () => this.runRefresh(),
+      this.logger,
+    );
+  }
+
+  private async runRefresh() {
     const startedAt = Date.now();
     this.logger.log('📅 Running tentative-deadline refresh sweep...');
 

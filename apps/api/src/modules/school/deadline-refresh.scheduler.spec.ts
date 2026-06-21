@@ -1,6 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DeadlineRefreshScheduler } from './deadline-refresh.scheduler';
+import { RedisService } from '../../common/redis/redis.service';
 
 /**
  * Coverage for the safety-critical parts of the deadline-refresh
@@ -20,8 +21,10 @@ describe('DeadlineRefreshScheduler', () => {
     auditLog: { create: jest.Mock };
   };
   let originalFetch: typeof global.fetch;
+  const redis = { setNXStrict: jest.fn() };
 
   beforeEach(async () => {
+    redis.setNXStrict.mockResolvedValue(true);
     prisma = {
       schoolDeadline: {
         findMany: jest.fn(),
@@ -34,6 +37,7 @@ describe('DeadlineRefreshScheduler', () => {
       providers: [
         DeadlineRefreshScheduler,
         { provide: PrismaService, useValue: prisma },
+        { provide: RedisService, useValue: redis },
       ],
     }).compile();
 
@@ -237,5 +241,19 @@ describe('DeadlineRefreshScheduler', () => {
 
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(prisma.schoolDeadline.update).not.toHaveBeenCalled();
+  });
+
+  // ───────────────────────────────────────────────────────────────────
+  // Multi-instance single-flight: a held lock skips the whole sweep.
+  // ───────────────────────────────────────────────────────────────────
+  it('skips the sweep entirely when the single-flight lock is held', async () => {
+    redis.setNXStrict.mockResolvedValue(false);
+    const fetchSpy = jest.fn();
+    global.fetch = fetchSpy;
+
+    await scheduler.refreshTentativeDeadlines();
+
+    expect(prisma.schoolDeadline.findMany).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

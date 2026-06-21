@@ -92,6 +92,8 @@ export const REDIS_TTL = {
   OUTCOME_REMINDER_CRON_LOCK: 10 * MINUTE,
   /** IPEDS update-monitor cron single-flight lock. */
   IPEDS_MONITOR_CRON_LOCK: 10 * MINUTE,
+  /** Tentative-deadline refresh cron single-flight lock. */
+  DEADLINE_REFRESH_CRON_LOCK: 10 * MINUTE,
 
   // ── 5 minutes ─────────────────────────────────────────────
   /** Permission resolution cache. */
