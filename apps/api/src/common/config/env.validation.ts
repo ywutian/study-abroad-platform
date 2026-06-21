@@ -114,6 +114,9 @@ const envSchema = z.object({
   METRICS_ENABLED: z.enum(['true', 'false']).default('true'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
   OTEL_SERVICE_NAME: z.string().default('study-abroad-api'),
+  // Cron dead-man's-switch base (e.g. https://hc-ping.com/<ping-key>); when set,
+  // each @Cron pings <base>/<slug> on success. Unset = heartbeats disabled.
+  HEALTHCHECK_PING_BASE_URL: z.string().url().optional(),
 
   // --- College Scorecard (Optional) ---
   COLLEGE_SCORECARD_API_KEY: z.string().optional(),

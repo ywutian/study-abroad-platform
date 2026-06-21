@@ -4,6 +4,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../../common/redis/cron-lock.util';
+import { pingCronHeartbeat } from '../../../common/monitoring/cron-heartbeat.util';
 import {
   NotificationService,
   NotificationType,
@@ -50,7 +51,7 @@ export class OutcomeReminderService {
     // Single-flight across replicas: every Cloud Run instance fires this cron at
     // 8AM, so without the lock each eligible user gets N duplicate reminders.
     // (See runWithCronLock for the TTL-as-window / fail-closed semantics.)
-    await runWithCronLock(
+    const ran = await runWithCronLock(
       this.redis,
       OUTCOME_REMINDER_LOCK_KEY,
       REDIS_TTL.OUTCOME_REMINDER_CRON_LOCK,
@@ -63,6 +64,7 @@ export class OutcomeReminderService {
       },
       this.logger,
     );
+    if (ran) await pingCronHeartbeat('outcome-reminder', this.logger);
   }
 
   /**
