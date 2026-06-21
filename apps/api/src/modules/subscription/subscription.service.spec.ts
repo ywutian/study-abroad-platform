@@ -4,7 +4,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../../common/email/email.service';
 import { SettingsService } from '../settings/settings.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SubscriptionPlan, SUBSCRIPTION_PLANS } from '@study-abroad/shared';
 import * as crypto from 'crypto';
 
@@ -526,6 +530,20 @@ describe('SubscriptionService', () => {
       // Should only call findFirst once (idempotency check) and not proceed
       expect(prismaService.payment.findFirst).toHaveBeenCalledTimes(1);
       expect(mockTransaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects a webhook with an invalid signature (constant-time check)', async () => {
+      const payload = {
+        type: 'payment.success',
+        id: 'evt-forged',
+        transactionId: 'txn_123',
+      };
+
+      await expect(
+        service.handlePaymentWebhook(payload, 'not-the-real-signature'),
+      ).rejects.toThrow(UnauthorizedException);
+      // Rejected before any processing.
+      expect(prismaService.payment.findFirst).not.toHaveBeenCalled();
     });
 
     it('should handle unknown event types', async () => {
