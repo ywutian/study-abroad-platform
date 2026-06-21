@@ -1,13 +1,24 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { EmailService } from '../../common/email/email.service';
 import { SettingsService, SETTING_KEYS } from '../settings/settings.module';
+import { RedisService } from '../../common/redis/redis.service';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { runWithCronLock } from '../../common/redis/cron-lock.util';
+
+const IPEDS_MONITOR_LOCK_KEY = 'ipeds-monitor:cron-lock';
+const IPEDS_FINGERPRINT_KEY = 'ipeds-monitor:last-fingerprint';
 
 /**
  * IPEDS 更新监控服务
  *
- * 定期检查 IPEDS 是否有新数据发布
- * 有更新时发送通知
+ * 每周检查 IPEDS 数据页是否有新数据发布，有更新时邮件通知管理员。
+ *
+ * Multi-instance: a Redis single-flight lock ensures only one Cloud Run replica
+ * runs the weekly check (so the admin gets one email, not N). The page
+ * fingerprint is persisted in Redis (not an in-memory field) so the baseline
+ * survives container restarts — otherwise every restart reset it to null and the
+ * next check always reported "no change", silently missing real IPEDS releases.
  */
 @Injectable()
 export class IpedsMonitorService {
@@ -15,12 +26,14 @@ export class IpedsMonitorService {
   private readonly IPEDS_DATA_PAGE =
     'https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx';
 
-  // 记录上次检查的数据版本
+  // In-memory fallback used only when Redis is unavailable (dev/single-instance);
+  // the durable, cross-replica baseline lives in Redis under IPEDS_FINGERPRINT_KEY.
   private lastKnownVersion: string | null = null;
 
   constructor(
     private emailService: EmailService,
     private settingsService: SettingsService,
+    @Optional() private redis?: RedisService,
   ) {}
 
   /**
@@ -28,30 +41,36 @@ export class IpedsMonitorService {
    */
   @Cron('0 9 * * 1') // 每周一上午 9 点
   async checkForUpdates() {
-    this.logger.log('🔍 检查 IPEDS 数据更新...');
+    // Single-flight across replicas so the admin gets one email, not N.
+    await runWithCronLock(
+      this.redis,
+      IPEDS_MONITOR_LOCK_KEY,
+      REDIS_TTL.IPEDS_MONITOR_CRON_LOCK,
+      async () => {
+        this.logger.log('🔍 检查 IPEDS 数据更新...');
+        try {
+          // 简单方案: 检查页面是否有变化
+          // 生产环境可以解析页面内容，提取最新数据文件列表
+          const response = await fetch(this.IPEDS_DATA_PAGE);
+          const html = await response.text();
 
-    try {
-      // 简单方案: 检查页面是否有变化
-      // 生产环境可以解析页面内容，提取最新数据文件列表
+          const hasNewData = await this.detectNewData(html);
 
-      const response = await fetch(this.IPEDS_DATA_PAGE);
-      const html = await response.text();
-
-      // 提取关键信息 (简化版)
-      const hasNewData = this.detectNewData(html);
-
-      if (hasNewData) {
-        this.logger.warn('📢 检测到 IPEDS 新数据发布！');
-        await this.sendNotification();
-      } else {
-        this.logger.log('✅ IPEDS 数据无更新');
-      }
-    } catch (error) {
-      this.logger.error('检查 IPEDS 更新失败', error);
-    }
+          if (hasNewData) {
+            this.logger.warn('📢 检测到 IPEDS 新数据发布！');
+            await this.sendNotification();
+          } else {
+            this.logger.log('✅ IPEDS 数据无更新');
+          }
+        } catch (error) {
+          this.logger.error('检查 IPEDS 更新失败', error);
+        }
+      },
+      this.logger,
+    );
   }
 
-  private detectNewData(html: string): boolean {
+  private async detectNewData(html: string): Promise<boolean> {
     // 简单检测: 查找页面中的年份标识
     // 实际生产中应该解析具体的文件列表
 
@@ -69,13 +88,22 @@ export class IpedsMonitorService {
       '_' +
       patterns.filter((p) => html.includes(p)).join(',');
 
-    if (this.lastKnownVersion && fingerprint !== this.lastKnownVersion) {
+    // Durable, cross-replica baseline: read the previous fingerprint from Redis
+    // (was a per-replica in-memory field that reset on every container restart →
+    // detection silently never fired on Cloud Run). Fall back to memory only when
+    // Redis is unavailable.
+    const previous = this.redis
+      ? await this.redis.get(IPEDS_FINGERPRINT_KEY)
+      : this.lastKnownVersion;
+
+    if (this.redis) {
+      await this.redis.set(IPEDS_FINGERPRINT_KEY, fingerprint);
+    } else {
       this.lastKnownVersion = fingerprint;
-      return true;
     }
 
-    this.lastKnownVersion = fingerprint;
-    return false;
+    // First run (no baseline) records the fingerprint and reports no change.
+    return previous !== null && fingerprint !== previous;
   }
 
   private async sendNotification() {
