@@ -125,6 +125,27 @@ describe('HealthController', () => {
     });
   });
 
+  describe('externalCheck (public, prefix-reachable for external monitors)', () => {
+    it('returns the same deep DB+Redis payload as check()', async () => {
+      const result = await controller.externalCheck(mockResponse as Response);
+
+      expect(result.status).toBe('ok');
+      expect(result.checks.database.status).toBe('ok');
+      expect(result.checks.redis?.status).toBe('ok');
+    });
+
+    it('responds 503 when a core dependency (DB) is down', async () => {
+      (prismaService.$queryRaw as jest.Mock).mockRejectedValue(
+        new Error('DB down'),
+      );
+
+      const result = await controller.externalCheck(mockResponse as Response);
+
+      expect(result.status).toBe('error');
+      expect(mockResponse.status).toHaveBeenCalledWith(503);
+    });
+  });
+
   describe('liveness', () => {
     it('should return ok status', () => {
       const result = controller.liveness();
