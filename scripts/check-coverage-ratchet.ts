@@ -30,6 +30,7 @@ const TARGETS: { app: string; file: string }[] = [
   { app: 'api', file: 'apps/api/package.json' },
   { app: 'mobile', file: 'apps/mobile/jest.config.js' },
   { app: 'web', file: 'apps/web/vitest.config.ts' },
+  { app: 'shared', file: 'packages/shared/vitest.config.ts' },
 ];
 
 /**
