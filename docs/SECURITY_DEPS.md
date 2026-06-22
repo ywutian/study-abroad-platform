@@ -50,6 +50,25 @@ list). Each entry MUST be documented here with the reason + a removal trigger.
 | --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GHSA-fx2h-pf6j-xcff` | `vite` (8.0.x) | Windows-only `server.fs.deny` **dev-server** bypass. `vite` here is a **test-only** transitive of `vitest`/`@vitejs/plugin-react`; the vite dev server is never run (web app builds with Next.js). pnpm 10.22 won't apply a `vite` override to this peer-contextualized transitive (range + exact + `--force` all keep 8.0.8). | `vitest`/`@vitejs/plugin-react` bump their `vite` to ≥8.0.16, or pnpm fixes the override resolution — then drop this entry and confirm `pnpm audit` stays green. |
 
+## Version pinning (One-Version Rule)
+
+Beyond CVE fixes, some packages cause **version thrash** — weeks of flip-flopping
+on which major to allow (the `zod` 3-vs-4 saga: #111 → #419 → #424 → #434). Two
+majors of one package resolvable at once is a _diamond dependency_. The decision
+for contested packages is recorded in
+[ADR-0021](adr/0021-dependency-version-pinning.md) and enforced by
+**`pnpm lint:dep-pins`** (`scripts/check-dep-pins.ts`, in `lint:all` + pre-push):
+
+- `zod` — app on **3** (`"zod": "3.25.76"`); **4** allowed _only_ as knip's
+  isolated dev dependency (`"knip>zod"`). A third major, or an app-level bump,
+  fails the guard with an actionable message.
+- To change a pin: edit `scripts/check-dep-pins.ts` **and** ADR-0021 in the same
+  PR. The lockfile is downstream of a recorded decision, not the source of truth.
+
+Do **not** "clean up" the lockfile with a blanket `pnpm dedupe` — it's a large,
+risky resolution change (the "passes CI, fails on Vercel" class). Guard the
+contested packages, not the whole tree.
+
 ## Dependabot
 
 `.github/dependabot.yml` opens weekly npm + GitHub-Actions update PRs. **Major

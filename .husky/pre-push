@@ -7,6 +7,17 @@ echo ""
 echo "🚀 Running pre-push checks..."
 echo ""
 
+# Step 0: Lockfile drift — the asymmetry that makes "passes locally, fails on
+# Vercel/CI" possible. `--frozen-lockfile` is pnpm's default in CI but NOT
+# locally, so a local `pnpm install` can silently mutate pnpm-lock.yaml. Verify
+# it here the same way CI and Vercel do. See docs/ANTI_CHURN_PLAYBOOK.md.
+echo "🔒 Verifying lockfile is in sync (frozen-lockfile)..."
+if ! pnpm install --frozen-lockfile --ignore-scripts > /dev/null 2>&1; then
+  echo "❌ Lockfile out of sync with package.json (ERR_PNPM_OUTDATED_LOCKFILE)."
+  echo "   Run \`pnpm install\`, commit the updated pnpm-lock.yaml, then push."
+  exit 1
+fi
+
 # Step 1: Generate Prisma client (needed for type resolution)
 echo "📦 Generating Prisma client..."
 pnpm --filter api db:generate || exit 1
@@ -23,6 +34,7 @@ echo ""
 echo "🛡️  Checking root guardrails..."
 pnpm lint:coverage-ratchet || exit 1
 pnpm lint:audit-gate || exit 1
+pnpm lint:dep-pins || exit 1
 pnpm lint:deploy-drift || exit 1
 pnpm lint:seed-parity || exit 1
 
