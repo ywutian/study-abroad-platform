@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmor8g69z00hf1jbw8maj96we","cmnwr8ini000wz0ti57rv9m9o","Auburn University","ACTIVITY","critical","/admin/essay-prompts/cmor8g69z00hf1jbw8maj96we","Describe extracurricular activities, including leadership positions, in which you have participated. If you did face extenuating circumstances, explain briefly how it affected your","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

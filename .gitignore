@@ -93,6 +93,13 @@ apps/api/scripts/external-cases-raw/*
 # Same ToS / provenance policy as external-cases-raw: kept OUT of git.
 apps/api/scripts/onepoint3acres-authorized-captures/
 
+# Closure-cycle run reports — timestamped JSON/CSV/MD/SQL artifacts written by
+# the *-packet.ts scripts + admin-profile-readiness-delivery.service.ts. These
+# are generated OUTPUT (1634 files, ~1.86M lines), not source — they bloated the
+# repo and skewed every churn metric. Untracked in #461 follow-up; regenerate on
+# demand. (Historical blobs still live in .git; shrink with git-filter-repo if needed.)
+apps/api/scripts/closure-reports/
+
 # Generated outputs (large binary/asset dumps, not source)
 outputs/
 

@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxfx3l007feiz6d6y75iza","cmn1htkoa000kvqf2oqm36hw5","University of Michigan, Ann Arbor","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxfx3l007feiz6d6y75iza","We also ask that you submit a short description that explains how your artifact demonstrates your learning in action. Essentially, what did you learn from this experience?","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

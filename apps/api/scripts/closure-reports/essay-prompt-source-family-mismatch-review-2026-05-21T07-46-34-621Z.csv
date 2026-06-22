@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorwmpar00ahnoojlg1gbqzh","cmn1htkqc001bvqf22zfkx827","Texas A&M University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorwmpar00ahnoojlg1gbqzh","What are some of your life goals and objectives?","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

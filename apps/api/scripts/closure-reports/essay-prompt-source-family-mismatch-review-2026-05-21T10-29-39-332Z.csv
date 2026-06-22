@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxkpht00eleiz659cvupc8","cmnwr8inf000uz0tic8a7s8is","Rensselaer Polytechnic Institute","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxkpht00eleiz659cvupc8","Please briefly elaborate on one of your extracurricular activities or work experiences.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

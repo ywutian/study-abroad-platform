@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmor84ln300831jbw0touh3s5","cmn1htkor000rvqf282ibd6kz","University of California, Davis","SHORT_ANSWER","critical","/admin/essay-prompts/cmor84ln300831jbw0touh3s5","In 150 words or fewer, please list a few words or phrases that describe your ideal college community.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

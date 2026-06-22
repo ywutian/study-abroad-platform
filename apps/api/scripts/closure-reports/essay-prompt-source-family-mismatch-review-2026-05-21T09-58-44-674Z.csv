@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxqt1f00kneiz6xyptz8ej","cmnwr8iqk0027z0ti3qm7r15o","University of Central Florida","ACTIVITY","critical","/admin/essay-prompts/cmorxqt1f00kneiz6xyptz8ej","Please briefly elaborate on one of your extracurricular activities or work experiences.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

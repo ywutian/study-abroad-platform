@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxk04v00dneiz6l1p433ow","cmnwr8imn000fz0ti5zassqtj","Pepperdine University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxk04v00dneiz6l1p433ow","Subconsciously building your own bubble is an easy thing to do in our modern world. Describe ways in which you seek to step outside of your bubble, challenge the worldviews you hol","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

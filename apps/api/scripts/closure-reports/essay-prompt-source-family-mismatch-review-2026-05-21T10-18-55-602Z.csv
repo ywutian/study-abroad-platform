@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmor88zto00bv1jbw6uouy4rg","cmnwr8im70006z0ti47aaywzj","Tulane University","ACTIVITY","critical","/admin/essay-prompts/cmor88zto00bv1jbw6uouy4rg","Please briefly elaborate on one of your extracurricular activities or work experiences.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"
