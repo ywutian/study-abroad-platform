@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { Header, PageTransitionWrapper, MobileTabBar } from '@/components/layout';
+import { EmailVerifyBanner } from '@/components/layout/email-verify-banner';
 import { FloatingChat } from '@/components/features/agent-chat';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     >
       <div className="app-shell-bg pointer-events-none fixed inset-0 -z-10" />
       <Header />
+      <EmailVerifyBanner />
       <PageTransitionWrapper className="flex-1">
         <main
           className={cn(

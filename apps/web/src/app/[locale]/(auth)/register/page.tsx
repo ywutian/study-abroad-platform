@@ -441,6 +441,7 @@ export default function RegisterPage() {
                     setScoreValues(nextValues);
                   }}
                 />
+                <p className="mt-3 text-xs text-muted-foreground">{ta('scoresOptionalHint')}</p>
               </div>
             </div>
 
