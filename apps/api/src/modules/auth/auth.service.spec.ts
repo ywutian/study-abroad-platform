@@ -369,16 +369,23 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw UnauthorizedException for unverified email', async () => {
+    it('logs in an unverified user (soft nudge, not a login wall)', async () => {
       (userService.findByEmail as jest.Mock).mockResolvedValue({
         ...mockUser,
         emailVerified: false,
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      (prismaService.refreshToken.create as jest.Mock).mockResolvedValue({
+        token: 'rt',
+      });
 
-      await expect(
-        service.login({ email: 'test@example.com', password: 'password123' }),
-      ).rejects.toThrow(UnauthorizedException);
+      const result = await service.login({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+
+      expect(result.tokens.accessToken).toBeDefined();
+      expect(result.user.emailVerified).toBe(false);
     });
   });
 
