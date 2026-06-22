@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxgmdn008neiz6bmlaa50x","cmn1htkow000tvqf2qc5n3qhd","University of Florida","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxgmdn008neiz6bmlaa50x","Please provide more details on your most meaningful commitment outside of the classroom while in high school and explain why it was meaningful. This could be related to an extracur","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

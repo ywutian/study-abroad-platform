@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxd5qz002neiz69rojmwjq","cmnwr8iuy0047z0tijtdlowua","Bowdoin College","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxd5qz002neiz69rojmwjq","How did you first learn about Bowdoin?","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

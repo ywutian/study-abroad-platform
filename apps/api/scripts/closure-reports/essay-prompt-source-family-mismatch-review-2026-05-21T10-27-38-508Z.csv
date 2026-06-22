@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxucc300m5eiz6hgnx41vr","cmnwr8ita003iz0ti7ezibmu3","Georgia State University","ACTIVITY","critical","/admin/essay-prompts/cmorxucc300m5eiz6hgnx41vr","Please list your primary extracurricular and community service activities. Describe one community service activity that you have participated in that has changed your view on a par","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxt1g800lleiz6rirr6a12","cmnwr8ise0034z0tiwz772kaw","Oklahoma State University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxt1g800lleiz6rirr6a12","Aliens land and ask for one thing to represent Earth. What do you give them and why?","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

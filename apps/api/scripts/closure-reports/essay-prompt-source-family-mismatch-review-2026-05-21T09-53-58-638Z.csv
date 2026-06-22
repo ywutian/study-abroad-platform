@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxfjp7006zeiz62o64qekh","cmn1htko5000ivqf28d3x9557","Vanderbilt University","ACTIVITY","critical","/admin/essay-prompts/cmorxfjp7006zeiz62o64qekh","Vanderbilt offers a community where students find balance between their academic and social experiences. Please briefly elaborate on how one of your extracurricular activities or w","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

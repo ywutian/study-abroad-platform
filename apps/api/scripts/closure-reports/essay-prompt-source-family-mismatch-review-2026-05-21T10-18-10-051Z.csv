@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmor88e2x00b31jbwocyn8zg1","cmnwr8ima0008z0ti358pkae1","University of Minnesota Twin Cities","SHORT_ANSWER","critical","/admin/essay-prompts/cmor88e2x00b31jbwocyn8zg1","The U of M has 8 freshman-admitting colleges and more than 150 majors. Please share a few words about what you’d like to study in college, career paths that interest you, or your f","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxe8ha004feiz65l03fe8s","cmnwr8iv9004dz0tirpo4zq16","Vassar College","ACTIVITY","critical","/admin/essay-prompts/cmorxe8ha004feiz65l03fe8s","Please briefly elaborate on one of your extracurricular activities or work experiences in the space below.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

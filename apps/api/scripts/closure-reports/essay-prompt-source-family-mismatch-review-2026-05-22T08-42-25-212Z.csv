@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorx20ti003j8vvhrhpbkplz","cmn1htkne0006vqf2quzi0v6h","California Institute of Technology","SHORT_ANSWER","critical","/admin/essay-prompts/cmorx20ti003j8vvhrhpbkplz","Tell us about a STEM-related experience from the last few years and share how and why it inspired your curiosity.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

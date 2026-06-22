@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxbuif001beiz6umctjgot","cmnwr8iur0043z0tie8ndrb65","Amherst College","ACTIVITY","critical","/admin/essay-prompts/cmorxbuif001beiz6umctjgot","Please briefly elaborate on an extracurricular activity or work experience of particular significance to you.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

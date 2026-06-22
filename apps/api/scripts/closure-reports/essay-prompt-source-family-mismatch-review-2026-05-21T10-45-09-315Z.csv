@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxup9400m7eiz6jkqqgv5l","cmnwr8iti003lz0ti0z9hwm3s","Wright State University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxup9400m7eiz6jkqqgv5l","Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it?","review","review_cross_school_prompt_owner_conflict","review-cross-school-prompt-owner-and-reassign-or-reject"

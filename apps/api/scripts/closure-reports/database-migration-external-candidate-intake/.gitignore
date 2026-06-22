@@ -1,9 +1,0 @@
-*
-!.gitignore
-!README.md
-!TARGETS.json
-!TARGETS.sha256
-!REQUEST.json
-!REQUEST.md
-!STATUS.json
-!STATUS.md

@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorxsott00lheiz61i6bv6c6","cmnwr8is80031z0tizosa0sa8","University of Toledo","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxsott00lheiz61i6bv6c6","Reflect on a time when you challenged a belief or idea. What prompted you to act? Would you make the same decision again?","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

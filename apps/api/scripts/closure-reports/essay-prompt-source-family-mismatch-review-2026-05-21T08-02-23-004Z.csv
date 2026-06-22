@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmorwfm2i0001noojmzxkwt8m","cmnwr8iwe004zz0tilegv5ian","Harvey Mudd College","SHORT_ANSWER","critical","/admin/essay-prompts/cmorwfm2i0001noojmzxkwt8m","Many students choose Harvey Mudd because they don’t want to give up their interests in the Humanities, Social Sciences, and the Arts – or HSA, as we call it at HMC. Briefly (in 100","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

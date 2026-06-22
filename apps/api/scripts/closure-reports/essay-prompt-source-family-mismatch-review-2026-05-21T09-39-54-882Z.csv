@@ -1,2 +1,0 @@
-essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
-"cmor7ytlo002r1jbw5glhilha","cmn1htknc0005vqf2l2az4cd2","University of Pennsylvania","SHORT_ANSWER","critical","/admin/essay-prompts/cmor7ytlo002r1jbw5glhilha","Discuss your connection to the language you would pursue as part of the Huntsman Program. Cover your background with the language, your motivation for studying it, and your authent","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"
