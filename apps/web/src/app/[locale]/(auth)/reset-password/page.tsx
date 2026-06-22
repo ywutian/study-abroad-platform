@@ -34,6 +34,7 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [linkError, setLinkError] = useState(false);
 
   const mutation = useMutation({
     // @cache-invalidation-allowed: auth form (reset-password) — no cached list/detail; onSuccess sets local success state
@@ -42,7 +43,11 @@ export default function ResetPasswordPage() {
     onSuccess: () => {
       setSuccess(true);
     },
-    // Error toast handled by global MutationCache
+    // A failure here is ~always a bad/expired token (the password is
+    // client-validated first), so surface the get-new-link recovery state.
+    // ponytail: treats any failure as link-expired; requesting a new link is
+    // harmless on a transient error, and the global toast still shows specifics.
+    onError: () => setLinkError(true),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,8 +71,8 @@ export default function ResetPasswordPage() {
     mutation.mutate({ token, newPassword: password });
   };
 
-  // No token - invalid link
-  if (!token) {
+  // No token, or the reset failed (expired/invalid token) — offer a new link
+  if (!token || linkError) {
     return (
       <div className="space-y-6">
         <div className="text-center">

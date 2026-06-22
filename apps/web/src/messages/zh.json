@@ -1280,6 +1280,7 @@
           "desc": "输入您的标化考试成绩（可跳过）"
         }
       },
+      "scoresOptionalHint": "成绩都是选填，注册后随时在「我的资料」里补充。",
       "common": {
         "optional": "（选填）"
       },
@@ -1315,7 +1316,10 @@
       "emailVerifiedSuccess": "邮箱验证成功！请登录您的账号",
       "emailVerifiedError": "验证链接无效或已过期",
       "emailNotVerifiedWarning": "您的邮箱尚未验证，部分功能可能受限",
-      "emailNotVerifiedAction": "重新发送"
+      "emailNotVerifiedAction": "重新发送",
+      "bannerText": "验证邮箱，保护账号安全、方便找回。",
+      "dismiss": "关闭",
+      "resendError": "重发失败，请重试。"
     },
     "forgotPassword": {
       "title": "忘记密码",
@@ -1327,7 +1331,7 @@
       "success": "重置链接已发送！请查收邮箱。",
       "emailRequired": "请输入邮箱地址",
       "emailSent": "邮件已发送",
-      "emailSentDesc": "我们已向你的邮箱发送了重置密码的链接",
+      "emailSentDesc": "如果该邮箱已注册，重置密码的链接马上就到。",
       "checkInbox": "请查看收件箱",
       "checkSpam": "如未收到，请查看垃圾邮件",
       "resend": "重新发送"

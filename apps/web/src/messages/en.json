@@ -1296,6 +1296,7 @@
           "desc": "Enter your standardized test scores (optional)"
         }
       },
+      "scoresOptionalHint": "Scores are optional — you can add them anytime later in your profile.",
       "common": {
         "optional": "(Optional)"
       },
@@ -1331,7 +1332,10 @@
       "emailVerifiedSuccess": "Email verified! Please log in to your account.",
       "emailVerifiedError": "Verification link is invalid or expired",
       "emailNotVerifiedWarning": "Your email is not verified. Some features may be limited.",
-      "emailNotVerifiedAction": "Resend"
+      "emailNotVerifiedAction": "Resend",
+      "bannerText": "Verify your email to keep your account secure and recoverable.",
+      "dismiss": "Dismiss",
+      "resendError": "Couldn't resend — please try again."
     },
     "forgotPassword": {
       "title": "Forgot Password",
@@ -1343,7 +1347,7 @@
       "success": "Reset link sent! Please check your inbox.",
       "emailRequired": "Please enter your email",
       "emailSent": "Email Sent",
-      "emailSentDesc": "We sent a password reset link to your email",
+      "emailSentDesc": "If an account exists for that email, a password reset link is on its way.",
       "checkInbox": "Check your inbox",
       "checkSpam": "Check spam folder if not received",
       "resend": "Resend"
