@@ -14,7 +14,7 @@ import {
   useEssayOpening,
 } from '@/hooks/use-essay-ai';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@/lib/zod-resolver';
 import { createEssaySchema, type EssayFormData } from '@/lib/validations/essay';
 import type {
   Essay,

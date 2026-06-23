@@ -29,7 +29,7 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@/lib/zod-resolver';
 import { createPersonalEventSchema, type PersonalEventFormData } from '@/lib/validations/timeline';
 import type {
   TimelineResponse,

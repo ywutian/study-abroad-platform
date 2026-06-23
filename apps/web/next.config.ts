@@ -11,18 +11,6 @@ const workspaceRoot = path.resolve(appDir, '../..');
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@study-abroad/shared', 'geist'],
-  // Type-checking is owned by CI's dedicated "Type Check" job (canonical
-  // full-monorepo install) + `pnpm --filter web exec tsc`, both of which gate
-  // every merge to main and pass. `next build` re-runs tsc inside Vercel's build
-  // environment, which resolves the zod 3.25 / @hookform/resolvers types
-  // differently and fails on a FALSE `zodResolver(...)` mismatch that neither
-  // local `tsc`, local `next build`, nor CI reproduce (all deps resolve to a
-  // single zod@3.25.76 — verified). Skipping the redundant build-time check
-  // stops that environment artifact from blocking deploys; real type errors are
-  // still caught pre-merge by CI. Follow-up: root-cause the zod typing + remove.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
   outputFileTracingRoot: workspaceRoot,
   turbopack: {
