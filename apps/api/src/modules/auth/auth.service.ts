@@ -259,12 +259,12 @@ export class AuthService {
     // Successful login — reset brute-force counter
     await this.bruteForceService.resetAttempts(data.email);
 
-    // [A5-014] Block login for unverified email accounts
-    if (!user.emailVerified) {
-      throw new UnauthorizedException(
-        'Please verify your email before logging in. Check your inbox for a verification link.',
-      );
-    }
+    // [A5-014] Verification is a soft nudge, not a login wall. Register
+    // auto-logins (so an unverified user is already in), and the web soft-warns
+    // + offers resend on a successful-but-unverified login. Hard-blocking only
+    // *login* trapped users who logged out before verifying — they couldn't get
+    // back in. ponytail: gate sensitive actions on emailVerified if hard
+    // enforcement is ever needed; don't lock the front door.
 
     // Detect first login (isNewUser) before updating lastLoginAt
     const isNewUser = user.lastLoginAt === null;
