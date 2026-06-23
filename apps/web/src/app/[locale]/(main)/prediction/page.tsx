@@ -708,14 +708,34 @@ export default function PredictionPage() {
                         <RecommendedSchoolsBlock />
                       </AIErrorBoundary>
                     </>
+                  ) : selectedSchools.length === 0 ? (
+                    <EmptyState
+                      type="first-time"
+                      title={t('prediction.startPrediction')}
+                      description={t('prediction.emptyHint')}
+                    />
                   ) : (
-                    selectedSchools.length === 0 && (
-                      <EmptyState
-                        type="first-time"
-                        title={t('prediction.startPrediction')}
-                        description={t('prediction.emptyHint')}
-                      />
-                    )
+                    // ponytail: schools picked, not pending, zero results = either
+                    // an empty run or the mutation errored. One persistent card with
+                    // Retry instead of the old blank fall-through (the "looks-wired,
+                    // silently dead-ends" gap — user ran an estimate and got a blank
+                    // column + a toast that vanished in 4s).
+                    <div className="rounded-[var(--theme-radius-card)] border bg-card p-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {predictMutation.isError
+                          ? t('prediction.errorRetryHint')
+                          : t('prediction.noResultRetryHint')}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={handlePredict}
+                        disabled={predictMutation.isPending}
+                      >
+                        {t('common.retry')}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>

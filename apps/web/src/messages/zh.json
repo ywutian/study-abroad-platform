@@ -2325,6 +2325,8 @@
   "prediction": {
     "title": "录取概率工作台",
     "noResult": "未获取到预测结果",
+    "noResultRetryHint": "没有返回结果。重试，或调整你选择的学校。",
+    "errorRetryHint": "预测没有成功。请检查网络后重试。",
     "successMessage": "已完成 {count} 所学校的测算",
     "selectSchools": "选择目标院校",
     "selectSchoolsDesc": "选择目标学校，评估您的个人录取概率",
