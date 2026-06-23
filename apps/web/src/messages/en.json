@@ -2341,6 +2341,8 @@
   "prediction": {
     "title": "Chance Engine",
     "noResult": "No prediction result available",
+    "noResultRetryHint": "No results came back. Try again, or adjust your selected schools.",
+    "errorRetryHint": "The estimate didn't go through. Check your connection and try again.",
     "successMessage": "Completed estimates for {count} schools",
     "selectSchools": "Select Target Schools",
     "selectSchoolsDesc": "Select target schools to estimate your personal admission chance",
