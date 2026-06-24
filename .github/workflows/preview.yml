@@ -28,7 +28,7 @@ jobs:
       group: preview-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v3
