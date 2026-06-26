@@ -104,3 +104,6 @@ apps/api/scripts/closure-reports/
 outputs/
 
 gcp-sa-key.json
+
+# Generated git-history dashboard (pnpm git:dashboard)
+git-dashboard.html

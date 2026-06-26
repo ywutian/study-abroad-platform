@@ -61,6 +61,7 @@
     "lint:seed-parity": "tsx scripts/check-seed-pipeline-parity.ts",
     "snapshot": "tsx scripts/generate-repo-snapshot.ts",
     "churn:report": "tsx scripts/churn-report.ts",
+    "git:dashboard": "tsx scripts/git-dashboard.ts",
     "lint:dead-code": "knip",
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys && pnpm lint:coverage-ratchet && pnpm lint:audit-gate && pnpm lint:dep-pins && pnpm lint:deploy-drift && pnpm lint:seed-parity",
     "check": "pnpm lint:all && pnpm test",
