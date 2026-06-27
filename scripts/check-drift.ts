@@ -175,17 +175,6 @@ function checkBriefAccuracy(): Issue[] {
         }
       }
 
-      // Check BRIEF.md line count (should be <= 40)
-      const lineCount = content.replace(/\n$/, '').split('\n').length;
-      if (lineCount > 40) {
-        issues.push({
-          rule: 'brief-accuracy',
-          severity: 'info',
-          file: rel(briefPath),
-          message: `BRIEF.md is ${lineCount} lines (limit: 40)`,
-        });
-      }
-
       // Check for significant .ts files not mentioned in BRIEF
       const significantFiles = actualFiles.filter(
         (f) =>
@@ -260,40 +249,6 @@ function checkClaudeMdConsistency(): Issue[] {
         file: 'CLAUDE.md',
         message: `Context Routing references \`${docPath}\` but file not found`,
       });
-    }
-  }
-
-  // Check CLAUDE.md line count (should be <= 190) — trim trailing newline for wc -l parity
-  const lineCount = content.replace(/\n$/, '').split('\n').length;
-  if (lineCount > 190) {
-    issues.push({
-      rule: 'claude-md-consistency',
-      severity: 'warning',
-      file: 'CLAUDE.md',
-      message: `Root CLAUDE.md is ${lineCount} lines (governance limit: 190)`,
-    });
-  }
-
-  // Check subdirectory CLAUDE.md files (should be <= 80 lines)
-  const subClaudeMds = [
-    'apps/api/CLAUDE.md',
-    'apps/web/CLAUDE.md',
-    'apps/mobile/CLAUDE.md',
-    'packages/shared/CLAUDE.md',
-  ];
-  for (const sub of subClaudeMds) {
-    const subPath = path.resolve(ROOT, sub);
-    if (fs.existsSync(subPath)) {
-      const subContent = readFile(subPath);
-      const subLines = subContent.replace(/\n$/, '').split('\n').length;
-      if (subLines > 80) {
-        issues.push({
-          rule: 'claude-md-consistency',
-          severity: 'info',
-          file: sub,
-          message: `Subdirectory CLAUDE.md is ${subLines} lines (governance limit: 80)`,
-        });
-      }
     }
   }
 

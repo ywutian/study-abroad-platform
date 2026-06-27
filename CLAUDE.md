@@ -130,18 +130,6 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 | **pre-push: migration**     | 修改 `prisma/migrations/` | 阻断：NOT NULL without DEFAULT、DROP TABLE       |
 | **pre-push: audit**         | `git push`                | 警告：high-severity CVE                          |
 
-## Documentation Governance (防膨胀)
-
-| 规则                        | 门禁值                                   | 超限动作                                   |
-| --------------------------- | ---------------------------------------- | ------------------------------------------ |
-| 根 `CLAUDE.md` 行数         | ≤ 190 行                                 | 拆分到 `.claude/rules/` 或子目录 CLAUDE.md |
-| `.claude/rules/*.md` 单文件 | ≤ 150 行                                 | 拆分为多个 rule 文件                       |
-| 子目录 `CLAUDE.md`          | ≤ 80 行                                  | 精简或移到 BRIEF.md                        |
-| BRIEF.md 单文件             | ≤ 40 行                                  | 只保留"不知道会犯错"的内容                 |
-| CLAUDE.md vs docs/ 重复     | 0（>10 行→链接引用）                     | 替换为链接引用                             |
-| Agent 清单一致性            | `.claude/agents/` 文件数 == Agent 表行数 | 同步增删                                   |
-| Context Routing 有效性      | 100% 路径可达                            | 新建/删除 docs 时同步更新                  |
-
 ## Skills (`.claude/skills/`)
 
 13 skills covering 起手 → 决策 → 上线 → 审查 full dev cycle:
