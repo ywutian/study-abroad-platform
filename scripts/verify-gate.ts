@@ -17,6 +17,7 @@
  *   npx tsx scripts/verify-gate.ts --staged     # staged files (pre-commit)
  *   npx tsx scripts/verify-gate.ts --pre-push   # pushing changes (pre-push)
  *   npx tsx scripts/verify-gate.ts --verbose    # include skip reasons
+ *   npx tsx scripts/verify-gate.ts --no-test    # skip tests (fast-push; CI runs them)
  */
 
 import { execSync } from 'child_process';
@@ -28,6 +29,9 @@ const ROOT = path.resolve(__dirname, '..');
 const stagedOnly = process.argv.includes('--staged');
 const prePush = process.argv.includes('--pre-push');
 const verbose = process.argv.includes('--verbose');
+// Fast-push: skip the slow test suite locally and let CI run it. The pre-push
+// hook passes this so `git push` stays fast; tests still gate the PR in CI.
+const noTest = process.argv.includes('--no-test');
 
 type App = 'api' | 'web' | 'mobile' | 'shared';
 
@@ -204,20 +208,24 @@ function main() {
     console.log('   ⏭️  lint — skipped (not in --pre-push mode)');
   }
 
-  // 3. Tests for affected apps
-  if (affected.has('api')) {
-    console.log('🧪 Test: api...');
-    results.push(runCheck('test:api', 'pnpm --filter api test --passWithNoTests'));
-  }
-  if (affected.has('web')) {
-    console.log('🧪 Test: web...');
-    results.push(runCheck('test:web', 'pnpm --filter web test -- --passWithNoTests'));
-  }
-  if (affected.has('mobile')) {
-    console.log('🧪 Test: mobile...');
-    results.push(
-      runCheck('test:mobile', 'pnpm --filter study-abroad-mobile test --passWithNoTests')
-    );
+  // 3. Tests for affected apps — skipped under --no-test (fast-push: CI runs them)
+  if (!noTest) {
+    if (affected.has('api')) {
+      console.log('🧪 Test: api...');
+      results.push(runCheck('test:api', 'pnpm --filter api test --passWithNoTests'));
+    }
+    if (affected.has('web')) {
+      console.log('🧪 Test: web...');
+      results.push(runCheck('test:web', 'pnpm --filter web test -- --passWithNoTests'));
+    }
+    if (affected.has('mobile')) {
+      console.log('🧪 Test: mobile...');
+      results.push(
+        runCheck('test:mobile', 'pnpm --filter study-abroad-mobile test --passWithNoTests')
+      );
+    }
+  } else if (verbose) {
+    console.log('   ⏭️  test — skipped (--no-test; CI runs the full suite)');
   }
 
   // 4. Conditional targeted checks
