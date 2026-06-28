@@ -482,7 +482,6 @@ apps/web/src/app/[locale]/(main)/admin/calibrations/_components/
 - Abbadi et al. 2025（fairness 审计强制环节；9-11% 子群差异警戒）
 - TabArena 2026（Beta / Venn-Abers 校准大规模对比）
 - PMC 2025（RF Brier 0.15；Isotonic > Platt > Beta 在该数据集）
-- [PREDICTION_V5_RESEARCH_REPORT.md](./PREDICTION_V5_RESEARCH_REPORT.md) 详细文献综述
 
 ---
 

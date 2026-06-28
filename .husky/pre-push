@@ -23,11 +23,12 @@ echo "📦 Generating Prisma client..."
 pnpm --filter api db:generate || exit 1
 
 # Step 2: Smart verification gate (only affected apps)
-# Pre-push mode compares committed changes vs upstream — matches what
-# CI will see. Runs: typecheck, lint (eslint), test, lint:routes,
-# lint:i18n, lint:integration, lint:drift — scoped to affected apps.
+# Pre-push mode compares committed changes vs upstream — matches what CI sees.
+# Runs typecheck + lint (eslint) + lint:routes/i18n/integration/drift, scoped
+# to affected apps. Fast-push: the unit-test suite runs in CI (ci.yml), NOT on
+# every push, so `git push` stays fast; tests still gate the PR.
 echo ""
-pnpm exec tsx scripts/verify-gate.ts --pre-push --verbose || exit 1
+pnpm exec tsx scripts/verify-gate.ts --pre-push --no-test --verbose || exit 1
 
 # Step 2.5: Root guardrails (fast, global — coverage ratchet / audit gate / deploy drift)
 echo ""

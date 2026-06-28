@@ -59,9 +59,9 @@ pnpm full-surface:generate --audit-date 2026-04-02
 
 默认会写入：
 
-- `e2e-report/full-surface-2026-04-02/`
-- `docs/FULL_SURFACE_AUDIT_LOG_2026-04-02.md`
-- `docs/FULL_SURFACE_AGENT_REVIEW_2026-04-02.md`
+- `e2e-report/full-surface-<audit-date>/`
+- `docs/FULL_SURFACE_AUDIT_LOG_<audit-date>.md`
+- `docs/FULL_SURFACE_AGENT_REVIEW_<audit-date>.md`
 
 全产品面事实源见：
 
@@ -93,4 +93,3 @@ e2e-report/releases/<release-id>/
   - `scripts/runtime-release-gate.ts`
 - 该脚本默认再调用：
   - `scripts/runtime-journey-audit.ts`
-- `scripts/runtime-journey-audit-2026-03-31.ts` 仍保留，但只作为兼容 wrapper。
