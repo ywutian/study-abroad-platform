@@ -10,6 +10,7 @@ import {
   Req,
   Logger,
   UnauthorizedException,
+  HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -26,6 +27,7 @@ import {
   RefreshTokenDto,
   ResendVerificationDto,
   ForgotPasswordDto,
+  CheckEmailDto,
 } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto, ChangePasswordDto } from './dto/reset-password.dto';
@@ -34,6 +36,7 @@ import {
   AuditLogService,
   AuditAction,
 } from '../../common/services/audit-log.service';
+import { EmailEnumerationGuardService } from './email-enumeration-guard.service';
 
 /**
  * 企业级 Cookie 安全配置
@@ -98,6 +101,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly auditLogService: AuditLogService,
+    private readonly enumerationGuard: EmailEnumerationGuardService,
   ) {}
 
   @Post('register')
@@ -126,6 +130,28 @@ export class AuthController {
       accessToken: result.tokens.accessToken,
       message: result.message,
     };
+  }
+
+  @Get('check-email')
+  @Public()
+  @ApiOperation({
+    summary:
+      'Check whether an email is already registered (signup early-feedback)',
+  })
+  async checkEmail(@Query() query: CheckEmailDto, @Req() req: Request) {
+    // Defense-in-depth over @ThrottleSensitive: a per-IP sustained enumeration
+    // guard. Fails open, so a Redis outage degrades to the burst throttle only.
+    const ip = req.ip ?? req.socket?.remoteAddress ?? 'unknown';
+    const { allowed } = await this.enumerationGuard.hit(ip);
+    if (!allowed) {
+      throw new HttpException(
+        'Too many email checks. Please try again later.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const available = await this.authService.isEmailAvailable(query.email);
+    return { available };
   }
 
   @Post('register/operator')

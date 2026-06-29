@@ -1275,6 +1275,7 @@
       "hidePassword": "Hide password",
       "hasAccount": "Already have an account?",
       "signIn": "Sign in",
+      "emailTaken": "This email is already registered.",
       "agreeTerms": "I agree to the Terms of Service and Privacy Policy",
       "success": "Registration successful! Please check your email.",
       "realName": "Name",

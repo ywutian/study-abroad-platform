@@ -9,6 +9,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { TokenCleanupScheduler } from './token-cleanup.scheduler';
 import { SessionManager } from './session-manager.service';
 import { BruteForceService } from './brute-force.service';
+import { EmailEnumerationGuardService } from './email-enumeration-guard.service';
 import { McpApiKeyService } from './mcp-api-key.service';
 import { McpApiKeyController } from './mcp-api-key.controller';
 import { UserModule } from '../user/user.module';
@@ -44,6 +45,7 @@ import { AuditLogModule } from '../../common/services/audit-log.module';
     TokenCleanupScheduler,
     SessionManager,
     BruteForceService,
+    EmailEnumerationGuardService,
     McpApiKeyService,
   ],
   exports: [AuthService, JwtModule, SessionManager, McpApiKeyService],
