@@ -69,7 +69,13 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   // 注册 tour
   const registerTour = useCallback((config: TourConfig) => {
-    setTours((prev) => new Map(prev).set(config.id, config));
+    // ponytail: idempotent by id. Re-registering the same tour must NOT churn
+    // the `tours` ref — startTour depends on [tours], so a fresh ref each call
+    // gives startTour a new identity every render; any effect that depends on
+    // startTour AND calls registerTour then infinite-loops (React #185 — the
+    // /dashboard crash). Upgrade path: key on (id+steps) if a live tour ever
+    // needs its steps updated after registration.
+    setTours((prev) => (prev.has(config.id) ? prev : new Map(prev).set(config.id, config)));
   }, []);
 
   // 检查是否完成
