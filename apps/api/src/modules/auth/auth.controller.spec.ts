@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { AuditLogService } from '../../common/services/audit-log.service';
+import { EmailEnumerationGuardService } from './email-enumeration-guard.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -65,11 +66,18 @@ describe('AuthController', () => {
             changePassword: jest
               .fn()
               .mockResolvedValue({ message: 'Password changed successfully' }),
+            isEmailAvailable: jest.fn().mockResolvedValue(true),
           },
         },
         {
           provide: AuditLogService,
           useValue: { log: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: EmailEnumerationGuardService,
+          useValue: {
+            hit: jest.fn().mockResolvedValue({ allowed: true, count: 1 }),
+          },
         },
       ],
     }).compile();
