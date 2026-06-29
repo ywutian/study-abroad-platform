@@ -48,6 +48,13 @@ export class RegisterDto {
   referralCode?: string;
 }
 
+export class CheckEmailDto {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail({}, { message: '请输入有效的邮箱地址' })
+  @MaxLength(255)
+  email: string;
+}
+
 export class RefreshTokenDto {
   @ApiPropertyOptional({
     description: 'Optional: preferably obtained from httpOnly cookie',

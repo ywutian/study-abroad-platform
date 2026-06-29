@@ -96,6 +96,8 @@ export const REDIS_TTL = {
   IPEDS_MONITOR_CRON_LOCK: 10 * MINUTE,
   /** Tentative-deadline refresh cron single-flight lock. */
   DEADLINE_REFRESH_CRON_LOCK: 10 * MINUTE,
+  /** Per-IP sustained window for the signup email-existence check (enumeration guard). */
+  EMAIL_CHECK_RATE_WINDOW: 10 * MINUTE,
 
   // ── 5 minutes ─────────────────────────────────────────────
   /** Permission resolution cache. */

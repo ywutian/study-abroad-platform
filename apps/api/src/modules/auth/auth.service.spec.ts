@@ -170,6 +170,22 @@ describe('AuthService', () => {
     });
   });
 
+  describe('isEmailAvailable', () => {
+    it('returns true when no user has the email', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(null);
+      await expect(service.isEmailAvailable('new@example.com')).resolves.toBe(
+        true,
+      );
+    });
+
+    it('returns false when the email is already registered', async () => {
+      (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);
+      await expect(service.isEmailAvailable('taken@example.com')).resolves.toBe(
+        false,
+      );
+    });
+  });
+
   describe('login', () => {
     it('should login successfully with valid credentials', async () => {
       (userService.findByEmail as jest.Mock).mockResolvedValue(mockUser);

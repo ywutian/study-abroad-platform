@@ -55,6 +55,15 @@ export class AuthService {
   ) {}
 
   /**
+   * Whether an email is free to register. Backs the signup form's early
+   * "already registered" feedback; mirrors the uniqueness check in register().
+   */
+  async isEmailAvailable(email: string): Promise<boolean> {
+    const existing = await this.userService.findByEmail(email);
+    return !existing;
+  }
+
+  /**
    * Register a new user account with email and password
    * @param data - Registration data containing email, password, and optional locale
    * @throws {ConflictException} When the email is already registered

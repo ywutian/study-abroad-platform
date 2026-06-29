@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { UseFormReturn } from 'react-hook-form';
+import { Link } from '@/lib/i18n/navigation';
+import { apiClient } from '@/lib/api';
+import { suggestEmailDomains } from '@/lib/email-suggestions';
 import { Input } from '@/components/ui/input';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -29,6 +32,26 @@ export function RegisterStepAccount({
   const ta = useTranslations('auth.register');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailSuggestions, setEmailSuggestions] = useState<string[]>([]);
+  const [emailTaken, setEmailTaken] = useState(false);
+
+  // On blur, ask the backend whether this email is already registered.
+  // Degrades silently on any error — never blocks signup.
+  const checkEmailTaken = async (value: string) => {
+    setEmailSuggestions([]);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) {
+      setEmailTaken(false);
+      return;
+    }
+    try {
+      const res = await apiClient.get<{ available: boolean }>(
+        `/auth/check-email?email=${encodeURIComponent(value)}`
+      );
+      setEmailTaken(!res.available);
+    } catch {
+      setEmailTaken(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -39,8 +62,48 @@ export function RegisterStepAccount({
           <FormItem>
             <FormLabel>{ta('email')}</FormLabel>
             <FormControl>
-              <Input type="email" placeholder="your@email.com" autoComplete="email" {...field} />
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                autoComplete="email"
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  if (emailTaken) setEmailTaken(false);
+                  setEmailSuggestions(suggestEmailDomains(e.target.value));
+                }}
+                onBlur={(e) => {
+                  field.onBlur();
+                  void checkEmailTaken(e.target.value);
+                }}
+              />
             </FormControl>
+            {emailSuggestions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {emailSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      form.setValue('email', s, { shouldValidate: true });
+                      setEmailSuggestions([]);
+                      void checkEmailTaken(s);
+                    }}
+                    className="rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            {emailTaken && (
+              <p className="pt-1 text-sm text-destructive">
+                {ta('emailTaken')}{' '}
+                <Link href="/login" className="font-medium underline underline-offset-2">
+                  {ta('signIn')}
+                </Link>
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}

@@ -1259,6 +1259,7 @@
       "hidePassword": "隐藏密码",
       "hasAccount": "已有账号？",
       "signIn": "立即登录",
+      "emailTaken": "该邮箱已被注册。",
       "agreeTerms": "我同意服务条款和隐私政策",
       "success": "注册成功！请查收验证邮件。",
       "realName": "姓名",
