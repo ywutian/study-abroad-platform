@@ -354,6 +354,14 @@ export class AuthService {
       throw new BadRequestException('Invalid verification token');
     }
 
+    // Idempotent: email link-scanners / prefetchers (corporate proxies, Outlook,
+    // antivirus) and double-clicks hit the verify URL before the user does. The
+    // first hit verifies; don't punish the real click with a scary 400 — the
+    // email is verified either way.
+    if (user.emailVerified) {
+      return { message: 'Email already verified' };
+    }
+
     if (user.emailVerifyTokenExp && user.emailVerifyTokenExp < new Date()) {
       throw new BadRequestException(
         'Verification token has expired. Please request a new one.',
@@ -362,11 +370,11 @@ export class AuthService {
 
     await this.prisma.user.update({
       where: { id: user.id },
-      data: {
-        emailVerified: true,
-        emailVerifyToken: null,
-        emailVerifyTokenExp: null,
-      },
+      // ponytail: keep the token (single-purpose, expires in 24h, overwritten on
+      // the next resend) so a prefetch/double-hit re-verify lands on the
+      // idempotent branch above instead of a 400. Upgrade path: sweep consumed
+      // tokens if stale-token tidiness ever matters.
+      data: { emailVerified: true },
     });
 
     // 发送欢迎邮件
