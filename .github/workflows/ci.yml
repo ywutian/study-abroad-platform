@@ -38,7 +38,7 @@ jobs:
       ci: ${{ steps.filter.outputs.ci }}
       any_app: ${{ steps.filter.outputs.api == 'true' || steps.filter.outputs.web == 'true' || steps.filter.outputs.mobile == 'true' || steps.filter.outputs.shared == 'true' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -74,7 +74,7 @@ jobs:
     if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -185,7 +185,7 @@ jobs:
     if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -233,7 +233,7 @@ jobs:
     if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -313,7 +313,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -388,7 +388,7 @@ jobs:
     if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -455,7 +455,7 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -615,7 +615,7 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -736,7 +736,7 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -941,7 +941,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -995,7 +995,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -1021,7 +1021,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Run Semgrep
         uses: semgrep/semgrep-action@v1
@@ -1049,7 +1049,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -1069,7 +1069,7 @@ jobs:
     needs: [lint, typecheck, test]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -1134,7 +1134,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -1180,7 +1180,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -1220,7 +1220,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v3
