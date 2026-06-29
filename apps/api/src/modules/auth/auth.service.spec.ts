@@ -296,8 +296,14 @@ describe('AuthService', () => {
   });
 
   describe('verifyEmail', () => {
-    it('should verify email successfully', async () => {
-      (prismaService.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
+    const future = new Date(Date.now() + 60 * 60 * 1000);
+
+    it('should verify a fresh (unverified) token successfully', async () => {
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        emailVerified: false,
+        emailVerifyTokenExp: future,
+      });
       (prismaService.user.update as jest.Mock).mockResolvedValue({
         ...mockUser,
         emailVerified: true,
@@ -306,12 +312,38 @@ describe('AuthService', () => {
       const result = await service.verifyEmail('valid_token');
 
       expect(result.message).toContain('verified successfully');
+      expect(prismaService.user.update).toHaveBeenCalled();
+    });
+
+    it('is idempotent — already-verified token returns success, not a 400 (prefetch/double-hit)', async () => {
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        emailVerified: true,
+      });
+
+      const result = await service.verifyEmail('already_used_token');
+
+      expect(result.message).toContain('already verified');
+      // No second write — the first hit already flipped it.
+      expect(prismaService.user.update).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException with invalid token', async () => {
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(service.verifyEmail('invalid_token')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw BadRequestException for an expired token on an unverified user', async () => {
+      (prismaService.user.findFirst as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        emailVerified: false,
+        emailVerifyTokenExp: new Date(Date.now() - 60 * 60 * 1000),
+      });
+
+      await expect(service.verifyEmail('expired_token')).rejects.toThrow(
         BadRequestException,
       );
     });
