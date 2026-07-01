@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { FlaskConical, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -58,9 +58,20 @@ export function PredictionWhatIfPanel({
     Boolean(profile?.applyingTestOptional)
   );
   const [previewResults, setPreviewResults] = useState<PredictionResult[]>([]);
+  // `hasRun` (not previewResults.length) drives the result area: a run that
+  // returns 0 schools must show an explicit empty state, not silently nothing —
+  // that "silent success" was the "no response" the user reported.
+  const [hasRun, setHasRun] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const schoolIds = useMemo(() => selectedSchools.map((school) => school.id), [selectedSchools]);
   const canRun = schoolIds.length > 0 && !disabled && !previewMutation.isPending;
+
+  // The result renders below a tall form, so pull it into view after a run —
+  // otherwise it looks like nothing happened.
+  useEffect(() => {
+    if (hasRun) resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [hasRun, previewResults]);
 
   const reset = () => {
     setGpa(toInputValue(profile?.gpa));
@@ -72,6 +83,7 @@ export function PredictionWhatIfPanel({
     setApplicationRound('CURRENT');
     setApplyingTestOptional(Boolean(profile?.applyingTestOptional));
     setPreviewResults([]);
+    setHasRun(false);
   };
 
   const runPreview = () => {
@@ -96,6 +108,7 @@ export function PredictionWhatIfPanel({
       {
         onSuccess: (data) => {
           setPreviewResults(data.results);
+          setHasRun(true);
           toast.success(t('whatIf.success', { count: data.results.length }));
         },
         onError: () => toast.error(t('whatIf.error')),
@@ -216,16 +229,27 @@ export function PredictionWhatIfPanel({
 
       <p className="mt-2 text-xs text-muted-foreground">{t('whatIf.notSaved')}</p>
 
-      {previewResults.length > 0 ? (
-        <div className="mt-4 space-y-2" data-testid="prediction-preview-results">
-          {previewResults.slice(0, 4).map((result) => (
-            <PreviewRow key={result.schoolId} result={result} />
-          ))}
-          {previewResults.length > 4 ? (
-            <p className="text-xs text-muted-foreground">
-              {t('whatIf.moreResults', { count: previewResults.length - 4 })}
-            </p>
-          ) : null}
+      {schoolIds.length === 0 ? (
+        <p className="mt-2 text-2xs text-muted-foreground">{t('whatIf.selectSchoolsHint')}</p>
+      ) : null}
+
+      {hasRun ? (
+        <div ref={resultsRef} className="mt-4 space-y-2" data-testid="prediction-preview-results">
+          <p className="text-overline text-muted-foreground">{t('whatIf.resultsTitle')}</p>
+          {previewResults.length > 0 ? (
+            <>
+              {previewResults.slice(0, 4).map((result) => (
+                <PreviewRow key={result.schoolId} result={result} />
+              ))}
+              {previewResults.length > 4 ? (
+                <p className="text-xs text-muted-foreground">
+                  {t('whatIf.moreResults', { count: previewResults.length - 4 })}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">{t('whatIf.noResults')}</p>
+          )}
         </div>
       ) : null}
     </div>

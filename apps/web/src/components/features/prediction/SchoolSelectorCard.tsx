@@ -18,6 +18,11 @@ interface SchoolSelectorCardProps {
   selectedSchools: SchoolSearchItem[];
   onAdd: (school: SchoolSearchItem) => void;
   onRemove: (schoolId: string) => void;
+  /** Bulk clear the calculation list (one tap instead of removing each). */
+  onClearAll?: () => void;
+  /** Re-import all schools from the user's saved school list. */
+  onImportList?: () => void;
+  importListCount?: number;
   onPredict: () => void;
   isPredicting: boolean;
   /** True when the profile is below the prediction-eligibility bar. */
@@ -32,6 +37,9 @@ export function SchoolSelectorCard({
   selectedSchools,
   onAdd,
   onRemove,
+  onClearAll,
+  onImportList,
+  importListCount = 0,
   onPredict,
   isPredicting,
   profileBlocked = false,
@@ -137,6 +145,30 @@ export function SchoolSelectorCard({
             </Card>
           )}
         </div>
+
+        {/* Bulk controls: import the whole saved list in one tap / clear in one tap,
+            so testing schools outside the list doesn't mean deleting each one. */}
+        {(onImportList || onClearAll) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {onImportList && importListCount > 0 && (
+              <Button variant="outline" size="sm" className="h-8 gap-1.5" onClick={onImportList}>
+                <School className="h-3.5 w-3.5" />
+                {t('prediction.importSchoolList', { count: importListCount })}
+              </Button>
+            )}
+            {onClearAll && selectedSchools.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-muted-foreground"
+                onClick={onClearAll}
+              >
+                <X className="mr-1 h-3.5 w-3.5" />
+                {t('prediction.clearAll')}
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Selected school list */}
         {selectedSchools.length > 0 && (
