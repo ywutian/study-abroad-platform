@@ -30,11 +30,14 @@ function validateGpaField(
   scaleStr: string,
   path: string,
   ctx: z.RefinementCtx,
-  t: (key: string, values?: Record<string, string | number>) => string
+  t: (key: string, values?: Record<string, string | number>) => string,
+  // Weighted GPA can exceed the unweighted scale (AP/Honors add ~1 pt): a
+  // straight-A student on a 4.0 scale can hit 5.0 weighted. Allow +1 headroom.
+  bonus = 0
 ) {
   if (!value) return;
   const num = parseFloat(value);
-  const max = getMaxGpa(scaleStr);
+  const max = getMaxGpa(scaleStr) + bonus;
   if (isNaN(num) || num < 0 || num > max) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -72,6 +75,7 @@ export function createProfileSchema(
 
       // GpaTab
       gpa: z.string().default(''),
+      weightedGpa: z.string().default(''),
       gpaScale: z.string().default('4.0'),
       gpa9: z.string().default(''),
       gpa10: z.string().default(''),
@@ -83,6 +87,7 @@ export function createProfileSchema(
     })
     .superRefine((data, ctx) => {
       validateGpaField(data.gpa, data.gpaScale, 'gpa', ctx, t);
+      validateGpaField(data.weightedGpa, data.gpaScale, 'weightedGpa', ctx, t, 1);
       validateGpaField(data.gpa9, data.gpaScale, 'gpa9', ctx, t);
       validateGpaField(data.gpa10, data.gpaScale, 'gpa10', ctx, t);
       validateGpaField(data.gpa11, data.gpaScale, 'gpa11', ctx, t);

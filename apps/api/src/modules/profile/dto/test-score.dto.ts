@@ -1,5 +1,5 @@
 import {
-  IsInt,
+  IsNumber,
   IsOptional,
   IsIn,
   IsObject,
@@ -30,7 +30,7 @@ export class CreateTestScoreDto {
   type: string;
 
   @ApiProperty({ description: 'Total score', example: 1500 })
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 1 })
   @Type(() => Number)
   @Min(0)
   @Max(2000)
@@ -68,7 +68,7 @@ export class UpdateTestScoreDto {
 
   @ApiPropertyOptional({ description: 'Total score' })
   @IsOptional()
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 1 })
   @Type(() => Number)
   @Min(0)
   @Max(2000)

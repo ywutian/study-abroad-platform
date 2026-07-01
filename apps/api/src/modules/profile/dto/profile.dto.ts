@@ -45,13 +45,29 @@ export class UpdateProfileDto {
   @MaxLength(200)
   realName?: string;
 
-  @ApiPropertyOptional({ description: 'GPA', example: 3.85, nullable: true })
+  @ApiPropertyOptional({
+    description: 'GPA (unweighted)',
+    example: 3.85,
+    nullable: true,
+  })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Transform(nullableNumberTransform)
   @Min(0)
   @Max(100)
   gpa?: number | null;
+
+  @ApiPropertyOptional({
+    description: 'Weighted GPA (AP/Honors bonus, may exceed the scale)',
+    example: 4.32,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Transform(nullableNumberTransform)
+  @Min(0)
+  @Max(110)
+  weightedGpa?: number | null;
 
   @ApiPropertyOptional({ description: 'GPA scale maximum', example: 4.0 })
   @IsOptional()

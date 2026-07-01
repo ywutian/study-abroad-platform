@@ -98,6 +98,10 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       testDate: '',
       satReading: '',
       satMath: '',
+      actEnglish: '',
+      actMath: '',
+      actReading: '',
+      actScience: '',
       toeflReading: '',
       toeflListening: '',
       toeflSpeaking: '',
@@ -118,6 +122,10 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           testDate: editingScore.testDate?.slice(0, 10) || '',
           satReading: editingScore.subScores?.reading?.toString() || '',
           satMath: editingScore.subScores?.math?.toString() || '',
+          actEnglish: editingScore.subScores?.english?.toString() || '',
+          actMath: editingScore.subScores?.math?.toString() || '',
+          actReading: editingScore.subScores?.reading?.toString() || '',
+          actScience: editingScore.subScores?.science?.toString() || '',
           toeflReading: editingScore.subScores?.reading?.toString() || '',
           toeflListening: editingScore.subScores?.listening?.toString() || '',
           toeflSpeaking: editingScore.subScores?.speaking?.toString() || '',
@@ -135,6 +143,10 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           testDate: '',
           satReading: '',
           satMath: '',
+          actEnglish: '',
+          actMath: '',
+          actReading: '',
+          actScience: '',
           toeflReading: '',
           toeflListening: '',
           toeflSpeaking: '',
@@ -209,17 +221,16 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
   }, 0);
 
   const onSubmit = (values: TestScoreFormValues) => {
-    // For subject-based types, score is computed or required differently
-    if (!isSubjectType && !values.score) {
-      toast.error(t('validation.scoreRequired'));
-      return;
-    }
+    // Subject-based types (AP/IB/A-Level/IGCSE) have no single top-level score —
+    // require at least one complete subject row instead of a `score` field.
     if (isSubjectType) {
-      const hasCompleteSubjectEntry = subjectEntries.some((entry) => entry.subject && entry.score);
-      if (!hasCompleteSubjectEntry && !values.score) {
+      if (!subjectEntries.some((entry) => entry.subject && entry.score)) {
         toast.error(t('validation.scoreRequired'));
         return;
       }
+    } else if (!values.score) {
+      toast.error(t('validation.scoreRequired'));
+      return;
     }
 
     let subScores: Record<string, number | string> | undefined;
@@ -232,16 +243,20 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
           subScores[entry.subject] = parseInt(entry.score);
         }
       }
-      totalScore = values.score ? parseInt(values.score) : subjectEntries.length;
+      // No single "AP score" exists — the card headline is how many AP exams.
+      totalScore = Object.keys(subScores).length;
     } else if (values.type === 'IB') {
       subScores = {};
+      let ibSum = 0;
       for (const entry of subjectEntries) {
         if (entry.subject && entry.score) {
           const key = entry.level ? `${entry.subject} (${entry.level})` : entry.subject;
-          subScores[key] = parseInt(entry.score);
+          const v = parseInt(entry.score);
+          subScores[key] = v;
+          ibSum += Number.isNaN(v) ? 0 : v;
         }
       }
-      totalScore = values.score ? parseInt(values.score) : 0;
+      totalScore = ibSum; // IB diploma total (out of 45)
     } else if (values.type === 'A_LEVEL') {
       subScores = {};
       for (const entry of subjectEntries) {
@@ -262,16 +277,25 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       subScores = {};
       if (values.satReading) subScores.reading = parseInt(values.satReading);
       if (values.satMath) subScores.math = parseInt(values.satMath);
-      totalScore = parseInt(values.score || '0');
-    } else if (values.type === 'TOEFL') {
+      totalScore = parseFloat(values.score || '0');
+    } else if (values.type === 'ACT') {
       subScores = {};
-      if (values.toeflReading) subScores.reading = parseInt(values.toeflReading);
-      if (values.toeflListening) subScores.listening = parseInt(values.toeflListening);
-      if (values.toeflSpeaking) subScores.speaking = parseInt(values.toeflSpeaking);
-      if (values.toeflWriting) subScores.writing = parseInt(values.toeflWriting);
-      totalScore = parseInt(values.score || '0');
+      if (values.actEnglish) subScores.english = parseInt(values.actEnglish);
+      if (values.actMath) subScores.math = parseInt(values.actMath);
+      if (values.actReading) subScores.reading = parseInt(values.actReading);
+      if (values.actScience) subScores.science = parseInt(values.actScience);
+      totalScore = parseFloat(values.score || '0');
+    } else if (values.type === 'TOEFL') {
+      // 2026 scale is half-point (5.5) — parseFloat, not parseInt.
+      subScores = {};
+      if (values.toeflReading) subScores.reading = parseFloat(values.toeflReading);
+      if (values.toeflListening) subScores.listening = parseFloat(values.toeflListening);
+      if (values.toeflSpeaking) subScores.speaking = parseFloat(values.toeflSpeaking);
+      if (values.toeflWriting) subScores.writing = parseFloat(values.toeflWriting);
+      totalScore = parseFloat(values.score || '0');
     } else {
-      totalScore = parseInt(values.score || '0');
+      // IELTS (x.5 bands), Duolingo — parseFloat preserves half-points.
+      totalScore = parseFloat(values.score || '0');
     }
 
     const data = {
@@ -341,8 +365,9 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                 )}
               />
 
-              {/* Score field — hidden for A-Level/IGCSE (auto-calculated) */}
-              {watchedType !== 'A_LEVEL' && watchedType !== 'IGCSE' && (
+              {/* Top-level score — single-score tests only. Subject-based types
+                  (AP/IB/A-Level/IGCSE) carry their score per subject below. */}
+              {!isSubjectType && (
                 <FormField
                   control={form.control}
                   name="score"
@@ -422,7 +447,14 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                       <FormItem>
                         <FormLabel>{t('form.reading')}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0 - 30" max={30} min={0} {...field} />
+                          <Input
+                            type="number"
+                            placeholder="1 - 6"
+                            max={6}
+                            min={1}
+                            step="0.5"
+                            {...field}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -434,7 +466,14 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                       <FormItem>
                         <FormLabel>{t('form.listening')}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0 - 30" max={30} min={0} {...field} />
+                          <Input
+                            type="number"
+                            placeholder="1 - 6"
+                            max={6}
+                            min={1}
+                            step="0.5"
+                            {...field}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -446,7 +485,14 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                       <FormItem>
                         <FormLabel>{t('form.speaking')}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0 - 30" max={30} min={0} {...field} />
+                          <Input
+                            type="number"
+                            placeholder="1 - 6"
+                            max={6}
+                            min={1}
+                            step="0.5"
+                            {...field}
+                          />
                         </FormControl>
                       </FormItem>
                     )}
@@ -458,7 +504,68 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
                       <FormItem>
                         <FormLabel>{t('form.writing')}</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0 - 30" max={30} min={0} {...field} />
+                          <Input
+                            type="number"
+                            placeholder="1 - 6"
+                            max={6}
+                            min={1}
+                            step="0.5"
+                            {...field}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {/* ACT sub-scores — English / Math / Reading / Science (each 1–36) */}
+              {watchedType === 'ACT' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="actEnglish"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('form.english')}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="1 - 36" max={36} min={1} {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="actMath"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('form.math')}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="1 - 36" max={36} min={1} {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="actReading"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('form.reading')}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="1 - 36" max={36} min={1} {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="actScience"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('form.science')}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="1 - 36" max={36} min={1} {...field} />
                         </FormControl>
                       </FormItem>
                     )}

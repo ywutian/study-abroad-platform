@@ -182,9 +182,9 @@ export const FIELD_TO_TAB: Record<string, string> = {
   // BasicInfoTab
   grade: 'basic',
   currentSchool: 'basic',
-  targetMajor: 'basic',
   budgetTier: 'basic',
   // DemographicsTab
+  targetMajor: 'demographics', // "Intended Major" input lives in Background now
   nationality: 'demographics',
   countryOfResidence: 'demographics',
   citizenship: 'demographics',
@@ -198,6 +198,7 @@ export const FIELD_TO_TAB: Record<string, string> = {
   secondMajor: 'demographics',
   // GpaTab
   gpa: 'gpa',
+  weightedGpa: 'gpa',
   gpaScale: 'gpa',
   gpa9: 'gpa',
   gpa10: 'gpa',

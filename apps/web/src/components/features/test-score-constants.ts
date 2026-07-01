@@ -1,7 +1,7 @@
 export const TEST_TYPES = [
   { value: 'SAT', label: 'SAT', maxScore: 1600 },
   { value: 'ACT', label: 'ACT', maxScore: 36 },
-  { value: 'TOEFL', label: 'TOEFL', maxScore: 120 },
+  { value: 'TOEFL', label: 'TOEFL', maxScore: 6 }, // 2026 scale: 1.0–6.0, half-point
   { value: 'IELTS', label: 'IELTS', maxScore: 9 },
   { value: 'AP', label: 'AP', maxScore: 5 },
   { value: 'IB', label: 'IB', maxScore: 45 },

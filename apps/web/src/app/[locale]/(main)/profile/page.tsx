@@ -72,6 +72,7 @@ const PROFILE_DEFAULT_VALUES: ProfileFormValues = {
   grade: '',
   currentSchool: '',
   gpa: '',
+  weightedGpa: '',
   gpaScale: '4.0',
   targetMajor: '',
   budgetTier: '',
@@ -114,6 +115,7 @@ function mapProfileToFormValues(profile: ProfileData | undefined): ProfileFormVa
     grade: (profile.grade as ProfileFormValues['grade']) || '',
     currentSchool: profile.currentSchool || '',
     gpa: profile.gpa?.toString() || '',
+    weightedGpa: profile.weightedGpa?.toString() || '',
     gpaScale: profile.gpaScale?.toString() || '4.0',
     targetMajor: profile.targetMajor || '',
     budgetTier: (profile.budgetTier as ProfileFormValues['budgetTier']) || '',
@@ -358,6 +360,7 @@ export default function ProfilePage() {
     m.updateMutation.mutate({
       ...data,
       gpa: data.gpa ? parseFloat(data.gpa) : null,
+      weightedGpa: data.weightedGpa ? parseFloat(data.weightedGpa) : null,
       gpaScale: parseFloat(data.gpaScale),
       grade: data.grade || undefined,
       budgetTier: data.budgetTier || undefined,

@@ -252,9 +252,13 @@ export function DemographicsTab({ control }: DemographicsTabProps) {
 
         {/* Intended Major & Second Major */}
         <div className="grid gap-6 sm:grid-cols-2 pt-4 border-t">
+          {/* ponytail: binds the canonical `targetMajor` column (read by prediction/
+              recommendation/chat). The old Basic Info "Target Major" input fed the
+              same column and was the duplicate; this single input replaces it.
+              Label stays "Intended Major" — synonymous, and what users expect here. */}
           <FormField
             control={control}
-            name="intendedMajor"
+            name="targetMajor"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium">
