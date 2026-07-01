@@ -46,6 +46,7 @@ import {
   IGCSE_LETTER_GRADES,
   IGCSE_GRADE_POINTS,
 } from './test-score-constants';
+import { buildTestScorePayload } from './test-score-form.utils';
 
 interface SubjectEntry {
   subject: string;
@@ -233,76 +234,17 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       return;
     }
 
-    let subScores: Record<string, number | string> | undefined;
-    let totalScore: number;
-
-    if (values.type === 'AP') {
-      subScores = {};
-      for (const entry of subjectEntries) {
-        if (entry.subject && entry.score) {
-          subScores[entry.subject] = parseInt(entry.score);
-        }
-      }
-      // No single "AP score" exists — the card headline is how many AP exams.
-      totalScore = Object.keys(subScores).length;
-    } else if (values.type === 'IB') {
-      subScores = {};
-      let ibSum = 0;
-      for (const entry of subjectEntries) {
-        if (entry.subject && entry.score) {
-          const key = entry.level ? `${entry.subject} (${entry.level})` : entry.subject;
-          const v = parseInt(entry.score);
-          subScores[key] = v;
-          ibSum += Number.isNaN(v) ? 0 : v;
-        }
-      }
-      totalScore = ibSum; // IB diploma total (out of 45)
-    } else if (values.type === 'A_LEVEL') {
-      subScores = {};
-      for (const entry of subjectEntries) {
-        if (entry.subject && entry.score) {
-          subScores[entry.subject] = entry.score;
-        }
-      }
-      totalScore = aLevelTotal;
-    } else if (values.type === 'IGCSE') {
-      subScores = {};
-      for (const entry of subjectEntries) {
-        if (entry.subject && entry.score) {
-          subScores[entry.subject] = entry.score;
-        }
-      }
-      totalScore = igcseTotal;
-    } else if (values.type === 'SAT' && (values.satReading || values.satMath)) {
-      subScores = {};
-      if (values.satReading) subScores.reading = parseInt(values.satReading);
-      if (values.satMath) subScores.math = parseInt(values.satMath);
-      totalScore = parseFloat(values.score || '0');
-    } else if (values.type === 'ACT') {
-      subScores = {};
-      if (values.actEnglish) subScores.english = parseInt(values.actEnglish);
-      if (values.actMath) subScores.math = parseInt(values.actMath);
-      if (values.actReading) subScores.reading = parseInt(values.actReading);
-      if (values.actScience) subScores.science = parseInt(values.actScience);
-      totalScore = parseFloat(values.score || '0');
-    } else if (values.type === 'TOEFL') {
-      // 2026 scale is half-point (5.5) — parseFloat, not parseInt.
-      subScores = {};
-      if (values.toeflReading) subScores.reading = parseFloat(values.toeflReading);
-      if (values.toeflListening) subScores.listening = parseFloat(values.toeflListening);
-      if (values.toeflSpeaking) subScores.speaking = parseFloat(values.toeflSpeaking);
-      if (values.toeflWriting) subScores.writing = parseFloat(values.toeflWriting);
-      totalScore = parseFloat(values.score || '0');
-    } else {
-      // IELTS (x.5 bands), Duolingo — parseFloat preserves half-points.
-      totalScore = parseFloat(values.score || '0');
-    }
+    const { score: totalScore, subScores } = buildTestScorePayload(
+      values.type,
+      values,
+      subjectEntries
+    );
 
     const data = {
       type: values.type,
       score: totalScore,
       testDate: values.testDate || undefined,
-      subScores: subScores && Object.keys(subScores).length > 0 ? subScores : undefined,
+      subScores,
     };
 
     if (isEditing) {
