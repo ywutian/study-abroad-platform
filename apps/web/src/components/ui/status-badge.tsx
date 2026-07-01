@@ -178,13 +178,7 @@ export function StatusBadge({
 
 // 申请状态特化版本
 type ApplicationStatus =
-  | 'preparing'
-  | 'submitted'
-  | 'interview'
-  | 'admitted'
-  | 'rejected'
-  | 'waitlisted'
-  | 'withdrawn';
+  'preparing' | 'submitted' | 'interview' | 'admitted' | 'rejected' | 'waitlisted' | 'withdrawn';
 
 const applicationStatusConfig: Record<ApplicationStatus, StatusConfig> = {
   preparing: {

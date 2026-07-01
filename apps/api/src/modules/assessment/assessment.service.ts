@@ -38,8 +38,7 @@ function parseStoredResult(value: Prisma.JsonValue): unknown {
 }
 
 type SupportedAssessmentType =
-  | AssessmentTypeEnum.MBTI
-  | AssessmentTypeEnum.HOLLAND;
+  AssessmentTypeEnum.MBTI | AssessmentTypeEnum.HOLLAND;
 
 type CalculatedAssessmentResult = MbtiResultDto | HollandResultDto;
 
@@ -639,8 +638,7 @@ export class AssessmentService {
   private getQuestionOptions(
     type: SupportedAssessmentType,
     question:
-      | (typeof MBTI_QUESTIONS)[number]
-      | (typeof HOLLAND_QUESTIONS)[number],
+      (typeof MBTI_QUESTIONS)[number] | (typeof HOLLAND_QUESTIONS)[number],
   ) {
     return type === AssessmentTypeEnum.MBTI
       ? LIKERT_OPTIONS

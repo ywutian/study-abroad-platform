@@ -76,11 +76,7 @@ type FeedbackSentiment = 'HELPFUL' | 'NOT_HELPFUL';
 type SweepMode = 'HOURLY_ROLLOUT' | 'NIGHTLY_SHADOW' | 'MANUAL_FULL';
 
 type EvidenceStatus =
-  | 'DRAFT'
-  | 'UNDER_REVIEW'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'EXPIRED';
+  'DRAFT' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
 type GovernanceEvidenceMode = 'fixture' | 'real' | 'mixed' | 'none';
 
 /**
@@ -759,8 +755,7 @@ export class ApplicationAnalysisWorkflowService {
         data: {
           experimentVersionId: input.experimentVersionId ?? undefined,
           capability: input.capability as
-            | ApplicationAnalysisExperimentCapability
-            | undefined,
+            ApplicationAnalysisExperimentCapability | undefined,
           type: input.type,
           severity: input.severity,
           title: input.title,

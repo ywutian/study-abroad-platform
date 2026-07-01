@@ -7,9 +7,7 @@ import { PrismaClient } from '@prisma/client';
 
 type Severity = 'critical' | 'warning' | 'info';
 type WorklistAction =
-  | 'apply-migration-or-align-db'
-  | 'review-extra-db-object'
-  | 'accept';
+  'apply-migration-or-align-db' | 'review-extra-db-object' | 'accept';
 type WorklistStatus = 'PASS' | 'REVIEW' | 'BLOCKED';
 
 interface Args {

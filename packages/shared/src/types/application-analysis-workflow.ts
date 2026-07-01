@@ -3,32 +3,17 @@ import type { ApplicationAnalysisExperimentCapability } from './ai-agent';
 
 export type SchoolPolicyDimension = 'TESTING' | 'INTL_AID' | 'ROUND' | 'OTHER';
 export type SchoolPolicyEvidenceStatus =
-  | 'DRAFT'
-  | 'UNDER_REVIEW'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'EXPIRED';
+  'DRAFT' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
 export type GovernanceEvidenceMode = 'fixture' | 'real' | 'mixed' | 'none';
 export type ApplicationAnalysisPolicyStatus =
-  | 'DRAFT'
-  | 'CANDIDATE'
-  | 'SHADOW'
-  | 'ACTIVE'
-  | 'RETIRED';
+  'DRAFT' | 'CANDIDATE' | 'SHADOW' | 'ACTIVE' | 'RETIRED';
 export type ApplicationAnalysisEvaluationMode = 'GOLD_SET' | 'SHADOW';
 export type ApplicationAnalysisEvaluationStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 export type ApplicationAnalysisExperimentStatus =
-  | 'DRAFT'
-  | 'SHADOW'
-  | 'CANARY'
-  | 'ACTIVE'
-  | 'RETIRED';
+  'DRAFT' | 'SHADOW' | 'CANARY' | 'ACTIVE' | 'RETIRED';
 export type ApplicationAnalysisExperimentEvaluationMode = 'GOLD_SET' | 'SHADOW' | 'CANARY';
 export type ApplicationAnalysisExperimentEvaluationStatus =
-  | 'PENDING'
-  | 'RUNNING'
-  | 'COMPLETED'
-  | 'FAILED';
+  'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 export type ApplicationAnalysisFeedbackCategory =
   | 'UNSAFE_RECOURSE'
   | 'POLICY_MISMATCH'
@@ -37,9 +22,7 @@ export type ApplicationAnalysisFeedbackCategory =
   | 'LOW_ACTIONABILITY';
 export type ApplicationAnalysisFeedbackSentiment = 'HELPFUL' | 'NOT_HELPFUL';
 export type ApplicationAnalysisExperimentSweepMode =
-  | 'HOURLY_ROLLOUT'
-  | 'NIGHTLY_SHADOW'
-  | 'MANUAL_FULL';
+  'HOURLY_ROLLOUT' | 'NIGHTLY_SHADOW' | 'MANUAL_FULL';
 export type ApplicationAnalysisExperimentSweepStatus = 'RUNNING' | 'COMPLETED' | 'FAILED';
 export type ApplicationAnalysisExperimentIncidentSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type ApplicationAnalysisExperimentIncidentStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';

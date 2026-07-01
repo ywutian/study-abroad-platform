@@ -1608,11 +1608,9 @@ async function main() {
   const historical = loadHistoricalCandidates();
   let searchResult: { searches: number; exhaustedKeys: number } | undefined;
   let consumeResult:
-    | { terminalCandidates: number; suspicious: number }
-    | undefined;
+    { terminalCandidates: number; suspicious: number } | undefined;
   let adjudicateResult:
-    | { terminalCandidates: number; untouched: number }
-    | undefined;
+    { terminalCandidates: number; untouched: number } | undefined;
   let terminalResult: { updated: number; skipped: number } | undefined;
   const rounds = Math.max(1, args.maxRounds);
   for (let round = 1; round <= rounds; round++) {

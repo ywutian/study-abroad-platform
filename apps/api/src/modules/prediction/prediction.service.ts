@@ -155,13 +155,11 @@ function mapPredictionSchoolMedia(assets?: any[] | null): SchoolPublicMedia {
   return {
     campusCover: toPredictionPublicMediaAsset(
       list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER) as
-        | PublicSchoolMediaAssetInput
-        | undefined,
+        PublicSchoolMediaAssetInput | undefined,
     ),
     logo: toPredictionPublicMediaAsset(
       list.find((asset) => asset.type === SchoolMediaType.LOGO) as
-        | PublicSchoolMediaAssetInput
-        | undefined,
+        PublicSchoolMediaAssetInput | undefined,
     ),
   };
 }
@@ -3072,11 +3070,7 @@ export class PredictionService {
     profileId: string,
     schoolId: string,
     actualResult:
-      | 'ADMITTED'
-      | 'REJECTED'
-      | 'WAITLISTED'
-      | 'DEFERRED'
-      | 'WITHDRAWN',
+      'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN',
     options?: {
       notes?: string;
       evidenceUrl?: string;

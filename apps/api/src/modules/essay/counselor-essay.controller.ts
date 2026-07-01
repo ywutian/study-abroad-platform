@@ -98,10 +98,7 @@ export class CounselorEssayController {
       ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'].includes(result)
     ) {
       where.result = result as
-        | 'ADMITTED'
-        | 'REJECTED'
-        | 'WAITLISTED'
-        | 'DEFERRED';
+        'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
     }
     if (
       essayType &&
@@ -110,11 +107,7 @@ export class CounselorEssayController {
       )
     ) {
       where.essayType = essayType as
-        | 'COMMON_APP'
-        | 'UC'
-        | 'SUPPLEMENTAL'
-        | 'WHY_SCHOOL'
-        | 'OTHER';
+        'COMMON_APP' | 'UC' | 'SUPPLEMENTAL' | 'WHY_SCHOOL' | 'OTHER';
     }
     if (archive) {
       where.sourceArchive = archive;

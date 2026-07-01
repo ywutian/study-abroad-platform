@@ -181,9 +181,7 @@ function buildProfile(
           {
             name: `${template.awardsLevel} Award`,
             level: template.awardsLevel as
-              | 'STATE'
-              | 'NATIONAL'
-              | 'INTERNATIONAL',
+              'STATE' | 'NATIONAL' | 'INTERNATIONAL',
             year: 2025,
           },
         ];

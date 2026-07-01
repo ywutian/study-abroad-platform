@@ -708,9 +708,7 @@ const BATCH: SchoolEntry[] = [
   },
 ];
 
-async function readSchoolMetadata(
-  schoolId: string,
-): Promise<{
+async function readSchoolMetadata(schoolId: string): Promise<{
   metadata: Record<string, unknown>;
   provenance: Record<string, unknown>;
 } | null> {

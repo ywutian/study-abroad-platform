@@ -47,20 +47,14 @@ export function useSwipeGesture({ onSwipe }: UseSwipeGestureOptions) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-14, 14]);
-  const opacity = useTransform(
-    x,
-    [-220, -110, 0, 110, 220],
-    [0.55, 1, 1, 1, 0.55]
-  );
+  const opacity = useTransform(x, [-220, -110, 0, 110, 220], [0.55, 1, 1, 1, 0.55]);
 
   const handleDragEnd = useCallback(
     (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       const vx = Math.abs(info.velocity.x);
       const vy = Math.abs(info.velocity.y);
       const isFlick = Math.max(vx, vy) > SWIPE_FLICK_VELOCITY;
-      const threshold = isFlick
-        ? SWIPE_COMMIT_DISTANCE * 0.5
-        : SWIPE_COMMIT_DISTANCE;
+      const threshold = isFlick ? SWIPE_COMMIT_DISTANCE * 0.5 : SWIPE_COMMIT_DISTANCE;
 
       const { x: ox, y: oy } = info.offset;
 

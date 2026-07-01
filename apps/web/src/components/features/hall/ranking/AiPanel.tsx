@@ -8,13 +8,7 @@
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import {
-  ClipboardCheck,
-  CheckCircle,
-  AlertTriangle,
-  Lightbulb,
-  Loader2,
-} from 'lucide-react';
+import { ClipboardCheck, CheckCircle, AlertTriangle, Lightbulb, Loader2 } from 'lucide-react';
 import type { AiAnalysisResult } from '@/types/hall';
 
 interface AiPanelProps {

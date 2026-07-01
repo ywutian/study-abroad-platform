@@ -179,8 +179,7 @@ export class RecommendationService {
         ? {
             nationality: (profile as any).nationality as string | undefined,
             isInternational: (profile as any).isInternational as
-              | boolean
-              | undefined,
+              boolean | undefined,
           }
         : undefined;
 
@@ -200,8 +199,7 @@ export class RecommendationService {
     if (this.historicalService) {
       const historicalLines: string[] = [];
       const targetSchools = (profile as any).targetSchools as
-        | string[]
-        | undefined;
+        string[] | undefined;
       if (targetSchools?.length) {
         for (const schoolName of targetSchools.slice(0, 5)) {
           try {

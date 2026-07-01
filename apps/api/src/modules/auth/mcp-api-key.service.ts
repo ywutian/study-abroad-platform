@@ -15,11 +15,7 @@ export interface McpKeyInfo {
 }
 
 export type McpKeyValidationStatus =
-  | 'valid'
-  | 'invalid'
-  | 'revoked'
-  | 'expired'
-  | 'user_inactive';
+  'valid' | 'invalid' | 'revoked' | 'expired' | 'user_inactive';
 
 export interface McpKeyValidationResult {
   status: McpKeyValidationStatus;

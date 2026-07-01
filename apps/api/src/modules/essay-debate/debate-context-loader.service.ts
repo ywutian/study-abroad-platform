@@ -238,8 +238,7 @@ export class DebateContextLoaderService {
     if (!cache || typeof cache !== 'object' || Array.isArray(cache))
       return null;
     const blob = (cache as Record<string, unknown>)[locale] as
-      | CachedAnalysisEntry
-      | undefined;
+      CachedAnalysisEntry | undefined;
     const paragraphsCommentary = blob?.payload?.paragraphs;
     if (
       !Array.isArray(paragraphsCommentary) ||

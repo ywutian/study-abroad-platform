@@ -535,15 +535,7 @@ export type ColorThemeCategory = (typeof COLOR_THEME_CATEGORIES)[number]['id'];
 
 type NeutralFamily = 'warm' | 'sand' | 'slate' | 'mauve' | 'sage' | 'pearl' | 'charcoal';
 type ThemeMood =
-  | 'warm'
-  | 'cool'
-  | 'dark'
-  | 'paper'
-  | 'pastel'
-  | 'academic'
-  | 'natural'
-  | 'contrast'
-  | 'electric';
+  'warm' | 'cool' | 'dark' | 'paper' | 'pastel' | 'academic' | 'natural' | 'contrast' | 'electric';
 export type ThemeTypographyPreset = 'system' | 'humanist' | 'editorial' | 'mono' | 'compact';
 export type ThemeRadiusPreset = 'sharp' | 'standard' | 'soft' | 'pill';
 export type ThemeDensityPreset = 'compact' | 'standard' | 'comfortable';
@@ -594,13 +586,7 @@ export const THEME_SHADOW_PRESETS: ThemeShadowPreset[] = ['none', 'subtle', 'med
 export const THEME_MOTION_PRESETS: ThemeMotionPreset[] = ['quiet', 'standard', 'expressive'];
 
 export type ThemeAppearanceNumericKey =
-  | 'clarity'
-  | 'frost'
-  | 'glow'
-  | 'texture'
-  | 'contrast'
-  | 'saturation'
-  | 'colorPresence';
+  'clarity' | 'frost' | 'glow' | 'texture' | 'contrast' | 'saturation' | 'colorPresence';
 
 export type ThemeAppearanceOverrides = Partial<{
   clarity: number;

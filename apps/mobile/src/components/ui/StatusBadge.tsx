@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
-type StatusType = 
+type StatusType =
   | 'draft'
   | 'pending'
   | 'in_progress'
@@ -34,12 +34,7 @@ interface StatusBadgeProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function StatusBadge({
-  status,
-  size = 'md',
-  showIcon = false,
-  style,
-}: StatusBadgeProps) {
+export function StatusBadge({ status, size = 'md', showIcon = false, style }: StatusBadgeProps) {
   const { t } = useTranslation();
   const colors = useColors();
 

@@ -40,16 +40,10 @@ const execFileAsync = promisify(execFile);
 type SurfaceStatus = 'PASS' | 'ISSUE' | 'BROKEN' | 'BLOCKED' | 'SKIPPED' | ReleaseRuntimeStatus;
 type RuntimeAuditMode = 'full-surface' | 'release-runtime';
 type FeedbackCategory =
-  | 'CODE_BUG'
-  | 'DATA_ISSUE'
-  | 'UX_CONFUSION'
-  | 'NEW_FEATURE'
-  | 'INDUSTRY_SUGGESTION';
+  'CODE_BUG' | 'DATA_ISSUE' | 'UX_CONFUSION' | 'NEW_FEATURE' | 'INDUSTRY_SUGGESTION';
 
 type AnySurfaceDefinition =
-  | RouteSurfaceDefinition
-  | CapabilitySurfaceDefinition
-  | JourneyOverlaySurfaceDefinition;
+  RouteSurfaceDefinition | CapabilitySurfaceDefinition | JourneyOverlaySurfaceDefinition;
 
 interface CliArgs {
   auditDate: string;
@@ -1100,11 +1094,9 @@ async function collectReleaseTiming(
   const browserTiming = await page
     .evaluate(() => {
       const nav = performance.getEntriesByType('navigation')[0] as
-        | PerformanceNavigationTiming
-        | undefined;
+        PerformanceNavigationTiming | undefined;
       const fcp = performance.getEntriesByName('first-contentful-paint')[0] as
-        | PerformanceEntry
-        | undefined;
+        PerformanceEntry | undefined;
       return {
         ttfbMs: nav ? Math.round(nav.responseStart) : null,
         domContentLoadedMs: nav ? Math.round(nav.domContentLoadedEventEnd) : null,

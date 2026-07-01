@@ -92,11 +92,7 @@ export interface GalleryEssayQuestionResponse {
 }
 
 export type GalleryEssayCompareFocus =
-  | 'theme'
-  | 'structure'
-  | 'voice'
-  | 'schoolFit'
-  | 'revisionPlan';
+  'theme' | 'structure' | 'voice' | 'schoolFit' | 'revisionPlan';
 
 export interface GalleryEssayCompareRequest {
   userEssayId: string;
@@ -125,11 +121,7 @@ export type GalleryEssayAIInteractionType = 'question' | 'compare';
 export type GalleryEssayAIInteractionStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED';
 export type GalleryEssayFeedbackSentiment = 'HELPFUL' | 'NOT_HELPFUL';
 export type GalleryEssayFeedbackCategory =
-  | 'wrong_evidence'
-  | 'too_generic'
-  | 'template_like'
-  | 'cost_not_worth'
-  | 'other';
+  'wrong_evidence' | 'too_generic' | 'template_like' | 'cost_not_worth' | 'other';
 
 export interface GalleryEssayInteractionFeedback {
   id: string;

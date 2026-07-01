@@ -19,13 +19,7 @@ import {
 } from '@/utils/theme';
 
 type ButtonVariant =
-  | 'default'
-  | 'destructive'
-  | 'outline'
-  | 'secondary'
-  | 'ghost'
-  | 'link'
-  | 'soft';
+  'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'soft';
 type ButtonSize = 'sm' | 'default' | 'lg' | 'icon';
 
 interface ButtonProps {

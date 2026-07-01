@@ -4,8 +4,7 @@ import type { RedisService } from './redis.service';
 describe('runWithCronLock', () => {
   const makeRedis = (acquired: boolean) =>
     ({ setNXStrict: jest.fn().mockResolvedValue(acquired) }) as unknown as
-      | RedisService
-      | undefined;
+      RedisService | undefined;
 
   it('runs the job and returns true when the lock is acquired', async () => {
     const redis = makeRedis(true);

@@ -6,8 +6,7 @@ import path from 'node:path';
 import { PrismaClient } from '@prisma/client';
 
 type PacketStatus =
-  | 'ESSAY_PROMPT_IDENTITY_CONFLICT_PACKET_READY'
-  | 'PASS_NO_IDENTITY_CONFLICTS';
+  'ESSAY_PROMPT_IDENTITY_CONFLICT_PACKET_READY' | 'PASS_NO_IDENTITY_CONFLICTS';
 
 type Severity = 'critical' | 'warning' | 'info';
 type MatchConfidence = 'high' | 'medium';

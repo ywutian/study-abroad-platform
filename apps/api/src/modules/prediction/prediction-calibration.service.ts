@@ -80,8 +80,7 @@ export class PredictionCalibrationService {
           schoolId: record.schoolId,
           probability: Number(record.probability),
           actualResult: canonical.canonicalRecord.result as
-            | 'ADMITTED'
-            | 'REJECTED',
+            'ADMITTED' | 'REJECTED',
         };
       })
       .filter(

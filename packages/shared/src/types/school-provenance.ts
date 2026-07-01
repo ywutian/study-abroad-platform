@@ -1,11 +1,5 @@
 export type TrustTier =
-  | 'OFFICIAL'
-  | 'PARTNER'
-  | 'SCRAPED'
-  | 'SEED'
-  | 'COMMUNITY'
-  | 'INFERRED'
-  | 'UNAVAILABLE';
+  'OFFICIAL' | 'PARTNER' | 'SCRAPED' | 'SEED' | 'COMMUNITY' | 'INFERRED' | 'UNAVAILABLE';
 
 export type ProvenanceStaleness = 'FRESH' | 'AGING' | 'STALE';
 

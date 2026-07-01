@@ -36,12 +36,20 @@ function nextKey(keys: string[]): string {
   return k;
 }
 
-async function tavilySearch(query: string, key: string): Promise<{ url: string; content: string }[]> {
+async function tavilySearch(
+  query: string,
+  key: string,
+): Promise<{ url: string; content: string }[]> {
   try {
     const res = await fetch('https://api.tavily.com/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_key: key, query, max_results: 5, search_depth: 'advanced' }),
+      body: JSON.stringify({
+        api_key: key,
+        query,
+        max_results: 5,
+        search_depth: 'advanced',
+      }),
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -56,7 +64,10 @@ async function tavilySearch(query: string, key: string): Promise<{ url: string; 
 
 // Parse a ranking list from Tavily content snippets
 // Looks for patterns like "1. Harvard" or "#1 Harvard" or "Rank 1: Harvard"
-function parseRankings(content: string, schoolNames: string[]): Map<string, number> {
+function parseRankings(
+  content: string,
+  schoolNames: string[],
+): Map<string, number> {
   const result = new Map<string, number>();
   const normMap = new Map<string, string>();
   for (const name of schoolNames) {
@@ -70,11 +81,17 @@ function parseRankings(content: string, schoolNames: string[]): Map<string, numb
     const m = line.match(/^#?(\d{1,3})[\.\):\s]+(.+)$/);
     if (!m) continue;
     const rank = parseInt(m[1]);
-    const rawName = m[2].trim().toLowerCase().replace(/[^a-z0-9 ]/g, '');
+    const rawName = m[2]
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/g, '');
 
     // Find closest matching school
     for (const [normName, origName] of normMap) {
-      if (rawName.includes(normName) || normName.includes(rawName.substring(0, 20))) {
+      if (
+        rawName.includes(normName) ||
+        normName.includes(rawName.substring(0, 20))
+      ) {
         if (!result.has(origName)) {
           result.set(origName, rank);
         }
@@ -86,7 +103,9 @@ function parseRankings(content: string, schoolNames: string[]): Map<string, numb
 }
 
 async function phaseA(dryRun: boolean): Promise<number> {
-  console.log('\n📊 Phase A: Seeding national university rankings from usNewsRank...');
+  console.log(
+    '\n📊 Phase A: Seeding national university rankings from usNewsRank...',
+  );
 
   const schools = await prisma.school.findMany({
     where: { country: 'US', usNewsRank: { not: null } },
@@ -97,7 +116,9 @@ async function phaseA(dryRun: boolean): Promise<number> {
   console.log(`  Found ${schools.length} schools with usNewsRank`);
 
   if (dryRun) {
-    console.log(`  [DRY RUN] Would insert ${schools.length} SchoolRanking rows`);
+    console.log(
+      `  [DRY RUN] Would insert ${schools.length} SchoolRanking rows`,
+    );
     return schools.length;
   }
 
@@ -107,10 +128,14 @@ async function phaseA(dryRun: boolean): Promise<number> {
     list: 'NATIONAL_UNIVERSITY' as const,
     rank: s.usNewsRank!,
     year: 2025,
-    sourceUrl: 'https://www.usnews.com/best-colleges/rankings/national-universities',
+    sourceUrl:
+      'https://www.usnews.com/best-colleges/rankings/national-universities',
   }));
 
-  const result = await prisma.schoolRanking.createMany({ data, skipDuplicates: true });
+  const result = await prisma.schoolRanking.createMany({
+    data,
+    skipDuplicates: true,
+  });
   console.log(`  ✅ Inserted ${result.count} SchoolRanking rows`);
   return result.count;
 }
@@ -139,12 +164,14 @@ async function phaseB(dryRun: boolean, tavilyKeys: string[]): Promise<number> {
     {
       label: 'CS Graduate',
       list: 'CS_GRADUATE',
-      query: 'US News best computer science graduate programs rankings 2024 site:usnews.com',
+      query:
+        'US News best computer science graduate programs rankings 2024 site:usnews.com',
     },
     {
       label: 'Engineering Graduate',
       list: 'ENGINEERING_GRADUATE',
-      query: 'US News best engineering graduate schools rankings 2024 site:usnews.com',
+      query:
+        'US News best engineering graduate schools rankings 2024 site:usnews.com',
     },
     {
       label: 'Business MBA',
@@ -167,7 +194,14 @@ async function phaseB(dryRun: boolean, tavilyKeys: string[]): Promise<number> {
     if (rankings.size === 0) continue;
 
     const nameToId = new Map(allSchools.map((s) => [s.name, s.id]));
-    const data: { schoolId: string; source: string; list: string; rank: number; year: number; sourceUrl: string }[] = [];
+    const data: {
+      schoolId: string;
+      source: string;
+      list: string;
+      rank: number;
+      year: number;
+      sourceUrl: string;
+    }[] = [];
 
     for (const [name, rank] of rankings) {
       const schoolId = nameToId.get(name);
@@ -209,7 +243,9 @@ async function main() {
 
   const existing = await prisma.schoolRanking.count();
   if (existing > 200 && !args.includes('--force')) {
-    console.log(`\n✅ Already have ${existing} ranking rows — skipping (use --force to override)`);
+    console.log(
+      `\n✅ Already have ${existing} ranking rows — skipping (use --force to override)`,
+    );
     await prisma.$disconnect();
     return;
   }

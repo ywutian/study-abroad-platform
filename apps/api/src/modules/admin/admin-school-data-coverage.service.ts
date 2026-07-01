@@ -62,17 +62,11 @@ const TERMINAL_REAL_DATA_STATUSES = new Set([
 ]);
 
 export type PredictionCoverageField =
-  | (typeof CRITICAL_FIELDS)[number]
-  | (typeof OPTIONAL_FIELDS)[number];
+  (typeof CRITICAL_FIELDS)[number] | (typeof OPTIONAL_FIELDS)[number];
 export type CampusLifeCoverageField = (typeof CAMPUS_LIFE_FIELDS)[number];
 export type CoverageField = PredictionCoverageField | CampusLifeCoverageField;
 export type CoverageBucket =
-  | 'official'
-  | 'heuristic'
-  | 'terminal'
-  | 'stale'
-  | 'other'
-  | 'missing';
+  'official' | 'heuristic' | 'terminal' | 'stale' | 'other' | 'missing';
 
 export interface FieldCoverageTotal {
   total: number;

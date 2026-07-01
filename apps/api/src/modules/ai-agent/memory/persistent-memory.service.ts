@@ -841,11 +841,9 @@ export class PersistentMemoryService {
       update: {
         description: input.description,
         attributes: input.attributes as unknown as
-          | Prisma.InputJsonValue
-          | undefined,
+          Prisma.InputJsonValue | undefined,
         relations: input.relations as unknown as
-          | Prisma.InputJsonValue
-          | undefined,
+          Prisma.InputJsonValue | undefined,
       },
       create: {
         userId,
@@ -853,11 +851,9 @@ export class PersistentMemoryService {
         name: input.name,
         description: input.description,
         attributes: input.attributes as unknown as
-          | Prisma.InputJsonValue
-          | undefined,
+          Prisma.InputJsonValue | undefined,
         relations: input.relations as unknown as
-          | Prisma.InputJsonValue
-          | undefined,
+          Prisma.InputJsonValue | undefined,
       },
     });
 
@@ -1105,11 +1101,9 @@ export class PersistentMemoryService {
           update: {
             description: entity.description,
             attributes: entity.attributes as unknown as
-              | Prisma.InputJsonValue
-              | undefined,
+              Prisma.InputJsonValue | undefined,
             relations: entity.relations as unknown as
-              | Prisma.InputJsonValue
-              | undefined,
+              Prisma.InputJsonValue | undefined,
           },
           create: {
             userId,
@@ -1117,11 +1111,9 @@ export class PersistentMemoryService {
             name: entity.name,
             description: entity.description,
             attributes: entity.attributes as unknown as
-              | Prisma.InputJsonValue
-              | undefined,
+              Prisma.InputJsonValue | undefined,
             relations: entity.relations as unknown as
-              | Prisma.InputJsonValue
-              | undefined,
+              Prisma.InputJsonValue | undefined,
           },
         });
       }

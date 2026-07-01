@@ -177,10 +177,7 @@ export function ActivityTab() {
                         <Badge
                           variant={
                             (ACTION_COLORS[log.action] as
-                              | 'destructive'
-                              | 'warning'
-                              | 'success'
-                              | 'default') || 'outline'
+                              'destructive' | 'warning' | 'success' | 'default') || 'outline'
                           }
                         >
                           {log.action}

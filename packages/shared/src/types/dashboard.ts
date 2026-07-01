@@ -65,13 +65,7 @@ export function toneFromReadinessStatus(status: DashboardReadinessStatus): Dashb
 }
 
 export type DashboardPriorityKind =
-  | 'profile'
-  | 'school-list'
-  | 'timeline'
-  | 'timeline-task'
-  | 'essay'
-  | 'prediction'
-  | 'deadline';
+  'profile' | 'school-list' | 'timeline' | 'timeline-task' | 'essay' | 'prediction' | 'deadline';
 
 export interface DashboardReadinessItem {
   key: 'profile' | 'schools' | 'essays' | 'timeline' | 'prediction';
@@ -128,11 +122,7 @@ export interface DashboardDeadlineItem {
 }
 
 export type DashboardDecisionStatus =
-  | 'SUBMITTED'
-  | 'ACCEPTED'
-  | 'REJECTED'
-  | 'WAITLISTED'
-  | 'WITHDRAWN';
+  'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'WAITLISTED' | 'WITHDRAWN';
 
 export interface DashboardRecentDecision {
   id: string;

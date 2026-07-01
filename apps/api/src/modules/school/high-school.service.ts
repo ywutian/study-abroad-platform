@@ -21,11 +21,7 @@ import {
 } from '../../common/events/high-school.events';
 
 type HsSource =
-  | 'admin'
-  | 'suggestion'
-  | 'import'
-  | 'ai-evaluate'
-  | 'niche-scrape';
+  'admin' | 'suggestion' | 'import' | 'ai-evaluate' | 'niche-scrape';
 
 @Injectable()
 export class HighSchoolService {

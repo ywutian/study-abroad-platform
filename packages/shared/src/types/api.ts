@@ -132,15 +132,9 @@ export type ProfileReadinessStatus = 'blocked' | 'attention' | 'ready';
 export type ProfileReadinessSeverity = 'critical' | 'warning' | 'info' | 'success';
 export type ProfileReadinessGpaSource = 'cumulative' | 'grade_level' | 'semester';
 export type ProfileReadinessTestStrategy =
-  | 'scores_submitted'
-  | 'test_optional_confirmed'
-  | 'unknown';
+  'scores_submitted' | 'test_optional_confirmed' | 'unknown';
 export type ProfileReadinessAnalysisState =
-  | 'ready'
-  | 'noTargetSchools'
-  | 'noPredictions'
-  | 'insufficientProfileData'
-  | 'notRun';
+  'ready' | 'noTargetSchools' | 'noPredictions' | 'insufficientProfileData' | 'notRun';
 
 export interface ProfileReadinessAction {
   key: string;

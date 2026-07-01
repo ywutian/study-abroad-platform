@@ -55,14 +55,7 @@ export interface ThemeModeCertificationResult {
 
 export interface ThemeButtonSurfaceAudit {
   variant:
-    | 'primary'
-    | 'secondary'
-    | 'tertiary'
-    | 'outline'
-    | 'ghost'
-    | 'danger'
-    | 'warning'
-    | 'success';
+    'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'danger' | 'warning' | 'success';
   mode: ThemeMode;
   foreground: string;
   background: string;

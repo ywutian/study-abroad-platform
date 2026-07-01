@@ -43,7 +43,7 @@ export function PathTab() {
                   'shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
                   active
                     ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 )}
               >
                 {t(`modes.${value}.label`)}
@@ -57,9 +57,7 @@ export function PathTab() {
       </div>
 
       {/* Content — wrap each in min-w-0 to honor Layout Robustness rule 1 (PR #214-220) */}
-      <div className="min-w-0">
-        {mode === 'single' ? <TinderTab /> : <ChallengeTab />}
-      </div>
+      <div className="min-w-0">{mode === 'single' ? <TinderTab /> : <ChallengeTab />}</div>
     </div>
   );
 }

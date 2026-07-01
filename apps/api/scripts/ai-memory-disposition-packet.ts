@@ -13,9 +13,7 @@ type PacketStatus =
 type ClosureState = 'trusted' | 'review' | 'terminal' | 'conflict';
 type SensitivityTier = 'low' | 'medium' | 'high' | 'unknown';
 type ConsentState =
-  | 'explicit_enabled'
-  | 'explicit_disabled'
-  | 'missing_preference_row';
+  'explicit_enabled' | 'explicit_disabled' | 'missing_preference_row';
 type ProvenanceState =
   | 'source_linked'
   | 'conversation_linked'

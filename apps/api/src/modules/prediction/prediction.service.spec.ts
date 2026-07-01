@@ -360,8 +360,7 @@ describe('PredictionService counselor primary', () => {
 
     const earlyTip = (school: Record<string, unknown>, profile: any) =>
       (service as any).buildEarlyRoundSuggestion(school, profile, '', false) as
-        | string
-        | null;
+        string | null;
 
     const callSuggest = (
       tier: 'reach' | 'match' | 'safety',

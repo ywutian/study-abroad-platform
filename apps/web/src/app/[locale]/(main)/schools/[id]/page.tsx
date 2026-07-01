@@ -397,8 +397,7 @@ export default function SchoolDetailPage() {
       {/* Data Sources Footer */}
       {(() => {
         const prov = school.metadata?.provenance as
-          | Record<string, { source: string; at: string }>
-          | undefined;
+          Record<string, { source: string; at: string }> | undefined;
         if (!prov || Object.keys(prov).length === 0) return null;
         const lk = locale === 'zh' ? 'zh' : 'en';
         const seen = new Set<string>();

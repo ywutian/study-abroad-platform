@@ -57,11 +57,7 @@ interface ParsedPost {
   year: number;
   tags: string[];
   highSchoolType?:
-    | 'PUBLIC_US'
-    | 'PRIVATE_US'
-    | 'CHINA_INTL'
-    | 'CHINA_PUBLIC'
-    | 'OTHER_INTL';
+    'PUBLIC_US' | 'PRIVATE_US' | 'CHINA_INTL' | 'CHINA_PUBLIC' | 'OTHER_INTL';
   state?: string;
   hooks?: string[]; // legacy, athlete, first_gen, urm
 }

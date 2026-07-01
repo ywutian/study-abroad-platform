@@ -47,11 +47,7 @@ const ROUNDS = ['EA', 'ED', 'ED2', 'RD', 'REA'];
 const ROUND_WEIGHTS = [0.15, 0.25, 0.05, 0.5, 0.05];
 
 type DifficultyLevel =
-  | 'elite'
-  | 'highly_selective'
-  | 'selective'
-  | 'moderate'
-  | 'accessible';
+  'elite' | 'highly_selective' | 'selective' | 'moderate' | 'accessible';
 
 function weightedRandom<T>(items: T[], weights: number[]): T {
   const total = weights.reduce((a, b) => a + b, 0);

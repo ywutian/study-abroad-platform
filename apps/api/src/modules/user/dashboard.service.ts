@@ -622,11 +622,7 @@ export class DashboardService {
         ),
         round: row.round,
         status: row.status as
-          | 'SUBMITTED'
-          | 'ACCEPTED'
-          | 'REJECTED'
-          | 'WAITLISTED'
-          | 'WITHDRAWN',
+          'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'WAITLISTED' | 'WITHDRAWN',
         decidedAt: row.updatedAt.toISOString(),
       })),
     };

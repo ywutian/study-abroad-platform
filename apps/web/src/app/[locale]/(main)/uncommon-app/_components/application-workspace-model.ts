@@ -12,12 +12,7 @@ export type WorkspaceActionId =
 export type WorkspaceActionIntent = 'navigate' | 'sync' | 'analysis' | 'recommendations';
 export type WorkspaceHealthStatus = 'good' | 'warning' | 'risk';
 export type ApplicationUrgency =
-  | 'overdue'
-  | 'due7'
-  | 'due30'
-  | 'missingTimeline'
-  | 'missingEssay'
-  | 'ready';
+  'overdue' | 'due7' | 'due30' | 'missingTimeline' | 'missingEssay' | 'ready';
 
 export interface WorkspaceAction {
   id: WorkspaceActionId;

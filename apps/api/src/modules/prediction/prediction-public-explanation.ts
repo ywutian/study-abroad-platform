@@ -5,13 +5,7 @@ import type {
 } from '@study-abroad/shared';
 
 type Tier =
-  | 'reach'
-  | 'match'
-  | 'safety'
-  | 'unavailable'
-  | string
-  | null
-  | undefined;
+  'reach' | 'match' | 'safety' | 'unavailable' | string | null | undefined;
 type Confidence = 'low' | 'medium' | 'high' | string | null | undefined;
 
 export interface PredictionPublicExplanationInput {

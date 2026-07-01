@@ -29,11 +29,7 @@ import { DistillationStatsRollupService } from './distillation/distillation-stat
 import { buildPredictionPublicExplanation } from './prediction-public-explanation';
 
 type ReportedOutcomeResult =
-  | 'ADMITTED'
-  | 'REJECTED'
-  | 'WAITLISTED'
-  | 'DEFERRED'
-  | 'WITHDRAWN';
+  'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN';
 
 const CALIBRATION_EXCLUDED_SOURCES = ['quick-match'] as const;
 const ELITE_OUTCOME_PROBABILITY_THRESHOLD = 0.2;

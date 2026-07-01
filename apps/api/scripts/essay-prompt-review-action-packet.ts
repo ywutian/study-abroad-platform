@@ -111,10 +111,7 @@ interface CheckedSource {
   textContentSha256: string | null;
   sourceQuality: 'official' | 'official_application_platform' | 'unknown';
   ownerRelation:
-    | 'assigned_school'
-    | 'matched_school'
-    | 'cross_school'
-    | 'unknown';
+    'assigned_school' | 'matched_school' | 'cross_school' | 'unknown';
   promptMatch: boolean;
   promptMatchKind: 'normalized_exact' | 'long_prefix_with_context' | null;
   promptLanguageSignals: string[];

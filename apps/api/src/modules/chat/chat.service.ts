@@ -53,12 +53,7 @@ const SENDER_SELECT = {
 } as const;
 
 type ConversationListFilter =
-  | 'all'
-  | 'unread'
-  | 'pinned'
-  | 'direct'
-  | 'groups'
-  | 'archived';
+  'all' | 'unread' | 'pinned' | 'direct' | 'groups' | 'archived';
 
 interface ConversationListOptions {
   q?: string;

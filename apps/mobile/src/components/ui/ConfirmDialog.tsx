@@ -3,7 +3,14 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -45,12 +52,7 @@ export function ConfirmDialog({
   const iconColor = isDestructive ? colors.error : colors.primary;
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View
           entering={FadeIn.duration(200)}

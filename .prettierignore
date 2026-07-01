@@ -1,0 +1,26 @@
+# Build output & dependencies
+node_modules
+dist
+build
+.next
+coverage
+*.tsbuildinfo
+
+# Lockfiles & minified assets
+pnpm-lock.yaml
+*.min.js
+*.min.css
+
+# Generated native mobile projects — never hand-formatted
+apps/mobile/android
+apps/mobile/ios
+
+# Test fixtures / gold snapshots — reformatting can break snapshot comparisons
+apps/api/gold-cases
+
+# Script data & pipeline outputs (JSON data, not source)
+apps/api/scripts/**/*.json
+
+# Reports & local artifacts
+e2e-report
+apps/api/spend-gateway.json

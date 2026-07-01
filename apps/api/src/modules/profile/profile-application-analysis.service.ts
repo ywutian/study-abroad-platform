@@ -573,18 +573,14 @@ export class ProfileApplicationAnalysisService {
               round: school.round,
               predictionSnapshot: school.predictionSnapshot,
               policyContext: school.policyContext as
-                | Record<string, unknown>
-                | undefined,
+                Record<string, unknown> | undefined,
               recourseGuidance: school.recourseGuidance as
-                | Record<string, unknown>
-                | undefined,
+                Record<string, unknown> | undefined,
               strategyUncertainty: school.strategyUncertainty as
-                | Record<string, unknown>
-                | undefined,
+                Record<string, unknown> | undefined,
             })),
             fairnessDisclosure: fairnessDisclosure as
-              | Record<string, unknown>
-              | undefined,
+              Record<string, unknown> | undefined,
           })
         : null;
 

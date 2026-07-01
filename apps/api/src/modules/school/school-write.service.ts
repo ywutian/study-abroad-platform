@@ -14,8 +14,7 @@ import { deepMergeRecords, toRecord } from './school-provenance.helpers';
 const LIST_CACHE_INVALIDATION_MIN_INTERVAL_MS = 60_000;
 
 type SchoolWriterClient =
-  | Pick<PrismaService, 'school'>
-  | Prisma.TransactionClient;
+  Pick<PrismaService, 'school'> | Prisma.TransactionClient;
 
 export interface SchoolWriteParams {
   fields?: Record<string, unknown>;

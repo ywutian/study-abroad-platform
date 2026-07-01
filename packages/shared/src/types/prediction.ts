@@ -85,13 +85,7 @@ export interface SchoolPredictionDataQuality {
 export interface PredictionOutcomeLabel {
   id: string;
   result:
-    | 'ADMITTED'
-    | 'REJECTED'
-    | 'WAITLISTED'
-    | 'DEFERRED'
-    | 'WITHDRAWN'
-    | 'UNKNOWN'
-    | 'CENSORED';
+    'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN' | 'UNKNOWN' | 'CENSORED';
   status: PredictionOutcomeLabelStatus;
   notes?: string;
   evidenceUrl?: string;

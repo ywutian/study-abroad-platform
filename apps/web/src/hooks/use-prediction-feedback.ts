@@ -7,11 +7,7 @@ import { predictionKeys } from './use-prediction';
 
 export type PredictionFeedbackSentiment = 'POSITIVE' | 'UNSURE' | 'NEGATIVE';
 export type PredictionFeedbackCategory =
-  | 'TOO_HIGH'
-  | 'TOO_LOW'
-  | 'FACTORS_WRONG'
-  | 'NEVER_MOVES'
-  | 'OTHER';
+  'TOO_HIGH' | 'TOO_LOW' | 'FACTORS_WRONG' | 'NEVER_MOVES' | 'OTHER';
 
 export interface SubmitPredictionFeedbackInput {
   predictionResultId: string;

@@ -326,8 +326,7 @@ export class OpenAIProvider implements ILLMProvider {
     // Parse tool calls with deduplication
     let toolCalls: LLMToolCall[] | undefined;
     const rawToolCalls = message?.tool_calls as
-      | Array<Record<string, unknown>>
-      | undefined;
+      Array<Record<string, unknown>> | undefined;
     if (rawToolCalls?.length) {
       const seen = new Set<string>();
       toolCalls = [];

@@ -3,9 +3,7 @@ import path from 'node:path';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
 export type DeliveryQueue =
-  | 'user_prompt'
-  | 'operator_review'
-  | 'system_generation';
+  'user_prompt' | 'operator_review' | 'system_generation';
 export type DeliveryStatus =
   | 'ready_for_in_app_admin_delivery'
   | 'ready_for_operator_review'
