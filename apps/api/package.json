@@ -36,6 +36,7 @@
     "db:seed:competitions": "ts-node prisma/seed-competitions.ts",
     "db:seed:teams": "ts-node prisma/seed-teams.ts",
     "db:seed:competition-data": "ts-node prisma/seeds/upsert-competition-data.ts",
+    "db:audit:competition-data": "ts-node prisma/seeds/audit-competition-data.ts",
     "db:seed:theme-styles": "tsx scripts/seed-theme-style-library.ts",
     "db:seed:rankings": "tsx prisma/seeds/closure-agents/collect-school-rankings.ts",
     "db:verify:seed": "tsx scripts/verify-seed.ts",
