@@ -6,7 +6,11 @@ describe('pingCronHeartbeat', () => {
 
   beforeEach(() => {
     fetchMock = jest.fn().mockResolvedValue({ ok: true });
-    global.fetch = fetchMock as unknown as typeof fetch;
+    // No cast: jest.Mock is assignable to global.fetch under the current
+    // @types/node. A stale `as unknown as typeof fetch` here caused recurring
+    // churn — eslint's no-unnecessary-type-assertion correctly strips it, so
+    // don't re-add it.
+    global.fetch = fetchMock;
   });
 
   afterEach(() => {
