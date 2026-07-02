@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart, Plus, Pencil, Trash2 } from 'lucide-react';
 import type { TestScore } from './types';
 
+// Multi-subject tests where the count of exams reads at a glance (e.g. "8 subjects").
+const SUBJECT_TEST_TYPES = new Set(['AP', 'IB', 'A_LEVEL', 'IGCSE']);
+
 interface TestScoresTabProps {
   testScores: TestScore[];
   onAddScore: () => void;
@@ -58,6 +61,14 @@ export function TestScoresTab({
                     <div>
                       <p className="font-medium text-sm text-muted-foreground">{score.type}</p>
                       <p className="text-2xl font-bold">{score.score}</p>
+                      {SUBJECT_TEST_TYPES.has(score.type) &&
+                        Object.keys(score.subScores ?? {}).length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {t('profile.subjectsCount', {
+                              count: Object.keys(score.subScores ?? {}).length,
+                            })}
+                          </p>
+                        )}
                     </div>
                   </div>
                   <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">

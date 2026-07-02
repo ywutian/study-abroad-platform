@@ -7,6 +7,7 @@ export interface Profile {
   userId: string;
   realName?: string;
   gpa?: number;
+  weightedGpa?: number;
   gpaScale: number;
   currentSchool?: string;
   grade?: string;

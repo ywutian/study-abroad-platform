@@ -522,6 +522,36 @@ export function GpaTab({
           </div>
         )}
 
+        {/* Weighted GPA — optional; may exceed the scale (AP/Honors bonus). Shown
+            in both modes since it's a single figure straight off the transcript. */}
+        <FormField
+          control={control}
+          name="weightedGpa"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium">
+                {t('profile.weightedGpa')}
+                <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                  {t('profile.weightedGpaHint')}
+                </span>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t('profile.placeholders.weightedGpaExample')}
+                  className="h-11 sm:max-w-xs"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* GPA summary display */}
         {watchedGpa && (
           <div className="rounded-xl bg-success/10 p-4">

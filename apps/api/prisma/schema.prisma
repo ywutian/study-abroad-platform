@@ -811,6 +811,9 @@ model Profile {
 
   // Sensitive - Optional anonymized
   gpa               Decimal? @db.Decimal(5, 2)
+  // Weighted GPA (AP/Honors bonus) — nullable, additive. `gpa` above is the
+  // unweighted figure; weightedGpa can exceed the scale (e.g. 4.32 on a 4.0 scale).
+  weightedGpa       Decimal? @db.Decimal(5, 2)
   gpaScale          Decimal  @default(4.0) @db.Decimal(5, 2)
   gpa9              Decimal? @db.Decimal(5, 2)
   gpa10             Decimal? @db.Decimal(5, 2)
@@ -923,9 +926,11 @@ model TestScore {
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   type      TestType
-  score     Int
+  // Float (not Int): the 2026 TOEFL scale (1.0–6.0) and IELTS (x.5 bands) are
+  // half-point. Lossless widen from Int; single-score tests still store integers.
+  score     Float
   subject   String?
-  subScores Json? // { reading: 800, math: 800 } or { listening: 30, reading: 29 }
+  subScores Json? // { reading: 5.5, listening: 6 } (TOEFL 2026) or { math: 800 } (SAT)
   testDate  DateTime?
 
   createdAt DateTime @default(now())

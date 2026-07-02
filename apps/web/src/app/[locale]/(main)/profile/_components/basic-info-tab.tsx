@@ -79,25 +79,7 @@ export function BasicInfoTab({ control }: BasicInfoTabProps) {
             )}
           />
         </div>
-        <FormField
-          control={control}
-          name="targetMajor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">
-                {t('profile.fields.targetMajor')}
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder={t('profile.fields.targetMajorPlaceholder')}
-                  className="h-11"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Target/Intended Major lives in the Background tab now (was duplicated here). */}
         <FormField
           control={control}
           name="budgetTier"

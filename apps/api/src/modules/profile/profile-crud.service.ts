@@ -217,6 +217,7 @@ export class ProfileCrudService {
       data: {
         ...data,
         gpa: this.toNullableDecimal(data.gpa),
+        weightedGpa: this.toNullableDecimal(data.weightedGpa),
         gpaScale:
           data.gpaScale === undefined
             ? undefined

@@ -109,6 +109,7 @@ export interface ProfileData {
   grade?: string;
   currentSchool?: string;
   gpa?: number;
+  weightedGpa?: number;
   gpaScale?: number;
   gpa9?: number;
   gpa10?: number;
@@ -145,6 +146,7 @@ export interface ProfileUpdatePayload {
   grade?: string;
   currentSchool?: string;
   gpa?: number | null;
+  weightedGpa?: number | null;
   gpaScale?: number;
   targetMajor?: string;
   budgetTier?: string;
