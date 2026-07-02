@@ -255,3 +255,60 @@ test.afterAll(async () => {
   }
   console.log('\n================================\n');
 });
+
+/**
+ * Regression guard for PR #478 — the /schools filter rail overlapping the fixed
+ * Feedback FAB and running off-screen ("advanced filters 跟 feedback 重合 / 看不到
+ * block 最底部"). Layout bugs can't be unit-tested (jsdom has no layout engine),
+ * so this asserts the real browser geometry — in the spec CI actually runs.
+ */
+test.describe('Schools filter rail layout', () => {
+  test('stays viewport-bounded, scrolls internally, and clears the Feedback FAB', async ({
+    page,
+  }) => {
+    await installApiFixtures(page);
+    // Short height so the expanded filter panel reliably overflows the viewport —
+    // the exact condition that broke (bottom fell below the fold + under the FAB).
+    await page.setViewportSize({ width: 1440, height: 600 });
+    await page.goto('/en/schools');
+
+    const rail = page.locator('aside').first();
+    await rail.waitFor({ state: 'visible' });
+
+    // Expand every collapsed filter section so the panel is tall.
+    await page.evaluate(() => {
+      document
+        .querySelectorAll('aside [aria-expanded="false"]')
+        .forEach((b) => (b as HTMLElement).click());
+    });
+    await page.waitForTimeout(400);
+
+    const g = await page.evaluate(() => {
+      const aside = document.querySelector('aside') as HTMLElement;
+      const cs = getComputedStyle(aside);
+      const fab = [...document.querySelectorAll('button')].find(
+        (b) => getComputedStyle(b).position === 'fixed' && /feedback/i.test(b.textContent || '')
+      );
+      return {
+        vh: window.innerHeight,
+        railHeight: aside.clientHeight,
+        scrollHeight: aside.scrollHeight,
+        overflowY: cs.overflowY,
+        paddingBottom: parseFloat(cs.paddingBottom) || 0,
+        fabTop: fab ? fab.getBoundingClientRect().top : null,
+      };
+    });
+
+    // Precondition: the expanded panel really is taller than the viewport.
+    expect(g.scrollHeight).toBeGreaterThan(g.vh);
+    // 1. Bounded — the rail never exceeds the viewport (pre-fix it ran off-screen).
+    expect(g.railHeight).toBeLessThanOrEqual(g.vh);
+    // 2. Scrolls internally instead of clipping, so the bottom stays reachable.
+    expect(['auto', 'scroll']).toContain(g.overflowY);
+    // 3. The rail's bottom padding covers the fixed Feedback FAB's band, so the
+    //    last filter can scroll clear of it instead of hiding underneath.
+    if (g.fabTop !== null) {
+      expect(g.paddingBottom).toBeGreaterThanOrEqual(g.vh - g.fabTop);
+    }
+  });
+});

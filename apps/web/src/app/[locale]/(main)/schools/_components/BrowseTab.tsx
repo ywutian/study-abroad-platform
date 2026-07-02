@@ -503,7 +503,10 @@ export function BrowseTab() {
 
   return (
     <div className="grid w-full min-w-0 gap-6 overflow-x-clip lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] xl:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
-      <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+      {/* Sticky filter rail: bound to the viewport + scroll internally so a tall
+          (Advanced-Filters-expanded) panel can reach its bottom, and pad the
+          bottom so the fixed Feedback FAB (bottom-6 left-6) never covers it. */}
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-24">
         <SchoolFilterBar
           search={search}
           onSearchChange={setSearch}
