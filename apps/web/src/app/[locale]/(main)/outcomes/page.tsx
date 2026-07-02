@@ -18,13 +18,7 @@ interface OutcomeView {
   id: string;
   predictionResultId: string;
   result:
-    | 'ADMITTED'
-    | 'REJECTED'
-    | 'WAITLISTED'
-    | 'DEFERRED'
-    | 'UNKNOWN'
-    | 'CENSORED'
-    | 'WITHDRAWN';
+    'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'UNKNOWN' | 'CENSORED' | 'WITHDRAWN';
   status:
     | 'SELF_REPORTED'
     | 'COUNSELOR_VERIFIED'

@@ -163,30 +163,17 @@ export interface SectionAnalysis {
 export type ApplicationAnalysisStatus = 'fresh' | 'cached' | 'degraded';
 
 export type AnalysisState =
-  | 'ready'
-  | 'noTargetSchools'
-  | 'noPredictions'
-  | 'insufficientProfileData'
-  | 'analysisError';
+  'ready' | 'noTargetSchools' | 'noPredictions' | 'insufficientProfileData' | 'analysisError';
 
 export type AnalysisDataQuality = 'high' | 'medium' | 'low' | 'insufficient';
 
 export type PortfolioBalance =
-  | 'balanced'
-  | 'reachHeavy'
-  | 'safetyHeavy'
-  | 'undermatch'
-  | 'insufficient';
+  'balanced' | 'reachHeavy' | 'safetyHeavy' | 'undermatch' | 'insufficient';
 
 export type AnalysisApplicantType = 'domestic' | 'international' | 'unknown';
 
 export type AnalysisContextFlag =
-  | 'needAid'
-  | 'firstGeneration'
-  | 'legacy'
-  | 'gapYear'
-  | 'testSubmit'
-  | 'testOptional';
+  'needAid' | 'firstGeneration' | 'legacy' | 'gapYear' | 'testSubmit' | 'testOptional';
 
 export type ApplicationAnalysisExperimentCapability = 'RECOURSE' | 'UNCERTAINTY' | 'FAIRNESS';
 
@@ -395,10 +382,7 @@ export interface ApplicationAnalysisDebugInfo {
 }
 
 export type ApplicationAnalysisEvidenceKind =
-  | 'PREDICTION_FACT'
-  | 'POLICY_EVIDENCE'
-  | 'DERIVED_JUDGMENT'
-  | 'UNKNOWN';
+  'PREDICTION_FACT' | 'POLICY_EVIDENCE' | 'DERIVED_JUDGMENT' | 'UNKNOWN';
 
 export interface ApplicationAnalysisEvidenceSummaryItem {
   type: ApplicationAnalysisEvidenceKind;

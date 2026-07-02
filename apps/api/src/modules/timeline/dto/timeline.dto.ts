@@ -266,10 +266,7 @@ export class TaskResponseDto {
 
   @ApiPropertyOptional()
   sourceStatus?:
-    | 'generic'
-    | 'source_backed'
-    | 'source_review_required'
-    | 'first_party';
+    'generic' | 'source_backed' | 'source_review_required' | 'first_party';
 
   @ApiPropertyOptional()
   sourcePolicy?: string;

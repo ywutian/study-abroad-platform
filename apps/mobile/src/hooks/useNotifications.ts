@@ -421,8 +421,7 @@ export function useNotifications() {
     // User tapped on notification
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data as
-        | { notification?: Notification }
-        | undefined;
+        { notification?: Notification } | undefined;
 
       if (data?.notification) {
         navigateToNotification(data.notification);

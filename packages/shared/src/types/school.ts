@@ -5,12 +5,7 @@ import type { SchoolRanking } from '../ranking';
 export type SchoolMediaType = 'LOGO' | 'CAMPUS_COVER';
 
 export type SchoolMediaStatus =
-  | 'CANDIDATE'
-  | 'PENDING_REVIEW'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'FAILED'
-  | 'ARCHIVED';
+  'CANDIDATE' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'FAILED' | 'ARCHIVED';
 
 export type SchoolMediaSourceType =
   | 'OFFICIAL_WEBSITE'

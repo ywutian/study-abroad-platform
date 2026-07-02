@@ -24,9 +24,7 @@ export interface ChatCompletionRequest {
   stream?: boolean;
   tools?: ToolDefinition[];
   tool_choice?:
-    | 'auto'
-    | 'none'
-    | { type: 'function'; function: { name: string } };
+    'auto' | 'none' | { type: 'function'; function: { name: string } };
   response_format?: { type: 'text' | 'json_object' };
 }
 

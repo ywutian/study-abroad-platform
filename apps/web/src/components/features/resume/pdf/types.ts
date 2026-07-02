@@ -14,12 +14,7 @@ export type LayoutType =
 // ─── Font Pairing Types ───
 
 export type FontPairingId =
-  | 'helvetica'
-  | 'times'
-  | 'roboto'
-  | 'lato'
-  | 'noto-sans-sc'
-  | 'source-merriweather';
+  'helvetica' | 'times' | 'roboto' | 'lato' | 'noto-sans-sc' | 'source-merriweather';
 
 export interface FontPairing {
   id: FontPairingId;

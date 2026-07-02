@@ -119,11 +119,7 @@ interface TrainingRow {
 type GpaBand = 'below_25' | '25_50' | '50_75' | 'above_75' | 'unknown';
 type SatBand = 'below_25' | '25_75' | 'above_75' | 'TO' | 'unknown';
 type GeoBand =
-  | 'intl'
-  | 'oos_public'
-  | 'in_state_public'
-  | 'private'
-  | 'unknown';
+  'intl' | 'oos_public' | 'in_state_public' | 'private' | 'unknown';
 type RoundBand = 'ED' | 'ED2' | 'EA' | 'REA' | 'RD' | 'unknown';
 type Tier = 'T5' | 'T6_20' | 'T21_50' | 'T51_100' | 'T100plus';
 

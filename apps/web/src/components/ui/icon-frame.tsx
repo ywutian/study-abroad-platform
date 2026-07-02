@@ -4,15 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type IconTone =
-  | 'default'
-  | 'neutral'
-  | 'info'
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'reach'
-  | 'match'
-  | 'safety';
+  'default' | 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'reach' | 'match' | 'safety';
 
 type IconFrameSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 

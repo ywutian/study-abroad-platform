@@ -33,11 +33,7 @@ type SourceQuality =
   | 'source_search_required'
   | 'terminal';
 type NextAction =
-  | 'accept'
-  | 'review'
-  | 'source-search'
-  | 'mark-terminal'
-  | 'block-release';
+  'accept' | 'review' | 'source-search' | 'mark-terminal' | 'block-release';
 
 interface Args {
   worklist: string | null;

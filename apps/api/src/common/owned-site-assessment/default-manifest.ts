@@ -110,64 +110,60 @@ function accountLabelFor(
 function buildJourneyDefinitions(site: SiteSpec): OwnedSiteJourneyDefinition[] {
   return (['prod', 'staging'] as OwnedSiteEnvironment[]).flatMap(
     (environment) =>
-      site.journeys.map(
-        (journey): OwnedSiteJourneyDefinition => ({
-          journeyId: `${site.siteKey}.${environment}.${journey.key}`,
-          siteKey: site.siteKey,
-          label:
-            environment === 'prod'
-              ? `${site.displayName} ${journey.label}`
-              : `${site.displayName} ${journey.label} (Staging)`,
-          category: journey.category,
-          entryUrl:
-            environment === 'prod'
-              ? journey.prodEntryUrl
-              : (journey.stagingEntryUrl ??
-                stagingUrl(site.siteKey, `/${journey.key}`)),
-          requiresAuth: journey.requiresAuth,
-          defaultMutationBudget: journey.defaultMutationBudget,
-          desktopPriority: journey.desktopPriority,
-          notes: journey.notes,
-        }),
-      ),
+      site.journeys.map((journey): OwnedSiteJourneyDefinition => ({
+        journeyId: `${site.siteKey}.${environment}.${journey.key}`,
+        siteKey: site.siteKey,
+        label:
+          environment === 'prod'
+            ? `${site.displayName} ${journey.label}`
+            : `${site.displayName} ${journey.label} (Staging)`,
+        category: journey.category,
+        entryUrl:
+          environment === 'prod'
+            ? journey.prodEntryUrl
+            : (journey.stagingEntryUrl ??
+              stagingUrl(site.siteKey, `/${journey.key}`)),
+        requiresAuth: journey.requiresAuth,
+        defaultMutationBudget: journey.defaultMutationBudget,
+        desktopPriority: journey.desktopPriority,
+        notes: journey.notes,
+      })),
   );
 }
 
 function buildTargets(site: SiteSpec): OwnedSiteAssessmentTarget[] {
   return (['prod', 'staging'] as OwnedSiteEnvironment[]).flatMap(
     (environment) =>
-      site.roles.map(
-        (role): OwnedSiteAssessmentTarget => ({
-          targetId: targetIdFor(
-            site.siteKey,
-            environment,
-            role.role,
-            role.siteRole,
-          ),
-          siteKey: site.siteKey,
+      site.roles.map((role): OwnedSiteAssessmentTarget => ({
+        targetId: targetIdFor(
+          site.siteKey,
           environment,
-          role: role.role,
-          siteRole: role.siteRole,
-          loginUrl: defaultLoginUrl(site, role, environment),
-          homeUrl: defaultHomeUrl(site, role, environment),
-          journeys: role.journeys.map(
-            (journeyKey) => `${site.siteKey}.${environment}.${journeyKey}`,
-          ),
-          mutationBudget:
-            environment === 'prod'
-              ? (role.prodMutationBudget ??
-                (role.role === 'guest' ? 'read-only' : 'reversible-write'))
-              : (role.stagingMutationBudget ??
-                (role.role === 'guest' ? 'read-only' : 'dangerous-write')),
-          accountLabel: accountLabelFor(
-            site.siteKey,
-            environment,
-            role.role,
-            role.siteRole,
-          ),
-          accountOwner: 'owned-site-assessment',
-        }),
-      ),
+          role.role,
+          role.siteRole,
+        ),
+        siteKey: site.siteKey,
+        environment,
+        role: role.role,
+        siteRole: role.siteRole,
+        loginUrl: defaultLoginUrl(site, role, environment),
+        homeUrl: defaultHomeUrl(site, role, environment),
+        journeys: role.journeys.map(
+          (journeyKey) => `${site.siteKey}.${environment}.${journeyKey}`,
+        ),
+        mutationBudget:
+          environment === 'prod'
+            ? (role.prodMutationBudget ??
+              (role.role === 'guest' ? 'read-only' : 'reversible-write'))
+            : (role.stagingMutationBudget ??
+              (role.role === 'guest' ? 'read-only' : 'dangerous-write')),
+        accountLabel: accountLabelFor(
+          site.siteKey,
+          environment,
+          role.role,
+          role.siteRole,
+        ),
+        accountOwner: 'owned-site-assessment',
+      })),
   );
 }
 

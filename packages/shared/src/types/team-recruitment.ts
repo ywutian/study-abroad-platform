@@ -1,8 +1,5 @@
 export type AvailabilityBand =
-  | 'LESS_THAN_5_HOURS'
-  | 'FIVE_TO_TEN_HOURS'
-  | 'TEN_PLUS_HOURS'
-  | 'WEEKENDS_ONLY';
+  'LESS_THAN_5_HOURS' | 'FIVE_TO_TEN_HOURS' | 'TEN_PLUS_HOURS' | 'WEEKENDS_ONLY';
 
 export type CollaborationMode = 'ONLINE' | 'OFFLINE' | 'HYBRID';
 
@@ -23,12 +20,7 @@ export type RecruitmentContextSourceType = 'OFFICIAL' | 'COMMUNITY' | (string & 
 export type RecruitmentHighlightTone = 'neutral' | 'success' | 'warning' | 'danger';
 
 export type RecruitmentHighlightSource =
-  | 'PROFILE'
-  | 'TEST_SCORE'
-  | 'AWARD'
-  | 'ACTIVITY'
-  | 'RESUME'
-  | 'ASSESSMENT';
+  'PROFILE' | 'TEST_SCORE' | 'AWARD' | 'ACTIVITY' | 'RESUME' | 'ASSESSMENT';
 
 export interface RecruitmentHighlightChipDto {
   label: string;

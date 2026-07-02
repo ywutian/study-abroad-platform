@@ -19,10 +19,7 @@ import { execSync } from 'child_process';
 const ROOT = path.resolve(__dirname, '..');
 
 // Directories scanned in full-scan mode.
-const SCAN_DIRS = [
-  path.join(ROOT, 'apps/web/src'),
-  path.join(ROOT, 'apps/mobile/src'),
-];
+const SCAN_DIRS = [path.join(ROOT, 'apps/web/src'), path.join(ROOT, 'apps/mobile/src')];
 
 // Only text-ish source files are inspected.
 const SCAN_EXT = new Set(['.ts', '.tsx', '.js', '.jsx', '.json']);
@@ -56,9 +53,8 @@ function collectFiles(stagedOnly: boolean): string[] {
       .filter(Boolean)
       .filter(
         (f) =>
-          (f.startsWith('apps/web/src/') ||
-            f.startsWith('apps/mobile/src/')) &&
-          SCAN_EXT.has(path.extname(f)),
+          (f.startsWith('apps/web/src/') || f.startsWith('apps/mobile/src/')) &&
+          SCAN_EXT.has(path.extname(f))
       )
       .map((f) => path.join(ROOT, f))
       .filter((f) => fs.existsSync(f));
@@ -107,7 +103,7 @@ function main() {
   console.log(
     `🏷️  Checking ${files.length} file(s) for deprecated brand terms${
       stagedOnly ? ' (staged)' : ''
-    }...`,
+    }...`
   );
 
   const hits = files.flatMap(scanFile);

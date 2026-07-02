@@ -1,6 +1,6 @@
 /**
  * 文书题目数据
- * 
+ *
  * 来源: 学校官网公开信息
  */
 
@@ -19,13 +19,15 @@ interface SchoolEssay {
 const SCHOOL_SUPPLEMENTS: Record<string, SchoolEssay[]> = {
   'Stanford University': [
     {
-      prompt: 'Reflect on an idea or experience that makes you genuinely excited about learning.',
+      prompt:
+        'Reflect on an idea or experience that makes you genuinely excited about learning.',
       promptZh: '反思一个让你真正对学习感到兴奋的想法或经历。',
       wordLimit: 250,
       year: 2025,
     },
     {
-      prompt: 'Write a note to your future roommate that reveals something about you.',
+      prompt:
+        'Write a note to your future roommate that reveals something about you.',
       promptZh: '给你未来的室友写一封便条，透露一些关于你的事情。',
       wordLimit: 250,
       year: 2025,
@@ -39,7 +41,8 @@ const SCHOOL_SUPPLEMENTS: Record<string, SchoolEssay[]> = {
   ],
   'Harvard University': [
     {
-      prompt: 'How will your life experiences enable you to contribute to Harvard?',
+      prompt:
+        'How will your life experiences enable you to contribute to Harvard?',
       promptZh: '你的生活经历将如何使你为哈佛做出贡献？',
       wordLimit: 200,
       year: 2025,
@@ -69,7 +72,8 @@ const SCHOOL_SUPPLEMENTS: Record<string, SchoolEssay[]> = {
   ],
   'Princeton University': [
     {
-      prompt: 'What song represents the soundtrack of your life at this moment?',
+      prompt:
+        'What song represents the soundtrack of your life at this moment?',
       promptZh: '什么歌曲代表了你目前人生的配乐？',
       wordLimit: 250,
       year: 2025,
@@ -86,8 +90,9 @@ async function seedEssayPrompts() {
     });
 
     if (school) {
-      const currentMetadata = (school.metadata as Record<string, unknown>) || {};
-      
+      const currentMetadata =
+        (school.metadata as Record<string, unknown>) || {};
+
       await prisma.school.update({
         where: { id: school.id },
         data: {

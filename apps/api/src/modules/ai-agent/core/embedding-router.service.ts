@@ -53,8 +53,7 @@ export class EmbeddingRouterService {
   ) {
     this.mode =
       (this.configService?.get<string>('EMBEDDING_ROUTER_MODE') as
-        | 'shadow'
-        | 'active') || 'shadow';
+        'shadow' | 'active') || 'shadow';
     this.logger.log(`EmbeddingRouter initialized in ${this.mode} mode`);
   }
 

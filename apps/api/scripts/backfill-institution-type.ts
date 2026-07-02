@@ -12,35 +12,57 @@ const prisma = new PrismaClient();
 
 // Known music conservatories by nameNorm substring
 const CONSERVATORY_PATTERNS = [
-  'conservatory', 'juilliard', 'berklee', 'curtis institute',
-  'manhattan school of music', 'new england conservatory',
-  'oberlin conservatory', 'san francisco conservatory',
-  'peabody', 'eastman school',
+  'conservatory',
+  'juilliard',
+  'berklee',
+  'curtis institute',
+  'manhattan school of music',
+  'new england conservatory',
+  'oberlin conservatory',
+  'san francisco conservatory',
+  'peabody',
+  'eastman school',
 ];
 
 // Known art/design schools by nameNorm substring
 const ART_DESIGN_PATTERNS = [
-  'school of the art institute', 'rhode island school of design',
-  'california institute of the arts', 'calarts',
-  'california college of the arts', 'pratt institute',
-  'savannah college of art', 'scad',
-  'parsons', 'school of visual arts', 'sva',
-  'maryland institute', 'mica',
-  'cranbrook', 'art center college',
+  'school of the art institute',
+  'rhode island school of design',
+  'california institute of the arts',
+  'calarts',
+  'california college of the arts',
+  'pratt institute',
+  'savannah college of art',
+  'scad',
+  'parsons',
+  'school of visual arts',
+  'sva',
+  'maryland institute',
+  'mica',
+  'cranbrook',
+  'art center college',
 ];
 
 // Known specialty schools
 const SPECIALTY_PATTERNS = [
-  'military', 'naval academy', 'air force academy', 'west point',
-  'merchant marine', 'coast guard academy',
-  'theological', 'seminary',
+  'military',
+  'naval academy',
+  'air force academy',
+  'west point',
+  'merchant marine',
+  'coast guard academy',
+  'theological',
+  'seminary',
 ];
 
 function classifyByName(nameNorm: string): InstitutionType | null {
   const n = nameNorm.toLowerCase();
-  if (CONSERVATORY_PATTERNS.some(p => n.includes(p))) return InstitutionType.MUSIC_CONSERVATORY;
-  if (ART_DESIGN_PATTERNS.some(p => n.includes(p))) return InstitutionType.ART_DESIGN;
-  if (SPECIALTY_PATTERNS.some(p => n.includes(p))) return InstitutionType.SPECIALTY;
+  if (CONSERVATORY_PATTERNS.some((p) => n.includes(p)))
+    return InstitutionType.MUSIC_CONSERVATORY;
+  if (ART_DESIGN_PATTERNS.some((p) => n.includes(p)))
+    return InstitutionType.ART_DESIGN;
+  if (SPECIALTY_PATTERNS.some((p) => n.includes(p)))
+    return InstitutionType.SPECIALTY;
   return null;
 }
 
@@ -51,8 +73,11 @@ async function main() {
   const schools = await prisma.school.findMany({
     where: { country: 'US' },
     select: {
-      id: true, nameNorm: true, isPrivate: true,
-      totalEnrollment: true, usNewsRank: true,
+      id: true,
+      nameNorm: true,
+      isPrivate: true,
+      totalEnrollment: true,
+      usNewsRank: true,
       institutionType: true,
       rankings: { select: { list: true }, take: 5 },
     },
@@ -61,13 +86,18 @@ async function main() {
   // Find schools with ART_DESIGN ranking
   const artDesignByRanking = new Set(
     schools
-      .filter(s => s.rankings.some(r => r.list?.toUpperCase().includes('ART')))
-      .map(s => s.id),
+      .filter((s) =>
+        s.rankings.some((r) => r.list?.toUpperCase().includes('ART')),
+      )
+      .map((s) => s.id),
   );
 
   const stats: Record<InstitutionType, number> = {
-    RESEARCH_UNIVERSITY: 0, LIBERAL_ARTS: 0,
-    ART_DESIGN: 0, MUSIC_CONSERVATORY: 0, SPECIALTY: 0,
+    RESEARCH_UNIVERSITY: 0,
+    LIBERAL_ARTS: 0,
+    ART_DESIGN: 0,
+    MUSIC_CONSERVATORY: 0,
+    SPECIALTY: 0,
   };
 
   let updated = 0;
@@ -124,4 +154,7 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

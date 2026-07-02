@@ -147,10 +147,7 @@ export interface ApplicationAnalysisDebugInfo {
 }
 
 export type ApplicationAnalysisEvidenceKind =
-  | 'PREDICTION_FACT'
-  | 'POLICY_EVIDENCE'
-  | 'DERIVED_JUDGMENT'
-  | 'UNKNOWN';
+  'PREDICTION_FACT' | 'POLICY_EVIDENCE' | 'DERIVED_JUDGMENT' | 'UNKNOWN';
 
 export interface ApplicationAnalysisEvidenceSummaryItem {
   type: ApplicationAnalysisEvidenceKind;
@@ -221,19 +218,10 @@ export type ApplicationAnalysisStatus = 'fresh' | 'cached' | 'degraded';
 export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
 export type SchoolIntlAidPolicy = 'NEED_BLIND' | 'NEED_AWARE' | 'UNKNOWN';
 export type SchoolRoundContext =
-  | 'ED'
-  | 'ED2'
-  | 'EA'
-  | 'REA'
-  | 'SCEA'
-  | 'RD'
-  | 'UC'
-  | 'UNKNOWN';
+  'ED' | 'ED2' | 'EA' | 'REA' | 'SCEA' | 'RD' | 'UC' | 'UNKNOWN';
 export type PolicySourceQuality = 'REVIEWED' | 'DERIVED' | 'UNKNOWN';
 export type ApplicationAnalysisExperimentCapability =
-  | 'RECOURSE'
-  | 'UNCERTAINTY'
-  | 'FAIRNESS';
+  'RECOURSE' | 'UNCERTAINTY' | 'FAIRNESS';
 export type ExperimentalVersionStatus = 'CANARY' | 'ACTIVE';
 
 export interface SchoolPolicyContext {
@@ -259,11 +247,7 @@ export type AnalysisState =
 export type AnalysisDataQuality = 'high' | 'medium' | 'low' | 'insufficient';
 
 export type PortfolioBalance =
-  | 'balanced'
-  | 'reachHeavy'
-  | 'safetyHeavy'
-  | 'undermatch'
-  | 'insufficient';
+  'balanced' | 'reachHeavy' | 'safetyHeavy' | 'undermatch' | 'insufficient';
 
 export type AnalysisApplicantType = 'domestic' | 'international' | 'unknown';
 

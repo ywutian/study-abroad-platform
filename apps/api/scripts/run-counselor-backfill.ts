@@ -56,9 +56,12 @@ function addResult(
 
 async function main() {
   const args = parseArgs();
-  const app = await NestFactory.createApplicationContext(CounselorEngineModule, {
-    logger: ['error', 'warn', 'log'],
-  });
+  const app = await NestFactory.createApplicationContext(
+    CounselorEngineModule,
+    {
+      logger: ['error', 'warn', 'log'],
+    },
+  );
 
   try {
     const service = app.get(CounselorBackfillService);

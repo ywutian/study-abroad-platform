@@ -1746,9 +1746,7 @@ function normalizeRecourse(value: unknown): RecourseGuidance | undefined {
             'medium',
           timeHorizon:
             (ensureString(entry.timeHorizon) as
-              | 'now'
-              | 'next90Days'
-              | 'beforeSubmission') ?? 'next90Days',
+              'now' | 'next90Days' | 'beforeSubmission') ?? 'next90Days',
           blockedBy: ensureStringArray(entry.blockedBy),
         }))
         .filter((entry) => entry.action && entry.rationale)
@@ -1763,9 +1761,7 @@ function normalizeRecourse(value: unknown): RecourseGuidance | undefined {
     recommendedChanges,
     estimatedDirection:
       (ensureString(value.estimatedDirection) as
-        | 'upside'
-        | 'stabilize'
-        | 'mixed') ?? 'mixed',
+        'upside' | 'stabilize' | 'mixed') ?? 'mixed',
     constraints: ensureStringArray(value.constraints),
     whyNotGuaranteed,
   };

@@ -17,10 +17,7 @@ const SET_VERSION =
   `case-aggregate-teachers-${new Date().toISOString().slice(0, 10)}`;
 
 type TeacherKey =
-  | 'ap-rigor-v1'
-  | 'ib-v1'
-  | 'feeder-hs-v1'
-  | 'activity-intensity-v1';
+  'ap-rigor-v1' | 'ib-v1' | 'feeder-hs-v1' | 'activity-intensity-v1';
 
 type Bucket = {
   teacherKey: TeacherKey;

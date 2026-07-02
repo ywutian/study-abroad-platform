@@ -1,16 +1,8 @@
 export type RecruitmentHighlightTone =
-  | 'neutral'
-  | 'success'
-  | 'warning'
-  | 'danger';
+  'neutral' | 'success' | 'warning' | 'danger';
 
 export type RecruitmentHighlightSource =
-  | 'PROFILE'
-  | 'TEST_SCORE'
-  | 'AWARD'
-  | 'ACTIVITY'
-  | 'RESUME'
-  | 'ASSESSMENT';
+  'PROFILE' | 'TEST_SCORE' | 'AWARD' | 'ACTIVITY' | 'RESUME' | 'ASSESSMENT';
 
 export interface RecruitmentHighlightChip {
   label: string;

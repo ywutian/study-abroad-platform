@@ -26,29 +26,15 @@ export type TimelineStatus =
   | 'WITHDRAWN';
 
 export type TaskSourceStatus =
-  | 'generic'
-  | 'source_backed'
-  | 'source_review_required'
-  | 'first_party';
+  'generic' | 'source_backed' | 'source_review_required' | 'first_party';
 
 export type PersonalEventCategory =
-  | 'COMPETITION'
-  | 'TEST'
-  | 'SUMMER_PROGRAM'
-  | 'INTERNSHIP'
-  | 'ACTIVITY'
-  | 'MATERIAL'
-  | 'OTHER';
+  'COMPETITION' | 'TEST' | 'SUMMER_PROGRAM' | 'INTERNSHIP' | 'ACTIVITY' | 'MATERIAL' | 'OTHER';
 
 export type PersonalEventStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export type GlobalEventCategory =
-  | 'TEST'
-  | 'COMPETITION'
-  | 'SUMMER_PROGRAM'
-  | 'FINANCIAL_AID'
-  | 'APPLICATION'
-  | 'OTHER';
+  'TEST' | 'COMPETITION' | 'SUMMER_PROGRAM' | 'FINANCIAL_AID' | 'APPLICATION' | 'OTHER';
 
 export const PERSONAL_EVENT_CATEGORIES: readonly PersonalEventCategory[] = [
   'COMPETITION',

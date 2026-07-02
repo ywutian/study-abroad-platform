@@ -85,9 +85,7 @@ export interface UpdateNotificationPreferencesInput {
 }
 
 export type ReadinessLiveChannel =
-  | 'redis_notification_feed'
-  | 'remote_push'
-  | 'email';
+  'redis_notification_feed' | 'remote_push' | 'email';
 
 export interface ReadinessLiveChannelConsent {
   preferences: NotificationPreferences;

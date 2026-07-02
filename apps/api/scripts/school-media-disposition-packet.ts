@@ -7,11 +7,7 @@ type PacketStatus =
   | 'BLOCKED_WORKLIST_MISSING'
   | 'BLOCKED_UNMAPPED_MEDIA_ROWS';
 type ClosureState =
-  | 'trusted'
-  | 'review'
-  | 'source_search'
-  | 'terminal'
-  | 'conflict';
+  'trusted' | 'review' | 'source_search' | 'terminal' | 'conflict';
 type NextAction =
   | 'accept'
   | 'review-media'

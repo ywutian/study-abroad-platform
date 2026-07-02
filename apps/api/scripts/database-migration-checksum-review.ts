@@ -5,9 +5,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 type ReviewStatus =
-  | 'PASS'
-  | 'BLOCKED_EXACT_SQL_NOT_FOUND'
-  | 'REVIEW_EXACT_SQL_FOUND';
+  'PASS' | 'BLOCKED_EXACT_SQL_NOT_FOUND' | 'REVIEW_EXACT_SQL_FOUND';
 
 interface Args {
   reconciliation: string;

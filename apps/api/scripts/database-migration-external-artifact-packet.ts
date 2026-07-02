@@ -101,9 +101,7 @@ interface ExternalArtifactRequestRow {
   disposition: string;
   exactMatchLocations: Array<Record<string, unknown>>;
   sourceKind:
-    | 'checksum_mismatch'
-    | 'unrecoverable_migration'
-    | 'target_override';
+    'checksum_mismatch' | 'unrecoverable_migration' | 'target_override';
   priorExactArtifactMatches: ArtifactMatch[];
 }
 

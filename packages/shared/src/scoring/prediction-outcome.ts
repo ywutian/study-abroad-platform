@@ -8,13 +8,7 @@ export type OutcomeLabelStatus =
   | 'CENSORED';
 
 export type OutcomeLabelResult =
-  | 'ADMITTED'
-  | 'REJECTED'
-  | 'WAITLISTED'
-  | 'DEFERRED'
-  | 'WITHDRAWN'
-  | 'UNKNOWN'
-  | 'CENSORED';
+  'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN' | 'UNKNOWN' | 'CENSORED';
 
 export type CanonicalOutcomeLabel = 'ADMITTED' | 'REJECTED' | 'CENSORED';
 

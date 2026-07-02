@@ -309,11 +309,7 @@ export interface SchoolStandardFormat {
 // ============================================
 
 export type EssayPromptSource =
-  | 'official'
-  | 'collegevine'
-  | 'common_app'
-  | 'llm_extracted'
-  | 'manual';
+  'official' | 'collegevine' | 'common_app' | 'llm_extracted' | 'manual';
 
 export interface EssayPromptStandardFormat {
   source: EssayPromptSource;

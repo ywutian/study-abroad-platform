@@ -70,13 +70,7 @@ type ColorPaletteMenuProps = {
 };
 
 type ThemeGroupId =
-  | 'featured'
-  | 'recent'
-  | 'favorites'
-  | 'more'
-  | 'experimental'
-  | 'all'
-  | ColorThemeCategory;
+  'featured' | 'recent' | 'favorites' | 'more' | 'experimental' | 'all' | ColorThemeCategory;
 type StudioPanel = 'themes' | 'customize';
 
 const RECENT_THEMES_KEY = 'color-palette-recents';

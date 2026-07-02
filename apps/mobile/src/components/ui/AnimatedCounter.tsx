@@ -36,13 +36,13 @@ export function AnimatedCounter({
   useEffect(() => {
     const startTime = Date.now();
     const startValue = displayValue;
-    
+
     const interval = setInterval(() => {
       const progress = Math.min(1, (Date.now() - startTime) / duration);
       const easedProgress = 1 - Math.pow(1 - progress, 3); // cubic ease out
       const newValue = startValue + (value - startValue) * easedProgress;
       setDisplayValue(Math.round(newValue * Math.pow(10, decimals)) / Math.pow(10, decimals));
-      
+
       if (progress >= 1) {
         clearInterval(interval);
         setDisplayValue(value);
@@ -70,7 +70,9 @@ export function AnimatedCounter({
         style,
       ]}
     >
-      {prefix}{formatValue(displayValue)}{suffix}
+      {prefix}
+      {formatValue(displayValue)}
+      {suffix}
     </Text>
   );
 }

@@ -166,9 +166,7 @@ export class CompliantDistillationService {
   ): Promise<{
     decision: DistillationBlendDecision;
     stage:
-      | typeof DISTILLATION_SHADOW_STAGE
-      | typeof DISTILLATION_LIVE_STAGE
-      | null;
+      typeof DISTILLATION_SHADOW_STAGE | typeof DISTILLATION_LIVE_STAGE | null;
     applyLiveBlend: boolean;
   } | null> {
     if (input.schoolCountry && input.schoolCountry !== 'US') {

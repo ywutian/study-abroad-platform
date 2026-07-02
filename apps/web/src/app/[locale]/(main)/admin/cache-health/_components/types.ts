@@ -9,12 +9,7 @@
 export type RedisOpKind = 'read' | 'write' | 'delete' | 'atomic' | 'admin' | 'pipeline' | 'unknown';
 
 export type RedisErrorKind =
-  | 'quota_exceeded'
-  | 'timeout'
-  | 'connection'
-  | 'auth'
-  | 'reply_error'
-  | 'other';
+  'quota_exceeded' | 'timeout' | 'connection' | 'auth' | 'reply_error' | 'other';
 
 export interface RedisOpSnapshot {
   kind: RedisOpKind;

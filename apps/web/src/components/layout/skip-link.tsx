@@ -2,7 +2,7 @@
 
 /**
  * Skip Links 组件
- * 
+ *
  * 为键盘用户和屏幕阅读器用户提供快速跳转到主要内容的功能
  */
 
@@ -39,7 +39,7 @@ export function SkipLinks({ mainId = 'main-content', navId = 'main-nav' }: SkipL
 
 /**
  * 主内容区域包装器
- * 
+ *
  * 自动添加 id 和无障碍属性
  */
 interface MainContentProps {
@@ -62,5 +62,3 @@ export function MainContent({ children, id = 'main-content', className }: MainCo
     </main>
   );
 }
-
-

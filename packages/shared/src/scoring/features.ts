@@ -211,7 +211,11 @@ export function extractFeatureVector(
       : profile.toeflScore != null
         ? profile.toeflScore / 120
         : NaN;
-  const hasTestScore = isTestBlindSchool ? 0 : (profile.satScore != null || profile.actScore != null ? 1 : 0);
+  const hasTestScore = isTestBlindSchool
+    ? 0
+    : profile.satScore != null || profile.actScore != null
+      ? 1
+      : 0;
   const hasToefl = profile.englishProficiencyScore != null || profile.toeflScore != null ? 1 : 0;
 
   let testCount = 0;

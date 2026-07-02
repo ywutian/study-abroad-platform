@@ -11,11 +11,7 @@ type PacketStatus =
   | 'BLOCKED_UNMAPPED_CASE_OUTCOME_ROWS'
   | 'BLOCKED_DB_QUERY_FAILED';
 type ClosureState =
-  | 'trusted'
-  | 'review'
-  | 'diagnostic'
-  | 'terminal'
-  | 'conflict';
+  'trusted' | 'review' | 'diagnostic' | 'terminal' | 'conflict';
 type RowType =
   | 'admission_case'
   | 'outcome_label'

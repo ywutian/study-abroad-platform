@@ -30,8 +30,7 @@ export const CATALOG_RANKING_LISTS = [
 
 export type CatalogRankingList = (typeof CATALOG_RANKING_LISTS)[number];
 export type RankingListSelection =
-  | typeof US_NEWS_CORE_RANKING_LIST
-  | CatalogRankingList;
+  typeof US_NEWS_CORE_RANKING_LIST | CatalogRankingList;
 
 const CATALOG_RANKING_LIST_SET = new Set<string>(CATALOG_RANKING_LISTS);
 const RANKING_LIST_SELECTION_SET = new Set<string>([

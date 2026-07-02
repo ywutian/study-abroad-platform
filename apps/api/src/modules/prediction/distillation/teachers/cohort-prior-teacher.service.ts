@@ -179,9 +179,7 @@ export class CohortPriorTeacherService implements TeacherSignalProvider {
     'configuredWeight' | 'effectiveBlendWeight'
   > {
     const baseConfidence = (prior.confidence ?? 'low') as
-      | 'low'
-      | 'medium'
-      | 'high';
+      'low' | 'medium' | 'high';
 
     // Tier-based downgrade: exact stays, others step down one rung.
     const tierDowngrade: Record<typeof tier, 'low' | 'medium' | 'high'> = {

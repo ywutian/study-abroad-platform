@@ -79,8 +79,7 @@ export class PointsRedemptionService {
         pointsSpent: cost,
         status: RedemptionStatus.PENDING,
         metadata: (metadata ?? null) as
-          | Prisma.InputJsonValue
-          | typeof Prisma.JsonNull,
+          Prisma.InputJsonValue | typeof Prisma.JsonNull,
       },
     });
 
@@ -126,8 +125,8 @@ export class PointsRedemptionService {
               fulfillment: fulfillmentMetadata,
             } as Prisma.InputJsonValue)
           : ((redemption.metadata as
-              | Prisma.InputJsonValue
-              | typeof Prisma.JsonNull) ?? Prisma.JsonNull),
+              Prisma.InputJsonValue | typeof Prisma.JsonNull) ??
+            Prisma.JsonNull),
       },
     });
   }

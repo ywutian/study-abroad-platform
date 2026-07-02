@@ -1,13 +1,7 @@
 import { cn } from '@/lib/utils';
 
 export type PageContainerVariant =
-  | 'marketing'
-  | 'entry'
-  | 'tool'
-  | 'ai'
-  | 'community'
-  | 'admin'
-  | 'workbench';
+  'marketing' | 'entry' | 'tool' | 'ai' | 'community' | 'admin' | 'workbench';
 
 interface PageContainerProps {
   children: React.ReactNode;

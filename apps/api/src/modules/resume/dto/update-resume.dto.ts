@@ -147,12 +147,7 @@ export class UpdateResumeDto {
     'ARCHIVED',
   ] as const)
   status?:
-    | 'DRAFT'
-    | 'ACTIVE'
-    | 'REVIEWED'
-    | 'APPROVED'
-    | 'EXPORTED'
-    | 'ARCHIVED';
+    'DRAFT' | 'ACTIVE' | 'REVIEWED' | 'APPROVED' | 'EXPORTED' | 'ARCHIVED';
 
   @ApiPropertyOptional({ description: 'Template ID' })
   @IsOptional()

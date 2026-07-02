@@ -2,10 +2,7 @@
  * Static error message translations for use outside React context (API client).
  * Keys must match those in api-error-map.ts.
  */
-import {
-  PASSWORD_POLICY_MESSAGE_EN,
-  PASSWORD_POLICY_MESSAGE_ZH,
-} from '@study-abroad/shared';
+import { PASSWORD_POLICY_MESSAGE_EN, PASSWORD_POLICY_MESSAGE_ZH } from '@study-abroad/shared';
 
 export const API_ERROR_MESSAGES: Record<'zh' | 'en', Record<string, string>> = {
   zh: {

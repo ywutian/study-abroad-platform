@@ -46,11 +46,7 @@ export type OwnedSiteDataSurfaceKind =
 export type OwnedSiteAgentFeasibility = 'reliable' | 'fragile' | 'blocked' | 'mutation-risk';
 
 export type OwnedSitePaginationBehavior =
-  | 'none'
-  | 'next-link'
-  | 'load-more'
-  | 'infinite-scroll'
-  | 'unknown';
+  'none' | 'next-link' | 'load-more' | 'infinite-scroll' | 'unknown';
 
 export type OwnedSiteExtractionPreference = 'browser' | 'desktop' | 'equal' | 'unknown';
 

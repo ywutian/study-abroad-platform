@@ -103,8 +103,7 @@ async function main() {
 
   const dryRun = !process.argv.includes('--apply');
   const raw = JSON.parse(readFileSync(file, 'utf8')) as
-    | { schools: InputRow[] }
-    | InputRow[];
+    { schools: InputRow[] } | InputRow[];
   const rows: InputRow[] = Array.isArray(raw) ? raw : raw.schools;
   if (!Array.isArray(rows))
     throw new Error('Input must contain schools[] array');

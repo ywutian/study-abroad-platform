@@ -13,11 +13,7 @@ const prisma = new PrismaClient();
 
 // 学校难度等级（基于录取率）
 type DifficultyLevel =
-  | 'elite'
-  | 'highly_selective'
-  | 'selective'
-  | 'moderate'
-  | 'accessible';
+  'elite' | 'highly_selective' | 'selective' | 'moderate' | 'accessible';
 
 function getSchoolDifficulty(acceptanceRate: number | null): DifficultyLevel {
   if (!acceptanceRate) return 'moderate';

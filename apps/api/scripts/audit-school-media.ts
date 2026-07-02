@@ -86,7 +86,8 @@ function parseArgs() {
     const idx = args.indexOf(`--${name}`);
     return idx >= 0 ? args[idx + 1] : undefined;
   };
-  const has = (name: string) => args.some((a) => a === `--${name}` || a.startsWith(`--${name}=`));
+  const has = (name: string) =>
+    args.some((a) => a === `--${name}` || a.startsWith(`--${name}=`));
   return {
     apply: has('apply'),
     out: get('out'),
@@ -177,7 +178,9 @@ async function main() {
   }
 
   if (opts.apply && hits.length > 0) {
-    console.log(`\n--apply set — flipping ${hits.length} asset(s) to REJECTED...`);
+    console.log(
+      `\n--apply set — flipping ${hits.length} asset(s) to REJECTED...`,
+    );
     const now = new Date();
     for (const hit of hits) {
       await prisma.schoolMediaAsset.update({

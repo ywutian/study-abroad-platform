@@ -54,21 +54,10 @@ export type BenchmarkProfileInput = {
 export type CompetitorRunStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 
 export type CompetitorPredictionStatus =
-  | 'PENDING'
-  | 'COMPLETED'
-  | 'TIER_ONLY'
-  | 'UNMATCHED'
-  | 'AMBIGUOUS'
-  | 'FAILED'
-  | 'SESSION_ERROR';
+  'PENDING' | 'COMPLETED' | 'TIER_ONLY' | 'UNMATCHED' | 'AMBIGUOUS' | 'FAILED' | 'SESSION_ERROR';
 
 export type CompetitorPredictionMatchStatus =
-  | 'matched'
-  | 'matched-tier-only'
-  | 'unmatched'
-  | 'ambiguous'
-  | 'adapter-error'
-  | 'session-error';
+  'matched' | 'matched-tier-only' | 'unmatched' | 'ambiguous' | 'adapter-error' | 'session-error';
 
 export interface BenchmarkProfile {
   id: string;

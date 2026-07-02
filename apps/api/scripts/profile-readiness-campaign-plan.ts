@@ -5,10 +5,7 @@ import crypto from 'node:crypto';
 
 type Severity = 'critical' | 'warning' | 'info';
 type CampaignChannel =
-  | 'in_app'
-  | 'dashboard'
-  | 'email_candidate'
-  | 'admin_queue';
+  'in_app' | 'dashboard' | 'email_candidate' | 'admin_queue';
 
 interface Args {
   worklist: string;

@@ -1146,8 +1146,10 @@ export class PredictionWorkflowService {
     const monitoringConfig =
       (policy.monitoringConfig as Record<string, unknown> | null) ?? {};
     const shadowMetrics = ((monitoringConfig.shadowMetrics as
-      | Record<string, unknown>
-      | undefined) ?? {}) as Record<string, number | boolean>;
+      Record<string, unknown> | undefined) ?? {}) as Record<
+      string,
+      number | boolean
+    >;
 
     const cohortSummary = eligibleCounts.cohorts;
     const resolvedCount = eligibleCounts.resolvedLabels;

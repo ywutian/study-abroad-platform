@@ -140,11 +140,7 @@ export interface PredictionHistoryData {
 }
 
 export type AdmissionResultReport =
-  | 'ADMITTED'
-  | 'REJECTED'
-  | 'WAITLISTED'
-  | 'DEFERRED'
-  | 'WITHDRAWN';
+  'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN';
 
 // ============================================
 // Hooks
