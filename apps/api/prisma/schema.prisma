@@ -1046,6 +1046,10 @@ model CompetitionEdition {
   registrationCloseAt DateTime?
   eventStartAt        DateTime?
   eventEndAt          DateTime?
+  // Provenance for real fetched dates (competition-data-update skill). Shape:
+  // { sourceUrl, fetchedAt, verifiedBy, confidence }. Null = synthetic seed dates,
+  // never web-verified — so consumers can tell real deadlines from placeholders.
+  sourceMeta          Json?
   tracks              CompetitionTrack[]
 
   createdAt DateTime @default(now())
