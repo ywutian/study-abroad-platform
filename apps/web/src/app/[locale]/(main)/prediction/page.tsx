@@ -110,21 +110,26 @@ export default function PredictionPage() {
     queryFn: () => apiClient.get<SchoolListItemApi[]>(schoolListRoutes.list()),
     enabled: canFetchProtectedData,
   });
+  // Shared mapping — reused by the initial pre-fill AND the "import my list" button.
+  const schoolListItems = useMemo<SchoolSearchItem[]>(
+    () =>
+      (schoolListData ?? [])
+        .filter((item) => item.school)
+        .map((item) => ({
+          id: item.school.id,
+          name: item.school.name,
+          nameZh: item.school.nameZh,
+          usNewsRank: item.school.usNewsRank,
+          acceptanceRate:
+            item.school.acceptanceRate != null ? Number(item.school.acceptanceRate) : undefined,
+        })),
+    [schoolListData]
+  );
   useEffect(() => {
-    if (hasPreFilled || !schoolListData?.length) return;
-    const items: SchoolSearchItem[] = schoolListData
-      .filter((item) => item.school)
-      .map((item) => ({
-        id: item.school.id,
-        name: item.school.name,
-        nameZh: item.school.nameZh,
-        usNewsRank: item.school.usNewsRank,
-        acceptanceRate:
-          item.school.acceptanceRate != null ? Number(item.school.acceptanceRate) : undefined,
-      }));
-    setSelectedSchools(items);
+    if (hasPreFilled || schoolListItems.length === 0) return;
+    setSelectedSchools(schoolListItems);
     setHasPreFilled(true);
-  }, [schoolListData, hasPreFilled]);
+  }, [schoolListItems, hasPreFilled]);
 
   // Prediction results
   const [results, setResults] = useState<PredictionResult[]>([]);
@@ -244,6 +249,13 @@ export default function PredictionPage() {
   const handleRemoveSchool = useCallback((schoolId: string) => {
     setSelectedSchools((prev) => prev.filter((s) => s.id !== schoolId));
   }, []);
+
+  // c) kill the "delete 14 one by one" friction: one-click clear + re-import.
+  const handleClearAll = useCallback(() => setSelectedSchools([]), []);
+  const handleImportList = useCallback(
+    () => setSelectedSchools(schoolListItems),
+    [schoolListItems]
+  );
 
   const handlePredict = useCallback(() => {
     if (!canFetchProtectedData) {
@@ -561,6 +573,9 @@ export default function PredictionPage() {
                   selectedSchools={selectedSchools}
                   onAdd={handleAddSchool}
                   onRemove={handleRemoveSchool}
+                  onClearAll={handleClearAll}
+                  onImportList={handleImportList}
+                  importListCount={schoolListItems.length}
                   onPredict={handlePredict}
                   isPredicting={predictMutation.isPending}
                   profileBlocked={profileBlocksPrediction}

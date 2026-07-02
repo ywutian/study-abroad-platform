@@ -473,35 +473,52 @@ export function PredictionDetailPane({
                   </div>
                 )}
               </div>
-              {normalizedSourceSummary.secondary &&
-                normalizedSourceSummary.secondary.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                      {t('sourceSummarySecondaryLabel')}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {normalizedSourceSummary.secondary.map((item) => (
-                        <Badge key={item} variant="outline" className="text-xs">
-                          {item}
-                        </Badge>
-                      ))}
-                    </div>
+              {((normalizedSourceSummary.secondary &&
+                normalizedSourceSummary.secondary.length > 0) ||
+                uncertaintyReasons.length > 0) && (
+                <details className="space-y-1.5">
+                  {/* Collapsed by default — keeps the deliberate #394/#413 transparency
+                      (missing signals skipped-neutrally, policy exclusions) available
+                      without letting it dominate the panel (feedback: too much info). */}
+                  <summary className="cursor-pointer text-2xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground">
+                    {t('moreSignalsToggle')}
+                  </summary>
+                  <div className="mt-2 space-y-3">
+                    {normalizedSourceSummary.secondary &&
+                      normalizedSourceSummary.secondary.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                            {t('sourceSummarySecondaryLabel')}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {normalizedSourceSummary.secondary.map((item) => (
+                              <Badge key={item} variant="outline" className="text-xs">
+                                {item}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    {uncertaintyReasons.length > 0 && (
+                      <div className="space-y-1.5">
+                        <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                          {t('uncertaintyReasonsLabel')}
+                        </p>
+                        <ul className="space-y-1 text-sm text-muted-foreground">
+                          {uncertaintyReasons.map((reason, index) => (
+                            <li
+                              key={`${result.schoolId}-uncertainty-${index}`}
+                              className="flex gap-2"
+                            >
+                              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
+                              <span>{reason}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
-                )}
-              {uncertaintyReasons.length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                    {t('uncertaintyReasonsLabel')}
-                  </p>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
-                    {uncertaintyReasons.map((reason, index) => (
-                      <li key={`${result.schoolId}-uncertainty-${index}`} className="flex gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
-                        <span>{reason}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                </details>
               )}
             </div>
           )}
@@ -607,6 +624,15 @@ export function PredictionDetailPane({
         </PredictionDetailSection>
       )}
 
+      {/* Improve chances — surfaced above the deep "why/technical" explanation so the
+          first actionable thing a user sees is how to raise their odds (feedback:
+          this should be more prominent than the how-it-was-computed detail). */}
+      {result.suggestions.length > 0 && (
+        <PredictionDetailSection title={t('detailSections.improve')}>
+          <SuggestionsPanel suggestions={result.suggestions} dataCompleteness={dataCompleteness} />
+        </PredictionDetailSection>
+      )}
+
       {/* Why this result */}
       {(publicExplanation || result.factors.length > 0 || result.comparison) && (
         <PredictionDetailSection title={t('detailSections.why')}>
@@ -648,13 +674,6 @@ export function PredictionDetailPane({
       <PredictionDetailSection title={t('detailSections.realCases')}>
         <CaseComparisonPanel schoolId={result.schoolId} />
       </PredictionDetailSection>
-
-      {/* Suggestions */}
-      {result.suggestions.length > 0 && (
-        <PredictionDetailSection title={t('detailSections.improve')}>
-          <SuggestionsPanel suggestions={result.suggestions} dataCompleteness={dataCompleteness} />
-        </PredictionDetailSection>
-      )}
 
       {/* Understanding / history / report outcome / feedback */}
       <PredictionDetailSection title={t('detailSections.understanding')}>
