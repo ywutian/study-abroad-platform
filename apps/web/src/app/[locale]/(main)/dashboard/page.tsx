@@ -29,6 +29,7 @@ import { OutcomePendingBanner } from '@/components/features/outcome/outcome-pend
 // Above-the-fold surfaces stay statically imported — they're always
 // visible and we don't want a chunk-fetch delay before paint.
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardCommunity } from './_components/dashboard-community';
 import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import {
@@ -336,6 +337,14 @@ export default function DashboardPage() {
                 />
               </AIErrorBoundary>
             </div>
+
+            {/*
+              Community on-ramp — a calm, non-ranked "you're not alone"
+              surface (the design debate's #3 main-column item), NOT a
+              trending/hot feed. Renders its own empty state, so it never
+              leaves an empty hole for a new user.
+            */}
+            <DashboardCommunity />
 
             {/*
               Pipeline strip — renders null unless at least one school
