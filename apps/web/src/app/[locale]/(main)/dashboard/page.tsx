@@ -29,6 +29,7 @@ import { OutcomePendingBanner } from '@/components/features/outcome/outcome-pend
 // Above-the-fold surfaces stay statically imported — they're always
 // visible and we don't want a chunk-fetch delay before paint.
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardCommunity } from './_components/dashboard-community';
 import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import {
@@ -290,24 +291,6 @@ export default function DashboardPage() {
         <OutcomePendingBanner />
 
         {/*
-          Quick Ask AI — collapses 3 clicks (icon → wait → type) into 1.
-          Submitting opens the global FloatingChat with the message
-          prefilled. Full-width strip ABOVE the two-column workbench grid
-          — it's a page-wide action bar, not a column.
-        */}
-        <div data-tour="dashboard-quick-ask">
-          {/* 2026-05 Phase 1.5 #17: QuickAsk wraps an AI feature (the
-              FloatingChat bridge). An AI failure should NOT crash the
-              entire dashboard, so wrap with AIErrorBoundary like every
-              other AI surface on the platform. */}
-          <AIErrorBoundary feature="agent-chat">
-            <DashboardQuickAsk
-              personalizedSuggestions={stableDashboard?.quickAskSuggestions ?? null}
-            />
-          </AIErrorBoundary>
-        </div>
-
-        {/*
           2026-05 dashboard redesign batch 2: two-column workbench.
           MAIN column (1fr) holds the "what do I do next" surfaces; the
           de-ranked SIDEBAR (~21rem) holds reference + navigation. Below
@@ -338,6 +321,30 @@ export default function DashboardPage() {
                 stage={stage}
               />
             </div>
+
+            {/*
+              Quick Ask AI — profile-aware prompts folded into the action
+              column, right under the command center. Dashboard redesign:
+              the AI box is no longer the full-width top focus (users don't
+              want "ask AI" to be the homepage headline), but it stays where
+              the next action is, and its suggestions are profile-aware.
+              AIErrorBoundary so an AI failure can't crash the dashboard.
+            */}
+            <div data-tour="dashboard-quick-ask">
+              <AIErrorBoundary feature="agent-chat">
+                <DashboardQuickAsk
+                  personalizedSuggestions={stableDashboard?.quickAskSuggestions ?? null}
+                />
+              </AIErrorBoundary>
+            </div>
+
+            {/*
+              Community on-ramp — a calm, non-ranked "you're not alone"
+              surface (the design debate's #3 main-column item), NOT a
+              trending/hot feed. Renders its own empty state, so it never
+              leaves an empty hole for a new user.
+            */}
+            <DashboardCommunity />
 
             {/*
               Pipeline strip — renders null unless at least one school

@@ -322,6 +322,12 @@
         }
       }
     },
+    "community": {
+      "title": "Community",
+      "subtitle": "You're not applying alone",
+      "open": "Open forum",
+      "empty": "No discussions yet — open the forum to start one"
+    },
     "workbench": {
       "label": "Application workbench",
       "rhythm": "Profile, schools, essays, and deadlines in one operating view",
@@ -349,7 +355,7 @@
       "readiness": "Readiness map",
       "setupChecklist": "Setup checklist",
       "setupProgress": "{ready} of {total} ready",
-      "priorityQueue": "Priority queue",
+      "priorityQueue": "To-do",
       "deadlineStream": "Deadline stream",
       "balanced": "Balanced list",
       "needsBalance": "Needs balance",

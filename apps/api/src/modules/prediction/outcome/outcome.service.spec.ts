@@ -25,6 +25,12 @@ const mockPrisma = {
     findUnique: jest.fn(),
     findMany: jest.fn(),
   },
+  schoolListItem: {
+    findMany: jest.fn(),
+  },
+  schoolDeadline: {
+    findMany: jest.fn(),
+  },
   profile: {
     findUnique: jest.fn(),
   },
@@ -322,8 +328,16 @@ describe('OutcomeService', () => {
   });
 
   describe('listPendingDecisions', () => {
-    it('returns predictions without outcomes for user', async () => {
+    it('returns predictions for saved schools whose decision day has passed', async () => {
       mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
+      mockPrisma.schoolListItem.findMany.mockResolvedValue([
+        { schoolId: 's1' },
+        { schoolId: 's2' },
+      ]);
+      mockPrisma.schoolDeadline.findMany.mockResolvedValue([
+        { schoolId: 's1' },
+        { schoolId: 's2' },
+      ]);
       mockPrisma.predictionResult.findMany.mockResolvedValue([
         {
           id: 'p1',
@@ -358,6 +372,30 @@ describe('OutcomeService', () => {
       mockPrisma.profile.findUnique.mockResolvedValue(null);
       const result = await service.listPendingDecisions('user1');
       expect(result).toEqual([]);
+    });
+
+    it('returns empty when the user has no saved school list (the "50 schools" bug)', async () => {
+      mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
+      mockPrisma.schoolListItem.findMany.mockResolvedValue([]);
+
+      const result = await service.listPendingDecisions('user1');
+
+      expect(result).toEqual([]);
+      // Must never fall back to counting every school ever predicted.
+      expect(mockPrisma.predictionResult.findMany).not.toHaveBeenCalled();
+    });
+
+    it('returns empty when no saved school has reached its decision day (pre-applicant)', async () => {
+      mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
+      mockPrisma.schoolListItem.findMany.mockResolvedValue([
+        { schoolId: 's1' },
+      ]);
+      mockPrisma.schoolDeadline.findMany.mockResolvedValue([]);
+
+      const result = await service.listPendingDecisions('user1');
+
+      expect(result).toEqual([]);
+      expect(mockPrisma.predictionResult.findMany).not.toHaveBeenCalled();
     });
   });
 

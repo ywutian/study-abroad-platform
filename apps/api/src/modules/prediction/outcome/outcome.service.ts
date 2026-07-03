@@ -268,10 +268,34 @@ export class OutcomeService {
     const profile = await this.prisma.profile.findUnique({ where: { userId } });
     if (!profile) return [];
 
+    // Only prompt for schools the user actually saved to their list — not every
+    // school ever previewed/quick-matched. Without this the banner counted every
+    // PredictionResult row (50+) instead of the ~14 saved schools (dashboard bug).
+    const listItems = await this.prisma.schoolListItem.findMany({
+      where: { userId },
+      select: { schoolId: true },
+    });
+    const listSchoolIds = listItems.map((i) => i.schoolId);
+    if (listSchoolIds.length === 0) return [];
+
+    // Only schools whose decision day has actually arrived — you cannot report an
+    // outcome that has not been released yet. Mirrors the outcome-reminder cron's
+    // decisionDate gate, so a pre-applicant never sees "report your result".
+    const now = new Date();
+    const released = await this.prisma.schoolDeadline.findMany({
+      where: { schoolId: { in: listSchoolIds }, decisionDate: { lte: now } },
+      select: { schoolId: true },
+    });
+    const releasedSchoolIds = [...new Set(released.map((d) => d.schoolId))];
+    if (releasedSchoolIds.length === 0) return [];
+
     const predictions = await this.prisma.predictionResult.findMany({
       where: {
         profileId: profile.id,
+        schoolId: { in: releasedSchoolIds },
         outcomeLabelRecords: { none: { reportedBy: userId } },
+        // Exclude throwaway quick-match PREVIEW rows; keep AUTHORITATIVE + legacy null.
+        OR: [{ authority: null }, { authority: 'AUTHORITATIVE' }],
       },
       orderBy: { createdAt: 'desc' },
       take: 50,

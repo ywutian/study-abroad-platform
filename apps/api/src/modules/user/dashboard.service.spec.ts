@@ -584,8 +584,10 @@ describe('DashboardService', () => {
       }
     });
 
-    // 2026-05 dashboard redesign batch 4: synthetic `prep` prerequisite rows.
-    it('derives synthetic prerequisite rows from a school deadline', async () => {
+    // Dashboard redesign: the deadline stream no longer fabricates synthetic
+    // "prerequisite" nudge rows (ask recommenders / send scores) — they fanned
+    // each school into extra near-identical rows and buried the real picture.
+    it('does not emit synthetic prerequisite rows in the deadline stream', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T00:00:00Z'));
       setupDefaultMocks();
       mockApplicationTimelineFindMany({
@@ -604,7 +606,7 @@ describe('DashboardService', () => {
                 id: 'deadline-far',
                 year: 2026,
                 round: 'RD',
-                // 60 days past the fake "now"
+                // 60 days out — the old code would have fabricated 2 prep rows here
                 applicationDeadline: new Date('2026-07-13T00:00:00.000Z'),
               },
             ],
@@ -614,60 +616,8 @@ describe('DashboardService', () => {
 
       try {
         const result = await service.getDashboardSummary(userId, 'en');
-        const prepRows = result.workbench.deadlineStream.filter(
-          (d) => d.type === 'prep',
-        );
-        expect(prepRows.map((r) => r.id).sort()).toEqual([
-          'prep-rec-deadline-far',
-          'prep-score-deadline-far',
-        ]);
-        const rec = prepRows.find((r) => r.id === 'prep-rec-deadline-far');
-        const score = prepRows.find((r) => r.id === 'prep-score-deadline-far');
-        // recommender row: 6 weeks (42d) before a 60-day-out deadline
-        expect(rec?.daysLeft).toBe(18);
-        // score-send row: 3 weeks (21d) before
-        expect(score?.daysLeft).toBe(39);
-        expect(rec?.href).toBe('/timeline');
-        expect(rec?.title).toContain('MIT');
-      } finally {
-        jest.useRealTimers();
-      }
-    });
-
-    it('suppresses prerequisite rows once the lead-time window has closed', async () => {
-      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T00:00:00Z'));
-      setupDefaultMocks();
-      mockApplicationTimelineFindMany({
-        upcomingDeadlines: [],
-        recentDecisions: [],
-      });
-      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
-        {
-          schoolId: 'school-1',
-          round: 'RD',
-          school: {
-            name: 'MIT',
-            nameZh: null,
-            deadlines: [
-              {
-                id: 'deadline-near',
-                year: 2026,
-                round: 'RD',
-                // only 10 days out — both the 42d and 21d prep windows
-                // have already closed, so no synthetic rows are emitted
-                applicationDeadline: new Date('2026-05-24T00:00:00.000Z'),
-              },
-            ],
-          },
-        },
-      ]);
-
-      try {
-        const result = await service.getDashboardSummary(userId, 'en');
-        const prepRows = result.workbench.deadlineStream.filter(
-          (d) => d.type === 'prep',
-        );
-        expect(prepRows).toEqual([]);
+        const stream = result.workbench.deadlineStream;
+        expect(stream.every((d) => d.type !== 'prep')).toBe(true);
       } finally {
         jest.useRealTimers();
       }

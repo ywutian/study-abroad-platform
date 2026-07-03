@@ -322,6 +322,12 @@
         }
       }
     },
+    "community": {
+      "title": "社区",
+      "subtitle": "你不是一个人在申请",
+      "open": "去论坛",
+      "empty": "还没有讨论 — 去论坛开个话题"
+    },
     "workbench": {
       "label": "申请作战台",
       "rhythm": "档案、选校、文书和截止日期统一推进",
@@ -349,7 +355,7 @@
       "readiness": "准备度地图",
       "setupChecklist": "准备清单",
       "setupProgress": "已就绪 {ready} / {total}",
-      "priorityQueue": "优先队列",
+      "priorityQueue": "待办",
       "deadlineStream": "截止流",
       "balanced": "选校均衡",
       "needsBalance": "待均衡",
