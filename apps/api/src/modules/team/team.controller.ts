@@ -103,6 +103,16 @@ export class TeamController {
     return this.recruitmentService.getMatchPoolById(id);
   }
 
+  @Get('competition-editions')
+  @Public()
+  @ThrottleRelaxed()
+  @ApiOperation({
+    summary: 'List competition editions (schedules) for a season',
+  })
+  async getCompetitionEditions(@Query('season') season?: string) {
+    return this.recruitmentService.getCompetitionEditions(season);
+  }
+
   @Get('community-contexts')
   @ApiBearerAuth()
   @ThrottleRelaxed()

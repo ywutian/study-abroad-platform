@@ -410,6 +410,10 @@ export const teamRoutes = {
   communityContextPublish: (id: string) => `${API_ROUTES.TEAMS}/community-contexts/${id}/publish`,
   matchPools: () => `${API_ROUTES.TEAMS}/match-pools`,
   matchPoolById: (id: string) => `${API_ROUTES.TEAMS}/match-pools/${id}`,
+  competitionEditions: (season?: string) =>
+    season
+      ? `${API_ROUTES.TEAMS}/competition-editions?season=${encodeURIComponent(season)}`
+      : `${API_ROUTES.TEAMS}/competition-editions`,
   recruitments: () => `${API_ROUTES.TEAMS}/recruitments`,
   myRecruitments: () => `${API_ROUTES.TEAMS}/recruitments/me`,
   recruitmentDeck: () => `${API_ROUTES.TEAMS}/recruitments/deck`,

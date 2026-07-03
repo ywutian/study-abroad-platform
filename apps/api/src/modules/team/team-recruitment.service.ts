@@ -37,7 +37,11 @@ import {
   UpdateRecruitmentDto,
   UpdateRecruitmentMemberProfileDto,
 } from './dto/recruitment.dto';
-import { TEAM_USER_SELECT } from './team.constants';
+import {
+  COMPETITION_EDITION_SELECT,
+  TEAM_USER_SELECT,
+  mapCompetitionEdition,
+} from './team.constants';
 import { SCHOOL_NAME_SELECT } from '../../common/constants/prisma-selects';
 import {
   buildMemberHighlights,
@@ -167,6 +171,27 @@ export class TeamRecruitmentService {
         updatedAt: pool.updatedAt,
       })),
     };
+  }
+
+  /**
+   * Public list of competition editions (schedules) for a season — the read
+   * side of the /competition-data-update data. No endpoint existed for this;
+   * it is the foundation for the dashboard events-timeline. ACTIVE editions
+   * only, ordered by event date (undated editions last).
+   */
+  async getCompetitionEditions(season?: string) {
+    const editions = await this.prisma.competitionEdition.findMany({
+      where: {
+        status: 'ACTIVE',
+        ...(season ? { seasonLabel: season } : {}),
+      },
+      select: COMPETITION_EDITION_SELECT,
+      orderBy: [
+        { eventStartAt: { sort: 'asc', nulls: 'last' } },
+        { registrationCloseAt: { sort: 'asc', nulls: 'last' } },
+      ],
+    });
+    return { items: editions.map(mapCompetitionEdition) };
   }
 
   async getMatchPoolById(poolId: string) {
