@@ -349,7 +349,7 @@
       "readiness": "准备度地图",
       "setupChecklist": "准备清单",
       "setupProgress": "已就绪 {ready} / {total}",
-      "priorityQueue": "优先队列",
+      "priorityQueue": "待办",
       "deadlineStream": "截止流",
       "balanced": "选校均衡",
       "needsBalance": "待均衡",

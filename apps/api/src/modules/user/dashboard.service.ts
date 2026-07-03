@@ -1271,114 +1271,14 @@ export class DashboardService {
       });
     }
 
-    const prereqDeadlines = this.buildPrerequisiteRows(deadlines, locale, now);
-
-    return [
-      ...schoolDeadlines,
-      ...eventDeadlines,
-      ...taskDeadlines,
-      ...prereqDeadlines,
-    ]
-      .sort((a, b) => {
-        if (a.daysLeft !== b.daysLeft) return a.daysLeft - b.daysLeft;
-        // Tiebreak: at an equal day count, a real deadline (school/event/
-        // task) sorts ahead of a synthetic `prep` row so an advisory
-        // nudge never buries a hard deadline.
-        const aPrep = a.type === 'prep' ? 1 : 0;
-        const bPrep = b.type === 'prep' ? 1 : 0;
-        return aPrep - bPrep;
-      })
+    // Real dated rows only. The old synthetic "prerequisite" nudges (ask
+    // recommenders / send scores, derived by subtracting a fixed lead time
+    // from each deadline) fanned every school into 2 extra near-identical
+    // rows and buried the real picture — removed in the dashboard redesign.
+    // The prep advice will resurface in the batch-2 events timeline instead.
+    return [...schoolDeadlines, ...eventDeadlines, ...taskDeadlines]
+      .sort((a, b) => a.daysLeft - b.daysLeft)
       .slice(0, 8);
-  }
-
-  /**
-   * 2026-05 dashboard redesign batch 4: synthetic "prerequisite" deadline
-   * rows. For a Chinese US-undergrad applicant the binding constraint is
-   * rarely the application form itself — it is the upstream prep work:
-   * a recommendation letter must be REQUESTED weeks early (Chinese-school
-   * teachers are mostly new to the Common App rec system), and official
-   * SAT/TOEFL score reports take 1–2 weeks to reach a school. Sorting the
-   * deadline stream by the raw form deadline silently hides those windows
-   * until it is already too late.
-   *
-   * These rows are derived purely algorithmically by subtracting a fixed
-   * lead-time offset from a REAL application deadline — no new schema, no
-   * per-user completion state. They are advisory calendar nudges, framed
-   * as such in the copy ("ask 6 weeks early"), so there is no unverifiable
-   * date being invented. A row is emitted only when its computed date is
-   * still in the future; once the prep window has closed, surfacing an
-   * overdue nudge the user never created would just be noise.
-   *
-   * Out of scope (would need schema + a write path): CSS Profile / aid
-   * deadlines (per-school, often a separate date — a wrong one is worse
-   * than none) and real per-user "have you asked yet?" tracking.
-   */
-  private buildPrerequisiteRows(
-    deadlines: DashboardSummary['upcomingDeadlines'],
-    locale: string,
-    now: Date,
-  ): DashboardWorkbench['deadlineStream'] {
-    const DAY_MS = 86_400_000;
-    const RECOMMENDER_LEAD_DAYS = 42; // 6 weeks
-    const SCORE_SEND_LEAD_DAYS = 21; // 3 weeks
-    const rows: DashboardWorkbench['deadlineStream'] = [];
-
-    for (const deadline of deadlines) {
-      const deadlineDate = new Date(deadline.deadline);
-      if (Number.isNaN(deadlineDate.getTime())) continue;
-
-      const recDate = new Date(
-        deadlineDate.getTime() - RECOMMENDER_LEAD_DAYS * DAY_MS,
-      );
-      const recDays = this.daysLeft(recDate, now);
-      if (recDays > 0) {
-        rows.push({
-          id: `prep-rec-${deadline.id}`,
-          type: 'prep',
-          title: this.t(
-            locale,
-            `联系推荐人 · ${deadline.schoolName}`,
-            `Ask recommenders · ${deadline.schoolName}`,
-          ),
-          subtitle: this.t(
-            locale,
-            '建议提前 6 周邀请推荐老师 — 国内老师多数首次接触 Common App 推荐系统，需要时间熟悉表格并准备英文推荐信',
-            'Ask your recommenders ~6 weeks early — most teachers in China are new to the Common App rec system and need time to prepare',
-          ),
-          dueAt: recDate.toISOString(),
-          daysLeft: recDays,
-          severity: this.severityForDays(recDays),
-          href: '/timeline',
-        });
-      }
-
-      const scoreDate = new Date(
-        deadlineDate.getTime() - SCORE_SEND_LEAD_DAYS * DAY_MS,
-      );
-      const scoreDays = this.daysLeft(scoreDate, now);
-      if (scoreDays > 0) {
-        rows.push({
-          id: `prep-score-${deadline.id}`,
-          type: 'prep',
-          title: this.t(
-            locale,
-            `寄送标化成绩 · ${deadline.schoolName}`,
-            `Send test scores · ${deadline.schoolName}`,
-          ),
-          subtitle: this.t(
-            locale,
-            '建议提前 3 周送分 — College Board / ETS 官方成绩到校通常需 1–2 周，节假日更慢',
-            'Order score sends ~3 weeks early — College Board / ETS delivery to a school takes 1–2 weeks',
-          ),
-          dueAt: scoreDate.toISOString(),
-          daysLeft: scoreDays,
-          severity: this.severityForDays(scoreDays),
-          href: '/timeline',
-        });
-      }
-    }
-
-    return rows;
   }
 
   private buildPriorityQueue({
