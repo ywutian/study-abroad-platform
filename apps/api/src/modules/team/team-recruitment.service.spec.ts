@@ -180,6 +180,9 @@ describe('TeamRecruitmentService', () => {
         findMany: jest.fn(),
         findUnique: jest.fn(),
       },
+      competitionEdition: {
+        findMany: jest.fn(),
+      },
       recruitmentContext: {
         findMany: jest.fn(),
         findUnique: jest.fn(),
@@ -623,5 +626,70 @@ describe('TeamRecruitmentService', () => {
         relatedId: expect.any(String),
       }),
     );
+  });
+
+  it('lists active competition editions for a season with a provenance flag', async () => {
+    (prisma.competitionEdition.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'ed-imo',
+        seasonLabel: '2026-2027',
+        registrationOpenAt: null,
+        registrationCloseAt: null,
+        eventStartAt: new Date('2026-07-10T00:00:00Z'),
+        eventEndAt: new Date('2026-07-21T00:00:00Z'),
+        sourceMeta: {
+          sourceUrl: 'https://imo-official.org/',
+          confidence: 'high',
+        },
+        competition: {
+          abbreviation: 'IMO',
+          name: 'International Mathematical Olympiad',
+          nameZh: null,
+          category: 'MATH',
+          tier: 5,
+          website: 'https://www.imo-official.org',
+        },
+        tracks: [{ name: 'Individual', minTeamSize: 1, maxTeamSize: 1 }],
+      },
+      {
+        id: 'ed-synthetic',
+        seasonLabel: '2026-2027',
+        registrationOpenAt: null,
+        registrationCloseAt: null,
+        eventStartAt: null,
+        eventEndAt: null,
+        sourceMeta: null,
+        competition: {
+          abbreviation: 'XYZ',
+          name: 'Some Competition',
+          nameZh: null,
+          category: 'SCIENCE',
+          tier: 4,
+          website: null,
+        },
+        tracks: [],
+      },
+    ]);
+
+    const result = await service.getCompetitionEditions('2026-2027');
+
+    expect(prisma.competitionEdition.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: 'ACTIVE',
+          seasonLabel: '2026-2027',
+        }),
+      }),
+    );
+    expect(result.items).toHaveLength(2);
+    // Web-verified edition (has sourceUrl) → verified true + provenance surfaced.
+    expect(result.items[0]).toMatchObject({
+      competition: expect.objectContaining({ abbreviation: 'IMO' }),
+      verified: true,
+      sourceUrl: 'https://imo-official.org/',
+      confidence: 'high',
+    });
+    // Synthetic-seed edition (no sourceMeta) → verified false, no provenance.
+    expect(result.items[1]).toMatchObject({ verified: false, sourceUrl: null });
   });
 });
