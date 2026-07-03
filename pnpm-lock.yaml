@@ -51,6 +51,7 @@ overrides:
   ws@>=6.0.0 <6.2.4: '>=6.2.4'
   ws@>=7.0.0 <7.5.11: '>=7.5.11'
   ws@>=8.0.0 <8.21.0: '>=8.21.0'
+  jsonata: '>=2.2.0'
 
 importers:
 
@@ -11871,8 +11872,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  jsonata@2.1.0:
-    resolution: {integrity: sha512-OCzaRMK8HobtX8fp37uIVmL8CY1IGc/a6gLsDqz3quExFR09/U78HUzWYr7T31UEB6+Eu0/8dkVD5fFDOl9a8w==}
+  jsonata@2.2.1:
+    resolution: {integrity: sha512-xd1uwUrKeIcJbsWhaoS3qAX4Ea8m0Mw0G5nlnAQvPT7TbZ5qaPdzBVTQia9KfyuyQm+nenfyjvzUDTRYHsC2sw==}
     engines: {node: '>= 8'}
 
   jsonc-parser@3.3.1:
@@ -18627,7 +18628,7 @@ snapshots:
       body-parser: 2.2.0
       compression: 1.8.1
       connect: 3.7.0
-      jsonata: 2.1.0
+      jsonata: 2.2.1
       sequelize: 6.37.8(@appthreat/sqlite3@6.0.9)
       sqlite3: '@appthreat/sqlite3@6.0.9'
     transitivePeerDependencies:
@@ -30458,7 +30459,7 @@ snapshots:
 
   json5@2.2.3: {}
 
-  jsonata@2.1.0:
+  jsonata@2.2.1:
     optional: true
 
   jsonc-parser@3.3.1: {}
