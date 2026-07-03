@@ -52,3 +52,14 @@ CVE-2026-24842
 CVE-2026-26960
 CVE-2026-29786
 CVE-2026-31802
+
+# ===================================================================
+# sigstore CVE-2026-48815 (HIGH) — lives in the base image's OWN npm
+# (usr/local/lib/node_modules/npm/node_modules/sigstore@2.3.1), not in
+# our pnpm lockfile. sigstore verifies package provenance at
+# install/publish time; our runtime is the NestJS API server and never
+# invokes it, so it is not runtime-reachable. Fixed in sigstore 4.1.1,
+# which requires a newer npm than the node base image currently ships —
+# will clear itself when the base image bumps npm.
+# ===================================================================
+CVE-2026-48815
