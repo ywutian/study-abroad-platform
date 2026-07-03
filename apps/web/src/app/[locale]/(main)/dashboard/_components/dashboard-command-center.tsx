@@ -302,7 +302,7 @@ export function DashboardCommandCenter({
           level only: the page grid owns the horizontal split, this
           card owns the vertical flow.
         */}
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-col">
           <div className="min-w-0 border-b border-border p-4 sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
@@ -397,7 +397,16 @@ export function DashboardCommandCenter({
                 ) : null}
               </div>
             </div>
+          </div>
 
+          {/*
+            Setup checklist as its own region. It renders AFTER the to-do +
+            deadline region via flex `order-last` on the outer column below —
+            promoting the to-do (the user's favorite) above the readiness grid
+            WITHOUT physically moving 130 lines of JSX or the shared `toneMeta`.
+            `border-t` gives it the same divider the hero region has above.
+          */}
+          <div className="order-last min-w-0 border-t border-border p-4 sm:p-5">
             <div className="mt-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-semibold">{t('setupChecklist')}</h3>
