@@ -322,11 +322,13 @@
         }
       }
     },
-    "community": {
-      "title": "Community",
-      "subtitle": "You're not applying alone",
+    "trending": {
+      "title": "Trending",
+      "subtitle": "What the community is discussing right now",
       "open": "Open forum",
-      "empty": "No discussions yet — open the forum to start one"
+      "empty": "No discussions yet — open the forum to start one",
+      "repliesLabel": "{count, plural, one {# reply} other {# replies}}",
+      "likesLabel": "{count, plural, one {# like} other {# likes}}"
     },
     "workbench": {
       "label": "Application workbench",

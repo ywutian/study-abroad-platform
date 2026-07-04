@@ -322,11 +322,13 @@
         }
       }
     },
-    "community": {
-      "title": "社区",
-      "subtitle": "你不是一个人在申请",
+    "trending": {
+      "title": "热门讨论",
+      "subtitle": "社区此刻正在热议的",
       "open": "去论坛",
-      "empty": "还没有讨论 — 去论坛开个话题"
+      "empty": "还没有讨论 — 去论坛开个话题",
+      "repliesLabel": "{count} 条回复",
+      "likesLabel": "{count} 个赞"
     },
     "workbench": {
       "label": "申请作战台",
