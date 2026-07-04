@@ -30,6 +30,8 @@ import { OutcomePendingBanner } from '@/components/features/outcome/outcome-pend
 // visible and we don't want a chunk-fetch delay before paint.
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
 import { DashboardCommunity } from './_components/dashboard-community';
+import { DashboardEventsTimeline } from './_components/dashboard-events-timeline';
+import { DashboardSetupProgress } from './_components/dashboard-setup-progress';
 import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import {
@@ -174,7 +176,6 @@ export default function DashboardPage() {
   const completeness = stableDashboard?.profile.completeness ?? 0;
   const { showIndicator, gapCount } = useOnboardingProgress();
   const schoolCount = stableDashboard?.profile.targetSchoolCount ?? 0;
-  const schoolTiers = stableDashboard?.profile.schoolTiers ?? { reach: 0, target: 0, safety: 0 };
   const pendingTotal = stableDashboard?.pendingTasks.total ?? 0;
   const profileGaps = stableDashboard?.pendingTasks.profileGaps ?? [];
   const effectivePending = pendingTotal > 0 ? pendingTotal : profileGaps.length;
@@ -305,13 +306,20 @@ export default function DashboardPage() {
               no data; a null grid/flex child collapses cleanly, so a
               new user simply sees CommandCenter alone (no empty hole). */}
           <div className="min-w-0 space-y-6">
+            {/*
+              Events timeline overview (batch-2, feedback 5e). At-a-glance
+              strip of the next big milestones — school deadlines +
+              competitions + exams — ABOVE the command center, so the user
+              first sees "the few big things coming up", then the specific
+              next action + to-do below. Renders null when there are none.
+            */}
+            <DashboardEventsTimeline items={workbench.deadlineStream} />
             <div data-tour="dashboard-command-center">
               <DashboardCommandCenter
                 workbench={workbench}
                 completingTaskId={completingTaskId}
                 onCompleteTask={(item) => toggleTimelineTask.mutate(item)}
                 completeness={completeness}
-                schoolTiers={schoolTiers}
                 schoolCount={schoolCount}
                 predictionsCount={predictionsCount}
                 casesCount={casesCount}
@@ -388,6 +396,13 @@ export default function DashboardPage() {
             whole column stacks below MAIN.
           */}
           <aside className="min-w-0 space-y-4">
+            {/*
+              Setup progress (batch-2, feedback 5c). The old 5-card readiness
+              grid was demoted from the hero to this compact sidebar card —
+              a small progress bar + one tight row per item, still one-click
+              into each page. Renders null when there are no readiness items.
+            */}
+            <DashboardSetupProgress workbench={workbench} />
             <DashboardStats dashboard={stableDashboard} defaultOpen={!isEmptyOnboarding} />
             <div data-tour="dashboard-hub">
               <DashboardWorkspaceHub />
