@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SchoolListService } from './school-list.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
+import { TimelineService } from '../timeline/timeline.service';
 import {
   NotFoundException,
   ConflictException,
@@ -26,6 +27,7 @@ describe('SchoolListService', () => {
   let service: SchoolListService;
   let prisma: PrismaService;
   let cacheInvalidation: CacheInvalidationService;
+  let timelineService: TimelineService;
 
   const mockSchool = {
     id: 'school-1',
@@ -96,6 +98,14 @@ describe('SchoolListService', () => {
             onProfileChange: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: TimelineService,
+          useValue: {
+            generateTimelines: jest
+              .fn()
+              .mockResolvedValue({ created: [], failed: [] }),
+          },
+        },
       ],
     }).compile();
 
@@ -104,6 +114,7 @@ describe('SchoolListService', () => {
     cacheInvalidation = module.get<CacheInvalidationService>(
       CacheInvalidationService,
     );
+    timelineService = module.get<TimelineService>(TimelineService);
   });
 
   afterEach(() => {
@@ -255,6 +266,27 @@ describe('SchoolListService', () => {
       expect(result.schoolId).toBe('school-1');
       expect(prisma.schoolListItem.create).toHaveBeenCalled();
       expect(cacheInvalidation.onProfileChange).toHaveBeenCalledWith('user-1');
+      // Root-fix (#490): adding a school auto-generates its timeline so the list
+      // never sits in the confusing "Awaiting Timeline / Generate" empty state.
+      expect(timelineService.generateTimelines).toHaveBeenCalledWith('user-1', {
+        schoolIds: ['school-1'],
+      });
+    });
+
+    it('does NOT fail the add when timeline auto-generation throws (best-effort)', async () => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+      (timelineService.generateTimelines as jest.Mock).mockRejectedValue(
+        new Error('timeline boom'),
+      );
+
+      const result = await service.addSchool('user-1', dto);
+
+      expect(result.schoolId).toBe('school-1');
+      expect(prisma.schoolListItem.create).toHaveBeenCalled();
     });
 
     it('counts only source-backed verified essay prompts in the response', async () => {
