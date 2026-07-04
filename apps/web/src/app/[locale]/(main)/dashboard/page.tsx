@@ -29,11 +29,11 @@ import { OutcomePendingBanner } from '@/components/features/outcome/outcome-pend
 // Above-the-fold surfaces stay statically imported — they're always
 // visible and we don't want a chunk-fetch delay before paint.
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
-import { DashboardCommunity } from './_components/dashboard-community';
 import { DashboardEventsTimeline } from './_components/dashboard-events-timeline';
 import { DashboardSetupProgress } from './_components/dashboard-setup-progress';
 import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
+import { DashboardTrending } from './_components/dashboard-trending';
 import {
   createFallbackWorkbench,
   deriveStage,
@@ -347,12 +347,13 @@ export default function DashboardPage() {
             </div>
 
             {/*
-              Community on-ramp — a calm, non-ranked "you're not alone"
-              surface (the design debate's #3 main-column item), NOT a
-              trending/hot feed. Renders its own empty state, so it never
+              Trending discussions (feedback 5f). The hottest community
+              threads by engagement — replaces the earlier non-ranked
+              "belonging" on-ramp per the user's explicit request for a
+              trending board. Renders its own empty state, so it never
               leaves an empty hole for a new user.
             */}
-            <DashboardCommunity />
+            <DashboardTrending />
 
             {/*
               Pipeline strip — renders null unless at least one school
