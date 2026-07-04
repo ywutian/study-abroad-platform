@@ -357,6 +357,8 @@
       "setupProgress": "{ready} of {total} ready",
       "priorityQueue": "To-do",
       "deadlineStream": "Deadline stream",
+      "upcomingEvents": "Upcoming",
+      "upcomingEventsHint": "Your next milestones — deadlines, competitions, and exams",
       "balanced": "Balanced list",
       "needsBalance": "Needs balance",
       "open": "Open",

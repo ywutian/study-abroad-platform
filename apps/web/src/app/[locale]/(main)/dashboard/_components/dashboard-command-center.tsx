@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import {
   ArrowRight,
   CalendarClock,
@@ -22,11 +21,8 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
 import {
-  toneFromReadinessStatus,
   toneFromSeverity,
-  type DashboardDeadlineItem,
   type DashboardPriorityItem,
   type DashboardTone,
   type DashboardWorkbench,
@@ -43,8 +39,6 @@ interface DashboardCommandCenterProps {
    * 0% empty-state onboarding scenario.
    */
   completeness: number;
-  /** Tier breakdown shown as badges on the schools readiness item. */
-  schoolTiers: { reach: number; target: number; safety: number };
   /** Total school count, used to detect the 0%/0-schools empty state. */
   schoolCount: number;
   /**
@@ -153,44 +147,11 @@ function PriorityKindIcon({
   }
 }
 
-/**
- * 2026-05 dashboard redesign batch 3: a single deadline row. Extracted
- * so the two-segment deadline strip (urgent ≤7d / upcoming) renders
- * identical rows without duplicating the markup. `deadlineLabel` is
- * passed pre-formatted so this stays a pure presentational component
- * (no `useTranslations` needed).
- */
-function DeadlineRow({
-  item,
-  deadlineLabel,
-}: {
-  item: DashboardDeadlineItem;
-  deadlineLabel: string;
-}) {
-  const meta = toneMeta[toneFromSeverity(item.severity)];
-  return (
-    <Link
-      href={item.href}
-      className="flex items-center gap-3 rounded-[var(--theme-radius-card)] border border-border px-3 py-2 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]"
-    >
-      <CircleAlert className={cn('h-4 w-4 shrink-0', meta.text)} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{item.title}</p>
-        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-      </div>
-      <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-        {deadlineLabel}
-      </span>
-    </Link>
-  );
-}
-
 export function DashboardCommandCenter({
   workbench,
   completingTaskId,
   onCompleteTask,
   completeness,
-  schoolTiers,
   schoolCount,
   predictionsCount = 0,
   casesCount = 0,
@@ -199,7 +160,6 @@ export function DashboardCommandCenter({
 }: DashboardCommandCenterProps) {
   const t = useTranslations('dashboard.workbench');
   const tCenter = useTranslations('dashboard.commandCenter');
-  const tStats = useTranslations('dashboard.stats');
   const topAction = workbench.priorityQueue[0];
   const topSeverity = toneMeta[topAction ? toneFromSeverity(topAction.severity) : 'neutral'];
   // 2026-05 Phase 2.7 #28: grade-aware rhythm message. When the user's
@@ -221,11 +181,6 @@ export function DashboardCommandCenter({
   // 105 次录取预测". Now also require predictionsCount + casesCount === 0.
   const isEmptyOnboarding =
     completeness === 0 && schoolCount === 0 && predictionsCount === 0 && casesCount === 0;
-  const formatDeadline = (daysLeft: number) => {
-    if (daysLeft < 0) return t('deadlineOverdue', { count: Math.abs(daysLeft) });
-    if (daysLeft === 0) return t('deadlineToday');
-    return t('deadlineDays', { count: daysLeft });
-  };
   // 2026-05 dashboard redesign batch 3: multi-critical signal. The hero
   // only renders priorityQueue[0]; when several critical items exist the
   // others are visually demoted into the queue body below. Surface the
@@ -235,31 +190,6 @@ export function DashboardCommandCenter({
   const criticalCount = workbench.priorityQueue.filter(
     (item) => item.severity === 'critical'
   ).length;
-  // 2026-05 dashboard redesign batch 3: two-segment deadline strip. The
-  // old flat `.slice(0, 5)` list let an 8–30-day deadline ("you should
-  // START this essay now") fall off the bottom behind nearer items —
-  // the "deadline black hole". Partition into an urgent (≤7d, includes
-  // overdue) band and an everything-later band so mid-range deadlines
-  // always get a labelled home and a visible "act now" cue. Both bands
-  // render in full (no client slice): `deadlineStream` is already
-  // server-capped at 8 items, so there is nothing to silently truncate;
-  // the section-level "view timeline" link is the see-everything path.
-  const urgentDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft <= 7);
-  const upcomingDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft > 7);
-  // 2026-05 dashboard redesign batch 4: the readiness section is reframed
-  // as a non-scored "setup checklist". The headline NN/100 score and the
-  // ready/attention/blocked verdict badge were REMOVED — a /100 score with
-  // a colored verdict, sitting next to the prediction tool, risks being
-  // read as an admit-chance proxy, which contradicts ai-system.md
-  // (prediction is the only probability/tier authority). The progress bar
-  // and the count now reflect a plain, auditable "N of 5 ready" tally that
-  // the 5 item cards below verify directly. `workbench.readiness.score` /
-  // `.status` stay in the contract (still computed) but are no longer
-  // rendered here.
-  const readyCount = workbench.readiness.items.filter((item) => item.status === 'ready').length;
-  const totalReadinessItems = workbench.readiness.items.length;
-  const readyPercent =
-    totalReadinessItems > 0 ? Math.round((readyCount / totalReadinessItems) * 100) : 0;
   // 2026-05 dashboard redesign batch 4: parallel-tracks hint. Application
   // season runs in parallel — the hero focus card shows ONE next action,
   // but the student may also have submitted apps, a pending waitlist, etc.
@@ -399,151 +329,6 @@ export function DashboardCommandCenter({
             </div>
           </div>
 
-          {/*
-            Setup checklist as its own region. It renders AFTER the to-do +
-            deadline region via flex `order-last` on the outer column below —
-            promoting the to-do (the user's favorite) above the readiness grid
-            WITHOUT physically moving 130 lines of JSX or the shared `toneMeta`.
-            `border-t` gives it the same divider the hero region has above.
-          */}
-          <div className="order-last min-w-0 border-t border-border p-4 sm:p-5">
-            <div className="mt-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold">{t('setupChecklist')}</h3>
-                <div className="flex items-center gap-2">
-                  {/* 2026-05: Quick Add School inline. Compresses the
-                      previous 5-click "open schools page → search →
-                      detail → add → confirm round" flow into 2 clicks
-                      (open popover → click result). Lives in the
-                      readiness header (not on the schools row) to avoid
-                      nesting a button inside the row's Link. */}
-                  <DashboardQuickAddSchool />
-                  <span className="text-xs font-medium tabular-nums text-muted-foreground">
-                    {t('setupProgress', { ready: readyCount, total: totalReadinessItems })}
-                  </span>
-                </div>
-              </div>
-              <Progress value={readyPercent} className="h-1.5" />
-              <p className="mt-1.5 text-xs text-muted-foreground">{tCenter('contributionHint')}</p>
-              {/*
-                2026-05 dashboard redesign batch 2: readiness grid
-                breakpoints re-keyed to the page-level two-column
-                workbench. CommandCenter now sits in the MAIN column
-                (1fr after a ~21rem sidebar), so the old `lg:grid-cols-5`
-                crushed the 5 items to ~109px/cell at lg. New ladder:
-                1-col phones → 2-col sm (≈285px/cell at lg viewport) →
-                3-col xl (≈264px/cell) → 5-col only at 2xl where the
-                main column is genuinely wide. Inner card uses truncate
-                + shrink-0 + flex-wrap badges so it stays legible.
-                The matching skeleton in loading.tsx uses this exact
-                breakpoint string — keep them in sync (CLS).
-              */}
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-                {workbench.readiness.items.map((item) => {
-                  const meta = toneMeta[toneFromReadinessStatus(item.status)];
-                  // 2026-05: When the prediction row is in the "attention"
-                  // state (eligible to run but hasn't been run yet), route
-                  // the click straight into auto-run mode so a single click
-                  // from the dashboard kicks off the prediction. This
-                  // collapses the previous 4-click flow (open → select →
-                  // run → wait) into 1 click.
-                  const href =
-                    item.key === 'prediction' && item.status === 'attention'
-                      ? `${item.href}?autorun=1`
-                      : item.href;
-                  return (
-                    <Link
-                      key={item.key}
-                      href={href}
-                      className={cn(
-                        'block rounded-[var(--theme-radius-card)] border p-3 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]',
-                        meta.border
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">{item.label}</p>
-                          <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                            {item.description}
-                          </p>
-                          {/* Action hint for prediction row in attention state.
-                              Communicates that clicking actually runs, not just
-                              navigates. */}
-                          {item.key === 'prediction' && item.status === 'attention' && (
-                            <Badge
-                              variant="outline"
-                              className="mt-2 border-primary/30 bg-primary/10 px-1.5 py-0 text-2xs text-primary"
-                            >
-                              <Zap className="h-3 w-3" />
-                              {t('runNow')}
-                            </Badge>
-                          )}
-                          {/* 2026-05 dashboard redesign batch 3: the
-                              profile letter-grade chip (A–D, from
-                              getProfileGrade) was REMOVED. It was a third
-                              encoding of profile completeness — the same
-                              number already shown as `profileContribution/40`
-                              on this row and as a % in the onboarding
-                              banner. A letter grade on a completeness
-                              metric also reads like an academic transcript
-                              grade ("the platform gave my kid a C"), an
-                              emotional misfire for anxious applicants. One
-                              honest signal per number. */}
-                          {/* Schools row: surface tier breakdown when at
-                              least one school is listed. */}
-                          {item.key === 'schools' && schoolCount > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {schoolTiers.reach > 0 && (
-                                <Badge
-                                  variant="outline"
-                                  className="border-destructive/30 bg-destructive/10 px-1.5 py-0 text-2xs text-destructive"
-                                >
-                                  {tStats('reach')} {schoolTiers.reach}
-                                </Badge>
-                              )}
-                              {schoolTiers.target > 0 && (
-                                <Badge
-                                  variant="outline"
-                                  className="border-primary/30 bg-primary/10 px-1.5 py-0 text-2xs text-primary"
-                                >
-                                  {tStats('target')} {schoolTiers.target}
-                                </Badge>
-                              )}
-                              {schoolTiers.safety > 0 && (
-                                <Badge
-                                  variant="outline"
-                                  className="border-success/30 bg-success/10 px-1.5 py-0 text-2xs text-success"
-                                >
-                                  {tStats('safety')} {schoolTiers.safety}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        {/* 2026-05 dashboard redesign batch 4: the per-item
-                            value shows a categorical state word (Ready /
-                            Needs attention / Blocked), not the old "32/40"
-                            contribution fraction. With the headline /100
-                            score gone, a bare fraction was an orphaned
-                            fragment of the weighted-score system the user
-                            can't act on. The state word + the card's tone
-                            border are one signal in two reinforcing
-                            channels (WCAG 1.4.1 — colour is not the only
-                            cue). `item.value` stays in the contract. */}
-                        <span
-                          className={cn('shrink-0 text-2xs font-medium', meta.text)}
-                          aria-label={`${item.label}: ${t(`status.${item.status}`)}`}
-                        >
-                          {t(`status.${item.status}`)}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
           <div className="min-w-0 p-4 sm:p-5" data-tour="dashboard-priority-queue">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold">{t('priorityQueue')}</h3>
@@ -635,51 +420,6 @@ export function DashboardCommandCenter({
                   </span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
-              )}
-            </div>
-
-            <div className="mt-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold">{t('deadlineStream')}</h3>
-                <Link href="/timeline" className="text-xs font-medium text-primary">
-                  {t('viewTimeline')}
-                </Link>
-              </div>
-              {urgentDeadlines.length > 0 || upcomingDeadlines.length > 0 ? (
-                <div className="space-y-4">
-                  {urgentDeadlines.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-2xs font-semibold uppercase tracking-wide text-destructive">
-                        {t('deadlineSegmentUrgent')}
-                      </p>
-                      {urgentDeadlines.map((item) => (
-                        <DeadlineRow
-                          key={`${item.type}-${item.id}`}
-                          item={item}
-                          deadlineLabel={formatDeadline(item.daysLeft)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {upcomingDeadlines.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t('deadlineSegmentUpcoming')}
-                      </p>
-                      {upcomingDeadlines.map((item) => (
-                        <DeadlineRow
-                          key={`${item.type}-${item.id}`}
-                          item={item}
-                          deadlineLabel={formatDeadline(item.daysLeft)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-[var(--theme-radius-card)] border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-                  {t('noDeadlines')}
-                </div>
               )}
             </div>
             {/*

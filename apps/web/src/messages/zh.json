@@ -357,6 +357,8 @@
       "setupProgress": "已就绪 {ready} / {total}",
       "priorityQueue": "待办",
       "deadlineStream": "截止流",
+      "upcomingEvents": "即将到来",
+      "upcomingEventsHint": "接下来的大事 —— 截止、比赛与大考",
       "balanced": "选校均衡",
       "needsBalance": "待均衡",
       "open": "打开",

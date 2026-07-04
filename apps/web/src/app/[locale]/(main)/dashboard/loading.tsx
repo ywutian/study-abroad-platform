@@ -6,18 +6,20 @@ import { Skeleton } from '@/components/ui/skeleton';
  * Dashboard loading skeleton — must match the real page layout to
  * minimize Cumulative Layout Shift (CLS).
  *
- * Real layout (2026-05 redesign batch 2 — two-column workbench):
+ * Real layout (2026-07 batch-2 — two-column workbench):
  *   PageHeader
- *   → QuickAsk                       (full-width, above the grid)
  *   → grid [ MAIN 1fr | SIDEBAR ~21rem ]
  *       MAIN:
- *         → CommandCenter            (single column — hero+readiness
- *                                     above the divider, priority queue
- *                                     + deadline stream below)
+ *         → EventsTimeline           (5e — upcoming milestones strip; top)
+ *         → CommandCenter            (hero above the divider, priority
+ *                                     queue / to-do below; the readiness
+ *                                     grid + deadline stream were removed)
+ *         → QuickAsk                 (folded into the column, under CC)
  *         → [PipelineStrip]          (conditional, no skeleton — see note)
  *         → [EssayCoach]             (conditional, no skeleton — see note)
  *         → [DecisionPanel]          (conditional, no skeleton — see note)
  *       SIDEBAR:
+ *         → DashboardSetupProgress   (5c — compact readiness card; top)
  *         → DashboardStats           (default-OPEN in the sidebar —
  *                                     header + 2-col tile grid skeleton)
  *         → DashboardWorkspaceHub    (collapsed — header-only skeleton)
@@ -69,15 +71,35 @@ export default function DashboardLoading() {
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_clamp(19rem,22vw,21rem)]">
           {/* MAIN column */}
           <div className="min-w-0 space-y-6">
-            {/* CommandCenter skeleton — single column (batch 2 flatten):
-                hero + readiness above the divider, priority queue +
-                deadline stream below. */}
+            {/* Events timeline overview skeleton (batch-2 5e): header + a
+                horizontal strip of milestone chips. */}
+            <Card className="rounded-[var(--theme-radius-card)]">
+              <CardContent className="p-4 sm:p-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-3 w-56" />
+                  </div>
+                  <Skeleton className="h-4 w-20 shrink-0" />
+                </div>
+                <div className="flex gap-3 overflow-hidden">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-28 w-40 shrink-0 rounded-[var(--theme-radius-card)]"
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            {/* CommandCenter skeleton — single column: hero above the
+                divider, priority queue (to-do) below. */}
             <Card className="overflow-hidden rounded-[var(--theme-radius-card)]">
               <CardContent className="p-0">
-                {/* Hero + readiness section */}
+                {/* Hero section (batch-2: readiness grid moved to the
+                    sidebar as a compact setup-progress card). */}
                 <div className="border-b border-border p-4 sm:p-5">
-                  {/* Hero */}
-                  <div className="mb-5 flex items-start gap-3">
+                  <div className="flex items-start gap-3">
                     <Skeleton className="h-11 w-11 shrink-0 rounded-[var(--theme-radius-card)]" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-7 w-72" />
@@ -85,40 +107,13 @@ export default function DashboardLoading() {
                     </div>
                     <Skeleton className="h-9 w-32 shrink-0" />
                   </div>
-                  {/* Setup-checklist header: title + (QuickAdd + count).
-                      Batch 4 dropped the score number + verdict badge —
-                      header is now 2 elements, not 3. */}
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <Skeleton className="h-5 w-28" />
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-7 w-20" />
-                      <Skeleton className="h-4 w-16" />
-                    </div>
-                  </div>
-                  <Skeleton className="mb-3 h-1.5 w-full" />
-                  {/* 5 readiness items — batch 2 breakpoint ladder
-                      (must match dashboard-command-center.tsx). */}
-                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Skeleton key={i} className="h-16 rounded-[var(--theme-radius-card)]" />
-                    ))}
-                  </div>
                 </div>
-                {/* Priority queue + deadline stream section */}
+                {/* Priority queue (to-do) section */}
                 <div className="p-4 sm:p-5">
                   <Skeleton className="mb-3 h-5 w-28" />
                   <div className="space-y-2">
                     {Array.from({ length: 2 }).map((_, i) => (
                       <Skeleton key={i} className="h-24 rounded-[var(--theme-radius-card)]" />
-                    ))}
-                  </div>
-                  {/* Two-segment deadline strip — section header, then a
-                      segment label + a couple of rows (batch 3). */}
-                  <Skeleton className="mb-3 mt-5 h-5 w-28" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-24" />
-                    {Array.from({ length: 2 }).map((_, i) => (
-                      <Skeleton key={i} className="h-12 rounded-[var(--theme-radius-card)]" />
                     ))}
                   </div>
                 </div>
@@ -130,6 +125,26 @@ export default function DashboardLoading() {
 
           {/* SIDEBAR column */}
           <aside className="min-w-0 space-y-4">
+            {/* Setup progress (batch-2 5c): header + progress bar + 5 rows
+                + Quick Add School. Moved here from the CommandCenter hero. */}
+            <Card className="rounded-[var(--theme-radius-card)]">
+              <CardContent className="p-4">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <Skeleton className="h-5 w-28" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <Skeleton className="h-1.5 w-full" />
+                <div className="mt-3 space-y-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-8 w-full rounded-[var(--theme-radius-control,0.5rem)]"
+                    />
+                  ))}
+                </div>
+                <Skeleton className="mt-3 h-8 w-full" />
+              </CardContent>
+            </Card>
             {/* Stats snapshot — default-open in the sidebar: header +
                 2-col grid of 9 counter tiles. */}
             <Card className="rounded-[var(--theme-radius-card)]">
