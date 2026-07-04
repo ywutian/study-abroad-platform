@@ -2851,7 +2851,7 @@
   },
   "cases": {
     "title": "Case Library",
-    "description": "Explore real admission profiles, test scores, activities, and winning essays from accepted students",
+    "description": "Explore real admission profiles, test scores, activities, and sample essays from accepted students",
     "comparisonLoadError": "Failed to load similar cases",
     "insufficientTitle": "Not enough cases to compare",
     "insufficientDesc": "No similar real cases yet",
@@ -2862,7 +2862,7 @@
     "viewLess": "Show less",
     "tabs": {
       "cases": "Cases",
-      "essays": "Winning Essays",
+      "essays": "Sample Essays",
       "rejected": "Rejected Essays"
     },
     "shareCase": "Share Case",
@@ -5184,7 +5184,7 @@
     "tips": {
       "step1": "Add your target schools in Profile > School Selection to unlock school-specific essay prompts",
       "step2": "Click \"New Essay\" and use \"Select School Prompt\" to find the exact prompts required by each school",
-      "step3": "Browse winning essays in the Case Library to study successful structures and themes"
+      "step3": "Browse sample essays in the Case Library to study successful structures and themes"
     },
     "action": {
       "browseExamples": "Browse Examples"
