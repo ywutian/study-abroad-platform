@@ -30,6 +30,7 @@ import {
   SCHOOL_TIER_SORT_RANK,
 } from './school-list.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
+import { TimelineService } from '../timeline/timeline.service';
 
 const SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE = {
   isActive: true,
@@ -44,6 +45,7 @@ export class SchoolListService {
   constructor(
     private prisma: PrismaService,
     private cacheInvalidation: CacheInvalidationService,
+    private timelineService: TimelineService,
   ) {}
 
   /**
@@ -382,6 +384,25 @@ export class SchoolListService {
     });
 
     await this.cacheInvalidation.onProfileChange(userId);
+
+    // Root-fix for the confusing "Schools Awaiting Timeline" state: a school's
+    // application timeline (real deadlines + auto-built tasks) is deterministic
+    // and cheap to build (no LLM), so generate it the moment the school is added
+    // — the user never has to find and click a "Generate Timeline" button, and
+    // the plan is ready by the time the timeline page loads. Best-effort: a
+    // school with no source-backed deadlines just yields nothing (returned in
+    // `failed`), and any failure must never block adding the school.
+    try {
+      await this.timelineService.generateTimelines(userId, {
+        schoolIds: [dto.schoolId],
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Auto-generate timeline failed for school ${dto.schoolId}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
 
     const essayCount = await this.prisma.essayPrompt.count({
       where: {
