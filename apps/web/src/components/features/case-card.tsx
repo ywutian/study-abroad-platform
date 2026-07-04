@@ -80,15 +80,18 @@ export function CaseCard({
         {/* ── Header: 学校 + 排名 + 结果 ── */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="truncate font-semibold text-sm">{schoolName}</h3>
-              <RankingBadge
-                rankings={rankings}
-                usNewsRank={rank}
-                variant="amber"
-                className="px-1.5 py-0"
-              />
-            </div>
+            {/* School name on its own line: the long "US News National
+                Universities #N" ranking badge is shrink-0, so keeping it
+                beside the name stole all the width and truncated it to
+                "Brow…"/"Harva…" (the missing-min-w-0 overflow class, #214/#217).
+                Badge sits below the name now, so the name gets the full column. */}
+            <h3 className="truncate font-semibold text-sm">{schoolName}</h3>
+            <RankingBadge
+              rankings={rankings}
+              usNewsRank={rank}
+              variant="amber"
+              className="mt-1 px-1.5 py-0"
+            />
             <p className="text-xs text-muted-foreground mt-0.5">
               {year} · {round} · {major || tc('notSpecified')}
             </p>

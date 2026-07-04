@@ -237,53 +237,45 @@ export default function CaseDetailPage() {
               </Card>
             )}
 
-            {/* 活动与亮点：优先展示 activityList，否则展示 tags 列表 */}
-            {(caseData.activityList?.trim() || (caseData.tags && caseData.tags.length > 0)) && (
+            {/* 活动与亮点：只在 activityList 有值时展示。不再兜底 raw tags——
+                采集来的文书没有活动数据，tags 里是内部溯源（source:URL、档案
+                关键词如 washu/shemmassian），兜底会把"来源"误显成"活动"。
+                溯源本就有专门字段（sourceArchive/sourceUrl）在别处展示。 */}
+            {caseData.activityList?.trim() && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">{t('cases.detail.activityListTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {caseData.activityList?.trim() ? (
-                    <div className="space-y-2">
-                      {caseData.activityList
-                        .split(/\n+/)
-                        .map((line: string) => line.trim())
-                        .filter(Boolean)
-                        .map((line: string, idx: number) => {
-                          const parts = line.split(/\s*[-–—:]\s*/);
-                          const category = parts.length > 1 ? parts[0] : null;
-                          const detail = parts.length > 1 ? parts.slice(1).join(' - ') : line;
-                          return (
-                            <div
-                              key={idx}
-                              className="flex items-start gap-3 p-2.5 rounded-lg border bg-muted/20"
-                            >
-                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-500/10 text-orange-500 text-xs font-semibold">
-                                {idx + 1}
-                              </div>
-                              <div className="min-w-0">
-                                {category && (
-                                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                    {category}
-                                  </span>
-                                )}
-                                <p className="text-sm">{detail}</p>
-                              </div>
+                  <div className="space-y-2">
+                    {caseData.activityList
+                      .split(/\n+/)
+                      .map((line: string) => line.trim())
+                      .filter(Boolean)
+                      .map((line: string, idx: number) => {
+                        const parts = line.split(/\s*[-–—:]\s*/);
+                        const category = parts.length > 1 ? parts[0] : null;
+                        const detail = parts.length > 1 ? parts.slice(1).join(' - ') : line;
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-3 p-2.5 rounded-lg border bg-muted/20"
+                          >
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-500/10 text-orange-500 text-xs font-semibold">
+                              {idx + 1}
                             </div>
-                          );
-                        })}
-                    </div>
-                  ) : (
-                    <ul className="space-y-2 list-none pl-0">
-                      {caseData.tags.map((tag: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm">
-                          <span className="text-muted-foreground mt-0.5 shrink-0">•</span>
-                          <span>{tag}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                            <div className="min-w-0">
+                              {category && (
+                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                  {category}
+                                </span>
+                              )}
+                              <p className="text-sm">{detail}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
                 </CardContent>
               </Card>
             )}
