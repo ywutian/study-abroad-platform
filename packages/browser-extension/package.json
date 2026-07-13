@@ -15,7 +15,7 @@
     "@study-abroad/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.0",
+    "@types/chrome": "^0.2.2",
     "@types/node": "^20.19.43",
     "css-loader": "^6.10.0",
     "jsdom": "^28.1.0",
@@ -24,8 +24,8 @@
     "style-loader": "^3.3.4",
     "ts-loader": "^9.6.2",
     "typescript": "^5.3.3",
-    "vitest": "^4.1.9",
-    "webpack": "^5.108.1",
+    "vitest": "^4.1.10",
+    "webpack": "^5.108.4",
     "webpack-cli": "^5.1.4"
   }
 }

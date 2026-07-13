@@ -207,11 +207,11 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.5",
-    "@eslint/js": "^9.39.4",
-    "@nestjs/cli": "^11.0.23",
+    "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^9.39.5",
+    "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
-    "@nestjs/testing": "^11.1.27",
+    "@nestjs/testing": "^11.1.28",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.15.43",
     "@swc/jest": "^0.2.39",
@@ -220,7 +220,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
-    "@types/multer": "^2.1.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^20.19.43",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
@@ -229,7 +229,7 @@
     "eslint-plugin-prettier": "^5.5.6",
     "globals": "^16.0.0",
     "jest": "^30.0.0",
-    "prettier": "^3.9.1",
+    "prettier": "^3.9.5",
     "puppeteer": "^24.43.1",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
@@ -239,7 +239,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.62.0"
+    "typescript-eslint": "^8.63.0"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
