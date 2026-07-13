@@ -62,7 +62,7 @@ export function SocialProof() {
             >
               <Quote className="absolute right-6 top-6 h-10 w-10 text-primary/12" />
 
-              <div className="text-subtitle italic leading-relaxed tracking-[-0.01em] text-[var(--landing-fg)]">
+              <div className="landing-serif text-subtitle italic leading-relaxed tracking-[-0.01em] text-[var(--landing-fg)]">
                 “{quote.quote}”
               </div>
 

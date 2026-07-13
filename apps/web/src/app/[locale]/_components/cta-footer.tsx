@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { LumniMark } from '@/components/ui/lumni-mark';
@@ -25,7 +26,18 @@ export function CTAFooter() {
         id="cta"
         className="landing-section relative overflow-hidden border-t border-[color:var(--landing-border)]"
       >
-        <PageContainer variant="marketing">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/landing/cta-background.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-[var(--landing-bg)]/65" />
+        </div>
+
+        <PageContainer variant="marketing" className="relative">
           <div className="mx-auto max-w-4xl text-center">
             <div className="landing-kicker justify-center">{home.cta.eyebrow}</div>
             <h2 className="mt-5 text-display-hero font-bold leading-[0.96] tracking-tight text-[var(--landing-fg)]">

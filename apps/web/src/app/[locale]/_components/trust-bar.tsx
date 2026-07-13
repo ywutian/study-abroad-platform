@@ -1,8 +1,29 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
+import { SchoolLogo } from '@/components/features/schools/SchoolLogo';
 import { PageContainer } from '@/components/layout/page-container';
 import { useHomeContent } from './home-content';
+
+// Marquee names (home.trust.schools) → official domains for the existing
+// SchoolLogo favicon chain — same resolution path the /schools page uses.
+const SCHOOL_DOMAINS: Record<string, string> = {
+  MIT: 'mit.edu',
+  Stanford: 'stanford.edu',
+  Harvard: 'harvard.edu',
+  Princeton: 'princeton.edu',
+  Yale: 'yale.edu',
+  Columbia: 'columbia.edu',
+  Caltech: 'caltech.edu',
+  UChicago: 'uchicago.edu',
+  UPenn: 'upenn.edu',
+  Cornell: 'cornell.edu',
+  Brown: 'brown.edu',
+  Duke: 'duke.edu',
+  JHU: 'jhu.edu',
+  Northwestern: 'northwestern.edu',
+  UCLA: 'ucla.edu',
+};
 
 export function TrustBar() {
   const home = useHomeContent();
@@ -43,13 +64,20 @@ export function TrustBar() {
         </motion.div>
 
         <div className="mt-8 border-t border-[color:var(--landing-border)] pt-6">
-          <div className="landing-marquee-mask overflow-hidden">
+          {/* Infinite marquee is intentionally wider than its mask — opt out of the dev overflow detector. */}
+          <div className="landing-marquee-mask overflow-hidden" data-allow-overflow-x>
             <div className="animate-marquee flex w-max gap-8 sm:gap-12">
               {[...home.trust.schools, ...home.trust.schools].map((school, index) => (
                 <span
                   key={`${school}-${index}`}
-                  className="text-xl font-medium tracking-[-0.02em] text-[var(--landing-muted)] sm:text-2xl"
+                  className="flex items-center gap-3 text-xl font-medium tracking-[-0.02em] text-[var(--landing-muted)] sm:text-2xl"
                 >
+                  <SchoolLogo
+                    name={school}
+                    website={SCHOOL_DOMAINS[school]}
+                    size="sm"
+                    className="shrink-0"
+                  />
                   {school}
                 </span>
               ))}

@@ -1,5 +1,10 @@
 # Anti-Churn Playbook
 
+> Execution companion: use
+> [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md)
+> as the day-to-day checklist that maps recent Git history to concrete
+> regression gates and PR actions.
+
 How we stop "building, then rebuilding the same thing days later." Grounded in
 how large engineering orgs (Google, Amazon, Meta) actually work, mapped to the
 three rework patterns this repo keeps hitting, and wired to enforcement that

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
@@ -376,7 +377,7 @@ type HeroVisualSceneProps = {
 
 function HeroVisualScene({ visual, copy, reduced, disclosure }: HeroVisualSceneProps) {
   if (visual === 'command-center') {
-    return <CommandCenterHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+    return <CommandCenterHero copy={copy} reduced={reduced} />;
   }
   if (visual === 'deer-moon-monolith') {
     return <DeerMoonMonolith copy={copy} reduced={reduced} disclosure={disclosure} />;
@@ -681,184 +682,68 @@ function PremiumHeroConsole({
   );
 }
 
-function CommandCenterHero({
-  copy,
-  reduced,
-  disclosure,
-}: {
-  copy: HeroConsoleCopy;
-  reduced: boolean;
-  disclosure: HeroVisualSceneProps['disclosure'];
-}) {
-  const [activeRow, setActiveRow] = useState(1);
-  const [activeTask, setActiveTask] = useState(0);
+function CommandCenterHero({ copy, reduced }: { copy: HeroConsoleCopy; reduced: boolean }) {
+  const [activeRow, setActiveRow] = useState(0);
   const rowCount = copy.rows.length;
-  const taskCount = copy.tasks.length;
 
   useEffect(() => {
     if (reduced) return;
     const timer = window.setInterval(() => {
       setActiveRow((prev) => (prev + 1) % rowCount);
-      setActiveTask((prev) => (prev + 1) % taskCount);
     }, 2600);
 
     return () => window.clearInterval(timer);
-  }, [reduced, rowCount, taskCount]);
+  }, [reduced, rowCount]);
 
   return (
-    <div className="relative mx-auto w-full max-w-[650px] lg:ml-8 xl:ml-14">
+    <div className="relative mx-auto w-full max-w-[480px] lg:ml-8 xl:ml-16">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[var(--theme-radius-card)] border border-[color:var(--landing-border)] shadow-[var(--landing-shadow-elevated)]">
+        <Image
+          src="/images/landing/hero-portrait.jpg"
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 480px, 0px"
+          className="object-cover"
+          priority
+        />
+      </div>
+
       <motion.div
-        className="relative overflow-hidden rounded-[var(--theme-radius-card)] border border-[color:var(--landing-border)] bg-[color:var(--lumni-hero-shell)] p-5 text-[color:var(--lumni-hero-text)] shadow-[var(--landing-shadow-elevated)] ring-1 ring-[color:var(--landing-border)]"
+        className="absolute bottom-4 left-4 right-4 z-20 rounded-[var(--theme-radius-card)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/92 p-4 shadow-[var(--landing-shadow-elevated)] backdrop-blur-2xl sm:right-auto sm:w-[260px]"
         animate={reduced ? undefined : { y: [0, -4, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--theme-grid)_1px,transparent_1px),linear-gradient(var(--theme-grid)_1px,transparent_1px)] bg-[size:34px_34px]" />
-        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[color:var(--theme-glow-1)] opacity-70 blur-3xl" />
-        <div className="absolute -bottom-20 left-10 h-60 w-60 rounded-full bg-[color:var(--theme-glow-2)] opacity-55 blur-3xl" />
-
-        <div className="relative rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] backdrop-blur-xl">
-          <div className="flex h-16 items-center justify-between border-b border-[color:var(--lumni-hero-line)] px-5">
-            <div>
-              <div className="text-2xs uppercase tracking-[0.24em] text-[color:var(--lumni-hero-muted)]">
-                {copy.workspace}
-              </div>
-              <div className="mt-1 text-xs text-[color:var(--lumni-hero-soft)]">
-                {copy.workflowLine}
-              </div>
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-inset)] px-3 py-1.5 text-2xs uppercase tracking-[0.16em] text-[color:var(--lumni-hero-soft)] shadow-sm">
-              <StatusDot status="success" pulse={!reduced} />
-              {copy.statusReady}
-            </div>
-          </div>
-
-          <div className="grid min-w-0 min-h-[520px] grid-cols-[0.88fr_1.12fr] gap-4 p-4">
-            <div className="relative flex flex-col justify-between overflow-hidden rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-inset)] p-5">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,var(--lumni-moon-soft),transparent_35%)]" />
-              <div className="relative flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-2xs uppercase tracking-[0.24em] text-[color:var(--lumni-hero-muted)]">
-                    {copy.signalLabel}
-                  </div>
-                  <div className="mt-2 text-sm font-medium text-[color:var(--lumni-hero-soft)]">
-                    {copy.symbolLabel}
-                  </div>
-                </div>
-                <span className="rounded-full border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] px-3 py-1 text-2xs uppercase tracking-[0.14em] text-[color:var(--lumni-hero-soft)]">
-                  {copy.signalLabel.split(' ')[0]}
-                </span>
-              </div>
-
-              <BrandSeal
-                className="relative mx-auto h-52 w-52"
-                markClassName="text-[color:var(--lumni-hero-mark)]"
-              />
-
-              <div className="relative rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] p-4 shadow-sm">
-                <div className="text-2xs uppercase tracking-[0.2em] text-[color:var(--lumni-hero-muted)]">
-                  {copy.profileLabel}
-                </div>
-                <div className="mt-2 text-lg font-semibold">{copy.profileMeta}</div>
-                <div className="mt-3 flex items-center gap-2 text-xs text-[color:var(--lumni-hero-soft)]">
-                  <StatusDot status="success" pulse={!reduced} />
-                  {copy.statusLive}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-rows-[auto_1fr_auto] gap-4">
-              <div className="rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] p-5 shadow-sm">
-                <div className="text-2xs uppercase tracking-[0.24em] text-[color:var(--lumni-hero-muted)]">
-                  {copy.termLabel}
-                </div>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--lumni-hero-text)]">
-                  {copy.title}
-                </h2>
-                <div className="mt-4 rounded-full border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-inset)] px-4 py-2 text-xs text-[color:var(--lumni-hero-soft)]">
-                  {copy.statusLive}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {copy.rows.map((row, index) => (
-                  <motion.div
-                    key={row.name}
-                    initial={false}
-                    animate={
-                      reduced
-                        ? undefined
-                        : {
-                            y: activeRow === index ? -2 : 0,
-                            scale: activeRow === index ? 1.015 : 1,
-                          }
-                    }
-                    transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                    className={cn(
-                      'grid min-w-0 grid-cols-[1fr_auto] items-center gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--lumni-hero-panel)] px-4 py-3 shadow-sm transition',
-                      activeRow === index
-                        ? 'border-[color:var(--ds-primary)]/40 ring-2 ring-[color:var(--ds-primary)]/10'
-                        : 'border-[color:var(--lumni-hero-line)]'
-                    )}
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-[color:var(--lumni-hero-text)]">
-                        {row.name}
-                      </div>
-                      <div className="mt-1 text-xs text-[color:var(--lumni-hero-soft)]">
-                        {row.status}
-                      </div>
-                    </div>
-                    <AdmissionTierBadge tier={row.tone} probability={row.probability} />
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="grid min-w-0 grid-cols-[0.85fr_1.15fr] gap-3">
-                <div className="rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] p-4">
-                  <div className="text-2xs uppercase tracking-[0.2em] text-[color:var(--lumni-hero-muted)]">
-                    {copy.tasksLabel}
-                  </div>
-                  <div className="mt-3 space-y-2.5">
-                    {copy.tasks.slice(0, 3).map((task, index) => (
-                      <div
-                        key={task}
-                        className="flex items-start gap-2 text-xs leading-5 text-[color:var(--lumni-hero-soft)]"
-                      >
-                        <CheckCircle2
-                          className={cn(
-                            'mt-0.5 h-3.5 w-3.5 shrink-0',
-                            index <= activeTask
-                              ? 'text-[color:var(--ds-primary)]'
-                              : 'text-[color:var(--lumni-hero-muted)]'
-                          )}
-                        />
-                        <span className={cn(index < activeTask && 'line-through opacity-55')}>
-                          {task}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="lumni-disclosure-on-light rounded-[var(--theme-radius-card)] border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-panel)] p-4">
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1.5 text-2xs uppercase tracking-[0.18em] text-[color:var(--lumni-hero-soft)]">
-                    <StatusDot status="ai" pulse={!reduced} />
-                    {copy.assistantBadge}
-                  </div>
-                  <p className="mb-3 text-xs leading-5 text-[color:var(--lumni-hero-soft)]">
-                    {copy.assistantMessages[1]}
-                  </p>
-                  <AIDisclosure
-                    inputs={disclosure.inputs}
-                    confidence={disclosure.confidence}
-                    limitations={disclosure.limitations}
-                  >
-                    {disclosure.trigger}
-                  </AIDisclosure>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+          <StatusDot status="ai" pulse={!reduced} />
+          {copy.assistantBadge}
         </div>
+        <div className="mt-3 space-y-2">
+          {copy.rows.slice(0, 2).map((row, index) => (
+            <div
+              key={row.name}
+              className={cn(
+                'flex items-center justify-between gap-3 rounded-lg border px-3 py-2 transition',
+                activeRow === index
+                  ? 'border-[color:var(--ds-primary)]/40 bg-[color:var(--landing-surface-muted)]'
+                  : 'border-[color:var(--landing-border)]'
+              )}
+            >
+              <span className="truncate text-sm font-medium text-[var(--landing-fg)]">
+                {row.name}
+              </span>
+              <AdmissionTierBadge tier={row.tone} probability={row.probability} />
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div
+        className="absolute right-4 top-4 z-20 hidden items-center gap-2 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/92 px-4 py-2.5 text-xs font-medium text-[var(--landing-fg)] shadow-[var(--landing-shadow-elevated)] backdrop-blur-2xl sm:flex"
+        animate={reduced ? undefined : { y: [0, 5, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+      >
+        <StatusDot status="success" pulse={!reduced} />
+        {copy.statusLive}
       </motion.div>
     </div>
   );
