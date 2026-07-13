@@ -140,7 +140,7 @@ export function HeroSection() {
               {denseCopy ? denseCopy.body : home.hero.subtitle}
             </p>
 
-            <MobileLumniCommandPreview visual={heroVisual} />
+            <MobileHeroPhoto />
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/register">
@@ -235,128 +235,45 @@ export function HeroSection() {
   );
 }
 
-function MobileLumniCommandPreview({ visual }: { visual: HeroVisualId }) {
+// Mobile counterpart to the desktop CommandCenterHero photo card. The
+// desktop photo lives in a `hidden lg:block` grid column, so mobile needs
+// its own render or it falls back to a synthetic mockup (the old behavior)
+// — meaning phone visitors never saw the real photography. Same image,
+// same AI-copilot rows, stacked instead of overlaid.
+function MobileHeroPhoto() {
   const t = useTranslations('home');
   const copy = t.raw('hero.console') as HeroConsoleCopy;
-  const primaryRow = copy.rows[0];
+  const rows = copy.rows.slice(0, 2);
 
   return (
-    <div
-      className={cn(
-        'relative mt-7 overflow-hidden rounded-lg border p-3 shadow-[var(--landing-shadow-soft)] lg:hidden',
-        visual === 'deer-moon-monolith'
-          ? 'border-[#1f1a15] bg-[#11100f] text-[#fff8ee]'
-          : 'border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-shell)] text-[var(--lumni-hero-text)]'
-      )}
-    >
-      <div className="lumni-night-grid pointer-events-none absolute inset-0" />
-      <div
-        className={cn(
-          'relative flex items-center justify-between gap-3 rounded-md border px-3 py-2.5',
-          visual === 'deer-moon-monolith'
-            ? 'border-white/12 bg-white/6'
-            : 'border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]'
-        )}
-      >
-        <div>
-          <div
-            className={cn(
-              'text-2xs uppercase tracking-[0.2em]',
-              visual === 'deer-moon-monolith' ? 'text-white/48' : 'text-[var(--lumni-hero-muted)]'
-            )}
-          >
-            {copy.workspace}
-          </div>
-          <div
-            className={cn(
-              'mt-0.5 text-xs',
-              visual === 'deer-moon-monolith' ? 'text-white/64' : 'text-[var(--lumni-hero-soft)]'
-            )}
-          >
-            {copy.workflowLine}
-          </div>
-        </div>
-        <div
-          className={cn(
-            'flex items-center gap-1.5 rounded-full border px-2 py-1 text-2xs uppercase tracking-[0.14em]',
-            visual === 'deer-moon-monolith'
-              ? 'border-white/14 text-white/70'
-              : 'border-[color:var(--lumni-hero-line)] text-[var(--lumni-hero-soft)]'
-          )}
-        >
-          <StatusDot status="success" pulse />
-          {copy.statusReady}
-        </div>
+    <div className="relative mt-7 lg:hidden">
+      <div className="relative aspect-[3/2] w-full overflow-hidden rounded-xl border border-[color:var(--landing-border)] shadow-[var(--landing-shadow-elevated)]">
+        <Image
+          src="/images/landing/hero-portrait.jpg"
+          alt=""
+          fill
+          sizes="(max-width: 1023px) 100vw, 0px"
+          className="object-cover object-top"
+        />
       </div>
 
-      <div className="relative mt-3 grid min-w-0 grid-cols-[104px_1fr] gap-3">
-        <div
-          className={cn(
-            'flex min-h-[150px] items-center justify-center rounded-md border',
-            visual === 'deer-moon-monolith'
-              ? 'border-white/12 bg-black'
-              : 'border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]'
-          )}
-        >
-          <div className="relative flex h-24 w-24 items-center justify-center">
-            <div
-              className={cn(
-                'absolute h-20 w-20 rounded-full',
-                visual === 'framer-orbit'
-                  ? 'bg-[#7aa8ff]'
-                  : visual === 'lovable-aura'
-                    ? 'bg-[#ff5aa5]'
-                    : 'bg-[var(--lumni-moon)]'
-              )}
-            />
-            <LumniMark
-              showDisc={false}
-              showMoon={false}
-              className={cn(
-                'relative h-24 w-24',
-                visual === 'deer-moon-monolith' ? 'text-[#fff7e5]' : 'text-[var(--lumni-hero-mark)]'
-              )}
-              iconClassName="h-full w-full"
-            />
-          </div>
+      <div className="mt-3 rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] p-3 shadow-[var(--landing-shadow-card)]">
+        <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+          <StatusDot status="ai" pulse />
+          {copy.assistantBadge}
         </div>
-
-        <div
-          className={cn(
-            'min-w-0 rounded-md border p-3',
-            visual === 'deer-moon-monolith'
-              ? 'border-white/12 bg-white/6'
-              : 'border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]'
-          )}
-        >
-          <div
-            className={cn(
-              'text-2xs uppercase tracking-[0.2em]',
-              visual === 'deer-moon-monolith' ? 'text-white/46' : 'text-[var(--lumni-hero-muted)]'
-            )}
-          >
-            {copy.termLabel}
-          </div>
-          <div
-            className={cn(
-              'mt-1 text-base font-semibold tracking-tight',
-              visual === 'deer-moon-monolith' ? 'text-white' : 'text-[var(--lumni-hero-text)]'
-            )}
-          >
-            {copy.title}
-          </div>
-          <div className="mt-3 rounded-md border border-[color:var(--lumni-moon)] bg-[color:var(--lumni-hero-active)] px-2.5 py-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="truncate text-sm font-medium">{primaryRow.name}</span>
-              <span className="shrink-0 rounded-full bg-[#fff4e2] px-2 py-0.5 text-2xs font-medium text-[#8a5f12]">
-                {primaryRow.status} {primaryRow.probability}%
+        <div className="mt-2.5 space-y-1.5">
+          {rows.map((row) => (
+            <div
+              key={row.name}
+              className="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--landing-border)] px-3 py-1.5"
+            >
+              <span className="truncate text-sm font-medium text-[var(--landing-fg)]">
+                {row.name}
               </span>
+              <AdmissionTierBadge tier={row.tone} probability={row.probability} />
             </div>
-          </div>
-          <div className="mt-3 flex items-start gap-2 text-xs leading-5 text-[var(--lumni-hero-soft)]">
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--lumni-moon)]" />
-            <span>{copy.tasks[0]}</span>
-          </div>
+          ))}
         </div>
       </div>
     </div>
