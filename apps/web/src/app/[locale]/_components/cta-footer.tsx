@@ -32,7 +32,11 @@ export function CTAFooter() {
             alt=""
             fill
             sizes="100vw"
-            className="object-cover"
+            // Source is a wide 16:9 crop (subject at ~30% from the left,
+            // composed for desktop). Mobile's section is tall/narrow, so
+            // object-cover's default center crop shows empty lawn instead
+            // of her — anchor to the subject below `lg`, recenter above it.
+            className="object-cover object-[30%_center] lg:object-center"
           />
           <div className="absolute inset-0 bg-[var(--landing-bg)]/65" />
         </div>

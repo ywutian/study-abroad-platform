@@ -699,12 +699,16 @@ function CommandCenterHero({ copy, reduced }: { copy: HeroConsoleCopy; reduced: 
     <div className="relative mx-auto w-full max-w-[480px] lg:ml-8 xl:ml-16">
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[var(--theme-radius-card)] border border-[color:var(--landing-border)] shadow-[var(--landing-shadow-elevated)]">
         <Image
+          // No `priority`: this card is `hidden lg:block` (mobile shows
+          // MobileLumniCommandPreview instead), and Next always emits a
+          // `priority` preload regardless of that CSS. Plain lazy-loading
+          // correctly skips the fetch while hidden, and still loads
+          // promptly on desktop since the card is in the initial viewport.
           src="/images/landing/hero-portrait.jpg"
           alt=""
           fill
           sizes="(min-width: 1024px) 480px, 0px"
           className="object-cover"
-          priority
         />
       </div>
 
