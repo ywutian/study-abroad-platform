@@ -625,7 +625,7 @@
       "trustLine": "预测锚定各校官方公布的录取率，每条结论都写明理由",
       "primaryCta": "免费开始",
       "secondaryCta": "查看学员案例",
-      "statLabel": "3,000+ 院校数据 · 2026 数据周期",
+      "statLabel": "2,000+ 院校数据 · 2026 数据周期",
       "floatingQuote": {
         "quote": "我终于知道下一步该做什么了。",
         "meta": "林同学 · UCLA '28"
@@ -818,7 +818,7 @@
         },
         "socialProof": {
           "headline": "预测锚定官方公布录取率",
-          "subline": "3,000+ 院校数据 · 每条结论都有理由"
+          "subline": "2,000+ 院校数据 · 每条结论都有理由"
         },
         "counselorEyebrow": "受信于以下升学顾问",
         "counselorSchools": [
@@ -892,7 +892,7 @@
       "label": "数据库收录院校 · 2026 持续更新",
       "stats": [
         {
-          "value": "3,000+",
+          "value": "2,000+",
           "label": "院校数据库"
         },
         {

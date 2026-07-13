@@ -625,7 +625,7 @@
       "trustLine": "Calibrated against officially published admit rates — every prediction explained",
       "primaryCta": "Get started free",
       "secondaryCta": "See student stories",
-      "statLabel": "3,000+ schools · 2026 data cycle",
+      "statLabel": "2,000+ schools · 2026 data cycle",
       "floatingQuote": {
         "quote": "I finally knew what the next move was.",
         "meta": "Lin · UCLA '28"
@@ -827,7 +827,7 @@
         },
         "socialProof": {
           "headline": "Anchored to published admit rates",
-          "subline": "3,000+ schools · every prediction explained"
+          "subline": "2,000+ schools · every prediction explained"
         },
         "counselorEyebrow": "Trusted by counselors at",
         "counselorSchools": [
@@ -901,7 +901,7 @@
       "label": "In the dataset · Updated for 2026",
       "stats": [
         {
-          "value": "3,000+",
+          "value": "2,000+",
           "label": "Schools in the dataset"
         },
         {
