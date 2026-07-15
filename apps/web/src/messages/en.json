@@ -620,7 +620,7 @@
       "features": [
         "Generate the first admissions route in 2 minutes",
         "Move schools, essays, and timelines together",
-        "Keep human advisors for the decisions that matter"
+        "Keep the final call on the decisions that matter"
       ],
       "trustLine": "Calibrated against officially published admit rates — every prediction explained",
       "primaryCta": "Get started free",
@@ -1031,9 +1031,9 @@
         },
         {
           "number": "06",
-          "tag": "Human",
-          "title": "Expert oversight",
-          "description": "Let former AOs and Top-30 mentors handle the irreversible judgment calls while AI accelerates the day-to-day work."
+          "tag": "Judgment",
+          "title": "Final say is yours",
+          "description": "AI accelerates the day-to-day work — lists, drafts, deadlines — but the calls you can't take back stay with you, not an algorithm."
         }
       ],
       "visuals": {
@@ -1132,8 +1132,8 @@
           ]
         },
         "mentor": {
-          "label": "Human oversight",
-          "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
+          "label": "You decide",
+          "quote": "AI keeps the system moving. You step in on the calls that can't be undone.",
           "points": ["List structure review", "Final essay direction", "Submission risk check"]
         }
       }
@@ -1156,7 +1156,7 @@
         {
           "number": "03",
           "title": "Advance essays and collaboration",
-          "description": "Use AI for structure, peers for pressure, and mentors for judgment until the drafts are strong for the right reasons."
+          "description": "Use AI for structure and peer review for pressure until the drafts are strong for the right reasons."
         },
         {
           "number": "04",
@@ -1204,7 +1204,7 @@
       "title": ["Stop wasting years", "to information gaps"],
       "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
       "primary": "Create free account",
-      "secondary": "Book a 1:1 consult",
+      "secondary": "Read the FAQ",
       "trust": "No card required · Cancel anytime · Privacy first"
     },
     "footer": {
