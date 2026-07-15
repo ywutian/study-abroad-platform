@@ -2,13 +2,17 @@
  * Dependency-audit gate integrity check.
  *
  * High-severity CVEs were patched reactively, over and over (undici, multer,
- * tar, minimatch, …). The actual guardrail — `pnpm audit --audit-level=high`
- * in CI — already hard-fails the build. The recurring risk is that the gate
- * gets *silently softened* (a `|| true`, a `continue-on-error: true`, or the
- * level relaxed), and then high CVEs slip in unnoticed again.
+ * tar, minimatch, …). The actual guardrail — `scripts/check-dependency-audit.ts`
+ * (osv-scanner under the hood; see that file for why it's not `pnpm audit`
+ * anymore) — hard-fails CI on any unignored high/critical finding. The
+ * recurring risk is that the gate gets *silently softened*: a `|| true`, a
+ * `continue-on-error: true`, or (now that the severity threshold lives in
+ * script logic instead of a CLI flag) a quiet edit to the script itself that
+ * drops the high/critical check or the exit code.
  *
- * This check asserts the CI audit step stays HARD. It does NOT scan deps (that's
- * `pnpm audit`'s job) — it protects the gate that runs it. See docs/SECURITY_DEPS.md.
+ * This check asserts both layers stay HARD. It does NOT scan deps (that's
+ * check-dependency-audit.ts's job) — it protects the gate that runs it.
+ * See docs/SECURITY_DEPS.md.
  *
  * Usage: tsx scripts/check-audit-gate.ts
  */
@@ -18,38 +22,62 @@ import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
 const CI_FILE = path.join(ROOT, '.github/workflows/ci.yml');
+const AUDIT_SCRIPT = path.join(ROOT, 'scripts/check-dependency-audit.ts');
 
-function main() {
-  const errors: string[] = [];
+function checkCiStep(errors: string[]) {
   if (!fs.existsSync(CI_FILE)) {
-    console.error('❌ .github/workflows/ci.yml not found');
-    process.exit(1);
+    errors.push('.github/workflows/ci.yml not found');
+    return;
   }
   const lines = fs.readFileSync(CI_FILE, 'utf8').split('\n');
 
-  // Find the step that runs `pnpm audit`.
-  const auditIdx = lines.findIndex((l) => /pnpm\s+audit\b/.test(l) && !l.trim().startsWith('#'));
+  const auditIdx = lines.findIndex(
+    (l) => /check-dependency-audit\.ts\b/.test(l) && !l.trim().startsWith('#')
+  );
   if (auditIdx === -1) {
-    errors.push('No `pnpm audit` step found in CI — the dependency-vulnerability gate is missing.');
-  } else {
-    const auditLine = lines[auditIdx];
-    // The gate must fail on high (or stricter: critical). moderate/low/none = softened.
-    if (!/--audit-level=(high|critical)\b/.test(auditLine)) {
-      errors.push(
-        `CI audit must run at --audit-level=high (or critical). Found: ${auditLine.trim()}`
-      );
-    }
-    // No inline softening.
-    if (/\|\|\s*true|\|\|\s*:|;\s*true\b/.test(auditLine)) {
-      errors.push(`CI audit line is softened (|| true / ; true): ${auditLine.trim()}`);
-    }
-    // No continue-on-error on the step (scan the ~6 lines around the step header).
-    const from = Math.max(0, auditIdx - 6);
-    const stepBlock = lines.slice(from, auditIdx + 2).join('\n');
-    if (/continue-on-error:\s*true/.test(stepBlock)) {
-      errors.push('CI audit step has `continue-on-error: true` — the gate would never block.');
-    }
+    errors.push(
+      'No `check-dependency-audit.ts` step found in CI — the dependency-vulnerability gate is missing.'
+    );
+    return;
   }
+  const auditLine = lines[auditIdx];
+  if (/\|\|\s*true|\|\|\s*:|;\s*true\b/.test(auditLine)) {
+    errors.push(`CI audit line is softened (|| true / ; true): ${auditLine.trim()}`);
+  }
+  const from = Math.max(0, auditIdx - 6);
+  const stepBlock = lines.slice(from, auditIdx + 2).join('\n');
+  if (/continue-on-error:\s*true/.test(stepBlock)) {
+    errors.push('CI audit step has `continue-on-error: true` — the gate would never block.');
+  }
+}
+
+function checkAuditScript(errors: string[]) {
+  if (!fs.existsSync(AUDIT_SCRIPT)) {
+    errors.push(
+      'scripts/check-dependency-audit.ts not found — the audit gate has no implementation.'
+    );
+    return;
+  }
+  const src = fs.readFileSync(AUDIT_SCRIPT, 'utf8');
+
+  if (
+    !/FAIL_SEVERITIES\s*=\s*new Set\(\[[^\]]*['"]HIGH['"][^\]]*['"]CRITICAL['"][^\]]*\]\)/.test(src)
+  ) {
+    errors.push(
+      "check-dependency-audit.ts no longer fails on both HIGH and CRITICAL (FAIL_SEVERITIES set doesn't match) — the gate was softened."
+    );
+  }
+  if (!/process\.exit\(1\)/.test(src)) {
+    errors.push(
+      'check-dependency-audit.ts no longer exits non-zero on failure — the gate would never block.'
+    );
+  }
+}
+
+function main() {
+  const errors: string[] = [];
+  checkCiStep(errors);
+  checkAuditScript(errors);
 
   if (errors.length > 0) {
     console.error('\n❌ Dependency-audit gate integrity check failed:\n');
