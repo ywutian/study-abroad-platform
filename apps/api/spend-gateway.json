@@ -1,0 +1,18 @@
+{
+  "budgets": {
+    "study-abroad": 50.0
+  },
+  "providers": {
+    "openai": {
+      "base_url": "https://api.openai.com",
+      "api_key_env": "OPENAI_API_KEY",
+      "rail": "llm_token",
+      "provider": "openai",
+      "merchant": "openai",
+      "service_from_body": "model",
+      "amount": 0.5,
+      "budget": "study-abroad",
+      "agent": "study-abroad-api"
+    }
+  }
+}

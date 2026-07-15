@@ -620,12 +620,12 @@
       "features": [
         "Generate the first admissions route in 2 minutes",
         "Move schools, essays, and timelines together",
-        "Keep human advisors for the decisions that matter"
+        "Keep the final call on the decisions that matter"
       ],
-      "trustLine": "Trusted by 12,400+ families · 2,100+ Top-30 offers",
+      "trustLine": "Calibrated against officially published admit rates — every prediction explained",
       "primaryCta": "Get started free",
       "secondaryCta": "See student stories",
-      "statLabel": "Top-30 admits · 2026 calibrated",
+      "statLabel": "2,000+ schools · 2026 data cycle",
       "floatingQuote": {
         "quote": "I finally knew what the next move was.",
         "meta": "Lin · UCLA '28"
@@ -826,8 +826,8 @@
           }
         },
         "socialProof": {
-          "headline": "1,247 students applied this week",
-          "subline": "Avg. 8.4 schools · 92% on-time submission"
+          "headline": "Anchored to published admit rates",
+          "subline": "2,000+ schools · every prediction explained"
         },
         "counselorEyebrow": "Trusted by counselors at",
         "counselorSchools": [
@@ -898,23 +898,23 @@
       }
     },
     "trust": {
-      "label": "Partner schools · Historical admits",
+      "label": "In the dataset · Updated for 2026",
       "stats": [
         {
-          "value": "12,400+",
-          "label": "Active families"
+          "value": "2,000+",
+          "label": "Schools in the dataset"
         },
         {
-          "value": "2,100+",
-          "label": "Top-30 admits"
+          "value": "5",
+          "label": "Global ranking systems"
         },
         {
-          "value": "87%",
-          "label": "Model calibration"
+          "value": "2026",
+          "label": "Admissions data cycle"
         },
         {
-          "value": "3,000+",
-          "label": "School dataset"
+          "value": "0",
+          "label": "Black-box verdicts"
         }
       ],
       "schools": [
@@ -1031,9 +1031,9 @@
         },
         {
           "number": "06",
-          "tag": "Human",
-          "title": "Expert oversight",
-          "description": "Let former AOs and Top-30 mentors handle the irreversible judgment calls while AI accelerates the day-to-day work."
+          "tag": "Judgment",
+          "title": "Final say is yours",
+          "description": "AI accelerates the day-to-day work — lists, drafts, deadlines — but the calls you can't take back stay with you, not an algorithm."
         }
       ],
       "visuals": {
@@ -1132,8 +1132,8 @@
           ]
         },
         "mentor": {
-          "label": "Human oversight",
-          "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
+          "label": "You decide",
+          "quote": "AI keeps the system moving. You step in on the calls that can't be undone.",
           "points": ["List structure review", "Final essay direction", "Submission risk check"]
         }
       }
@@ -1156,7 +1156,7 @@
         {
           "number": "03",
           "title": "Advance essays and collaboration",
-          "description": "Use AI for structure, peers for pressure, and mentors for judgment until the drafts are strong for the right reasons."
+          "description": "Use AI for structure and peer review for pressure until the drafts are strong for the right reasons."
         },
         {
           "number": "04",
@@ -1177,54 +1177,25 @@
       }
     },
     "social": {
-      "eyebrow": "Real students · Real outcomes",
-      "title": "Not louder marketing. Better delivery.",
-      "stats": [
+      "eyebrow": "Method over marketing",
+      "title": "Trust what you can verify.",
+      "subtitle": "No borrowed numbers, no invented stories. Here is how the engine actually earns your trust.",
+      "principles": [
         {
-          "value": "12,400+",
-          "label": "Active students"
+          "title": "Anchored to published data",
+          "body": "Probability calibration is anchored to each school's officially published admit rates — not forum folklore or consultant instinct."
         },
         {
-          "value": "2,100+",
-          "label": "Top-30 admits"
+          "title": "Ranges, not verdicts",
+          "body": "Every prediction ships as a probability band with its reasons and uncertainty spelled out. When the data is too thin, we say so instead of guessing."
         },
         {
-          "value": "87%",
-          "label": "Model calibration"
+          "title": "AI does the legwork, humans own the calls",
+          "body": "Lists, essays, and timelines move faster with AI — while the irreversible decisions stay with human judgment."
         },
         {
-          "value": "3,000+",
-          "label": "Schools tracked"
-        }
-      ],
-      "quotes": [
-        {
-          "quote": "I thought the consultancy would be the sharpest part of the process. A month in, the AI list was simply better reasoned. MIT EA came through.",
-          "name": "Lin",
-          "meta": "MIT CS · Class of 2028",
-          "tag": "MIT CS",
-          "monogram": "L"
-        },
-        {
-          "quote": "The team layer changed everything. Four Econ applicants reviewed each other’s essays for weeks, and every one of us ended up beating our expected outcomes.",
-          "name": "Wang",
-          "meta": "UPenn Wharton · Class of 2028",
-          "tag": "Wharton",
-          "monogram": "W"
-        },
-        {
-          "quote": "AI didn’t write for me. It pushed me until the story was finally mine. By draft seventeen, the Common App essay actually sounded like me.",
-          "name": "Zhou",
-          "meta": "Stanford · Class of 2028",
-          "tag": "Stanford",
-          "monogram": "Z"
-        },
-        {
-          "quote": "From the parent side, this was the first time I could see the pace clearly. Not more anxiety. Just more clarity about what mattered each week.",
-          "name": "Ms. Zhang",
-          "meta": "Parent perspective",
-          "tag": "Parent POV",
-          "monogram": "Z"
+          "title": "Every number has a source",
+          "body": "School data carries provenance: rankings from five global systems, admissions figures traceable to where they were published."
         }
       ]
     },
@@ -1233,7 +1204,7 @@
       "title": ["Stop wasting years", "to information gaps"],
       "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
       "primary": "Create free account",
-      "secondary": "Book a 1:1 consult",
+      "secondary": "Read the FAQ",
       "trust": "No card required · Cancel anytime · Privacy first"
     },
     "footer": {

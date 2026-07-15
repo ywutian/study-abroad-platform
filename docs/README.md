@@ -6,15 +6,15 @@
 
 ## 按角色快速入口
 
-| 角色             | 首先阅读                                                                                                                                                                                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **新人**         | [ONBOARDING.md](ONBOARDING.md) → [QUICK_REFERENCE.md](QUICK_REFERENCE.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md) → [CONTRIBUTING.md](../CONTRIBUTING.md)                                                  |
-| **后端开发**     | [ARCHITECTURE.md](ARCHITECTURE.md) → [API_REFERENCE.md](API_REFERENCE.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)                                                                                                                                       |
-| **前端开发**     | [ARCHITECTURE.md](ARCHITECTURE.md) (Section 7) → [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                                                                                                                                                          |
-| **运维**         | [RUNBOOK.md](RUNBOOK.md) → [DEPLOY.md](DEPLOY.md) → [ARCHITECTURE.md](ARCHITECTURE.md) (Section 12)                                                                                                                                                            |
-| **QA / Release** | [RELEASE_GATE_ONE_PAGER.md](RELEASE_GATE_ONE_PAGER.md) → [QA_RELEASE_GATE_SOP.md](QA_RELEASE_GATE_SOP.md) → [CODEX_E2E_RUNBOOK.md](CODEX_E2E_RUNBOOK.md) → [FULL_SURFACE_REGISTRY.md](FULL_SURFACE_REGISTRY.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) |
-| **产品经理**     | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [GLOSSARY.md](GLOSSARY.md)                                                                                                                                                                                          |
-| **管理层**       | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [INVESTOR_PITCH_AI_SYSTEM.md](INVESTOR_PITCH_AI_SYSTEM.md)                                                                                                                                                          |
+| 角色             | 首先阅读                                                                                                                                                                                                                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **新人**         | [ONBOARDING.md](ONBOARDING.md) → [QUICK_REFERENCE.md](QUICK_REFERENCE.md) → [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) → [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md) → [CONTRIBUTING.md](../CONTRIBUTING.md)                                        |
+| **后端开发**     | [ARCHITECTURE.md](ARCHITECTURE.md) → [API_REFERENCE.md](API_REFERENCE.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)                                                                                                                                                                                           |
+| **前端开发**     | [ARCHITECTURE.md](ARCHITECTURE.md) (Section 7) → [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                                                                                                                                                                                                              |
+| **运维**         | [RUNBOOK.md](RUNBOOK.md) → [DEPLOY.md](DEPLOY.md) → [ARCHITECTURE.md](ARCHITECTURE.md) (Section 12)                                                                                                                                                                                                                |
+| **QA / Release** | [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) → [RELEASE_GATE_ONE_PAGER.md](RELEASE_GATE_ONE_PAGER.md) → [QA_RELEASE_GATE_SOP.md](QA_RELEASE_GATE_SOP.md) → [FULL_SURFACE_REGISTRY.md](FULL_SURFACE_REGISTRY.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) |
+| **产品经理**     | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [GLOSSARY.md](GLOSSARY.md)                                                                                                                                                                                                                                              |
+| **管理层**       | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [INVESTOR_PITCH_AI_SYSTEM.md](INVESTOR_PITCH_AI_SYSTEM.md)                                                                                                                                                                                                              |
 
 ---
 
@@ -22,26 +22,28 @@
 
 ### 治理与流程
 
-| 文档                                                                                 | 说明                                        | 语言 |
-| ------------------------------------------------------------------------------------ | ------------------------------------------- | ---- |
-| [LICENSE](../LICENSE)                                                                | 私有许可证                                  | EN   |
-| [SECURITY.md](../SECURITY.md)                                                        | 安全策略与漏洞上报                          | EN   |
-| [CONTRIBUTING.md](../CONTRIBUTING.md)                                                | 开发规范与协作流程                          | ZH   |
-| [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md)                                 | 工程标准 (质量门禁、编码规范)               | EN   |
-| [RELEASE_GATE_ONE_PAGER.md](RELEASE_GATE_ONE_PAGER.md)                               | 发版门禁一页版执行手册                      | ZH   |
-| [QA_RELEASE_GATE_SOP.md](QA_RELEASE_GATE_SOP.md)                                     | AI-first 发版门禁 E2E SOP                   | ZH   |
-| [CODEX_E2E_RUNBOOK.md](CODEX_E2E_RUNBOOK.md)                                         | Codex 执行发版门禁的固定 Runbook            | ZH   |
-| [JOURNEY_REGISTRY.md](JOURNEY_REGISTRY.md)                                           | 发版门禁旅程注册表                          | ZH   |
-| [FULL_SURFACE_REGISTRY.md](FULL_SURFACE_REGISTRY.md)                                 | 全产品面审计注册表                          | ZH   |
-| [FULL_SURFACE_REUSE_PLAYBOOK.md](FULL_SURFACE_REUSE_PLAYBOOK.md)                     | 全产品面审计复用手册                        | ZH   |
-| [FULL_SURFACE_GAP_CHECKLIST.md](FULL_SURFACE_GAP_CHECKLIST.md)                       | 全产品面易漏点清单                          | ZH   |
-| [RELEASE_IMPACT_MAPPING.md](RELEASE_IMPACT_MAPPING.md)                               | 代码改动到旅程的映射规则                    | ZH   |
-| [PREDICTION_CLOSED_LOOP_SOP.md](PREDICTION_CLOSED_LOOP_SOP.md)                       | 预测闭环运营 SOP                            | ZH   |
-| [APPLICATION_ANALYSIS_WORKFLOW_SOP.md](APPLICATION_ANALYSIS_WORKFLOW_SOP.md)         | 申请分析治理工作流 SOP                      | ZH   |
-| [APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md](APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md) | 申请分析实验能力 / canary / kill-switch SOP | ZH   |
-| [CHANGELOG.md](../CHANGELOG.md)                                                      | 变更日志 (Keep a Changelog)                 | ZH   |
-| [ADR 目录](adr/)                                                                     | 架构决策记录 (MADR 格式)                    | EN   |
-| [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md)                             | 文档元标准 (DORA 自评)                      | ZH   |
+| 文档                                                                                             | 说明                                        | 语言 |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------- | ---- |
+| [LICENSE](../LICENSE)                                                                            | 私有许可证                                  | EN   |
+| [SECURITY.md](../SECURITY.md)                                                                    | 安全策略与漏洞上报                          | EN   |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)                                                            | 开发规范与协作流程                          | ZH   |
+| [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md)                                             | 工程标准 (质量门禁、编码规范)               | EN   |
+| [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) | 企业级防回归与开发执行指南                  | ZH   |
+| [ANTI_CHURN_PLAYBOOK.md](ANTI_CHURN_PLAYBOOK.md)                                                 | 防返工 playbook 与工程治理原则              | EN   |
+| [RELEASE_GATE_ONE_PAGER.md](RELEASE_GATE_ONE_PAGER.md)                                           | 发版门禁一页版执行手册                      | ZH   |
+| [QA_RELEASE_GATE_SOP.md](QA_RELEASE_GATE_SOP.md)                                                 | AI-first 发版门禁 E2E SOP                   | ZH   |
+| [CODEX_E2E_RUNBOOK.md](CODEX_E2E_RUNBOOK.md)                                                     | Codex 执行发版门禁的固定 Runbook            | ZH   |
+| [JOURNEY_REGISTRY.md](JOURNEY_REGISTRY.md)                                                       | 发版门禁旅程注册表                          | ZH   |
+| [FULL_SURFACE_REGISTRY.md](FULL_SURFACE_REGISTRY.md)                                             | 全产品面审计注册表                          | ZH   |
+| [FULL_SURFACE_REUSE_PLAYBOOK.md](FULL_SURFACE_REUSE_PLAYBOOK.md)                                 | 全产品面审计复用手册                        | ZH   |
+| [FULL_SURFACE_GAP_CHECKLIST.md](FULL_SURFACE_GAP_CHECKLIST.md)                                   | 全产品面易漏点清单                          | ZH   |
+| [RELEASE_IMPACT_MAPPING.md](RELEASE_IMPACT_MAPPING.md)                                           | 代码改动到旅程的映射规则                    | ZH   |
+| [PREDICTION_CLOSED_LOOP_SOP.md](PREDICTION_CLOSED_LOOP_SOP.md)                                   | 预测闭环运营 SOP                            | ZH   |
+| [APPLICATION_ANALYSIS_WORKFLOW_SOP.md](APPLICATION_ANALYSIS_WORKFLOW_SOP.md)                     | 申请分析治理工作流 SOP                      | ZH   |
+| [APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md](APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md)             | 申请分析实验能力 / canary / kill-switch SOP | ZH   |
+| [CHANGELOG.md](../CHANGELOG.md)                                                                  | 变更日志 (Keep a Changelog)                 | ZH   |
+| [ADR 目录](adr/)                                                                                 | 架构决策记录 (MADR 格式)                    | EN   |
+| [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md)                                         | 文档元标准 (DORA 自评)                      | ZH   |
 
 ### arc42 S1: 介绍与目标
 
@@ -84,39 +86,39 @@
 
 ### arc42 S10-11: 质量与风险
 
-| 文档                                                                                     | 说明                                   |
+| 文档 | 说明 |
 | ---------------------------------------------------------------------------------------- | -------------------------------------- | --- |
-| [CODE_REVIEW.md](CODE_REVIEW.md)                                                         | 代码审查报告                           |
-| [QUALITY_CHECK.md](QUALITY_CHECK.md)                                                     | 质量检查报告                           |
-| [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)                                             | 测试清单 (24/24 suites, 468/468 tests) |
-| [AI_AGENT_EVALUATION_RUBRIC.md](AI_AGENT_EVALUATION_RUBRIC.md)                           | AI Agent 功能与输出评估 Rubric         | ZH  |
-| [CROSS_PLATFORM_REUSE_RUBRIC.md](CROSS_PLATFORM_REUSE_RUBRIC.md)                         | Web / Mobile 复用合理性 Rubric         | ZH  |
-| [PROFESSIONAL_CONSULTANCY_RUBRIC.md](PROFESSIONAL_CONSULTANCY_RUBRIC.md)                 | 专业留学中介感 Rubric                  | ZH  |
-| [../scripts/release-gate/README.md](../scripts/release-gate/README.md)                   | Release gate 脚本使用说明              | ZH  |
-| [templates/human-e2e-task-card.md](templates/human-e2e-task-card.md)                     | 人工 E2E 测试任务卡模板                | ZH  |
-| [templates/e2e-issue-report.md](templates/e2e-issue-report.md)                           | E2E 问题提报模板                       | ZH  |
-| [templates/release-gate-master.md](templates/release-gate-master.md)                     | 发版门禁总表模板                       | ZH  |
-| [templates/full-surface-route-check.md](templates/full-surface-route-check.md)           | 全产品面 route 检查模板                | ZH  |
-| [templates/full-surface-capability-check.md](templates/full-surface-capability-check.md) | 全产品面 capability 检查模板           | ZH  |
-| [templates/full-surface-batch-summary.md](templates/full-surface-batch-summary.md)       | 全产品面批次总结模板                   | ZH  |
-| [examples/AI_FIRST_RELEASE_GATE_SAMPLE.md](examples/AI_FIRST_RELEASE_GATE_SAMPLE.md)     | 发版门禁样例包                         | ZH  |
-| [P0_OPTIMIZATION_PLAN.md](P0_OPTIMIZATION_PLAN.md)                                       | P0 优化计划                            |
-| [DATA_VERIFICATION.md](DATA_VERIFICATION.md)                                             | 数据验证记录                           |
+| [CODE_REVIEW.md](CODE_REVIEW.md) | 代码审查报告 |
+| [QUALITY_CHECK.md](QUALITY_CHECK.md) | 质量检查报告 |
+| [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) | 测试清单 (24/24 suites, 468/468 tests) |
+| [AI_AGENT_EVALUATION_RUBRIC.md](AI_AGENT_EVALUATION_RUBRIC.md) | AI Agent 功能与输出评估 Rubric | ZH |
+| [CROSS_PLATFORM_REUSE_RUBRIC.md](CROSS_PLATFORM_REUSE_RUBRIC.md) | Web / Mobile 复用合理性 Rubric | ZH |
+| [PROFESSIONAL_CONSULTANCY_RUBRIC.md](PROFESSIONAL_CONSULTANCY_RUBRIC.md) | 专业留学中介感 Rubric | ZH |
+| [../scripts/release-gate/README.md](../scripts/release-gate/README.md) | Release gate 脚本使用说明 | ZH |
+| [templates/human-e2e-task-card.md](templates/human-e2e-task-card.md) | 人工 E2E 测试任务卡模板 | ZH |
+| [templates/e2e-issue-report.md](templates/e2e-issue-report.md) | E2E 问题提报模板 | ZH |
+| [templates/release-gate-master.md](templates/release-gate-master.md) | 发版门禁总表模板 | ZH |
+| [templates/full-surface-route-check.md](templates/full-surface-route-check.md) | 全产品面 route 检查模板 | ZH |
+| [templates/full-surface-capability-check.md](templates/full-surface-capability-check.md) | 全产品面 capability 检查模板 | ZH |
+| [templates/full-surface-batch-summary.md](templates/full-surface-batch-summary.md) | 全产品面批次总结模板 | ZH |
+| [examples/AI_FIRST_RELEASE_GATE_SAMPLE.md](examples/AI_FIRST_RELEASE_GATE_SAMPLE.md) | 发版门禁样例包 | ZH |
+| [P0_OPTIMIZATION_PLAN.md](P0_OPTIMIZATION_PLAN.md) | P0 优化计划 |
+| [DATA_VERIFICATION.md](DATA_VERIFICATION.md) | 数据验证记录 |
 
 ### 入职与指南
 
-| 文档                                                                   | 说明                                                          |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 文档                                                                   | 说明                                                                              |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md)         | **技术总览** — 架构摘要、AI 三层模型、MMFM 现状、PDF 栈、量化指标、难点与对外表述 |
-| [PROJECT_FORECAST_2026.md](PROJECT_FORECAST_2026.md)                   | **2026 路线预估** — 主/次/低概率情景、量化区间、人周与成本量级、决策树 |
-| [PROJECT_EXPECTED_OUTCOMES_2026.md](PROJECT_EXPECTED_OUTCOMES_2026.md) | **2026 完整预计结果** — 基线→年末中性/保守/乐观全表、季度里程碑、边界与资源 |
-| [ONBOARDING.md](ONBOARDING.md)                                         | 新人入职指南 (3 天上手)                                       |
-| [QUICK_REFERENCE.md](QUICK_REFERENCE.md)                               | 一页速查手册（命令、端口、目录结构等）                        |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                               | 开发环境常见问题排障指南                                      |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                   | 设计系统规范                                                  |
-| [UI_LANGUAGE_RESEARCH_FRAMEWORK.md](UI_LANGUAGE_RESEARCH_FRAMEWORK.md) | 多端 UI 语言研究框架（与 DS v2.1 对齐的分层规范与阶段交付物） |
-| [I18N_GUIDE.md](I18N_GUIDE.md)                                         | 国际化 (i18n) 开发指南                                        |
-| [TYPOGRAPHY_GUIDE.md](TYPOGRAPHY_GUIDE.md)                             | 排版规范指南                                                  |
+| [PROJECT_FORECAST_2026.md](PROJECT_FORECAST_2026.md)                   | **2026 路线预估** — 主/次/低概率情景、量化区间、人周与成本量级、决策树            |
+| [PROJECT_EXPECTED_OUTCOMES_2026.md](PROJECT_EXPECTED_OUTCOMES_2026.md) | **2026 完整预计结果** — 基线→年末中性/保守/乐观全表、季度里程碑、边界与资源       |
+| [ONBOARDING.md](ONBOARDING.md)                                         | 新人入职指南 (3 天上手)                                                           |
+| [QUICK_REFERENCE.md](QUICK_REFERENCE.md)                               | 一页速查手册（命令、端口、目录结构等）                                            |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                               | 开发环境常见问题排障指南                                                          |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                   | 设计系统规范                                                                      |
+| [UI_LANGUAGE_RESEARCH_FRAMEWORK.md](UI_LANGUAGE_RESEARCH_FRAMEWORK.md) | 多端 UI 语言研究框架（与 DS v2.1 对齐的分层规范与阶段交付物）                     |
+| [I18N_GUIDE.md](I18N_GUIDE.md)                                         | 国际化 (i18n) 开发指南                                                            |
+| [TYPOGRAPHY_GUIDE.md](TYPOGRAPHY_GUIDE.md)                             | 排版规范指南                                                                      |
 
 ### 技术备忘
 
@@ -140,8 +142,9 @@
 
 | 日期       | 变更                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-05-20 | 新增 PROJECT_TECHNICAL_OVERVIEW、PROJECT_FORECAST_2026、PROJECT_EXPECTED_OUTCOMES_2026 三份规划文档 |
-| 2026-05-20 | 新增 [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md) — 整合项目梳理、技术难点、MMFM/Claude Code/Codex 与线上 AI 区分、PDF 栈与量化指标 |
+| 2026-06-27 | 新增 [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) — 基于最近 90 天 Git 历史、churn 指标和现有门禁，整理企业级防回归与日常开发执行流程                                                                                                              |
+| 2026-05-20 | 新增 PROJECT_TECHNICAL_OVERVIEW、PROJECT_FORECAST_2026、PROJECT_EXPECTED_OUTCOMES_2026 三份规划文档                                                                                                                                                                                                    |
+| 2026-05-20 | 新增 [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md) — 整合项目梳理、技术难点、MMFM/Claude Code/Codex 与线上 AI 区分、PDF 栈与量化指标                                                                                                                                                  |
 | 2026-04-10 | 补齐申请分析跨端闭环：新增 mobile canonical consumer（`/profile` 摘要卡、`/profile/analysis`、`/prediction` CTA），同步收口 API / Architecture / Research / Prediction SOP / Journey log / Full Surface Registry / memory 文档                                                                         |
 | 2026-04-02 | 新增全产品面审计资产：FULL_SURFACE_REGISTRY.md、FULL_SURFACE_REUSE_PLAYBOOK.md、FULL_SURFACE_GAP_CHECKLIST.md、三份 full-surface 模板、`MEMORY.md`、`scripts/release-gate/full-surface-registry.ts` 与 `generate-full-surface-audit.ts`；为后续 Codex / Claude / Cursor 复用同一审计事实源做准备       |
 | 2026-04-01 | 新增 AI-first 发版门禁文档集：RELEASE_GATE_ONE_PAGER.md、QA_RELEASE_GATE_SOP.md、CODEX_E2E_RUNBOOK.md、人工任务卡、问题提报模板、门禁总表模板；测试清单与旅程审计模板同步升级到 `execution_owner / validation_type` 口径                                                                               |
@@ -156,4 +159,4 @@
 
 ---
 
-_最后更新: 2026-05-20_
+_最后更新: 2026-06-27_

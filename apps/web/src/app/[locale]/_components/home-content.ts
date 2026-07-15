@@ -45,12 +45,9 @@ export interface HomeContentItem {
   description: string;
 }
 
-export interface HomeSocialQuote {
-  quote: string;
-  name: string;
-  meta: string;
-  tag: string;
-  monogram: string;
+export interface HomeSocialPrinciple {
+  title: string;
+  body: string;
 }
 
 export interface HomeFooterColumn {
@@ -72,7 +69,7 @@ export interface HomeContent {
   problem: HomeSectionCollection & { items: HomeContentItem[] };
   features: HomeSectionCollection & { items: HomeContentItem[] };
   how: HomeSectionCollection & { steps: HomeContentItem[] };
-  social: HomeSectionCollection & { stats: HomeStat[]; quotes: HomeSocialQuote[] };
+  social: HomeSectionCollection & { principles: HomeSocialPrinciple[] };
   cta: {
     eyebrow: string;
     title: [string, string];
@@ -131,8 +128,7 @@ export function useHomeContent(): HomeContent {
     features: t.raw('features') as HomeSectionCollection & { items: HomeContentItem[] },
     how: t.raw('how') as HomeSectionCollection & { steps: HomeContentItem[] },
     social: t.raw('social') as HomeSectionCollection & {
-      stats: HomeStat[];
-      quotes: HomeSocialQuote[];
+      principles: HomeSocialPrinciple[];
     },
     cta: t.raw('cta') as HomeContent['cta'],
     footer: t.raw('footer') as HomeContent['footer'],

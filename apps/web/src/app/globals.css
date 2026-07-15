@@ -2177,9 +2177,22 @@
   }
 
   .landing-hero-accent {
+    font-family: var(--font-newsreader), Georgia, serif;
     font-style: italic;
-    font-weight: 600;
+    font-weight: 500;
+    letter-spacing: -0.01em;
     color: color-mix(in oklab, var(--ds-primary) 78%, var(--ds-accent) 22%);
+  }
+
+  /* Editorial serif for "human voice" moments (quotes, excerpts).
+     Newsreader is Latin-only — zh falls back to sans below. */
+  .landing-serif {
+    font-family: var(--font-newsreader), Georgia, serif;
+  }
+
+  :lang(zh) .landing-hero-accent,
+  :lang(zh) .landing-serif {
+    font-family: var(--font-sans);
   }
 
   .landing-nav-link {
