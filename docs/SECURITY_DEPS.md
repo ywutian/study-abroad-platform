@@ -6,15 +6,24 @@ one-time fix; the goal here is a consistent, enforced _process_.
 
 ## The gate (enforced)
 
-- **CI hard-fails on high** — `.github/workflows/ci.yml` runs
-  `pnpm audit --audit-level=high`. A `high`/`critical` advisory in the tree
-  fails the build. This is the line of defense that must never be softened.
-- **`check-audit-gate.ts`** (`pnpm lint:audit-gate`, in `lint:all`) asserts that
-  CI audit step stays hard — no `|| true`, no `continue-on-error: true`, no
-  relaxed `--audit-level`. It protects the gate, not the deps.
-- **Pre-push** runs `pnpm audit` as a _warning_ (heads-up, non-blocking — a newly
-  published advisory on an existing dep shouldn't block an unrelated push). CI is
-  the hard gate.
+- **Not `pnpm audit` anymore.** npmjs.org retired the classic audit REST
+  endpoints (`/-/npm/v1/security/audits{,/quick}` → 410, "use the bulk
+  advisory endpoint instead"). pnpm's fix for this lives in v11
+  (pnpm/pnpm#11268), but v11 requires Node ≥22.13 — this repo pins Node 20.x
+  deliberately (see `docs/ANTI_CHURN_PLAYBOOK.md`), so we didn't chase that
+  major bump just to unbreak an audit command.
+- **`scripts/check-dependency-audit.ts`** runs instead: `osv-scanner` (Google's
+  OSV.dev-backed scanner) reads `pnpm-lock.yaml` directly — no npm registry
+  API involved at all — and the script fails on any unignored HIGH/CRITICAL
+  finding. Both **CI** (`.github/workflows/ci.yml`, after a pinned-binary
+  `osv-scanner` install) **and pre-push** run this script and hard-fail
+  (`|| exit 1`) — this is the line of defense that must never be softened,
+  in either place.
+- **`check-audit-gate.ts`** (`pnpm lint:audit-gate`, in `lint:all`) asserts the
+  gate stays hard on both layers: the CI step isn't softened (no `|| true`, no
+  `continue-on-error: true`), and `check-dependency-audit.ts` itself hasn't been
+  quietly edited to drop the HIGH/CRITICAL check or its exit code. It protects
+  the gate, not the deps.
 
 ## Fixing a high/critical advisory
 
@@ -29,7 +38,8 @@ one-time fix; the goal here is a consistent, enforced _process_.
      "tar": ">=7.5.10"                              // floor
    }
    ```
-3. Re-run `pnpm install` + `pnpm audit --audit-level=high` until clean.
+3. Re-run `pnpm install` + `tsx scripts/check-dependency-audit.ts` until clean
+   (requires `osv-scanner` on PATH — `brew install osv-scanner` locally).
 4. Add a brief comment on the override if the reason isn't obvious.
 
 ## When an override genuinely can't be applied (`auditConfig.ignoreGhsas`)
@@ -46,9 +56,9 @@ NOT a `--audit-level` relaxation — the CI gate stays hard for every other high
 `check-audit-gate.ts` still passes because it guards the gate command, not this
 list). Each entry MUST be documented here with the reason + a removal trigger.
 
-| GHSA                  | Package        | Why ignored                                                                                                                                                                                                                                                                                                                    | Remove when                                                                                                                                                      |
-| --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GHSA-fx2h-pf6j-xcff` | `vite` (8.0.x) | Windows-only `server.fs.deny` **dev-server** bypass. `vite` here is a **test-only** transitive of `vitest`/`@vitejs/plugin-react`; the vite dev server is never run (web app builds with Next.js). pnpm 10.22 won't apply a `vite` override to this peer-contextualized transitive (range + exact + `--force` all keep 8.0.8). | `vitest`/`@vitejs/plugin-react` bump their `vite` to ≥8.0.16, or pnpm fixes the override resolution — then drop this entry and confirm `pnpm audit` stays green. |
+| GHSA                  | Package        | Why ignored                                                                                                                                                                                                                                                                                                                    | Remove when                                                                                                                                                                                 |
+| --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GHSA-fx2h-pf6j-xcff` | `vite` (8.0.x) | Windows-only `server.fs.deny` **dev-server** bypass. `vite` here is a **test-only** transitive of `vitest`/`@vitejs/plugin-react`; the vite dev server is never run (web app builds with Next.js). pnpm 10.22 won't apply a `vite` override to this peer-contextualized transitive (range + exact + `--force` all keep 8.0.8). | `vitest`/`@vitejs/plugin-react` bump their `vite` to ≥8.0.16, or pnpm fixes the override resolution — then drop this entry and confirm `tsx scripts/check-dependency-audit.ts` stays green. |
 
 ## Version pinning (One-Version Rule)
 
