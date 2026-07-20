@@ -3,8 +3,8 @@
 import { LandingHeader } from './_components/landing-header';
 import { HeroSection } from './_components/hero-section';
 import { TrustBar } from './_components/trust-bar';
-import { ProblemStatement } from './_components/problem-statement';
 import { BentoFeatures } from './_components/bento-features';
+import { CommunityBoard } from './_components/community-board';
 import { HowItWorks } from './_components/how-it-works';
 import { SocialProof } from './_components/social-proof';
 import { CTAFooter } from './_components/cta-footer';
@@ -16,9 +16,9 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <TrustBar />
-        <ProblemStatement />
-        <BentoFeatures />
         <HowItWorks />
+        <BentoFeatures />
+        <CommunityBoard />
         <SocialProof />
         <CTAFooter />
       </main>

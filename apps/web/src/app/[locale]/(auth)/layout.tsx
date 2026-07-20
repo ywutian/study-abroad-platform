@@ -4,7 +4,7 @@ import { useEffect, Suspense } from 'react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Lightbulb, TrendingUp, Users, Globe, Star } from 'lucide-react';
+import { Lightbulb, TrendingUp, Users, Globe, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { FadeInView } from '@/components/ui/motion';
 import { LumniMark } from '@/components/ui/lumni-mark';
@@ -52,12 +52,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     { icon: Globe, key: 'schools' },
   ];
 
-  const testimonials = [
-    { key: '0', avatar: 'L' },
-    { key: '1', avatar: 'W' },
-    { key: '2', avatar: 'Z' },
-  ];
-
   return (
     <div className="app-shell relative flex min-h-screen overflow-hidden bg-background text-foreground">
       <Suspense fallback={null}>
@@ -81,12 +75,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="max-w-xl space-y-10">
           {/* 主标题 */}
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-[var(--theme-radius-badge)] border border-border bg-[color:var(--theme-card-bg)] px-4 py-2 shadow-[var(--theme-button-shadow)]">
-              <Lightbulb className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                {t('auth.layout.subtitle')}
-              </span>
-            </div>
             <h1 className="text-display max-w-[12ch] text-balance text-foreground">
               {t('auth.layout.heroTitle')}
               <span className="mt-2 block text-primary">{t('auth.layout.heroHighlight')}</span>
@@ -113,44 +101,22 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             ))}
           </div>
 
-          {/* 用户评价 */}
+          {/* 数据说明 */}
           <div className="border-t border-border pt-8">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {testimonials.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex h-8 w-8 items-center justify-center rounded-[var(--theme-radius-button)] bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-background"
-                  >
-                    {item.avatar}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-1 text-auth-star">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {t('auth.layout.testimonials.rating')}
-              </span>
-            </div>
-            <blockquote className="border-l-2 border-primary/30 pl-4 text-sm italic leading-relaxed text-muted-foreground">
-              &ldquo;{t(`auth.layout.testimonials.items.${testimonials[0].key}.quote`)}&rdquo;
-            </blockquote>
-            <div className="mt-3 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[var(--theme-radius-button)] bg-primary text-sm font-semibold text-primary-foreground">
-                {testimonials[0].avatar}
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--theme-radius-button)] border border-primary/20 bg-primary/5 text-primary">
+                <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  {t(`auth.layout.testimonials.items.${testimonials[0].key}.name`)}
+                <p className="text-sm font-semibold text-foreground">
+                  {t('auth.layout.proof.title')}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {t(`auth.layout.testimonials.items.${testimonials[0].key}.school`)}
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {t('auth.layout.proof.body')}
                 </p>
               </div>
             </div>
+            <p className="mt-4 text-xs text-muted-foreground">{t('auth.layout.proof.meta')}</p>
           </div>
         </div>
       </div>

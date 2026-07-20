@@ -606,29 +606,22 @@
     "brand": "Lumni",
     "nav": {
       "product": "产品",
-      "cases": "学员案例",
-      "pricing": "定价",
       "community": "社区",
       "about": "关于我们",
       "signIn": "登录",
       "getStarted": "免费开始"
     },
     "hero": {
-      "eyebrow": "Lumni Command Center · GPT-5 驱动",
-      "headline": ["照亮你的", "录取路线"],
-      "subtitle": "从选校、文书、时间线到提交，Lumni 把复杂申请拆成清晰、可执行的计划，并用真实录取数据持续校准每一步。",
-      "features": [
-        "2 分钟生成首版录取路线图",
-        "选校、文书、时间线同步推进",
-        "关键节点由你自己拍板"
-      ],
+      "headline": ["留学申请不该继续", "是一场信息战"],
+      "subtitle": "真正的问题从来不是资料少，而是缺少一套能比较、能解释、能推进下一步的决策系统。Lumni 把申请过程整理成一条清晰工作流。",
+      "features": ["快速生成首版录取路线图", "选校、文书、时间线同步推进", "关键节点由你自己拍板"],
       "trustLine": "预测锚定各校官方公布的录取率，每条结论都写明理由",
       "primaryCta": "免费开始",
-      "secondaryCta": "查看学员案例",
-      "statLabel": "2,000+ 院校数据 · 2026 数据周期",
+      "secondaryCta": "查看使用流程",
+      "statLabel": "申请数据持续更新 · 结论说明依据",
       "floatingQuote": {
-        "quote": "我终于知道下一步该做什么了。",
-        "meta": "林同学 · UCLA '28"
+        "quote": "示例界面仅用于展示工作流。",
+        "meta": "实际结果以用户数据与公开来源为准"
       },
       "aiDisclosure": {
         "trigger": "查看模型依据",
@@ -645,22 +638,22 @@
         "signalLabel": "Lumni 信号",
         "symbolLabel": "月光路线",
         "workflowLine": "选校 · 文书 · 时间线 · 提交",
-        "profileLabel": "Amy Z. · 12 年级",
-        "profileMeta": "GPA 3.92 · SAT 1540 · 计算机科学",
+        "profileLabel": "示例申请画像",
+        "profileMeta": "演示数据 · 非真实用户",
         "termLabel": "2026 秋季 · CS",
         "sections": ["总览", "选校 · 6", "文书 · 14", "时间线", "组队"],
         "title": "录取路线中枢",
         "assistantBadge": "AI 助理",
         "assistantMessages": [
           "CMU 文书与 MIT 的第二段论证重合偏高，建议压缩重复案例。",
-          "Georgia Tech 的 Why Major 更新后，匹配度上升了 14%。",
+          "Georgia Tech 的 Why Major 已更新，可以继续检查材料一致性。",
           "Purdue 的申请材料已齐套，今晚是最稳妥的提交窗口。"
         ],
         "tasksLabel": "今日 · 3 个任务",
         "tasks": ["完成 GT Why-Essay v2", "提醒 Ms. Chen 上传推荐信", "确认 Purdue 提交窗口"],
         "askAnything": "继续问 AI",
         "statusReady": "分析就绪",
-        "statusLive": "实时录取信号 · 已同步",
+        "statusLive": "示例申请状态 · 已同步",
         "rows": [
           {
             "name": "MIT EECS",
@@ -700,9 +693,9 @@
           "fit": "匹配分析",
           "essay": "文书"
         },
-        "url": "lumni.app/dashboard/sara-chen",
+        "url": "lumniedu.com/dashboard/demo",
         "list": {
-          "summary": "8 所中的 5 所",
+          "summary": "示例选校组合",
           "tierLabels": {
             "reach": "冲刺",
             "target": "匹配",
@@ -753,7 +746,7 @@
         },
         "fit": {
           "title": "加州伯克利 · EECS",
-          "subtitle": "综合匹配 · 2 小时前更新",
+          "subtitle": "示例匹配分析 · 不代表录取结果",
           "factors": [
             {
               "label": "学术档案",
@@ -808,104 +801,86 @@
         },
         "badges": {
           "matchScore": {
-            "label": "匹配分",
-            "value": "+18%"
+            "label": "匹配依据",
+            "value": "已解释"
           },
           "essayShipped": {
-            "school": "加州伯克利 · CS",
-            "status": "文书已提交"
+            "school": "文书工作台",
+            "status": "修改建议已整理"
           }
         },
         "socialProof": {
-          "headline": "预测锚定官方公布录取率",
-          "subline": "2,000+ 院校数据 · 每条结论都有理由"
+          "headline": "预测展示依据与不确定性",
+          "subline": "院校数据持续更新 · 重要决定由用户确认"
         },
-        "counselorEyebrow": "受信于以下升学顾问",
-        "counselorSchools": [
-          "Andover",
-          "Stuyvesant",
-          "Harker",
-          "TJ Magnet",
-          "Choate",
-          "Exeter",
-          "Sidwell"
-        ],
-        "eyebrow": "新版 · AI 文书教练",
-        "eyebrowVersion": "v2.4",
+        "counselorEyebrow": "一条工作流覆盖",
+        "counselorSchools": ["申请画像", "选校比较", "策略判断", "文书协作", "时间线", "社区互助"],
         "headline": {
-          "lead": "你的",
-          "italic": "真实",
-          "suffix": "选校单。",
-          "accent": "是校准，不是堆砌。"
+          "lead": "留学申请",
+          "italic": "不该",
+          "suffix": "继续",
+          "accent": "是一场信息战。"
         },
-        "body": "基于成绩单、分数和目标，搭建一份可辩护的选校清单。每个截止日期都被追踪，每篇文书都有迭代轨迹，每次提交都有底气。",
+        "body": "从填写档案、选校比较到策略判断与社区互助，Lumni 把散落的信息整理成一条可以真正执行的申请流程。",
         "primaryCta": "开始你的选校",
-        "secondaryCta": "看 90 秒导览"
+        "secondaryCta": "查看使用流程"
       },
       "centeredMark": {
-        "eyebrowBadge": "新功能",
-        "eyebrow": "Coach v2.4 —— 实时阅读每一篇文书",
+        "eyebrowBadge": "产品预览",
+        "eyebrow": "文书修改建议与申请任务同步整理",
         "headline": {
-          "lead": "一条更清晰的路 ——",
-          "accent": "通往真正属于你的地方。"
+          "lead": "留学申请不该继续",
+          "accent": "是一场信息战。"
         },
-        "subtitle": "Lumni 将你的成绩单、分数与故事，整理成一张站得住脚的学校清单，并陪你逐行打磨每一篇文书。",
+        "subtitle": "Lumni 把档案、选校、策略、比较和社区协作整理成一条清晰、可以执行的申请流程。",
         "primaryCta": "免费开始",
-        "secondaryCta": "观看 90 秒导览",
+        "secondaryCta": "查看使用流程",
         "trustItems": [
           {
             "icon": "check",
-            "text": "前 3 所学校免费"
+            "text": "注册后即可开始"
           },
           {
             "icon": "shield",
-            "text": "SOC 2 · FERPA 合规"
+            "text": "AI 建议不会替你做最终决定"
           }
         ],
-        "counselorEyebrow": "受信于以下升学顾问",
-        "counselorSchools": [
-          "Andover",
-          "Stuyvesant",
-          "Harker",
-          "TJ Magnet",
-          "Choate",
-          "Exeter",
-          "Sidwell"
-        ],
+        "counselorEyebrow": "一条工作流覆盖",
+        "counselorSchools": ["申请画像", "选校比较", "策略判断", "文书协作", "时间线", "社区互助"],
         "floatingChips": {
           "match": {
-            "value": "匹配 +18%",
-            "school": "卡内基梅隆"
+            "value": "匹配依据",
+            "school": "课程 · 方向 · 偏好"
           },
           "essay": {
-            "school": "加州伯克利",
-            "status": "文书已交"
+            "school": "文书工作台",
+            "status": "建议已整理"
           },
           "voice": {
-            "value": "声纹 92",
-            "label": "具体度高"
+            "value": "表达分析",
+            "label": "具体度待加强"
           }
         }
       }
     },
     "trust": {
-      "label": "数据库收录院校 · 2026 持续更新",
+      "label": "公开数据、真实案例与可解释预测",
       "stats": [
         {
-          "value": "2,000+",
-          "label": "院校数据库"
+          "value": "持续更新",
+          "label": "院校与申请数据"
         },
         {
-          "value": "5",
-          "label": "权威排名体系"
+          "value": "多源校准",
+          "label": "公开信息与排名"
         },
         {
-          "value": "2026",
-          "label": "录取数据周期"
+          "value": "来源标注",
+          "label": "案例与录取信息"
         },
         {
-          "value": "0",
-          "label": "黑箱结论"
+          "value": "拒绝黑箱",
+          "label": "说明依据与限制"
         }
       ],
       "schools": [
@@ -925,58 +900,6 @@
         "Northwestern",
         "UCLA"
       ]
-    },
-    "problem": {
-      "eyebrow": "为什么 90% 的家庭都走过弯路",
-      "title": "留学申请不该继续是一场信息战",
-      "subtitle": "不是信息越多越安全，而是判断越晚越昂贵。真正的问题，从来不是资料少，而是没有一套可靠的决策系统。",
-      "items": [
-        {
-          "number": "01",
-          "title": "信息不对称",
-          "description": "论坛、中介、社媒和排名表各说各话。家庭看到的是碎片，真正需要的是能被验证、能被比较的判断依据。"
-        },
-        {
-          "number": "02",
-          "title": "选校靠感觉",
-          "description": "只看排名，不看匹配度、专业适配和录取波动。最后清单看起来很努力，结果却没有策略。"
-        },
-        {
-          "number": "03",
-          "title": "文书失去本人",
-          "description": "模版化、翻译腔、重复表达让申请者的声音被抹平。真正高质量的文书，应该被放大而不是被代替。"
-        },
-        {
-          "number": "04",
-          "title": "申请节奏失控",
-          "description": "截止日期、推荐信、活动补强和文书修改交错堆叠。没有统一工作台，焦虑会在最后一百天集中爆发。"
-        }
-      ],
-      "visuals": {
-        "signalNoise": {
-          "label": "碎片化信息流",
-          "tabs": ["小红书", "College Confidential", "Reddit", "一亩三分地", "US News", "官网 FAQ"],
-          "notes": [
-            "MIT 还看 AP Physics C 吗？",
-            "夏校值不值得花 8 万？",
-            "1520 和 1570 差别大吗？",
-            "文书首段能不能用对话开头？",
-            "推荐信 3 封够不够？"
-          ],
-          "footer": "问题越来越多，但答案没有统一坐标"
-        },
-        "decisionQuestions": {
-          "eyebrow": "哈佛学院 · 常规申请",
-          "excerpt": "“经过慎重评估，我们目前无法为你提供录取名额……”",
-          "stamp": "结果 · 03.27",
-          "questions": [
-            "为什么 1570 还是会落空？",
-            "是文书不够锋利？",
-            "还是活动清单缺了说服力？",
-            "又或者本质上只是高波动结果？"
-          ]
-        }
-      }
     },
     "features": {
       "eyebrow": "一站式 AI 留学工作台",
@@ -1021,7 +944,7 @@
         }
       ],
       "visuals": {
-        "openModule": "打开模块",
+        "openModule": "注册后体验",
         "matching": {
           "label": "录取分层",
           "schools": [
@@ -1123,42 +1046,91 @@
       }
     },
     "how": {
-      "eyebrow": "四步走完全流程",
-      "title": "从“我要出国”到“我被录取”",
-      "subtitle": "先建立判断，再推进动作。每一步都带着清晰的优先级，而不是到最后再补漏洞。",
+      "eyebrow": "六步申请工作流",
+      "title": "从填写信息，到做出最后决定",
+      "subtitle": "先建立档案，再选校、理解策略并横向比较。每一步都给出清晰结果，不需要在散落的信息之间来回切换。",
       "steps": [
         {
           "number": "01",
-          "title": "建立你的档案",
-          "description": "十分钟录入成绩、活动、兴趣与目标，让系统先看清你现在的位置。"
+          "tag": "建立基础",
+          "title": "填写申请信息",
+          "description": "录入成绩、活动、兴趣与目标，形成后续判断共用的申请画像。"
         },
         {
           "number": "02",
-          "title": "生成申请矩阵",
-          "description": "把学校、概率、文书难度和时间成本放在一张桌面上统一比较。"
+          "tag": "双路径选校",
+          "title": "DIY 选校 / AI 辅助定校",
+          "description": "自己筛选学校，或让 AI 根据画像生成冲刺、匹配和保底组合。"
         },
         {
           "number": "03",
-          "title": "推进文书与协作",
-          "description": "AI 负责结构建议与风险提示，组队伙伴帮你把反馈打磨进真实的版本里。"
+          "tag": "策略判断",
+          "title": "了解申请策略",
+          "description": "理解轮次、专业适配、材料重点和当前档案的优先改进方向。"
         },
         {
           "number": "04",
-          "title": "跟踪递交与结果",
-          "description": "系统持续同步进度、材料状态与关键提醒，直到 offer 真正落地。"
+          "tag": "横向比较",
+          "title": "优化申请组合",
+          "description": "比较学校、专业、成本、概率和材料压力，调整整个选校结构。"
+        },
+        {
+          "number": "05",
+          "tag": "探索与互助",
+          "title": "趣味功能与社区文化",
+          "description": "通过测评、对话、组队和留言板，获得灵感并和同路申请者交流。"
+        },
+        {
+          "number": "06",
+          "tag": "即将解锁",
+          "title": "未公布功能",
+          "description": "新的申请能力正在准备中；上线前只保留线索，不提前承诺具体功能。"
         }
       ],
-      "dashboard": {
-        "eyebrow": "Lumni 工作台",
-        "title": "从资料到递交，一屏看清优先级",
-        "note": "申请矩阵 · 文书任务 · AI 追踪",
-        "cards": ["选校清单", "文书排期", "协作提醒"],
-        "assistantBadge": "AI 助理",
-        "tip": "AI 正在比对 MIT / CMU 文书重合度",
-        "tasksLabel": "今日推进",
-        "tasks": ["完善申请画像", "完成 GT Why Essay", "确认 Purdue 提交"],
-        "columns": ["学校", "档位", "进度"]
-      }
+      "footer": "你可以全程自己推进，也可以在需要时调用 AI 建议和社区协作；不可逆的最终决定始终由你完成。"
+    },
+    "communityBoard": {
+      "eyebrow": "Lumni 社区留言板",
+      "title": "每一个申请难题，都有人正在拆解",
+      "subtitle": "从对话、选校到预测、文书和时间线，先看看大家如何把问题变成下一步行动。",
+      "cta": "注册后加入",
+      "liveLabel": "正在讨论",
+      "liveTitle": "把困惑摆到桌面上",
+      "liveBody": "找同路申请者交流，也让 Lumni 帮你把问题带回自己的申请计划。",
+      "prompt": "EA 申请前，选校名单还需要再加一所保底吗？",
+      "reply": "先看整体梯度，再决定要不要补一所。",
+      "cards": [
+        {
+          "tag": "申请对话",
+          "title": "和同路申请者聊聊",
+          "body": "围绕目标院校、文书进度和申请策略，开启一次有来有回的对话。"
+        },
+        {
+          "tag": "选校建议",
+          "title": "把偏好变成选校清单",
+          "body": "用背景、地区和专业偏好，生成更有层次的冲刺、匹配与保底组合。"
+        },
+        {
+          "tag": "录取预测",
+          "title": "先看概率，也看依据",
+          "body": "每一次预测都回到你的档案、公开数据和下一步可以改善的部分。"
+        },
+        {
+          "tag": "文书工作台",
+          "title": "把修改意见留在原文旁",
+          "body": "从段落反馈到改写方向，让每次修改都能继续往下推进。"
+        },
+        {
+          "tag": "时间线",
+          "title": "让截止日期不再突然出现",
+          "body": "选校、材料和提交节奏放在同一个视图里，知道今天应该先做什么。"
+        },
+        {
+          "tag": "论坛留言板",
+          "title": "问一个具体的问题",
+          "body": "把纠结发出来，看看相似申请者正在讨论什么，也留下你的经验。"
+        }
+      ]
     },
     "social": {
       "eyebrow": "方法，而非话术",
@@ -1186,29 +1158,40 @@
     "cta": {
       "eyebrow": "现在开始 · 免费",
       "title": ["别再把时间", "浪费在信息差上"],
-      "subtitle": "注册只要 30 秒。两分钟后，你就能看到属于自己的第一版申请矩阵和下一步优先级。",
+      "subtitle": "注册后先完成申请画像，再查看属于自己的第一版申请矩阵和下一步优先级。",
       "primary": "免费创建账号",
-      "secondary": "查看常见问题",
+      "secondary": "看看你的竞争对手们都在干嘛",
       "trust": "无需信用卡 · 随时退出 · 隐私保护"
     },
     "footer": {
-      "description": "Lumni 把 AI 选校、文书协作、时间线管理和真实录取数据放进同一套申请工作台，让复杂留学流程变成可以被执行的系统。",
+      "description": "从选校到定校，从申请策略到文书润色，Lumni AI 全程陪跑，让申请更简单、更透明。",
       "columns": [
         {
           "title": "产品",
-          "links": ["AI 选校", "文书工作台", "三年时间线", "录取预测", "组队社区"]
+          "links": [
+            { "label": "AI 辅助选校", "href": "/register" },
+            { "label": "申请策略", "href": "/register" },
+            { "label": "文书润色", "href": "/register" },
+            { "label": "录取预测", "href": "/register" },
+            { "label": "社区协作", "href": "/register" }
+          ]
         },
         {
-          "title": "资源",
-          "links": ["学员案例", "帮助中心", "关于我们", "免费开始", "服务条款"]
+          "title": "关于 Lumni",
+          "links": [
+            { "label": "团队", "href": "/about#team" },
+            { "label": "愿景", "href": "/about#vision" },
+            { "label": "使命", "href": "/about#mission" }
+          ]
         },
         {
-          "title": "公司",
-          "links": ["关于团队", "学生社区", "联系支持", "隐私保护", "注册账号"]
-        },
-        {
-          "title": "法律",
-          "links": ["隐私政策", "服务条款", "帮助文档"]
+          "title": "法律与安全",
+          "links": [
+            { "label": "隐私政策", "href": "/privacy" },
+            { "label": "服务条款", "href": "/terms" },
+            { "label": "免责声明", "href": "/terms#disclaimer" },
+            { "label": "数据收集说明", "href": "/privacy#collection" }
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · 让录取不再是黑箱。",
@@ -1347,35 +1330,19 @@
       }
     },
     "layout": {
-      "subtitle": "AI 驱动的 Lumni 申请工作台",
       "heroTitle": "开启你的",
       "heroHighlight": "留学之旅",
-      "heroDesc": "智能选校、精准预测、案例分享\n让留学申请不再迷茫",
+      "heroDesc": "选校、预测、案例与申请节奏放在一起\n让每一步都有依据、有下一步",
       "features": {
-        "ai": "AI 智能选校推荐",
-        "accuracy": "结果校准预测",
-        "cases": "10,000+ 真实案例",
-        "schools": "覆盖 500+ 院校"
+        "ai": "个性化选校建议",
+        "accuracy": "可解释录取预测",
+        "cases": "真实录取案例",
+        "schools": "院校数据持续更新"
       },
-      "testimonials": {
-        "rating": "10,000+ 用户好评",
-        "items": {
-          "0": {
-            "name": "李同学",
-            "school": "MIT CS 2025",
-            "quote": "这个平台帮助我成功拿到了 MIT 的 offer！"
-          },
-          "1": {
-            "name": "王同学",
-            "school": "Stanford EE 2025",
-            "quote": "AI 预测非常准确，推荐!"
-          },
-          "2": {
-            "name": "张同学",
-            "school": "CMU SCS 2025",
-            "quote": "案例库对我帮助很大"
-          }
-        }
+      "proof": {
+        "title": "真实数据说明",
+        "body": "案例来自用户提交、公开来源与后台核验；预测会展示依据、数据来源和不确定性。",
+        "meta": "不承诺录取结果 · 重要决定由你确认"
       }
     }
   },
@@ -4706,34 +4673,35 @@
     "lastUpdated": "最后更新: {date}",
     "importantBadge": "重要提示",
     "sectionNumber": "第 {num} 条",
-    "introduction": "请仔细阅读以下服务条款。使用我们的服务即表示您同意受这些条款的约束。",
+    "introduction": "本条款说明您使用 Lumni 网站、申请工具、AI 功能和社区服务时适用的基本规则。请在使用前仔细阅读。",
     "acceptance": {
       "title": "接受条款",
-      "content": "通过访问或使用 Lumni，您同意遵守本服务条款。如果您不同意这些条款，请勿使用我们的服务。"
+      "content": "访问或使用 Lumni 即表示您同意遵守本条款，并保证提交的账户和申请信息真实、合法且有权提供。如果您不同意，请停止使用相关服务。"
     },
     "services": {
       "title": "服务描述",
-      "content": "我们提供留学申请相关的信息服务，包括但不限于学校推荐、录取预测、案例分享等功能。"
+      "content": "Lumni 提供申请信息整理、院校比较、录取概率分析、文书辅助、时间线和社区协作等信息工具。功能和数据覆盖可能随产品更新而变化；Lumni 不代表任何院校，也不代替招生机构作出决定。"
     },
     "userConduct": {
       "title": "用户行为规范",
-      "content": "用户承诺不会上传虚假信息、侵犯他人权益、或进行任何违法行为。"
+      "content": "您不得提交虚假或无权使用的信息，不得骚扰他人、侵犯隐私或知识产权，不得绕过安全措施、批量抓取数据或利用平台从事违法活动。社区内容应保持尊重，并遵守适用法律。"
     },
     "intellectualProperty": {
       "title": "知识产权",
-      "content": "平台上的所有内容（包括但不限于文字、图片、代码）均受知识产权法保护。"
+      "content": "Lumni 的软件、界面和平台内容受适用的知识产权法律保护。您保留对自己提交内容的权利，同时授权 Lumni 在提供、保护和改进服务所必需的范围内处理该内容。请勿上传侵犯第三方权利的材料。"
     },
     "disclaimer": {
       "title": "免责声明",
-      "content": "我们尽力确保信息准确，但不对预测结果或建议的准确性做出保证。最终申请决定应由用户自行判断。"
+      "content": "院校信息、AI 建议、案例和录取概率仅用于信息与规划参考，可能存在延迟、遗漏或误差，不构成录取保证，也不构成法律、财务或其他专业意见。申请政策可能随时变化，请以院校官方信息为准；最终申请决定和提交内容由您自行确认。"
     },
     "termination": {
       "title": "终止条款",
-      "content": "我们保留在用户违反条款时终止其账户的权利。"
+      "content": "如账户违反本条款、危及平台安全或损害其他用户权益，Lumni 可限制或终止相关服务。您也可以停止使用服务或按平台提供的方式申请删除账户；依法或为解决争议需要保留的记录除外。"
     },
     "contact": {
       "title": "联系我们",
-      "content": "如有任何问题，请通过以下方式联系我们"
+      "content": "如对本条款或服务有疑问，请通过平台帮助中心提交问题。",
+      "action": "前往帮助中心"
     }
   },
   "privacy": {
@@ -4742,44 +4710,44 @@
     "securityBadge": "安全承诺",
     "commitment": {
       "title": "我们的承诺",
-      "content": "我们致力于保护您的隐私和个人信息安全。本隐私政策说明我们如何收集、使用和保护您的数据。"
+      "content": "本政策说明 Lumni 在提供申请工具、AI 功能和社区服务时如何收集、使用、共享、保存和保护信息。我们仅在提供服务、保障安全和履行适用义务所需的范围内处理数据。"
     },
     "collection": {
       "title": "信息收集",
-      "content": "我们收集以下类型的信息以提供更好的服务：",
+      "content": "根据您使用的功能，我们可能收集以下类型的信息：",
       "items": {
-        "personal": "个人身份信息（姓名、邮箱等）",
-        "academic": "学术背景信息（GPA、标化成绩等）",
-        "usage": "使用数据（浏览记录、功能使用情况）",
-        "device": "设备信息（浏览器类型、IP地址等）"
+        "personal": "账户与身份信息（姓名、邮箱、语言偏好等）",
+        "academic": "申请信息（学术背景、目标院校、活动、文书及您主动提交的材料）",
+        "usage": "使用与互动记录（使用的功能、社区内容、反馈和操作日志）",
+        "device": "设备与安全信息（浏览器类型、IP 地址、错误和安全日志等）"
       }
     },
     "usage": {
       "title": "信息使用",
-      "content": "我们使用收集的信息用于以下目的：",
+      "content": "我们可能将收集的信息用于以下目的：",
       "items": {
-        "service": "提供和改进我们的服务",
-        "personalization": "个性化您的体验",
-        "communication": "与您沟通服务相关信息",
-        "analytics": "分析和改进平台性能"
+        "service": "创建账户并提供选校、预测、文书、时间线和社区功能",
+        "personalization": "结合您的申请信息生成个性化建议和 AI 输出",
+        "communication": "发送安全、账户和重要服务通知",
+        "analytics": "排查故障、防止滥用，并分析和改进平台性能"
       }
     },
     "sharing": {
       "title": "信息共享",
-      "content": "我们不会出售您的个人信息。仅在以下情况下可能共享：",
+      "content": "我们不会出售您的个人信息。仅在提供服务或适用法律允许的情况下共享必要信息：",
       "items": {
         "consent": "经您明确同意",
-        "legal": "法律要求或配合执法",
-        "partners": "与服务提供商合作（受保密协议约束）"
+        "legal": "为遵守法律要求、保护用户或平台安全",
+        "partners": "与承担托管、分析、通信或 AI 处理等工作的服务提供商共享必要信息，并要求其按约定处理"
       }
     },
     "security": {
       "title": "数据安全",
-      "content": "我们采用行业标准的安全措施保护您的数据，包括加密传输、安全存储和访问控制。"
+      "content": "我们采取与数据风险相适应的技术和组织措施，包括访问控制、传输保护、日志和权限管理。任何系统都无法保证绝对安全；我们会在提供服务、履行法律义务和解决争议所需期间保存信息，并按适用要求处理删除请求。"
     },
     "rights": {
       "title": "您的权利",
-      "content": "您对自己的数据享有以下权利：",
+      "content": "根据适用法律和账户状态，您可以通过账户功能或帮助中心提出以下请求：",
       "items": {
         "access": "访问您的个人数据",
         "correction": "更正不准确的数据",
@@ -4789,100 +4757,58 @@
     },
     "cookies": {
       "title": "Cookie 使用",
-      "content": "我们使用 Cookie 和类似技术来改善用户体验、分析流量和个性化内容。"
+      "content": "我们使用必要的 Cookie 维持登录、安全和语言设置，并可能使用类似技术分析功能表现。您可以通过浏览器控制 Cookie，但部分功能可能因此无法正常工作。"
     },
     "changes": {
       "title": "政策变更",
-      "content": "我们可能会不时更新本隐私政策。重大变更时我们会通过邮件或平台通知您。"
+      "content": "我们可能随产品和法律要求更新本政策。发生重大变化时，我们会通过站内通知、电子邮件或页面提示告知，并更新页面日期。"
     },
     "contact": {
       "title": "隐私问题咨询",
-      "content": "如有任何隐私相关问题，请联系我们"
+      "content": "如有隐私问题，或希望访问、更正、导出或删除数据，请通过平台帮助中心提交请求。",
+      "action": "前往帮助中心"
     }
   },
   "about": {
     "badge": "关于我们",
-    "title": "Lumni",
-    "subtitle": "让每一个留学梦想都能实现",
-    "stats": {
-      "users": "注册用户",
-      "schools": "覆盖院校",
-      "cases": "真实案例",
-      "accuracy": "预测准确率"
+    "title": "关于 Lumni",
+    "subtitle": "Lumni 为小鹿们（Lumi）提供强大 ai 申请工具，打造活力申请社区助力每一只小鹿圆满。",
+    "metadata": {
+      "title": "关于 Lumni",
+      "description": "了解 Lumni 如何通过 AI 辅助申请、真实数据、申请者社区与顾问把关，帮助小鹿们减少信息差。"
     },
     "story": {
-      "title": "我们的故事",
-      "content": "Lumni 诞生于一群留学归来的创业者对教育公平的追求。我们深知留学申请过程中信息不对称带来的困扰，因此致力于用技术手段为每一位申请者提供专业、透明、高效的服务。"
+      "title": "我们在做什么",
+      "content": "Lumni 把 AI 辅助申请、真实录取数据、申请者社区和关键节点的顾问把关放在同一个平台里，帮助每一只小鹿减少信息差，清楚知道下一步该做什么。"
     },
     "vision": {
       "title": "我们的愿景",
-      "content": "我们希望成为全球最值得信赖的留学服务平台，通过AI技术和真实数据，让每一位申请者都能做出最适合自己的选择。"
+      "content": "让专业的申请工具不再只属于少数人，让选校、策略、文书和提交过程更简单、更透明，也让每一位申请者保留对重要决定的掌控。"
     },
     "values": {
       "badge": "我们的价值观",
       "title": "我们的价值观",
       "mission": {
-        "title": "使命驱动",
-        "desc": "帮助学生实现留学梦想是我们的核心使命"
+        "title": "AI 辅助申请",
+        "desc": "从选校、申请策略到文书润色，用 AI 把复杂任务拆成清晰的下一步"
       },
       "innovation": {
-        "title": "持续创新",
-        "desc": "用最新技术不断优化用户体验"
+        "title": "消除信息差",
+        "desc": "用真实录取数据和可解释的分析，帮助申请者看清依据与选择"
       },
       "trust": {
-        "title": "诚信透明",
-        "desc": "真实数据，客观分析，不夸大不误导"
+        "title": "社区氛围",
+        "desc": "让同路申请者分享经验、讨论问题，在互助中少走弯路"
       },
       "care": {
-        "title": "用心服务",
-        "desc": "每一位用户都值得最好的服务"
-      }
-    },
-    "timeline": {
-      "badge": "发展历程",
-      "title": "发展历程",
-      "founded": {
-        "title": "平台创立",
-        "desc": "团队组建，开始产品研发"
-      },
-      "growth": {
-        "title": "快速发展",
-        "desc": "用户突破1万，覆盖500+院校"
-      },
-      "ai": {
-        "title": "AI升级",
-        "desc": "引入 GPT-4，提升解释质量与决策支持能力"
-      },
-      "expansion": {
-        "title": "全球拓展",
-        "desc": "服务范围扩展至全球主要留学目的地"
+        "title": "高级顾问把关",
+        "desc": "在关键节点保留专业顾问审核，让重要决定更稳妥"
       }
     },
     "team": {
       "badge": "核心团队",
-      "title": "核心团队",
-      "members": {
-        "zhangming": {
-          "name": "张明",
-          "role": "CEO & 创始人"
-        },
-        "lihua": {
-          "name": "李华",
-          "role": "CTO"
-        },
-        "wangfang": {
-          "name": "王芳",
-          "role": "产品总监"
-        },
-        "chenjie": {
-          "name": "陈杰",
-          "role": "AI 研发负责人"
-        }
-      }
-    },
-    "contact": {
-      "title": "联系我们",
-      "desc": "有任何问题或建议？我们随时欢迎您的来信"
+      "title": "跨专业协作团队",
+      "content": "Lumni 由产品、工程、数据与申请顾问共同建设。系统负责整理信息和提高效率，顾问在关键节点提供专业判断，最终决定始终由申请者自己完成。"
     }
   },
   "security": {

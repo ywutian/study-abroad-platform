@@ -8,6 +8,7 @@ import { PageContainer } from '@/components/layout/page-container';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useHomeContent, type HomeContentItem } from './home-content';
+import { LANDING_LINKS } from './landing-links';
 
 type MatchingVisualCopy = {
   label: string;
@@ -20,14 +21,6 @@ type MentorVisualCopy = {
   points: string[];
 };
 
-const featureRoutes = [
-  '/schools',
-  '/essays',
-  '/timeline',
-  '/prediction',
-  '/teams',
-  '/help',
-] as const;
 const featureSpans = [
   'lg:col-span-4',
   'lg:col-span-2',
@@ -68,7 +61,7 @@ export function BentoFeatures() {
             <FeatureCard
               key={item.number}
               item={item}
-              href={featureRoutes[index]}
+              href={LANDING_LINKS.register}
               index={index}
               reduced={!!prefersReducedMotion}
               className={featureSpans[index]}

@@ -11,7 +11,6 @@ import {
   Video,
   FileText,
   ExternalLink,
-  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +23,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Link } from '@/lib/i18n/navigation';
 
 // FAQ 数据
 interface FAQItem {
@@ -235,18 +235,12 @@ export function HelpCenter() {
             <div className="rounded-xl border bg-muted/30 p-4">
               <h3 className="text-sm font-semibold mb-2">{t('otherQuestions')}</h3>
               <p className="text-sm text-muted-foreground mb-4">{t('contactSupport')}</p>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button variant="outline" className="flex-1" asChild>
-                  <a href="mailto:support@studyabroad.com">
-                    <Mail className="w-4 h-4 mr-2" />
-                    {t('sendEmail')}
-                  </a>
-                </Button>
-                <Button className="flex-1">
+              <Button className="w-full" asChild>
+                <Link href="/chat">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   {t('onlineService')}
-                </Button>
-              </div>
+                </Link>
+              </Button>
             </div>
           </div>
         </ScrollArea>

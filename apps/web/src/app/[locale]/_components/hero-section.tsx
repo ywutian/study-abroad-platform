@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Feather,
   Lock,
-  Play,
   ShieldCheck,
   Lightbulb,
   Target,
@@ -28,6 +27,7 @@ import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useHeroVisual } from '@/hooks/use-hero-visual';
 import { useHomeContent } from './home-content';
+import { LANDING_LINKS } from './landing-links';
 
 type ConsoleRow = {
   name: string;
@@ -104,16 +104,6 @@ export function HeroSection() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-10"
           >
-            <div className="landing-eyebrow-pill">
-              <Lightbulb className="h-3.5 w-3.5 text-[var(--lumni-gold-ink)]" />
-              <span>{denseCopy ? denseCopy.eyebrow : home.hero.eyebrow}</span>
-              {denseCopy && (
-                <span className="ml-1 inline-flex items-center rounded-full bg-[color:var(--ds-foreground)] px-2 py-0.5 text-2xs font-semibold text-[color:var(--landing-bg)]">
-                  {denseCopy.eyebrowVersion}
-                </span>
-              )}
-            </div>
-
             {denseCopy ? (
               <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
                 <span className="block text-balance">
@@ -143,7 +133,7 @@ export function HeroSection() {
             <MobileHeroPhoto />
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register">
+              <Link href={LANDING_LINKS.register}>
                 <Button
                   size="lg"
                   className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] transition-colors hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
@@ -152,7 +142,7 @@ export function HeroSection() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/cases">
+              <Link href={LANDING_LINKS.workflow}>
                 <Button
                   variant="outline"
                   size="lg"
@@ -160,7 +150,7 @@ export function HeroSection() {
                 >
                   {denseCopy ? (
                     <>
-                      <Play className="h-3.5 w-3.5" />
+                      <ArrowRight className="h-3.5 w-3.5" />
                       {denseCopy.secondaryCta}
                     </>
                   ) : (
@@ -1058,8 +1048,6 @@ type DenseCockpitCopy = {
     matchScore: { label: string; value: string };
     essayShipped: { school: string; status: string };
   };
-  eyebrow: string;
-  eyebrowVersion: string;
   headline: { lead: string; italic: string; suffix: string; accent: string };
   body: string;
   primaryCta: string;
@@ -1546,7 +1534,7 @@ function CenteredMarkHero({ reduced }: { reduced: boolean }) {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/register">
+          <Link href={LANDING_LINKS.register}>
             <Button
               size="lg"
               className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
@@ -1555,13 +1543,13 @@ function CenteredMarkHero({ reduced }: { reduced: boolean }) {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/cases">
+          <Link href={LANDING_LINKS.workflow}>
             <Button
               variant="outline"
               size="lg"
               className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/52 px-7 text-sm text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
             >
-              <Play className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5" />
               {copy.secondaryCta}
             </Button>
           </Link>
