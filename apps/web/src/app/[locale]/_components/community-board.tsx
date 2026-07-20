@@ -73,7 +73,7 @@ export function CommunityBoard() {
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-5 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.78fr)]">
+        <div className="mt-10 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.78fr)]">
           <motion.aside
             initial={prefersReducedMotion ? false : { opacity: 0, y: 22 }}
             whileInView={{ opacity: 1, y: 0 }}
