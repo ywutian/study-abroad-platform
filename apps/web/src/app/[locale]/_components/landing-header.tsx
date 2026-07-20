@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 
 import { useHomeContent } from './home-content';
+import { LANDING_LINKS } from './landing-links';
 
 const localeCodes: Record<Locale, string> = {
   en: 'EN',
@@ -47,11 +48,9 @@ export function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: NavItem[] = [
-    { label: home.nav.product, href: '#features', anchor: true },
-    { label: home.nav.cases, href: '/cases' },
-    { label: home.nav.pricing, href: '#cta', anchor: true },
-    { label: home.nav.community, href: '/teams' },
-    { label: home.nav.about, href: '/about' },
+    { label: home.nav.product, href: LANDING_LINKS.product, anchor: true },
+    { label: home.nav.community, href: LANDING_LINKS.community, anchor: true },
+    { label: home.nav.about, href: LANDING_LINKS.about },
   ];
 
   useEffect(() => {
@@ -100,7 +99,7 @@ export function LandingHeader() {
         >
           <div className="flex items-center gap-5 lg:gap-8">
             <Link
-              href={user ? '/dashboard' : '/'}
+              href={user ? '/dashboard' : LANDING_LINKS.home}
               className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <div className="flex items-center gap-3">
@@ -133,7 +132,7 @@ export function LandingHeader() {
 
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="hidden items-center gap-2 lg:flex">
-              <Link href="/login">
+              <Link href={LANDING_LINKS.login}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -142,7 +141,7 @@ export function LandingHeader() {
                   {home.nav.signIn}
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href={LANDING_LINKS.register}>
                 <Button
                   size="sm"
                   className="rounded-[var(--theme-radius-button)] border border-primary/10 bg-[var(--landing-fg)] px-4 text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)] hover:bg-[var(--landing-fg)]/92 hover:shadow-[var(--landing-shadow-elevated)]"
@@ -236,7 +235,7 @@ export function LandingHeader() {
         </nav>
 
         <div className="mt-4 grid gap-2 border-t border-[color:var(--landing-border)] pt-4 sm:grid-cols-2">
-          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+          <Link href={LANDING_LINKS.login} onClick={() => setMobileMenuOpen(false)}>
             <Button
               variant="outline"
               className="w-full rounded-[var(--theme-radius-button)] border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)]"
@@ -244,7 +243,7 @@ export function LandingHeader() {
               {home.nav.signIn}
             </Button>
           </Link>
-          <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+          <Link href={LANDING_LINKS.register} onClick={() => setMobileMenuOpen(false)}>
             <Button className="w-full rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)]">
               {home.nav.getStarted}
             </Button>

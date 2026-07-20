@@ -80,6 +80,18 @@ describe('HomePage', () => {
     );
   }
 
+  function expectCardsToRegister(titles: string[]) {
+    const links = screen.getAllByRole('link');
+
+    titles.forEach((title) => {
+      expect(
+        links.some(
+          (link) => link.textContent?.includes(title) && link.getAttribute('href') === '/register'
+        )
+      ).toBe(true);
+    });
+  }
+
   it('renders the redesigned Chinese homepage with mapped CTA links', () => {
     const home = zhMessages.home;
     renderHome('zh');
@@ -88,6 +100,9 @@ describe('HomePage', () => {
     expect(screen.getByText(home.hero.headline[1])).toBeInTheDocument();
     expect(screen.getByText(home.features.title)).toBeInTheDocument();
     expect(screen.getByText(home.how.title)).toBeInTheDocument();
+    home.how.steps.forEach((step) => {
+      expect(screen.getByText(step.title)).toBeInTheDocument();
+    });
 
     expect(
       screen
@@ -96,19 +111,36 @@ describe('HomePage', () => {
     ).toBe(true);
     expect(
       screen
+        .getAllByRole('link', { name: home.hero.secondaryCta })
+        .some((link) => link.getAttribute('href') === '#workflow')
+    ).toBe(true);
+    expect(
+      screen
         .getAllByRole('link', { name: home.cta.secondary })
-        .some((link) => link.getAttribute('href') === '/help')
+        .some((link) => link.getAttribute('href') === '#community')
     ).toBe(true);
     expect(
       screen
         .getAllByRole('link', { name: home.nav.product })
         .some((link) => link.getAttribute('href') === '#features')
     ).toBe(true);
+    expectCardsToRegister(home.features.items.map((item) => item.title));
+    expectCardsToRegister(home.communityBoard.cards.map((card) => card.title));
     expect(
       screen
-        .getAllByRole('link', { name: home.nav.pricing })
-        .some((link) => link.getAttribute('href') === '#cta')
+        .getAllByRole('link', { name: home.communityBoard.cta })
+        .some((link) => link.getAttribute('href') === '/register')
     ).toBe(true);
+    expect(screen.getByText(home.footer.description)).toBeInTheDocument();
+    home.footer.columns
+      .flatMap((column) => column.links)
+      .forEach((footerLink) => {
+        expect(
+          screen
+            .getAllByRole('link', { name: footerLink.label })
+            .some((link) => link.getAttribute('href') === footerLink.href)
+        ).toBe(true);
+      });
   }, 30_000);
 
   it('renders the English homepage copy and route mapping', () => {
@@ -119,6 +151,9 @@ describe('HomePage', () => {
     expect(screen.getByText(home.hero.headline[1])).toBeInTheDocument();
     expect(screen.getByText(home.features.title)).toBeInTheDocument();
     expect(screen.getByText(home.how.title)).toBeInTheDocument();
+    home.how.steps.forEach((step) => {
+      expect(screen.getByText(step.title)).toBeInTheDocument();
+    });
 
     expect(
       screen
@@ -127,8 +162,13 @@ describe('HomePage', () => {
     ).toBe(true);
     expect(
       screen
+        .getAllByRole('link', { name: home.hero.secondaryCta })
+        .some((link) => link.getAttribute('href') === '#workflow')
+    ).toBe(true);
+    expect(
+      screen
         .getAllByRole('link', { name: home.cta.secondary })
-        .some((link) => link.getAttribute('href') === '/help')
+        .some((link) => link.getAttribute('href') === '#community')
     ).toBe(true);
     expect(
       screen
@@ -138,7 +178,52 @@ describe('HomePage', () => {
     expect(
       screen
         .getAllByRole('link', { name: home.nav.community })
-        .some((link) => link.getAttribute('href') === '/teams')
+        .some((link) => link.getAttribute('href') === '#community')
     ).toBe(true);
+    expectCardsToRegister(home.features.items.map((item) => item.title));
+    expectCardsToRegister(home.communityBoard.cards.map((card) => card.title));
+    expect(
+      screen
+        .getAllByRole('link', { name: home.communityBoard.cta })
+        .some((link) => link.getAttribute('href') === '/register')
+    ).toBe(true);
+    expect(screen.getByText(home.footer.description)).toBeInTheDocument();
+    home.footer.columns
+      .flatMap((column) => column.links)
+      .forEach((footerLink) => {
+        expect(
+          screen
+            .getAllByRole('link', { name: footerLink.label })
+            .some((link) => link.getAttribute('href') === footerLink.href)
+        ).toBe(true);
+      });
   }, 30_000);
+
+  it('does not ship unverified marketing claims in either locale', () => {
+    const prohibitedClaims = [
+      '50,000+',
+      '10,000+ \u7528\u6237\u597d\u8bc4',
+      '10,000+ Positive Reviews',
+      '2,000+ \u9662\u6821\u6570\u636e',
+      '2,000+ schools',
+      '85%',
+      'Trusted by counselors at',
+      '\u53d7\u4fe1\u4e8e\u4ee5\u4e0b\u5347\u5b66\u987e\u95ee',
+      'studyabroad.com',
+    ];
+
+    [zhMessages, enMessages].forEach((messages) => {
+      const marketingCopy = JSON.stringify({
+        home: messages.home,
+        about: messages.about,
+        auth: messages.auth.layout,
+        terms: messages.terms,
+        privacy: messages.privacy,
+      });
+
+      prohibitedClaims.forEach((claim) => {
+        expect(marketingCopy).not.toContain(claim);
+      });
+    });
+  });
 });

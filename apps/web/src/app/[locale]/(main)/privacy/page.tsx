@@ -19,6 +19,7 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 const sections = [
@@ -144,7 +145,7 @@ export default function PrivacyPage() {
     <PageContainer maxWidth="4xl">
       <PageHeader
         title={t('title')}
-        description={t('lastUpdated', { date: '2026-01-01' })}
+        description={t('lastUpdated', { date: '2026-07-20' })}
         icon={ShieldCheck}
         color="emerald"
       />
@@ -177,10 +178,12 @@ export default function PrivacyPage() {
           const colors = colorMap[section.color];
           return (
             <motion.div
+              id={section.id}
               key={section.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.08 }}
+              className="scroll-mt-24"
             >
               <Card className="overflow-hidden hover:shadow-md transition-shadow">
                 <div className={cn('h-1 bg-gradient-to-r', colors.gradient)} />
@@ -238,10 +241,10 @@ export default function PrivacyPage() {
               </div>
             </div>
             <Button variant="outline" className="gap-2" asChild>
-              <a href="mailto:privacy@studyabroad.com">
+              <Link href="/help">
                 <Mail className="h-4 w-4" />
-                privacy@studyabroad.com
-              </a>
+                {t('contact.action')}
+              </Link>
             </Button>
           </CardContent>
         </Card>

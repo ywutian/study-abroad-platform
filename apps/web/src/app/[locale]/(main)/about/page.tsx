@@ -2,28 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import {
-  Target,
-  Users,
-  Lightbulb,
-  Shield,
-  Globe,
-  Award,
-  Heart,
-  Zap,
-  GraduationCap,
-  Building2,
-  TrendingUp,
-  MessageCircle,
-  Mail,
-  ArrowRight,
-} from 'lucide-react';
+import { Target, Users, Lightbulb, Shield, Globe, Heart, Zap, GraduationCap } from 'lucide-react';
 
-import { PageContainer } from '@/components/layout';
+import { PageContainer } from '@/components/layout/page-container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const COLOR_CLASSES: Record<
@@ -62,31 +45,6 @@ const COLOR_CLASSES: Record<
   },
 };
 
-const stats = [
-  { icon: Users, value: '50,000+', labelKey: 'stats.users', color: 'blue', gradient: 'bg-primary' },
-  {
-    icon: Building2,
-    value: '2,000+',
-    labelKey: 'stats.schools',
-    color: 'emerald',
-    gradient: 'bg-success',
-  },
-  {
-    icon: Award,
-    value: '10,000+',
-    labelKey: 'stats.cases',
-    color: 'amber',
-    gradient: 'bg-warning',
-  },
-  {
-    icon: TrendingUp,
-    value: '85%',
-    labelKey: 'stats.accuracy',
-    color: 'violet',
-    gradient: 'bg-primary',
-  },
-];
-
 const values = [
   { icon: Target, titleKey: 'values.mission.title', descKey: 'values.mission.desc', color: 'blue' },
   {
@@ -97,55 +55,6 @@ const values = [
   },
   { icon: Shield, titleKey: 'values.trust.title', descKey: 'values.trust.desc', color: 'emerald' },
   { icon: Heart, titleKey: 'values.care.title', descKey: 'values.care.desc', color: 'rose' },
-];
-
-const team = [
-  {
-    nameKey: 'team.members.zhangming.name',
-    roleKey: 'team.members.zhangming.role',
-    avatar: 'ZM',
-    gradient: 'bg-primary',
-  },
-  {
-    nameKey: 'team.members.lihua.name',
-    roleKey: 'team.members.lihua.role',
-    avatar: 'LH',
-    gradient: 'bg-success',
-  },
-  {
-    nameKey: 'team.members.wangfang.name',
-    roleKey: 'team.members.wangfang.role',
-    avatar: 'WF',
-    gradient: 'bg-primary',
-  },
-  {
-    nameKey: 'team.members.chenjie.name',
-    roleKey: 'team.members.chenjie.role',
-    avatar: 'CJ',
-    gradient: 'bg-warning',
-  },
-];
-
-const timeline = [
-  {
-    year: '2023',
-    titleKey: 'timeline.founded.title',
-    descKey: 'timeline.founded.desc',
-    color: 'blue',
-  },
-  {
-    year: '2024',
-    titleKey: 'timeline.growth.title',
-    descKey: 'timeline.growth.desc',
-    color: 'emerald',
-  },
-  { year: '2025', titleKey: 'timeline.ai.title', descKey: 'timeline.ai.desc', color: 'violet' },
-  {
-    year: '2026',
-    titleKey: 'timeline.expansion.title',
-    descKey: 'timeline.expansion.desc',
-    color: 'amber',
-  },
 ];
 
 export default function AboutPage() {
@@ -174,39 +83,6 @@ export default function AboutPage() {
         </div>
       </motion.div>
 
-      {/* Stats */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-12">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <motion.div
-              key={stat.labelKey}
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="text-center overflow-hidden">
-                <div className={cn('h-1 bg-gradient-to-r', stat.gradient)} />
-                <CardContent className="pt-6 pb-6">
-                  <div
-                    className={cn(
-                      'flex h-12 w-12 items-center justify-center rounded-xl mx-auto mb-3',
-                      COLOR_CLASSES[stat.color]?.bg
-                    )}
-                  >
-                    <Icon className={cn('h-6 w-6', COLOR_CLASSES[stat.color]?.text)} />
-                  </div>
-                  <div className={cn('text-3xl font-bold', COLOR_CLASSES[stat.color]?.textBold)}>
-                    {stat.value}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{t(stat.labelKey)}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
-
       {/* Mission & Vision */}
       <div className="grid gap-6 md:grid-cols-2 mb-12">
         <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
@@ -226,7 +102,13 @@ export default function AboutPage() {
           </Card>
         </motion.div>
 
-        <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+        <motion.div
+          id="vision"
+          initial={false}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="scroll-mt-24"
+        >
           <Card className="h-full overflow-hidden">
             <div className="h-1 bg-primary dark:bg-primary" />
             <CardHeader>
@@ -262,10 +144,12 @@ export default function AboutPage() {
             const Icon = value.icon;
             return (
               <motion.div
+                id={value.titleKey === 'values.mission.title' ? 'mission' : undefined}
                 key={value.titleKey}
                 initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
+                className="scroll-mt-24"
               >
                 <Card className="text-center h-full group">
                   <CardContent className="pt-6">
@@ -288,150 +172,26 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="mb-12">
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mb-8"
-        >
-          <Badge variant="secondary" className="mb-2">
-            {t('timeline.badge')}
-          </Badge>
-          <h2 className="text-subtitle">{t('timeline.title')}</h2>
-        </motion.div>
-        <div className="relative max-w-3xl mx-auto">
-          <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 h-full w-0.5 bg-gradient-to-b from-blue-500 via-violet-500 to-amber-500" />
-          <div className="space-y-8">
-            {timeline.map((item, index) => {
-              const isEven = index % 2 === 0;
-              return (
-                <motion.div
-                  key={item.year}
-                  initial={false}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className={cn(
-                    'flex items-center',
-                    isEven ? 'sm:flex-row' : 'sm:flex-row-reverse'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'w-full pl-10 sm:w-1/2 sm:pl-0',
-                      isEven ? 'sm:pr-8 sm:text-right' : 'sm:pl-8'
-                    )}
-                  >
-                    <Card className="overflow-hidden">
-                      <div
-                        className={cn('h-1 bg-gradient-to-r', {
-                          'bg-primary': item.color === 'blue' || item.color === 'violet',
-                          'bg-success': item.color === 'emerald',
-                          'bg-warning': item.color === 'amber',
-                        })}
-                      />
-                      <CardContent className="pt-4 pb-4">
-                        <Badge
-                          variant="outline"
-                          className={cn('mb-2', {
-                            'border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5':
-                              item.color === 'blue',
-                            'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5':
-                              item.color === 'emerald',
-                            'border-violet-500/30 text-primary bg-primary/5':
-                              item.color === 'violet',
-                            'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5':
-                              item.color === 'amber',
-                          })}
-                        >
-                          {item.year}
-                        </Badge>
-                        <h3 className="font-semibold">{t(item.titleKey)}</h3>
-                        <p className="text-sm text-muted-foreground">{t(item.descKey)}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div
-                    className={cn(
-                      'absolute left-2 sm:relative sm:left-auto z-10 flex items-center justify-center w-4 h-4 rounded-full border-4 border-background',
-                      {
-                        'bg-blue-500': item.color === 'blue',
-                        'bg-emerald-500': item.color === 'emerald',
-                        'bg-primary': item.color === 'violet',
-                        'bg-amber-500': item.color === 'amber',
-                      }
-                    )}
-                  />
-                  <div className="hidden sm:block sm:w-1/2" />
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Team */}
-      <div className="mb-12">
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="text-center mb-8"
-        >
-          <Badge variant="secondary" className="mb-2">
-            {t('team.badge')}
-          </Badge>
-          <h2 className="text-subtitle">{t('team.title')}</h2>
-        </motion.div>
-        <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
-          {team.map((member, index) => (
-            <motion.div
-              key={member.nameKey}
-              initial={false}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 + index * 0.1 }}
-            >
-              <Card className="text-center overflow-hidden group">
-                <div className={cn('h-1 bg-gradient-to-r', member.gradient)} />
-                <CardContent className="pt-6">
-                  <Avatar
-                    className={cn(
-                      'w-20 h-20 mx-auto mb-4 bg-gradient-to-br',
-                      member.gradient,
-                      'ring-4 ring-background shadow-lg'
-                    )}
-                  >
-                    <AvatarFallback className="text-white text-xl font-bold bg-transparent">
-                      {member.avatar}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h3 className="font-semibold">{t(member.nameKey)}</h3>
-                  <p className="text-sm text-muted-foreground">{t(member.roleKey)}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Contact CTA */}
-      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+      <motion.div
+        id="team"
+        initial={false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mb-12 scroll-mt-24"
+      >
         <Card className="overflow-hidden">
-          <div className="h-1.5 bg-primary" />
-          <CardContent className="py-10 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-success mx-auto mb-4 ">
-              <MessageCircle className="h-8 w-8 text-white" />
+          <div className="h-1 bg-primary" />
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <CardTitle>{t('team.title')}</CardTitle>
             </div>
-            <h2 className="text-subtitle mb-2">{t('contact.title')}</h2>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t('contact.desc')}</p>
-            <Button className="gap-2" asChild>
-              <a href="mailto:contact@studyabroad.com">
-                <Mail className="h-4 w-4" />
-                contact@studyabroad.com
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">{t('team.content')}</p>
           </CardContent>
         </Card>
       </motion.div>

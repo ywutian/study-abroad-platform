@@ -4,8 +4,6 @@ import { useTranslations } from 'next-intl';
 
 export interface HomeNavContent {
   product: string;
-  cases: string;
-  pricing: string;
   community: string;
   about: string;
   signIn: string;
@@ -13,7 +11,6 @@ export interface HomeNavContent {
 }
 
 export interface HomeHeroContent {
-  eyebrow: string;
   headline: [string, string];
   subtitle: string;
   features: string[];
@@ -52,7 +49,10 @@ export interface HomeSocialPrinciple {
 
 export interface HomeFooterColumn {
   title: string;
-  links: string[];
+  links: Array<{
+    label: string;
+    href: string;
+  }>;
 }
 
 export interface HomeSectionCollection {
@@ -66,9 +66,8 @@ export interface HomeContent {
   nav: HomeNavContent;
   hero: HomeHeroContent;
   trust: { label: string; stats: HomeStat[]; schools: string[] };
-  problem: HomeSectionCollection & { items: HomeContentItem[] };
   features: HomeSectionCollection & { items: HomeContentItem[] };
-  how: HomeSectionCollection & { steps: HomeContentItem[] };
+  how: HomeSectionCollection & { steps: HomeContentItem[]; footer: string };
   social: HomeSectionCollection & { principles: HomeSocialPrinciple[] };
   cta: {
     eyebrow: string;
@@ -124,9 +123,8 @@ export function useHomeContent(): HomeContent {
       },
     },
     trust: t.raw('trust') as HomeContent['trust'],
-    problem: t.raw('problem') as HomeSectionCollection & { items: HomeContentItem[] },
     features: t.raw('features') as HomeSectionCollection & { items: HomeContentItem[] },
-    how: t.raw('how') as HomeSectionCollection & { steps: HomeContentItem[] },
+    how: t.raw('how') as HomeSectionCollection & { steps: HomeContentItem[]; footer: string },
     social: t.raw('social') as HomeSectionCollection & {
       principles: HomeSocialPrinciple[];
     },
