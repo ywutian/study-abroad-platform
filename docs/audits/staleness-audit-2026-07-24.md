@@ -239,9 +239,27 @@ CDS **2025-26** 已发布（Duke、Georgia Tech、UCSD、BU、Iowa 等）。
 `packages/shared/vitest.config.ts:9` 自己写着 "scoring/ml/* is orphaned dead code"，
 但 `scoring/index.ts:8` 还在 `export * from './ml'` 对外暴露。
 
-**修法**：删那 4 个，`index.ts` 改为只导出 `./ml/metrics`。
+**修法 — 已完成 2026-07-24**
 
-> 注意：`metrics.ts` 是活的，**不要整目录删**（旧记忆已记此坑）。
+删除前先做了全仓库消费者扫描（26 个导出名 × api/web/mobile/scripts，排除 `dist/`），
+结果 0 命中。**但 `metrics.ts` 有一条依赖边**：`computeFeatureImportance()` 从
+`logistic-regression` 引入 `TrainedModel` 类型 —— 这就是"整目录删"会炸的地方。
+该函数本身也无消费者，随 4 个文件一并删除，依赖边才断得干净。
+
+- 删 `logistic-regression.ts` / `gbdt-inference.ts` / `beta-calibration.ts` / `explainer.ts`
+- `metrics.ts` 移除 `computeFeatureImportance` + `FeatureImportance` + `TrainedModel` import
+- `ml/index.ts` 收窄为只导出 `./metrics`
+
+**顺带关掉一个假豁免**：`vitest.config.ts` 把 `src/scoring/ml/**` 排除在覆盖率外，
+理由写的是 "orphaned dead code, no live importer" —— 对 `metrics.ts` 而言这句是**假的**
+（`computeAucRoc` 被 `prediction-policy-shadow`、`computeBrierScore` 被 `prediction-reporting` 在用）。
+死文件删掉后这条豁免没有理由了，遂解除，并补 `metrics.test.ts` 19 条测试覆盖全部 7 个导出。
+
+覆盖率：`metrics.ts` 96/91/100/100；shared 全局 92.4/82.1/96.6/93.8，
+ratchet `✅ hold the line`；knip 无输出。396 项 shared 测试全过（+19）。
+
+**没做**：`computeAccuracy` / `computeCalibrationCurve` / `computePSI` 目前无消费者，
+但已被测试覆盖、无跨文件依赖、且正是 #4/#5 校准工作会用到的东西 —— 保留。要一并删说一声。
 
 ---
 
