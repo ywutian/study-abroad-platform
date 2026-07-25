@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CounselorEngineService } from './counselor-engine.service';
+import { AnchorResolverService } from './anchor-resolver.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 
 /**
@@ -36,6 +37,7 @@ describe('CounselorEngineService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CounselorEngineService,
+        AnchorResolverService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
@@ -120,7 +122,12 @@ describe('CounselorEngineService', () => {
       );
 
       expect(result.tier).toBe(2);
-      expect(result.anchorSource).toContain('SAT bands');
+      // The anchor is the school's admit rate; bands only reach the modifiers.
+      // The old assertion was `toContain('SAT bands')`, which the previous
+      // misleading string satisfied by accident — so it pinned nothing.
+      expect(result.anchorSource).toBe(
+        'scorecard admit rate, test bands applied',
+      );
       expect(result.anchor).toBeCloseTo(0.49, 2);
     });
 

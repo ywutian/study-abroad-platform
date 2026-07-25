@@ -232,13 +232,67 @@ Opportunity Insights：不提交分数的学生，实际表现约等于提交 ~1
 **后果**：两层偏差叠加（GPA 推出的 SAT × 只含提交者的分布）→ 对无分数申请者系统性低估。
 可量化、有文献，不是玄学。
 
-**修法**：锚点用 band 时带 submitter-share 折扣；或无分数路径直接锚到 ~1300 等效位，
-不走 GPA→SAT。
+## ❌ 原修法已作废 —— 四个 agent 一致否决（2026-07-24）
 
-**验收**：跑 11-invariant sweep，无分数档案的预测不应低于同 GPA 有分数档案一个 tier 以上。
+原写的两个方案（① 锚点带 submitter-share 折扣 ② 无分数路径锚到 ~1300 等效位）
+经 study-abroad-expert / architect / data-model-reviewer / test-engineer 独立审查后全部否决。
 
-> ⚠️ 这是**改结构**不是**调系数**。参见 `feedback_do_not_tune_coefficients`——
-> n=1076 下不得手调/ML 学习各轴倍率。
+**我的前提本身就是错的**：`anchor-resolver.service.ts:79` 那个
+`'scorecard (acceptanceRate + SAT bands)'` 只是**溯源文案**，锚点值就是
+`school.acceptanceRate`，SAT band 一个数字都没进锚点。我被自己写的字符串骗了。
+
+| Agent    | 判定      | 决定性论据                                                                                                                                                    |
+| -------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 留学业务 | WARN      | 有分数者拿 submitter 比 submitter 分布是**正确参照系**，无偏差可修。真实错配只在 `gpaBandMultiplier` 启发式兜底，而 76% 学校已有 `gpaDistribution` 走对的路径 |
+| 架构     | INFO      | 实算 Amherst：照"锚到 1300"做，无分数者得 **×0.3**（现 ×0.85）—— **处方符号与诊断相反**                                                                       |
+| 数据模型 | **BLOCK** | 修正需要**申请者池**提交率，公开世界不存在；CDS C9 / IPEDS SATPCT 都是**入学**口径，拿它当分母＝重演 `intlAcceptanceRate` 那次总体调包                        |
+| 测试工程 | **BLOCK** | 唯一 oracle 仅 3 条 gated fixture，hi/lo 达 **8×**，效应量 ~×1.41 —— **改与不改，CI 判定完全相同**                                                            |
+
+**原验收标准也是错的**：「无分数档案不应低于同 GPA 有分数档案一个 tier 以上」在 2026-27
+恰恰与 §1 冲突（强制标化学校**就该**低一个 tier），而且在精英校三档 tier 下**改前已恒真**。
+
+**测试工程 agent 的收尾论据最硬**：§1（昨天落地）让无分数申请者 ×0.85 更悲观，
+§4 要让同一批人 ×1.41 更乐观 —— **方向相反、相隔 24 小时，且没有任何仪器能测出净效应。**
+
+**解除条件**（任一）：回填 `School.testSubmissionRate`（该列已存在但是死列）+ 政策回摆学校
+2019/2024 双轨 band 回测；或改为只加宽区间 + caveat、不动点估计。
+
+---
+
+## ✅ 实际落地：同一代码路径上的一组真 bug（2026-07-24）
+
+**1. 单调性护栏在守一份生产不跑的代码（架构 agent，MUST）**
+`counselor-engine.service.ts` 曾有私有 `resolveAnchor`/`lookupCdsBand`/`isotonicBandRate`
+与 `AnchorResolverService` 重复，靠 `@Optional()` 三元选择。而
+`counselor-engine.monotonicity.spec.ts` 注释明写 _"intentionally NOT provided"_ ——
+那个防了 #319/#320/#321 三次回归的护栏**测的是生产不走的那份**。
+→ 三个 spec 全部改为注入 resolver（10/10 绿，parity 由源码逐字符比对证明）→ 删私有副本
+**208 行** + 传递性死掉的 6 个 helper **90 行** → 注入改为必需（缺绑定启动即失败）。
+
+**2. tier 虚高 → 区间假装更确定（留学业务 + 架构）**
+`hasSatBands` 只判 null：学校有 band 就给 tier 2 → `medium` → 更窄区间。两个漏洞：
+placeholder band（1080/1320）照算；**申请者没分数时也照算**。
+→ 现在要求 band 可用**且**申请者持有可比成绩。只动区间，不动点估计。
+
+**3. ⚠️ 我在修 2 时引入了一个 BLOCK，被验收 agent 抓到**
+第一版 `applicantHasComparableScore` 硬编码 `SAT|ACT`，但 `testBandMultiplier`
+**确实**把 IB / A-Level / **高考**折算成等效 SAT 去读 band —— 我把这三类考生
+错误降级成 low confidence、区间宽 55%，**伤的正是核心国际生群体**。
+→ 抽出 `BAND_COMPARABLE_TEST_TYPES` + `hasBandComparableScore()` 作为单一来源，两处共用。
+
+**4. 溯源字符串在说谎且用户可见** — 旧串暗示 band 进了锚点；且它经
+`sourceSummary` / `factors[0].detail` 直接渲染给用户。改为 `scorecard admit rate, test bands applied`。
+
+**5. ACT 越界** — `act * 45` 无 clamp，ACT 36 → 1620。**这不是 no-op**：sat75 ∈ [1551,1570]
+且无 ACT band 的学校，满分 ACT 的 test 轴倍率 1.5→1.2。修前满分 ACT 能压过满分 SAT。
+
+**6. policy version bump** → `counselor-cold-start-v1.9-honest-tier`。
+理由：点估计确实变了（5）；Redis cache key 含 version，不 bump 会让新旧缓存吐不同区间；
+`ruleVersion` 是 replay 指纹，served 变了指纹不变会静默腐坏审计链。
+
+**测试**：`anchor-resolver.service.spec.ts` 新增 tier 真值表 10 条
+（含 IB/A-Level/高考 → tier 2 三行，正是抓住 bug 3 的那几条）+ anchorSource 契约。
+827 项预测测试全过，knip clean，门禁全绿。
 
 ---
 
@@ -252,7 +306,41 @@ CDS **2025-26** 已发布（Duke、Georgia Tech、UCSD、BU、Iowa 等）。
 州内/州外比、国际生比、ED 倍率本身是 2026-05-31 那轮 48-flagship 审计定的，数字没问题，
 只是底层 CDS 该滚一版。
 
-**修法**：走 `/closure-update` + `/competition-data-audit` 流程，不要手改数字。
+## ❌ 判定：N_A —— 不该做（两个 agent 一致，2026-07-24）
+
+**行号是我自己撞歪的**：`:1050/:1313/:1439` 在 §1 落地前完全命中，是 §1 给
+`testBandMultiplier` 加的 36 行把它们推到了 `:1086/:1349/:1475`。
+
+**否决理由**（按权重）：
+
+1. **`:1086` 那条 "CDS 2023-24 / NC 2.2" 是死注释** —— 它描述的六州旧表已在 2026-05-31
+   被 48-flagship 新表取代（实际 `NC: 2.5`，且 FL/MI 根本不是 key）。滚它＝更新一段
+   描述已删常数的散文。
+2. **这张表对本平台核心用户永不触发** —— `counselor-modifiers.ts` 里
+   `if (profile.isInternational) return NEUTRAL`，整张州表对国际申请者无效。
+3. **要紧的那半滚不动** —— CDS 2025-26 现约半数院校发布，早发的是公立
+   （GT/UCSD/Iowa/BU），晚发/不发的正是校准 intl 常数的顶尖私立。
+   方向完全反了。
+4. **等错了版本** —— CDS 2025-26 = fall 2025 = 强制标化浪潮**前**的最后一版。
+   现在滚＝买一个即将断裂的序列的最后一年。该等的是 **CDS 2026-27**（约 2026-12 起发布）。
+5. **年际位移小于噪声** —— 硬编码的是**比值**，分母 `acceptanceRate` 每周从 DB 刷新；
+   比值本身由立法/董事会周期决定（州外招生法定上限、top-6% 自动录取），
+   ±0.05–0.15 过不了 clamp + geomean + 有下限的区间。
+   最硬的证据：同一个 NC 注释 2.2 / 常数 2.5 的矛盾在 prod 跑了两个月无事。
+6. 两组 elite intl 常数各自只建立在 **n=3** 学校上，逐年重算是 noise-chasing。
+
+**我原文写的 "走 /closure-update" 也是错配**：该 skill 驱动 `ClosureTarget` 数据库工作队列，
+**触不到 TypeScript 常数 map**；仓库里不存在能再生这三处常数的管线。
+
+### ✅ 实际落地：只修注释（2026-07-24）
+
+重写 `counselor-modifiers.ts` 的 `STATE_IN_STATE_OVER_OVERALL` JSDoc —— 删掉那段复述
+旧表的散文（正是产生这张工单的陷阱），指向 map 自身的行内注释作为单一来源，
+并写明这些值该按政策周期而非 CDS 周期刷新。**数字一个没动。**
+
+**重评时点**：2027 Q1–Q2，CDS 2026-27 有实质覆盖后，跑
+`apps/api/scripts/audit-fallback-calibration.ts` 重新验证，而不是"滚一版"。
+提前触发条件只有一类：某州/某校政策变更公告。
 
 ---
 

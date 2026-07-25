@@ -92,7 +92,51 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function isPlaceholderSatBand(sat25?: number | null, sat75?: number | null) {
+/**
+ * Test types `testBandMultiplier()` converts to an SAT-equivalent and compares
+ * against the school's SAT band. TOEFL/IELTS/DUOLINGO/AP/IGCSE are absent on
+ * purpose — they're language or supplementary tests and never read the band.
+ *
+ * Exported because `AnchorResolverService` grades anchor tier on "did the band
+ * inform THIS applicant", and that question has exactly one right answer: the
+ * set below. Getting it wrong is not hypothetical — the first cut of that check
+ * hardcoded SAT|ACT and silently dropped IB / A-Level / Gaokao applicants to
+ * low confidence with a 55% wider interval, which is most of this platform's
+ * international users (caught in acceptance review, 2026-07-24).
+ */
+export const BAND_COMPARABLE_TEST_TYPES = [
+  'SAT',
+  'ACT',
+  'IB',
+  'A_LEVEL',
+  'GAOKAO',
+] as const;
+
+/** Does this applicant hold a score that `testBandMultiplier` compares to the school band? */
+export function hasBandComparableScore(
+  testScores?: Array<{ type: string; score?: number | null }> | null,
+): boolean {
+  return (testScores ?? []).some(
+    (t) =>
+      !!t.score &&
+      (BAND_COMPARABLE_TEST_TYPES as readonly string[]).includes(t.type),
+  );
+}
+
+/**
+ * Launch-seed placeholder SAT band. Exported so `AnchorResolverService` grades
+ * anchor tier on the same notion of "usable band" this file uses — they used to
+ * disagree, and schools carrying the placeholder bought a tier-2 (narrower)
+ * interval while every band modifier returned neutral (2026-07-24 audit).
+ *
+ * ponytail: exact-match sentinel, so a real school landing on precisely
+ * 1080/1320 would be misread as seed data. Upgrade path: mark placeholders in
+ * provenance instead of sniffing values.
+ */
+export function isPlaceholderSatBand(
+  sat25?: number | null,
+  sat75?: number | null,
+) {
   return sat25 === 1080 && sat75 === 1320;
 }
 
@@ -578,7 +622,9 @@ export function testBandMultiplier(
         if (bestDirectAct == null || act > bestDirectAct) {
           bestDirectAct = act;
         }
-        considerScore(act * 45, `ACT ${ts.score}`);
+        // Clamp the SAT-equivalent too: ACT 36 × 45 = 1620, past the top of the
+        // SAT scale. The SAT branch above already clamps; this one didn't.
+        considerScore(Math.min(1600, act * 45), `ACT ${ts.score}`);
         break;
       }
       case 'IB':
@@ -1065,24 +1111,26 @@ export function urmMultiplier(
  * anchor by the (much larger) in-state-vs-OOS ratio double-counts and
  * over-predicts in-state applicants. A flat 1.8 (= UC in-state÷OOS) did exactly
  * that: it inflated strong CA in-state UC predictions to ~45% — caught by the
- * counselor gold set on 2026-05-31. Each ratio below is the system's PUBLISHED
- * in-state÷overall admit rate (reviewed 2026-05-31):
+ * counselor gold set on 2026-05-31. Each ratio in the map below is the state
+ * flagship's PUBLISHED in-state÷overall admit rate, from the 48-flagship audit
+ * of 2026-05-31 (see docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md §7.10).
+ * Per-value sourcing lives in the inline comments on the map itself — that is
+ * the single place to read and to update.
  *
- *   NC 2.2  — UNC-CH official CDS 2023-24 C1: in-state 41.2% / overall 18.7%
- *             (OOS enrollment legally capped at 18%). Highest confidence.
- *   VA 1.5  — UVA Dean of Admission 2024/2025: in-state ~24-25% / overall ~16.5%.
- *   TX 1.5  — UT-Austin OOS÷overall 0.38 (strong in-state pref); in-state is
- *             bimodal (top-6% auto-admit ~100% vs holistic ~10%), no single
- *             official %, so 1.5 is a conservative blend.
- *   CA 1.2  — UC systemwide in-state÷overall 1.06 (UCOP 2024); Berkeley 1.35,
- *             UCLA 1.06. Selective campuses tilt above systemwide; UC freshman-
- *             GPA bands are CA-resident-leaning, so the anchor already captures
- *             much of the residency effect — keep the extra tilt small.
- *   FL 1.1  — UF CDS leaves the residency columns blank; DB oos 23.3% ≈ overall
- *             24.2% → ~residency-neutral.
- *   MI 1.0  — UMich publishes no residency split; the circulating "39% in-state"
- *             is mathematically impossible against the official 17.9% overall,
- *             and DB oos 18% > overall 15.6% → OOS admitted *easier* → neutral.
+ * This block used to restate a SUPERSEDED six-state table (NC 2.2 / VA 1.5 /
+ * TX 1.5 / CA 1.2 / FL 1.1 / MI 1.0, cited to CDS 2023-24), which had drifted
+ * from the map ~20 lines below it — NC was already 2.5, and FL/MI are not keys
+ * at all. Two months of prod ran on that contradiction without incident, which
+ * is itself a measurement of how much these fallbacks move the needle. The
+ * 2026-07-24 staleness audit then opened a "roll CDS to 2025-26" ticket off the
+ * stale citation, i.e. the comment generated work about a value that no longer
+ * existed. Prose duplicating a table is a liability; don't reintroduce it.
+ *
+ * On refreshing these at all: they are policy-shaped (legislated non-resident
+ * caps, auto-admit rules), so they move on legislative cycles, not CDS cycles.
+ * The volatile term — the overall admit rate they divide by — is already
+ * refreshed from the live DB on every call. Only refresh a value when that
+ * state's policy actually changes.
  *
  * Out-of-state uses the per-school oos÷overall DATA path in geoMultiplier when
  * a published OOS rate exists; PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF only

@@ -130,3 +130,91 @@ describe('AnchorResolverService', () => {
     expect(result.anchor).toBeCloseTo(0.55, 2);
   });
 });
+
+/**
+ * Tier-2 truth table (added 2026-07-24 after acceptance review).
+ *
+ * Tier drives confidence drives interval width. Tier 2 is a claim that the
+ * engine had a usable test signal FOR THIS APPLICANT — so it has to track what
+ * `testBandMultiplier` actually consumes, not a hand-copied list. The first cut
+ * of this check hardcoded SAT|ACT and silently demoted IB / A-Level / Gaokao
+ * applicants; nothing caught it because tier had zero assertions anywhere.
+ */
+describe('AnchorResolverService · anchor tier truth table', () => {
+  const resolver = () =>
+    new AnchorResolverService({
+      schoolCdsAdmitBand: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    } as any);
+
+  const profileWith = (testScores: Array<{ type: string; score: number }>) => ({
+    gpa: 3.9,
+    gpaScale: 4,
+    testScores,
+    activities: [],
+    awards: [],
+  });
+
+  const school = (over: Record<string, unknown> = {}) => ({
+    id: 's1',
+    name: 'Test U',
+    acceptanceRate: 0.15,
+    sat25: 1400,
+    sat75: 1550,
+    ...over,
+  });
+
+  const cases: Array<
+    [
+      label: string,
+      scores: Array<{ type: string; score: number }>,
+      over: Record<string, unknown>,
+      tier: number,
+    ]
+  > = [
+    ['real band + SAT', [{ type: 'SAT', score: 1500 }], {}, 2],
+    ['real band + ACT', [{ type: 'ACT', score: 33 }], {}, 2],
+    // These three ARE compared against the school SAT band via an
+    // SAT-equivalent, so they earn tier 2 exactly like a direct SAT.
+    ['real band + IB', [{ type: 'IB', score: 42 }], {}, 2],
+    ['real band + A-Level', [{ type: 'A_LEVEL', score: 152 }], {}, 2],
+    ['real band + Gaokao', [{ type: 'GAOKAO', score: 690 }], {}, 2],
+    // Language tests never read the band — demotion is correct here.
+    ['real band + TOEFL only', [{ type: 'TOEFL', score: 110 }], {}, 3],
+    ['real band + no scores', [], {}, 3],
+    [
+      'placeholder band + SAT',
+      [{ type: 'SAT', score: 1500 }],
+      { sat25: 1080, sat75: 1320 },
+      3,
+    ],
+    [
+      'no band + SAT',
+      [{ type: 'SAT', score: 1500 }],
+      { sat25: null, sat75: null },
+      3,
+    ],
+  ];
+
+  it.each(cases)('%s', async (_label, scores, over, tier) => {
+    const result = await resolver().resolveAnchor(
+      profileWith(scores) as any,
+      school(over) as any,
+    );
+    expect({ tier: result.tier }).toEqual({ tier });
+  });
+
+  it('never claims SAT bands fed the anchor — the anchor is acceptanceRate', async () => {
+    const result = await resolver().resolveAnchor(
+      profileWith([{ type: 'SAT', score: 1500 }]) as any,
+      school() as any,
+    );
+    // The old string was 'scorecard (acceptanceRate + SAT bands)', which read as
+    // "bands are part of the anchor". They are not: the anchor is the school's
+    // acceptance rate, full stop. This string lands in servedTrace.
+    expect(result.anchor).toBe(0.15);
+    expect(result.anchorSource).not.toContain('+ SAT bands');
+  });
+});
