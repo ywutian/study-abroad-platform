@@ -138,7 +138,9 @@ describe('PredictionPolicyService', () => {
           highSchoolId: 'hs-1',
           highSchoolTier: 'TIER_1',
         },
-        school: {},
+        // "all metadata available" must include testingPolicy — an absent policy
+        // is itself an uncertainty reason (see buildTracePayload).
+        school: { testingPolicy: 'REQUIRED' },
         roundContext: 'ED',
         confidence: 'high' as const,
         schoolMeta: {
@@ -188,6 +190,30 @@ describe('PredictionPolicyService', () => {
       );
       expect(result.uncertaintyReasons).toContain(
         'Profile data is incomplete, so this estimate has wider uncertainty.',
+      );
+    });
+
+    it('should add uncertainty when testingPolicy is unknown and no scores submitted', () => {
+      const result = service.buildTracePayload(makeParams({ school: {} }));
+      expect(result.uncertaintyReasons).toContain(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
+      );
+    });
+
+    it('should NOT add the testing-policy caveat when the applicant submitted a score', () => {
+      const result = service.buildTracePayload(
+        makeParams({
+          school: {},
+          profile: {
+            nationality: 'CN',
+            highSchoolId: 'hs-1',
+            highSchoolTier: 'TIER_1',
+            testScores: [{ type: 'SAT', score: 1500 }],
+          },
+        }),
+      );
+      expect(result.uncertaintyReasons).not.toContain(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
       );
     });
 

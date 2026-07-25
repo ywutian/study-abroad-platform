@@ -611,30 +611,51 @@ export function testBandMultiplier(
       };
     }
 
-    if (
+    // `testingPolicy` is UNKNOWN for 96.3% of prod schools (234/243, audited
+    // 2026-07-24): College Scorecard doesn't publish the field and nothing
+    // backfills it, so UNKNOWN is the MAIN path here, not an edge case. It used
+    // to fall through to NEUTRAL, which silently handed every no-score applicant
+    // a ×1.0 at every school — including the ones that hard-require SAT/ACT as of
+    // the 2026-27 cycle (6/8 Ivies, the whole University System of Georgia, UF).
+    // Anything that isn't BLIND (returned above) / REQUIRED / OPTIONAL now takes
+    // the same selectivity-scaled correction as test-optional: conservative,
+    // without pretending we know a policy we don't. There is deliberately no
+    // neutral fallback left — that was the bug.
+    //
+    // This caps the damage at the selective end; it does NOT fully fix it. A
+    // ≥20% school that actually requires scores (e.g. UF) still reads 1.0 here.
+    // The real fix is backfilling testingPolicy — `uncertaintyReasons` tells the
+    // user the policy is unknown in the meantime.
+    //
+    // ponytail: reuses the test-optional curve rather than inventing an
+    // UNKNOWN-specific one — give UNKNOWN its own curve only once the column is
+    // populated and the two can actually be measured apart.
+    const declaredTestOptional =
       school.testingPolicy === 'OPTIONAL' ||
-      profile.applyingTestOptional === true
-    ) {
-      const overallNorm = normalizeRate(school.acceptanceRate);
-      if (overallNorm != null && overallNorm < 0.2) {
-        return {
-          multiplier: 0.85,
-          label: 'No test score at highly selective test-optional school',
-          evidence:
-            'Common App data: highly selective test-optional schools admit no-score applicants lower than test-submitters; 0.85× conservative correction.',
-          impact: 'negative',
-        };
-      }
+      profile.applyingTestOptional === true;
+    const surface = declaredTestOptional
+      ? 'test-optional school'
+      : 'school with unrecorded testing policy';
+
+    const overallNorm = normalizeRate(school.acceptanceRate);
+    if (overallNorm != null && overallNorm < 0.2) {
       return {
-        multiplier: 1.0,
-        label: 'No test score at less-selective test-optional school',
-        evidence:
-          'At schools with admit rates at or above 20%, no-score test-optional applications have no strong observed penalty.',
-        impact: 'neutral',
+        multiplier: 0.85,
+        label: `No test score at highly selective ${surface}`,
+        evidence: declaredTestOptional
+          ? 'Common App data: highly selective test-optional schools admit no-score applicants lower than test-submitters; 0.85× conservative correction.'
+          : "This school's SAT/ACT requirement is not on record. Applying the test-optional correction (0.85×) as a conservative floor — if the school in fact requires scores, the true impact is substantially larger.",
+        impact: 'negative',
       };
     }
-
-    return { ...NEUTRAL, label: 'Test score' };
+    return {
+      multiplier: 1.0,
+      label: `No test score at less-selective ${surface}`,
+      evidence: declaredTestOptional
+        ? 'At schools with admit rates at or above 20%, no-score test-optional applications have no strong observed penalty.'
+        : "This school's SAT/ACT requirement is not on record, but at admit rates at or above 20% a missing score is unlikely to be decisive.",
+      impact: 'neutral',
+    };
   }
 
   if (bestDirectAct != null && school.act25 && school.act75) {

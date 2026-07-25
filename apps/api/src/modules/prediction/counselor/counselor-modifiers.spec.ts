@@ -169,6 +169,32 @@ describe('counselor modifiers launch guards', () => {
       expect(result.label).toContain('highly selective test-optional');
     });
 
+    // Regression guard for the 2026-07-24 audit: UNKNOWN is 96.3% of prod
+    // schools and used to fall through to a silent ×1.0, over-predicting every
+    // no-score applicant at every school whose policy wasn't on record.
+    it('does NOT treat an unknown testing policy as neutral at selective schools', () => {
+      const result = testBandMultiplier(
+        baseProfile({ testScores: [] }),
+        baseSchool({ testingPolicy: 'UNKNOWN', acceptanceRate: 0.05 }),
+      );
+
+      expect(result.multiplier).toBe(0.85);
+      expect(result.label).toContain('unrecorded testing policy');
+      expect(result.impact).toBe('negative');
+    });
+
+    it('leaves an unknown testing policy neutral at non-selective schools', () => {
+      const result = testBandMultiplier(
+        baseProfile({ testScores: [] }),
+        baseSchool({ testingPolicy: 'UNKNOWN', acceptanceRate: 0.6 }),
+      );
+
+      // Known remaining gap: a ≥20% school that actually REQUIRES scores still
+      // reads 1.0 here. Only backfilling testingPolicy closes it.
+      expect(result.multiplier).toBe(1.0);
+      expect(result.label).toContain('unrecorded testing policy');
+    });
+
     it('compares ACT directly against act25/act75 when available', () => {
       const result = testBandMultiplier(
         baseProfile({ testScores: [{ type: 'ACT', score: 34 }] }),

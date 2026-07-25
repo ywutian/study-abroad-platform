@@ -176,6 +176,22 @@ export class PredictionPolicyService {
       );
     }
 
+    // A missing `testingPolicy` is not cosmetic metadata: it decides whether a
+    // no-score applicant takes a ×0.1 (REQUIRED) or ×1.0 (BLIND) hit. 96.3% of
+    // prod schools have it UNKNOWN (audited 2026-07-24), so say so out loud
+    // rather than letting the estimate look better-grounded than it is.
+    const testingPolicyOnRecord =
+      params.school.testingPolicy != null &&
+      params.school.testingPolicy !== 'UNKNOWN';
+    const hasStandardizedScore = (params.profile.testScores ?? []).some(
+      (t) => (t.type === 'SAT' || t.type === 'ACT') && t.score,
+    );
+    if (!testingPolicyOnRecord && !hasStandardizedScore) {
+      uncertaintyReasons.push(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
+      );
+    }
+
     if (!hasSchoolRanking) {
       uncertaintyReasons.push('School metadata is partially missing.');
     }
