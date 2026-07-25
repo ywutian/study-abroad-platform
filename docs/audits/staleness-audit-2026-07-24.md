@@ -125,7 +125,40 @@ GPT-4o 系已从 OpenAI 官方定价页下架。
 prod 实际跑 `gpt-5.4-mini`（不在表里）→ 按 gpt-4o-mini 计价 →
 **input 少算 5×，output 少算 7.5×**。TokenTracker 的成本数字全是假的。
 
-**修法**：补 PRICING 表；`||` 兜底改为告警而非静默。
+**深挖后发现的真问题：四张重复的模型事实表，已经互相打架**
+
+| 表                | 位置                       | 单位  |
+| ----------------- | -------------------------- | ----- |
+| `PRICING`         | `llm.service.ts:320`       | $/1M  |
+| `TOKEN_PRICES`    | `ai-agent/constants.ts:67` | $/1K  |
+| `contextLimits`   | `token-tracker.service.ts` | token |
+| `CONTEXT_WINDOWS` | `openai.provider.ts:23`    | token |
+
+两张定价表**单位不同**且未知模型的兜底差了几个数量级：一张退到 $0.15/$0.60 per 1M，
+另一张退到等效 $1000/$2000 per 1M。补四张表只会让它们继续漂。
+
+另有一处独立错误：`token-tracker` 的 tokenizer 兜底是 `cl100k_base`（GPT-4/3.5 的旧编码），
+GPT-5.x 该用 `o200k_base` —— **token 数本身就是错的**，再乘上错的单价。
+
+**修法 — 已完成 2026-07-24**
+
+- **合成一张 SSOT**：`ai-agent/constants.ts` 的 `MODEL_CATALOG`，每个模型一行
+  `{ input, output, contextWindow }`，单位统一为 $/1M。四张表全部改为从它派生。
+- **兜底改为「取表内最高价」**，不是手写常数 —— 由构造保证"永不低估"，且随表增长自动成立。
+  配一条 warn-once 日志提示把模型加进目录。
+  （最初手写了 $5/$30，被自己新加的不变量测试抓出来：`gpt-4` 是 $30/$60，更贵。）
+- tokenizer 兜底 `cl100k_base` → `o200k_base`，并补齐 GPT-5.x 条目。
+- 过时默认值 `gpt-4o-mini` → `gpt-5.4-mini`（prod 实际在跑的）：`env.validation.ts`、
+  `llm.service.ts`、`profile-application-analysis-v2.service.ts`、`config.service.ts`、
+  `workflow-engine.service.ts`。**这些只是 env 未设时的兜底**。
+- 新增 `constants.spec.ts` 6 条测试，含「未知模型定价不得低于目录内任一模型」的不变量。
+  594 项 ai-agent 测试全过。
+
+**刻意没做**：`agents.config.ts` 里 6 个 agent 显式写死的 `model: 'gpt-4o-mini'`。
+改它等于改这 6 个 agent 实际用的模型 —— 那是成本/质量决策，不是时效性修复。**待定**。
+
+**可选升级**：GPT-5.6 家族 2026-07-09 GA，Terra（$2.50/$15）被定位为生产默认档，
+与 GPT-5.4 同价。已在目录里，改 `OPENAI_MODEL` 即可切。
 
 **验收**：一次已知 token 数的调用，`estimateCost` 结果对得上 OpenAI 账单量级。
 

@@ -1018,7 +1018,7 @@ ${solveOutput.slice(0, 2000)}
 用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
 
       const extractResult = await this.llm.call(extractPrompt, [], {
-        model: config.reflectionModel || 'gpt-4o-mini',
+        model: config.reflectionModel || 'gpt-5.4-mini',
         temperature: 0,
         maxTokens: 500,
         userId: 'system',

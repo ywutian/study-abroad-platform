@@ -96,7 +96,7 @@ const envSchema = z.object({
 
   // --- AI / LLM (Optional) ---
   OPENAI_API_KEY: z.string().optional(),
-  OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_MODEL: z.string().default('gpt-5.4-mini'),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
   LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
@@ -147,6 +147,12 @@ const envSchema = z.object({
 
   // --- Webhook Signature [A5-020] ---
   WEBHOOK_SECRET: z.string().min(32).optional(),
+
+  // --- Payments (retired by default) ---
+  // The only provider currently present is a non-production simulator. Keeping
+  // both switches explicit prevents an environment typo from enabling writes.
+  PAYMENTS_ENABLED: z.enum(['true', 'false']).default('false'),
+  PAYMENT_PROVIDER: z.enum(['none', 'simulator']).default('none'),
 
   // --- Email Verification ---
   SKIP_EMAIL_VERIFICATION: z.enum(['true', 'false']).default('false'),
@@ -236,6 +242,16 @@ export function validateEnv(
 
   // Production checks — errors for security-critical, warnings for recommended
   if (result.data.NODE_ENV === 'production') {
+    if (
+      result.data.PAYMENTS_ENABLED !== 'false' ||
+      result.data.PAYMENT_PROVIDER !== 'none'
+    ) {
+      throw new Error(
+        'FATAL: paid subscriptions are retired. Production requires ' +
+          'PAYMENTS_ENABLED=false and PAYMENT_PROVIDER=none.',
+      );
+    }
+
     // Security-critical: MUST be set in production [A5-005]
     if (!result.data.VAULT_ENCRYPTION_KEY) {
       throw new Error(

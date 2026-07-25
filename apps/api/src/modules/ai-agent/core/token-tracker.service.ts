@@ -16,6 +16,15 @@ import { LRUCache } from 'lru-cache';
 
 // 模型到编码的映射
 const MODEL_ENCODING_MAP: Record<string, TiktokenEncoding> = {
+  // GPT-5 系列使用 o200k_base
+  'gpt-5.6-sol': 'o200k_base',
+  'gpt-5.6-terra': 'o200k_base',
+  'gpt-5.6-luna': 'o200k_base',
+  'gpt-5.5': 'o200k_base',
+  'gpt-5.4': 'o200k_base',
+  'gpt-5.4-mini': 'o200k_base',
+  'gpt-5.4-nano': 'o200k_base',
+
   // GPT-4o 系列使用 o200k_base
   'gpt-4o': 'o200k_base',
   'gpt-4o-mini': 'o200k_base',
@@ -56,7 +65,8 @@ import {
   DEFAULT_TOKEN_QUOTAS,
   PRO_TOKEN_QUOTAS,
   PREMIUM_TOKEN_QUOTAS,
-  TOKEN_PRICES,
+  MODEL_CATALOG,
+  estimateModelCost,
   TokenQuota,
 } from '../constants';
 
@@ -155,7 +165,11 @@ export class TokenTrackerService implements OnModuleInit {
   private getEncoder(model: string): Tiktoken | null {
     if (!this.encoderReady) return null;
 
-    const encoding = MODEL_ENCODING_MAP[model] || 'cl100k_base';
+    // Unknown models fall back to o200k_base, not cl100k_base: cl100k is the
+    // legacy GPT-4/3.5 encoding, and every current model uses o200k. The old
+    // default silently mis-counted tokens for anything newer — which then fed
+    // the cost numbers.
+    const encoding = MODEL_ENCODING_MAP[model] || 'o200k_base';
     return this.encoders.get(encoding) || null;
   }
 
@@ -379,7 +393,7 @@ export class TokenTrackerService implements OnModuleInit {
    * @param text 要计算的文本
    * @param model 模型名称（可选，用于选择正确的编码）
    */
-  countTokens(text: string, model: string = 'gpt-4o-mini'): number {
+  countTokens(text: string, model: string = 'gpt-5.4-mini'): number {
     const encoder = this.getEncoder(model);
     if (encoder) {
       try {
@@ -418,7 +432,7 @@ export class TokenTrackerService implements OnModuleInit {
    */
   countChatTokens(
     messages: Array<{ role: string; content: string; name?: string }>,
-    model: string = 'gpt-4o-mini',
+    model: string = 'gpt-5.4-mini',
   ): number {
     const encoder = this.getEncoder(model);
     const overhead =
@@ -458,7 +472,7 @@ export class TokenTrackerService implements OnModuleInit {
    */
   countMessagesTokens(
     messages: Array<{ role: string; content: string }>,
-    model: string = 'gpt-4o-mini',
+    model: string = 'gpt-5.4-mini',
   ): number {
     return this.countChatTokens(messages, model);
   }
@@ -474,7 +488,7 @@ export class TokenTrackerService implements OnModuleInit {
       maxResponseTokens?: number;
     },
   ): { promptTokens: number; estimatedTotal: number } {
-    const model = options?.model || 'gpt-4o-mini';
+    const model = options?.model || 'gpt-5.4-mini';
     const maxResponseTokens = options?.maxResponseTokens || 1000;
 
     // 构建完整消息列表（包含 system prompt）
@@ -497,22 +511,14 @@ export class TokenTrackerService implements OnModuleInit {
   checkContextWindow(
     systemPrompt: string,
     messages: Array<{ role: string; content: string }>,
-    model: string = 'gpt-4o-mini',
+    model: string = 'gpt-5.4-mini',
   ): {
     withinLimit: boolean;
     tokenCount: number;
     limit: number;
     remaining: number;
   } {
-    const contextLimits: Record<string, number> = {
-      'gpt-4o': 128000,
-      'gpt-4o-mini': 128000,
-      'gpt-4-turbo': 128000,
-      'gpt-4': 8192,
-      'gpt-3.5-turbo': 16385,
-    };
-
-    const limit = contextLimits[model] || 128000;
+    const limit = MODEL_CATALOG[model]?.contextWindow ?? 128_000;
     const tokenCount = this.estimateRequestTokens(systemPrompt, messages, {
       model,
     }).promptTokens;
@@ -534,11 +540,9 @@ export class TokenTrackerService implements OnModuleInit {
     promptTokens: number,
     completionTokens: number,
   ): number {
-    const prices = TOKEN_PRICES[model] || TOKEN_PRICES.default;
-    return (
-      (promptTokens / 1000) * prices.input +
-      (completionTokens / 1000) * prices.output
-    );
+    // Prices come from MODEL_CATALOG (per 1M tokens). This used to keep its own
+    // per-1K table that disagreed with llm.service's per-1M one.
+    return estimateModelCost(model, promptTokens, completionTokens).cost;
   }
 
   /**
