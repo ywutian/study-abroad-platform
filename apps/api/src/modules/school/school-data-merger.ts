@@ -23,17 +23,57 @@ export enum DataSource {
   NICHE_TAVILY = 'SCRAPER:TAVILY_NICHE', // Tavily 搜索索引里的 Niche 页面片段
 }
 
-const SOURCE_PRIORITY: Record<DataSource, number> = {
-  [DataSource.COLLEGE_SCORECARD]: 1,
-  [DataSource.URBAN_INSTITUTE]: 2,
-  [DataSource.IPEDS]: 3,
-  [DataSource.MANUAL_ADMIN]: 4,
-  [DataSource.SEED]: 5,
-  [DataSource.BIGFUTURE]: 6,
-  [DataSource.APPILY]: 7,
-  [DataSource.NICHE_TAVILY]: 8,
-  [DataSource.SCRAPER]: 9,
+/**
+ * Source of a provenance entry that carries no `source` field of its own.
+ * `deriveProvenanceSource` (packages/shared) stamps closure-v2 collected data
+ * with this, so it has to be rankable here.
+ */
+export const CLOSURE_V2_SOURCE = 'CLOSURE_V2';
+
+/**
+ * Write priority — LOWER number wins. This table used to be **inverted against
+ * the enum declared right above it**, which documents the intended order as
+ * "优先级从高到低" starting at MANUAL_ADMIN: it put COLLEGE_SCORECARD at 1 and
+ * MANUAL_ADMIN/SEED at 4/5, so every bulk sync outranked every hand-verified
+ * value.
+ *
+ * Combined with the `?? 99` fallback below, that was a loaded gun. closure-v2
+ * entries derive the source `CLOSURE_V2`, which is not a `DataSource` member,
+ * so they scored 99 — and `incomingPriority > existingPriority` (1 > 99) is
+ * false, meaning the overwrite was permitted outright. The first Scorecard
+ * sync to run against prod would silently revert the whole 2026-05-31 audit
+ * (SJSU 84.61, Hawaii 86.6, CU Boulder 80.5, ~20 anchors) to values that lag
+ * roughly two years. `MERGEABLE_FIELDS` includes `acceptanceRate`, i.e. the
+ * prediction anchor itself. Nothing today fires it only because the prod
+ * deploy has no COLLEGE_SCORECARD_API_KEY — adding that key is all it takes.
+ *
+ * Ordering principle: read from the school's own published source beats a bulk
+ * federal aggregator. closure-v2 and admin edits are checked against a primary
+ * document; Scorecard/IPEDS are convenient but stale by construction.
+ */
+const SOURCE_PRIORITY: Record<string, number> = {
+  [CLOSURE_V2_SOURCE]: 1, // agent-verified against the school's own CDS/IR page
+  [DataSource.MANUAL_ADMIN]: 2, // deliberate human override
+  [DataSource.SEED]: 3, // curated + audited seed corrections
+  [DataSource.COLLEGE_SCORECARD]: 4,
+  [DataSource.URBAN_INSTITUTE]: 5,
+  [DataSource.IPEDS]: 6,
+  [DataSource.BIGFUTURE]: 7,
+  [DataSource.APPILY]: 8,
+  [DataSource.NICHE_TAVILY]: 9,
+  [DataSource.SCRAPER]: 10,
 };
+
+/**
+ * Priority for an existing value whose source we don't recognize.
+ *
+ * Fails SAFE (treated as top priority) rather than the old 99. An unknown
+ * source is far more likely to be verified data written by a pipeline this
+ * table hasn't caught up with than it is to be junk — that is precisely how
+ * closure-v2 got clobbered. The staleness valve below still lets genuinely
+ * old values be replaced, so this protects rather than freezes.
+ */
+const UNKNOWN_SOURCE_PRIORITY = 1;
 
 export const VERIFIED_SCHOOL_DATA_SOURCES = new Set<DataSource>([
   DataSource.COLLEGE_SCORECARD,
@@ -195,8 +235,9 @@ export class SchoolDataMerger {
         // Field already has a value — check provenance priority
         if (fieldProv) {
           const existingPriority =
-            SOURCE_PRIORITY[fieldProv.source as DataSource] ?? 99;
-          const incomingPriority = SOURCE_PRIORITY[source];
+            SOURCE_PRIORITY[fieldProv.source] ?? UNKNOWN_SOURCE_PRIORITY;
+          const incomingPriority =
+            SOURCE_PRIORITY[source] ?? UNKNOWN_SOURCE_PRIORITY;
 
           // Lower-priority source cannot overwrite higher-priority source...
           if (incomingPriority > existingPriority) {

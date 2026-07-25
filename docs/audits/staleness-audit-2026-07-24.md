@@ -380,6 +380,77 @@ ratchet `✅ hold the line`；knip 无输出。396 项 shared 测试全过（+19
 
 ---
 
+## 8. 🔴 数据源优先级倒挂 —— 一把上了膛的枪
+
+> 本项**不在原审计里**。它是审 #5 时由 agent 发现的，且在验证过程中我原本立的
+> 「比值分子/分母刷新不对称」命题**被证伪**。两件事一起记在这里。
+
+### ❌ 先记我被证伪的那条
+
+我原以为：分母 `acceptanceRate` 每周由 cron 从 Scorecard 刷新，分子（intl/inState/oos/ed 各率）
+是 2026-05-31 一次性 seed 永不刷新 → 比值每周静默上漂 → 系统性过度乐观。
+
+**测试 agent 用实证拆掉了它**：
+
+1. **被点名的 cron 在 prod 是死的** —— `syncSchoolsFromScorecard()` 在无
+   `COLLEGE_SCORECARD_API_KEY` 时立刻 throw；而 `ci.yml` 里该 key 出现 **0 次**，
+   且 `--set-env-vars` / `--set-secrets` 是**替换**语义。每周 throw 一次，零写入。
+2. **唯一免 key 的路径也在空转** —— `UrbanInstituteDataService` 的
+   `targetYear = 当前年 - 1 = 2025`，agent 实际调了该 API：2025 返回 `count: 0`
+   （IPEDS 2025 招生数据要到 2027 才发布）；且 `ipedsId` 覆盖 0/243。
+3. **数学上大部分自相抵消** —— Tier 2/3 锚点就是 `acceptanceRate`，而
+   `p = anchor × product`。intl 修正 = `intlRate / A`，于是 `p = A × (intlRate/A) = intlRate`，
+   **分母精确约掉**。agent 在 243 校真实 payload 上算了弹性：单修正原型
+   **80–98% 精确抵消，弹性 0**。
+4. **clamp 生效处符号相反** —— 弹性 +1，分母下降使预测**变保守**，不是变乐观。
+5. **方向当下也是反的** —— 分子是 closure-v2 网核的 CDS 2023-25，分母若来自
+   Scorecard 则滞后约 2 年，今天刷新分母是在**缩小**错配。
+
+### ✅ 真正的 bug（更干净、更严重）
+
+`school-data-merger.ts` 的 `SOURCE_PRIORITY` **与它上方枚举声明的意图完全相反**。
+枚举注释写着「优先级从高到低」并把 `MANUAL_ADMIN` / `SEED` 排在最前，
+而表里 `COLLEGE_SCORECARD: 1`（最高）、`MANUAL_ADMIN: 4`、`SEED: 5`。
+
+更糟的是 closure-v2 那条链：
+closure-v2 的 provenance 条目没有 `source` 字段 → `deriveProvenanceSource` 把它
+映射成 `'CLOSURE_V2'` → **不是 `DataSource` 枚举成员** → `SOURCE_PRIORITY[...] ?? 99`
+→ 判断 `incomingPriority > existingPriority` 即 `1 > 99` 为 **false**
+→ **直接放行覆盖**。
+
+**即：所有自动源压过所有人工核验值，而人工核验值毫无抵抗力。**
+`MERGEABLE_FIELDS` 包含 `acceptanceRate` —— **预测锚点本身**。
+
+**引信**：只要有人给 prod 补上 `COLLEGE_SCORECARD_API_KEY`，第一次月度 cron
+就会把 2026-05-31 那次 41-agent 审计（~20 个 anchor，含 SJSU 84.61 / Hawaii 86.6 /
+CU Boulder 80.5）整体静默回退到滞后约两年的值。**没有任何测试会响。**
+
+### 修法 — 已完成 2026-07-24
+
+- `SOURCE_PRIORITY` 改回与枚举声明一致的意图：
+  `CLOSURE_V2(1) < MANUAL_ADMIN(2) < SEED(3) < COLLEGE_SCORECARD(4) < …`
+  排序原则：**读学校自己发布的一手来源，优先于批量联邦聚合器**。
+- 显式加入 `CLOSURE_V2_SOURCE`，它不再落到兜底。
+- `?? 99` → `?? UNKNOWN_SOURCE_PRIORITY (=1)`，**未知来源改为 fail-safe 保护**。
+  理由：未知来源更可能是这张表还没跟上的新管线（closure-v2 就是这么被冲掉的），
+  而不是垃圾数据。既有的 staleness 阀门（>1 年可覆盖）仍然打开，所以是保护不是冻结。
+- 新增 `school-data-merger.spec.ts` 6 条：closure-v2 / admin / seed / 未知来源
+  四类都不得被 Scorecard 回退；stale 后仍可覆盖（证明不是冻结）；高优先级仍可覆盖低的。
+  **不需要 DB、不需要 seed、不需要网络** —— 这是它能落地的关键。
+
+232 项 school 模块测试全过。
+
+### 顺带（agent 发现，未处理，建议单开）
+
+- `school-provenance.scheduler.ts` 精心算出的 `staleScorecardSchools` 集合
+  **只被用来取 `.size` 当批量大小**，`syncSchoolsFromScorecard(limit)` 不接受 school id
+  —— 「刷新陈旧学校」实际刷的是 Scorecard 第 0 页起的任意 N 条。
+- 两个 `@Cron` 都没有 Redis single-flight 锁，违反 #448/#450 的规则。
+  目前无害仅因为工作本身是 no-op。
+- `refreshStaleOfficialFields` 没有 try/catch，每周产生一次未捕获 rejection。
+
+---
+
 ## 附：小 bug
 
 `counselor-modifiers.ts:581` — `considerScore(act * 45, …)`：
