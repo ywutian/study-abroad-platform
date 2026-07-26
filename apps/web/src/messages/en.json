@@ -1196,28 +1196,64 @@
         {
           "title": "Product",
           "links": [
-            { "label": "AI-assisted matching", "href": "/register" },
-            { "label": "Application strategy", "href": "/register" },
-            { "label": "Essay refinement", "href": "/register" },
-            { "label": "Admission prediction", "href": "/register" },
-            { "label": "Community collaboration", "href": "/register" }
+            {
+              "label": "AI-assisted matching",
+              "href": "/register"
+            },
+            {
+              "label": "Application strategy",
+              "href": "/register"
+            },
+            {
+              "label": "Essay refinement",
+              "href": "/register"
+            },
+            {
+              "label": "Admission prediction",
+              "href": "/register"
+            },
+            {
+              "label": "Community collaboration",
+              "href": "/register"
+            }
           ]
         },
         {
           "title": "About Lumni",
           "links": [
-            { "label": "Team", "href": "/about#team" },
-            { "label": "Vision", "href": "/about#vision" },
-            { "label": "Mission", "href": "/about#mission" }
+            {
+              "label": "Team",
+              "href": "/about#team"
+            },
+            {
+              "label": "Vision",
+              "href": "/about#vision"
+            },
+            {
+              "label": "Mission",
+              "href": "/about#mission"
+            }
           ]
         },
         {
           "title": "Legal & Safety",
           "links": [
-            { "label": "Privacy policy", "href": "/privacy" },
-            { "label": "Terms of service", "href": "/terms" },
-            { "label": "Disclaimer", "href": "/terms#disclaimer" },
-            { "label": "Data collection", "href": "/privacy#collection" }
+            {
+              "label": "Privacy policy",
+              "href": "/privacy"
+            },
+            {
+              "label": "Terms of service",
+              "href": "/terms"
+            },
+            {
+              "label": "Disclaimer",
+              "href": "/terms#disclaimer"
+            },
+            {
+              "label": "Data collection",
+              "href": "/privacy#collection"
+            }
           ]
         }
       ],
@@ -3221,7 +3257,8 @@
       "preferences": "Preferences",
       "notifications": "Notifications",
       "help": "Help & Support",
-      "accountActions": "Account Actions"
+      "accountActions": "Account Actions",
+      "subscription": "Subscription"
     },
     "items": {
       "editProfile": "Edit Profile",
@@ -3244,7 +3281,9 @@
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data"
+      "deleteAccountDesc": "Permanently delete your account and data",
+      "subscription": "Subscription",
+      "subscriptionDesc": "Manage your subscription plan"
     },
     "comingSoonHint": "This feature is coming soon",
     "dialogs": {
@@ -6899,7 +6938,6 @@
     "websitePlaceholder": "https://example.com",
     "username": "Username",
     "usernamePlaceholder": "Enter username...",
-    "password": "Password",
     "passwordPlaceholder": "Enter password...",
     "notes": "Notes",
     "notesPlaceholder": "Enter notes...",
@@ -8017,7 +8055,8 @@
     "reason": "Reason",
     "benefits": {
       "title": "Verification Benefits",
-      "badge": "Exclusive verified badge"
+      "badge": "Exclusive verified badge",
+      "points": "Bonus points reward"
     }
   },
   "activity": {
@@ -10622,7 +10661,21 @@
       "statusCompleted": "Completed",
       "statusPending": "Pending",
       "statusFailed": "Failed",
-      "statusRefunded": "Refunded"
+      "statusRefunded": "Refunded",
+      "refunded": "Payment refunded",
+      "adjusted": "Subscription adjusted",
+      "totalRevenue": "Total Revenue",
+      "monthlyRevenue": "Monthly Revenue",
+      "activeSubscriptions": "Active Subscriptions",
+      "actions": "Actions",
+      "refund": "Refund",
+      "adjustSub": "Adjust Subscription",
+      "refundConfirm": "Confirm Refund",
+      "refundDesc": "This will refund the payment and downgrade the user's subscription.",
+      "refundReason": "Refund Reason",
+      "refundReasonPlaceholder": "Enter the reason for this refund (required for audit trail)",
+      "adjustSubDesc": "Manually change user subscription level",
+      "newPlan": "New Plan"
     },
     "settings": {
       "title": "System Settings",
@@ -10640,7 +10693,8 @@
         "AI_QUOTA_DEFAULT_DAILY": "Default Daily Quota",
         "AI_QUOTA_PRO_DAILY": "Pro Daily Quota",
         "AI_QUOTA_PREMIUM_DAILY": "Premium Daily Quota"
-      }
+      },
+      "subscription": "Subscription"
     },
     "devTools": {
       "title": "Developer Tools",
@@ -11550,7 +11604,8 @@
     "shareDesc": "Invite your friends to join Lumni",
     "stats": {
       "invited": "Friends Invited",
-      "signups": "Successful Signups"
+      "signups": "Successful Signups",
+      "points": "Points Earned"
     },
     "howItWorks": "How It Works",
     "step1": "Share your unique referral code",
@@ -11569,7 +11624,10 @@
       "twitter": "X / Twitter"
     },
     "emailSubject": "Join me on Lumni",
-    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code}: {link}"
+    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code}: {link}",
+    "step3": "You both earn 50 points",
+    "step3Desc": "Points are awarded once registration is complete",
+    "pointsAwarded": "+{points} points"
   },
   "tour": {
     "next": "Next",
@@ -11763,6 +11821,59 @@
       "firstGenClassPct": "First-gen % of class",
       "cycleYear": "Cycle year",
       "source": "Source attribution"
+    }
+  },
+  "subscription": {
+    "upgradeSuccess": "Upgrade successful",
+    "title": "Subscription",
+    "description": "Manage your subscription plan and billing",
+    "currentPlan": "Current Plan",
+    "validForever": "Valid Forever",
+    "mostPopular": "Most Popular",
+    "currentPlanLabel": "Current Plan",
+    "getStarted": "Get Started",
+    "upgrade": "Upgrade",
+    "paymentHistory": "Payment History",
+    "paymentHistoryDesc": "View your payment history",
+    "noInvoices": "No invoices",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "period": "Forever",
+        "description": "Basic features for first-time experience",
+        "features": [
+          "Browse school info",
+          "View public cases",
+          "Basic AI chat (5/day)",
+          "Profile management"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "period": "month",
+        "description": "Unlock all features for efficient applications",
+        "features": [
+          "All Free features",
+          "Unlimited AI chat",
+          "Admission prediction",
+          "Essay review & polish",
+          "Detailed case data",
+          "Priority support"
+        ]
+      },
+      "premium": {
+        "name": "Premium",
+        "period": "month",
+        "description": "One-on-one service, full accompaniment",
+        "features": [
+          "All Pro features",
+          "Dedicated counselor",
+          "Application strategy",
+          "Deep essay editing",
+          "Mock interviews",
+          "VIP community"
+        ]
+      }
     }
   }
 }

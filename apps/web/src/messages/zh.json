@@ -1169,28 +1169,64 @@
         {
           "title": "产品",
           "links": [
-            { "label": "AI 辅助选校", "href": "/register" },
-            { "label": "申请策略", "href": "/register" },
-            { "label": "文书润色", "href": "/register" },
-            { "label": "录取预测", "href": "/register" },
-            { "label": "社区协作", "href": "/register" }
+            {
+              "label": "AI 辅助选校",
+              "href": "/register"
+            },
+            {
+              "label": "申请策略",
+              "href": "/register"
+            },
+            {
+              "label": "文书润色",
+              "href": "/register"
+            },
+            {
+              "label": "录取预测",
+              "href": "/register"
+            },
+            {
+              "label": "社区协作",
+              "href": "/register"
+            }
           ]
         },
         {
           "title": "关于 Lumni",
           "links": [
-            { "label": "团队", "href": "/about#team" },
-            { "label": "愿景", "href": "/about#vision" },
-            { "label": "使命", "href": "/about#mission" }
+            {
+              "label": "团队",
+              "href": "/about#team"
+            },
+            {
+              "label": "愿景",
+              "href": "/about#vision"
+            },
+            {
+              "label": "使命",
+              "href": "/about#mission"
+            }
           ]
         },
         {
           "title": "法律与安全",
           "links": [
-            { "label": "隐私政策", "href": "/privacy" },
-            { "label": "服务条款", "href": "/terms" },
-            { "label": "免责声明", "href": "/terms#disclaimer" },
-            { "label": "数据收集说明", "href": "/privacy#collection" }
+            {
+              "label": "隐私政策",
+              "href": "/privacy"
+            },
+            {
+              "label": "服务条款",
+              "href": "/terms"
+            },
+            {
+              "label": "免责声明",
+              "href": "/terms#disclaimer"
+            },
+            {
+              "label": "数据收集说明",
+              "href": "/privacy#collection"
+            }
           ]
         }
       ],
@@ -3194,7 +3230,8 @@
       "preferences": "偏好设置",
       "notifications": "通知",
       "help": "帮助与支持",
-      "accountActions": "账户操作"
+      "accountActions": "账户操作",
+      "subscription": "订阅"
     },
     "items": {
       "editProfile": "编辑资料",
@@ -3217,7 +3254,9 @@
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
       "deleteAccount": "删除账户",
-      "deleteAccountDesc": "永久删除您的账户和数据"
+      "deleteAccountDesc": "永久删除您的账户和数据",
+      "subscription": "订阅管理",
+      "subscriptionDesc": "管理您的订阅计划"
     },
     "comingSoonHint": "此功能即将上线",
     "dialogs": {
@@ -6875,7 +6914,6 @@
     "websitePlaceholder": "https://example.com",
     "username": "用户名",
     "usernamePlaceholder": "输入用户名...",
-    "password": "密码",
     "passwordPlaceholder": "输入密码...",
     "notes": "备注",
     "notesPlaceholder": "输入备注...",
@@ -6992,7 +7030,6 @@
     "loadingDesc": "根据你的档案分析最适合的学校",
     "errorTitle": "暂时无法获取推荐",
     "errorDesc": "请先完善你的个人档案",
-    "retry": "重试",
     "cached": "使用缓存结果",
     "aiError": "分析暂时不可用",
     "aiErrorDesc": "请稍后重试",
@@ -7991,7 +8028,8 @@
     "reason": "原因",
     "benefits": {
       "title": "认证权益",
-      "badge": "专属认证标识"
+      "badge": "专属认证标识",
+      "points": "额外积分奖励"
     }
   },
   "activity": {
@@ -10596,7 +10634,21 @@
       "statusCompleted": "已完成",
       "statusPending": "待处理",
       "statusFailed": "失败",
-      "statusRefunded": "已退款"
+      "statusRefunded": "已退款",
+      "refunded": "已退款",
+      "adjusted": "订阅已调整",
+      "totalRevenue": "总收入",
+      "monthlyRevenue": "月收入",
+      "activeSubscriptions": "活跃订阅",
+      "actions": "操作",
+      "refund": "退款",
+      "adjustSub": "调整订阅",
+      "refundConfirm": "确认退款",
+      "refundDesc": "这将退还付款并降级用户的订阅。",
+      "refundReason": "退款原因",
+      "refundReasonPlaceholder": "请输入退款原因（审计必填）",
+      "adjustSubDesc": "手动更改用户订阅级别",
+      "newPlan": "新方案"
     },
     "settings": {
       "title": "系统设置",
@@ -10614,7 +10666,8 @@
         "AI_QUOTA_DEFAULT_DAILY": "默认每日配额",
         "AI_QUOTA_PRO_DAILY": "Pro 每日配额",
         "AI_QUOTA_PREMIUM_DAILY": "Premium 每日配额"
-      }
+      },
+      "subscription": "订阅"
     },
     "devTools": {
       "title": "开发者工具",
@@ -11524,7 +11577,8 @@
     "shareDesc": "邀请好友加入 Lumni",
     "stats": {
       "invited": "已邀请好友",
-      "signups": "成功注册"
+      "signups": "成功注册",
+      "points": "获得积分"
     },
     "howItWorks": "如何运作",
     "step1": "分享你的专属邀请码",
@@ -11543,7 +11597,10 @@
       "twitter": "X（推特）"
     },
     "emailSubject": "和我一起使用 Lumni",
-    "emailBody": "嗨！我一直在用 Lumni 做留学申请规划。使用我的邀请码 {code} 注册：{link}"
+    "emailBody": "嗨！我一直在用 Lumni 做留学申请规划。使用我的邀请码 {code} 注册：{link}",
+    "step3": "双方各得50积分",
+    "step3Desc": "注册完成后积分即刻到账",
+    "pointsAwarded": "+{points} 积分"
   },
   "tour": {
     "next": "下一步",
@@ -11737,6 +11794,54 @@
       "firstGenClassPct": "First-gen 占班 %",
       "cycleYear": "数据年份",
       "source": "来源说明"
+    }
+  },
+  "subscription": {
+    "upgradeSuccess": "升级成功",
+    "title": "订阅管理",
+    "description": "管理您的订阅计划和账单",
+    "currentPlan": "当前计划",
+    "validForever": "永久有效",
+    "mostPopular": "最受欢迎",
+    "currentPlanLabel": "当前计划",
+    "getStarted": "开始订阅",
+    "upgrade": "升级",
+    "paymentHistory": "支付记录",
+    "paymentHistoryDesc": "查看您的历史支付记录",
+    "noInvoices": "暂无账单",
+    "plans": {
+      "free": {
+        "name": "免费版",
+        "period": "永久",
+        "description": "基础功能，适合初次体验",
+        "features": ["浏览学校信息", "查看公开案例", "基础 AI 对话 (每日5次)", "档案管理"]
+      },
+      "pro": {
+        "name": "专业版",
+        "period": "月",
+        "description": "解锁全部功能，高效申请",
+        "features": [
+          "免费版所有功能",
+          "无限 AI 对话",
+          "录取概率预测",
+          "文书评估与润色",
+          "详细案例数据",
+          "优先客服支持"
+        ]
+      },
+      "premium": {
+        "name": "尊享版",
+        "period": "月",
+        "description": "一对一服务，全程陪伴",
+        "features": [
+          "专业版所有功能",
+          "专属留学顾问",
+          "申请策略规划",
+          "文书深度修改",
+          "模拟面试指导",
+          "VIP 专属社群"
+        ]
+      }
     }
   }
 }
