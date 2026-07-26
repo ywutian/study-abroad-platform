@@ -69,7 +69,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
 export type EncodedDimension = 'gpa' | 'test';
 
 export const COUNSELOR_RULE_VERSION =
-  'counselor-cold-start-v1.10-substitute-cap';
+  'counselor-cold-start-v1.11-act-concordance';
 
 export interface CounselorFactor {
   name: string;

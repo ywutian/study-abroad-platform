@@ -1,6 +1,7 @@
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import {
   aLevelToEquivalentSat,
+  actToEquivalentSat,
   gaokaoToEquivalentSat,
   gpaToEquivalentSat,
   ibToEquivalentSat,
@@ -18,6 +19,85 @@ import {
  * majorMultiplier ratio/clamp and the profileContextMultiplier [0.90, 1.13] cap.
  */
 describe('Counselor concordances & under-tested modifiers', () => {
+  describe('actToEquivalentSat — 2018 ACT/SAT Concordance Table A2', () => {
+    // Every published row, pinned. These are transcribed from ACT's own PDF
+    // (ACT-SAT-Concordance-Tables.pdf, Table A2, single-point column), so a
+    // typo here is a real mis-scoring of every ACT submitter at that band.
+    it.each([
+      [36, 1590],
+      [35, 1540],
+      [34, 1500],
+      [33, 1460],
+      [32, 1430],
+      [31, 1400],
+      [30, 1370],
+      [29, 1340],
+      [28, 1310],
+      [27, 1280],
+      [26, 1240],
+      [25, 1210],
+      [24, 1180],
+      [23, 1140],
+      [22, 1110],
+      [21, 1080],
+      [20, 1040],
+      [19, 1010],
+      [18, 970],
+      [17, 930],
+      [16, 890],
+      [15, 850],
+      [14, 800],
+      [13, 760],
+      [12, 710],
+      [11, 670],
+      [10, 630],
+      [9, 590],
+    ])('ACT %d → SAT-equiv %d', (act, sat) => {
+      expect(actToEquivalentSat(act)).toBe(sat);
+    });
+
+    it('returns the published floor below ACT 9 rather than extrapolating', () => {
+      expect(actToEquivalentSat(8)).toBe(590);
+      expect(actToEquivalentSat(1)).toBe(590);
+    });
+
+    it('rejects out-of-range / non-finite', () => {
+      expect(actToEquivalentSat(37)).toBeNull();
+      expect(actToEquivalentSat(0)).toBeNull();
+      expect(actToEquivalentSat(-1)).toBeNull();
+      expect(actToEquivalentSat(NaN)).toBeNull();
+    });
+
+    it('is monotonic non-decreasing in score', () => {
+      for (let act = 2; act <= 36; act++) {
+        expect(actToEquivalentSat(act)!).toBeGreaterThanOrEqual(
+          actToEquivalentSat(act - 1)!,
+        );
+      }
+    });
+
+    it('never exceeds the SAT scale, which `act * 45` did at the top', () => {
+      expect(actToEquivalentSat(36)!).toBeLessThanOrEqual(1600);
+      expect(36 * 45).toBeGreaterThan(1600);
+    });
+
+    it('no longer understates the mid and lower bands the way `act * 45` did', () => {
+      // The regression being guarded: the linear form was one-directional-low
+      // below ACT ~30, so these applicants landed under their true position
+      // against a school's 25/75 percentiles.
+      for (const [act, minGain] of [
+        [26, 50],
+        [24, 80],
+        [20, 120],
+        [16, 150],
+      ] as const) {
+        expect(actToEquivalentSat(act)! - act * 45).toBeGreaterThanOrEqual(
+          minGain,
+        );
+      }
+    });
+  });
+
   describe('ibToEquivalentSat — College Board IB concordance', () => {
     it.each([
       [45, 1600],
