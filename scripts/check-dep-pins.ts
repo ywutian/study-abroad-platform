@@ -64,6 +64,94 @@ function resolvedVersions(name: string, lines: string[]): string[] {
   return [...versions];
 }
 
+/**
+ * Two root-manifest invariants, both learned the same day (2026-07-26):
+ *
+ * 1. The workspace root must declare NO runtime `dependencies`.
+ *    `pnpm deploy --legacy` (apps/api/Dockerfile) links the root's dependencies
+ *    into every deployed app, so seven frontend packages sitting in the root —
+ *    framer-motion, @sentry/nextjs and friends — shipped inside the NestJS
+ *    production image. @sentry/nextjs peer-depends on `next`, which vendors its
+ *    own copies of tar and brace-expansion under dist/compiled/, and Trivy
+ *    flagged CRITICAL/HIGH CVEs in code the API can never load. Removing them
+ *    took the image's node_modules from 972 MB to 466 MB. Root-level runtime
+ *    deps are never right here: every app declares what it uses.
+ *
+ * 2. `pnpm.overrides` must have no duplicate keys.
+ *    A merge landed both `"brace-expansion@^1": "1.1.16"` and
+ *    `"brace-expansion@^2": ">=2.1.2 <3"`-style entries twice over; git saw two
+ *    separate lines, not a conflict. JSON parsers keep the last occurrence, so
+ *    the file silently disagreed with itself and which pin applied depended on
+ *    line order. Six keys were affected before this guard existed.
+ */
+function checkRootManifest(): string[] {
+  const errors: string[] = [];
+  const manifestPath = path.join(ROOT, 'package.json');
+  const raw = fs.readFileSync(manifestPath, 'utf8');
+  const manifest = JSON.parse(raw) as {
+    dependencies?: Record<string, string>;
+    pnpm?: { overrides?: Record<string, string> };
+  };
+
+  const rootDeps = Object.keys(manifest.dependencies ?? {});
+  if (rootDeps.length > 0) {
+    errors.push(
+      [
+        `the workspace root declares ${rootDeps.length} runtime \`dependencies\`: ${rootDeps.join(', ')}`,
+        `   \`pnpm deploy\` links these into EVERY deployed app, so they ship inside`,
+        `   apps/api's production image whether or not the API uses them.`,
+        `   → move each one to the app that imports it, or delete it if nothing does.`,
+      ].join('\n')
+    );
+  }
+
+  for (const [key, count] of duplicateOverrideKeys(raw)) {
+    errors.push(
+      [
+        `\`pnpm.overrides\` declares "${key}" ${count} times.`,
+        `   JSON keeps the last occurrence, so the effective pin depends on line order`,
+        `   and the file disagrees with itself. Usually a merge that kept both sides.`,
+        `   → keep one entry with the intended range.`,
+      ].join('\n')
+    );
+  }
+
+  return errors;
+}
+
+/** Raw-text scan: JSON.parse collapses duplicates, so the object can't reveal them. */
+function duplicateOverrideKeys(raw: string): Array<[string, number]> {
+  const anchor = raw.indexOf('"overrides"');
+  if (anchor === -1) return [];
+  const open = raw.indexOf('{', anchor);
+  if (open === -1) return [];
+
+  const counts = new Map<string, number>();
+  let depth = 0;
+  for (let i = open; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) break;
+    } else if (ch === '"' && depth === 1) {
+      // A string at depth 1 that is followed by ':' is a key of this object.
+      let j = i + 1;
+      let key = '';
+      while (j < raw.length && raw[j] !== '"') {
+        if (raw[j] === '\\') j++;
+        key += raw[j];
+        j++;
+      }
+      let k = j + 1;
+      while (k < raw.length && /\s/.test(raw[k])) k++;
+      if (raw[k] === ':') counts.set(key, (counts.get(key) ?? 0) + 1);
+      i = j;
+    }
+  }
+  return [...counts.entries()].filter(([, c]) => c > 1);
+}
+
 function main(): void {
   if (!fs.existsSync(LOCKFILE)) {
     console.error('❌ pnpm-lock.yaml not found — run from the repo root.');
@@ -97,6 +185,8 @@ function main(): void {
       errors.push(parts.join('\n'));
     }
   }
+
+  errors.push(...checkRootManifest());
 
   if (errors.length > 0) {
     console.error('\n❌ Contested-dependency pin check failed:\n');

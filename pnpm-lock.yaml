@@ -67,34 +67,6 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      '@radix-ui/react-alert-dialog':
-        specifier: ^1.1.15
-        version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.1.17))(@types/react@19.1.17)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@sentry/nestjs':
-        specifier: ^10.34.0
-        version: 10.36.0(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
-      '@sentry/nextjs':
-        specifier: ^10.34.0
-        version: 10.36.0(@opentelemetry/context-async-hooks@2.7.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.7.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@16.2.11(@opentelemetry/api@1.9.0)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(webpack@5.108.1)
-      '@sentry/node':
-        specifier: ^10.34.0
-        version: 10.36.0
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      framer-motion:
-        specifier: ^12.27.0
-        version: 12.28.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      react-markdown:
-        specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.1.17)(react@19.2.3)
-      remark-gfm:
-        specifier: ^4.0.1
-        version: 4.0.1
-      socket.io-client:
-        specifier: ^4.8.3
-        version: 4.8.3
     devDependencies:
       '@commitlint/cli':
         specifier: ^20.5.3
@@ -13868,12 +13840,6 @@ packages:
   react-is@19.2.4:
     resolution: {integrity: sha512-W+EWGn2v0ApPKgKKCy/7s7WHXkboGcsrXE+2joLyVxkbyVQfO3MUEaUQDHoSmb8TFFrSKYa9mw64WZHNHSDzYA==}
 
-  react-markdown@10.1.0:
-    resolution: {integrity: sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==}
-    peerDependencies:
-      '@types/react': '>=18'
-      react: '>=18'
-
   react-native-fit-image@1.5.5:
     resolution: {integrity: sha512-Wl3Vq2DQzxgsWKuW4USfck9zS7YzhvLNPpkwUUCF90bL32e1a0zOVQ3WsJILJOwzmPdHfzZmWasiiAUNBkhNkg==}
 
@@ -23267,31 +23233,6 @@ snapshots:
       - supports-color
       - webpack
 
-  '@sentry/nextjs@10.36.0(@opentelemetry/context-async-hooks@2.7.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.7.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@16.2.11(@opentelemetry/api@1.9.0)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(webpack@5.108.1)':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/semantic-conventions': 1.39.0
-      '@rollup/plugin-commonjs': 28.0.1(rollup@4.59.0)
-      '@sentry-internal/browser-utils': 10.36.0
-      '@sentry/bundler-plugin-core': 4.7.0(encoding@0.1.13)
-      '@sentry/core': 10.36.0
-      '@sentry/node': 10.36.0
-      '@sentry/opentelemetry': 10.36.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.7.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.7.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.39.0)
-      '@sentry/react': 10.36.0(react@19.2.3)
-      '@sentry/vercel-edge': 10.36.0
-      '@sentry/webpack-plugin': 4.7.0(encoding@0.1.13)(webpack@5.108.1)
-      next: 16.2.11(@opentelemetry/api@1.9.0)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      rollup: 4.59.0
-      stacktrace-parser: 0.1.11
-    transitivePeerDependencies:
-      - '@opentelemetry/context-async-hooks'
-      - '@opentelemetry/core'
-      - '@opentelemetry/sdk-trace-base'
-      - encoding
-      - react
-      - supports-color
-      - webpack
-
   '@sentry/node-core@10.36.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.210.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.39.0)':
     dependencies:
       '@apm-js-collab/tracing-hooks': 0.3.1
@@ -23411,16 +23352,6 @@ snapshots:
       unplugin: 1.0.1
       uuid: 9.0.1
       webpack: 5.108.1(esbuild@0.28.1)
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-
-  '@sentry/webpack-plugin@4.7.0(encoding@0.1.13)(webpack@5.108.1)':
-    dependencies:
-      '@sentry/bundler-plugin-core': 4.7.0(encoding@0.1.13)
-      unplugin: 1.0.1
-      uuid: 9.0.1
-      webpack: 5.108.1
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -31537,14 +31468,6 @@ snapshots:
     optionalDependencies:
       esbuild: 0.28.1
 
-  minimizer-webpack-plugin@5.6.1(webpack@5.108.1):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      terser: 5.48.0
-      webpack: 5.108.1
-
   minipass-collect@2.0.1:
     dependencies:
       minipass: 7.1.3
@@ -31735,34 +31658,6 @@ snapshots:
       '@playwright/test': 1.61.1
       babel-plugin-react-compiler: 1.0.0
       sharp: 0.35.3(@types/node@20.19.43)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@types/node'
-      - babel-plugin-macros
-
-  next@16.2.11(@opentelemetry/api@1.9.0)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
-    dependencies:
-      '@next/env': 16.2.11
-      '@swc/helpers': 0.5.15
-      baseline-browser-mapping: 2.10.40
-      caniuse-lite: 1.0.30001799
-      postcss: 8.5.23
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
-      styled-jsx: 5.1.6(@babel/core@7.29.7)(react@19.2.3)
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 16.2.11
-      '@next/swc-darwin-x64': 16.2.11
-      '@next/swc-linux-arm64-gnu': 16.2.11
-      '@next/swc-linux-arm64-musl': 16.2.11
-      '@next/swc-linux-x64-gnu': 16.2.11
-      '@next/swc-linux-x64-musl': 16.2.11
-      '@next/swc-win32-arm64-msvc': 16.2.11
-      '@next/swc-win32-x64-msvc': 16.2.11
-      '@opentelemetry/api': 1.9.0
-      '@playwright/test': 1.61.1
-      babel-plugin-react-compiler: 1.0.0
-      sharp: 0.35.3(@types/node@26.0.1)
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/node'
@@ -32759,24 +32654,6 @@ snapshots:
 
   react-is@19.2.4: {}
 
-  react-markdown@10.1.0(@types/react@19.1.17)(react@19.2.3):
-    dependencies:
-      '@types/hast': 3.0.4
-      '@types/mdast': 4.0.4
-      '@types/react': 19.1.17
-      devlop: 1.1.0
-      hast-util-to-jsx-runtime: 2.3.6
-      html-url-attributes: 3.0.1
-      mdast-util-to-hast: 13.2.1
-      react: 19.2.3
-      remark-parse: 11.0.0
-      remark-rehype: 11.1.2
-      unified: 11.0.5
-      unist-util-visit: 5.0.0
-      vfile: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
   react-native-fit-image@1.5.5:
     dependencies:
       prop-types: 15.8.1
@@ -33650,40 +33527,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.3
       '@img/sharp-win32-x64': 0.35.3
       '@types/node': 20.19.43
-
-  sharp@0.35.3(@types/node@26.0.1):
-    dependencies:
-      '@img/colour': 1.1.0
-      detect-libc: 2.1.2
-      semver: 7.8.5
-    optionalDependencies:
-      '@img/sharp-darwin-arm64': 0.35.3
-      '@img/sharp-darwin-x64': 0.35.3
-      '@img/sharp-freebsd-wasm32': 0.35.3
-      '@img/sharp-libvips-darwin-arm64': 1.3.2
-      '@img/sharp-libvips-darwin-x64': 1.3.2
-      '@img/sharp-libvips-linux-arm': 1.3.2
-      '@img/sharp-libvips-linux-arm64': 1.3.2
-      '@img/sharp-libvips-linux-ppc64': 1.3.2
-      '@img/sharp-libvips-linux-riscv64': 1.3.2
-      '@img/sharp-libvips-linux-s390x': 1.3.2
-      '@img/sharp-libvips-linux-x64': 1.3.2
-      '@img/sharp-libvips-linuxmusl-arm64': 1.3.2
-      '@img/sharp-libvips-linuxmusl-x64': 1.3.2
-      '@img/sharp-linux-arm': 0.35.3
-      '@img/sharp-linux-arm64': 0.35.3
-      '@img/sharp-linux-ppc64': 0.35.3
-      '@img/sharp-linux-riscv64': 0.35.3
-      '@img/sharp-linux-s390x': 0.35.3
-      '@img/sharp-linux-x64': 0.35.3
-      '@img/sharp-linuxmusl-arm64': 0.35.3
-      '@img/sharp-linuxmusl-x64': 0.35.3
-      '@img/sharp-webcontainers-wasm32': 0.35.3
-      '@img/sharp-win32-arm64': 0.35.3
-      '@img/sharp-win32-ia32': 0.35.3
-      '@img/sharp-win32-x64': 0.35.3
-      '@types/node': 26.0.1
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
@@ -35236,44 +35079,6 @@ snapshots:
       schema-utils: 4.3.3
       tapable: 2.3.3
       terser-webpack-plugin: 5.6.1(@swc/core@1.15.43(@swc/helpers@0.5.18))(webpack@5.106.2(@swc/core@1.15.43(@swc/helpers@0.5.18)))
-      watchpack: 2.5.2
-      webpack-sources: 3.5.0
-    transitivePeerDependencies:
-      - '@minify-html/node'
-      - '@swc/core'
-      - '@swc/css'
-      - '@swc/html'
-      - clean-css
-      - cssnano
-      - csso
-      - esbuild
-      - html-minifier-terser
-      - lightningcss
-      - postcss
-      - uglify-js
-
-  webpack@5.108.1:
-    dependencies:
-      '@types/estree': 1.0.9
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.17.0
-      acorn-import-phases: 1.0.4(acorn@8.17.0)
-      browserslist: 4.28.4
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.24.1
-      es-module-lexer: 2.1.0
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      graceful-fs: 4.2.11
-      loader-runner: 4.3.2
-      mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.6.1(webpack@5.108.1)
-      neo-async: 2.6.2
-      schema-utils: 4.3.3
-      tapable: 2.3.3
       watchpack: 2.5.2
       webpack-sources: 3.5.0
     transitivePeerDependencies:
