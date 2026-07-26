@@ -10675,7 +10675,8 @@
       "refundReason": "Refund Reason",
       "refundReasonPlaceholder": "Enter the reason for this refund (required for audit trail)",
       "adjustSubDesc": "Manually change user subscription level",
-      "newPlan": "New Plan"
+      "newPlan": "New Plan",
+      "viewDetails": "View Details"
     },
     "settings": {
       "title": "System Settings",
@@ -10694,7 +10695,12 @@
         "AI_QUOTA_PRO_DAILY": "Pro Daily Quota",
         "AI_QUOTA_PREMIUM_DAILY": "Premium Daily Quota"
       },
-      "subscription": "Subscription"
+      "subscription": "Subscription",
+      "subscriptionSettings": {
+        "SUBSCRIPTION_PREMIUM_PRICE": "Premium Monthly Price",
+        "SUBSCRIPTION_PRO_PRICE": "Pro Monthly Price",
+        "SUBSCRIPTION_YEARLY_DISCOUNT": "Yearly Discount (%)"
+      }
     },
     "devTools": {
       "title": "Developer Tools",
@@ -11874,6 +11880,27 @@
           "VIP community"
         ]
       }
-    }
+    },
+    "amount": "Amount",
+    "billingHistory": "Billing History",
+    "cancel": "Cancel Subscription",
+    "current": "Current",
+    "downgrade": "Downgrade",
+    "failed": "Failed",
+    "features": "Features",
+    "freePlan": "Free",
+    "monthlyBilling": "Monthly Billing",
+    "nextBilling": "Next Billing",
+    "paid": "Paid",
+    "pending": "Pending",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "popular": "Popular",
+    "premiumPlan": "Premium",
+    "proPlan": "Pro",
+    "renew": "Renew",
+    "savePercent": "Save {percent}%",
+    "status": "Status",
+    "yearlyBilling": "Yearly Billing"
   }
 }

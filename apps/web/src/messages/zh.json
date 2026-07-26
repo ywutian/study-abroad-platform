@@ -10648,7 +10648,8 @@
       "refundReason": "退款原因",
       "refundReasonPlaceholder": "请输入退款原因（审计必填）",
       "adjustSubDesc": "手动更改用户订阅级别",
-      "newPlan": "新方案"
+      "newPlan": "新方案",
+      "viewDetails": "查看详情"
     },
     "settings": {
       "title": "系统设置",
@@ -10667,7 +10668,12 @@
         "AI_QUOTA_PRO_DAILY": "Pro 每日配额",
         "AI_QUOTA_PREMIUM_DAILY": "Premium 每日配额"
       },
-      "subscription": "订阅"
+      "subscription": "订阅",
+      "subscriptionSettings": {
+        "SUBSCRIPTION_PREMIUM_PRICE": "Premium 月费",
+        "SUBSCRIPTION_PRO_PRICE": "Pro 月费",
+        "SUBSCRIPTION_YEARLY_DISCOUNT": "年付折扣 (%)"
+      }
     },
     "devTools": {
       "title": "开发者工具",
@@ -11842,6 +11848,27 @@
           "VIP 专属社群"
         ]
       }
-    }
+    },
+    "amount": "金额",
+    "billingHistory": "账单历史",
+    "cancel": "取消订阅",
+    "current": "当前",
+    "downgrade": "降级",
+    "failed": "支付失败",
+    "features": "功能特性",
+    "freePlan": "免费版",
+    "monthlyBilling": "按月付费",
+    "nextBilling": "下次扣款",
+    "paid": "已支付",
+    "pending": "待支付",
+    "perMonth": "/月",
+    "perYear": "/年",
+    "popular": "热门",
+    "premiumPlan": "高级版",
+    "proPlan": "专业版",
+    "renew": "续订",
+    "savePercent": "节省 {percent}%",
+    "status": "状态",
+    "yearlyBilling": "按年付费"
   }
 }
