@@ -143,6 +143,16 @@ jobs:
         run: pnpm application-analysis:governance -- --mode=nightly
         env:
           CI: true
+          # This job starts the web server itself ("Start Web server" above),
+          # then the governance script shells out to Playwright twice. Without
+          # this, Playwright's `webServer` tries to start its OWN dev server on
+          # the same port and aborts with "http://localhost:4100 is already
+          # used" — which is what had been failing this workflow every night.
+          # `playwright.config.ts` reads this flag and nothing in the repo ever
+          # set it, so the reuse path was unreachable. Only set it where a
+          # server is pre-started; the ci.yml Playwright steps deliberately let
+          # Playwright manage its own.
+          PLAYWRIGHT_REUSE_SERVER: 'true'
           ENABLE_E2E_FIXTURES: true
           NEXT_PUBLIC_API_URL: http://localhost:4101
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
