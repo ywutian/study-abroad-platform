@@ -15,7 +15,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 1,
         generatedAt: '2026-04-21T07:27:29.241Z',
-        traceId: 'e0067a1d-0a72-494e-8cba-774343610d18',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -240,7 +240,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 0,
         schoolsWithPredictions: 0,
         generatedAt: '2026-04-21T07:27:29.243Z',
-        traceId: '16fb64c5-478f-49ea-901f-ec103efe11be',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -325,7 +325,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 1,
         generatedAt: '2026-04-21T07:27:29.243Z',
-        traceId: 'd9784b10-acba-452c-a64a-4c2f21878232',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -535,7 +535,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 0,
         generatedAt: '2026-04-21T07:27:29.243Z',
-        traceId: '0303d0a9-9c5d-4b0a-bd4c-2a88962b48aa',
+        traceId: 'qa000000-fixture-trace-id',
         degradedReason: 'predictionUnavailable',
       },
       profileSummary: {
@@ -623,7 +623,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 0,
         generatedAt: '2026-04-21T07:27:29.243Z',
-        traceId: '8cb679af-be49-4231-850d-2f7dbdb406e6',
+        traceId: 'qa000000-fixture-trace-id',
         degradedReason: 'insufficientProfileData',
       },
       profileSummary: {
@@ -707,7 +707,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 1,
         generatedAt: '2026-04-21T07:27:29.243Z',
-        traceId: '02a113d1-e8ad-4a47-906c-1d625d606dca',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -926,7 +926,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 1,
         generatedAt: '2026-04-21T07:27:29.243Z',
-        traceId: '4b171a40-ea67-4283-9c36-5fdbf7492cea',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -1126,7 +1126,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 2,
         schoolsWithPredictions: 2,
         generatedAt: '2026-04-21T07:27:29.244Z',
-        traceId: 'dd9726bb-2e84-4de8-8fb1-81eb4c12d271',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -1443,7 +1443,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 1,
         generatedAt: '2026-04-21T07:27:29.244Z',
-        traceId: '12e5f35e-fc2c-42ed-89b1-8045141fc7b4',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {
@@ -1639,7 +1639,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
         focusSchoolCount: 1,
         schoolsWithPredictions: 1,
         generatedAt: '2026-04-21T07:27:29.244Z',
-        traceId: '30f4ff05-0176-449b-8c52-087d4e07a914',
+        traceId: 'qa000000-fixture-trace-id',
         debugEnabled: true,
       },
       profileSummary: {

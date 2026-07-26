@@ -17,6 +17,10 @@ const OUTPUT_FILE = path.resolve(
   '../../../packages/shared/src/fixtures/application-analysis-render.data.ts',
 );
 
+// Same for every case on purpose: only the first 8 characters reach the DOM,
+// and they must render at a constant width. See the assignment below.
+const DETERMINISTIC_TRACE_ID = 'qa000000-fixture-trace-id';
+
 function ensureEnvDefaults() {
   process.env.NODE_ENV ??= 'test';
   process.env.JWT_SECRET ??= 'render-fixtures-jwt-secret';
@@ -114,6 +118,14 @@ async function main() {
       mode: 'deterministic',
       persistRun: false,
     });
+
+    // The UI renders meta.traceId.slice(0, 8) in a proportional font, so a
+    // fresh random id every run means a few pixels of width difference — and
+    // Playwright's mask tracks the element's box, so the mask itself changes
+    // size and the screenshot never matches. Masking cannot fix a moving box;
+    // the id has to stop moving. It identifies a run, which a fixture does not
+    // have, so a constant is also the more honest value.
+    analysis.meta.traceId = DETERMINISTIC_TRACE_ID;
 
     fixtures.push({
       caseId: goldCase.id,
