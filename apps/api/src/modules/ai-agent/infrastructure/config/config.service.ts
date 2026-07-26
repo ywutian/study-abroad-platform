@@ -553,7 +553,7 @@ export class AgentConfigService implements OnModuleInit {
           AgentType.TIMELINE,
           AgentType.RESUME,
         ],
-        model: this.nestConfig.get('OPENAI_MODEL', 'gpt-4o-mini'),
+        model: this.nestConfig.get('OPENAI_MODEL', 'gpt-5.4-mini'),
         temperature: 0.7,
         maxTokens: 2000,
         enabled: true,
@@ -696,7 +696,7 @@ export class AgentConfigService implements OnModuleInit {
   private getDefaultSystemConfig(): SystemConfig {
     return {
       llm: {
-        defaultModel: this.nestConfig.get('OPENAI_MODEL', 'gpt-4o-mini'),
+        defaultModel: this.nestConfig.get('OPENAI_MODEL', 'gpt-5.4-mini'),
         fallbackModel: 'gpt-3.5-turbo',
         maxRetries: 3,
         timeoutMs: 30000,

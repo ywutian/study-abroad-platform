@@ -70,6 +70,13 @@ export const REDIS_TTL = {
   // ── 1 hour ────────────────────────────────────────────────
   /** Essay-scraper cron single-flight lock (long async pipeline + clock skew). */
   ESSAY_SCRAPER_CRON_LOCK: 1 * HOUR,
+  /**
+   * Stale-official-field refresh cron single-flight lock. An hour, not ten
+   * minutes: this one fans out to external bulk APIs (College Scorecard, Urban
+   * Institute) and a duplicate run burns third-party quota, so the window has
+   * to comfortably outlast a slow sync.
+   */
+  SCHOOL_STALE_REFRESH_CRON_LOCK: 1 * HOUR,
   /** Individual school detail. */
   SCHOOL_DETAIL: 1 * HOUR,
   /** School list query results. */
@@ -96,6 +103,8 @@ export const REDIS_TTL = {
   IPEDS_MONITOR_CRON_LOCK: 10 * MINUTE,
   /** Tentative-deadline refresh cron single-flight lock. */
   DEADLINE_REFRESH_CRON_LOCK: 10 * MINUTE,
+  /** School official-coverage SLO monitor cron single-flight lock. */
+  SCHOOL_COVERAGE_MONITOR_CRON_LOCK: 10 * MINUTE,
   /** Per-IP sustained window for the signup email-existence check (enumeration guard). */
   EMAIL_CHECK_RATE_WINDOW: 10 * MINUTE,
 

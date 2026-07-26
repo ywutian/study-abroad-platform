@@ -7,8 +7,7 @@ import { cn } from '@/lib/utils';
 import { Database, Info } from 'lucide-react';
 import type { MajorBreakdown } from '@study-abroad/shared/types';
 import { formatPercentValue, resolveContextualBaseline } from './benchmark-utils';
-
-type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 interface RateBreakdownPanelProps {
   schoolMeta?: {

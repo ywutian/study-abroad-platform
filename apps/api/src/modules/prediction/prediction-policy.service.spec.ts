@@ -138,7 +138,9 @@ describe('PredictionPolicyService', () => {
           highSchoolId: 'hs-1',
           highSchoolTier: 'TIER_1',
         },
-        school: {},
+        // "all metadata available" must include testingPolicy — an absent policy
+        // is itself an uncertainty reason (see buildTracePayload).
+        school: { testingPolicy: 'REQUIRED' },
         roundContext: 'ED',
         confidence: 'high' as const,
         schoolMeta: {
@@ -188,6 +190,55 @@ describe('PredictionPolicyService', () => {
       );
       expect(result.uncertaintyReasons).toContain(
         'Profile data is incomplete, so this estimate has wider uncertainty.',
+      );
+    });
+
+    it('should add uncertainty when testingPolicy is unknown and no scores submitted', () => {
+      const result = service.buildTracePayload(makeParams({ school: {} }));
+      expect(result.uncertaintyReasons).toContain(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
+      );
+    });
+
+    it('should NOT add the testing-policy caveat when the applicant submitted a score', () => {
+      const result = service.buildTracePayload(
+        makeParams({
+          school: {},
+          profile: {
+            nationality: 'CN',
+            highSchoolId: 'hs-1',
+            highSchoolTier: 'TIER_1',
+            testScores: [{ type: 'SAT', score: 1500 }],
+          },
+        }),
+      );
+      expect(result.uncertaintyReasons).not.toContain(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
+      );
+    });
+
+    // The caveat must use the same notion of "has a score" the engine does.
+    // IB / A-Level / Gaokao are converted to an SAT-equivalent and compared
+    // against the school band, so telling these applicants their estimate was
+    // weakened by missing scores is simply false.
+    it.each([
+      ['IB', 42],
+      ['A_LEVEL', 152],
+      ['GAOKAO', 690],
+    ])('does not claim a missing score for a %s applicant', (type, score) => {
+      const result = service.buildTracePayload(
+        makeParams({
+          school: {},
+          profile: {
+            nationality: 'CN',
+            highSchoolId: 'hs-1',
+            highSchoolTier: 'TIER_1',
+            testScores: [{ type, score }],
+          },
+        }),
+      );
+      expect(result.uncertaintyReasons).not.toContain(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
       );
     });
 

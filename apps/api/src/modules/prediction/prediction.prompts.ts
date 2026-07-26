@@ -4,6 +4,7 @@
 
 import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export interface ProfileInput {
   gpa?: number;
@@ -135,7 +136,7 @@ export interface SchoolInput {
   studentFacultyRatio?: number;
   percentNeedMet?: number;
   averageNetPrice?: number;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   hasEarlyDecision2?: boolean;

@@ -92,7 +92,69 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function isPlaceholderSatBand(sat25?: number | null, sat75?: number | null) {
+/**
+ * Test types `testBandMultiplier()` converts to an SAT-equivalent and compares
+ * against the school's SAT band. TOEFL/IELTS/DUOLINGO/AP/IGCSE are absent on
+ * purpose — they're language or supplementary tests and never read the band.
+ *
+ * Exported because `AnchorResolverService` grades anchor tier on "did the band
+ * inform THIS applicant", and that question has exactly one right answer: the
+ * set below. Getting it wrong is not hypothetical — the first cut of that check
+ * hardcoded SAT|ACT and silently dropped IB / A-Level / Gaokao applicants to
+ * low confidence with a 55% wider interval, which is most of this platform's
+ * international users (caught in acceptance review, 2026-07-24).
+ */
+export const BAND_COMPARABLE_TEST_TYPES = [
+  'SAT',
+  'ACT',
+  'IB',
+  'A_LEVEL',
+  'GAOKAO',
+] as const;
+
+/**
+ * ponytail: do NOT add `AP` to the list above, however tempting it looks when
+ * a test-flexible school (CMU) accepts it. Two reasons, both fatal:
+ *
+ *  1. This list is consumed as "can be compared against the SAT band", and
+ *     `testBandMultiplier` reads the same list to decide "did this applicant
+ *     satisfy the school's testing requirement". Adding AP would hand AP-only
+ *     applicants a band comparison at Georgia Tech and Harvard too — schools
+ *     that require SAT/ACT specifically — reinstating the over-optimism the
+ *     2026-07-24 audit just removed.
+ *  2. College Board publishes SAT-AP *correlations*, not a concordance. An
+ *     "equivalent SAT" for 5,5,4 would be invented, which is the exact move
+ *     this audit rejected everywhere else.
+ *
+ * The real gap is that one list answers two different questions. Splitting it
+ * needs per-school accepted-test data, not another entry here.
+ */
+
+/** Does this applicant hold a score that `testBandMultiplier` compares to the school band? */
+export function hasBandComparableScore(
+  testScores?: Array<{ type: string; score?: number | null }> | null,
+): boolean {
+  return (testScores ?? []).some(
+    (t) =>
+      !!t.score &&
+      (BAND_COMPARABLE_TEST_TYPES as readonly string[]).includes(t.type),
+  );
+}
+
+/**
+ * Launch-seed placeholder SAT band. Exported so `AnchorResolverService` grades
+ * anchor tier on the same notion of "usable band" this file uses — they used to
+ * disagree, and schools carrying the placeholder bought a tier-2 (narrower)
+ * interval while every band modifier returned neutral (2026-07-24 audit).
+ *
+ * ponytail: exact-match sentinel, so a real school landing on precisely
+ * 1080/1320 would be misread as seed data. Upgrade path: mark placeholders in
+ * provenance instead of sniffing values.
+ */
+export function isPlaceholderSatBand(
+  sat25?: number | null,
+  sat75?: number | null,
+) {
   return sat25 === 1080 && sat75 === 1320;
 }
 
@@ -578,7 +640,9 @@ export function testBandMultiplier(
         if (bestDirectAct == null || act > bestDirectAct) {
           bestDirectAct = act;
         }
-        considerScore(act * 45, `ACT ${ts.score}`);
+        // Clamp the SAT-equivalent too: ACT 36 × 45 = 1620, past the top of the
+        // SAT scale. The SAT branch above already clamps; this one didn't.
+        considerScore(Math.min(1600, act * 45), `ACT ${ts.score}`);
         break;
       }
       case 'IB':
@@ -611,30 +675,51 @@ export function testBandMultiplier(
       };
     }
 
-    if (
+    // `testingPolicy` is UNKNOWN for 96.3% of prod schools (234/243, audited
+    // 2026-07-24): College Scorecard doesn't publish the field and nothing
+    // backfills it, so UNKNOWN is the MAIN path here, not an edge case. It used
+    // to fall through to NEUTRAL, which silently handed every no-score applicant
+    // a ×1.0 at every school — including the ones that hard-require SAT/ACT as of
+    // the 2026-27 cycle (6/8 Ivies, the whole University System of Georgia, UF).
+    // Anything that isn't BLIND (returned above) / REQUIRED / OPTIONAL now takes
+    // the same selectivity-scaled correction as test-optional: conservative,
+    // without pretending we know a policy we don't. There is deliberately no
+    // neutral fallback left — that was the bug.
+    //
+    // This caps the damage at the selective end; it does NOT fully fix it. A
+    // ≥20% school that actually requires scores (e.g. UF) still reads 1.0 here.
+    // The real fix is backfilling testingPolicy — `uncertaintyReasons` tells the
+    // user the policy is unknown in the meantime.
+    //
+    // ponytail: reuses the test-optional curve rather than inventing an
+    // UNKNOWN-specific one — give UNKNOWN its own curve only once the column is
+    // populated and the two can actually be measured apart.
+    const declaredTestOptional =
       school.testingPolicy === 'OPTIONAL' ||
-      profile.applyingTestOptional === true
-    ) {
-      const overallNorm = normalizeRate(school.acceptanceRate);
-      if (overallNorm != null && overallNorm < 0.2) {
-        return {
-          multiplier: 0.85,
-          label: 'No test score at highly selective test-optional school',
-          evidence:
-            'Common App data: highly selective test-optional schools admit no-score applicants lower than test-submitters; 0.85× conservative correction.',
-          impact: 'negative',
-        };
-      }
+      profile.applyingTestOptional === true;
+    const surface = declaredTestOptional
+      ? 'test-optional school'
+      : 'school with unrecorded testing policy';
+
+    const overallNorm = normalizeRate(school.acceptanceRate);
+    if (overallNorm != null && overallNorm < 0.2) {
       return {
-        multiplier: 1.0,
-        label: 'No test score at less-selective test-optional school',
-        evidence:
-          'At schools with admit rates at or above 20%, no-score test-optional applications have no strong observed penalty.',
-        impact: 'neutral',
+        multiplier: 0.85,
+        label: `No test score at highly selective ${surface}`,
+        evidence: declaredTestOptional
+          ? 'Common App data: highly selective test-optional schools admit no-score applicants lower than test-submitters; 0.85× conservative correction.'
+          : "This school's SAT/ACT requirement is not on record. Applying the test-optional correction (0.85×) as a conservative floor — if the school in fact requires scores, the true impact is substantially larger.",
+        impact: 'negative',
       };
     }
-
-    return { ...NEUTRAL, label: 'Test score' };
+    return {
+      multiplier: 1.0,
+      label: `No test score at less-selective ${surface}`,
+      evidence: declaredTestOptional
+        ? 'At schools with admit rates at or above 20%, no-score test-optional applications have no strong observed penalty.'
+        : "This school's SAT/ACT requirement is not on record, but at admit rates at or above 20% a missing score is unlikely to be decisive.",
+      impact: 'neutral',
+    };
   }
 
   if (bestDirectAct != null && school.act25 && school.act75) {
@@ -647,18 +732,71 @@ export function testBandMultiplier(
     );
   }
 
+  const hasDirectSatAct = testScores.some(
+    (t) => (t.type === 'SAT' || t.type === 'ACT') && t.score,
+  );
+
   const usableSat = usableSatBand(school);
   const sat25 = usableSat?.sat25;
   const sat75 = usableSat?.sat75;
-  if (!sat25 || !sat75) {
+  const banded =
+    !sat25 || !sat75
+      ? {
+          multiplier: 1.0,
+          label: 'Test score',
+          evidence: `${testLabel} (no school percentile data; no adjustment)`,
+          impact: 'neutral' as const,
+        }
+      : compareTestBand(bestEquivSat, sat25, sat75, testLabel);
+
+  return capSubstituteAtRequiredSchool(banded, school, hasDirectSatAct);
+}
+
+/**
+ * At a school that requires SAT/ACT, a substitute credential must not earn a
+ * BONUS on the test axis.
+ *
+ * `BAND_COMPARABLE_TEST_TYPES` answers "can this be converted to compare
+ * against the SAT band". `testBandMultiplier` was also letting it answer "did
+ * this applicant satisfy the school's testing requirement", and those are
+ * different questions: an IB 45 converts to a fine SAT-equivalent and still
+ * does not meet Yale's requirement. Because the conversion succeeded, such an
+ * applicant skipped the REQUIRED branch entirely and came out at ×1.2 labelled
+ * "typical of admitted students" — a claim the school's own page contradicts.
+ * The seed's Yale note ("AP/IB no longer substitute", 2026-05-27) and the
+ * engine were saying opposite things about the same applicant.
+ *
+ * The fix deliberately does NOT invent a penalty. Deciding that an IB 45 at
+ * Harvard is worth ×0.6, or ×0.3, would be exactly the per-axis coefficient
+ * this codebase forbids at n=1076, and the honest range is per-school anyway
+ * (Harvard and MIT keep an exceptional-cases clause for applicants who cannot
+ * reach a test centre; Yale and Georgia Tech do not). So this only removes the
+ * false positive: no bonus, no claim of being typical, and the uncertainty is
+ * stated. The magnitude question needs per-school accepted-test data.
+ *
+ * ponytail: caps rather than scales. Ceiling — an applicant who genuinely
+ * qualifies for a school's exceptional-cases clause is still capped at
+ * neutral, which slightly understates them. Upgrade path: per-school
+ * `acceptedTestTypes`, then branch on it instead of capping.
+ */
+function capSubstituteAtRequiredSchool(
+  result: ModifierResult,
+  school: SchoolInput,
+  hasDirectSatAct: boolean,
+): ModifierResult {
+  if (school.testingPolicy !== 'REQUIRED' || hasDirectSatAct) return result;
+  if (result.multiplier <= 1.0) {
     return {
-      multiplier: 1.0,
-      label: 'Test score',
-      evidence: `${testLabel} (no school percentile data; no adjustment)`,
-      impact: 'neutral',
+      ...result,
+      evidence: `${result.evidence} This school requires the SAT or ACT; the score above is a substitute and may not satisfy that requirement.`,
     };
   }
-  return compareTestBand(bestEquivSat, sat25, sat75, testLabel);
+  return {
+    multiplier: 1.0,
+    label: 'Substitute test at a school requiring SAT/ACT',
+    evidence: `${result.evidence} Capped at neutral: this school requires the SAT or ACT, so a substitute credential is not counted as an advantage here.`,
+    impact: 'neutral',
+  };
 }
 
 /**
@@ -1044,24 +1182,26 @@ export function urmMultiplier(
  * anchor by the (much larger) in-state-vs-OOS ratio double-counts and
  * over-predicts in-state applicants. A flat 1.8 (= UC in-state÷OOS) did exactly
  * that: it inflated strong CA in-state UC predictions to ~45% — caught by the
- * counselor gold set on 2026-05-31. Each ratio below is the system's PUBLISHED
- * in-state÷overall admit rate (reviewed 2026-05-31):
+ * counselor gold set on 2026-05-31. Each ratio in the map below is the state
+ * flagship's PUBLISHED in-state÷overall admit rate, from the 48-flagship audit
+ * of 2026-05-31 (see docs/PREDICTION_DATA_DRIVEN_STRATEGY_2026-05-30.md §7.10).
+ * Per-value sourcing lives in the inline comments on the map itself — that is
+ * the single place to read and to update.
  *
- *   NC 2.2  — UNC-CH official CDS 2023-24 C1: in-state 41.2% / overall 18.7%
- *             (OOS enrollment legally capped at 18%). Highest confidence.
- *   VA 1.5  — UVA Dean of Admission 2024/2025: in-state ~24-25% / overall ~16.5%.
- *   TX 1.5  — UT-Austin OOS÷overall 0.38 (strong in-state pref); in-state is
- *             bimodal (top-6% auto-admit ~100% vs holistic ~10%), no single
- *             official %, so 1.5 is a conservative blend.
- *   CA 1.2  — UC systemwide in-state÷overall 1.06 (UCOP 2024); Berkeley 1.35,
- *             UCLA 1.06. Selective campuses tilt above systemwide; UC freshman-
- *             GPA bands are CA-resident-leaning, so the anchor already captures
- *             much of the residency effect — keep the extra tilt small.
- *   FL 1.1  — UF CDS leaves the residency columns blank; DB oos 23.3% ≈ overall
- *             24.2% → ~residency-neutral.
- *   MI 1.0  — UMich publishes no residency split; the circulating "39% in-state"
- *             is mathematically impossible against the official 17.9% overall,
- *             and DB oos 18% > overall 15.6% → OOS admitted *easier* → neutral.
+ * This block used to restate a SUPERSEDED six-state table (NC 2.2 / VA 1.5 /
+ * TX 1.5 / CA 1.2 / FL 1.1 / MI 1.0, cited to CDS 2023-24), which had drifted
+ * from the map ~20 lines below it — NC was already 2.5, and FL/MI are not keys
+ * at all. Two months of prod ran on that contradiction without incident, which
+ * is itself a measurement of how much these fallbacks move the needle. The
+ * 2026-07-24 staleness audit then opened a "roll CDS to 2025-26" ticket off the
+ * stale citation, i.e. the comment generated work about a value that no longer
+ * existed. Prose duplicating a table is a liability; don't reintroduce it.
+ *
+ * On refreshing these at all: they are policy-shaped (legislated non-resident
+ * caps, auto-admit rules), so they move on legislative cycles, not CDS cycles.
+ * The volatile term — the overall admit rate they divide by — is already
+ * refreshed from the live DB on every call. Only refresh a value when that
+ * state's policy actually changes.
  *
  * Out-of-state uses the per-school oos÷overall DATA path in geoMultiplier when
  * a published OOS rate exists; PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF only

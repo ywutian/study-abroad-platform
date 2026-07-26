@@ -19,16 +19,7 @@ import {
   LLMProviderError,
 } from './llm-provider.types';
 
-// Context windows for known models
-const CONTEXT_WINDOWS: Record<string, number> = {
-  'gpt-4o': 128_000,
-  'gpt-4o-mini': 128_000,
-  'gpt-4-turbo': 128_000,
-  'gpt-4': 8_192,
-  'gpt-3.5-turbo': 16_385,
-  'deepseek-chat': 64_000,
-  'deepseek-reasoner': 64_000,
-};
+import { MODEL_CATALOG } from '../constants';
 
 @Injectable()
 export class OpenAIProvider implements ILLMProvider {
@@ -55,7 +46,9 @@ export class OpenAIProvider implements ILLMProvider {
   }
 
   getContextWindow(model: string): number | undefined {
-    return CONTEXT_WINDOWS[model];
+    // Stays `undefined` for unknown models — the interface contract, and the
+    // caller treats it as "don't enforce a limit".
+    return MODEL_CATALOG[model]?.contextWindow;
   }
 
   async chat(request: LLMChatRequest): Promise<LLMChatResponse> {

@@ -169,6 +169,96 @@ describe('counselor modifiers launch guards', () => {
       expect(result.label).toContain('highly selective test-optional');
     });
 
+    // Regression guard for the 2026-07-24 audit: UNKNOWN is 96.3% of prod
+    // schools and used to fall through to a silent ×1.0, over-predicting every
+    // no-score applicant at every school whose policy wasn't on record.
+    it('does NOT treat an unknown testing policy as neutral at selective schools', () => {
+      const result = testBandMultiplier(
+        baseProfile({ testScores: [] }),
+        baseSchool({ testingPolicy: 'UNKNOWN', acceptanceRate: 0.05 }),
+      );
+
+      expect(result.multiplier).toBe(0.85);
+      expect(result.label).toContain('unrecorded testing policy');
+      expect(result.impact).toBe('negative');
+    });
+
+    it('leaves an unknown testing policy neutral at non-selective schools', () => {
+      const result = testBandMultiplier(
+        baseProfile({ testScores: [] }),
+        baseSchool({ testingPolicy: 'UNKNOWN', acceptanceRate: 0.6 }),
+      );
+
+      // Known remaining gap: a ≥20% school that actually REQUIRES scores still
+      // reads 1.0 here. Only backfilling testingPolicy closes it.
+      expect(result.multiplier).toBe(1.0);
+      expect(result.label).toContain('unrecorded testing policy');
+    });
+
+    // A substitute credential converts to an SAT-equivalent, which used to let
+    // it skip the REQUIRED branch and come out at ×1.2 "typical of admitted
+    // students" — at a school whose own page says the SAT or ACT is required.
+    // The seed's Yale note and the engine were contradicting each other.
+    describe('substitute credentials at a school requiring SAT/ACT', () => {
+      const required = () =>
+        baseSchool({
+          testingPolicy: 'REQUIRED',
+          acceptanceRate: 0.05,
+          sat25: 1500,
+          sat75: 1560,
+        });
+
+      it.each([
+        ['IB', 45],
+        ['A_LEVEL', 168],
+        ['GAOKAO', 700],
+      ])('does not award a bonus for a strong %s', (type, score) => {
+        const result = testBandMultiplier(
+          baseProfile({ testScores: [{ type, score }] }),
+          required(),
+        );
+
+        expect(result.multiplier).toBeLessThanOrEqual(1.0);
+        expect(result.evidence).toContain('requires the SAT or ACT');
+      });
+
+      it('leaves a real SAT untouched at the same school', () => {
+        const result = testBandMultiplier(
+          baseProfile({ testScores: [{ type: 'SAT', score: 1570 }] }),
+          required(),
+        );
+
+        expect(result.multiplier).toBeGreaterThan(1.0);
+        expect(result.evidence).not.toContain('requires the SAT or ACT');
+      });
+
+      it('leaves the same substitute untouched where the school allows it', () => {
+        const result = testBandMultiplier(
+          baseProfile({ testScores: [{ type: 'IB', score: 45 }] }),
+          baseSchool({
+            testingPolicy: 'OPTIONAL',
+            acceptanceRate: 0.05,
+            sat25: 1500,
+            sat75: 1560,
+          }),
+        );
+
+        expect(result.multiplier).toBeGreaterThan(1.0);
+      });
+
+      // Capping only removes the bonus. A weak substitute keeps its penalty —
+      // the cap must not become an accidental floor.
+      it('keeps an existing penalty and still names the requirement', () => {
+        const result = testBandMultiplier(
+          baseProfile({ testScores: [{ type: 'IB', score: 28 }] }),
+          required(),
+        );
+
+        expect(result.multiplier).toBeLessThan(1.0);
+        expect(result.evidence).toContain('requires the SAT or ACT');
+      });
+    });
+
     it('compares ACT directly against act25/act75 when available', () => {
       const result = testBandMultiplier(
         baseProfile({ testScores: [{ type: 'ACT', score: 34 }] }),

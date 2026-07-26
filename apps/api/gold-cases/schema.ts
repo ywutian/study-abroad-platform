@@ -1,7 +1,7 @@
 import type {
   AnalysisState,
-  SchoolTestingPolicy,
 } from '../src/modules/ai/ai.types';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export interface GoldCaseExpectedSchool {
   schoolId?: string;

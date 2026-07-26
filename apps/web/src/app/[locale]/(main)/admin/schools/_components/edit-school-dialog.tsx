@@ -29,8 +29,9 @@ import {
   resolveSchoolTestingPolicyValue,
   toLegacyTestOptionalFlag,
 } from '@study-abroad/shared/utils';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
-type TestingPolicyValue = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+type TestingPolicyValue = SchoolTestingPolicy;
 
 interface School {
   id: string;

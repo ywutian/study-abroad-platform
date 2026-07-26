@@ -1,3 +1,4 @@
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 /**
  * Standardized intermediate data formats for all data sources.
  * All scrapers, CSV imports, and manual entries convert to these formats
@@ -284,7 +285,7 @@ export interface SchoolStandardFormat {
   avgSalary?: number;
   salary6YrPostGrad?: number;
 
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   acceptsCommonApp?: boolean;
   hasEarlyDecision?: boolean;

@@ -18,6 +18,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export enum BudgetRange {
   LOW = 'low', // < $30k/年
@@ -140,7 +141,7 @@ export class RecommendedSchoolDto {
     state?: string;
     tuition?: number;
     isPrivate?: boolean;
-    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+    testingPolicy?: SchoolTestingPolicy;
     testOptional?: boolean;
     hasEarlyDecision?: boolean;
     retentionRate?: number;

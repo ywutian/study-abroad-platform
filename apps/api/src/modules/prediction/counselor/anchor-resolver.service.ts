@@ -5,6 +5,10 @@ import type {
   CounselorTier,
   EncodedDimension,
 } from './counselor-engine.service';
+import {
+  hasBandComparableScore,
+  isPlaceholderSatBand,
+} from './counselor-modifiers';
 
 export interface AnchorResolution {
   anchor: number;
@@ -74,13 +78,43 @@ export class AnchorResolverService {
 
     const overall = this.normalizeAcceptanceRate(school.acceptanceRate);
     if (overall != null) {
-      const hasSatBands = school.sat25 != null && school.sat75 != null;
-      const source = hasSatBands
-        ? 'scorecard (acceptanceRate + SAT bands)'
-        : 'scorecard (acceptanceRate only)';
+      // Tier drives confidence, and confidence drives interval width
+      // (`deriveCounselorConfidence` → `LOGIT_HALF_WIDTH`): tier ≤2 can reach
+      // `medium` (±0.55 logit), tier 3 is pinned to `low` (±0.85). It never
+      // touches the anchor value — that is `acceptanceRate`, full stop.
+      //
+      // So tier 2 is a claim that the engine had a usable test signal for THIS
+      // applicant. Two ways it used to be claimed falsely (2026-07-24 audit):
+      //   1. a placeholder band counted as a band, while every band modifier
+      //      rejected it and returned neutral;
+      //   2. the school having a band was enough, even when the applicant
+      //      submitted no comparable score — so a no-score applicant got the
+      //      narrower interval off a band the engine never read.
+      // Both are the same failure: claiming more certainty than we have. Widen
+      // the interval instead. Point estimates are untouched.
+      //
+      // "Comparable" comes from `hasBandComparableScore`, not a local list —
+      // it must stay identical to what `testBandMultiplier` actually consumes.
+      // Hardcoding SAT|ACT here (the first cut) wrongly demoted IB / A-Level /
+      // Gaokao applicants, whose scores DO get converted to an SAT-equivalent
+      // and compared against the band.
+      const schoolBandUsable =
+        school.sat25 != null &&
+        school.sat75 != null &&
+        !isPlaceholderSatBand(school.sat25, school.sat75);
+      const bandInformsThisApplicant =
+        schoolBandUsable && hasBandComparableScore(profile.testScores);
+
+      // This string is rendered to users verbatim inside `sourceSummary` and
+      // `factors[0].detail`, so it stays short and free of internal jargon.
+      // The old 'scorecard (acceptanceRate + SAT bands)' read as though the
+      // bands fed the anchor — they never did.
+      const source = bandInformsThisApplicant
+        ? 'scorecard admit rate, test bands applied'
+        : 'scorecard admit rate only';
       return {
         anchor: overall,
-        tier: hasSatBands ? 2 : 3,
+        tier: bandInformsThisApplicant ? 2 : 3,
         anchorSource: source,
         encodedDimensions: new Set(),
         sourceContributions: [

@@ -15,6 +15,7 @@ import { predict as m3Predict } from './m3-bayesian-engine';
 
 // Import counselor service from the API
 import { CounselorEngineService } from '../apps/api/src/modules/prediction/counselor/counselor-engine.service';
+import { AnchorResolverService } from '../apps/api/src/modules/prediction/counselor/anchor-resolver.service';
 
 const prisma = new PrismaClient();
 
@@ -108,7 +109,13 @@ async function main() {
   console.log(`  Activities: ${profile.activities.length}`);
   console.log(`  Awards: ${profile.awards.length}`);
 
-  const counselor = new CounselorEngineService(prisma as any);
+  // AnchorResolverService is a required constructor arg now: it stopped being
+  // @Optional() when its duplicate inside the engine was deleted (2026-07-24).
+  // Passed explicitly because this script bypasses Nest DI.
+  const counselor = new CounselorEngineService(
+    prisma as any,
+    new AnchorResolverService(prisma as any)
+  );
 
   console.log(
     '\n═══ Counselor (prod served) vs M3 v2 — Alice as INTERNATIONAL (nationality=CN) ═══\n'

@@ -105,7 +105,7 @@ async function main() {
       const explicitUnknown =
         field === 'testOptional' &&
         value == null &&
-        (school as any).testingPolicy === 'UNKNOWN';
+        school.testingPolicy === 'UNKNOWN';
       const filled = value != null || explicitUnknown;
       const source = provenance[field]
         ? toSchoolFieldSource(provenance[field]!)

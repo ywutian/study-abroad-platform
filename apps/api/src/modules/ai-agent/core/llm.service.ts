@@ -23,6 +23,7 @@ import {
   LLMChatResponse,
   LLMStreamChunk,
 } from '../providers/llm-provider.types';
+import { estimateModelCost, UNKNOWN_MODEL_PRICING } from '../constants';
 import { ResilienceService } from './resilience.service';
 import { TokenTrackerService, TokenUsage } from './token-tracker.service';
 import { PromptGuardService } from '../security/prompt-guard.service';
@@ -102,6 +103,8 @@ const LLM_CONFIG = {
 export class LLMService {
   private readonly logger = new Logger(LLMService.name);
   private readonly defaultModel: string;
+  /** Models already warned about, so an unknown model logs once, not per call. */
+  private readonly warnedUnknownModels = new Set<string>();
 
   constructor(
     private configService: ConfigService,
@@ -111,7 +114,7 @@ export class LLMService {
     @Optional() private promptGuard?: PromptGuardService,
   ) {
     this.defaultModel =
-      this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini';
+      this.configService.get<string>('OPENAI_MODEL') || 'gpt-5.4-mini';
   }
 
   /**
@@ -311,26 +314,34 @@ export class LLMService {
 
   // ── Private helpers ──────────────────────────────────────
 
-  /** Estimate USD cost from token counts using per-model pricing ($/M tokens). */
+  /**
+   * Estimate USD cost from token counts. Prices live in `MODEL_CATALOG`.
+   *
+   * An unknown model is costed at the flagship rate and warned about once —
+   * the previous silent fallback to gpt-4o-mini rates is what made prod's
+   * gpt-5.4-mini spend read 5-7.5× too low.
+   */
   private estimateCost(
     model: string,
     promptTokens: number,
     completionTokens: number,
   ): number {
-    const PRICING: Record<string, { input: number; output: number }> = {
-      'gpt-4o': { input: 2.5, output: 10 },
-      'gpt-4o-mini': { input: 0.15, output: 0.6 },
-      'gpt-4-turbo': { input: 10, output: 30 },
-      'gpt-4': { input: 30, output: 60 },
-      'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
-      'deepseek-chat': { input: 0.14, output: 0.28 },
-      'deepseek-reasoner': { input: 0.55, output: 2.19 },
-    };
-
-    const price = PRICING[model] || PRICING['gpt-4o-mini'];
-    return (
-      (promptTokens * price.input + completionTokens * price.output) / 1_000_000
+    const { cost, known } = estimateModelCost(
+      model,
+      promptTokens,
+      completionTokens,
     );
+
+    if (!known && !this.warnedUnknownModels.has(model)) {
+      this.warnedUnknownModels.add(model);
+      this.logger.warn(
+        `Model "${model}" is not in MODEL_CATALOG — costing it at the flagship rate ` +
+          `($${UNKNOWN_MODEL_PRICING.input}/$${UNKNOWN_MODEL_PRICING.output} per 1M tokens). ` +
+          `Add it to ai-agent/constants.ts so spend is reported accurately.`,
+      );
+    }
+
+    return cost;
   }
 
   private buildRequest(
