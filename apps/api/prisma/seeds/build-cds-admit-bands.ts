@@ -40,11 +40,28 @@ type CdsBandInputRow = {
 
 const API_ROOT = path.join(__dirname, '../..');
 
-/** Committed files that contain rows in the `CdsBandInputRow` shape. */
-const SOURCE_FILES = [
-  path.join(API_ROOT, 'scripts/cds-bands-uc-system.json'),
-  path.join(API_ROOT, 'scripts/seed-cds-fixture.json'),
-];
+/**
+ * Committed files that contain rows in the `CdsBandInputRow` shape.
+ *
+ * `scripts/seed-cds-fixture.json` used to be listed here and must not be:
+ * it is a starter FIXTURE (three synthetic rows for UC Merced and UC Berkeley,
+ * sourced to the schools' homepages with round sample counts — Berkeley's says
+ * 1,000 against an application pool of ~125,000). Its legitimate use is the
+ * admin `POST /cds-bands/load-fixture` endpoint, which is opt-in and dry-run by
+ * default. Merging it here put it in the payload `migrate.sh` step 54 applies
+ * to prod on every deploy, so two UC campuses were served Tier-1 anchors
+ * derived from test data.
+ *
+ * It also broke monotonicity. The fixture gives Merced only the `3.75-4.00`
+ * rung, so a 4.0 applicant matched it and anchored at 0.88 while a 3.5 matched
+ * nothing, fell through to Tier-2 and anchored on the school's overall rate of
+ * ~0.89 — the stronger applicant scoring lower. `isotonicBandRate` could not
+ * repair it: it clamps against lower rungs in the same ladder and there were
+ * none. Found by the invariant sweep on 2026-07-25.
+ *
+ * Only add a file here if every row in it is real, cited, per-band admit data.
+ */
+const SOURCE_FILES = [path.join(API_ROOT, 'scripts/cds-bands-uc-system.json')];
 
 const OUTPUT_FILE = path.join(
   API_ROOT,

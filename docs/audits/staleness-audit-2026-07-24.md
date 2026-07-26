@@ -640,12 +640,37 @@ GPA 4.0 命中那唯一一档 → Tier-1 anchor 0.88；GPA 3.5 无档命中 → 
 `isotonicBandRate` 修不了 —— 它只能拿同 ladder 的**更低档**往上夹，而这里没有更低档。
 Berkeley 形状相同但不倒挂：它总录取率 ~11% 远低于顶档。
 
-**这不只是测试夹具的问题** —— `migrate.sh` step 54 加载的就是这个文件，
-所以 prod 同样存在，而 UC Merced 正是学生拿来当保底校查的那类。
-数据覆盖缺陷，非引擎回归。已单开工单跟踪。
+### 根因：夹具数据混进了生产 payload（已修 2026-07-25）
 
-CI 注释和脚本 docstring 都已改成写明这个已测结果，并明确写着
-**在补齐数据之前不要给这个 job 加 band seeding**。
+`build-cds-admit-bands.ts` 把**两个**文件合成生产 payload：
+
+```
+scripts/cds-bands-uc-system.json  ← 真实 UC Information Center 数据（35 条 / 7 所，ladder 完整）
+scripts/seed-cds-fixture.json     ← 启动用的 FIXTURE（3 条 / Merced + Berkeley，只有顶档）
+```
+
+而这个 builder 自己的注释写着 _"so we never fabricate band rows"_ ——
+它读的两个文件里**有一个就是 fixture**。旁证：sourceUrl 指向学校首页而非数据页；
+Berkeley 的 `sampleCount` 写 1000，而它每年约 12.5 万份申请。
+
+**`migrate.sh` step 54 加载的正是这份合并结果**，所以 prod 有两所 UC 校区
+在用测试数据做 Tier-1 锚点，其中 Merced 还因此产生了"4.0 低于 3.5"的倒挂。
+
+fixture 的正当用途是管理员端点 `POST /cds-bands/load-fixture`
+（显式触发、默认 `dryRun: true`）—— 那个不受影响。
+
+**修法**：把 `seed-cds-fixture.json` 从 payload builder 的 `SOURCE_FILES` 里摘掉并重新生成。
+38 条 / 9 所 → **35 条 / 7 所**，fixture 归零。Merced 和 Berkeley 退回 Tier-2
+（用学校总录取率）—— 这是**正确**的，我们本来就没有它们的真实分档数据。
+
+**验证**：重新加载 band 后跑 sweep → **16/16 全绿，0 violations，且 Tier-1 路径有覆盖**。
+
+**顺带补上 gate-vs-prod 保真度缺口**：CI 的 prediction-gate 原本不加载 band
+（prod 在 migrate.sh step 54 加载），整条 Tier-1 锚点路径在 CI 里从未被走到。
+现在加了 `Load CDS admit bands` 步骤，#9 那个新 gate 才真正覆盖到它。
+
+> **值得记的一课**：那条排除说明把锅甩给"gate 的数据不完整"甩了很久，
+> 而问题其实在 prod 出货的 payload 里。**一个被排除的检查，没法告诉你是哪一种。**
 
 ---
 

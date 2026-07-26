@@ -49,23 +49,21 @@
  * 9,342 checks and 0 violations, all 16 invariants green. The artifact requires PARTIAL band
  * coverage, and that DB seeds ZERO `SchoolCdsAdmitBand` rows — there is no Tier-1 to cross into.
  *
- * So the exclusion cost real coverage for a condition that wasn't present in that job.
+ * Turning it on then exposed the real cause of the artifact the exclusion had been blaming on
+ * the gate. Loading the band payload made the sweep red — 6 violations, all University of
+ * California, Merced — because `prisma/seeds/data/cds-admit-bands.json` was merging a starter
+ * FIXTURE alongside the real UC Information Center extract. The fixture gave Merced only a
+ * `3.75-4.00` rung, so a 4.0 applicant matched it and anchored at 0.88 while a 3.5 matched
+ * nothing, fell through to Tier-2 and anchored on the school's overall rate of ~0.89 — the
+ * stronger applicant scoring lower. `isotonicBandRate` could not repair it: it clamps against
+ * LOWER rungs in the same ladder and there were none.
  *
- * The condition IS present once bands exist, and that was measured too. Loading
- * prisma/seeds/data/cds-admit-bands.json (38 rows, 9 UCs) into the same DB turns the sweep red:
- * 6 violations, all University of California, Merced. Seven of those nine UCs carry a full
- * five-rung GPA_ONLY ladder; Berkeley and Merced carry only `3.75-4.00`. A 4.0 applicant matches
- * that lone rung (0.88) while a 3.5 matches nothing and falls through to the school's overall
- * rate (~0.89) — so the stronger applicant scores lower. `isotonicBandRate` cannot repair it,
- * because it clamps against LOWER rungs in the same ladder and there aren't any. Berkeley has the
- * same shape but never inverts: its overall rate (~11%) sits far below its top-rung admit rate.
+ * migrate.sh step 54 loaded that same payload, so prod was serving two UC campuses Tier-1
+ * anchors derived from test data. Fixture removed from the payload builder 2026-07-25; the
+ * sweep is green again WITH bands loaded, and the CI job now seeds them.
  *
- * That is a data-coverage gap, not an engine regression — but migrate.sh step 54 loads the same
- * file, so it is not confined to test fixtures. Tracked separately.
- *
- * Still worth running locally against the orchestrator seed before merging engine changes: it
- * DOES load bands, so it exercises the Tier-1 path the CI gate cannot reach — and, per the above,
- * expect the Merced violations until the ladder is filled in.
+ * The lesson worth keeping: the exclusion note blamed the gate's data for years, and the
+ * artifact was in the payload prod ships. An excluded check cannot tell you which.
  * See docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
  */
 
