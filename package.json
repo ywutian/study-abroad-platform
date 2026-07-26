@@ -77,8 +77,8 @@
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
     "@cyclonedx/cdxgen": "^11.3.2",
-    "@eslint/js": "^9.39.4",
-    "@playwright/test": "^1.61.1",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.62.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^9.39.2",
@@ -88,12 +88,12 @@
     "husky": "^9.1.7",
     "knip": "5.88.1",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.9.1",
+    "prettier": "^3.9.6",
     "ts-morph": "^27.0.2",
-    "tsx": "^4.22.4",
-    "turbo": "^2.10.0",
+    "tsx": "^4.23.1",
+    "turbo": "^2.10.7",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.62.0"
+    "typescript-eslint": "^8.65.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
