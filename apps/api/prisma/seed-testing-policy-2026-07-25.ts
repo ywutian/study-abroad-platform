@@ -47,10 +47,31 @@
  *   - Harvey Mudd College, Grinnell College — policy published only through
  *     fall 2026, with the re-evaluation point landing on this very cycle.
  *
- * The first three cuts share a root cause worth naming: `TestingPolicy` has no
- * value for "test-flexible" and no way to express a rule conditioned on where
- * the applicant went to school. Three of fourteen REQUIRED candidates hit that
- * gap. Widening the enum is the real fix; until then these stay UNKNOWN.
+ * The first three cuts look like an enum gap — no FLEXIBLE value, no way to
+ * condition on where the applicant went to school. Widening the enum was the
+ * obvious next move and it is the WRONG one; measured, not assumed:
+ *
+ *   profile        REQUIRED  OPTIONAL  UNKNOWN  FLEXIBLE(hypothetical)
+ *   IB 45            1.200     1.200    1.200          1.200
+ *   A-Level 168      1.000     1.000    1.000          1.000
+ *   Gaokao 680       1.000     1.000    1.000          1.000
+ *   AP only          0.100     0.850    0.850          0.850
+ *
+ * FLEXIBLE is bit-identical to the UNKNOWN these three already carry, because
+ * `testingPolicy` is only read when the applicant has none of the five
+ * band-comparable tests. Give it its own branch and the only profile that
+ * moves is AP-only: +1.75pp at CMU, +0.81pp at Dartmouth — against served
+ * interval widths of 16.0pp and 8.1pp. Miami's delta is exactly zero.
+ * The bill would be an enum migration plus the union type that is hand-copied
+ * 18 times across shared/api/web, seven `as any` reads that typecheck cannot
+ * catch, and four i18n surfaces resolved dynamically (so the missing-key lint
+ * stays silent and users see a raw key).
+ *
+ * So UNKNOWN is not a placeholder here, it is the correct value: we know
+ * something the schema cannot say, and saying it wrong in either direction is
+ * worse than saying nothing. What is actually missing is per-school
+ * accepted-test data — which tests satisfy which school — and that is a
+ * separate, larger change to the served numbers.
  *
  * Run standalone (also applied to prod via migrate.sh run_seed):
  *   npx tsx apps/api/prisma/seed-testing-policy-2026-07-25.ts

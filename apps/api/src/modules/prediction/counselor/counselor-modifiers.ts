@@ -112,6 +112,24 @@ export const BAND_COMPARABLE_TEST_TYPES = [
   'GAOKAO',
 ] as const;
 
+/**
+ * ponytail: do NOT add `AP` to the list above, however tempting it looks when
+ * a test-flexible school (CMU) accepts it. Two reasons, both fatal:
+ *
+ *  1. This list is consumed as "can be compared against the SAT band", and
+ *     `testBandMultiplier` reads the same list to decide "did this applicant
+ *     satisfy the school's testing requirement". Adding AP would hand AP-only
+ *     applicants a band comparison at Georgia Tech and Harvard too — schools
+ *     that require SAT/ACT specifically — reinstating the over-optimism the
+ *     2026-07-24 audit just removed.
+ *  2. College Board publishes SAT-AP *correlations*, not a concordance. An
+ *     "equivalent SAT" for 5,5,4 would be invented, which is the exact move
+ *     this audit rejected everywhere else.
+ *
+ * The real gap is that one list answers two different questions. Splitting it
+ * needs per-school accepted-test data, not another entry here.
+ */
+
 /** Does this applicant hold a score that `testBandMultiplier` compares to the school band? */
 export function hasBandComparableScore(
   testScores?: Array<{ type: string; score?: number | null }> | null,
