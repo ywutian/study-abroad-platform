@@ -632,3 +632,39 @@ Population: 241 US schools (13 portfolio exempt) | 219 w/ SAT bands
 **留给下一个人的话**（已写进脚本 docstring 和 CI 注释）：若将来给 gate job 加了 band
 seeding，**必须重新测量**再假设它仍然干净；本地跑仍有价值 —— orchestrator seed **有**
 band ladder，能覆盖这个 gate 够不到的 Tier-1 路径。
+
+---
+
+## 10. 🟠 school 同步 scheduler 的三处缺陷 —— 已修
+
+由 §8 的调查顺带发现。三处都**在正常运行时不可见**，只在 prod 咬人。
+
+**1. 两个 `@Cron` 都没有 single-flight 锁。** Cloud Run 跑 N 个副本，每个都会触发同一个
+cron。覆盖率监控那条会把一次 SLO 违约变成 **N 条 Sentry 告警**；刷新那条会 **N 倍消耗
+第三方 API 配额**。违反 MEMORY.md 记的 #448/#450 规则。目前无害仅仅因为工作本身是
+no-op —— 一旦补上 `COLLEGE_SCORECARD_API_KEY` 就会放大。
+
+**2. 刷新任务没有 try/catch。** `syncSchoolsFromScorecard()` 在无 API key 时**直接
+throw**（prod 当前正是如此），而调用点没有保护 → 每周一产生一次未捕获 rejection，
+**并且让 IPEDS 那一半永远不会执行**。同文件的 `syncCollegeScorecard` 反而有 try/catch。
+
+**3. 精心算出的 stale 集合只被用来取 `.size`。**
+`syncSchoolsFromScorecard(limit)` / `syncAll(year, limit)` **都不接受 school id**，
+它们从 API 第 0 页开始拉前 N 条。所以 `staleScorecardSchools.size` 作为 limit 传进去，
+读起来像「刷新这些陈旧学校」，实际只是决定了**拉多少所任意学校** ——
+一次发现 3 所陈旧的运行，会去刷新 API 的前 3 所，而那几乎必然不是那 3 所。
+
+**修法 — 已完成 2026-07-25**
+
+- 两个 cron 都接 `runWithCronLock`（复用仓库既有助手）。新增两个 TTL 常量：
+  覆盖率监控 10 分钟；刷新任务 **1 小时** —— 它要打外部批量 API，
+  窗口必须能舒服地覆盖一次慢同步。
+- 两个 sync **各自独立 try/catch**，一个死源不能拖垮另一个。
+- `.size` 换成显式的 `BULK_REFRESH_BATCH = 500`，并标 `ponytail:` 注释写明
+  这是因为两个 sync 都无法定向、以及升级路径（让它们接受 school-id 列表）。
+  同时**把陈旧学校的 id 打进日志** —— sync 既然定向不了，这就是唯一能让人
+  实际行动的记录，否则这个任务只报一个没人能用的计数。
+
+**测试**：`school-provenance.scheduler.spec.ts` 7 条 —— 锁被占则两个 cron 都不执行；
+拿到锁则执行；Scorecard 失败不得阻断 IPEDS；IPEDS 失败不得抛出；只看 OFFICIAL 层级；
+无陈旧字段时不调用任何 sync。3747 项 API 测试全过。
