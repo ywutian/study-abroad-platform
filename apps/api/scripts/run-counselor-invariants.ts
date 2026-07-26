@@ -39,12 +39,21 @@
  *     pnpm --filter api invariants:counselor          # 0 violations on prod-like data
  *     pnpm --filter api invariants:counselor --limit 60   # fast subset
  *
- * It is NOT wired into the CI Prediction Gate. A full-POPULATION sweep is only meaningful on a
- * complete dataset: the gate DB is seeded via `prisma db seed` (minimal/partial — no full band
- * ladders), which produces TIER-CROSSING artifacts (a 3.8 GPA that matches a lone low Tier-1 band
- * scores below a 3.5 that falls through to the higher Tier-2 overall rate). Those are gate-DB DATA
- * artifacts, not engine bugs — on the orchestrator seed (= prod) the engine is invariant-clean
- * (0 violations). Run this before merging any counselor-engine change. See
+ * WIRED INTO CI as of 2026-07-25 (ci.yml, prediction-gate job).
+ *
+ * It was excluded before that on the grounds that the gate DB, being partially seeded, produces
+ * TIER-CROSSING artifacts — a 3.8 GPA matching a lone low Tier-1 band scoring below a 3.5 that
+ * falls through to the higher Tier-2 overall rate. That reasoning was never re-measured after the
+ * gate's seed sequence changed. Reproducing this job's DB exactly (migrate deploy → db seed →
+ * closure overlay → EA/ED2 backfill → the five correction seeds) on 2026-07-25 gave 241 schools,
+ * 9,342 checks and 0 violations, all 16 invariants green. The artifact requires PARTIAL band
+ * coverage, and that DB seeds ZERO `SchoolCdsAdmitBand` rows — there is no Tier-1 to cross into.
+ *
+ * So the exclusion cost real coverage for a condition that wasn't present. If band seeding is
+ * ever added to the gate job, re-measure before assuming this still holds.
+ *
+ * Still worth running locally against the orchestrator seed before merging engine changes: that
+ * seed DOES have band ladders, so it exercises the Tier-1 path this gate cannot reach. See
  * docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
  */
 

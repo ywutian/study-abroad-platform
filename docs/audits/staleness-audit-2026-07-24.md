@@ -596,3 +596,39 @@ seed 文件头改正了原先的错误结论并附上实测矩阵。
 
 **重评条件**：只有当 per-school `acceptedTestTypes`（§12 的后续）落地后，
 枚举问题才可能重新变得相关 —— 届时也很可能是被那份数据取代，而不是被枚举解决。
+
+---
+
+## 9. 🟠 16 条不变量 sweep 不在 CI —— 已接入
+
+**问题**：`apps/api/scripts/run-counselor-invariants.ts` 是唯一能抓「某次改动把预测抬得
+过高」的仪器（gold / calibration 钉的是具体点，它钉的是**形状**：单调性、支配性、
+轮次序、hook 方向、确定性、clamp 边界）。但它不在 CI，只靠有人记得本地跑 —— 而本产品
+零用户，没有任何人工发现渠道。
+
+**排除它的理由是**：gate DB seed 不完整 → tier-crossing 伪阳性（3.8 GPA 匹配到孤立的低
+Tier-1 band，反而低于落到 Tier-2 的 3.5）。
+
+**这个理由在 seed 序列变更后从未被重新测量。**
+
+**实测（2026-07-25）**：忠实复现该 job 自己的建库序列
+（`migrate deploy` → `db seed` → closure overlay → EA/ED2 backfill → 5 个修正 seed）：
+
+```
+Population: 241 US schools (13 portfolio exempt) | 219 w/ SAT bands
+16/16 PASS   Total checks: 9,342 | Violations: 0
+```
+
+**根因**：那个伪阳性需要**部分** band 覆盖才会发生，而 gate DB 的
+`SchoolCdsAdmitBand` 是 **0 行** —— 根本没有 Tier-1 可以跨进去。
+**排除它是在为一个并不存在的条件付出真实的覆盖代价。**
+
+顺带端到端验证了 §1 的 seed：gate 形态下 `🎯 Testing policy: updated 50 school row(s)`，
+分布 `REQUIRED:19 OPTIONAL:45 BLIND:9 UNKNOWN:168`。
+
+**已接入**：`ci.yml` 的 prediction-gate job，位置在 5 个修正 seed 之后、
+`Verify prediction launch reports` 之前。脚本 exit 2 即 fail。
+
+**留给下一个人的话**（已写进脚本 docstring 和 CI 注释）：若将来给 gate job 加了 band
+seeding，**必须重新测量**再假设它仍然干净；本地跑仍有价值 —— orchestrator seed **有**
+band ladder，能覆盖这个 gate 够不到的 Tier-1 路径。

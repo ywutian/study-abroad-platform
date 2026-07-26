@@ -839,6 +839,24 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
+      # Property sweep over the full seeded population: monotonicity, dominance,
+      # round ordering, hook direction, determinism, clamp bounds. It is the only
+      # instrument that catches "a change pushed predictions too high" — gold and
+      # calibration cases pin specific points, this pins the shape.
+      #
+      # It used to be excluded on the grounds that a partially-seeded gate DB
+      # produces tier-crossing artifacts (a 3.8 GPA matching a lone low Tier-1
+      # band scoring under a 3.5 that falls through to Tier-2). Measured on a
+      # faithful reproduction of this job's own DB on 2026-07-25: 241 schools,
+      # 9,342 checks, 0 violations, all 16 invariants green. The artifact needs
+      # PARTIAL band coverage to occur and this DB seeds ZERO cdsAdmitBands, so
+      # there is no Tier-1 to cross into. If band seeding is ever added to this
+      # job, re-measure before assuming it still holds.
+      - name: Counselor invariant sweep
+        run: pnpm --filter api invariants:counselor
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
       - name: Verify prediction launch reports
         run: |
           pnpm --filter api verify:counselor-coverage
