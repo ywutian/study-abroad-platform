@@ -629,9 +629,23 @@ Population: 241 US schools (13 portfolio exempt) | 219 w/ SAT bands
 **已接入**：`ci.yml` 的 prediction-gate job，位置在 5 个修正 seed 之后、
 `Verify prediction launch reports` 之前。脚本 exit 2 即 fail。
 
-**留给下一个人的话**（已写进脚本 docstring 和 CI 注释）：若将来给 gate job 加了 band
-seeding，**必须重新测量**再假设它仍然干净；本地跑仍有价值 —— orchestrator seed **有**
-band ladder，能覆盖这个 gate 够不到的 Tier-1 路径。
+**那句"若加了 band seeding 必须重新测量"——我当场测掉了，答案是不成立。**
+
+把 `cds-admit-bands.json`（38 条 / 9 所 UC）加载进同一个库，sweep **立刻变红：
+6 处 violation，全部 UC Merced**（I2 单调性 / I4 支配性 / I16 国际生）。
+
+根因：那 9 所里 **7 所有完整的 5 档 ladder，Berkeley 和 Merced 只有 `3.75-4.00` 一档**。
+GPA 4.0 命中那唯一一档 → Tier-1 anchor 0.88；GPA 3.5 无档命中 → 落到 Tier-2 =
+学校总录取率 ~0.89。**更强的申请者预测更低。**
+`isotonicBandRate` 修不了 —— 它只能拿同 ladder 的**更低档**往上夹，而这里没有更低档。
+Berkeley 形状相同但不倒挂：它总录取率 ~11% 远低于顶档。
+
+**这不只是测试夹具的问题** —— `migrate.sh` step 54 加载的就是这个文件，
+所以 prod 同样存在，而 UC Merced 正是学生拿来当保底校查的那类。
+数据覆盖缺陷，非引擎回归。已单开工单跟踪。
+
+CI 注释和脚本 docstring 都已改成写明这个已测结果，并明确写着
+**在补齐数据之前不要给这个 job 加 band seeding**。
 
 ---
 

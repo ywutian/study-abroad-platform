@@ -845,13 +845,21 @@ jobs:
       # calibration cases pin specific points, this pins the shape.
       #
       # It used to be excluded on the grounds that a partially-seeded gate DB
-      # produces tier-crossing artifacts (a 3.8 GPA matching a lone low Tier-1
-      # band scoring under a 3.5 that falls through to Tier-2). Measured on a
-      # faithful reproduction of this job's own DB on 2026-07-25: 241 schools,
-      # 9,342 checks, 0 violations, all 16 invariants green. The artifact needs
-      # PARTIAL band coverage to occur and this DB seeds ZERO cdsAdmitBands, so
-      # there is no Tier-1 to cross into. If band seeding is ever added to this
-      # job, re-measure before assuming it still holds.
+      # produces tier-crossing artifacts. Measured on a faithful reproduction of
+      # this job's own DB on 2026-07-25: 241 schools, 9,342 checks, 0
+      # violations, all 16 invariants green — because the artifact needs PARTIAL
+      # band coverage and this job seeds ZERO cdsAdmitBands (bands come from
+      # seed-orchestrator / migrate.sh step 54, which this job does not run).
+      #
+      # DO NOT add band seeding here without fixing the data first. Also
+      # measured 2026-07-25: loading prisma/seeds/data/cds-admit-bands.json into
+      # this DB turns the sweep red with 6 violations, all UC Merced. Seven of
+      # the nine UCs in that file carry a full five-rung ladder; Berkeley and
+      # Merced carry only `3.75-4.00`. A 4.0 applicant matches that lone rung
+      # (0.88) while a 3.5 finds no rung and falls through to the school's
+      # overall rate (~0.89), so the better applicant scores lower. The isotonic
+      # floor cannot repair it — there are no lower rungs to clamp up against.
+      # Tracked separately; it is a data-coverage gap, not an engine regression.
       - name: Counselor invariant sweep
         run: pnpm --filter api invariants:counselor
         env:
