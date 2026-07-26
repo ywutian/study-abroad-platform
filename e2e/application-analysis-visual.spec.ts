@@ -35,6 +35,13 @@ async function buildMasks(page: Page, selectors: string[]) {
   return masks;
 }
 
+// Baselines are committed for chromium-linux only — the platform the nightly
+// governance workflow runs on. Running this suite on macOS produces
+// "A snapshot doesn't exist" for every case; that is expected, and the actual
+// renders it writes are for local inspection, not for committing. A second
+// platform's baselines have to be regenerated in lockstep with every change to
+// maskSelectors or to the fixture generator, and the darwin set that used to
+// live here silently rotted for three months because nothing did that.
 test.describe('application-analysis-visual', () => {
   test.use({ viewport: { width: 1440, height: 1100 } });
 

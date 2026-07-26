@@ -8,7 +8,7 @@ describe('env validation', () => {
   });
 
   it('provides default for NEXT_PUBLIC_APP_URL', () => {
-    expect(env.NEXT_PUBLIC_APP_URL).toBe('https://studyabroad.app');
+    expect(env.NEXT_PUBLIC_APP_URL).toBe('https://www.lumniedu.com');
   });
 
   it('provides default for NEXT_PUBLIC_API_URL', () => {
