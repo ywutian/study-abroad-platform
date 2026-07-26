@@ -128,6 +128,15 @@ async function main() {
       maskSelectors: [
         '[data-testid="analysis-trace-id"]',
         '[data-testid^="analysis-school-updated-at-"]',
+        // This file is REGENERATED on every nightly run (the workflow's
+        // "Generate render fixtures" step), so anything derived from the
+        // generation date differs from the committed baseline every single
+        // day. freshnessSummary.summary embeds it as prose — "…analysis from
+        // 2026-04-21." — and it is the only date-bearing field that reaches
+        // the DOM unmasked (meta.generatedAt and freshnessSummary.generatedAt
+        // are never rendered; prediction.updatedAt is covered by the selector
+        // above). A timestamp cannot be pixel-compared; mask it.
+        '[data-testid="analysis-freshness-summary"]',
       ],
     });
   }

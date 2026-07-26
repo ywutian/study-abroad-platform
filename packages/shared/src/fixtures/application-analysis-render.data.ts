@@ -223,6 +223,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -307,6 +308,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -516,6 +518,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -603,6 +606,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -686,6 +690,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -904,6 +909,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -1103,6 +1109,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -1419,6 +1426,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -1614,6 +1622,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
   {
@@ -1827,6 +1836,7 @@ export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixt
     maskSelectors: [
       '[data-testid="analysis-trace-id"]',
       '[data-testid^="analysis-school-updated-at-"]',
+      '[data-testid="analysis-freshness-summary"]',
     ],
   },
 ];
