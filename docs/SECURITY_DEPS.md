@@ -25,6 +25,28 @@ one-time fix; the goal here is a consistent, enforced _process_.
   quietly edited to drop the HIGH/CRITICAL check or its exit code. It protects
   the gate, not the deps.
 
+## A clean lockfile is not a clean image
+
+The gates above read `pnpm-lock.yaml`. CI's `Docker Build` job runs Trivy against
+the **built API image**, which is a different artifact and can contain packages
+the lockfile never resolved.
+
+`apps/api/Dockerfile` builds it with `pnpm deploy --legacy`, and that links the
+**workspace root's `dependencies`** into the deployed app. Seven frontend
+packages living in the root therefore shipped inside the NestJS image;
+`@sentry/nextjs` peer-depends on `next`, which vendors its own copies of `tar`
+and `brace-expansion` under `dist/compiled/`. Trivy flagged CRITICAL/HIGH CVEs
+in code the API can never load, and no `pnpm.overrides` could reach them —
+they are pre-bundled inside the `next` package. Removing the root deps took the
+image's `node_modules` from 972 MB to 466 MB and cleared all three findings.
+
+`pnpm lint:dep-pins` now fails if the root declares any runtime `dependencies`
+(and if `pnpm.overrides` grows duplicate keys, which a merge can introduce
+silently — JSON keeps the last one, so the effective pin follows line order).
+When a Trivy image finding names a package that is not in the lockfile at that
+version, look for a vendored copy inside some dependency's `dist/compiled/`
+before reaching for an ignore entry.
+
 ## Fixing a high/critical advisory
 
 1. Prefer a real upgrade: bump the offending package (or its parent) to a patched
