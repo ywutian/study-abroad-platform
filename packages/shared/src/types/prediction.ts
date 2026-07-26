@@ -43,7 +43,23 @@ export interface PredictionEligibility {
 
 export type TierType = 'reach' | 'match' | 'safety' | 'unavailable';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
-export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+/**
+ * A school's SAT/ACT policy — the SINGLE definition of this union.
+ *
+ * It was hand-copied into 18 files across shared/api/web, none of them tied to
+ * the Prisma `TestingPolicy` enum they all describe. Seven more places read it
+ * through `as any`, so typecheck could not see those at all. That is a broken
+ * SSOT, and the i18n surfaces resolve their key dynamically
+ * (`testingPolicyT(school.testingPolicy)`), so `check-missing-keys` stays quiet
+ * and a drifted value reaches the user as a raw translation key.
+ *
+ * Import this type instead of retyping the union. The array is exported too so
+ * the drift guard can compare it against Prisma at runtime — see
+ * `apps/api/src/modules/school/testing-policy-ssot.spec.ts`.
+ */
+export const SCHOOL_TESTING_POLICIES = ['REQUIRED', 'OPTIONAL', 'BLIND', 'UNKNOWN'] as const;
+
+export type SchoolTestingPolicy = (typeof SCHOOL_TESTING_POLICIES)[number];
 export type SchoolIntlAidPolicy = 'NEED_BLIND' | 'NEED_AWARE' | 'UNKNOWN';
 export type SchoolRoundContext = 'ED' | 'ED2' | 'EA' | 'REA' | 'SCEA' | 'RD' | 'UC' | 'UNKNOWN';
 export type PolicySourceQuality = 'REVIEWED' | 'DERIVED' | 'UNKNOWN';

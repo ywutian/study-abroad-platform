@@ -668,3 +668,34 @@ throw**（prod 当前正是如此），而调用点没有保护 → 每周一产
 **测试**：`school-provenance.scheduler.spec.ts` 7 条 —— 锁被占则两个 cron 都不执行；
 拿到锁则执行；Scorecard 失败不得阻断 IPEDS；IPEDS 失败不得抛出；只看 OFFICIAL 层级；
 无陈旧字段时不调用任何 sync。3747 项 API 测试全过。
+
+---
+
+## 13. 🟠 `TestingPolicy` union SSOT 断裂 —— 已收敛
+
+由 §11 的架构 agent 发现，是任何未来枚举变更的**前置条件**。
+
+**问题**：`'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN'` 在仓库里**被手抄 18 份**
+（shared / api / web 三层），没有一份与它们所描述的 Prisma `TestingPolicy` 枚举相连。
+另有 **7 处 `as any` 读取**，typecheck 对它们完全不可见。
+
+**为什么这特别危险**：i18n 是**动态取 key** 的（`testingPolicyT(school.testingPolicy)`），
+所以 `check-missing-keys.ts` 抓不到 —— 枚举一旦漂移，前端表现是**用户看到裸 key**。
+也就是说这个 SSOT 断裂的失败模式是静默且用户可见的。
+
+**修法 — 已完成 2026-07-25**
+
+- `packages/shared/src/types/prediction.ts` 的 `SchoolTestingPolicy` 作为唯一定义，
+  改为从 `SCHOOL_TESTING_POLICIES` 常量数组派生（数组导出是为了让守卫能在**运行时**比对）。
+- **18 处手抄全部替换为引用它** → 现在剩 0 处。顺带发现 `ai.types.ts` 在做一层
+  没必要的再导出，两个消费者改为直接指向源头。
+- **7 处 `as any` 全部拆除**。拆完 typecheck **直接通过** —— 说明那些 cast 一直
+  纯粹是在蒙眼，类型本来就是对的。同时把 `SchoolMetrics.testingPolicy` 从
+  `string` 收紧为 `SchoolTestingPolicy`。
+- **漂移守卫** `testing-policy-ssot.spec.ts`：运行时断言 shared 的数组与
+  `Object.keys(TestingPolicy)` 完全一致（Prisma 是权威，shared 跟随）；
+  外加一条类型层断言（枚举多出成员时**编译就断**，比运行时更早）；
+  以及一条钉住 `UNKNOWN` 必须存在 —— 它是列默认值且在本代码库里有确切语义
+  （"已知未记录"而非"忘了填"），改名或删除会静默改变每一所未回填学校的算分。
+
+3750 项 API 测试 + 399 项 shared 测试全过，web typecheck 通过。

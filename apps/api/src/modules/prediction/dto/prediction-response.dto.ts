@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { SchoolPublicMedia } from '@study-abroad/shared';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export class PredictionFactor {
   @ApiProperty({ description: 'Factor name', example: 'GPA' })
@@ -396,7 +397,7 @@ export class PredictionResultDto {
     sat75?: number;
     act25?: number;
     act75?: number;
-    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+    testingPolicy?: SchoolTestingPolicy;
     dataQuality?: {
       officialFields: string[];
       heuristicFields: string[];

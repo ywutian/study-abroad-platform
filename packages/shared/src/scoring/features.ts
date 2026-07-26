@@ -202,7 +202,7 @@ export function extractFeatureVector(
       ? normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0, profile.gpaSystem) / 4.0
       : NaN;
   // Test-blind schools: SAT/ACT are not applicable — zero out test features
-  const isTestBlindSchool = (school as any).testingPolicy === 'BLIND' ? 1 : 0;
+  const isTestBlindSchool = school.testingPolicy === 'BLIND' ? 1 : 0;
   const satNorm = !isTestBlindSchool && profile.satScore != null ? profile.satScore / 1600 : NaN;
   const actNorm = !isTestBlindSchool && profile.actScore != null ? profile.actScore / 36 : NaN;
   const toeflNorm =

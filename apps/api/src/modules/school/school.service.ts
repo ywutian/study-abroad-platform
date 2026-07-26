@@ -55,6 +55,7 @@ import {
   type CatalogRanking,
   type RankingListSelection,
 } from './school-ranking-catalog';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 import {
   decodeNicheGradeParam,
   isNicheGradeAtLeast,
@@ -215,7 +216,7 @@ interface SchoolFilters {
   salaryMax?: number;
   schoolType?: 'public' | 'private';
   testOptional?: boolean;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   needBlind?: boolean;
   hasEarlyDecision?: boolean;
   sortBy?: 'rank' | 'name' | 'acceptance' | 'salary' | 'weighted';
@@ -1123,7 +1124,7 @@ export class SchoolService {
     const testingPolicy =
       (
         schoolBase as {
-          testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN' | null;
+          testingPolicy?: SchoolTestingPolicy | null;
         }
       ).testingPolicy ?? 'UNKNOWN';
     const nextSchool = {

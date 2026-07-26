@@ -15,6 +15,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { SchoolTier, TierSource } from '@prisma/client';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export { SchoolTier, TierSource };
 
@@ -105,7 +106,7 @@ export class SchoolListItemResponseDto {
     tuition?: number;
     city?: string;
     state?: string;
-    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+    testingPolicy?: SchoolTestingPolicy;
     testOptional?: boolean;
     hasEarlyDecision?: boolean;
     acceptsCommonApp?: boolean;
