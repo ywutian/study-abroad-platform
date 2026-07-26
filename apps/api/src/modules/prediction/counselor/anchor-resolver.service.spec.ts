@@ -200,16 +200,16 @@ describe('AnchorResolverService · anchor tier truth table', () => {
 
   it.each(cases)('%s', async (_label, scores, over, tier) => {
     const result = await resolver().resolveAnchor(
-      profileWith(scores) as any,
-      school(over) as any,
+      profileWith(scores),
+      school(over),
     );
     expect({ tier: result.tier }).toEqual({ tier });
   });
 
   it('never claims SAT bands fed the anchor — the anchor is acceptanceRate', async () => {
     const result = await resolver().resolveAnchor(
-      profileWith([{ type: 'SAT', score: 1500 }]) as any,
-      school() as any,
+      profileWith([{ type: 'SAT', score: 1500 }]),
+      school(),
     );
     // The old string was 'scorecard (acceptanceRate + SAT bands)', which read as
     // "bands are part of the anchor". They are not: the anchor is the school's

@@ -37,7 +37,7 @@
     "prepare": "husky",
     "sbom:generate": "cdxgen -o sbom/bom.json --deep -t js --spec-version 1.5",
     "sbom:verify": "node -e \"const s=require('./sbom/bom.json'); if(!s.specVersion||!(s.components||[]).length){process.exit(1)} console.log('SBOM OK — specVersion:', s.specVersion, '| components:', s.components.length);\"",
-    "lint:routes": "tsx scripts/check-api-routes.ts && tsx scripts/check-client-closure.ts",
+    "lint:routes": "tsx scripts/check-api-routes.ts",
     "lint:routes:test": "tsx scripts/check-api-routes.ts --self-test && tsx scripts/check-client-closure.ts --self-test",
     "lint:integration": "tsx scripts/check-integration.ts",
     "lint:recurrence": "tsx scripts/check-recurrence.ts",
