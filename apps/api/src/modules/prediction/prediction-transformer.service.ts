@@ -454,7 +454,7 @@ export class PredictionTransformerService {
     // these fields, which would otherwise downgrade them to UNKNOWN and
     // break the application-analysis golden render fixtures (E2E
     // application-analysis-render expects 'BLIND' for Berkeley etc.).
-    const rawTestingPolicy = (school as any).testingPolicy ?? undefined;
+    const rawTestingPolicy = school.testingPolicy ?? undefined;
     const rawTestOptional = (school as any).testOptional ?? undefined;
     const testingPolicy =
       rawTestingPolicy ??

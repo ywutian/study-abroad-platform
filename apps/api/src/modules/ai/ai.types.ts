@@ -1,4 +1,5 @@
 import type { AIAnalysisResult } from '@study-abroad/shared';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -215,7 +216,6 @@ void _sharedContractSatisfiesV2;
 
 export type ApplicationAnalysisStatus = 'fresh' | 'cached' | 'degraded';
 
-export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
 export type SchoolIntlAidPolicy = 'NEED_BLIND' | 'NEED_AWARE' | 'UNKNOWN';
 export type SchoolRoundContext =
   'ED' | 'ED2' | 'EA' | 'REA' | 'SCEA' | 'RD' | 'UC' | 'UNKNOWN';

@@ -27,6 +27,7 @@ import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo';
 // 2026-05 Phase 4 follow-up: Web Vitals → Sentry reporter.
 import { WebVitalsReporter } from '@/components/observability/web-vitals-reporter';
 import { env } from '@/lib/env';
+import { buildAlternates } from '@/lib/seo';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -37,8 +38,13 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'meta.home' });
   const common = await getTranslations({ locale, namespace: 'common' });
+  // x-pathname is forwarded by proxy.ts; the fallback only fires if the
+  // middleware is bypassed, in which case the locale root is the right guess.
+  const alternates = buildAlternates((await headers()).get('x-pathname') ?? `/${locale}`);
 
   return {
+    metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
+    alternates,
     title: {
       default: t('title'),
       template: `%s | ${common('appName')}`,
@@ -50,6 +56,7 @@ export async function generateMetadata({
       type: 'website',
       locale: locale === 'zh' ? 'zh_CN' : 'en_US',
       siteName: common('appName'),
+      url: alternates.canonical as string,
     },
     twitter: {
       card: 'summary_large_image',

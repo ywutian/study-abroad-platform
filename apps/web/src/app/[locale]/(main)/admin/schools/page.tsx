@@ -29,6 +29,7 @@ import { DataSyncTab } from './_components/data-sync-tab';
 import { EditSchoolDialog } from './_components/edit-school-dialog';
 import { SchoolCommunityRatingsDialog } from './_components/school-community-ratings-dialog';
 import { MediaAssetsTab } from './_components/media-assets-tab';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 interface School {
   id: string;
@@ -47,7 +48,7 @@ interface School {
   averageNetPrice?: number;
   roomAndBoard?: number;
   percentNeedMet?: number;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;

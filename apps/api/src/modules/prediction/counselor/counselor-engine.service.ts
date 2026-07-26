@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   resolveMajorToCip,
   resolveMajorToProgramBucket,
@@ -69,7 +69,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
 export type EncodedDimension = 'gpa' | 'test';
 
 export const COUNSELOR_RULE_VERSION =
-  'counselor-cold-start-v1.8-profile-signals';
+  'counselor-cold-start-v1.10-substitute-cap';
 
 export interface CounselorFactor {
   name: string;
@@ -115,9 +115,14 @@ export class CounselorEngineService {
   constructor(
     @Inject(PrismaService)
     private readonly prisma: PrismaService,
-    @Optional()
+    // Required, not @Optional(). It used to be optional with a private
+    // duplicate of the whole anchor ladder as fallback — which meant prod ran
+    // the resolver while `counselor-engine.monotonicity.spec.ts` deliberately
+    // omitted it and guarded the copy instead. The guard watched code nobody
+    // ran (2026-07-24 audit). The duplicate is gone; a missing binding must now
+    // fail at startup rather than silently switch maths.
     @Inject(AnchorResolverService)
-    private readonly anchorResolver?: AnchorResolverService,
+    private readonly anchorResolver: AnchorResolverService,
   ) {}
 
   /**
@@ -154,9 +159,7 @@ export class CounselorEngineService {
       encodedDimensions,
       insufficientData,
       sourceContributions: anchorContributions,
-    } = this.anchorResolver
-      ? await this.anchorResolver.resolveAnchor(profile, school)
-      : await this.resolveAnchor(profile, school);
+    } = await this.anchorResolver.resolveAnchor(profile, school);
 
     if (insufficientData) {
       const profileContext = profileContextMultiplier(profile, school);
@@ -454,214 +457,6 @@ export class CounselorEngineService {
     return Array.from(missing);
   }
 
-  // ---------------------------------------------------------------------------
-  // Anchor resolution: 4-tier fallback
-  // ---------------------------------------------------------------------------
-
-  private async resolveAnchor(
-    profile: ProfileInput,
-    school: SchoolInput & {
-      acceptanceRate?: number | null;
-      institutionType?: string | null;
-    },
-  ): Promise<{
-    anchor: number;
-    tier: CounselorTier;
-    anchorSource: string;
-    /**
-     * Profile dimensions already absorbed into the anchor — see EncodedDimension.
-     * For Tier 1 CDS-band cells, this depends on the cell's `testType`. For
-     * Tier 2/3/4 (overall acceptance rate), the set is empty and all modifiers
-     * apply normally.
-     */
-    encodedDimensions: ReadonlySet<EncodedDimension>;
-    insufficientData?: { reason: string };
-    sourceContributions?: CounselorResult['sourceContributions'];
-  }> {
-    if (this.isAuditionOrPortfolioSchool(school)) {
-      return {
-        anchor: 0,
-        tier: 4,
-        anchorSource: 'audition_or_portfolio_admission',
-        encodedDimensions: new Set(),
-        insufficientData: {
-          reason:
-            'audition_or_portfolio_admission: this school admits primarily on portfolio review or audition; academic stats alone cannot reliably predict outcome',
-        },
-        sourceContributions: [
-          {
-            source: 'institutionType',
-            value: null,
-            role: 'anchor',
-            detail:
-              'Portfolio/audition-first institution; counselor declines to provide an academic-stats probability.',
-          },
-        ],
-      };
-    }
-
-    // Tier 1: CDS Section C9 admit-by-band lookup if (school, gpaBand, testBand)
-    // cell exists. Most accurate signal — uses school-published numbers directly.
-    const cdsBand = await this.lookupCdsBand(profile, school);
-    if (cdsBand != null) {
-      return {
-        anchor: cdsBand.admitRate,
-        tier: 1,
-        anchorSource: 'cds-bands-v1',
-        encodedDimensions: cdsBand.encodedDimensions,
-      };
-    }
-
-    // Tier 2 / 3: fall back to overall acceptanceRate.
-    // The difference between Tier 2 and Tier 3 is only relevant for the
-    // GPA/SAT band modifiers (which need sat25/75 to be useful) — both use
-    // acceptanceRate as anchor. Distinction is reported in `tier` for ops
-    // visibility but doesn't affect math here.
-    const overall = this.normalizeAcceptanceRate(school.acceptanceRate);
-    if (overall != null) {
-      const hasSatBands = school.sat25 != null && school.sat75 != null;
-      return {
-        anchor: overall,
-        tier: hasSatBands ? 2 : 3,
-        anchorSource: hasSatBands
-          ? 'scorecard (acceptanceRate + SAT bands)'
-          : 'scorecard (acceptanceRate only)',
-        encodedDimensions: new Set(),
-      };
-    }
-
-    // Tier 4: no usable data — caller shows "insufficient data" message.
-    return {
-      anchor: 0,
-      tier: 4,
-      anchorSource: 'none',
-      encodedDimensions: new Set(),
-      insufficientData: {
-        reason:
-          'school_missing_acceptance_rate: no acceptanceRate or CDS band data available for this school',
-      },
-    };
-  }
-
-  /**
-   * Look up `SchoolCdsAdmitBand` for the (school, gpaBand, testBand) cell.
-   * Mirrors `cds-bands-teacher.service.ts:resolveGpaBand/resolveSatBand` logic
-   * for a consistent band convention across the platform.
-   *
-   * Returns the cell admit rate AND which profile dimensions the cell
-   * encodes. `testType: 'GPA_ONLY'` cells encode only GPA; `SAT`/`ACT` cells
-   * encode both GPA and test. The caller uses this to suppress redundant
-   * modifiers in the compute step (see `EncodedDimension` docs).
-   */
-  private async lookupCdsBand(
-    profile: ProfileInput,
-    school: SchoolInput,
-  ): Promise<{
-    admitRate: number;
-    encodedDimensions: ReadonlySet<EncodedDimension>;
-  } | null> {
-    const gpaBands = this.gpaToBands(profile.gpa, profile.gpaScale);
-    if (!gpaBands.length) return null;
-
-    const testCandidates: Array<{ testType: string; testBand: string }> = [];
-    const sat = profile.testScores?.find((t) => t.type === 'SAT')?.score;
-    if (sat != null) {
-      const satBand = this.satToBand(sat);
-      if (satBand) testCandidates.push({ testType: 'SAT', testBand: satBand });
-    }
-    const act = profile.testScores?.find((t) => t.type === 'ACT')?.score;
-    if (act != null) {
-      const actBand = this.actToBand(act);
-      if (actBand) testCandidates.push({ testType: 'ACT', testBand: actBand });
-    }
-    testCandidates.push({ testType: 'GPA_ONLY', testBand: 'ANY' });
-
-    // PR-14: iterate gpaBands in preference order (UC weighted first, then
-    // standard 4.0 fallback). For each gpaBand, try each test candidate.
-    // First hit wins.
-    for (const gpaBand of gpaBands) {
-      for (const c of testCandidates) {
-        const row = await this.prisma.schoolCdsAdmitBand.findFirst({
-          where: {
-            schoolId: school.id,
-            gpaBand,
-            testType: c.testType,
-            testBand: c.testBand,
-          },
-          orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
-          select: { admitRate: true },
-        });
-        if (row) {
-          let rate = row.admitRate.toNumber();
-          if (rate >= 1) rate = rate / 100; // tolerate percentages stored as 88 not 0.88
-          if (rate <= 0 || rate >= 1) continue;
-          // Isotonic floor: a strictly-higher GPA band must never serve a LOWER
-          // anchor than a lower band in the same (testType, testBand) ladder.
-          rate = await this.isotonicBandRate(
-            school.id,
-            c.testType,
-            c.testBand,
-            gpaBand,
-            rate,
-          );
-          // Cell with testType = SAT/ACT encodes BOTH gpa + test signal.
-          // Cell with testType = GPA_ONLY encodes ONLY gpa.
-          const encoded: Set<EncodedDimension> = new Set(['gpa']);
-          if (c.testType !== 'GPA_ONLY') encoded.add('test');
-          return { admitRate: rate, encodedDimensions: encoded };
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Isotonic (monotonic) floor for the by-GPA CDS band ladder. A strictly-HIGHER
-   * GPA band must never serve a LOWER anchor than a lower GPA band in the same
-   * (testType, testBand) ladder. Hand-estimated CDS ladders can dip at the top
-   * (e.g. UC Merced GPA_ONLY: 3.50-3.74 = 92% but 3.75-4.00 = 88%), which would
-   * make a 3.8-GPA applicant score BELOW a 3.7 — a visible, trust-eroding
-   * non-monotonicity (caught by the 2026-06 invariant audit). We clamp the
-   * matched band's rate UP to the running max over all strictly-lower GPA bands
-   * in the same ladder. This only ever RAISES the served rate and never lowers
-   * one, so it cannot push a prediction above the school's own published
-   * top-band ceiling. Bands are only comparable WITHIN a family (standard 4.0 vs
-   * UC-weighted) and WITHIN a fixed testBand (we never mix SAT bands).
-   */
-  private async isotonicBandRate(
-    schoolId: string,
-    testType: string,
-    testBand: string,
-    matchedBand: string,
-    matchedRate: number,
-  ): Promise<number> {
-    const LADDERS = [
-      ['<3.00', '3.00-3.24', '3.25-3.49', '3.50-3.74', '3.75-4.00'],
-      ['<3.60', '3.60-3.79', '3.80-3.99', '4.00-4.19', '4.20-4.40'],
-    ];
-    const family = LADDERS.find((l) => l.includes(matchedBand));
-    if (!family) return matchedRate;
-    const lowerBands = family.slice(0, family.indexOf(matchedBand));
-    if (lowerBands.length === 0) return matchedRate;
-
-    const rows = await this.prisma.schoolCdsAdmitBand.findMany({
-      where: { schoolId, testType, testBand, gpaBand: { in: lowerBands } },
-      orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
-      select: { gpaBand: true, admitRate: true },
-    });
-    const seen = new Set<string>();
-    let max = matchedRate;
-    for (const r of rows) {
-      if (seen.has(r.gpaBand)) continue; // first row per band = latest cycle
-      seen.add(r.gpaBand);
-      let rate = r.admitRate.toNumber();
-      if (rate >= 1) rate = rate / 100;
-      if (rate <= 0 || rate >= 1) continue;
-      if (rate > max) max = rate;
-    }
-    return max;
-  }
-
   private async lookupProgramAcceptanceRate(
     profile: ProfileInput,
     school: SchoolInput,
@@ -724,95 +519,5 @@ export class CounselorEngineService {
 
     // No hit anywhere → majorMultiplier returns neutral.
     return null;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Helpers (band conventions mirror cds-bands-teacher.service.ts)
-  // ---------------------------------------------------------------------------
-
-  private gpaToBand(
-    gpa: number | undefined,
-    gpaScale: number | undefined,
-  ): string | null {
-    // Legacy single-band: returns the standard 4.0-scale band for backward
-    // compatibility. New code uses gpaToBands() to also try UC-weighted bands.
-    const bands = this.gpaToBands(gpa, gpaScale);
-    return bands[bands.length - 1] ?? null;
-  }
-
-  /**
-   * Return all candidate gpaBand labels to try (in order of preference)
-   * when looking up a CDS cell. PR-14: also emits UC-weighted bands when
-   * the input scale > 4.0, so UC students with weighted GPA hit per-band
-   * UCOP cells loaded into `SchoolCdsAdmitBand` for higher precision.
-   *
-   * Order: most-specific first (UC weighted) → fallback (standard 4.0).
-   */
-  private gpaToBands(
-    gpa: number | undefined,
-    gpaScale: number | undefined,
-  ): string[] {
-    if (gpa == null || !Number.isFinite(gpa)) return [];
-    const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
-    const bands: string[] = [];
-
-    // UC weighted scale (capped at 4.4): emit UC-style bands matching UCOP
-    // freshman profile data ("admit rate by HS GPA: 4.20+ / 4.00-4.19 / ...").
-    // Only emit when caller explicitly set scale > 4.0 (avoids misfiring
-    // on accidental gpa=4.30 with default 4.0 scale).
-    if (scale > 4.0) {
-      if (gpa >= 4.2) bands.push('4.20-4.40');
-      else if (gpa >= 4.0) bands.push('4.00-4.19');
-      else if (gpa >= 3.8) bands.push('3.80-3.99');
-      else if (gpa >= 3.6) bands.push('3.60-3.79');
-      else bands.push('<3.60');
-    }
-
-    // Always also emit standard 4.0-scale band (normalized). Acts as
-    // fallback when no UC-weighted cell matches; also primary for non-UC
-    // schools.
-    const gpa4 = (gpa / scale) * 4.0;
-    if (gpa4 >= 3.75) bands.push('3.75-4.00');
-    else if (gpa4 >= 3.5) bands.push('3.50-3.74');
-    else if (gpa4 >= 3.25) bands.push('3.25-3.49');
-    else if (gpa4 >= 3) bands.push('3.00-3.24');
-    else bands.push('<3.00');
-
-    return bands;
-  }
-
-  private satToBand(sat: number): string | null {
-    if (!Number.isFinite(sat)) return null;
-    if (sat >= 1500) return '1500-1600';
-    if (sat >= 1400) return '1400-1499';
-    if (sat >= 1300) return '1300-1399';
-    return '<1300';
-  }
-
-  private actToBand(act: number): string | null {
-    if (!Number.isFinite(act)) return null;
-    if (act >= 34) return '34-36';
-    if (act >= 31) return '31-33';
-    if (act >= 28) return '28-30';
-    return '<28';
-  }
-
-  /**
-   * Coerce school.acceptanceRate (Decimal column, may be 11.5 = 11.5% OR 0.115)
-   * to probability in [0, 1]. Returns null if missing or invalid.
-   */
-  private normalizeAcceptanceRate(
-    raw: number | null | undefined,
-  ): number | null {
-    if (raw == null || !Number.isFinite(raw) || raw <= 0) return null;
-    const normalized = raw > 1 ? raw / 100 : raw;
-    return normalized > 0 && normalized < 1 ? normalized : null;
-  }
-
-  private isAuditionOrPortfolioSchool(
-    school: SchoolInput & { institutionType?: string | null },
-  ): boolean {
-    const type = school.institutionType?.trim().toUpperCase();
-    return type === 'ART_DESIGN' || type === 'MUSIC_CONSERVATORY';
   }
 }

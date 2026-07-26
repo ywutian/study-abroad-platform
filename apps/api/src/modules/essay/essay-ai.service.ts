@@ -44,6 +44,7 @@ import type {
   EssayDimension,
   GalleryLearningHighlight,
 } from '@study-abroad/shared';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 /**
  * Versions the gallery `aiAnalysisCache[locale]` payload. Bump this when
@@ -113,7 +114,7 @@ export class EssayAiService {
   ) {}
 
   private formatTestingPolicyLabel(
-    testingPolicy: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN',
+    testingPolicy: SchoolTestingPolicy,
     locale: string,
   ): string | null {
     const isZh = locale === 'zh';
@@ -628,7 +629,7 @@ export class EssayAiService {
             ? `${Number(school.acceptanceRate)}%`
             : null;
         const testingPolicy = resolveSchoolTestingPolicyValue({
-          testingPolicy: (school as any).testingPolicy,
+          testingPolicy: school.testingPolicy,
           testOptional: school.testOptional,
         });
         const testingPolicyLabel = this.formatTestingPolicyLabel(

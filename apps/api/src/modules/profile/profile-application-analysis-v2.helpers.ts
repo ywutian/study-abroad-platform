@@ -19,11 +19,11 @@ import type {
   PortfolioBalance,
   SchoolIntlAidPolicy,
   SchoolRoundContext,
-  SchoolTestingPolicy,
 } from '../ai/ai.types';
 import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
 import type { CaseComparisonResult } from '../prediction/prediction-historical.service';
 import { resolveEffectiveTier } from '../school-list/school-list.constants';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export const MAX_FOCUS_SCHOOLS = 5;
 

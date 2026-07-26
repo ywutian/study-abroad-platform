@@ -142,7 +142,7 @@ export function calculateAcademicScore(
   let score = ACADEMIC_CONFIG.baseScore;
 
   // Detect test-blind schools — SAT/ACT scores are not applicable
-  const isTestBlind = (school as any).testingPolicy === 'BLIND';
+  const isTestBlind = school.testingPolicy === 'BLIND';
 
   if (profile.gpa) {
     const normalizedGpa = normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0, profile.gpaSystem);

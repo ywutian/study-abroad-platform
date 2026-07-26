@@ -52,19 +52,57 @@ import {
 
 const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
 const PREDICTION_CONTEXT_STALE_AFTER_MS = 1000 * 60 * 60 * 24 * 30;
+
+function readBoundedPositiveInteger(
+  value: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= min && parsed <= max
+    ? parsed
+    : fallback;
+}
 
 // The per-school analyst LLM steps are independent, so run them with bounded
 // concurrency instead of serially. Serially, MAX_FOCUS_SCHOOLS (5) steps × the
 // per-step timeout + the portfolio step could reach ~180s and blow the 120s
 // TimeoutMiddleware budget → 408 on prod (slow deepseek proxy hits each ceiling).
-// K=4 covers the 5 focus schools in ~one wave while staying gentle on the proxy.
-const SCHOOL_ANALYST_CONCURRENCY = 4;
-// Tighter than the portfolio step (30s): a stuck school gives up to its
-// deterministic floor sooner. deepseek p50 for a 1500-token completion is well
-// under this; only true stalls hit it.
-const SCHOOL_ANALYST_TIMEOUT_MS = 22_000;
+// The product caps focus schools at five. Run that bounded set in one wave so a
+// provider outage cannot create a second full timeout wave.
+export const SCHOOL_ANALYST_CONCURRENCY = readBoundedPositiveInteger(
+  process.env.APPLICATION_ANALYSIS_SCHOOL_CONCURRENCY,
+  5,
+  1,
+  5,
+);
+// These are deliberately below the API request timeout. Both remain tunable for
+// a slower private provider, while bad values fall back to safe defaults.
+export const SCHOOL_ANALYST_TIMEOUT_MS = readBoundedPositiveInteger(
+  process.env.APPLICATION_ANALYSIS_SCHOOL_TIMEOUT_MS,
+  12_000,
+  1_000,
+  60_000,
+);
+export const PORTFOLIO_SYNTHESIZER_TIMEOUT_MS = readBoundedPositiveInteger(
+  process.env.APPLICATION_ANALYSIS_PORTFOLIO_TIMEOUT_MS,
+  15_000,
+  1_000,
+  60_000,
+);
+// A provider-wide failure is useful deterministic output, but retrying it on
+// every screen mount creates a thundering herd. Keep it briefly and preserve the
+// degraded status so clients never mistake it for a healthy cache hit.
+export const APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS =
+  readBoundedPositiveInteger(
+    process.env.APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS,
+    90,
+    10,
+    600,
+  );
 
 /**
  * Map over `items` running `fn` with at most `limit` in flight at once,
@@ -96,6 +134,18 @@ interface GetAnalysisOptions {
   debug?: boolean;
   mode?: 'deterministic' | 'live';
   persistRun?: boolean;
+}
+
+export function shouldSkipPortfolioSynthesis(input: {
+  mode: 'deterministic' | 'live';
+  llmCallsAttempted: number;
+  llmCallsFailed: number;
+}): boolean {
+  return (
+    input.mode === 'live' &&
+    input.llmCallsAttempted > 0 &&
+    input.llmCallsFailed === input.llmCallsAttempted
+  );
 }
 
 interface NormalizedSchoolAnalysisResponse {
@@ -154,6 +204,10 @@ export class ProfileApplicationAnalysisV2Service {
   private readonly logger = new Logger(
     ProfileApplicationAnalysisV2Service.name,
   );
+  private readonly inFlightAnalyses = new Map<
+    string,
+    Promise<ApplicationAnalysisResponseV2>
+  >();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -177,22 +231,61 @@ export class ProfileApplicationAnalysisV2Service {
         return this.enrichApplicantResponse(
           {
             ...cached,
-            status: 'cached',
+            status: cached.status === 'degraded' ? 'degraded' : 'cached',
             meta: { ...cached.meta, debugEnabled: false },
           },
           locale,
         );
       }
+
+      const existing = this.inFlightAnalyses.get(cacheKey);
+      if (existing) {
+        return existing;
+      }
     }
 
+    const generation = this.generateAndCacheAnalysis(
+      userId,
+      locale,
+      cacheKey,
+      options,
+    );
+    if (options.debug) {
+      return generation;
+    }
+
+    this.inFlightAnalyses.set(cacheKey, generation);
+    try {
+      return await generation;
+    } finally {
+      if (this.inFlightAnalyses.get(cacheKey) === generation) {
+        this.inFlightAnalyses.delete(cacheKey);
+      }
+    }
+  }
+
+  private async generateAndCacheAnalysis(
+    userId: string,
+    locale: string,
+    cacheKey: string,
+    options: GetAnalysisOptions,
+  ): Promise<ApplicationAnalysisResponseV2> {
     const snapshot = await this.buildSnapshotForUser(userId, locale);
     const response = await this.generateFromSnapshot(snapshot, {
       debug: options.debug,
       mode: options.mode,
     });
 
-    if (!options.debug && response.status !== 'degraded') {
-      await this.redis.setJSON(cacheKey, response, ANALYSIS_CACHE_TTL_SECONDS);
+    if (!options.debug) {
+      const ttl =
+        response.status === 'degraded'
+          ? response.meta.degradedReason === 'llmUnavailable'
+            ? APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS
+            : undefined
+          : ANALYSIS_CACHE_TTL_SECONDS;
+      if (ttl) {
+        await this.redis.setJSON(cacheKey, response, ttl);
+      }
     }
 
     return response;
@@ -835,6 +928,11 @@ export class ProfileApplicationAnalysisV2Service {
       `${portfolioSystemPrompt}\n${portfolioUserPrompt}`,
     );
     promptHashes.portfolio_synthesizer = portfolioPromptHash;
+    const allSchoolLlmCallsFailed = shouldSkipPortfolioSynthesis({
+      mode,
+      llmCallsAttempted,
+      llmCallsFailed,
+    });
 
     let normalizedPortfolio: NormalizedPortfolioResponse = {
       portfolioSummary: fallbackPortfolio,
@@ -860,6 +958,26 @@ export class ProfileApplicationAnalysisV2Service {
       });
       stepIds.push(portfolioStep.id);
       stepTimingsMs.portfolio_synthesizer = portfolioStep.latencyMs ?? 0;
+    } else if (allSchoolLlmCallsFailed) {
+      // Do not spend another independent timeout after a provider-wide school
+      // analysis failure. The deterministic portfolio is already complete and
+      // the run will be explicitly marked degraded below.
+      const portfolioStep = await this.recordStep({
+        runId,
+        stepName: 'portfolio_synthesizer',
+        status: 'SKIPPED',
+        normalizedInput: toJson(portfolioInput),
+        normalizedOutput: toJson({
+          portfolioSummary: fallbackPortfolio,
+          actionPlan: fallbackActionPlan,
+          unknowns: [],
+        }),
+        inputHash: hashObject(portfolioInput),
+        promptHash: portfolioPromptHash,
+        validationErrors: toJson(['upstream_school_analysis_unavailable']),
+      });
+      stepIds.push(portfolioStep.id);
+      stepTimingsMs.portfolio_synthesizer = portfolioStep.latencyMs ?? 0;
     } else {
       llmCallsAttempted += 1;
       try {
@@ -881,7 +999,7 @@ export class ProfileApplicationAnalysisV2Service {
             // silently fall back to the deterministic floor.
             maxTokens: 1500,
             userId: snapshot.profile.userId,
-            timeoutMs: 30000,
+            timeoutMs: PORTFOLIO_SYNTHESIZER_TIMEOUT_MS,
           },
         );
         const parsed = extractJsonFromLlm<Record<string, unknown>>(

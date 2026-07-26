@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CounselorEngineService } from './counselor-engine.service';
+import { AnchorResolverService } from './anchor-resolver.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 
 /**
@@ -23,10 +24,14 @@ import type { ProfileInput, SchoolInput } from '../prediction.prompts';
  *     but never the band-cell / isotonic-floor logic where every real regression lived.
  *
  * So a NEW non-monotonicity in the band path ships green today. THIS spec closes that:
- * it drives the engine's OWN Tier-1 path (the engine is constructed without an
- * AnchorResolver, so its private `lookupCdsBand` → `isotonicBandRate` runs) with
- * synthetic by-GPA / by-SAT band ladders mocked into Prisma — no real DB — and asserts
- * the core monotonicity invariants specifically over that path.
+ * it drives the SERVED Tier-1 path — `AnchorResolverService.lookupCdsBand` →
+ * `isotonicBandRate` — with synthetic by-GPA / by-SAT band ladders mocked into Prisma
+ * (no real DB), and asserts the core monotonicity invariants over that path.
+ *
+ * Until 2026-07-24 this spec deliberately withheld `AnchorResolverService` so the
+ * engine fell back to a private duplicate of the same ladder. Prod always had the
+ * resolver injected, so the guard was watching code nobody ran. The duplicate is
+ * deleted and the resolver is a required dependency; there is one implementation now.
  *
  * INVARIANTS (mirroring run-counselor-invariants.ts, restricted to the band path):
  *   - I2  GPA-monotonic       — holding test fixed, higher GPA ⇒ prob non-decreasing
@@ -105,11 +110,15 @@ describe('CounselorEngineService — CDS-band monotonicity (regression guard for
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CounselorEngineService,
+        AnchorResolverService,
         { provide: PrismaService, useValue: prisma },
       ],
-      // NOTE: AnchorResolverService is intentionally NOT provided. It's @Optional()
-      // on the engine, so the engine falls back to its OWN private lookupCdsBand +
-      // isotonicBandRate — the exact code path that regressed in #319/#320/#321.
+      // AnchorResolverService IS provided, so this guard exercises the SERVED
+      // anchor path. It used to be deliberately omitted to test the engine's own
+      // private lookupCdsBand + isotonicBandRate — but prod always has the
+      // resolver injected, so the guard was watching code nobody runs while the
+      // served copy went unguarded (found in the 2026-07-24 audit). The private
+      // duplicate has since been deleted; there is now one implementation.
     }).compile();
     service = module.get(CounselorEngineService);
   });

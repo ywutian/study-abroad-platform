@@ -86,6 +86,7 @@ RUN cd apps/api && npx tsc \
     prisma/seed-round-rate-correction.ts \
     prisma/seed-audit-corrections-2026-05-31.ts \
     prisma/seed-instate-rate-2026-05-31.ts \
+    prisma/seed-testing-policy-2026-07-25.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma
@@ -110,6 +111,25 @@ FROM node:20-alpine AS runner
 # A plain `apk add openssl` leaves the vulnerable base packages in place; this is the
 # image that ships + gets scanned, so it must carry the patched libs.
 RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
+
+# Upgrade the base image's own bundled npm, for the same reason as the apk line
+# above: it ships in the scanned image. node:20-alpine bundles npm 10, whose
+# vendored copies of tar (6.2.1) and brace-expansion (2.0.1) carry
+# CVE-2026-59873 (CRITICAL), CVE-2026-59874 and CVE-2026-13149, and whose
+# sigstore (2.3.1) carries CVE-2026-48815. None are reachable — the runtime is
+# `node dist/main.js` and npm never installs anything in the container — but
+# they are also trivially removable, and silencing four unreachable-but-fixable
+# findings would have meant four permanent .trivyignore entries: the fix for all
+# of them is in npm 11, and Node 20 stays on the npm 10 line, so the "will clear
+# itself when the base image bumps npm" trigger written on the old sigstore
+# entry could never actually fire while engines.node is pinned to 20.x.
+#
+# npm 11 requires Node ^20.17.0; this base is 20.19.x. If that ever stops
+# holding, this line fails at build time rather than at deploy time.
+#
+# npm itself must stay: migrate.sh runs `npx prisma migrate deploy` as a Cloud
+# Run Job from this image.
+RUN npm install -g npm@11
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \

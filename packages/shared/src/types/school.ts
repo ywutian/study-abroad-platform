@@ -1,4 +1,5 @@
 import type { SchoolRanking } from '../ranking';
+import type { SchoolTestingPolicy } from './prediction';
 
 // School & Ranking
 
@@ -44,7 +45,7 @@ export interface School {
   avgSalary?: number;
   rankings?: SchoolRanking[];
   media?: SchoolPublicMedia;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
 }
 

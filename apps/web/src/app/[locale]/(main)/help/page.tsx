@@ -10,7 +10,6 @@ import {
   BookOpen,
   Video,
   FileText,
-  Mail,
   MessageCircle,
   ExternalLink,
   Lightbulb,
@@ -313,13 +312,7 @@ export default function HelpPage() {
                 <p className="text-muted-foreground">{t('contactSupport')}</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="gap-2" asChild>
-                <a href="mailto:support@studyabroad.com">
-                  <Mail className="h-4 w-4" />
-                  {t('sendEmail')}
-                </a>
-              </Button>
+            <div>
               <Button className="gap-2" asChild>
                 <Link href="/chat">
                   <MessageCircle className="h-4 w-4" />

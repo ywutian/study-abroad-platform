@@ -5,6 +5,7 @@ import type {
   SchoolPublicMedia,
 } from '@study-abroad/shared';
 import type { SchoolRanking } from '@/lib/utils/ranking';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export interface SchoolDetail {
   id: string;
@@ -59,7 +60,7 @@ export interface SchoolDetail {
   feeWaiverAvailable?: boolean;
   acceptsCommonApp?: boolean;
   acceptsCoalition?: boolean;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
 

@@ -4,6 +4,7 @@ import type {
   SchoolPublicMedia,
 } from '@study-abroad/shared';
 import { type SchoolRanking } from '@/lib/utils/ranking';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export interface School {
   id: string;
@@ -33,7 +34,7 @@ export interface School {
   nicheLifeGrade?: string;
   nicheFoodGrade?: string;
   nicheOverallGrade?: string;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;

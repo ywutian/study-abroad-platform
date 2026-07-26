@@ -303,7 +303,7 @@
         "aiLab": "AI Lab",
         "aiLabDesc": "Experimental AI features",
         "referral": "Invite & Earn",
-        "referralDesc": "Share Lumni — earn points when friends join"
+        "referralDesc": "Share Lumni with friends"
       },
       "stats": {
         "followers": "Followers",
@@ -606,29 +606,26 @@
     "brand": "Lumni",
     "nav": {
       "product": "Product",
-      "cases": "Cases",
-      "pricing": "Pricing",
       "community": "Community",
       "about": "About",
       "signIn": "Sign in",
       "getStarted": "Get started"
     },
     "hero": {
-      "eyebrow": "Lumni Command Center · Powered by GPT-5",
-      "headline": ["Illuminate your", "admissions route"],
-      "subtitle": "From school lists and essays to timelines and submission, Lumni turns a complex application season into a clear plan calibrated by real admissions data.",
+      "headline": ["Admissions shouldn't remain", "an information war"],
+      "subtitle": "The problem is not a lack of information. It is the lack of a system that can compare, explain, and move the next decision forward. Lumni turns the application into one clear workflow.",
       "features": [
-        "Generate the first admissions route in 2 minutes",
+        "Quickly generate a first admissions route",
         "Move schools, essays, and timelines together",
-        "Keep human advisors for the decisions that matter"
+        "Keep the final call on the decisions that matter"
       ],
-      "trustLine": "Trusted by 12,400+ families · 2,100+ Top-30 offers",
+      "trustLine": "Calibrated against officially published admit rates — every prediction explained",
       "primaryCta": "Get started free",
-      "secondaryCta": "See student stories",
-      "statLabel": "Top-30 admits · 2026 calibrated",
+      "secondaryCta": "See the workflow",
+      "statLabel": "Application data kept current · Every conclusion explained",
       "floatingQuote": {
-        "quote": "I finally knew what the next move was.",
-        "meta": "Lin · UCLA '28"
+        "quote": "This sample interface demonstrates the workflow only.",
+        "meta": "Actual results depend on user data and published sources"
       },
       "aiDisclosure": {
         "trigger": "View model basis",
@@ -650,15 +647,15 @@
         "signalLabel": "Lumni Signal",
         "symbolLabel": "Moonlit route",
         "workflowLine": "Schools · Essays · Timeline · Submit",
-        "profileLabel": "Amy Z. · Senior",
-        "profileMeta": "GPA 3.92 · SAT 1540 · CS",
+        "profileLabel": "Sample applicant profile",
+        "profileMeta": "Demonstration data · Not a real user",
         "termLabel": "Fall 2026 · CS",
         "sections": ["Overview", "Schools · 6", "Essays · 14", "Timeline", "Teams"],
         "title": "Admissions Route Hub",
         "assistantBadge": "AI Copilot",
         "assistantMessages": [
           "Your CMU essay overlaps too closely with MIT. Tighten the second proof point.",
-          "Georgia Tech Why Major improved by 14% after the latest revision.",
+          "Georgia Tech Why Major was updated and is ready for a consistency check.",
           "Purdue is submission-ready. Tonight is the cleanest window to send it."
         ],
         "tasksLabel": "Today · 3 tasks",
@@ -669,7 +666,7 @@
         ],
         "askAnything": "Ask the copilot",
         "statusReady": "Analysis ready",
-        "statusLive": "Live admissions signals · synced",
+        "statusLive": "Sample application status · synced",
         "rows": [
           {
             "name": "MIT EECS",
@@ -709,9 +706,9 @@
           "fit": "Fit analysis",
           "essay": "Essays"
         },
-        "url": "lumni.app/dashboard/sara-chen",
+        "url": "lumniedu.com/dashboard/demo",
         "list": {
-          "summary": "5 of 8 schools",
+          "summary": "Sample school list",
           "tierLabels": {
             "reach": "reach",
             "target": "target",
@@ -762,7 +759,7 @@
         },
         "fit": {
           "title": "UC Berkeley · EECS",
-          "subtitle": "Composite fit · last updated 2h ago",
+          "subtitle": "Sample fit analysis · Not an admission result",
           "factors": [
             {
               "label": "Academic profile",
@@ -817,104 +814,100 @@
         },
         "badges": {
           "matchScore": {
-            "label": "Match score",
-            "value": "+18%"
+            "label": "Match basis",
+            "value": "Explained"
           },
           "essayShipped": {
-            "school": "UC Berkeley · CS",
-            "status": "Essay shipped"
+            "school": "Essay workspace",
+            "status": "Revision notes ready"
           }
         },
         "socialProof": {
-          "headline": "1,247 students applied this week",
-          "subline": "Avg. 8.4 schools · 92% on-time submission"
+          "headline": "Predictions show their basis and uncertainty",
+          "subline": "School data kept current · Applicants confirm important decisions"
         },
-        "counselorEyebrow": "Trusted by counselors at",
+        "counselorEyebrow": "One workflow for",
         "counselorSchools": [
-          "Andover",
-          "Stuyvesant",
-          "Harker",
-          "TJ Magnet",
-          "Choate",
-          "Exeter",
-          "Sidwell"
+          "Applicant profiles",
+          "School comparison",
+          "Strategy",
+          "Essay collaboration",
+          "Timelines",
+          "Community"
         ],
-        "eyebrow": "New · AI-grade essay coach",
-        "eyebrowVersion": "v2.4",
         "headline": {
-          "lead": "Your",
-          "italic": "real",
-          "suffix": "shortlist.",
-          "accent": "Calibrated, not curated."
+          "lead": "Admissions",
+          "italic": "shouldn't",
+          "suffix": "remain",
+          "accent": "an information war."
         },
-        "body": "Build a defensible college list grounded in your transcript, scores, and goals. Track every deadline, draft every essay, and ship applications with conviction.",
+        "body": "From profile building and school comparison to strategy and community support, Lumni turns scattered inputs into an application workflow you can actually follow.",
         "primaryCta": "Start your shortlist",
-        "secondaryCta": "Watch 90s tour"
+        "secondaryCta": "See the workflow"
       },
       "centeredMark": {
-        "eyebrowBadge": "New",
-        "eyebrow": "Coach v2.4 — read every essay in real time",
+        "eyebrowBadge": "Product preview",
+        "eyebrow": "Keep essay feedback and application tasks organized together",
         "headline": {
-          "lead": "A clearer path to",
-          "accent": "where you belong."
+          "lead": "Admissions shouldn't remain",
+          "accent": "an information war."
         },
-        "subtitle": "Lumni turns your transcript, scores, and story into a defensible college list — and walks every essay with you, line by line.",
+        "subtitle": "Lumni organizes profiles, school choices, strategy, comparison, and community support into one clear application workflow.",
         "primaryCta": "Start free",
-        "secondaryCta": "Watch 90s tour",
+        "secondaryCta": "See the workflow",
         "trustItems": [
           {
             "icon": "check",
-            "text": "Free for the first 3 schools"
+            "text": "Start after signing up"
           },
           {
             "icon": "shield",
-            "text": "SOC 2 · FERPA-aware"
+            "text": "AI suggestions never make the final decision for you"
           }
         ],
-        "counselorEyebrow": "Trusted by counselors at",
+        "counselorEyebrow": "One workflow for",
         "counselorSchools": [
-          "Andover",
-          "Stuyvesant",
-          "Harker",
-          "TJ Magnet",
-          "Choate",
-          "Exeter",
-          "Sidwell"
+          "Applicant profiles",
+          "School comparison",
+          "Strategy",
+          "Essay collaboration",
+          "Timelines",
+          "Community"
         ],
         "floatingChips": {
           "match": {
-            "value": "+18% match",
-            "school": "Carnegie Mellon"
+            "value": "Match basis",
+            "school": "Courses · Goals · Preferences"
           },
           "essay": {
-            "school": "UC Berkeley",
-            "status": "Essay shipped"
+            "school": "Essay workspace",
+            "status": "Notes ready"
           },
           "voice": {
-            "value": "Voice 92",
-            "label": "Specificity strong"
+            "value": "Expression review",
+            "label": "Specificity can improve"
           }
         }
       }
     },
     "trust": {
-      "label": "Partner schools · Historical admits",
+      "label": "Published data, real cases, and explainable predictions",
       "stats": [
         {
-          "value": "12,400+",
-          "label": "Active families"
+          "value": "Kept current",
+          "label": "School and application data"
         },
         {
-          "value": "2,100+",
-          "label": "Top-30 admits"
+          "value": "Multi-source",
+          "label": "Published information and rankings"
         },
         {
-          "value": "87%",
-          "label": "Model calibration"
+          "value": "Sources shown",
+          "label": "Cases and admissions information"
         },
         {
-          "value": "3,000+",
-          "label": "School dataset"
+          "value": "No black box",
+          "label": "Basis and limitations explained"
         }
       ],
       "schools": [
@@ -934,65 +927,6 @@
         "Northwestern",
         "UCLA"
       ]
-    },
-    "problem": {
-      "eyebrow": "Why most families still take expensive wrong turns",
-      "title": "Admissions should not remain an information war",
-      "subtitle": "The issue is not a lack of information. The issue is lacking a system that can compare signals, set priorities, and turn uncertainty into action.",
-      "items": [
-        {
-          "number": "01",
-          "title": "Information asymmetry",
-          "description": "Forums, consultants, rankings, and social feeds all tell partial stories. Families collect fragments when they really need a way to evaluate tradeoffs."
-        },
-        {
-          "number": "02",
-          "title": "School lists by intuition",
-          "description": "Rankings dominate the conversation while fit, program dynamics, and probability drift get ignored. The list looks impressive but lacks strategy."
-        },
-        {
-          "number": "03",
-          "title": "Essays lose the person",
-          "description": "Template language and over-edited drafts flatten the applicant’s voice. Strong essay work should sharpen originality, not erase it."
-        },
-        {
-          "number": "04",
-          "title": "Execution collapses late",
-          "description": "Deadlines, recommendations, activity upgrades, and essay revisions stack up at once. Without a unified operating surface, anxiety peaks exactly when it hurts most."
-        }
-      ],
-      "visuals": {
-        "signalNoise": {
-          "label": "Fragmented signal flow",
-          "tabs": [
-            "Xiaohongshu",
-            "College Confidential",
-            "Reddit",
-            "1point3acres",
-            "US News",
-            "Official FAQ"
-          ],
-          "notes": [
-            "Does MIT still care about AP Physics C?",
-            "Is summer school worth the spend?",
-            "How big is 1520 vs 1570 really?",
-            "Can I open with dialogue?",
-            "Are 3 recommendation letters enough?"
-          ],
-          "footer": "More inputs, but no consistent frame for judgment"
-        },
-        "decisionQuestions": {
-          "eyebrow": "Harvard College · Regular Decision",
-          "excerpt": "“After careful review, we are unable to offer you a place...”",
-          "stamp": "Decision · 03.27",
-          "questions": [
-            "Why did 1570 still miss?",
-            "Was the essay not sharp enough?",
-            "Was the activity list too light?",
-            "Or was it mostly variance?"
-          ]
-        }
-      }
     },
     "features": {
       "eyebrow": "An AI-native admissions workbench",
@@ -1031,13 +965,13 @@
         },
         {
           "number": "06",
-          "tag": "Human",
-          "title": "Expert oversight",
-          "description": "Let former AOs and Top-30 mentors handle the irreversible judgment calls while AI accelerates the day-to-day work."
+          "tag": "Judgment",
+          "title": "Final say is yours",
+          "description": "AI accelerates the day-to-day work — lists, drafts, deadlines — but the calls you can't take back stay with you, not an algorithm."
         }
       ],
       "visuals": {
-        "openModule": "Open module",
+        "openModule": "Sign up to explore",
         "matching": {
           "label": "List balance",
           "schools": [
@@ -1132,128 +1066,195 @@
           ]
         },
         "mentor": {
-          "label": "Human oversight",
-          "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
+          "label": "You decide",
+          "quote": "AI keeps the system moving. You step in on the calls that can't be undone.",
           "points": ["List structure review", "Final essay direction", "Submission risk check"]
         }
       }
     },
     "how": {
-      "eyebrow": "Four steps, end to end",
-      "title": "From “I want to apply” to “I got in”",
-      "subtitle": "Build judgment first, then execute. Each step clarifies what matters next instead of leaving the hardest choices for the final month.",
+      "eyebrow": "A six-step application workflow",
+      "title": "From entering your profile to making the final call",
+      "subtitle": "Build the profile, choose schools, understand strategy, and compare the full plan. Each step produces a clear result without forcing you across scattered sources.",
       "steps": [
         {
           "number": "01",
-          "title": "Build the profile",
-          "description": "Capture grades, activities, goals, and context so the system can see where the applicant really stands."
+          "tag": "build the base",
+          "title": "Enter application information",
+          "description": "Capture grades, activities, interests, and goals in one profile used by every later decision."
         },
         {
           "number": "02",
-          "title": "Generate the matrix",
-          "description": "Compare schools, probabilities, essay load, and timing on one decision surface rather than across scattered tabs."
+          "tag": "two school-list paths",
+          "title": "DIY search / AI-assisted shortlist",
+          "description": "Research schools yourself or let AI shape reach, match, and safety options from the profile."
         },
         {
           "number": "03",
-          "title": "Advance essays and collaboration",
-          "description": "Use AI for structure, peers for pressure, and mentors for judgment until the drafts are strong for the right reasons."
+          "tag": "strategy",
+          "title": "Understand the application plan",
+          "description": "See how rounds, program fit, materials, and profile gaps change what should happen next."
         },
         {
           "number": "04",
-          "title": "Track submission and outcomes",
-          "description": "Keep progress, reminders, and material status synchronized all the way through the actual offer cycle."
+          "tag": "side-by-side comparison",
+          "title": "Optimize the application mix",
+          "description": "Compare schools, majors, cost, probability, and workload before adjusting the overall list."
+        },
+        {
+          "number": "05",
+          "tag": "explore together",
+          "title": "Playful tools and community culture",
+          "description": "Use assessments, chat, teams, and the message board to find ideas and talk with applicants on a similar path."
+        },
+        {
+          "number": "06",
+          "tag": "coming next",
+          "title": "Unannounced capability",
+          "description": "A new application capability is in progress. Until launch, the workflow keeps the clue without inventing a promise."
         }
       ],
-      "dashboard": {
-        "eyebrow": "Lumni dashboard",
-        "title": "One surface for list strategy, essays, and pacing",
-        "note": "School matrix · essay sprint · AI review",
-        "cards": ["School list", "Essay sprint", "Team signals"],
-        "assistantBadge": "AI Copilot",
-        "tip": "AI is checking overlap between MIT and CMU essays",
-        "tasksLabel": "Today’s push",
-        "tasks": ["Refine the profile", "Finish GT Why Essay", "Confirm Purdue submission"],
-        "columns": ["School", "Tier", "Progress"]
-      }
+      "footer": "Move through the workflow yourself or call on AI guidance and community collaboration when useful. Irreversible final decisions always remain yours."
+    },
+    "communityBoard": {
+      "eyebrow": "Lumni community board",
+      "title": "Every application question has someone working through it.",
+      "subtitle": "From conversations and school lists to predictions, essays, and timelines, see how applicants turn uncertainty into the next action.",
+      "cta": "Join after signing up",
+      "liveLabel": "live discussion",
+      "liveTitle": "Put the uncertainty on the table.",
+      "liveBody": "Talk with applicants on a similar path, then bring the question back to your own application plan with Lumni.",
+      "prompt": "Before EA, should I add one more safety school to my list?",
+      "reply": "Check the shape of the whole list first, then decide whether you need another one.",
+      "cards": [
+        {
+          "tag": "applicant chat",
+          "title": "Talk with applicants on your path",
+          "body": "Start a real exchange about target schools, essay progress, and application strategy."
+        },
+        {
+          "tag": "school matching",
+          "title": "Turn preferences into a shortlist",
+          "body": "Use your profile, locations, and major interests to build reach, match, and safety options."
+        },
+        {
+          "tag": "prediction",
+          "title": "See the probability and the basis",
+          "body": "Every estimate starts with your profile, public data, and what you can improve next."
+        },
+        {
+          "tag": "essay desk",
+          "title": "Keep feedback beside the draft",
+          "body": "Move from paragraph comments to concrete revision direction without losing momentum."
+        },
+        {
+          "tag": "timeline",
+          "title": "Make deadlines less surprising",
+          "body": "Keep school research, materials, and submissions in one view so today's priority is clear."
+        },
+        {
+          "tag": "message board",
+          "title": "Ask one specific question",
+          "body": "Share the dilemma, see what similar applicants are discussing, and leave what you learned."
+        }
+      ]
     },
     "social": {
-      "eyebrow": "Real students · Real outcomes",
-      "title": "Not louder marketing. Better delivery.",
-      "stats": [
+      "eyebrow": "Method over marketing",
+      "title": "Trust what you can verify.",
+      "subtitle": "No borrowed numbers, no invented stories. Here is how the engine actually earns your trust.",
+      "principles": [
         {
-          "value": "12,400+",
-          "label": "Active students"
+          "title": "Anchored to published data",
+          "body": "Probability calibration is anchored to each school's officially published admit rates — not forum folklore or consultant instinct."
         },
         {
-          "value": "2,100+",
-          "label": "Top-30 admits"
+          "title": "Ranges, not verdicts",
+          "body": "Every prediction ships as a probability band with its reasons and uncertainty spelled out. When the data is too thin, we say so instead of guessing."
         },
         {
-          "value": "87%",
-          "label": "Model calibration"
+          "title": "AI does the legwork, humans own the calls",
+          "body": "Lists, essays, and timelines move faster with AI — while the irreversible decisions stay with human judgment."
         },
         {
-          "value": "3,000+",
-          "label": "Schools tracked"
-        }
-      ],
-      "quotes": [
-        {
-          "quote": "I thought the consultancy would be the sharpest part of the process. A month in, the AI list was simply better reasoned. MIT EA came through.",
-          "name": "Lin",
-          "meta": "MIT CS · Class of 2028",
-          "tag": "MIT CS",
-          "monogram": "L"
-        },
-        {
-          "quote": "The team layer changed everything. Four Econ applicants reviewed each other’s essays for weeks, and every one of us ended up beating our expected outcomes.",
-          "name": "Wang",
-          "meta": "UPenn Wharton · Class of 2028",
-          "tag": "Wharton",
-          "monogram": "W"
-        },
-        {
-          "quote": "AI didn’t write for me. It pushed me until the story was finally mine. By draft seventeen, the Common App essay actually sounded like me.",
-          "name": "Zhou",
-          "meta": "Stanford · Class of 2028",
-          "tag": "Stanford",
-          "monogram": "Z"
-        },
-        {
-          "quote": "From the parent side, this was the first time I could see the pace clearly. Not more anxiety. Just more clarity about what mattered each week.",
-          "name": "Ms. Zhang",
-          "meta": "Parent perspective",
-          "tag": "Parent POV",
-          "monogram": "Z"
+          "title": "Every number has a source",
+          "body": "School data carries provenance: rankings from five global systems, admissions figures traceable to where they were published."
         }
       ]
     },
     "cta": {
       "eyebrow": "Start now · Free",
       "title": ["Stop wasting years", "to information gaps"],
-      "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
+      "subtitle": "After signing up, complete your applicant profile to see a first application matrix and the priorities that matter next.",
       "primary": "Create free account",
-      "secondary": "Book a 1:1 consult",
+      "secondary": "See what other applicants are working on",
       "trust": "No card required · Cancel anytime · Privacy first"
     },
     "footer": {
-      "description": "Lumni brings school matching, essay collaboration, timelines, and real admissions data into one operating surface so ambitious families can move with clarity.",
+      "description": "From school discovery to a final shortlist, and from application strategy to essay refinement, Lumni AI stays with you to make the process simpler and more transparent.",
       "columns": [
         {
           "title": "Product",
-          "links": ["AI matching", "Essay desk", "Timeline", "Probability", "Teams"]
+          "links": [
+            {
+              "label": "AI-assisted matching",
+              "href": "/register"
+            },
+            {
+              "label": "Application strategy",
+              "href": "/register"
+            },
+            {
+              "label": "Essay refinement",
+              "href": "/register"
+            },
+            {
+              "label": "Admission prediction",
+              "href": "/register"
+            },
+            {
+              "label": "Community collaboration",
+              "href": "/register"
+            }
+          ]
         },
         {
-          "title": "Resources",
-          "links": ["Student stories", "Help center", "About us", "Get started", "Terms"]
+          "title": "About Lumni",
+          "links": [
+            {
+              "label": "Team",
+              "href": "/about#team"
+            },
+            {
+              "label": "Vision",
+              "href": "/about#vision"
+            },
+            {
+              "label": "Mission",
+              "href": "/about#mission"
+            }
+          ]
         },
         {
-          "title": "Company",
-          "links": ["About the team", "Community", "Support", "Privacy", "Create account"]
-        },
-        {
-          "title": "Legal",
-          "links": ["Privacy policy", "Terms of service", "Help docs"]
+          "title": "Legal & Safety",
+          "links": [
+            {
+              "label": "Privacy policy",
+              "href": "/privacy"
+            },
+            {
+              "label": "Terms of service",
+              "href": "/terms"
+            },
+            {
+              "label": "Disclaimer",
+              "href": "/terms#disclaimer"
+            },
+            {
+              "label": "Data collection",
+              "href": "/privacy#collection"
+            }
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · Admissions, no longer a black box.",
@@ -1392,35 +1393,19 @@
       }
     },
     "layout": {
-      "subtitle": "AI-powered Lumni workbench",
       "heroTitle": "Start Your",
       "heroHighlight": "Study Abroad Journey",
-      "heroDesc": "Smart school selection, accurate predictions, case sharing\nMake your application journey clear",
+      "heroDesc": "Bring school selection, predictions, cases, and application timing together\nGive every step evidence and a clear next move",
       "features": {
-        "ai": "AI Smart School Recommendations",
-        "accuracy": "Outcome-Calibrated Predictions",
-        "cases": "10,000+ Real Cases",
-        "schools": "500+ Schools Covered"
+        "ai": "Personalized School Guidance",
+        "accuracy": "Explainable Admission Predictions",
+        "cases": "Real Admission Cases",
+        "schools": "Continuously Updated School Data"
       },
-      "testimonials": {
-        "rating": "10,000+ Positive Reviews",
-        "items": {
-          "0": {
-            "name": "Student L",
-            "school": "MIT CS 2025",
-            "quote": "This platform helped me get my MIT offer!"
-          },
-          "1": {
-            "name": "Student W",
-            "school": "Stanford EE 2025",
-            "quote": "AI prediction is very accurate, highly recommended!"
-          },
-          "2": {
-            "name": "Student Z",
-            "school": "CMU SCS 2025",
-            "quote": "The case library was a great help to me"
-          }
-        }
+      "proof": {
+        "title": "How We Use Real Data",
+        "body": "Cases come from user submissions, public sources, and internal verification. Predictions show their evidence, sources, and uncertainty.",
+        "meta": "No admission guarantees · You confirm every important decision"
       }
     }
   },
@@ -1474,7 +1459,7 @@
       "forum": "Join discussions with fellow applicants",
       "teams": "Find or create teams for same-school applications and prep",
       "help": "FAQ, guides and support",
-      "referral": "Invite friends and earn points",
+      "referral": "Invite friends to join Lumni",
       "ranking": "Customize school rankings based on your preferences"
     },
     "sections": {
@@ -2943,7 +2928,7 @@
       "title": "No cases yet",
       "description": "Be the first to share! Your contribution helps the community and improves your own recommendations.",
       "bullet1": "Share your results to get more accurate school recommendations",
-      "bullet2": "Earn points and verification badges for your contributions",
+      "bullet2": "Earn verification badges for approved contributions",
       "bullet3": "Compare your profile against admitted students at your target schools",
       "startTour": "Learn how to use in 30 seconds"
     },
@@ -3271,9 +3256,9 @@
       "profile": "Profile",
       "preferences": "Preferences",
       "notifications": "Notifications",
-      "subscription": "Subscription",
       "help": "Help & Support",
-      "accountActions": "Account Actions"
+      "accountActions": "Account Actions",
+      "subscription": "Subscription"
     },
     "items": {
       "editProfile": "Edit Profile",
@@ -3290,15 +3275,15 @@
       "pushNotificationDesc": "Receive important update notifications",
       "emailNotification": "Email Notifications",
       "emailNotificationDesc": "Receive email notifications",
-      "subscription": "Subscription",
-      "subscriptionDesc": "Manage your subscription plan",
       "helpCenter": "Help Center",
       "helpCenterDesc": "View FAQs and documentation",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data"
+      "deleteAccountDesc": "Permanently delete your account and data",
+      "subscription": "Subscription",
+      "subscriptionDesc": "Manage your subscription plan"
     },
     "comingSoonHint": "This feature is coming soon",
     "dialogs": {
@@ -4751,34 +4736,35 @@
     "lastUpdated": "Last updated: {date}",
     "importantBadge": "Important Notice",
     "sectionNumber": "Section {num}",
-    "introduction": "Please read the following terms of service carefully. By using our service, you agree to be bound by these terms.",
+    "introduction": "These terms describe the basic rules that apply when you use the Lumni website, application tools, AI features, and community services. Please read them before using the service.",
     "acceptance": {
       "title": "Acceptance of Terms",
-      "content": "By accessing or using the Lumni, you agree to comply with these Terms of Service. If you do not agree to these terms, please do not use our services."
+      "content": "By accessing or using Lumni, you agree to these terms and confirm that account and application information you submit is lawful, accurate, and yours to provide. If you do not agree, stop using the relevant services."
     },
     "services": {
       "title": "Service Description",
-      "content": "We provide information services related to study abroad applications, including but not limited to school recommendations, admission predictions, and case sharing."
+      "content": "Lumni provides information tools for organizing applications, comparing schools, estimating admission probabilities, working on essays, managing timelines, and collaborating with the community. Features and data coverage may change as the product evolves. Lumni does not represent any school or make admission decisions."
     },
     "userConduct": {
       "title": "User Conduct",
-      "content": "Users agree not to upload false information, infringe on others' rights, or engage in any illegal activities."
+      "content": "You may not submit false information or content you have no right to use; harass others; violate privacy or intellectual-property rights; bypass security controls; scrape data at scale; or use the platform for unlawful activity. Community participation must remain respectful and lawful."
     },
     "intellectualProperty": {
       "title": "Intellectual Property",
-      "content": "All content on the platform (including but not limited to text, images, code) is protected by intellectual property laws."
+      "content": "Lumni software, interfaces, and platform content are protected by applicable intellectual-property laws. You retain rights in content you submit and grant Lumni permission to process it only as needed to provide, secure, and improve the service. Do not upload material that infringes third-party rights."
     },
     "disclaimer": {
       "title": "Disclaimer",
-      "content": "We strive to ensure accuracy of information, but make no guarantees about prediction results or recommendations. Final application decisions should be made at the user's own discretion."
+      "content": "School information, AI suggestions, cases, and admission probabilities are for information and planning only. They may be delayed, incomplete, or inaccurate; they do not guarantee admission or constitute legal, financial, or other professional advice. School policies may change, so confirm important details with official sources and review every final submission yourself."
     },
     "termination": {
       "title": "Termination",
-      "content": "We reserve the right to terminate user accounts for violations of these terms."
+      "content": "Lumni may restrict or terminate services when an account violates these terms, threatens platform security, or harms other users. You may stop using the service or request account deletion through available platform controls, subject to records that must be retained by law or to resolve disputes."
     },
     "contact": {
       "title": "Contact Us",
-      "content": "If you have any questions, please contact us"
+      "content": "If you have questions about these terms or the service, submit them through the platform Help Center.",
+      "action": "Open Help Center"
     }
   },
   "privacy": {
@@ -4787,44 +4773,44 @@
     "securityBadge": "Security Commitment",
     "commitment": {
       "title": "Our Commitment",
-      "content": "We are committed to protecting your privacy and personal information. This privacy policy explains how we collect, use, and protect your data."
+      "content": "This policy explains how Lumni collects, uses, shares, retains, and protects information while providing application tools, AI features, and community services. We process data only as needed to provide the service, maintain security, and meet applicable obligations."
     },
     "collection": {
       "title": "Information Collection",
-      "content": "We collect the following types of information to provide better services:",
+      "content": "Depending on the features you use, we may collect the following information:",
       "items": {
-        "personal": "Personal identification information (name, email, etc.)",
-        "academic": "Academic background information (GPA, test scores, etc.)",
-        "usage": "Usage data (browsing history, feature usage)",
-        "device": "Device information (browser type, IP address, etc.)"
+        "personal": "Account and identity information, such as name, email, and language preferences",
+        "academic": "Application information, such as academic background, target schools, activities, essays, and materials you submit",
+        "usage": "Usage and interaction records, including features used, community content, feedback, and activity logs",
+        "device": "Device and security information, such as browser type, IP address, error reports, and security logs"
       }
     },
     "usage": {
       "title": "Information Usage",
-      "content": "We use collected information for the following purposes:",
+      "content": "We may use collected information for the following purposes:",
       "items": {
-        "service": "To provide and improve our services",
-        "personalization": "To personalize your experience",
-        "communication": "To communicate service-related information",
-        "analytics": "To analyze and improve platform performance"
+        "service": "Create accounts and provide school, prediction, essay, timeline, and community features",
+        "personalization": "Use application information to generate personalized guidance and AI outputs",
+        "communication": "Send security, account, and important service notices",
+        "analytics": "Troubleshoot issues, prevent abuse, and analyze and improve platform performance"
       }
     },
     "sharing": {
       "title": "Information Sharing",
-      "content": "We do not sell your personal information. We may share it only in the following cases:",
+      "content": "We do not sell personal information. We share only information needed to provide the service or where applicable law permits:",
       "items": {
         "consent": "With your explicit consent",
-        "legal": "When required by law or to comply with legal process",
-        "partners": "With service providers (bound by confidentiality agreements)"
+        "legal": "To comply with legal requirements or protect users and platform security",
+        "partners": "With service providers supporting hosting, analytics, communications, or AI processing, subject to contractual handling requirements"
       }
     },
     "security": {
       "title": "Data Security",
-      "content": "We employ industry-standard security measures to protect your data, including encrypted transmission, secure storage, and access controls."
+      "content": "We use technical and organizational measures appropriate to the data risk, including access controls, transmission safeguards, logging, and permission management. No system can guarantee absolute security. We retain information while needed to provide services, meet legal obligations, or resolve disputes, and process deletion requests as applicable."
     },
     "rights": {
       "title": "Your Rights",
-      "content": "You have the following rights regarding your data:",
+      "content": "Depending on applicable law and account status, you may use account controls or the Help Center to request the following:",
       "items": {
         "access": "Access your personal data",
         "correction": "Correct inaccurate data",
@@ -4834,100 +4820,58 @@
     },
     "cookies": {
       "title": "Cookie Usage",
-      "content": "We use cookies and similar technologies to improve user experience, analyze traffic, and personalize content."
+      "content": "We use necessary cookies for sign-in, security, and language settings, and may use similar technologies to understand feature performance. Browser controls can limit cookies, but some features may no longer work correctly."
     },
     "changes": {
       "title": "Policy Changes",
-      "content": "We may update this privacy policy from time to time. We will notify you of significant changes via email or platform notification."
+      "content": "We may update this policy as the product and legal requirements evolve. For material changes, we will provide notice through the product, email, or this page and update the displayed date."
     },
     "contact": {
       "title": "Privacy Inquiries",
-      "content": "If you have any privacy-related questions, please contact us"
+      "content": "For privacy questions or requests to access, correct, export, or delete data, submit a request through the platform Help Center.",
+      "action": "Open Help Center"
     }
   },
   "about": {
     "badge": "About Us",
-    "title": "Lumni",
-    "subtitle": "Making every study abroad dream come true",
-    "stats": {
-      "users": "Registered Users",
-      "schools": "Schools Covered",
-      "cases": "Real Cases",
-      "accuracy": "Prediction Accuracy"
+    "title": "About Lumni",
+    "subtitle": "Lumni gives every Lumi powerful AI application tools and a lively applicant community, helping each student complete their journey with clarity and confidence.",
+    "metadata": {
+      "title": "About Lumni",
+      "description": "Learn how Lumni combines AI guidance, real data, an applicant community, and expert review to reduce information gaps for every Lumi."
     },
     "story": {
-      "title": "Our Story",
-      "content": "The Lumni was born from the pursuit of educational equity by a group of entrepreneurs who studied abroad. We understand the challenges of information asymmetry in the application process, so we are committed to providing professional, transparent, and efficient services through technology."
+      "title": "What We Do",
+      "content": "Lumni brings AI application guidance, real admissions data, an applicant community, and expert review at key moments into one platform, so every Lumi can reduce information gaps and know what to do next."
     },
     "vision": {
       "title": "Our Vision",
-      "content": "We aspire to become the world's most trusted study abroad service platform, using AI technology and real data to help every applicant make the best choice for themselves."
+      "content": "We want professional application tools to be available to everyone, making school selection, strategy, essays, and submission simpler and more transparent while keeping applicants in control of important decisions."
     },
     "values": {
       "badge": "Our Values",
       "title": "Our Values",
       "mission": {
-        "title": "Mission-Driven",
-        "desc": "Helping students achieve their study abroad dreams is our core mission"
+        "title": "AI Application Guidance",
+        "desc": "From school selection and application strategy to essay review, AI turns complex work into a clear next step"
       },
       "innovation": {
-        "title": "Continuous Innovation",
-        "desc": "Constantly improving user experience with the latest technology"
+        "title": "Closing Information Gaps",
+        "desc": "Real admissions data and explainable analysis help applicants understand the evidence behind each choice"
       },
       "trust": {
-        "title": "Integrity & Transparency",
-        "desc": "Real data, objective analysis, no exaggeration or misleading"
+        "title": "Applicant Community",
+        "desc": "Applicants exchange experience, discuss real questions, and help one another avoid unnecessary detours"
       },
       "care": {
-        "title": "Dedicated Service",
-        "desc": "Every user deserves the best service"
-      }
-    },
-    "timeline": {
-      "badge": "Our Journey",
-      "title": "Our Journey",
-      "founded": {
-        "title": "Platform Founded",
-        "desc": "Team assembled, product development began"
-      },
-      "growth": {
-        "title": "Rapid Growth",
-        "desc": "Users exceeded 10,000, covering 500+ schools"
-      },
-      "ai": {
-        "title": "AI Upgrade",
-        "desc": "Introduced GPT-4 to improve explanation quality and decision support"
-      },
-      "expansion": {
-        "title": "Global Expansion",
-        "desc": "Service expanded to major study abroad destinations worldwide"
+        "title": "Expert Review",
+        "desc": "Professional advisors review key milestones so important decisions feel more considered and secure"
       }
     },
     "team": {
       "badge": "Our Team",
-      "title": "Core Team",
-      "members": {
-        "zhangming": {
-          "name": "Zhang Ming",
-          "role": "CEO & Founder"
-        },
-        "lihua": {
-          "name": "Li Hua",
-          "role": "CTO"
-        },
-        "wangfang": {
-          "name": "Wang Fang",
-          "role": "Product Director"
-        },
-        "chenjie": {
-          "name": "Chen Jie",
-          "role": "AI R&D Lead"
-        }
-      }
-    },
-    "contact": {
-      "title": "Contact Us",
-      "desc": "Have any questions or suggestions? We welcome your messages anytime"
+      "title": "A Cross-Functional Team",
+      "content": "Lumni is built by product, engineering, data, and application-advising professionals. The system organizes information and improves efficiency, advisors add judgment at key moments, and applicants keep control of final decisions."
     }
   },
   "security": {
@@ -4938,6 +4882,8 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "passwordRequirements": "Password must include uppercase, lowercase, a number, and one special character from @$!%*#?&",
     "updatePassword": "Update Password",
     "passwordMismatch": "Passwords do not match",
@@ -4967,80 +4913,6 @@
     "dangerZone": "Danger Zone",
     "dangerZoneDesc": "Deleting your account will permanently remove all your data. This action cannot be undone.",
     "deleteAccount": "Delete Account"
-  },
-  "subscription": {
-    "title": "Subscription",
-    "description": "Manage your subscription plan and billing",
-    "currentPlan": "Current Plan",
-    "freePlan": "Free",
-    "proPlan": "Pro",
-    "premiumPlan": "Premium",
-    "features": "Features",
-    "upgrade": "Upgrade",
-    "downgrade": "Downgrade",
-    "cancel": "Cancel Subscription",
-    "renew": "Renew",
-    "billingHistory": "Billing History",
-    "nextBilling": "Next Billing",
-    "amount": "Amount",
-    "status": "Status",
-    "paid": "Paid",
-    "pending": "Pending",
-    "failed": "Failed",
-    "popular": "Popular",
-    "current": "Current",
-    "perMonth": "/month",
-    "perYear": "/year",
-    "savePercent": "Save {percent}%",
-    "monthlyBilling": "Monthly Billing",
-    "yearlyBilling": "Yearly Billing",
-    "validForever": "Valid Forever",
-    "currentPlanLabel": "Current Plan",
-    "mostPopular": "Most Popular",
-    "paymentHistory": "Payment History",
-    "paymentHistoryDesc": "View your payment history",
-    "plans": {
-      "free": {
-        "name": "Free",
-        "period": "Forever",
-        "description": "Basic features for first-time experience",
-        "features": [
-          "Browse school info",
-          "View public cases",
-          "Basic AI chat (5/day)",
-          "Profile management"
-        ]
-      },
-      "pro": {
-        "name": "Pro",
-        "period": "month",
-        "description": "Unlock all features for efficient applications",
-        "features": [
-          "All Free features",
-          "Unlimited AI chat",
-          "Admission prediction",
-          "Essay review & polish",
-          "Detailed case data",
-          "Priority support"
-        ]
-      },
-      "premium": {
-        "name": "Premium",
-        "period": "month",
-        "description": "One-on-one service, full accompaniment",
-        "features": [
-          "All Pro features",
-          "Dedicated counselor",
-          "Application strategy",
-          "Deep essay editing",
-          "Mock interviews",
-          "VIP community"
-        ]
-      }
-    },
-    "getStarted": "Get Started",
-    "noInvoices": "No invoices",
-    "upgradeSuccess": "Upgrade successful"
   },
   "helpCenter": {
     "title": "Help Center",
@@ -5583,6 +5455,12 @@
       "section": {
         "hidden": "Hidden",
         "evidenceRefs": "{count} evidence",
+        "expandSection": "Expand section",
+        "collapseSection": "Collapse section",
+        "showSection": "Show section",
+        "hideSection": "Hide section",
+        "deleteSection": "Delete section",
+        "editTitle": "Edit section title: {title}",
         "aiHint": "AI suggestions are not written automatically. You choose what to apply."
       },
       "match": {
@@ -6280,12 +6158,12 @@
       },
       "ai": {
         "loginRequired": "Login to use AI paragraph review",
-        "costHint": "Costs 20 points for professional admissions officer perspective analysis",
+        "costHint": "Get a professional admissions officer perspective analysis",
         "loginButton": "Login to Use",
         "title": "AI Paragraph Review",
         "description": "Analyzes each paragraph from admissions officer perspective with specific improvement suggestions",
         "analyzing": "Analyzing...",
-        "startAnalysis": "Start Analysis (20 points)",
+        "startAnalysis": "Start Analysis",
         "analysisError": "Analysis failed, please try again later",
         "cachedHint": "Analyzed · Instant response",
         "privacyHelpLabel": "How we use your data",
@@ -6324,7 +6202,7 @@
         "evidence": "Quoted evidence",
         "selectedText": "This question will use your selected text",
         "history": "Recent questions",
-        "failed": "This question failed and points were refunded.",
+        "failed": "This question failed. Please try again.",
         "paragraphQuestion": "How should I understand the note for paragraph {num}?",
         "quick": {
           "structure": "Why is this essay's structure effective?",
@@ -6367,7 +6245,7 @@
         "openWorkbench": "Open Essay Workbench",
         "history": "Recent comparisons",
         "historyBadge": "Reference compare",
-        "failed": "This comparison failed and points were refunded."
+        "failed": "This comparison failed. Please try again."
       },
       "citation": {
         "label": "Showing quoted evidence in the essay",
@@ -7029,8 +6907,11 @@
     "addItem": "Add Item",
     "allItems": "All",
     "credential": "Credential",
+    "password": "Password",
     "document": "Document",
     "note": "Note",
+    "api_key": "API key",
+    "other": "Other",
     "certificate": "Certificate",
     "categories": "Categories",
     "search": "Search vault...",
@@ -7057,7 +6938,6 @@
     "websitePlaceholder": "https://example.com",
     "username": "Username",
     "usernamePlaceholder": "Enter username...",
-    "password": "Password",
     "passwordPlaceholder": "Enter password...",
     "notes": "Notes",
     "notesPlaceholder": "Enter notes...",
@@ -7083,6 +6963,9 @@
       "mainAccountNote": "Main account info"
     },
     "saveError": "Failed to save",
+    "loadError": "Failed to load your vault. No sample data was substituted.",
+    "retry": "Retry",
+    "passwordGenerateError": "Failed to generate a password",
     "tooManyTags": "You can add at most {max} tags — please reduce and try again.",
     "deleteError": "Failed to delete"
   },
@@ -7231,10 +7114,10 @@
     "missingTargetMajor": "target major",
     "missingProfile": "profile",
     "points": "points",
-    "pointsRemaining": "{points} points remaining",
-    "insufficientPoints": "Insufficient points (need 25)",
+    "pointsRemaining": "All recommendation features are available",
+    "insufficientPoints": "Complete your profile to continue",
     "confirmTitle": "Generate School Recommendations",
-    "confirmDesc": "This will use 25 points. You currently have {points} points. Continue?",
+    "confirmDesc": "Generate personalized school recommendations based on your profile?",
     "confirmDescSimple": "Generate personalized school recommendations based on your profile?",
     "confirmGenerate": "Generate",
     "cancel": "Cancel",
@@ -7273,6 +7156,7 @@
     "additionalPreferences": "Additional Preferences",
     "additionalPreferencesPlaceholder": "Any specific requirements...",
     "completeProfileFirst": "Complete profile first",
+    "cannotGenerate": "Recommendations are temporarily unavailable",
     "tests": "Tests",
     "activities": "Activities",
     "missing": "Missing",
@@ -8119,7 +8003,10 @@
       "verified": "Verified User"
     },
     "verify": "Verify",
-    "pleaseSelectFile": "Please select a file",
+    "pleaseSelectFile": "Please select a file and admission case",
+    "caseLabel": "Admission case",
+    "selectCase": "Select one of your admission cases",
+    "noCases": "Create an admission case before requesting verification.",
     "title": "Identity Verification",
     "description": "Upload proof of admission to verify your identity",
     "descriptionWithSchool": "Upload proof of admission for {school}",
@@ -8138,9 +8025,9 @@
     "dragOrClick": "Drag or click to upload",
     "dropHere": "Drop to upload",
     "dropOrClick": "Drop files here or click to upload",
-    "supportedFormats": "Supports PDF, JPG, PNG",
-    "fileRequirements": "Max file size: 10MB",
-    "fileTooLarge": "File too large. Please select a file under 10MB",
+    "supportedFormats": "Supports PDF, JPG, PNG, and WebP",
+    "fileRequirements": "Maximum original file size: 7 MiB",
+    "fileTooLarge": "File too large. Please select a file no larger than 7 MiB",
     "invalidFileType": "Unsupported file format",
     "noFile": "Please select a file",
     "showPreview": "Show Preview",
@@ -8404,8 +8291,11 @@
       "predictionHealth": "Prediction Data Health",
       "predictionFeedback": "Prediction Feedback",
       "predictionBenchmark": "Prediction Benchmark",
+      "outcomesVerification": "Outcome Verification",
+      "debateEval": "Debate Evaluation",
       "cdsBands": "CDS Bands",
       "dataCoverage": "Data Coverage",
+      "dataQualityPage": "School Data Quality",
       "applicationAnalysisWorkflow": "Application Analysis Workflow",
       "activityTemplates": "Activity Templates",
       "highSchools": "High Schools",
@@ -10750,30 +10640,20 @@
     },
     "payments": {
       "title": "Payment Management",
-      "description": "View payment records and manage subscriptions",
+      "description": "View the historical payment ledger",
+      "readOnlyTitle": "Paid subscriptions are retired",
+      "readOnlyDescription": "All product features are currently open. This ledger is read-only; refunds and subscription overrides are disabled.",
       "stats": "Payment Statistics",
-      "totalRevenue": "Total Revenue",
-      "monthlyRevenue": "Monthly Revenue",
       "totalPayments": "Total Payments",
-      "activeSubscriptions": "Active Subscriptions",
+      "successfulPayments": "Successful Payments",
+      "failedPayments": "Failed Payments",
+      "refundedPayments": "Refunded Payments",
       "records": "Payment Records",
       "user": "User",
       "plan": "Plan",
       "amount": "Amount",
       "status": "Status",
       "date": "Date",
-      "actions": "Actions",
-      "viewDetails": "View Details",
-      "refund": "Refund",
-      "refundConfirm": "Confirm Refund",
-      "refundDesc": "This will refund the payment and downgrade the user's subscription.",
-      "refunded": "Payment refunded",
-      "refundReason": "Refund Reason",
-      "refundReasonPlaceholder": "Enter the reason for this refund (required for audit trail)",
-      "adjustSub": "Adjust Subscription",
-      "adjustSubDesc": "Manually change user subscription level",
-      "newPlan": "New Plan",
-      "adjusted": "Subscription adjusted",
       "noPayments": "No payment records",
       "noPaymentsDesc": "No payments match the current filters",
       "allStatuses": "All Statuses",
@@ -10781,12 +10661,26 @@
       "statusCompleted": "Completed",
       "statusPending": "Pending",
       "statusFailed": "Failed",
-      "statusRefunded": "Refunded"
+      "statusRefunded": "Refunded",
+      "refunded": "Payment refunded",
+      "adjusted": "Subscription adjusted",
+      "totalRevenue": "Total Revenue",
+      "monthlyRevenue": "Monthly Revenue",
+      "activeSubscriptions": "Active Subscriptions",
+      "actions": "Actions",
+      "refund": "Refund",
+      "adjustSub": "Adjust Subscription",
+      "refundConfirm": "Confirm Refund",
+      "refundDesc": "This will refund the payment and downgrade the user's subscription.",
+      "refundReason": "Refund Reason",
+      "refundReasonPlaceholder": "Enter the reason for this refund (required for audit trail)",
+      "adjustSubDesc": "Manually change user subscription level",
+      "newPlan": "New Plan",
+      "viewDetails": "View Details"
     },
     "settings": {
       "title": "System Settings",
       "description": "Configure platform-wide settings",
-      "subscription": "Subscription",
       "aiQuota": "AI Quota",
       "general": "General",
       "key": "Setting",
@@ -10796,15 +10690,16 @@
       "batchSave": "Save All",
       "batchSaved": "All settings saved",
       "resetConfirm": "Reset this setting?",
-      "subscriptionSettings": {
-        "SUBSCRIPTION_PRO_PRICE": "Pro Monthly Price",
-        "SUBSCRIPTION_PREMIUM_PRICE": "Premium Monthly Price",
-        "SUBSCRIPTION_YEARLY_DISCOUNT": "Yearly Discount (%)"
-      },
       "aiQuotaSettings": {
         "AI_QUOTA_DEFAULT_DAILY": "Default Daily Quota",
         "AI_QUOTA_PRO_DAILY": "Pro Daily Quota",
         "AI_QUOTA_PREMIUM_DAILY": "Premium Daily Quota"
+      },
+      "subscription": "Subscription",
+      "subscriptionSettings": {
+        "SUBSCRIPTION_PREMIUM_PRICE": "Premium Monthly Price",
+        "SUBSCRIPTION_PRO_PRICE": "Pro Monthly Price",
+        "SUBSCRIPTION_YEARLY_DISCOUNT": "Yearly Discount (%)"
       }
     },
     "devTools": {
@@ -11706,13 +11601,13 @@
   },
   "referral": {
     "title": "Invite Friends",
-    "description": "Share your referral code and earn points",
+    "description": "Share your referral code with friends",
     "yourCode": "Your Referral Code",
     "copyCode": "Copy Code",
     "copyLink": "Copy Invite Link",
     "copied": "Copied!",
     "shareTitle": "Share with Friends",
-    "shareDesc": "Invite your friends to join and you'll both earn rewards",
+    "shareDesc": "Invite your friends to join Lumni",
     "stats": {
       "invited": "Friends Invited",
       "signups": "Successful Signups",
@@ -11723,13 +11618,10 @@
     "step1Desc": "Copy your code or share your invite link with friends",
     "step2": "Friend signs up with your code",
     "step2Desc": "They enter your code during registration",
-    "step3": "You both earn 50 points",
-    "step3Desc": "Points are awarded once registration is complete",
     "history": "Referral History",
     "noReferrals": "No referrals yet",
-    "noReferralsDesc": "Share your code to start earning points",
+    "noReferralsDesc": "Share your code to invite a friend",
     "joinedOn": "Joined on {date}",
-    "pointsAwarded": "+{points} points",
     "loginRequired": "Please log in to view your referral code",
     "shareVia": {
       "wechat": "WeChat",
@@ -11738,7 +11630,10 @@
       "twitter": "X / Twitter"
     },
     "emailSubject": "Join me on Lumni",
-    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code} and we'll both earn 50 points! {link}"
+    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code}: {link}",
+    "step3": "You both earn 50 points",
+    "step3Desc": "Points are awarded once registration is complete",
+    "pointsAwarded": "+{points} points"
   },
   "tour": {
     "next": "Next",
@@ -11762,7 +11657,7 @@
       "browse": "Browse Cases",
       "browseDesc": "Each card shows a real applicant's GPA, test scores, and admission outcome. Click to view their full profile.",
       "share": "Share Your Case",
-      "shareDesc": "Contribute your admission results to help others and earn platform points."
+      "shareDesc": "Contribute your admission results to help other applicants."
     },
     "dashboard": {
       "quickAsk": "Quick Ask AI",
@@ -11807,7 +11702,7 @@
     "cancel": "Cancel",
     "submitReport": "Submit",
     "submitting": "Submitting...",
-    "reportSuccess": "Recorded! Points awarded 🎉",
+    "reportSuccess": "Outcome recorded successfully",
     "reportError": "Submit failed. Try again.",
     "myHistory": "My Outcomes",
     "myHistoryDescription": "See outcomes you have reported",
@@ -11933,5 +11828,79 @@
       "cycleYear": "Cycle year",
       "source": "Source attribution"
     }
+  },
+  "subscription": {
+    "upgradeSuccess": "Upgrade successful",
+    "title": "Subscription",
+    "description": "Manage your subscription plan and billing",
+    "currentPlan": "Current Plan",
+    "validForever": "Valid Forever",
+    "mostPopular": "Most Popular",
+    "currentPlanLabel": "Current Plan",
+    "getStarted": "Get Started",
+    "upgrade": "Upgrade",
+    "paymentHistory": "Payment History",
+    "paymentHistoryDesc": "View your payment history",
+    "noInvoices": "No invoices",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "period": "Forever",
+        "description": "Basic features for first-time experience",
+        "features": [
+          "Browse school info",
+          "View public cases",
+          "Basic AI chat (5/day)",
+          "Profile management"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "period": "month",
+        "description": "Unlock all features for efficient applications",
+        "features": [
+          "All Free features",
+          "Unlimited AI chat",
+          "Admission prediction",
+          "Essay review & polish",
+          "Detailed case data",
+          "Priority support"
+        ]
+      },
+      "premium": {
+        "name": "Premium",
+        "period": "month",
+        "description": "One-on-one service, full accompaniment",
+        "features": [
+          "All Pro features",
+          "Dedicated counselor",
+          "Application strategy",
+          "Deep essay editing",
+          "Mock interviews",
+          "VIP community"
+        ]
+      }
+    },
+    "amount": "Amount",
+    "billingHistory": "Billing History",
+    "cancel": "Cancel Subscription",
+    "current": "Current",
+    "downgrade": "Downgrade",
+    "failed": "Failed",
+    "features": "Features",
+    "freePlan": "Free",
+    "monthlyBilling": "Monthly Billing",
+    "nextBilling": "Next Billing",
+    "paid": "Paid",
+    "pending": "Pending",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "popular": "Popular",
+    "premiumPlan": "Premium",
+    "proPlan": "Pro",
+    "renew": "Renew",
+    "savePercent": "Save {percent}%",
+    "status": "Status",
+    "yearlyBilling": "Yearly Billing"
   }
 }

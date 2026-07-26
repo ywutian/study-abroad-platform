@@ -97,6 +97,23 @@ export default function proxy(request: NextRequest) {
   // from middleware to server components (readable via headers() in layout).
   intlResponse.headers.set('x-middleware-request-x-nonce', nonce);
 
+  // Forward the request path to generateMetadata, which needs it for a per-page
+  // canonical + hreflang (a layout otherwise only knows the locale, and would
+  // canonicalize every subpage to the locale root).
+  //
+  // Next only reads `x-middleware-request-<key>` for keys listed in
+  // `x-middleware-override-headers`, and DELETES every request header missing
+  // from that list (next/dist/server/lib/router-utils/resolve-routes.js).
+  // next-intl already publishes that list with the full incoming header set, so
+  // we APPEND — replacing it would strip `cookie` and log everyone out. If a
+  // next-intl upgrade ever stops emitting it, skip forwarding instead: canonical
+  // degrades to the locale root, which is survivable; losing cookies is not.
+  const overrides = intlResponse.headers.get('x-middleware-override-headers');
+  if (overrides) {
+    intlResponse.headers.set('x-middleware-override-headers', `${overrides},x-pathname`);
+    intlResponse.headers.set('x-middleware-request-x-pathname', pathname);
+  }
+
   // Set CSP response header (browser enforces this)
   intlResponse.headers.set('Content-Security-Policy', csp);
 

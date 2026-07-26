@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { SchoolPublicMedia } from '@study-abroad/shared';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export class PredictionFactor {
   @ApiProperty({ description: 'Factor name', example: 'GPA' })
@@ -309,14 +310,14 @@ export class PredictionResultDto {
 
   @ApiPropertyOptional({
     description: 'Counselor engine rule version that produced this prediction',
-    example: 'counselor-cold-start-v1.8-profile-signals',
+    example: 'counselor-cold-start-v1.10-substitute-cap',
   })
   modelVersion?: string;
 
   @ApiPropertyOptional({
     description:
       'Served policy version — equals the counselor engine rule version (the served path is counselor-only)',
-    example: 'counselor-cold-start-v1.8-profile-signals',
+    example: 'counselor-cold-start-v1.10-substitute-cap',
   })
   servedPolicyVersionId?: string;
 
@@ -396,7 +397,7 @@ export class PredictionResultDto {
     sat75?: number;
     act25?: number;
     act75?: number;
-    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+    testingPolicy?: SchoolTestingPolicy;
     dataQuality?: {
       officialFields: string[];
       heuristicFields: string[];

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
 import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
+import { hasBandComparableScore } from './counselor/counselor-modifiers';
 
 export { LEGACY_PREDICTION_POLICY_VERSION } from './prediction-policy.constants';
 const CHINA_CODES = new Set(['CN', 'CHN', 'CHINA', 'PRC']);
@@ -173,6 +174,26 @@ export class PredictionPolicyService {
     if (params.confidence === 'low') {
       uncertaintyReasons.push(
         'Profile data is incomplete, so this estimate has wider uncertainty.',
+      );
+    }
+
+    // A missing `testingPolicy` is not cosmetic metadata: it decides whether a
+    // no-score applicant takes a ×0.1 (REQUIRED) or ×1.0 (BLIND) hit. 96.3% of
+    // prod schools have it UNKNOWN (audited 2026-07-24), so say so out loud
+    // rather than letting the estimate look better-grounded than it is.
+    const testingPolicyOnRecord =
+      params.school.testingPolicy != null &&
+      params.school.testingPolicy !== 'UNKNOWN';
+    // Shares `hasBandComparableScore` with the engine rather than re-listing
+    // SAT|ACT. The first cut here did re-list them, which told an IB or
+    // A-Level applicant their estimate was weakened by "no scores submitted"
+    // while the engine was in fact reading their score.
+    if (
+      !testingPolicyOnRecord &&
+      !hasBandComparableScore(params.profile.testScores)
+    ) {
+      uncertaintyReasons.push(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
       );
     }
 

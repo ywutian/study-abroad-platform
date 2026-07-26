@@ -3,37 +3,16 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { ArrowUpRight, BarChart3, Clock3, FileText, Shield, Lightbulb, Users } from 'lucide-react';
-import { AdmissionTierBadge, StatusDot } from '@/components/features/landing';
+import { AdmissionTierBadge } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useHomeContent, type HomeContentItem } from './home-content';
+import { LANDING_LINKS } from './landing-links';
 
 type MatchingVisualCopy = {
   label: string;
   schools: Array<{ name: string; odds: number; tier: 'reach' | 'target' | 'safety' }>;
-};
-
-type EssayVisualCopy = {
-  kicker: string;
-  lines: string[];
-  chips: string[];
-};
-
-type TimelineVisualCopy = {
-  label: string;
-  items: Array<{ month: string; label: string }>;
-};
-
-type ProbabilityVisualCopy = {
-  label: string;
-  ranges: Array<{ tier: 'reach' | 'target' | 'safety'; text: string }>;
-  note: string;
-};
-
-type TeamVisualCopy = {
-  label: string;
-  members: Array<{ name: string; task: string; status: 'success' | 'warning' | 'ai' }>;
 };
 
 type MentorVisualCopy = {
@@ -42,14 +21,6 @@ type MentorVisualCopy = {
   points: string[];
 };
 
-const featureRoutes = [
-  '/schools',
-  '/essays',
-  '/timeline',
-  '/prediction',
-  '/teams',
-  '/help',
-] as const;
 const featureSpans = [
   'lg:col-span-4',
   'lg:col-span-2',
@@ -90,7 +61,7 @@ export function BentoFeatures() {
             <FeatureCard
               key={item.number}
               item={item}
-              href={featureRoutes[index]}
+              href={LANDING_LINKS.register}
               index={index}
               reduced={!!prefersReducedMotion}
               className={featureSpans[index]}
@@ -116,14 +87,10 @@ function FeatureCard({
   className: string;
 }) {
   const t = useTranslations('home');
-  const visuals = [
-    <MatchingVisual key="matching" />,
-    <EssayVisual key="essay" />,
-    <TimelineVisual key="timeline" />,
-    <ProbabilityVisual key="probability" />,
-    <TeamVisual key="team" />,
-    <MentorVisual key="mentor" />,
-  ];
+  // Visuals only on the two large cards (span-4 matching, span-6 mentor) —
+  // small cards stay icon+text so the page keeps one flagship demo instead
+  // of nine competing mockups.
+  const visual = index === 0 ? <MatchingVisual /> : index === 5 ? <MentorVisual /> : null;
 
   const Icon = featureIcons[index];
 
@@ -164,9 +131,14 @@ function FeatureCard({
             </span>
           </div>
 
-          <div className="mt-auto">{visuals[index]}</div>
+          {visual ? <div className="mt-auto">{visual}</div> : null}
 
-          <div className="inline-flex items-center gap-2 text-sm text-[var(--landing-muted)]">
+          <div
+            className={cn(
+              'inline-flex items-center gap-2 text-sm text-[var(--landing-muted)]',
+              !visual && 'mt-auto'
+            )}
+          >
             <span>{t('features.visuals.openModule')}</span>
             <ArrowUpRight className="h-4 w-4" />
           </div>
@@ -208,127 +180,6 @@ function MatchingVisual() {
             <div className="w-10 text-right font-mono text-xs text-[var(--landing-muted)]">
               {school.odds}%
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EssayVisual() {
-  const t = useTranslations('home');
-  const copy = t.raw('features.visuals.essay') as EssayVisualCopy;
-
-  return (
-    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
-      <div className="flex items-center justify-between text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-        <span>{copy.kicker}</span>
-        <Lightbulb className="h-3.5 w-3.5 text-primary" />
-      </div>
-      <div className="mt-4 space-y-2 text-sm leading-7 text-[var(--landing-fg)]">
-        <div>{copy.lines[0]}</div>
-        <div className="inline-block rounded-lg border border-[color:var(--ds-status-reach)]/20 bg-[color:var(--ds-status-reach-bg)] px-2 py-1 text-[color:var(--ds-status-reach-fg)] line-through">
-          {copy.lines[1]}
-        </div>
-        <div className="inline-block rounded-lg border border-[color:var(--ds-status-safety)]/20 bg-[color:var(--ds-status-safety-bg)] px-2 py-1 text-[color:var(--ds-status-safety-fg)]">
-          {copy.lines[2]}
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {copy.chips.map((chip) => (
-          <span
-            key={chip}
-            className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3 py-1 text-2xs text-[var(--landing-muted)]"
-          >
-            {chip}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TimelineVisual() {
-  const t = useTranslations('home');
-  const copy = t.raw('features.visuals.timeline') as TimelineVisualCopy;
-
-  return (
-    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
-      <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-        <Clock3 className="h-3.5 w-3.5 text-primary" />
-        <span>{copy.label}</span>
-      </div>
-      <div className="mt-4 space-y-4">
-        {copy.items.map((item, index) => (
-          <div key={item.month} className="flex items-start gap-3">
-            <div className="flex min-w-12 flex-col items-center">
-              <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-                {item.month}
-              </div>
-              {index < copy.items.length - 1 ? (
-                <div className="mt-2 h-10 w-px bg-[var(--landing-border)]" />
-              ) : null}
-            </div>
-            <div className="flex-1 rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 text-sm text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]">
-              {item.label}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProbabilityVisual() {
-  const t = useTranslations('home');
-  const copy = t.raw('features.visuals.probability') as ProbabilityVisualCopy;
-
-  return (
-    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
-      <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-        <BarChart3 className="h-3.5 w-3.5 text-primary" />
-        <span>{copy.label}</span>
-      </div>
-      <div className="mt-4 space-y-3">
-        {copy.ranges.map((range) => (
-          <div
-            key={range.text}
-            className="flex items-center justify-between rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-card)]"
-          >
-            <span className="text-sm text-[var(--landing-fg)]">{range.text}</span>
-            <AdmissionTierBadge tier={range.tier} />
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 text-sm text-[var(--landing-muted)]">{copy.note}</div>
-    </div>
-  );
-}
-
-function TeamVisual() {
-  const t = useTranslations('home');
-  const copy = t.raw('features.visuals.team') as TeamVisualCopy;
-
-  return (
-    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
-      <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-        <Users className="h-3.5 w-3.5 text-primary" />
-        <span>{copy.label}</span>
-      </div>
-      <div className="mt-4 space-y-3">
-        {copy.members.map((member) => (
-          <div
-            key={member.name}
-            className="flex items-center gap-3 rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-card)]"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)] text-sm font-semibold text-[var(--landing-fg)]">
-              {member.name.slice(0, 1)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-[var(--landing-fg)]">{member.name}</div>
-              <div className="truncate text-xs text-[var(--landing-muted)]">{member.task}</div>
-            </div>
-            <StatusDot status={member.status} pulse={member.status === 'ai'} />
           </div>
         ))}
       </div>

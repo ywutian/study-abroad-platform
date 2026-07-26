@@ -1,19 +1,14 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { LumniMark } from '@/components/ui/lumni-mark';
 import { Link } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores';
 import { useHomeContent } from './home-content';
-
-const footerRoutes = [
-  ['/schools', '/essays', '/timeline', '/prediction', '/teams'],
-  ['/cases', '/help', '/about', '/register', '/terms'],
-  ['/about', '/teams', '/help', '/privacy', '/register'],
-  ['/privacy', '/terms', '/help'],
-] as const;
+import { LANDING_LINKS } from './landing-links';
 
 export function CTAFooter() {
   const home = useHomeContent();
@@ -25,7 +20,22 @@ export function CTAFooter() {
         id="cta"
         className="landing-section relative overflow-hidden border-t border-[color:var(--landing-border)]"
       >
-        <PageContainer variant="marketing">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/landing/cta-background.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            // Source is a wide 16:9 crop (subject at ~30% from the left,
+            // composed for desktop). Mobile's section is tall/narrow, so
+            // object-cover's default center crop shows empty lawn instead
+            // of her — anchor to the subject below `lg`, recenter above it.
+            className="object-cover object-[30%_center] lg:object-center"
+          />
+          <div className="absolute inset-0 bg-[var(--landing-bg)]/65" />
+        </div>
+
+        <PageContainer variant="marketing" className="relative">
           <div className="mx-auto max-w-4xl text-center">
             <div className="landing-kicker justify-center">{home.cta.eyebrow}</div>
             <h2 className="mt-5 text-display-hero font-bold leading-[0.96] tracking-tight text-[var(--landing-fg)]">
@@ -39,7 +49,7 @@ export function CTAFooter() {
             </p>
 
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link href="/register">
+              <Link href={LANDING_LINKS.register}>
                 <Button
                   size="lg"
                   className="btn-elegant-glow h-12 rounded-[var(--theme-radius-button)] border border-primary/10 bg-[var(--landing-fg)] px-8 text-sm text-[var(--landing-bg)] shadow-[var(--landing-shadow-elevated)] hover:bg-[var(--landing-fg)]/92 sm:h-14 sm:text-base"
@@ -48,7 +58,7 @@ export function CTAFooter() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/help">
+              <Link href={LANDING_LINKS.community}>
                 <Button
                   variant="outline"
                   size="lg"
@@ -68,9 +78,12 @@ export function CTAFooter() {
 
       <footer className="border-t border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/65">
         <PageContainer variant="marketing" className="py-10 sm:py-12">
-          <div className="grid min-w-0 gap-10 lg:grid-cols-[1.8fr_repeat(4,minmax(0,1fr))]">
+          <div className="grid min-w-0 gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.65fr)_repeat(3,minmax(0,1fr))]">
             <div>
-              <Link href={user ? '/dashboard' : '/'} className="inline-flex items-center gap-3">
+              <Link
+                href={user ? '/dashboard' : LANDING_LINKS.home}
+                className="inline-flex items-center gap-3"
+              >
                 <LumniMark className="h-11 w-11" iconClassName="h-5 w-5" />
                 <span className="text-2xl font-semibold tracking-[-0.02em] text-[var(--landing-fg)]">
                   {home.brand}
@@ -81,19 +94,19 @@ export function CTAFooter() {
               </p>
             </div>
 
-            {home.footer.columns.map((column, columnIndex) => (
+            {home.footer.columns.map((column) => (
               <div key={column.title}>
                 <div className="text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
                   {column.title}
                 </div>
                 <ul className="mt-4 space-y-3">
-                  {column.links.map((label, labelIndex) => (
-                    <li key={label}>
+                  {column.links.map((link) => (
+                    <li key={`${link.label}-${link.href}`}>
                       <Link
-                        href={footerRoutes[columnIndex][labelIndex] ?? '/'}
+                        href={link.href}
                         className="text-sm text-[var(--landing-muted)] transition hover:text-[var(--landing-fg)]"
                       >
-                        {label}
+                        {link.label}
                       </Link>
                     </li>
                   ))}

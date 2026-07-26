@@ -1,3 +1,4 @@
+import type { SchoolTestingPolicy } from '../types/prediction';
 /**
  * Scoring Types
  */
@@ -83,8 +84,13 @@ export interface SchoolMetrics {
   usNewsRank?: number;
   /** 4年毕业率 (0-100), College Scorecard */
   graduationRate?: number;
-  /** Testing policy: 'REQUIRED' | 'OPTIONAL' | 'BLIND' */
-  testingPolicy?: string;
+  /**
+   * The school's SAT/ACT policy. Typed, not `string`: readers used to reach it
+   * through `(school as any).testingPolicy`, which meant typecheck could not
+   * see them at all — the exact blind spot that let the union drift across 18
+   * hand-written copies.
+   */
+  testingPolicy?: SchoolTestingPolicy;
   /** ED acceptance rate (0–100 percentage) */
   edAcceptanceRate?: number;
   /** ED2 admit rate as 0-100 percentage when published. */

@@ -140,8 +140,21 @@ jobs:
           git fetch --unshallow || true
           pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
 
+      # `pnpm audit` itself is broken — npmjs.org retired the classic audit
+      # REST endpoints it calls (410). The real fix (pnpm v11) needs Node
+      # >=22.13, which this repo doesn't run. osv-scanner reads pnpm-lock.yaml
+      # directly instead — no dependency on that endpoint. Same pinned-binary
+      # pattern as the gitleaks install above. See scripts/check-dependency-audit.ts.
+      - name: Install osv-scanner
+        run: |
+          curl -sSL "https://github.com/google/osv-scanner/releases/download/v2.4.0/osv-scanner_linux_amd64" \
+            -o /tmp/osv-scanner
+          chmod +x /tmp/osv-scanner
+          sudo mv /tmp/osv-scanner /usr/local/bin/osv-scanner
+          osv-scanner --version
+
       - name: Dependency audit
-        run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
+        run: pnpm exec tsx scripts/check-dependency-audit.ts
 
       - name: Integration check
         run: pnpm lint:integration --verbose
@@ -822,6 +835,40 @@ jobs:
           pnpm exec tsx prisma/seed-round-rate-correction.ts
           pnpm exec tsx prisma/seed-audit-corrections-2026-05-31.ts
           pnpm exec tsx prisma/seed-instate-rate-2026-05-31.ts
+          pnpm exec tsx prisma/seed-testing-policy-2026-07-25.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      # Property sweep over the full seeded population: monotonicity, dominance,
+      # round ordering, hook direction, determinism, clamp bounds. It is the only
+      # instrument that catches "a change pushed predictions too high" — gold and
+      # calibration cases pin specific points, this pins the shape.
+      #
+      # Tier-1 CDS admit bands. This job used to skip them, so the gate DB had
+      # zero cdsAdmitBands while prod loads them at migrate.sh step 54 — the
+      # whole Tier-1 anchor path went unexercised here. Seeding them closes that
+      # gap and is what lets the sweep below actually cover it.
+      - name: Load CDS admit bands
+        working-directory: apps/api
+        run: pnpm exec tsx prisma/seeds/load-cds-bands.ts --file prisma/seeds/data/cds-admit-bands.json --apply
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      # Property sweep over the full seeded population: monotonicity, dominance,
+      # round ordering, hook direction, determinism, clamp bounds. It is the only
+      # instrument that catches "a change pushed predictions too high" — gold and
+      # calibration cases pin specific points, this pins the shape.
+      #
+      # It was excluded for years on the grounds that a partially-seeded gate DB
+      # produces tier-crossing artifacts. That was true, and the cause was not
+      # the gate: prisma/seeds/data/cds-admit-bands.json was merging a starter
+      # FIXTURE that gave UC Merced only a `3.75-4.00` rung, so a 4.0 anchored
+      # at 0.88 while a 3.5 fell through to Tier-2 and anchored at ~0.89. Prod
+      # loaded that same file. Fixture removed 2026-07-25; measured on a
+      # faithful reproduction of this job's DB, with bands loaded: 241 schools,
+      # 9,342 checks, 0 violations, all 16 invariants green.
+      - name: Counselor invariant sweep
+        run: pnpm --filter api invariants:counselor
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
