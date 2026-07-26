@@ -31,6 +31,15 @@ export enum DataSource {
 export const CLOSURE_V2_SOURCE = 'CLOSURE_V2';
 
 /**
+ * Values read directly off a school's own admissions page and recorded with
+ * the URL and the wording they came from (e.g. the 2026-07-25 testing-policy
+ * collection). Same character as closure-v2: a primary document, not a bulk
+ * feed. It would be protected by UNKNOWN_SOURCE_PRIORITY anyway; ranked here
+ * explicitly so the protection is stated rather than inherited.
+ */
+export const OFFICIAL_PAGE_SOURCE = 'OFFICIAL_ADMISSIONS_PAGE';
+
+/**
  * Write priority — LOWER number wins. This table used to be **inverted against
  * the enum declared right above it**, which documents the intended order as
  * "优先级从高到低" starting at MANUAL_ADMIN: it put COLLEGE_SCORECARD at 1 and
@@ -53,6 +62,7 @@ export const CLOSURE_V2_SOURCE = 'CLOSURE_V2';
  */
 const SOURCE_PRIORITY: Record<string, number> = {
   [CLOSURE_V2_SOURCE]: 1, // agent-verified against the school's own CDS/IR page
+  [OFFICIAL_PAGE_SOURCE]: 1, // read off the school's own admissions page, URL recorded
   [DataSource.MANUAL_ADMIN]: 2, // deliberate human override
   [DataSource.SEED]: 3, // curated + audited seed corrections
   [DataSource.COLLEGE_SCORECARD]: 4,

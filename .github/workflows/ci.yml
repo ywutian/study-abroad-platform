@@ -835,6 +835,7 @@ jobs:
           pnpm exec tsx prisma/seed-round-rate-correction.ts
           pnpm exec tsx prisma/seed-audit-corrections-2026-05-31.ts
           pnpm exec tsx prisma/seed-instate-rate-2026-05-31.ts
+          pnpm exec tsx prisma/seed-testing-policy-2026-07-25.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 

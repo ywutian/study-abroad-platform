@@ -89,8 +89,48 @@ Duke 5.7% / Vanderbilt 5.9% / JHU 6.4% / Pomona 6.8% …
    **已知残留缺口**（代码层解不了）：录取率 ≥20% 但实际强制标化的学校（如 UF ~23%）
    在这里仍读作 1.0×。只有回填数据能关掉它。
 
-2. ⬜ **数据（真正的杠杆）**：回填 234 所学校的 `testingPolicy`。
-   Scorecard 无此字段，需要独立数据源 —— 优先覆盖 56 所 <20% 的高选择性学校。
+2. ✅ **数据（真正的杠杆）— 已完成 2026-07-25**
+
+   `apps/api/prisma/seed-testing-policy-2026-07-25.ts`，覆盖录取率 <20% 的 59 所学校，
+   **50 所落值**（38 OPTIONAL / 10 REQUIRED / 2 BLIND），9 所刻意留 UNKNOWN。
+
+   **取数**：4 个 agent 分批查证，一律以学校自己的招生官网为准（FairTest 仅作交叉验证），
+   每条记录 URL + 读到的原文措辞 + 适用申请季。三条**第三方误传**被逐一推翻并记录：
+   Bowdoin / Northwestern、Williams / Middlebury、Boston College 被多个备考站称已恢复强制，
+   官网现行页面均否定。
+
+   **独立复核**：另派一个 agent 对 14 条 REQUIRED **从零重新取证**（不看前一批结论）。
+   **抓出 4 条**，全部会直接打到本平台用户群：
+
+   | 学校                       | 问题                                                                       |
+   | -------------------------- | -------------------------------------------------------------------------- |
+   | Carnegie Mellon            | 全校 test-**flexible**（SAT/ACT/IB/AP/A-Level 皆可），仅计算机学院硬性要求 |
+   | University of Miami        | 豁免名单明写「在美国境外高中毕业的学生」—— 即本平台绝大多数用户            |
+   | Dartmouth                  | 按生源地分档：美高必须交，境外可用 3 门 AP / IB / A-Level / 本国统考替代   |
+   | University of Pennsylvania | 两个 Penn 自有来源仍限定 "the 2025-26 application cycle"，无 2026-27 表述  |
+
+   四条全部降级为 UNKNOWN。另 Yale 结论正确但**依据被更新**：不是旧的 test-flexible，
+   而是 2026-05-27 刚宣布取消 flexible、改回只认 SAT/ACT。
+
+   **前三条的共同根因**：`TestingPolicy` 枚举没有 `FLEXIBLE`，也无法表达「按生源地分档」。
+   14 条 REQUIRED 候选里就撞上 3 条。**扩枚举才是真解**，在那之前这些保持 UNKNOWN。
+
+   **写入**：带 provenance（`source` / `sourceUrl` / `cycleYear` / 原文 note）。source token
+   `OFFICIAL_ADMISSIONS_PAGE` 已登记进 §8 修好的 `SOURCE_PRIORITY`，排在批量聚合器之上 ——
+   否则这批值会被下一次 Scorecard 同步静默回退。
+
+   **接线**：migrate.sh + Dockerfile + seed.ts + ci.yml 四处，`check-seed-pipeline-parity` 通过
+   （漏 Dockerfile 会导致 prod 镜像里没有 .js → 静默跳过 seed）。
+
+   **护栏**：`testing-policy-seed.spec.ts` 7 条结构性检查（重复、枚举合法性、禁止写 UNKNOWN、
+   来源可解析、证据非空、nameNorm 规范、provenance token 与 merger 一致）。
+
+   **顺带修好一处我自己在 §1 留下的不一致**：`prediction-policy.service.ts` 的
+   `hasStandardizedScore` 只认 SAT/ACT，会告诉 IB / A-Level / 高考考生「你没交成绩所以估计变弱」
+   —— 而引擎其实正在读他们的分数。改为复用 §4 建立的 `hasBandComparableScore`。
+
+   **待复查**：Penn（8 月 Common App 开放后）、Juilliard（2026-09 后）、
+   Harvey Mudd / Grinnell（官网公布 fall 2027 政策后）。
 
 **验收**：无分数 + `UNKNOWN` 高选择性学校，输出不得高于同条件 `OPTIONAL` 学校。
 

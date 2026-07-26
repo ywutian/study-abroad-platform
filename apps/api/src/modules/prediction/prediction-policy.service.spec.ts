@@ -217,6 +217,31 @@ describe('PredictionPolicyService', () => {
       );
     });
 
+    // The caveat must use the same notion of "has a score" the engine does.
+    // IB / A-Level / Gaokao are converted to an SAT-equivalent and compared
+    // against the school band, so telling these applicants their estimate was
+    // weakened by missing scores is simply false.
+    it.each([
+      ['IB', 42],
+      ['A_LEVEL', 152],
+      ['GAOKAO', 690],
+    ])('does not claim a missing score for a %s applicant', (type, score) => {
+      const result = service.buildTracePayload(
+        makeParams({
+          school: {},
+          profile: {
+            nationality: 'CN',
+            highSchoolId: 'hs-1',
+            highSchoolTier: 'TIER_1',
+            testScores: [{ type, score }],
+          },
+        }),
+      );
+      expect(result.uncertaintyReasons).not.toContain(
+        "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
+      );
+    });
+
     it('should add uncertainty when school ranking missing', () => {
       const result = service.buildTracePayload(
         makeParams({

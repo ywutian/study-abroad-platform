@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
 import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
+import { hasBandComparableScore } from './counselor/counselor-modifiers';
 
 export { LEGACY_PREDICTION_POLICY_VERSION } from './prediction-policy.constants';
 const CHINA_CODES = new Set(['CN', 'CHN', 'CHINA', 'PRC']);
@@ -183,10 +184,14 @@ export class PredictionPolicyService {
     const testingPolicyOnRecord =
       params.school.testingPolicy != null &&
       params.school.testingPolicy !== 'UNKNOWN';
-    const hasStandardizedScore = (params.profile.testScores ?? []).some(
-      (t) => (t.type === 'SAT' || t.type === 'ACT') && t.score,
-    );
-    if (!testingPolicyOnRecord && !hasStandardizedScore) {
+    // Shares `hasBandComparableScore` with the engine rather than re-listing
+    // SAT|ACT. The first cut here did re-list them, which told an IB or
+    // A-Level applicant their estimate was weakened by "no scores submitted"
+    // while the engine was in fact reading their score.
+    if (
+      !testingPolicyOnRecord &&
+      !hasBandComparableScore(params.profile.testScores)
+    ) {
       uncertaintyReasons.push(
         "This school's SAT/ACT requirement is not on record, so the effect of applying without scores could not be estimated precisely.",
       );
