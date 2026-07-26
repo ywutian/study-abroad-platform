@@ -732,18 +732,71 @@ export function testBandMultiplier(
     );
   }
 
+  const hasDirectSatAct = testScores.some(
+    (t) => (t.type === 'SAT' || t.type === 'ACT') && t.score,
+  );
+
   const usableSat = usableSatBand(school);
   const sat25 = usableSat?.sat25;
   const sat75 = usableSat?.sat75;
-  if (!sat25 || !sat75) {
+  const banded =
+    !sat25 || !sat75
+      ? {
+          multiplier: 1.0,
+          label: 'Test score',
+          evidence: `${testLabel} (no school percentile data; no adjustment)`,
+          impact: 'neutral' as const,
+        }
+      : compareTestBand(bestEquivSat, sat25, sat75, testLabel);
+
+  return capSubstituteAtRequiredSchool(banded, school, hasDirectSatAct);
+}
+
+/**
+ * At a school that requires SAT/ACT, a substitute credential must not earn a
+ * BONUS on the test axis.
+ *
+ * `BAND_COMPARABLE_TEST_TYPES` answers "can this be converted to compare
+ * against the SAT band". `testBandMultiplier` was also letting it answer "did
+ * this applicant satisfy the school's testing requirement", and those are
+ * different questions: an IB 45 converts to a fine SAT-equivalent and still
+ * does not meet Yale's requirement. Because the conversion succeeded, such an
+ * applicant skipped the REQUIRED branch entirely and came out at ×1.2 labelled
+ * "typical of admitted students" — a claim the school's own page contradicts.
+ * The seed's Yale note ("AP/IB no longer substitute", 2026-05-27) and the
+ * engine were saying opposite things about the same applicant.
+ *
+ * The fix deliberately does NOT invent a penalty. Deciding that an IB 45 at
+ * Harvard is worth ×0.6, or ×0.3, would be exactly the per-axis coefficient
+ * this codebase forbids at n=1076, and the honest range is per-school anyway
+ * (Harvard and MIT keep an exceptional-cases clause for applicants who cannot
+ * reach a test centre; Yale and Georgia Tech do not). So this only removes the
+ * false positive: no bonus, no claim of being typical, and the uncertainty is
+ * stated. The magnitude question needs per-school accepted-test data.
+ *
+ * ponytail: caps rather than scales. Ceiling — an applicant who genuinely
+ * qualifies for a school's exceptional-cases clause is still capped at
+ * neutral, which slightly understates them. Upgrade path: per-school
+ * `acceptedTestTypes`, then branch on it instead of capping.
+ */
+function capSubstituteAtRequiredSchool(
+  result: ModifierResult,
+  school: SchoolInput,
+  hasDirectSatAct: boolean,
+): ModifierResult {
+  if (school.testingPolicy !== 'REQUIRED' || hasDirectSatAct) return result;
+  if (result.multiplier <= 1.0) {
     return {
-      multiplier: 1.0,
-      label: 'Test score',
-      evidence: `${testLabel} (no school percentile data; no adjustment)`,
-      impact: 'neutral',
+      ...result,
+      evidence: `${result.evidence} This school requires the SAT or ACT; the score above is a substitute and may not satisfy that requirement.`,
     };
   }
-  return compareTestBand(bestEquivSat, sat25, sat75, testLabel);
+  return {
+    multiplier: 1.0,
+    label: 'Substitute test at a school requiring SAT/ACT',
+    evidence: `${result.evidence} Capped at neutral: this school requires the SAT or ACT, so a substitute credential is not counted as an advantage here.`,
+    impact: 'neutral',
+  };
 }
 
 /**

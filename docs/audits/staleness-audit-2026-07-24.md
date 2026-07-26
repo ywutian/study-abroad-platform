@@ -491,6 +491,49 @@ CU Boulder 80.5）整体静默回退到滞后约两年的值。**没有任何测
 
 ---
 
+## 12. 🔴 REQUIRED 对 IB / A-Level / 高考考生未生效
+
+> 由 #11 的调查翻出（#11 本身被实测证伪、已关闭）。
+
+**问题**：`BAND_COMPARABLE_TEST_TYPES` 同时回答了两个不同的问题：
+
+| 问题                         | IB / A-Level / 高考                             |
+| ---------------------------- | ----------------------------------------------- |
+| 能否折算去比 SAT band？      | **能** —— 合理                                  |
+| 能否**满足该校的标化要求**？ | 在 Harvard / MIT / Georgia Tech / Yale **不能** |
+
+代码用同一个集合回答两者。于是一个 A-Level 考生、无 SAT、申请 Harvard（#7 已标 REQUIRED）：
+`bestEquivSat != null` → **跳过 REQUIRED 分支** → 走 band 比较 → **×1.2，文案
+「typical of admitted students」**。
+
+**最刺眼的证据在仓库内部**：`seed-testing-policy-2026-07-25.ts` 里 Yale 的 note 写着
+「2026-05-27 起 AP/IB 不再替代」，而引擎正把 IB 当作满足了 Yale 的要求。
+**数据的证据和引擎的行为直接矛盾。** 命中 #7 落值的全部 10 所 REQUIRED × 本平台核心用户群。
+
+**修法 — 已完成 2026-07-25**
+
+`capSubstituteAtRequiredSchool()`：在 `testingPolicy === 'REQUIRED'` 且申请者**没有真实
+SAT/ACT** 时，band 比较的结果**封顶到 1.0**，并在 evidence 里说明该校要求 SAT/ACT、
+所持成绩是替代品、可能不满足要求。
+
+**刻意不做的事 —— 这是本项的设计核心**：
+不引入任何惩罚系数。判定「IB 45 在 Harvard 值 ×0.6 还是 ×0.3」正是
+`feedback_do_not_tune_coefficients` 在 n=1076 下禁止的 per-axis 调参，而且诚实的答案
+**逐校不同**（Harvard / MIT / Caltech 保留 exceptional-cases 条款，Yale / Georgia Tech 没有）。
+所以只消除**假阳性**：不给加成、不宣称「典型」、把不确定性说出来。
+量级问题需要逐校 accepted-test 数据，见任务 #12 的后续。
+
+标了 `ponytail:` 注释写明天花板：真正符合 exceptional-cases 条款的申请者也会被封到中性，
+略微低估；升级路径是 per-school `acceptedTestTypes`。
+
+**测试**：6 条 —— IB/A-Level/高考三种替代品在 REQUIRED 校不得拿加成；真实 SAT 在同校不受影响；
+同一 IB 在 OPTIONAL 校不受影响；**弱替代品的既有惩罚必须保留**（防止封顶变成意外的地板）。
+
+**policy version** → `counselor-cold-start-v1.10-substitute-cap`（点估计确实变了，
+且 Redis cache key 含 version）。3740 项 API 测试全过。
+
+---
+
 ## 附：小 bug
 
 `counselor-modifiers.ts:581` — `considerScore(act * 45, …)`：
