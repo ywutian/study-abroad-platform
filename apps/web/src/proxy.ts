@@ -92,26 +92,34 @@ export default function proxy(request: NextRequest) {
     return intlResponse;
   }
 
-  // Forward nonce to server components via the intl middleware's response.
-  // x-middleware-request-* headers are how Next.js forwards request headers
-  // from middleware to server components (readable via headers() in layout).
-  intlResponse.headers.set('x-middleware-request-x-nonce', nonce);
-
-  // Forward the request path to generateMetadata, which needs it for a per-page
-  // canonical + hreflang (a layout otherwise only knows the locale, and would
-  // canonicalize every subpage to the locale root).
+  // Forward three request headers to the render:
+  //   x-pathname               -> generateMetadata, for a per-page canonical +
+  //                               hreflang (a layout only knows the locale, and
+  //                               would canonicalize every subpage to the root)
+  //   x-nonce                  -> the layout, for its own inline <script>/<style>
+  //   content-security-policy  -> Next itself, which parses the nonce out of it
+  //                               (app-render.js -> getScriptNonceFromHeader) to
+  //                               stamp its hydration/RSC inline scripts. Setting
+  //                               CSP only on the response is why the nonce never
+  //                               worked before.
   //
   // Next only reads `x-middleware-request-<key>` for keys listed in
   // `x-middleware-override-headers`, and DELETES every request header missing
   // from that list (next/dist/server/lib/router-utils/resolve-routes.js).
   // next-intl already publishes that list with the full incoming header set, so
   // we APPEND — replacing it would strip `cookie` and log everyone out. If a
-  // next-intl upgrade ever stops emitting it, skip forwarding instead: canonical
-  // degrades to the locale root, which is survivable; losing cookies is not.
+  // next-intl upgrade ever stops emitting it, skip forwarding: canonical
+  // degrades to the locale root and the CSP falls back to its 'unsafe-inline'
+  // leg. Both are survivable; losing cookies is not.
   const overrides = intlResponse.headers.get('x-middleware-override-headers');
   if (overrides) {
-    intlResponse.headers.set('x-middleware-override-headers', `${overrides},x-pathname`);
+    intlResponse.headers.set(
+      'x-middleware-override-headers',
+      `${overrides},x-pathname,x-nonce,content-security-policy`
+    );
     intlResponse.headers.set('x-middleware-request-x-pathname', pathname);
+    intlResponse.headers.set('x-middleware-request-x-nonce', nonce);
+    intlResponse.headers.set('x-middleware-request-content-security-policy', csp);
   }
 
   // Set CSP response header (browser enforces this)

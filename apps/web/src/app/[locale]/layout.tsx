@@ -117,7 +117,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           {/* Mount Web Vitals reporter once at the locale root — fires
               globally for every navigation. Renders null. */}
           <WebVitalsReporter />
-          <Providers>{children}</Providers>
+          <Providers nonce={nonce}>{children}</Providers>
         </NextIntlClientProvider>
       </body>
     </html>
