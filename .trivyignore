@@ -22,24 +22,12 @@ GHSA-6rw7-vpxm-498p
 # Production minimatch@10.x already patched via pnpm override.
 CVE-2026-26996
 
-# ===================================================================
-# Docker image transitive dependency CVEs
-# These are dev/build-time dependencies in the container image,
-# not exploitable in production runtime.
-# ===================================================================
 
-# cross-spawn ReDoS — dev-only (used by npm/eslint toolchain)
-CVE-2024-21538
-
-# glob prototype pollution — dev-only transitive dep
-CVE-2025-64756
 
 # minimatch ReDoS (additional CVEs beyond CVE-2026-26996)
 CVE-2026-27903
 CVE-2026-27904
 
-# zlib memory corruption — Node.js built-in, mitigated by container isolation
-CVE-2026-22184
 
 # ===================================================================
 # REMOVED: the node-tar 6.2.1 block and sigstore CVE-2026-48815.
