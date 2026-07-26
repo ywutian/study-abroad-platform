@@ -4,9 +4,8 @@
  * 用于 SEO 优化，支持多种 schema.org 类型
  */
 
-'use client';
-
-import { useEffect, useMemo } from 'react';
+// Deliberately NOT 'use client': this renders a static <script> tag and nothing
+// else, so it stays a server component and its markup lands in the initial HTML.
 
 // 组织信息
 interface OrganizationSchema {
@@ -196,34 +195,29 @@ function generateSchema(data: SchemaType): object {
   }
 }
 
+/**
+ * Renders the schema straight into the markup.
+ *
+ * This used to `return null` and append a <script> to document.head from a
+ * useEffect, which meant every JSON-LD block on the site — Organization,
+ * WebSite, and per-school — existed only after hydration and was absent from
+ * the server-rendered HTML a crawler reads. Structured data that requires
+ * running the page's JavaScript is worth close to nothing: it is invisible to
+ * any non-executing crawler and, for the ones that do execute, arrives on a
+ * best-effort second pass.
+ */
 export function JsonLd({ data }: JsonLdProps) {
-  const schema = useMemo(() => generateSchema(data), [data]);
-  const schemaText = useMemo(() => JSON.stringify(schema), [schema]);
-
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      return;
-    }
-
-    const id = `json-ld-${data.type}`;
-    const existing = document.getElementById(id);
-    const script =
-      existing instanceof HTMLScriptElement ? existing : document.createElement('script');
-
-    script.id = id;
-    script.type = 'application/ld+json';
-    script.textContent = schemaText;
-
-    if (!existing) {
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      script.remove();
-    };
-  }, [data.type, schemaText]);
-
-  return null;
+  return (
+    <script
+      type="application/ld+json"
+      // Schema values are DB/third-party text (school names, descriptions), so
+      // escape '<' — an embedded "</script>" would otherwise close this tag and
+      // turn page data into executable markup.
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(generateSchema(data)).replace(/</g, '\\u003c'),
+      }}
+    />
+  );
 }
 
 // 便捷组件
