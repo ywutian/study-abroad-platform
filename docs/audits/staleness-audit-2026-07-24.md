@@ -112,8 +112,14 @@ Duke 5.7% / Vanderbilt 5.9% / JHU 6.4% / Pomona 6.8% …
    四条全部降级为 UNKNOWN。另 Yale 结论正确但**依据被更新**：不是旧的 test-flexible，
    而是 2026-05-27 刚宣布取消 flexible、改回只认 SAT/ACT。
 
-   **前三条的共同根因**：`TestingPolicy` 枚举没有 `FLEXIBLE`，也无法表达「按生源地分档」。
-   14 条 REQUIRED 候选里就撞上 3 条。**扩枚举才是真解**，在那之前这些保持 UNKNOWN。
+   **前三条看起来的共同根因**：`TestingPolicy` 枚举没有 `FLEXIBLE`，也无法表达「按生源地分档」。
+   14 条 REQUIRED 候选里就撞上 3 条。
+
+   > ⚠️ **「扩枚举才是真解」这句我写错了，已被实测推翻** —— 见下方 §11。
+   > `FLEXIBLE` 与这三所现在带的 `UNKNOWN` **逐格相同**，因为 `testingPolicy` 只在申请者
+   > 五种 band-comparable 考试全无时才被读到。`UNKNOWN` 是**正确取值**，不是占位符：
+   > schema 说不出我们已知的事，往任何一个方向说错都比不说更糟。
+   > 真正缺的是逐校 accepted-test 数据，那是 §12。
 
    **写入**：带 provenance（`source` / `sourceUrl` / `cycleYear` / 原文 note）。source token
    `OFFICIAL_ADMISSIONS_PAGE` 已登记进 §8 修好的 `SOURCE_PRIORITY`，排在批量聚合器之上 ——
@@ -553,3 +559,40 @@ SAT/ACT** 时，band 比较的结果**封顶到 1.0**，并在 evidence 里说�
 - [Galvanize — DET / IELTS / TOEFL 换算](https://galvanizetestprep.com/blogs/duolingo-score-chart-ielts-toefl-conversion-guide/)
 - [South Shore — test-optional 时代 SAT 均分的误导性](https://highambition.org/2025/01/19/the-misleading-nature-of-college-average-sat-and-act-scores-in-the-test-optional-era/)
 - [Georgia Tech CDS 2025-26](https://irp.gatech.edu/node/152)
+
+---
+
+## 11. ⬜ 扩 `TestingPolicy` 枚举 —— 判定 N_A，已关闭
+
+#7 留下 9 所 UNKNOWN，看起来是枚举表达力不足（缺 `FLEXIBLE`、缺「按生源地分档」）。
+两个 agent 独立否决，其中架构 agent 跑了**实测矩阵**：
+
+| profile     | REQUIRED | OPTIONAL | UNKNOWN   | FLEXIBLE(假想) |
+| ----------- | -------- | -------- | --------- | -------------- |
+| IB 45       | 1.200    | 1.200    | **1.200** | **1.200**      |
+| A-Level 168 | 1.000    | 1.000    | **1.000** | **1.000**      |
+| 高考 680    | 1.000    | 1.000    | **1.000** | **1.000**      |
+| AP only     | 0.100    | 0.850    | **0.850** | **0.850**      |
+
+`FLEXIBLE` 与 `UNKNOWN` **逐格相同** —— 因为 `testingPolicy` 只在申请者五种
+band-comparable 考试全无时才被读到。光加枚举值不写新分支 = **纯 no-op**。
+
+即使配上新分支，唯一变化的画像是 AP-only：CMU **+1.75pp**、Dartmouth **+0.81pp**，
+而两校服务给用户的区间宽度是 **16.0pp / 8.1pp** —— 位移是区间的 5–11%，
+完全埋在里面。这与 §4 被四个 agent 否掉的理由同构。Miami 的 delta **严格为 0**。
+
+**代价**：enum migration + 该 union 类型在仓库里**被手抄 18 份** + **7 处 `as any`**
+（typecheck 抓不到）+ 4 个动态解析的 i18n 面（`check-missing-keys` 也抓不到，
+用户会看到裸 key）。
+
+**业务侧补充**：test-flexible 是**收缩中**的品类 —— 发明者 Yale 2026-05-27 刚放弃。
+而 AP-only 在中国申请者里主要意味着「档案未完成」而非「flexible 申请者」
+（AP 轨学生几乎必考 SAT），所以 `FLEXIBLE` 会主要在未完成档案上触发，且触发错误行为。
+
+**已落地**：`counselor-modifiers.ts` 在 `BAND_COMPARABLE_TEST_TYPES` 旁钉了
+`ponytail:` 警告 —— **不要把 `AP` 加进去**（会让 AP-only 在 Georgia Tech / Harvard
+拿到 band 比较，把 §1 修掉的过度乐观放回去；且 AP↔SAT 无官方 concordance）。
+seed 文件头改正了原先的错误结论并附上实测矩阵。
+
+**重评条件**：只有当 per-school `acceptedTestTypes`（§12 的后续）落地后，
+枚举问题才可能重新变得相关 —— 届时也很可能是被那份数据取代，而不是被枚举解决。
