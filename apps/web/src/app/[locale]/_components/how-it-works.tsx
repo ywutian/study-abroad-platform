@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import {
-  Bot,
+  CircleCheckBig,
   Compass,
   LockKeyhole,
   MessageCircleHeart,
@@ -45,7 +45,7 @@ export function HowItWorks() {
 
         <ol className="relative mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
           {home.how.steps.map((step, index) => {
-            const Icon = workflowIcons[index] ?? Bot;
+            const Icon = workflowIcons[index] ?? CircleCheckBig;
             const isPreview = index === home.how.steps.length - 1;
 
             return (
@@ -127,7 +127,7 @@ export function HowItWorks() {
           transition={{ duration: 0.6, delay: 0.22 }}
           className="mt-6 flex items-start gap-3 border-l-2 border-[color:var(--landing-border-strong)] pl-4 text-sm leading-7 text-[var(--landing-muted)]"
         >
-          <Bot className="mt-1 h-4 w-4 shrink-0 text-[var(--landing-fg)]" />
+          <CircleCheckBig className="mt-1 h-4 w-4 shrink-0 text-[var(--landing-fg)]" />
           <span>{home.how.footer}</span>
         </motion.div>
       </PageContainer>

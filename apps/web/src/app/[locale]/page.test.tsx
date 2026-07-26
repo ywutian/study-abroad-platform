@@ -202,13 +202,13 @@ describe('HomePage', () => {
   it('does not ship unverified marketing claims in either locale', () => {
     const prohibitedClaims = [
       '50,000+',
-      '10,000+ 用户好评',
+      '10,000+ \u7528\u6237\u597d\u8bc4',
       '10,000+ Positive Reviews',
-      '2,000+ 院校数据',
+      '2,000+ \u9662\u6821\u6570\u636e',
       '2,000+ schools',
       '85%',
       'Trusted by counselors at',
-      '受信于以下升学顾问',
+      '\u53d7\u4fe1\u4e8e\u4ee5\u4e0b\u5347\u5b66\u987e\u95ee',
       'studyabroad.com',
     ];
 

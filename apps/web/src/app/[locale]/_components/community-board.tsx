@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowUpRight, MessageCircleMore, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Images as ImagesIcon, MessageCircleMore } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
@@ -73,7 +73,7 @@ export function CommunityBoard() {
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-5 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.78fr)]">
+        <div className="mt-10 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.78fr)]">
           <motion.aside
             initial={prefersReducedMotion ? false : { opacity: 0, y: 22 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -138,7 +138,7 @@ export function CommunityBoard() {
                       {index === 0 ? (
                         <MessageCircleMore className="h-4 w-4 text-[var(--landing-muted)]" />
                       ) : (
-                        <Sparkles className="h-4 w-4 text-[var(--landing-muted)]" />
+                        <ImagesIcon className="h-4 w-4 text-[var(--landing-muted)]" />
                       )}
                     </div>
                     <h3 className="mt-4 text-lg font-semibold tracking-[-0.02em] text-[var(--landing-fg)]">
