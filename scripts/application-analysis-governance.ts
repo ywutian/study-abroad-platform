@@ -186,6 +186,29 @@ async function main() {
         suiteEnv
       )
     );
+    // Runs in both modes. It used to be nightly-only, which made every
+    // rendering-affecting change invisible to the PR pipeline: a dependency
+    // bump that moved a pixel (Playwright, Next, a font package) went green on
+    // the PR and turned the nightly red the following day, with the cause a
+    // day behind the merge. The suite costs ~30s of a ~224s run and the
+    // servers and browser are already up for web-dom-parity, so there is no
+    // reason to defer it. Deliberately not gated behind a paths filter — the
+    // set of things that can move a pixel is not enumerable, and a stale
+    // allowlist would recreate the same blind spot it was meant to close.
+    suites.push(
+      await runCommand(
+        'web-visual-parity',
+        'pnpm',
+        [
+          'exec',
+          'playwright',
+          'test',
+          'e2e/application-analysis-visual.spec.ts',
+          '--reporter=list',
+        ],
+        suiteEnv
+      )
+    );
     suites.push(
       await runCommand('mobile-rn-parity', 'pnpm', [
         '--filter',
@@ -213,20 +236,6 @@ async function main() {
         ])
       );
       suites.push(
-        await runCommand(
-          'web-visual-parity',
-          'pnpm',
-          [
-            'exec',
-            'playwright',
-            'test',
-            'e2e/application-analysis-visual.spec.ts',
-            '--reporter=list',
-          ],
-          suiteEnv
-        )
-      );
-      suites.push(
         await runCommand('runtime-journey-audit', 'pnpm', [
           'exec',
           'tsx',
@@ -250,10 +259,7 @@ async function main() {
       ...asRecord(deterministicReplay.metrics),
       webRenderPass: suites.find((suite) => suite.name === 'web-dom-parity')?.success ?? false,
       mobileRenderPass: suites.find((suite) => suite.name === 'mobile-rn-parity')?.success ?? false,
-      webVisualPass:
-        args.mode === 'nightly'
-          ? (suites.find((suite) => suite.name === 'web-visual-parity')?.success ?? false)
-          : null,
+      webVisualPass: suites.find((suite) => suite.name === 'web-visual-parity')?.success ?? false,
       liveGoldPassRate:
         args.mode === 'nightly'
           ? typeof liveReplayMetrics.goldPassRate === 'number'
@@ -317,7 +323,7 @@ async function main() {
       renderParityMode: {
         web: 'dom_blocking',
         mobile: 'rn_screen',
-        webVisual: args.mode === 'nightly' ? 'screenshot_diff' : null,
+        webVisual: 'screenshot_diff',
       },
     };
 
@@ -344,6 +350,7 @@ async function main() {
             [
               'deterministic-replay',
               'web-dom-parity',
+              'web-visual-parity',
               'mobile-rn-parity',
               'governance-evaluation-record',
             ].includes(suite.name)
