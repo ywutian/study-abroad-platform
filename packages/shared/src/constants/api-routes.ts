@@ -8,6 +8,15 @@
  * When a controller prefix changes, update HERE and all consumers auto-sync.
  */
 
+/**
+ * Global prefix set by `app.setGlobalPrefix()` in `apps/api/src/main.ts`.
+ * Sits in front of every API_ROUTES entry. Browser callers go through the
+ * Next rewrite and get this from `apiClient`; server-side callers that build
+ * an absolute URL (sitemap.ts) prepend it themselves — both from here, so the
+ * version can't drift between them.
+ */
+export const API_VERSION_PREFIX = '/api/v1';
+
 // ─── Route Prefixes ──────────────────────────────────────────────────────────
 // Each key maps to a backend @Controller('prefix') decorator.
 // ALL prefixes use plural nouns (NestJS convention in this project).
