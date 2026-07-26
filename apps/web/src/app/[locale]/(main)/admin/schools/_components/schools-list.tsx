@@ -20,6 +20,7 @@ import { PaginationControls } from '../../_components/pagination-controls';
 import { SchoolLogo } from '@/components/features';
 import { getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 import { GraduationCap, Search, Pencil, MessageSquare } from 'lucide-react';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 interface School {
   id: string;
@@ -38,7 +39,7 @@ interface School {
   averageNetPrice?: number;
   roomAndBoard?: number;
   percentNeedMet?: number;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;

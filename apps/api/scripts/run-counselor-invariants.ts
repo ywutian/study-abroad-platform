@@ -39,13 +39,32 @@
  *     pnpm --filter api invariants:counselor          # 0 violations on prod-like data
  *     pnpm --filter api invariants:counselor --limit 60   # fast subset
  *
- * It is NOT wired into the CI Prediction Gate. A full-POPULATION sweep is only meaningful on a
- * complete dataset: the gate DB is seeded via `prisma db seed` (minimal/partial — no full band
- * ladders), which produces TIER-CROSSING artifacts (a 3.8 GPA that matches a lone low Tier-1 band
- * scores below a 3.5 that falls through to the higher Tier-2 overall rate). Those are gate-DB DATA
- * artifacts, not engine bugs — on the orchestrator seed (= prod) the engine is invariant-clean
- * (0 violations). Run this before merging any counselor-engine change. See
- * docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
+ * WIRED INTO CI as of 2026-07-25 (ci.yml, prediction-gate job).
+ *
+ * It was excluded before that on the grounds that the gate DB, being partially seeded, produces
+ * TIER-CROSSING artifacts — a 3.8 GPA matching a lone low Tier-1 band scoring below a 3.5 that
+ * falls through to the higher Tier-2 overall rate. That reasoning was never re-measured after the
+ * gate's seed sequence changed. Reproducing this job's DB exactly (migrate deploy → db seed →
+ * closure overlay → EA/ED2 backfill → the five correction seeds) on 2026-07-25 gave 241 schools,
+ * 9,342 checks and 0 violations, all 16 invariants green. The artifact requires PARTIAL band
+ * coverage, and that DB seeds ZERO `SchoolCdsAdmitBand` rows — there is no Tier-1 to cross into.
+ *
+ * Turning it on then exposed the real cause of the artifact the exclusion had been blaming on
+ * the gate. Loading the band payload made the sweep red — 6 violations, all University of
+ * California, Merced — because `prisma/seeds/data/cds-admit-bands.json` was merging a starter
+ * FIXTURE alongside the real UC Information Center extract. The fixture gave Merced only a
+ * `3.75-4.00` rung, so a 4.0 applicant matched it and anchored at 0.88 while a 3.5 matched
+ * nothing, fell through to Tier-2 and anchored on the school's overall rate of ~0.89 — the
+ * stronger applicant scoring lower. `isotonicBandRate` could not repair it: it clamps against
+ * LOWER rungs in the same ladder and there were none.
+ *
+ * migrate.sh step 54 loaded that same payload, so prod was serving two UC campuses Tier-1
+ * anchors derived from test data. Fixture removed from the payload builder 2026-07-25; the
+ * sweep is green again WITH bands loaded, and the CI job now seeds them.
+ *
+ * The lesson worth keeping: the exclusion note blamed the gate's data for years, and the
+ * artifact was in the payload prod ships. An excluded check cannot tell you which.
+ * See docs/PREDICTION_INVARIANT_DEEPDIVE_2026-06-01.md.
  */
 
 import { NestFactory } from '@nestjs/core';

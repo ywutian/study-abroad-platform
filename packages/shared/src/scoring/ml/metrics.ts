@@ -2,11 +2,12 @@
  * ML Evaluation Metrics
  *
  * Pure TypeScript implementations of AUC-ROC, Brier Score,
- * ECE, Log-Loss, calibration curves, and feature importance.
- * Zero external dependencies.
+ * ECE, Log-Loss, and calibration curves. Zero external dependencies.
+ *
+ * These outlived the v5 ML path (deleted 2026-05-07): the served engine is the
+ * deterministic counselor, but its shadow/reporting services still score
+ * themselves with AUC and Brier. Everything else under ml/ went with v5.
  */
-
-import type { TrainedModel } from './logistic-regression';
 
 // ============================================
 // Core Metrics
@@ -173,39 +174,6 @@ export function computeCalibrationCurve(
   }
 
   return bins;
-}
-
-// ============================================
-// Feature Importance
-// ============================================
-
-export interface FeatureImportance {
-  feature: string;
-  importance: number;
-  weight: number;
-  direction: 'positive' | 'negative';
-}
-
-/**
- * Compute feature importance from a trained logistic regression model.
- * For LR, importance = |weight[i]| * std(feature[i]).
- * This measures how much each feature contributes to prediction variance.
- */
-export function computeFeatureImportance(model: TrainedModel): FeatureImportance[] {
-  return model.featureNames
-    .map((name, i) => {
-      const weight = model.weights[i];
-      const std = model.featureStds[name] ?? 1;
-      const importance = Math.abs(weight) * std;
-
-      return {
-        feature: name,
-        importance,
-        weight,
-        direction: weight >= 0 ? ('positive' as const) : ('negative' as const),
-      };
-    })
-    .sort((a, b) => b.importance - a.importance);
 }
 
 // ============================================

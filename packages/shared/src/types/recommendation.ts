@@ -1,5 +1,6 @@
 // Recommendation
 import type { SchoolFieldSource } from './school-provenance';
+import type { SchoolTestingPolicy } from './prediction';
 
 export interface SchoolMeta {
   nameZh?: string;
@@ -10,7 +11,7 @@ export interface SchoolMeta {
   state?: string;
   tuition?: number;
   isPrivate?: boolean;
-  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testingPolicy?: SchoolTestingPolicy;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   retentionRate?: number;

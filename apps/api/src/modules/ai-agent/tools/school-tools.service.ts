@@ -185,7 +185,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
       },
     });
     const testingPolicy = resolveSchoolTestingPolicyValue({
-      testingPolicy: (fullSchool as any).testingPolicy,
+      testingPolicy: fullSchool.testingPolicy,
       testOptional: (fullSchool as any).testOptional,
     });
     const ranking = getCatalogRanking(
@@ -309,7 +309,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
     return {
       comparison: schools.map((s) => {
         const testingPolicy = resolveSchoolTestingPolicyValue({
-          testingPolicy: (s as any).testingPolicy,
+          testingPolicy: s.testingPolicy,
           testOptional: (s as any).testOptional,
         });
         const ranking = getCatalogRanking(

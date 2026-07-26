@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CounselorEngineService } from './counselor-engine.service';
+import { AnchorResolverService } from './anchor-resolver.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 
 /**
@@ -42,6 +43,7 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CounselorEngineService,
+        AnchorResolverService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();

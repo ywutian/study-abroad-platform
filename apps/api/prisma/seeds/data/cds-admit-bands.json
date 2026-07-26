@@ -383,38 +383,5 @@
     "cycleYear": 2024,
     "source": "manual-uc-freshman-profile:uc-los-angeles:2024",
     "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/admissions-residency-and-ethnicity"
-  },
-  {
-    "schoolNameNorm": "university of california, merced",
-    "gpaBand": "3.75-4.00",
-    "testType": "SAT",
-    "testBand": "1500-1600",
-    "admitRate": 0.92,
-    "sampleCount": 500,
-    "cycleYear": 2024,
-    "source": "manual-cds-fixture:uc-merced:2024",
-    "sourceUrl": "https://admissions.ucmerced.edu/"
-  },
-  {
-    "schoolNameNorm": "university of california, merced",
-    "gpaBand": "3.75-4.00",
-    "testType": "GPA_ONLY",
-    "testBand": "ANY",
-    "admitRate": 0.88,
-    "sampleCount": 1200,
-    "cycleYear": 2024,
-    "source": "manual-cds-fixture:uc-merced:2024",
-    "sourceUrl": "https://admissions.ucmerced.edu/"
-  },
-  {
-    "schoolNameNorm": "university of california, berkeley",
-    "gpaBand": "3.75-4.00",
-    "testType": "GPA_ONLY",
-    "testBand": "ANY",
-    "admitRate": 0.25,
-    "sampleCount": 1000,
-    "cycleYear": 2024,
-    "source": "manual-cds-fixture:uc-berkeley:2024",
-    "sourceUrl": "https://admissions.berkeley.edu/"
   }
 ]

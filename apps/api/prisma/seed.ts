@@ -22,6 +22,7 @@ import { correctIntlRates } from './seed-intl-rate-correction';
 import { correctRoundRateScaleErrors } from './seed-round-rate-correction';
 import { applyAuditCorrections } from './seed-audit-corrections-2026-05-31';
 import { applyInStateRates } from './seed-instate-rate-2026-05-31';
+import { applyTestingPolicies } from './seed-testing-policy-2026-07-25';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
 
@@ -2128,6 +2129,13 @@ export async function main() {
   // (PRIMARY path) instead of the state-map+damping proxy. Runs after audit corrections.
   const inStateRates = await applyInStateRates(prisma);
   console.log(`  ✅ In-state rates: ${inStateRates} school(s) populated`);
+
+  // Per-school SAT/ACT testing policy for the 2026-27 cycle (2026-07-25
+  // research). Without it every school sits at the UNKNOWN default, and a
+  // no-score applicant is scored the same at a test-required school as at an
+  // open-admission one.
+  const testingPolicies = await applyTestingPolicies(prisma);
+  console.log(`  ✅ Testing policy: ${testingPolicies} school(s) populated`);
 
   // ========== GPA Distributions (CDS Section C9) ==========
   const gpaDists = await seedGpaDistributions(prisma);

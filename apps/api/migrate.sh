@@ -111,6 +111,7 @@ run_seed "round-rate-correction" ./prisma/seed-round-rate-correction.js
 #     scripts/check-seed-pipeline-parity.ts (each .js here needs a compiled .ts).
 run_seed "audit-corrections" ./prisma/seed-audit-corrections-2026-05-31.js
 run_seed "instate-rates" ./prisma/seed-instate-rate-2026-05-31.js
+run_seed "testing-policy" ./prisma/seed-testing-policy-2026-07-25.js
 
 echo "=== All Seed Steps Complete ==="
 

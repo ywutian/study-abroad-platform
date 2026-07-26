@@ -54,6 +54,23 @@ CVE-2026-29786
 CVE-2026-31802
 
 # ===================================================================
+# brace-expansion CVE-2026-14257 (HIGH, = GHSA-mh99-v99m-4gvg) — DoS via
+# unbounded brace expansion, affects 1.1.16 and 2.1.2. No patched release
+# exists on either line; the fix ships only in 5.0.8. Forcing everything to
+# >=5.0.8 resolves cleanly and then breaks the toolchain (5.x drops the
+# callable CJS default export, so minimatch@3.1.5 under eslint 9 throws
+# "expand is not a function" and all three lint:* scripts die). 1.x/2.x reach
+# us only via minimatch@3/@9, whose patterns come from our own configs and
+# never from user input, so the DoS is not reachable.
+#
+# This is the SAME exemption as pnpm.auditConfig.ignoreGhsas, documented in
+# docs/SECURITY_DEPS.md. Both gates scan the lockfile and both report it, so
+# an exemption has to be recorded in BOTH places or one gate stays red.
+# Remove from here and from ignoreGhsas together.
+# ===================================================================
+CVE-2026-14257
+
+# ===================================================================
 # sigstore CVE-2026-48815 (HIGH) — lives in the base image's OWN npm
 # (usr/local/lib/node_modules/npm/node_modules/sigstore@2.3.1), not in
 # our pnpm lockfile. sigstore verifies package provenance at
