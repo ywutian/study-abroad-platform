@@ -303,7 +303,7 @@
         "aiLab": "AI Lab",
         "aiLabDesc": "Experimental AI features",
         "referral": "Invite & Earn",
-        "referralDesc": "Share Lumni — earn points when friends join"
+        "referralDesc": "Share Lumni with friends"
       },
       "stats": {
         "followers": "Followers",
@@ -1423,7 +1423,7 @@
       "forum": "Join discussions with fellow applicants",
       "teams": "Find or create teams for same-school applications and prep",
       "help": "FAQ, guides and support",
-      "referral": "Invite friends and earn points",
+      "referral": "Invite friends to join Lumni",
       "ranking": "Customize school rankings based on your preferences"
     },
     "sections": {
@@ -2892,7 +2892,7 @@
       "title": "No cases yet",
       "description": "Be the first to share! Your contribution helps the community and improves your own recommendations.",
       "bullet1": "Share your results to get more accurate school recommendations",
-      "bullet2": "Earn points and verification badges for your contributions",
+      "bullet2": "Earn verification badges for approved contributions",
       "bullet3": "Compare your profile against admitted students at your target schools",
       "startTour": "Learn how to use in 30 seconds"
     },
@@ -3220,7 +3220,6 @@
       "profile": "Profile",
       "preferences": "Preferences",
       "notifications": "Notifications",
-      "subscription": "Subscription",
       "help": "Help & Support",
       "accountActions": "Account Actions"
     },
@@ -3239,8 +3238,6 @@
       "pushNotificationDesc": "Receive important update notifications",
       "emailNotification": "Email Notifications",
       "emailNotificationDesc": "Receive email notifications",
-      "subscription": "Subscription",
-      "subscriptionDesc": "Manage your subscription plan",
       "helpCenter": "Help Center",
       "helpCenterDesc": "View FAQs and documentation",
       "termsOfService": "Terms of Service",
@@ -4846,6 +4843,8 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "passwordRequirements": "Password must include uppercase, lowercase, a number, and one special character from @$!%*#?&",
     "updatePassword": "Update Password",
     "passwordMismatch": "Passwords do not match",
@@ -4875,80 +4874,6 @@
     "dangerZone": "Danger Zone",
     "dangerZoneDesc": "Deleting your account will permanently remove all your data. This action cannot be undone.",
     "deleteAccount": "Delete Account"
-  },
-  "subscription": {
-    "title": "Subscription",
-    "description": "Manage your subscription plan and billing",
-    "currentPlan": "Current Plan",
-    "freePlan": "Free",
-    "proPlan": "Pro",
-    "premiumPlan": "Premium",
-    "features": "Features",
-    "upgrade": "Upgrade",
-    "downgrade": "Downgrade",
-    "cancel": "Cancel Subscription",
-    "renew": "Renew",
-    "billingHistory": "Billing History",
-    "nextBilling": "Next Billing",
-    "amount": "Amount",
-    "status": "Status",
-    "paid": "Paid",
-    "pending": "Pending",
-    "failed": "Failed",
-    "popular": "Popular",
-    "current": "Current",
-    "perMonth": "/month",
-    "perYear": "/year",
-    "savePercent": "Save {percent}%",
-    "monthlyBilling": "Monthly Billing",
-    "yearlyBilling": "Yearly Billing",
-    "validForever": "Valid Forever",
-    "currentPlanLabel": "Current Plan",
-    "mostPopular": "Most Popular",
-    "paymentHistory": "Payment History",
-    "paymentHistoryDesc": "View your payment history",
-    "plans": {
-      "free": {
-        "name": "Free",
-        "period": "Forever",
-        "description": "Basic features for first-time experience",
-        "features": [
-          "Browse school info",
-          "View public cases",
-          "Basic AI chat (5/day)",
-          "Profile management"
-        ]
-      },
-      "pro": {
-        "name": "Pro",
-        "period": "month",
-        "description": "Unlock all features for efficient applications",
-        "features": [
-          "All Free features",
-          "Unlimited AI chat",
-          "Admission prediction",
-          "Essay review & polish",
-          "Detailed case data",
-          "Priority support"
-        ]
-      },
-      "premium": {
-        "name": "Premium",
-        "period": "month",
-        "description": "One-on-one service, full accompaniment",
-        "features": [
-          "All Pro features",
-          "Dedicated counselor",
-          "Application strategy",
-          "Deep essay editing",
-          "Mock interviews",
-          "VIP community"
-        ]
-      }
-    },
-    "getStarted": "Get Started",
-    "noInvoices": "No invoices",
-    "upgradeSuccess": "Upgrade successful"
   },
   "helpCenter": {
     "title": "Help Center",
@@ -5491,6 +5416,12 @@
       "section": {
         "hidden": "Hidden",
         "evidenceRefs": "{count} evidence",
+        "expandSection": "Expand section",
+        "collapseSection": "Collapse section",
+        "showSection": "Show section",
+        "hideSection": "Hide section",
+        "deleteSection": "Delete section",
+        "editTitle": "Edit section title: {title}",
         "aiHint": "AI suggestions are not written automatically. You choose what to apply."
       },
       "match": {
@@ -6188,12 +6119,12 @@
       },
       "ai": {
         "loginRequired": "Login to use AI paragraph review",
-        "costHint": "Costs 20 points for professional admissions officer perspective analysis",
+        "costHint": "Get a professional admissions officer perspective analysis",
         "loginButton": "Login to Use",
         "title": "AI Paragraph Review",
         "description": "Analyzes each paragraph from admissions officer perspective with specific improvement suggestions",
         "analyzing": "Analyzing...",
-        "startAnalysis": "Start Analysis (20 points)",
+        "startAnalysis": "Start Analysis",
         "analysisError": "Analysis failed, please try again later",
         "cachedHint": "Analyzed · Instant response",
         "privacyHelpLabel": "How we use your data",
@@ -6232,7 +6163,7 @@
         "evidence": "Quoted evidence",
         "selectedText": "This question will use your selected text",
         "history": "Recent questions",
-        "failed": "This question failed and points were refunded.",
+        "failed": "This question failed. Please try again.",
         "paragraphQuestion": "How should I understand the note for paragraph {num}?",
         "quick": {
           "structure": "Why is this essay's structure effective?",
@@ -6275,7 +6206,7 @@
         "openWorkbench": "Open Essay Workbench",
         "history": "Recent comparisons",
         "historyBadge": "Reference compare",
-        "failed": "This comparison failed and points were refunded."
+        "failed": "This comparison failed. Please try again."
       },
       "citation": {
         "label": "Showing quoted evidence in the essay",
@@ -6937,8 +6868,11 @@
     "addItem": "Add Item",
     "allItems": "All",
     "credential": "Credential",
+    "password": "Password",
     "document": "Document",
     "note": "Note",
+    "api_key": "API key",
+    "other": "Other",
     "certificate": "Certificate",
     "categories": "Categories",
     "search": "Search vault...",
@@ -6991,6 +6925,9 @@
       "mainAccountNote": "Main account info"
     },
     "saveError": "Failed to save",
+    "loadError": "Failed to load your vault. No sample data was substituted.",
+    "retry": "Retry",
+    "passwordGenerateError": "Failed to generate a password",
     "tooManyTags": "You can add at most {max} tags — please reduce and try again.",
     "deleteError": "Failed to delete"
   },
@@ -7139,10 +7076,10 @@
     "missingTargetMajor": "target major",
     "missingProfile": "profile",
     "points": "points",
-    "pointsRemaining": "{points} points remaining",
-    "insufficientPoints": "Insufficient points (need 25)",
+    "pointsRemaining": "All recommendation features are available",
+    "insufficientPoints": "Complete your profile to continue",
     "confirmTitle": "Generate School Recommendations",
-    "confirmDesc": "This will use 25 points. You currently have {points} points. Continue?",
+    "confirmDesc": "Generate personalized school recommendations based on your profile?",
     "confirmDescSimple": "Generate personalized school recommendations based on your profile?",
     "confirmGenerate": "Generate",
     "cancel": "Cancel",
@@ -7181,6 +7118,7 @@
     "additionalPreferences": "Additional Preferences",
     "additionalPreferencesPlaceholder": "Any specific requirements...",
     "completeProfileFirst": "Complete profile first",
+    "cannotGenerate": "Recommendations are temporarily unavailable",
     "tests": "Tests",
     "activities": "Activities",
     "missing": "Missing",
@@ -8027,7 +7965,10 @@
       "verified": "Verified User"
     },
     "verify": "Verify",
-    "pleaseSelectFile": "Please select a file",
+    "pleaseSelectFile": "Please select a file and admission case",
+    "caseLabel": "Admission case",
+    "selectCase": "Select one of your admission cases",
+    "noCases": "Create an admission case before requesting verification.",
     "title": "Identity Verification",
     "description": "Upload proof of admission to verify your identity",
     "descriptionWithSchool": "Upload proof of admission for {school}",
@@ -8046,9 +7987,9 @@
     "dragOrClick": "Drag or click to upload",
     "dropHere": "Drop to upload",
     "dropOrClick": "Drop files here or click to upload",
-    "supportedFormats": "Supports PDF, JPG, PNG",
-    "fileRequirements": "Max file size: 10MB",
-    "fileTooLarge": "File too large. Please select a file under 10MB",
+    "supportedFormats": "Supports PDF, JPG, PNG, and WebP",
+    "fileRequirements": "Maximum original file size: 7 MiB",
+    "fileTooLarge": "File too large. Please select a file no larger than 7 MiB",
     "invalidFileType": "Unsupported file format",
     "noFile": "Please select a file",
     "showPreview": "Show Preview",
@@ -8076,8 +8017,7 @@
     "reason": "Reason",
     "benefits": {
       "title": "Verification Benefits",
-      "badge": "Exclusive verified badge",
-      "points": "Bonus points reward"
+      "badge": "Exclusive verified badge"
     }
   },
   "activity": {
@@ -8312,8 +8252,11 @@
       "predictionHealth": "Prediction Data Health",
       "predictionFeedback": "Prediction Feedback",
       "predictionBenchmark": "Prediction Benchmark",
+      "outcomesVerification": "Outcome Verification",
+      "debateEval": "Debate Evaluation",
       "cdsBands": "CDS Bands",
       "dataCoverage": "Data Coverage",
+      "dataQualityPage": "School Data Quality",
       "applicationAnalysisWorkflow": "Application Analysis Workflow",
       "activityTemplates": "Activity Templates",
       "highSchools": "High Schools",
@@ -10658,30 +10601,20 @@
     },
     "payments": {
       "title": "Payment Management",
-      "description": "View payment records and manage subscriptions",
+      "description": "View the historical payment ledger",
+      "readOnlyTitle": "Paid subscriptions are retired",
+      "readOnlyDescription": "All product features are currently open. This ledger is read-only; refunds and subscription overrides are disabled.",
       "stats": "Payment Statistics",
-      "totalRevenue": "Total Revenue",
-      "monthlyRevenue": "Monthly Revenue",
       "totalPayments": "Total Payments",
-      "activeSubscriptions": "Active Subscriptions",
+      "successfulPayments": "Successful Payments",
+      "failedPayments": "Failed Payments",
+      "refundedPayments": "Refunded Payments",
       "records": "Payment Records",
       "user": "User",
       "plan": "Plan",
       "amount": "Amount",
       "status": "Status",
       "date": "Date",
-      "actions": "Actions",
-      "viewDetails": "View Details",
-      "refund": "Refund",
-      "refundConfirm": "Confirm Refund",
-      "refundDesc": "This will refund the payment and downgrade the user's subscription.",
-      "refunded": "Payment refunded",
-      "refundReason": "Refund Reason",
-      "refundReasonPlaceholder": "Enter the reason for this refund (required for audit trail)",
-      "adjustSub": "Adjust Subscription",
-      "adjustSubDesc": "Manually change user subscription level",
-      "newPlan": "New Plan",
-      "adjusted": "Subscription adjusted",
       "noPayments": "No payment records",
       "noPaymentsDesc": "No payments match the current filters",
       "allStatuses": "All Statuses",
@@ -10694,7 +10627,6 @@
     "settings": {
       "title": "System Settings",
       "description": "Configure platform-wide settings",
-      "subscription": "Subscription",
       "aiQuota": "AI Quota",
       "general": "General",
       "key": "Setting",
@@ -10704,11 +10636,6 @@
       "batchSave": "Save All",
       "batchSaved": "All settings saved",
       "resetConfirm": "Reset this setting?",
-      "subscriptionSettings": {
-        "SUBSCRIPTION_PRO_PRICE": "Pro Monthly Price",
-        "SUBSCRIPTION_PREMIUM_PRICE": "Premium Monthly Price",
-        "SUBSCRIPTION_YEARLY_DISCOUNT": "Yearly Discount (%)"
-      },
       "aiQuotaSettings": {
         "AI_QUOTA_DEFAULT_DAILY": "Default Daily Quota",
         "AI_QUOTA_PRO_DAILY": "Pro Daily Quota",
@@ -11614,30 +11541,26 @@
   },
   "referral": {
     "title": "Invite Friends",
-    "description": "Share your referral code and earn points",
+    "description": "Share your referral code with friends",
     "yourCode": "Your Referral Code",
     "copyCode": "Copy Code",
     "copyLink": "Copy Invite Link",
     "copied": "Copied!",
     "shareTitle": "Share with Friends",
-    "shareDesc": "Invite your friends to join and you'll both earn rewards",
+    "shareDesc": "Invite your friends to join Lumni",
     "stats": {
       "invited": "Friends Invited",
-      "signups": "Successful Signups",
-      "points": "Points Earned"
+      "signups": "Successful Signups"
     },
     "howItWorks": "How It Works",
     "step1": "Share your unique referral code",
     "step1Desc": "Copy your code or share your invite link with friends",
     "step2": "Friend signs up with your code",
     "step2Desc": "They enter your code during registration",
-    "step3": "You both earn 50 points",
-    "step3Desc": "Points are awarded once registration is complete",
     "history": "Referral History",
     "noReferrals": "No referrals yet",
-    "noReferralsDesc": "Share your code to start earning points",
+    "noReferralsDesc": "Share your code to invite a friend",
     "joinedOn": "Joined on {date}",
-    "pointsAwarded": "+{points} points",
     "loginRequired": "Please log in to view your referral code",
     "shareVia": {
       "wechat": "WeChat",
@@ -11646,7 +11569,7 @@
       "twitter": "X / Twitter"
     },
     "emailSubject": "Join me on Lumni",
-    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code} and we'll both earn 50 points! {link}"
+    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code}: {link}"
   },
   "tour": {
     "next": "Next",
@@ -11670,7 +11593,7 @@
       "browse": "Browse Cases",
       "browseDesc": "Each card shows a real applicant's GPA, test scores, and admission outcome. Click to view their full profile.",
       "share": "Share Your Case",
-      "shareDesc": "Contribute your admission results to help others and earn platform points."
+      "shareDesc": "Contribute your admission results to help other applicants."
     },
     "dashboard": {
       "quickAsk": "Quick Ask AI",
@@ -11715,7 +11638,7 @@
     "cancel": "Cancel",
     "submitReport": "Submit",
     "submitting": "Submitting...",
-    "reportSuccess": "Recorded! Points awarded 🎉",
+    "reportSuccess": "Outcome recorded successfully",
     "reportError": "Submit failed. Try again.",
     "myHistory": "My Outcomes",
     "myHistoryDescription": "See outcomes you have reported",
