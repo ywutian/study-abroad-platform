@@ -303,7 +303,7 @@
         "aiLab": "AI 实验室",
         "aiLabDesc": "实验性 AI 功能",
         "referral": "邀请有奖",
-        "referralDesc": "分享 Lumni — 朋友加入即可获得积分"
+        "referralDesc": "把 Lumni 分享给朋友"
       },
       "stats": {
         "followers": "粉丝",
@@ -1396,7 +1396,7 @@
       "forum": "加入讨论，与申请者交流经验",
       "teams": "发现或创建队伍，一起申请、备考、共享时间线",
       "help": "常见问题、指南与支持",
-      "referral": "邀请好友赚取积分",
+      "referral": "邀请好友加入 Lumni",
       "ranking": "根据个人偏好自定义学校排名榜单"
     },
     "sections": {
@@ -2865,7 +2865,7 @@
       "title": "暂无案例",
       "description": "成为第一个分享者！你的贡献将帮助整个社区，同时提升你自己的选校推荐精准度。",
       "bullet1": "分享你的录取结果，系统会为你匹配更精准的选校建议",
-      "bullet2": "通过认证的贡献获得积分和徽章",
+      "bullet2": "通过认证的贡献获得认证徽章",
       "bullet3": "将你的档案与目标学校已录取的学生进行比较",
       "startTour": "30秒了解如何使用"
     },
@@ -3193,7 +3193,6 @@
       "profile": "个人资料",
       "preferences": "偏好设置",
       "notifications": "通知",
-      "subscription": "订阅",
       "help": "帮助与支持",
       "accountActions": "账户操作"
     },
@@ -3212,8 +3211,6 @@
       "pushNotificationDesc": "接收重要更新推送",
       "emailNotification": "邮件通知",
       "emailNotificationDesc": "接收邮件通知",
-      "subscription": "订阅管理",
-      "subscriptionDesc": "管理您的订阅计划",
       "helpCenter": "帮助中心",
       "helpCenterDesc": "查看常见问题和文档",
       "termsOfService": "服务条款",
@@ -4837,6 +4834,8 @@
     "activeSessionsDesc": "查看和管理您的登录设备",
     "currentSession": "当前设备",
     "lastActive": "最后活跃",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
     "revokeSession": "撤销",
     "sessionRevoked": "会话已撤销",
     "logoutAll": "登出所有设备",
@@ -4848,75 +4847,6 @@
     "dangerZone": "危险操作",
     "dangerZoneDesc": "删除账户将永久删除您的所有数据，此操作不可逆。",
     "deleteAccount": "删除账户"
-  },
-  "subscription": {
-    "title": "订阅管理",
-    "description": "管理您的订阅计划和账单",
-    "currentPlan": "当前计划",
-    "freePlan": "免费版",
-    "proPlan": "专业版",
-    "premiumPlan": "高级版",
-    "features": "功能特性",
-    "upgrade": "升级",
-    "downgrade": "降级",
-    "cancel": "取消订阅",
-    "renew": "续订",
-    "billingHistory": "账单历史",
-    "nextBilling": "下次扣款",
-    "amount": "金额",
-    "status": "状态",
-    "paid": "已支付",
-    "pending": "待支付",
-    "failed": "支付失败",
-    "popular": "热门",
-    "current": "当前",
-    "perMonth": "/月",
-    "perYear": "/年",
-    "savePercent": "节省 {percent}%",
-    "monthlyBilling": "按月付费",
-    "yearlyBilling": "按年付费",
-    "validForever": "永久有效",
-    "currentPlanLabel": "当前计划",
-    "mostPopular": "最受欢迎",
-    "paymentHistory": "支付记录",
-    "paymentHistoryDesc": "查看您的历史支付记录",
-    "plans": {
-      "free": {
-        "name": "免费版",
-        "period": "永久",
-        "description": "基础功能，适合初次体验",
-        "features": ["浏览学校信息", "查看公开案例", "基础 AI 对话 (每日5次)", "档案管理"]
-      },
-      "pro": {
-        "name": "专业版",
-        "period": "月",
-        "description": "解锁全部功能，高效申请",
-        "features": [
-          "免费版所有功能",
-          "无限 AI 对话",
-          "录取概率预测",
-          "文书评估与润色",
-          "详细案例数据",
-          "优先客服支持"
-        ]
-      },
-      "premium": {
-        "name": "尊享版",
-        "period": "月",
-        "description": "一对一服务，全程陪伴",
-        "features": [
-          "专业版所有功能",
-          "专属留学顾问",
-          "申请策略规划",
-          "文书深度修改",
-          "模拟面试指导",
-          "VIP 专属社群"
-        ]
-      }
-    },
-    "getStarted": "开始订阅",
-    "noInvoices": "暂无账单",
-    "upgradeSuccess": "升级成功"
   },
   "helpCenter": {
     "title": "帮助中心",
@@ -5459,6 +5389,12 @@
       "section": {
         "hidden": "隐藏",
         "evidenceRefs": "素材 {count}",
+        "expandSection": "展开板块",
+        "collapseSection": "收起板块",
+        "showSection": "显示板块",
+        "hideSection": "隐藏板块",
+        "deleteSection": "删除板块",
+        "editTitle": "编辑板块标题：{title}",
         "aiHint": "AI 建议不会自动写入，确认后才会应用。"
       },
       "match": {
@@ -6156,12 +6092,12 @@
       },
       "ai": {
         "loginRequired": "登录后可使用AI逐段点评",
-        "costHint": "消耗20积分，获取专业招生官视角的逐段分析",
+        "costHint": "获取专业招生官视角的逐段分析",
         "loginButton": "登录使用",
         "title": "AI 逐段点评",
         "description": "招生官视角分析每个段落，给出具体改进建议",
         "analyzing": "分析中...",
-        "startAnalysis": "开始分析 (20积分)",
+        "startAnalysis": "开始分析",
         "analysisError": "分析失败，请稍后重试",
         "cachedHint": "已分析 · 秒级响应",
         "privacyHelpLabel": "查看数据使用说明",
@@ -6200,7 +6136,7 @@
         "evidence": "引用证据",
         "selectedText": "本次会围绕选中文本追问",
         "history": "最近问答",
-        "failed": "这次问答失败，积分已退回。",
+        "failed": "这次问答失败，请重试。",
         "paragraphQuestion": "第 {num} 段的拆解还能怎么理解？",
         "quick": {
           "structure": "这篇文书的结构为什么有效？",
@@ -6243,7 +6179,7 @@
         "openWorkbench": "前往文书工作台",
         "history": "最近对比",
         "historyBadge": "范文对比",
-        "failed": "这次对比失败，积分已退回。"
+        "failed": "这次对比失败，请重试。"
       },
       "citation": {
         "label": "正在原文中显示引用证据",
@@ -6898,6 +6834,9 @@
     "title": "安全保险库",
     "description": "安全存储您的敏感信息",
     "subtitle": "采用端到端加密，确保您的数据安全",
+    "loadError": "保险库加载失败，未使用示例数据替代。",
+    "retry": "重试",
+    "passwordGenerateError": "密码生成失败",
     "security": {
       "encryption": "AES-256 加密",
       "zeroKnowledge": "零知识架构"
@@ -6923,8 +6862,11 @@
     "editTitle": "编辑安全项目",
     "itemTitle": "标题",
     "itemTitlePlaceholder": "输入标题...",
+    "password": "密码",
     "itemCategory": "分类",
     "itemCategoryPlaceholder": "输入或选择分类...",
+    "api_key": "API 密钥",
+    "other": "其他",
     "itemTags": "标签",
     "itemTagsPlaceholder": "输入标签后按回车添加...",
     "itemData": "内容",
@@ -6977,6 +6919,7 @@
     "tooManyMajors": "最多选择 {max} 个专业，请减少后重试",
     "budget": "预算范围",
     "budgetPlaceholder": "选择预算范围",
+    "retry": "重试",
     "budgetOptions": {
       "low": "30万以下",
       "medium": "30-50万",
@@ -7107,10 +7050,10 @@
     "missingTargetMajor": "目标专业",
     "missingProfile": "个人档案",
     "points": "积分",
-    "pointsRemaining": "剩余 {points} 积分",
-    "insufficientPoints": "积分不足（需要 25 积分）",
+    "pointsRemaining": "选校推荐功能已开放",
+    "insufficientPoints": "请先完善个人档案",
     "confirmTitle": "生成选校建议",
-    "confirmDesc": "将消耗 25 积分。您当前有 {points} 积分。是否继续？",
+    "confirmDesc": "根据您的档案生成个性化选校推荐？",
     "confirmDescSimple": "根据您的档案生成个性化选校推荐？",
     "confirmGenerate": "确认生成",
     "cancel": "取消",
@@ -7149,6 +7092,7 @@
     "additionalPreferences": "额外偏好",
     "additionalPreferencesPlaceholder": "任何特殊要求...",
     "completeProfileFirst": "请先完善个人档案",
+    "cannotGenerate": "推荐功能暂时不可用",
     "tests": "考试",
     "activities": "活动",
     "missing": "缺少",
@@ -7995,7 +7939,10 @@
       "verified": "已认证用户"
     },
     "verify": "认证",
-    "pleaseSelectFile": "请选择文件",
+    "pleaseSelectFile": "请选择文件和录取案例",
+    "caseLabel": "录取案例",
+    "selectCase": "选择你的录取案例",
+    "noCases": "请先创建录取案例，再提交认证。",
     "title": "身份认证",
     "description": "上传录取证明完成身份认证",
     "descriptionWithSchool": "上传 {school} 的录取证明",
@@ -8014,9 +7961,9 @@
     "dragOrClick": "拖拽或点击上传",
     "dropHere": "松开以上传",
     "dropOrClick": "拖拽文件到此处或点击上传",
-    "supportedFormats": "支持 PDF、JPG、PNG 格式",
-    "fileRequirements": "文件大小不超过 10MB",
-    "fileTooLarge": "文件过大，请选择小于 10MB 的文件",
+    "supportedFormats": "支持 PDF、JPG、PNG、WebP 格式",
+    "fileRequirements": "原文件最大 7 MiB",
+    "fileTooLarge": "文件过大，请选择不超过 7 MiB 的文件",
     "invalidFileType": "不支持的文件格式",
     "noFile": "请选择文件",
     "showPreview": "查看预览",
@@ -8044,8 +7991,7 @@
     "reason": "原因",
     "benefits": {
       "title": "认证权益",
-      "badge": "专属认证标识",
-      "points": "额外积分奖励"
+      "badge": "专属认证标识"
     }
   },
   "activity": {
@@ -8304,6 +8250,9 @@
         "ai": "AI 系统",
         "system": "系统"
       },
+      "outcomesVerification": "录取结果核验",
+      "debateEval": "辩论盲测评估",
+      "dataQualityPage": "院校数据质量",
       "dataHealth": "数据健康度"
     },
     "cacheHealth": {
@@ -10626,30 +10575,20 @@
     },
     "payments": {
       "title": "支付管理",
-      "description": "查看支付记录和管理订阅",
+      "description": "查看历史支付账本",
+      "readOnlyTitle": "付费订阅已退役",
+      "readOnlyDescription": "当前所有产品功能均已开放。此账本仅供查看，退款和订阅调级均已禁用。",
       "stats": "支付统计",
-      "totalRevenue": "总收入",
-      "monthlyRevenue": "月收入",
       "totalPayments": "总支付数",
-      "activeSubscriptions": "活跃订阅",
+      "successfulPayments": "成功支付",
+      "failedPayments": "失败支付",
+      "refundedPayments": "已退款记录",
       "records": "支付记录",
       "user": "用户",
       "plan": "方案",
       "amount": "金额",
       "status": "状态",
       "date": "日期",
-      "actions": "操作",
-      "viewDetails": "查看详情",
-      "refund": "退款",
-      "refundConfirm": "确认退款",
-      "refundDesc": "这将退还付款并降级用户的订阅。",
-      "refunded": "已退款",
-      "refundReason": "退款原因",
-      "refundReasonPlaceholder": "请输入退款原因（审计必填）",
-      "adjustSub": "调整订阅",
-      "adjustSubDesc": "手动更改用户订阅级别",
-      "newPlan": "新方案",
-      "adjusted": "订阅已调整",
       "noPayments": "暂无支付记录",
       "noPaymentsDesc": "没有符合条件的支付记录",
       "allStatuses": "所有状态",
@@ -10662,7 +10601,6 @@
     "settings": {
       "title": "系统设置",
       "description": "配置平台全局设置",
-      "subscription": "订阅",
       "aiQuota": "AI 配额",
       "general": "通用",
       "key": "设置项",
@@ -10672,11 +10610,6 @@
       "batchSave": "全部保存",
       "batchSaved": "所有设置已保存",
       "resetConfirm": "重置此设置？",
-      "subscriptionSettings": {
-        "SUBSCRIPTION_PRO_PRICE": "Pro 月费",
-        "SUBSCRIPTION_PREMIUM_PRICE": "Premium 月费",
-        "SUBSCRIPTION_YEARLY_DISCOUNT": "年付折扣 (%)"
-      },
       "aiQuotaSettings": {
         "AI_QUOTA_DEFAULT_DAILY": "默认每日配额",
         "AI_QUOTA_PRO_DAILY": "Pro 每日配额",
@@ -11582,30 +11515,26 @@
   },
   "referral": {
     "title": "邀请好友",
-    "description": "分享邀请码，赚取积分奖励",
+    "description": "把邀请码分享给好友",
     "yourCode": "你的邀请码",
     "copyCode": "复制邀请码",
     "copyLink": "复制邀请链接",
     "copied": "已复制！",
     "shareTitle": "分享给好友",
-    "shareDesc": "邀请好友加入，双方都能获得奖励",
+    "shareDesc": "邀请好友加入 Lumni",
     "stats": {
       "invited": "已邀请好友",
-      "signups": "成功注册",
-      "points": "获得积分"
+      "signups": "成功注册"
     },
     "howItWorks": "如何运作",
     "step1": "分享你的专属邀请码",
     "step1Desc": "复制邀请码或分享邀请链接给好友",
     "step2": "好友使用邀请码注册",
     "step2Desc": "他们在注册时输入你的邀请码",
-    "step3": "双方各得50积分",
-    "step3Desc": "注册完成后积分即刻到账",
     "history": "邀请记录",
     "noReferrals": "暂无邀请记录",
-    "noReferralsDesc": "分享邀请码开始赚取积分",
+    "noReferralsDesc": "分享邀请码邀请好友",
     "joinedOn": "加入于 {date}",
-    "pointsAwarded": "+{points} 积分",
     "loginRequired": "请登录后查看邀请码",
     "shareVia": {
       "wechat": "微信",
@@ -11614,7 +11543,7 @@
       "twitter": "X（推特）"
     },
     "emailSubject": "和我一起使用 Lumni",
-    "emailBody": "嗨！我一直在用 Lumni 做留学申请规划。用我的邀请码 {code} 注册，我们都能获得 50 积分！{link}"
+    "emailBody": "嗨！我一直在用 Lumni 做留学申请规划。使用我的邀请码 {code} 注册：{link}"
   },
   "tour": {
     "next": "下一步",
@@ -11638,7 +11567,7 @@
       "browse": "浏览案例",
       "browseDesc": "每张卡片展示真实申请者的 GPA、标化成绩和录取结果。点击查看完整档案。",
       "share": "分享案例",
-      "shareDesc": "贡献你的录取结果，帮助他人的同时赚取平台积分。"
+      "shareDesc": "贡献你的录取结果，帮助其他申请者。"
     },
     "dashboard": {
       "quickAsk": "AI 快速提问",
@@ -11683,7 +11612,7 @@
     "cancel": "取消",
     "submitReport": "提交",
     "submitting": "提交中...",
-    "reportSuccess": "已记录！点数已发放 🎉",
+    "reportSuccess": "录取结果已记录",
     "reportError": "提交失败，稍后再试",
     "myHistory": "我的 Outcome",
     "myHistoryDescription": "查看你已经报告的录取结果",
