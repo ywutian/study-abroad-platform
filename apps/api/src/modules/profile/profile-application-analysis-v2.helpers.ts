@@ -1,5 +1,8 @@
 import { Prisma, SchoolPolicyDimension, SchoolTier } from '@prisma/client';
-import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
+import {
+  getSchoolDisplayName,
+  resolveSchoolTestingPolicyValue,
+} from '@study-abroad/shared/utils';
 import type {
   AnalysisActionPlan,
   AnalysisApplicantType,
@@ -445,7 +448,7 @@ export function buildDeterministicSchoolResult(
   policyCard: ApplicationAnalysisPolicyCard,
   locale: string,
 ): ApplicationAnalysisSchoolResult {
-  const schoolName = item.school.nameZh || item.school.name;
+  const schoolName = getSchoolDisplayName(item.school, locale);
   const whyThisIsHard = buildWhyThisIsHard(
     item,
     prediction,

@@ -50,6 +50,8 @@ import {
   buildSchoolAnalystUserPrompt,
 } from './profile-application-analysis-v2.prompts';
 
+import { getSchoolDisplayName } from '@study-abroad/shared/utils';
+
 const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
@@ -674,7 +676,7 @@ export class ProfileApplicationAnalysisV2Service {
       );
       return {
         schoolId: item.schoolId,
-        schoolName: item.school.nameZh || item.school.name,
+        schoolName: getSchoolDisplayName(item.school, snapshot.locale),
         item,
         policyCard: built.card,
       };
