@@ -6,7 +6,12 @@ import { notFound } from 'next/navigation';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Newsreader, Inter } from 'next/font/google';
-import { getThemeCssText, getWebThemeBootstrapScript } from '@study-abroad/shared';
+import {
+  CRITICAL_COLOR_PALETTE_IDS,
+  getThemeCssText,
+  getWebThemeBootstrapScript,
+} from '@study-abroad/shared';
+import { THEME_CSS_HREF } from '@/lib/theme-css';
 
 const newsreader = Newsreader({
   subsets: ['latin'],
@@ -92,7 +97,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: getWebThemeBootstrapScript() }} />
-        <style nonce={nonce} dangerouslySetInnerHTML={{ __html: getThemeCssText() }} />
+        {/* Link first so the parser finds it before the inline block. Both sit
+            after Next's own CSS chunks, which is what lets `--ds-*` beat the
+            legacy `:root` rules in the bundled sheet. */}
+        <link rel="stylesheet" href={THEME_CSS_HREF} />
+        <style
+          nonce={nonce}
+          dangerouslySetInnerHTML={{ __html: getThemeCssText(CRITICAL_COLOR_PALETTE_IDS) }}
+        />
         {/* Rendered in dev too: gating this on NODE_ENV was the only reason
             structured data was invisible locally, which is how it went
             unnoticed that JsonLd emitted nothing server-side at all. */}

@@ -4854,31 +4854,50 @@ export function serializeCssVars(vars: Record<string, string>): string {
 }
 
 /**
+ * The palettes worth inlining into the document `<head>`: the default (what a
+ * first-time visitor with no localStorage gets) plus the featured set, plus
+ * `linear-indigo` because it is the target of the legacy `slate` alias below.
+ * Everything else is served from the cacheable external sheet — all 160 stay
+ * user-selectable (settings page maps COLOR_PALETTES; the palette menu has an
+ * "all" tab and a search box over every definition), so the external sheet is
+ * required for correctness, not an optimisation.
+ */
+export const CRITICAL_COLOR_PALETTE_IDS: ColorPalette[] = [
+  ...new Set<ColorPalette>([DEFAULT_COLOR_PALETTE, 'linear-indigo', ...FEATURED_COLOR_PALETTE_IDS]),
+];
+
+/**
  * Injects `--ds-*` for each color palette + light/dark. Selectors must beat legacy `:root` rules
  * in bundled CSS; `html[data-color-palette]` wins. Warm applies when attribute absent or `warm`.
+ *
+ * `palettes` narrows the output to a subset. Emitting all 160 inline put ~1.82 MB
+ * in front of the LCP element *and* a second copy in the RSC flight, on a document
+ * that is served `no-store` — so every page view paid for it twice.
  */
-export function getThemeCssText(): string {
-  return COLOR_PALETTES.map((palette) => {
-    const lightSelectors = [`html:not(.dark)[data-color-palette="${palette}"]`];
-    const darkSelectors = [`html.dark[data-color-palette="${palette}"]`];
+export function getThemeCssText(palettes: readonly ColorPalette[] = COLOR_PALETTES): string {
+  return palettes
+    .map((palette) => {
+      const lightSelectors = [`html:not(.dark)[data-color-palette="${palette}"]`];
+      const darkSelectors = [`html.dark[data-color-palette="${palette}"]`];
 
-    if (palette === DEFAULT_COLOR_PALETTE) {
-      lightSelectors.push('html:not(.dark):not([data-color-palette])');
-      darkSelectors.push('html.dark:not([data-color-palette])');
-      lightSelectors.push('html:not(.dark)[data-color-palette="warm"]');
-      darkSelectors.push('html.dark[data-color-palette="warm"]');
-    }
+      if (palette === DEFAULT_COLOR_PALETTE) {
+        lightSelectors.push('html:not(.dark):not([data-color-palette])');
+        darkSelectors.push('html.dark:not([data-color-palette])');
+        lightSelectors.push('html:not(.dark)[data-color-palette="warm"]');
+        darkSelectors.push('html.dark[data-color-palette="warm"]');
+      }
 
-    if (palette === 'linear-indigo') {
-      lightSelectors.push('html:not(.dark)[data-color-palette="slate"]');
-      darkSelectors.push('html.dark[data-color-palette="slate"]');
-    }
+      if (palette === 'linear-indigo') {
+        lightSelectors.push('html:not(.dark)[data-color-palette="slate"]');
+        darkSelectors.push('html.dark[data-color-palette="slate"]');
+      }
 
-    const vars = webThemeCssVarsByPalette[palette];
-    return `${lightSelectors.join(',')}{${serializeCssVars(vars.light)}}${darkSelectors.join(
-      ','
-    )}{${serializeCssVars(vars.dark)}}`;
-  }).join('');
+      const vars = webThemeCssVarsByPalette[palette];
+      return `${lightSelectors.join(',')}{${serializeCssVars(vars.light)}}${darkSelectors.join(
+        ','
+      )}{${serializeCssVars(vars.dark)}}`;
+    })
+    .join('');
 }
 
 export const cssVars = {
