@@ -82,7 +82,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   const messages = await getMessages();
   const nonce = (await headers()).get('x-nonce') ?? undefined;
-  const shouldRenderStructuredData = process.env.NODE_ENV === 'production';
 
   return (
     <html
@@ -93,24 +92,23 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: getWebThemeBootstrapScript() }} />
         <style nonce={nonce} dangerouslySetInnerHTML={{ __html: getThemeCssText() }} />
-        {shouldRenderStructuredData ? (
-          <>
-            <OrganizationJsonLd
-              name="Lumni"
-              url={env.NEXT_PUBLIC_APP_URL}
-              description="AI-driven study abroad planning platform" /* @i18n-skip SEO metadata */
-            />
-            <WebSiteJsonLd
-              name="Lumni"
-              url={env.NEXT_PUBLIC_APP_URL}
-              potentialAction={{
-                type: 'SearchAction',
-                target: `${env.NEXT_PUBLIC_APP_URL}/schools?q={search_term_string}`,
-                'query-input': 'required name=search_term_string',
-              }}
-            />
-          </>
-        ) : null}
+        {/* Rendered in dev too: gating this on NODE_ENV was the only reason
+            structured data was invisible locally, which is how it went
+            unnoticed that JsonLd emitted nothing server-side at all. */}
+        <OrganizationJsonLd
+          name="Lumni"
+          url={env.NEXT_PUBLIC_APP_URL}
+          description="AI-driven study abroad planning platform" /* @i18n-skip SEO metadata */
+        />
+        <WebSiteJsonLd
+          name="Lumni"
+          url={env.NEXT_PUBLIC_APP_URL}
+          potentialAction={{
+            type: 'SearchAction',
+            target: `${env.NEXT_PUBLIC_APP_URL}/schools?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+          }}
+        />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
