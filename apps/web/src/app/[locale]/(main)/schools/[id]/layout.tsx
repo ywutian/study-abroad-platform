@@ -1,72 +1,27 @@
-import { cache } from 'react';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { API_ROUTES, API_VERSION_PREFIX } from '@study-abroad/shared';
 import { SchoolJsonLd } from '@/components/seo';
-import { env } from '@/lib/env';
+import { getSchool } from './_components/get-school';
+import type { SchoolDetail } from './_components/types';
 
 /**
- * page.tsx is `'use client'` and fetches the school in a `useQuery`, so the
- * server-rendered HTML for every one of the ~243 detail pages was the empty
- * app shell: no <h1>, ~48 characters of visible text, and — because a client
- * page cannot export generateMetadata — the root layout's *homepage* <title>
- * and description repeated identically on all of them. Crawlers were being
- * handed hundreds of duplicate, contentless URLs (the sitemap now points at
- * every one of them), which is how thin-content pages get dropped instead of
- * ranked.
+ * Per-school <title>/description and JSON-LD.
  *
- * This layout re-fetches the same public endpoint on the server so the initial
- * HTML carries per-school metadata and structured data. It deliberately does
- * NOT render visible markup: the client page already owns the header, and
- * duplicating it here would double it on screen.
+ * These live in a layout rather than in page.tsx because a metadata export has
+ * to sit in a server file, and this route's page was `'use client'` when the
+ * metadata was added. page.tsx is a server shell now, so this could be folded
+ * in — it is kept separate only because generateMetadata and JSON-LD are one
+ * concern (what a crawler reads) and the page is another (what a visitor sees).
  *
- * ponytail: metadata + JSON-LD only. Server-rendering the actual page body is
- * a 445-line client-component refactor — worth doing only if Search Console
- * shows Google still not indexing these once they stop looking identical.
+ * Renders no visible markup on purpose: the client component owns the header,
+ * and repeating it here would double it on screen.
  */
 
-interface SchoolSeoFields {
-  name?: string;
-  nameZh?: string;
-  description?: string;
-  descriptionZh?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  website?: string;
-  usNewsRank?: number;
-  acceptanceRate?: number;
-}
-
-/**
- * `cache` dedupes this between generateMetadata and the layout body, which
- * Next renders in separate passes — otherwise every page hits the API twice.
- * Returns null rather than throwing: a school page that 500s because its SEO
- * sidecar failed would be far worse than one that falls back to the root
- * metadata.
- */
-const getSchool = cache(async (id: string): Promise<SchoolSeoFields | null> => {
-  const apiUrl = env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
-  if (!apiUrl) return null;
-
-  try {
-    const res = await fetch(`${apiUrl}${API_VERSION_PREFIX}${API_ROUTES.SCHOOLS}/${id}`, {
-      signal: AbortSignal.timeout(5_000),
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    const body = await res.json();
-    return (body?.data as SchoolSeoFields) ?? null;
-  } catch {
-    return null;
-  }
-});
-
-const localizedName = (school: SchoolSeoFields, locale: string) =>
+const localizedName = (school: SchoolDetail, locale: string) =>
   (locale === 'zh' ? school.nameZh : school.name) || school.name || school.nameZh;
 
-const localizedDescription = (school: SchoolSeoFields, locale: string) =>
+const localizedDescription = (school: SchoolDetail, locale: string) =>
   (locale === 'zh' ? school.descriptionZh : school.description) ||
   school.description ||
   school.descriptionZh;
