@@ -3885,6 +3885,24 @@ async function main() {
   for (const record of RECORDS) {
     console.log(`[${record.status}] ${record.id} ${record.title}`);
   }
+
+  // A BROKEN journey must fail the run.
+  //
+  // Until 2026-07-27 it did not: `runSingleJourney` catches the journey's error and
+  // turns it into a BROKEN record, `main()` then returns normally, and the only
+  // `exitCode = 1` lives in `main().catch()` — which never fires. The script printed
+  // `[BROKEN] AA1 …` and exited 0, so the `runtime-journey-audit` suite reported
+  // success and the governance record persisted `journeyPassRate: 1` while its one
+  // and only journey was broken. The gate could only fail if the harness itself
+  // crashed — never because the thing it audits was broken.
+  const broken = RECORDS.filter((record) => record.status === 'BROKEN');
+  if (broken.length > 0) {
+    console.error(
+      `\n${broken.length} journey(s) BROKEN: ${broken.map((r) => r.id).join(', ')}\n` +
+        `Evidence: ${EVIDENCE_ROOT}/<id>/error.txt`
+    );
+    process.exitCode = 1;
+  }
 }
 
 main().catch(async (error) => {
