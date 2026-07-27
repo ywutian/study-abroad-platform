@@ -67,6 +67,20 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // 这才是让 /_next/image 产物对浏览器可缓存的那一步，`images.minimumCacheTTL`
+        // 不够：Vercel 不用 Next 自带的图片优化器，它自己那套里 minimumCacheTTL 只管
+        // **边缘缓存**的 TTL，发给浏览器的 Cache-Control 是从**上游源图**派生的。
+        //
+        // 生产实测（#522 上线后）：取一个从未缓存过的尺寸 w=828，x-vercel-cache: MISS
+        // 且 age: 0——是当前部署现生成的——拿到的仍是 max-age=0，因为 /public 下的原图
+        // 就是 max-age=0。所以要改的是源头。
+        //
+        // 30 天而不是 1 年：/_next/image 的 URL 不含源图内容哈希，原地替换同名图片
+        // 拿不到缓存失效。落地页的图会换（#494 换过一轮）。
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }],
+      },
     ];
   },
   // 已删除/合并的路由重定向
