@@ -175,17 +175,18 @@ jobs:
       #   routes  — client API paths match @Controller() routes
       #   journeys— user-journey path integrity
       #   icons   — no banned AI-feeling lucide icons / emoji in web UI chrome
-      # NOT wired here (and why):
-      #   lint:drift — inherently local-only: its claude-md/manifest rules
-      #     inspect .claude/agents + .claude/manifests, which are gitignored
-      #     (.gitignore keeps only .claude/skills/), so a fresh CI checkout has
-      #     1 agent file / no manifest and the check always errors. Stays a
-      #     pre-push check where those files exist.
-      - name: Cross-layer guards (routes / journeys / icons)
+      #   drift   — CLAUDE.md / BRIEF.md / manifest vs the actual files.
+      #     Was local-only until .claude/agents + .claude/manifests were
+      #     gitignored-by-accident; a fresh checkout had 1 agent file and no
+      #     manifest, so the check errored for everyone but the one machine
+      #     that had them untracked on disk. They travel with the repo now
+      #     (see .gitignore), which is what makes this runnable here.
+      - name: Cross-layer guards (routes / journeys / icons / drift)
         run: |
           pnpm lint:routes
           pnpm lint:journeys
           pnpm quality:icons
+          pnpm lint:drift
 
       # Prettier drift gate: whole-repo `prettier --check` (ts/tsx). lint-staged
       # only formats *changed* files, so old files silently drift when the config
