@@ -98,28 +98,6 @@ jobs:
       - name: Re-build shared package (after fixture regen)
         run: pnpm --filter @study-abroad/shared build
 
-      # AA1 (`/profiles/me/ai-analysis`) needs a working LLM. Without one the
-      # endpoint never completes and the journey records BROKEN — which, as of
-      # 2026-07-27, now correctly fails the run. This step exists so that the red
-      # names its own cause instead of sending the next person hunting a product
-      # bug: `secrets.OPENAI_API_KEY` does not exist in this repo (only
-      # GEMINI_API_KEY does), so the expression silently resolves to an empty
-      # string and everything downstream looks like an application failure.
-      #
-      # Deliberately an annotation, not a hard failure: the other six suites still
-      # carry real regression signal and should keep reporting even when the
-      # credential is missing.
-      - name: Check LLM credential (annotate, do not abort)
-        run: |
-          if [ -z "${OPENAI_API_KEY}" ]; then
-            echo "::error title=OPENAI_API_KEY is empty::AA1 (/profiles/me/ai-analysis) cannot succeed without an LLM key. Add the OPENAI_API_KEY repo secret, or drop AA1 from the nightly journey list. The runtime-journey-audit suite will fail below — this is the cause."
-            echo "⚠️  OPENAI_API_KEY empty — AA1 will be BROKEN and the run will go red."
-          else
-            echo "✅ OPENAI_API_KEY present (${#OPENAI_API_KEY} chars)"
-          fi
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
       - name: Seed database
         run: pnpm --filter api exec prisma db seed
         env:
