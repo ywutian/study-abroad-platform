@@ -132,12 +132,13 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 ## Skills (`.claude/skills/`)
 
-15 skills covering 起手 → 决策 → 上线 → 审查 full dev cycle:
+16 skills covering 起手 → 决策 → 上线 → 审查 full dev cycle:
 
 | Skill                             | Purpose                                                                                                                                                |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `/review`                         | Post-generation sensor — runs relevant agents on changed files                                                                                         |
 | `/close-the-loop`                 | Turn a recurring bug into one that can't recur — recurrence check → root cause → guardrail (lint/test/SSOT/type) → prove it fires                      |
+| `/verify-where-it-matters`        | 说「好了」之前先证明证据覆盖的是生产真正跑的那条路 — 断言 → 枚举路径 → 标覆盖 → 设计能证伪的判据 → 跑,或明说哪部分没验                                 |
 | `/create-module`                  | Scaffold NestJS backend module (controller + service + dto + BRIEF.md)                                                                                 |
 | `/create-feature-page`            | Scaffold Next.js feature page (PageHeader + i18n + loading + dark mode + min-w-0)                                                                      |
 | `/add-endpoint`                   | Add REST endpoint (DTO, throttle, swagger, tests)                                                                                                      |

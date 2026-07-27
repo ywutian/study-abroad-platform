@@ -25,6 +25,7 @@ import * as path from 'path';
 const ROOT = path.resolve(__dirname, '..');
 const CLAUDE_MD = path.resolve(ROOT, 'CLAUDE.md');
 const AGENTS_DIR = path.resolve(ROOT, '.claude/agents');
+const SKILLS_DIR = path.resolve(ROOT, '.claude/skills');
 const RULES_DIR = path.resolve(ROOT, '.claude/rules');
 const API_MODULES_DIR = path.resolve(ROOT, 'apps/api/src/modules');
 const WEB_FEATURES_DIR = path.resolve(ROOT, 'apps/web/src/components/features');
@@ -234,6 +235,34 @@ function checkClaudeMdConsistency(): Issue[] {
       severity: 'error',
       file: 'CLAUDE.md',
       message: `Rules Index has ${ruleTableRows} rows but .claude/rules/ has ${ruleFiles.length} files`,
+    });
+  }
+
+  // Check skills index matches actual skill files.
+  // A skill that exists on disk but is missing from CLAUDE.md is effectively invisible —
+  // this is the "registered in one place but not the place that makes it discoverable" class.
+  const skillFiles = fs.existsSync(SKILLS_DIR)
+    ? getFiles(SKILLS_DIR).filter((f) => f.endsWith('.md'))
+    : [];
+  const skillTableRows = (content.match(/\| `\/[a-z-]+`\s+\|/g) || []).length;
+
+  if (skillFiles.length !== skillTableRows) {
+    issues.push({
+      rule: 'claude-md-consistency',
+      severity: 'error',
+      file: 'CLAUDE.md',
+      message: `Skills table has ${skillTableRows} rows but .claude/skills/ has ${skillFiles.length} files`,
+    });
+  }
+
+  // The prose count above the table ("N skills covering …") drifts silently otherwise.
+  const proseCount = content.match(/^(\d+) skills covering/m);
+  if (proseCount && Number(proseCount[1]) !== skillFiles.length) {
+    issues.push({
+      rule: 'claude-md-consistency',
+      severity: 'error',
+      file: 'CLAUDE.md',
+      message: `Prose says "${proseCount[1]} skills" but .claude/skills/ has ${skillFiles.length} files`,
     });
   }
 
