@@ -22,6 +22,7 @@ const inter = Inter({
   variable: '--font-inter',
 });
 import { locales } from '@/lib/i18n/config';
+import { stripAdminNamespaces } from '@/lib/i18n/message-scope';
 import { Providers } from '@/components/providers';
 import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo';
 // 2026-05 Phase 4 follow-up: Web Vitals → Sentry reporter.
@@ -111,7 +112,8 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <NextIntlClientProvider messages={messages}>
+        {/* admin 那一块只发给 /admin/*（见 lib/i18n/message-scope.ts + admin/layout.tsx） */}
+        <NextIntlClientProvider messages={stripAdminNamespaces(messages)}>
           {/* Mount Web Vitals reporter once at the locale root — fires
               globally for every navigation. Renders null. */}
           <WebVitalsReporter />
