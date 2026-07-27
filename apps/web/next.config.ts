@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
     root: workspaceRoot,
   },
   images: {
+    // /public 原图带的是 `max-age=0, must-revalidate`，图片优化器会继承它，
+    // 于是每个回访者都要为 LCP 图付一趟 304 往返（生产实测 114ms，占 LCP 的 12%）。
+    //
+    // 30 天而不是 1 年：`/_next/image?url=…&w=…&q=…` 不含源图的内容哈希，
+    // 所以原地替换 /public 下的同名图片是拿不到缓存失效的。30 天已经吃掉了
+    // 几乎全部收益（回访者零重验证），又把「换了图但没换文件名」的最坏情况
+    // 兜在一个月内。要延长到 1 年的前提是先约定图片改名带版本号。
+    minimumCacheTTL: 2592000,
     qualities: [75, 90],
     remotePatterns: [
       { protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons**' },
