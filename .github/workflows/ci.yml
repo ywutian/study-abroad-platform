@@ -91,6 +91,15 @@ jobs:
       - name: Setup Turbo Cache
         uses: dtinth/setup-github-actions-caching-for-turbo@v1
 
+      # 这一步不能省：下面的 lint 是 `pnpm --filter api lint`（直接调，不走 turbo），
+      # 所以 turbo.json 里给 lint 声明的 `dependsOn: ["db:generate"]` 覆盖不到这里。
+      # 没有生成的 Prisma client，@typescript-eslint 的类型感知规则拿到的是残缺类型：
+      # 报出来的东西不可信，而且 `--fix` 会把必需的类型断言当成多余删掉（本地实测
+      # 会写坏 31 个文件 / 新增 70 个 typecheck 错误）。CI 因为 checkout 用完即弃
+      # 而没出事，但这一直意味着 api 的 lint 结果是拿错误类型信息算出来的。
+      - name: Generate Prisma client (lint 的类型感知规则依赖它)
+        run: pnpm --filter api db:generate
+
       - name: Lint all apps (parallel)
         run: |
           FAIL=0
