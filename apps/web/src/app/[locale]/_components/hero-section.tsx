@@ -245,10 +245,14 @@ function MobileHeroPhoto() {
           sizes="(max-width: 1023px) 100vw, 0px"
           // Measured LCP element on mobile; `loading="lazy"` made its fetch
           // wait for first layout and then queue behind ~570 KB of JS.
-          // eager + fetchPriority rather than `priority`, which would emit a
-          // <link rel="preload"> for every viewport even though this block is
-          // lg:hidden. Desktop now fetches the smallest srcset candidate
-          // (sizes resolves to 0px) instead of nothing — cheap.
+          //
+          // Next emits a <head> `<link rel=preload as=image>` for this either
+          // way — verified in the production HTML, it is the first element in
+          // <head>. (An earlier version of this comment claimed eager +
+          // fetchPriority avoided the preload that `priority` adds; it does
+          // not.) What keeps it cheap on desktop, where this block is
+          // lg:hidden, is `sizes` resolving to 0px there, so the preload's
+          // imageSizes picks the smallest srcset candidate.
           loading="eager"
           fetchPriority="high"
           className="object-cover object-top"
