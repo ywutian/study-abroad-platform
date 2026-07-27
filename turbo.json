@@ -21,6 +21,14 @@
       "inputs": ["src/**", "test/**", "**/*.e2e-spec.ts", "tests/**"]
     },
     "lint": {
+      // api 的 lint 是 `eslint --fix`，而 @typescript-eslint 的类型感知规则要读
+      // 生成后的 Prisma client。没有它时类型信息残缺，`no-unnecessary-type-assertion`
+      // 会把 `{} as Record<string, number>` 这类**必需**的断言当成多余删掉 ——
+      // 在干净 checkout 上实测会往 apps/api/src 里写入 70 个新 typecheck 错误。
+      //
+      // CI 看不到：Lint 与 Type Check 是两个独立 job、各自全新 checkout，被改脏的
+      // 那份跑完就丢了。所以只有本地跑 `pnpm lint` / `lint:all` / `check` 的人会中招。
+      "dependsOn": ["db:generate"],
       "outputs": []
     },
     "lint:i18n": {

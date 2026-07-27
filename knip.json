@@ -82,6 +82,16 @@
     "packages/shared": {
       "entry": ["src/**/*.ts"],
       "project": ["src/**/*.ts"]
+    },
+    "packages/browser-extension": {
+      "entry": [
+        "src/background/service-worker.ts",
+        "src/content/index.ts",
+        "src/popup/index.ts",
+        "src/**/*.test.ts",
+        "*.config.{js,ts}"
+      ],
+      "project": ["src/**/*.ts"]
     }
   }
 }

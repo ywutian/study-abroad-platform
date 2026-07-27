@@ -93,7 +93,10 @@
    🎨 设计系统 - 亮色主题
    ======================================== */
 :root {
-  /* --ds-* 由 layout 内联 getThemeCssText() 注入（packages/shared），随 color-palette 切换 */
+  /* --ds-* 由 packages/shared 的 getThemeCssText() 生成，随 color-palette 切换。
+     layout 只内联 CRITICAL_COLOR_PALETTE_IDS（默认 + 精选，共 16 个），其余 144 个
+     走 /theme.css 外部表（app/theme.css/route.ts）——两者都在 Next 自己的 CSS chunk
+     之后，这是 --ds-* 能盖过本文件里 :root 兜底值的原因。 */
 
   /* ========== 语义别名层 (existing) ========== */
   --radius: var(--ds-radius);
@@ -244,7 +247,7 @@
    🌙 设计系统 - 暗色主题
    ======================================== */
 .dark {
-  /* --ds-* 由内联 getThemeCssText() 注入 */
+  /* --ds-* 来源同上：内联 16 个 critical 配色 + /theme.css 外部表 */
 
   /* ========== 语义别名层 (existing) ========== */
   /* 背景 - 深邃夜空 */
