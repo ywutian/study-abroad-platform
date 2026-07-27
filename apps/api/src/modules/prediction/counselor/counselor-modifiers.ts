@@ -447,6 +447,67 @@ export function gpaBandMultiplier(
 }
 
 /**
+ * 2018 ACT/SAT Concordance, Table A2 (ACT Composite → SAT Total), single-point
+ * column — the one the tables themselves designate "when a single score point
+ * comparison is needed". Published jointly by ACT and College Board and, per
+ * ACT, the only official concordance for terms after fall 2018.
+ *
+ * Citation: https://www.act.org/content/dam/act/unsecured/documents/ACT-SAT-Concordance-Tables.pdf
+ *
+ * The table stops at ACT 9; `actToEquivalentSat` returns its floor below that
+ * rather than extrapolating a number ACT never published.
+ */
+const ACT_COMPOSITE_TO_SAT: Readonly<Record<number, number>> = {
+  36: 1590,
+  35: 1540,
+  34: 1500,
+  33: 1460,
+  32: 1430,
+  31: 1400,
+  30: 1370,
+  29: 1340,
+  28: 1310,
+  27: 1280,
+  26: 1240,
+  25: 1210,
+  24: 1180,
+  23: 1140,
+  22: 1110,
+  21: 1080,
+  20: 1040,
+  19: 1010,
+  18: 970,
+  17: 930,
+  16: 890,
+  15: 850,
+  14: 800,
+  13: 760,
+  12: 710,
+  11: 670,
+  10: 630,
+  9: 590,
+};
+
+const ACT_CONCORDANCE_FLOOR = ACT_COMPOSITE_TO_SAT[9];
+
+/**
+ * Convert an ACT Composite (1-36) to SAT-equivalent via the published
+ * concordance above.
+ *
+ * Replaces `act * 45`, which tracks the concordance only near the top of the
+ * scale and then diverges in one direction — understating ACT 30 by 20 SAT
+ * points, ACT 24 by 100, ACT 20 by 140 and ACT 16 by 170. Because the error was
+ * one-directional, every mid- and lower-band ACT submitter was placed below
+ * their true position against a school's 25/75 percentiles. Same failure as the
+ * TOEFL `score / max` normalization: a straight line standing in for a
+ * published table.
+ */
+export function actToEquivalentSat(actScore: number): number | null {
+  if (!Number.isFinite(actScore) || actScore < 1 || actScore > 36) return null;
+  return ACT_COMPOSITE_TO_SAT[Math.round(actScore)] ?? ACT_CONCORDANCE_FLOOR;
+}
+
+/**
  * Convert IB total score (0-45) to SAT-equivalent.
  * Citation: College Board IB Concordance 2018; standard mapping used by
  * UC, US private universities for IB applicants without SAT.
@@ -586,7 +647,7 @@ function compareTestBand(
  * Reads the highest SAT or ACT score in `profile.testScores[]` and compares
  * to the school's 25/75 percentiles. Other test types are converted to
  * SAT-equivalent via published concordance:
- *   - ACT: rough College Board concordance (ACT * 45 ≈ SAT)
+ *   - ACT: 2018 ACT/SAT Concordance, Table A2 (official, joint ACT/College Board)
  *   - IB: 0-45 score → SAT (College Board IB Concordance 2018)
  *   - A_LEVEL: UCAS tariff points → SAT (Cambridge International)
  *   - GAOKAO: 0-750 raw score → SAT (calibrated to provincial percentile)
@@ -640,9 +701,7 @@ export function testBandMultiplier(
         if (bestDirectAct == null || act > bestDirectAct) {
           bestDirectAct = act;
         }
-        // Clamp the SAT-equivalent too: ACT 36 × 45 = 1620, past the top of the
-        // SAT scale. The SAT branch above already clamps; this one didn't.
-        considerScore(Math.min(1600, act * 45), `ACT ${ts.score}`);
+        considerScore(actToEquivalentSat(act), `ACT ${ts.score}`);
         break;
       }
       case 'IB':
