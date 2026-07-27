@@ -22,6 +22,7 @@
     "lint:i18n-english": "tsx scripts/check-hardcoded-english.ts",
     "lint:typography": "tsx scripts/check-typography.ts",
     "lint:quality": "tsx scripts/check-code-quality.ts",
+    "check:seo": "tsx scripts/check-seo-html.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage"
