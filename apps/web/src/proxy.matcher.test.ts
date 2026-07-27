@@ -39,6 +39,11 @@ describe('proxy config.matcher', () => {
     '/_next/image',
     '/globe.svg',
     '/og-image.png',
+    // Full palette sheet (app/theme.css/route.ts). A 307 to /{locale}/theme.css
+    // 404s it, and every palette outside CRITICAL_COLOR_PALETTE_IDS then renders
+    // with undefined --ds-* variables. Only the pathname is listed — Next
+    // matches on pathname, so the `?v=<hash>` the layout appends is irrelevant.
+    '/theme.css',
   ])('does NOT match %s (served without locale redirect)', (path) => {
     expect(matcher.test(path)).toBe(false);
   });

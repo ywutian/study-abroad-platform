@@ -574,10 +574,10 @@ jobs:
       # stale precache (the 2026-06 "页面无法跳转" incident); redirected
       # robots/sitemap also hid the site from crawlers. Pairs with
       # apps/web/src/proxy.matcher.test.ts (unit level).
-      - name: Assert root public assets bypass proxy (sw.js / robots / sitemap)
+      - name: Assert root public assets bypass proxy (sw.js / robots / sitemap / theme.css)
         run: |
           set -e
-          for p in /sw.js /manifest.json /robots.txt /sitemap.xml; do
+          for p in /sw.js /manifest.json /robots.txt /sitemap.xml /theme.css; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:4100$p")
             if [ "$code" != "200" ]; then
               echo "❌ $p -> HTTP $code (expected 200 — proxy matcher is intercepting it again)"
@@ -588,6 +588,13 @@ jobs:
           case "$ct" in
             *javascript*) echo "✅ sw.js + manifest + robots + sitemap all 200; sw.js is $ct" ;;
             *) echo "❌ /sw.js content-type '$ct' (expected javascript — likely an HTML 404/redirect body)"; exit 1 ;;
+          esac
+          # A 307 to /{locale}/theme.css still answers 200 with an HTML body, so
+          # the status check alone cannot catch it — assert the type too.
+          ct=$(curl -s -o /dev/null -w "%{content_type}" http://localhost:4100/theme.css)
+          case "$ct" in
+            *css*) echo "✅ theme.css is $ct" ;;
+            *) echo "❌ /theme.css content-type '$ct' (expected css — proxy is locale-redirecting it, every non-critical palette loses its --ds-* values)"; exit 1 ;;
           esac
 
       - name: Run release runtime audit
