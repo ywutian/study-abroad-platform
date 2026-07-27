@@ -1,0 +1,161 @@
+# Agent Workflow Manifest — Single Source of Truth
+#
+# Used by: CLAUDE.md (Phase 1/2), /review skill, /feedback-triage skill
+# All agent selection, severity levels, and acceptance criteria read from here.
+
+# ── Severity Levels (unified across all agents) ──────────────────
+severity:
+  BLOCK: 'Must fix before commit' # = feedback critical = agent MUST
+  WARN: 'Should fix' # = feedback high/medium = agent SHOULD
+  INFO: 'Suggestion for improvement' # = feedback low = agent CONSIDER
+  N_A: 'Not relevant, skip'
+
+# ── Agent Registry ───────────────────────────────────────────────
+agents:
+  - id: study-abroad-expert
+    name: Study Abroad Expert
+    file: .claude/agents/study-abroad-expert.md
+    role: Business logic validation
+
+  - id: applicant-simulator
+    name: Applicant Simulator
+    file: .claude/agents/applicant-simulator.md
+    role: Student/parent UX review
+
+  - id: design-reviewer
+    name: Design Reviewer
+    file: .claude/agents/design-reviewer.md
+    role: UI/UX, dark mode, a11y
+
+  - id: architect
+    name: Architect
+    file: .claude/agents/architect.md
+    role: System design, API, deps
+
+  - id: integration-checker
+    name: Integration Checker
+    file: .claude/agents/integration-checker.md
+    role: Frontend-backend closure
+
+  - id: data-model-reviewer
+    name: Data Model Reviewer
+    file: .claude/agents/data-model-reviewer.md
+    role: Schema-DTO-type chain
+
+  - id: security-reviewer
+    name: Security Reviewer
+    file: .claude/agents/security-reviewer.md
+    role: Auth, injection, OWASP
+
+  - id: ai-prompt-engineer
+    name: AI Prompt Engineer
+    file: .claude/agents/ai-prompt-engineer.md
+    role: Prompt quality, hallucination
+
+  - id: i18n-specialist
+    name: i18n Specialist
+    file: .claude/agents/i18n-specialist.md
+    role: Translation, key coverage
+
+  - id: test-engineer
+    name: Test Engineer
+    file: .claude/agents/test-engineer.md
+    role: Test coverage, edge cases
+
+  - id: mobile-specialist
+    name: Mobile Specialist
+    file: .claude/agents/mobile-specialist.md
+    role: Expo/RN compatibility
+
+  - id: feedback-processor
+    name: Feedback Processor
+    file: .claude/agents/feedback-processor.md
+    role: Feedback triage, root cause
+
+  - id: user-journey-auditor
+    name: User Journey Auditor
+    file: .claude/agents/user-journey-auditor.md
+    role: E2E journey completeness
+
+# ── Agent Selection Matrix (Phase 1) ────────────────────────────
+selection:
+  by_change_type:
+    backend:
+      agents: [architect, data-model-reviewer, security-reviewer, test-engineer]
+      add_if: { llm_code: [ai-prompt-engineer] }
+
+    frontend:
+      agents: [design-reviewer, i18n-specialist, applicant-simulator, test-engineer]
+
+    mobile:
+      agents: [mobile-specialist, i18n-specialist, applicant-simulator, test-engineer]
+
+    ai_feature:
+      agents: [ai-prompt-engineer, study-abroad-expert, security-reviewer, test-engineer]
+
+    full_stack:
+      agents:
+        [
+          architect,
+          data-model-reviewer,
+          design-reviewer,
+          i18n-specialist,
+          security-reviewer,
+          test-engineer,
+        ]
+      add_if:
+        llm_code: [ai-prompt-engineer, study-abroad-expert]
+        mobile_affected: [mobile-specialist]
+
+    db_change:
+      agents: [data-model-reviewer, architect, security-reviewer]
+
+    large_change:
+      agents: ALL
+
+  # Additive rules — stack on top of by_change_type selection
+  cross_cutting:
+    - when: prisma_field_in_frontend_ui
+      add: design-reviewer
+    - when: llm_output_structure_change
+      add: data-model-reviewer
+    - when: api_error_code_change
+      add: integration-checker
+    - when: shared_type_change_with_mobile
+      add: mobile-specialist
+    - when: nullable_field_with_frontend_display
+      add: applicant-simulator
+    - when: prompt_output_for_business_decision
+      add: study-abroad-expert
+
+# ── Acceptance (Phase 2 — mandatory) ────────────────────────────
+acceptance:
+  # Always run these two:
+  mandatory:
+    - integration-checker # Frontend-backend alignment, types, i18n, permissions
+    - test-engineer # Run tests, fill gaps, verify pass
+
+  # Run when changes are user-visible:
+  user_visible:
+    - user-journey-auditor # Feature completeness
+
+  # Additional agents by feedback category:
+  by_feedback_type:
+    CODE_BUG: [test-engineer]
+    DATA_ISSUE: [data-model-reviewer]
+    UX_CONFUSION: [applicant-simulator, design-reviewer]
+    NEW_FEATURE: [integration-checker, test-engineer]
+    INDUSTRY_SUGGESTION: [study-abroad-expert]
+
+# ── Output Format (all agents must follow) ──────────────────────
+output:
+  severity_tiers: [N_A, BLOCK, WARN, INFO]
+  format: |
+    Each agent outputs one of:
+    - N/A: "Not relevant — {reason}" (early exit, ~10s)
+    - Findings table:
+      | Severity | File:Line | Issue | Agent |
+      |----------|-----------|-------|-------|
+      | BLOCK    | path:42   | ...   | Name  |
+      | WARN     | path:88   | ...   | Name  |
+      | INFO     | path:10   | ...   | Name  |
