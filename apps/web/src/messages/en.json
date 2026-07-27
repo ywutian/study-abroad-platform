@@ -6508,6 +6508,9 @@
       "low": "This school is competitive. Highlight your unique strengths and polish your essays",
       "moderate": "This school has moderate difficulty. Focus on demonstrating fit with the school"
     },
+    "meta": {
+      "acceptanceRate": "{rate}% acceptance"
+    },
     "stats": {
       "acceptanceRate": "School-wide Acceptance Rate",
       "tuition": "Tuition/Year",

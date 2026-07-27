@@ -6481,6 +6481,9 @@
       "low": "该校竞争较为激烈，建议展示独特亮点，提高文书质量",
       "moderate": "该校申请难度适中，注重展示与学校的匹配度"
     },
+    "meta": {
+      "acceptanceRate": "录取率 {rate}%"
+    },
     "stats": {
       "acceptanceRate": "学校整体录取率",
       "tuition": "学费/年",

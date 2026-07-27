@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
 import { API_ROUTES, API_VERSION_PREFIX } from '@study-abroad/shared';
 import { SchoolJsonLd } from '@/components/seo';
 import { env } from '@/lib/env';
@@ -83,6 +84,8 @@ export async function generateMetadata({
   const name = localizedName(school, locale);
   if (!name) return {};
 
+  const t = await getTranslations({ locale, namespace: 'school.meta' });
+
   // Only facts the API actually returned; no placeholders, so a school missing
   // rank or acceptance rate simply gets a shorter title.
   const place = [school.city, school.state].filter(Boolean).join(', ');
@@ -90,9 +93,7 @@ export async function generateMetadata({
     place,
     typeof school.usNewsRank === 'number' ? `US News #${school.usNewsRank}` : null,
     typeof school.acceptanceRate === 'number'
-      ? locale === 'zh'
-        ? `录取率 ${school.acceptanceRate}%`
-        : `${school.acceptanceRate}% acceptance`
+      ? t('acceptanceRate', { rate: school.acceptanceRate })
       : null,
   ].filter(Boolean);
 
