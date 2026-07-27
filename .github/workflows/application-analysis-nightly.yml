@@ -83,6 +83,21 @@ jobs:
           JWT_EXPIRES_IN: 15m
           JWT_REFRESH_EXPIRES_IN: 7d
 
+      # `gold:fixtures` above rewrites
+      # packages/shared/src/fixtures/application-analysis-render.data.ts, but
+      # nothing had rebuilt the package afterwards, so shared/dist still held
+      # the fixture as committed. The two consumers then disagreed: the web app
+      # resolves shared through the `import` condition and got the fresh .ts,
+      # while the Playwright specs run under Node and got the stale dist. The
+      # page rendered the new data and web-dom-parity compared it against the
+      # old expectedSchoolOrder — a mismatch with no bug behind it.
+      #
+      # ci.yml's governance job has always had this step ("Re-build shared
+      # package (after fixture regen)"); the nightly did not. Any change to the
+      # analysis output would have tripped it; #515 happened to be the first.
+      - name: Re-build shared package (after fixture regen)
+        run: pnpm --filter @study-abroad/shared build
+
       - name: Seed database
         run: pnpm --filter api exec prisma db seed
         env:

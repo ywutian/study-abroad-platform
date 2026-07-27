@@ -90,6 +90,58 @@ function main() {
   console.log(
     `✅ Seed pipeline in parity: all ${seeds.length} migrate.sh seeds are compiled in the Dockerfile + present on disk.`
   );
+
+  checkFixtureRegenRebuildsShared();
+}
+
+/**
+ * Second guard, same family: a workflow that regenerates a package's SOURCE
+ * must rebuild that package before anything consumes it.
+ *
+ * `gold:fixtures` rewrites
+ * packages/shared/src/fixtures/application-analysis-render.data.ts. The two
+ * consumers resolve @study-abroad/shared differently — the web app takes the
+ * `import` condition and gets the fresh .ts, the Playwright specs run under
+ * Node and get dist. Without a rebuild in between they disagree: the page
+ * renders the new data while the spec asserts against the old
+ * expectedSchoolOrder, and the failure reads as a product bug with nothing
+ * behind it.
+ *
+ * ci.yml's governance job always rebuilt; the nightly did not, and the drift
+ * sat there until the first change to the analysis output exposed it.
+ */
+function checkFixtureRegenRebuildsShared(): void {
+  const dir = path.join(ROOT, '.github/workflows');
+  const errors: string[] = [];
+  let checked = 0;
+
+  for (const file of fs.readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
+    const lines = fs.readFileSync(path.join(dir, file), 'utf8').split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (!/gold:fixtures/.test(lines[i])) continue;
+      checked++;
+      const after = lines.slice(i + 1).join('\n');
+      if (!/@study-abroad\/shared\s+build/.test(after)) {
+        errors.push(
+          `${file}:${i + 1} runs \`gold:fixtures\` but never rebuilds @study-abroad/shared afterwards — ` +
+            `shared/dist keeps the committed fixture while the .ts source is regenerated, so the web app ` +
+            `and the Playwright specs read different data.`
+        );
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error('\n❌ Fixture-regen parity broken:\n');
+    for (const e of errors) console.error('   ' + e);
+    console.error(
+      '\nAdd a `pnpm --filter @study-abroad/shared build` step after the gold:fixtures step.\n'
+    );
+    process.exit(1);
+  }
+  console.log(
+    `✅ Fixture regen in parity: all ${checked} gold:fixtures step(s) rebuild @study-abroad/shared afterwards.`
+  );
 }
 
 main();
