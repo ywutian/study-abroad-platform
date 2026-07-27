@@ -235,17 +235,30 @@ async function main() {
           '--persist-run',
         ])
       );
-      suites.push(
-        await runCommand('runtime-journey-audit', 'pnpm', [
-          'exec',
-          'tsx',
-          'scripts/runtime-journey-audit.ts',
-          '--journeys',
-          'AA1',
-          '--audit-id',
-          'application-analysis-nightly',
-        ])
-      );
+      // runtime-journey-audit is OFF in the nightly (2026-07-27).
+      //
+      // AA1 (`申请分析页 runtime parity`) was its only journey, and AA1 drives
+      // `/profiles/me/ai-analysis`, which cannot complete without a working LLM.
+      // `secrets.OPENAI_API_KEY` does not exist in this repo — the workflow
+      // expression resolves to an empty string — so AA1 was permanently BROKEN.
+      // It had been silently BROKEN for a long time; #526 made the gate honest,
+      // which turned the nightly red for a missing credential rather than for a
+      // real regression.
+      //
+      // To restore: add the OPENAI_API_KEY repo secret, then re-enable the block
+      // below. Do NOT re-enable it without the secret — you'd be back to a red
+      // nightly that says nothing about the product.
+      //
+      //   suites.push(
+      //     await runCommand('runtime-journey-audit', 'pnpm', [
+      //       'exec', 'tsx', 'scripts/runtime-journey-audit.ts',
+      //       '--journeys', 'AA1',
+      //       '--audit-id', 'application-analysis-nightly',
+      //     ])
+      //   );
+      //
+      // `scripts/runtime-journey-audit.ts` itself is unchanged and still exits 1
+      // on a BROKEN journey — run it manually with a key when you need AA1.
       liveReplay = await findLatestReplayRun(prisma, 'gold:live:nightly:v1');
       liveReplayMetrics = asRecord(liveReplay?.metrics);
     }
@@ -268,11 +281,16 @@ async function main() {
               ? 1
               : 0
           : null,
+      // `null` when the suite did not run, NOT 0. The old shape was
+      // `suites.find(…)?.success ? 1 : 0`, so removing the suite would have
+      // silently recorded "0% of journeys passed" for a suite that never ran —
+      // the same lying-metric class #526 fixed on the other side.
       journeyPassRate:
         args.mode === 'nightly'
-          ? suites.find((suite) => suite.name === 'runtime-journey-audit')?.success
-            ? 1
-            : 0
+          ? (() => {
+              const suite = suites.find((s) => s.name === 'runtime-journey-audit');
+              return suite ? (suite.success ? 1 : 0) : null;
+            })()
           : null,
     } satisfies Record<string, unknown>;
 
