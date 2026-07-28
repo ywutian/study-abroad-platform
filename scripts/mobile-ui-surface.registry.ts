@@ -183,21 +183,6 @@ export const MOBILE_UI_SURFACE_ROUTES: MobileUiSurfaceRoute[] = [
     role: 'user',
     state: 'navigable',
   },
-  {
-    name: 'Peer review',
-    pattern: '/peer-review',
-    path: '/peer-review',
-    role: 'user',
-    state: 'navigable',
-  },
-  { name: 'Points', pattern: '/points', path: '/points', role: 'user', state: 'navigable' },
-  {
-    name: 'Subscription',
-    pattern: '/subscription',
-    path: '/subscription',
-    role: 'user',
-    state: 'navigable',
-  },
   { name: 'Resume', pattern: '/resume', path: '/resume', role: 'user', state: 'navigable' },
   {
     name: 'School detail',

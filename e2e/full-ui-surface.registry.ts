@@ -154,7 +154,6 @@ export const FULL_UI_SURFACE_ROUTES: FullUiSurfaceRoute[] = [
   { name: 'Prediction', pattern: '/prediction', path: '/prediction', role: 'user', critical: true },
   { name: 'Outcomes', pattern: '/outcomes', path: '/outcomes', role: 'user', critical: true },
   { name: 'Profile', pattern: '/profile', path: '/profile', role: 'user', critical: true },
-  { name: 'Points', pattern: '/points', path: '/points', role: 'user' },
   { name: 'Referral', pattern: '/referral', path: '/referral', role: 'user' },
   { name: 'Resume', pattern: '/resume', path: '/resume', role: 'user' },
   {
