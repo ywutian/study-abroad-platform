@@ -42,13 +42,18 @@ const SCAN_DIRS = [
   path.join(ROOT, 'apps/api/src/modules/peer-review'),
   path.join(ROOT, 'apps/api/src/modules/school-list'),
   path.join(ROOT, 'apps/api/src/modules/verification'),
+  // Third batch. forum's 22 sites are 12 moderation routes behind
+  // @Roles(OPERATOR) + CONTENT_MODERATE, 3 board-config reads, and 7 scoped by
+  // reporterId/authorId. chat's 14 turned up a real one — see report().
+  path.join(ROOT, 'apps/api/src/modules/forum'),
+  path.join(ROOT, 'apps/api/src/modules/chat'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
   // the site needs a human decision rather than a schema lookup):
   //
-  //   essay  70  (46 system / ★24)   forum 22  (5 / ★17)   chat 14 (3 / ★11)
-  //   case   12  ( 0 / ★12)          hall  12  (1 / ★11)   team 11 (6 / ★5)
+  //   essay  70  (46 system / ★24)   case 12 (0 / ★12)
+  //   hall   12  ( 1 / ★11)          team 11 (6 / ★5)
   //
   // Do NOT add them in one sweep. The 2026-08-02 pass over hall found
   // getListById() returning private lists on a @Public() route, and the
@@ -191,11 +196,15 @@ export function run(): GovernanceIssue[] {
           }
         }
 
-        // Check for raw queries without userId governance comment
+        // Check for raw queries without userId governance comment.
+        // Method-scoped for the same reason as the branch above, and more so
+        // here: a tagged-template SQL block routinely runs 20+ lines, so a
+        // ±5-line window could not even see the whole statement it was
+        // judging. chat.service.ts's unread-count query filters on
+        // `"senderId" != ${userId}` seven lines below the `$queryRaw`, and was
+        // reported as unscoped.
         if (line.includes('$queryRaw') || line.includes('$executeRaw')) {
-          const contextWindow = lines
-            .slice(Math.max(0, i - 5), Math.min(i + 5, lines.length))
-            .join('\n');
+          const contextWindow = enclosingMethod(lines, i);
           if (
             !contextWindow.includes('userId') &&
             !contextWindow.includes('// governance: userId validated') &&

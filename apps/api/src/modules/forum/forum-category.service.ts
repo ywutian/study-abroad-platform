@@ -71,6 +71,7 @@ export class ForumCategoryService {
    * @returns Array of categories with post counts
    */
   async getCategories(): Promise<CategoryDto[]> {
+    // governance: system-scope — ForumCategory is board configuration — no User/Profile relation
     const categories = await this.prisma.forumCategory.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
@@ -99,6 +100,7 @@ export class ForumCategoryService {
    * @throws {BadRequestException} When a category with the same name already exists
    */
   async createCategory(data: CreateCategoryDto): Promise<CategoryDto> {
+    // governance: system-scope — ForumCategory is board configuration — no User/Profile relation
     const existing = await this.prisma.forumCategory.findFirst({
       where: {
         OR: [{ name: data.name }, { nameZh: data.nameZh }],
@@ -111,6 +113,7 @@ export class ForumCategoryService {
       );
     }
 
+    // governance: system-scope — ForumCategory is board configuration — no User/Profile relation
     const category = await this.prisma.forumCategory.create({
       data: {
         name: data.name,

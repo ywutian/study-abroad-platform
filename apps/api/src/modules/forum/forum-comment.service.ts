@@ -177,6 +177,7 @@ export class ForumCommentService {
    * 递归计算所有子回复数量
    */
   async countAllReplies(commentId: string): Promise<number> {
+    // governance: parent-scoped — private recursive helper; the caller verifyOwnership(…, ownerField: authorId) on the parent comment first
     const directReplies = await this.prisma.forumComment.findMany({
       where: { parentId: commentId },
       select: { id: true },

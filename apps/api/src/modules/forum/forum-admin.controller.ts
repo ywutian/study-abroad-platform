@@ -67,6 +67,7 @@ export class ForumAdminController {
     }
 
     const [posts, total] = await Promise.all([
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
       this.prisma.forumPost.findMany({
         where,
         skip: (p - 1) * ps,
@@ -78,6 +79,7 @@ export class ForumAdminController {
           _count: { select: { comments: true, likes: true } },
         },
       }),
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
       this.prisma.forumPost.count({ where }),
     ]);
 
@@ -93,9 +95,11 @@ export class ForumAdminController {
   @Put('posts/:id/pin')
   @ApiOperation({ summary: 'Pin/unpin post' })
   async togglePin(@Param('id') id: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     const post = await this.prisma.forumPost.findUniqueOrThrow({
       where: { id },
     });
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     const updated = await this.prisma.forumPost.update({
       where: { id },
       data: { isPinned: !post.isPinned },
@@ -107,9 +111,11 @@ export class ForumAdminController {
   @Put('posts/:id/lock')
   @ApiOperation({ summary: 'Lock/unlock post' })
   async toggleLock(@Param('id') id: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     const post = await this.prisma.forumPost.findUniqueOrThrow({
       where: { id },
     });
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     const updated = await this.prisma.forumPost.update({
       where: { id },
       data: { isLocked: !post.isLocked },
@@ -121,6 +127,7 @@ export class ForumAdminController {
   @Delete('posts/:id')
   @ApiOperation({ summary: 'Admin delete post (bypass owner check)' })
   async deletePost(@Param('id') id: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     await this.prisma.forumPost.delete({ where: { id } });
     return { message: 'Post deleted' };
   }
@@ -134,6 +141,7 @@ export class ForumAdminController {
     let failed = 0;
 
     if (dto.action === 'delete') {
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
       const result = await this.prisma.forumPost.deleteMany({
         where: { id: { in: dto.ids } },
       });
@@ -146,6 +154,7 @@ export class ForumAdminController {
         lock: { isLocked: true },
         unlock: { isLocked: false },
       };
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
       const result = await this.prisma.forumPost.updateMany({
         where: { id: { in: dto.ids } },
         data: dataMap[dto.action],
@@ -160,6 +169,7 @@ export class ForumAdminController {
   @Delete('comments/:id')
   @ApiOperation({ summary: 'Admin delete comment' })
   async deleteComment(@Param('id') id: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     await this.prisma.forumComment.delete({ where: { id } });
     return { message: 'Comment deleted' };
   }
@@ -177,6 +187,7 @@ export class ForumAdminController {
     if (description) data.description = description;
     if (isActive !== undefined) data.isActive = isActive === 'true';
 
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     return this.prisma.forumCategory.update({
       where: { id },
       data,
@@ -187,6 +198,7 @@ export class ForumAdminController {
   @ApiOperation({ summary: 'Delete/archive forum category' })
   async deleteCategory(@Param('id') id: string) {
     // Soft-archive by setting isActive = false instead of hard delete
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE); moderation is cross-user by definition
     return this.prisma.forumCategory.update({
       where: { id },
       data: { isActive: false },
