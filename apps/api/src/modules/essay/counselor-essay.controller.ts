@@ -5,7 +5,7 @@ import {
   ApiTags,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Role, Prisma, DataReviewStatus } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -78,13 +78,14 @@ export class CounselorEssayController {
       ? Math.min(100, Math.max(1, parseInt(pageSizeStr, 10)))
       : 50;
 
-    const where: Prisma.AdmissionCaseWhereInput = {
-      visibility: { in: ['PUBLIC', 'ANONYMOUS'] },
-      essayContent: { not: null },
-      reviewStatus: {
-        in: [DataReviewStatus.AUTO_APPROVED, DataReviewStatus.APPROVED],
-      },
-    };
+    // Spread the constant instead of restating it. These three clauses were a
+    // hand-copy of CASE_PUBLIC_WHERE, with a `void CASE_PUBLIC_WHERE;` further
+    // down standing in for the link — which imported the constant, referenced
+    // it, and applied none of it. The filter was correct, but only because the
+    // copy happened to still match: add a Visibility value or a review status
+    // to the constant and this counselor surface keeps the old set silently,
+    // while the `void` line goes on implying they are in sync.
+    const where: Prisma.AdmissionCaseWhereInput = { ...CASE_PUBLIC_WHERE };
     if (school) {
       where.school = {
         OR: [
@@ -112,12 +113,8 @@ export class CounselorEssayController {
     if (archive) {
       where.sourceArchive = archive;
     }
-    // `CASE_PUBLIC_WHERE` is the same as the public gallery — we don't
-    // grant counselors access to private/pending essays. The B2B value is
-    // the search shape, not access to unpublished material.
-    void CASE_PUBLIC_WHERE;
-
     const [cases, total] = await Promise.all([
+      // governance: public-feed — `where` spreads CASE_PUBLIC_WHERE; see the note above it
       this.prisma.admissionCase.findMany({
         where,
         select: GALLERY_LIST_SELECT,
@@ -129,6 +126,7 @@ export class CounselorEssayController {
           { createdAt: 'desc' },
         ],
       }),
+      // governance: public-feed — `where` spreads CASE_PUBLIC_WHERE; see the note above it
       this.prisma.admissionCase.count({ where }),
     ]);
 
@@ -163,10 +161,15 @@ export class CounselorEssayController {
 
     // Distinct archive list — drives the autocomplete in the filter bar.
     // Cheap because we already have all sourceArchive values cached on the row.
+    // The second hand-copy, and this one had already drifted: it restated
+    // visibility + essayContent but dropped `reviewStatus`, so the archive
+    // autocomplete was built from unapproved cases too. Only distinct archive
+    // hostnames leak that way, which is why nobody noticed — the point is that
+    // a copy diverged, exactly as a copy does.
+    // governance: public-feed — spreads CASE_PUBLIC_WHERE
     const archiveRows = await this.prisma.admissionCase.findMany({
       where: {
-        visibility: { in: ['PUBLIC', 'ANONYMOUS'] },
-        essayContent: { not: null },
+        ...CASE_PUBLIC_WHERE,
         sourceArchive: { not: null },
       },
       select: { sourceArchive: true },
