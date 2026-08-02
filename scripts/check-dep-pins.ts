@@ -26,6 +26,7 @@ import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
 const LOCKFILE = path.join(ROOT, 'pnpm-lock.yaml');
+const PACKAGE_JSON = path.join(ROOT, 'package.json');
 
 interface Pin {
   /** The exact set of major versions allowed to coexist in the lockfile. */
@@ -64,6 +65,50 @@ function resolvedVersions(name: string, lines: string[]): string[] {
   return [...versions];
 }
 
+/**
+ * Duplicate-key guard for `pnpm.overrides`.
+ *
+ * `pnpm.overrides` is where every CVE fix lands (see .claude/rules/security.md).
+ * It is also plain JSON — and JSON's own rule is "last duplicate key wins,
+ * silently". `JSON.parse` drops the earlier entry without a warning, pnpm never
+ * sees it, and no existing gate reads the raw text. So a *second* `"js-yaml@^4"`
+ * added months after the first quietly deletes the original pin.
+ *
+ * That is a security-gate failure mode, not a style nit: the next `>=x.y.z`
+ * added to fix an advisory can be shadowed by a stale looser range sitting
+ * above it, and the build stays green while the fix does nothing.
+ *
+ * This check re-reads package.json as TEXT (never via JSON.parse, which is
+ * exactly the blind spot) and fails on any repeated key.
+ */
+function duplicateOverrideKeys(): { key: string; values: string[] }[] {
+  const text = fs.readFileSync(PACKAGE_JSON, 'utf8');
+  const lines = text.split('\n');
+
+  // Locate the `"overrides": {` line, then walk to its matching close brace.
+  // Values in this block are always strings (no nesting), so brace depth only
+  // moves on the opening line and the final close.
+  const startIdx = lines.findIndex((l) => /^\s*"overrides"\s*:\s*\{\s*$/.test(l));
+  if (startIdx === -1) return [];
+
+  const seen = new Map<string, string[]>();
+  let depth = 1;
+  for (let i = startIdx + 1; i < lines.length && depth > 0; i++) {
+    const line = lines[i];
+    depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
+    if (depth <= 0) break;
+    // `      "pkg@^1": ">=1.2.3",` — key may itself contain `@`, `>`, `<`, spaces.
+    const m = line.match(/^\s*"((?:[^"\\]|\\.)+)"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    if (!m) continue;
+    const [, key, value] = m;
+    seen.set(key, [...(seen.get(key) ?? []), value]);
+  }
+
+  return [...seen.entries()]
+    .filter(([, values]) => values.length > 1)
+    .map(([key, values]) => ({ key, values }));
+}
+
 function main(): void {
   if (!fs.existsSync(LOCKFILE)) {
     console.error('❌ pnpm-lock.yaml not found — run from the repo root.');
@@ -71,6 +116,18 @@ function main(): void {
   }
   const lines = fs.readFileSync(LOCKFILE, 'utf8').split('\n');
   const errors: string[] = [];
+
+  for (const { key, values } of duplicateOverrideKeys()) {
+    errors.push(
+      [
+        `\`pnpm.overrides["${key}"]\` is declared ${values.length}× — JSON keeps only the LAST one.`,
+        `   declared: ${values.map((v) => `"${v}"`).join(' → ')}   (effective: "${values[values.length - 1]}")`,
+        `   why it matters: overrides is the CVE-fix mechanism (.claude/rules/security.md). A duplicate`,
+        `   key silently deletes the earlier pin — a security fix can land, stay green, and do nothing.`,
+        `   → merge the duplicates into ONE entry with the narrowest range that satisfies every reason.`,
+      ].join('\n')
+    );
+  }
 
   for (const [name, pin] of Object.entries(PINS)) {
     const versions = resolvedVersions(name, lines);
@@ -110,6 +167,7 @@ function main(): void {
     .map((n) => `${n} {${PINS[n].allowedMajors.join(',')}}`)
     .join(', ');
   console.log(`✅ Contested-dependency pins hold: ${summary}`);
+  console.log('✅ pnpm.overrides has no duplicate keys (no silently-shadowed CVE pin).');
 }
 
 main();
