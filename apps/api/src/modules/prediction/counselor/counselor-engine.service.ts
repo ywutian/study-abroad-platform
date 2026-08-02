@@ -68,8 +68,13 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
+// v1.12 = v1.10's substitute-credential cap AND v1.11's ACT concordance table.
+// The two landed on separate branches and this merge is the first engine to
+// carry both, so it needs its own version: served traces and calibration rows
+// key off this string, and reusing either parent's name would claim to be an
+// engine that produces different point estimates than this one does.
 export const COUNSELOR_RULE_VERSION =
-  'counselor-cold-start-v1.10-substitute-cap';
+  'counselor-cold-start-v1.12-substitute-cap-act-concordance';
 
 export interface CounselorFactor {
   name: string;

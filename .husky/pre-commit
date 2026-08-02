@@ -60,6 +60,16 @@ if [ "$WEB_SRC_CHANGED" -gt "0" ]; then
     exit 1
   fi
 
+  # 5. 检查分域 namespace（admin 字典不发给普通用户）没有被域外引用
+  #    漏掉的话线上会把原始 key 路径显示给用户，而 typecheck/单测都不会报错
+  if ! pnpm --filter web exec tsx scripts/check-i18n-scope.ts; then
+    echo ""
+    echo "❌ i18n check failed: scoped namespace referenced outside its route."
+    echo "   See apps/web/src/lib/i18n/message-scope.ts"
+    echo ""
+    exit 1
+  fi
+
   echo ""
   echo "✅ i18n checks passed!"
   echo ""

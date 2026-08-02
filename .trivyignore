@@ -22,36 +22,29 @@ GHSA-6rw7-vpxm-498p
 # Production minimatch@10.x already patched via pnpm override.
 CVE-2026-26996
 
-# ===================================================================
-# Docker image transitive dependency CVEs
-# These are dev/build-time dependencies in the container image,
-# not exploitable in production runtime.
-# ===================================================================
 
-# cross-spawn ReDoS — dev-only (used by npm/eslint toolchain)
-CVE-2024-21538
-
-# glob prototype pollution — dev-only transitive dep
-CVE-2025-64756
 
 # minimatch ReDoS (additional CVEs beyond CVE-2026-26996)
 CVE-2026-27903
 CVE-2026-27904
 
-# zlib memory corruption — Node.js built-in, mitigated by container isolation
-CVE-2026-22184
 
 # ===================================================================
-# tar (node-tar) v6.2.1 in Docker image — pnpm deploy --prod resolves
-# an older version despite pnpm.overrides. Not exploitable: tar is only
-# used at install time (extracting packages), not at runtime.
+# REMOVED: the node-tar 6.2.1 block and sigstore CVE-2026-48815.
+#
+# Both were attributed to `pnpm deploy --prod` resolving old versions "despite
+# pnpm.overrides". That was wrong, and the wrong attribution is what made these
+# entries keep growing new CVE ids: tar 6.2.1, brace-expansion 2.0.1 and
+# sigstore 2.3.1 were never in our lockfile at all. They lived in the base
+# image's own bundled npm, under usr/local/lib/node_modules/npm/. No override
+# could ever have reached them.
+#
+# apps/api/Dockerfile now upgrades that npm to 11, which brings tar 7.x,
+# a patched brace-expansion and sigstore 4.x, so these findings are gone rather
+# than silenced. If a future Trivy finding names a package at a version the
+# lockfile does not contain, check `usr/local/lib/node_modules/npm/` and any
+# dependency's `dist/compiled/` before adding an entry here.
 # ===================================================================
-CVE-2026-23745
-CVE-2026-23950
-CVE-2026-24842
-CVE-2026-26960
-CVE-2026-29786
-CVE-2026-31802
 
 # ===================================================================
 # brace-expansion CVE-2026-14257 (HIGH, = GHSA-mh99-v99m-4gvg) — DoS via
@@ -69,14 +62,3 @@ CVE-2026-31802
 # Remove from here and from ignoreGhsas together.
 # ===================================================================
 CVE-2026-14257
-
-# ===================================================================
-# sigstore CVE-2026-48815 (HIGH) — lives in the base image's OWN npm
-# (usr/local/lib/node_modules/npm/node_modules/sigstore@2.3.1), not in
-# our pnpm lockfile. sigstore verifies package provenance at
-# install/publish time; our runtime is the NestJS API server and never
-# invokes it, so it is not runtime-reachable. Fixed in sigstore 4.1.1,
-# which requires a newer npm than the node base image currently ships —
-# will clear itself when the base image bumps npm.
-# ===================================================================
-CVE-2026-48815

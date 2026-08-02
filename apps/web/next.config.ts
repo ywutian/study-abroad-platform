@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
     root: workspaceRoot,
   },
   images: {
+    // /public 原图带的是 `max-age=0, must-revalidate`，图片优化器会继承它，
+    // 于是每个回访者都要为 LCP 图付一趟 304 往返（生产实测 114ms，占 LCP 的 12%）。
+    //
+    // 30 天而不是 1 年：`/_next/image?url=…&w=…&q=…` 不含源图的内容哈希，
+    // 所以原地替换 /public 下的同名图片是拿不到缓存失效的。30 天已经吃掉了
+    // 几乎全部收益（回访者零重验证），又把「换了图但没换文件名」的最坏情况
+    // 兜在一个月内。要延长到 1 年的前提是先约定图片改名带版本号。
+    minimumCacheTTL: 2592000,
     qualities: [75, 90],
     remotePatterns: [
       { protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons**' },
@@ -65,6 +73,20 @@ const nextConfig: NextConfig = {
             value: 'max-age=31536000; includeSubDomains; preload',
           },
         ],
+      },
+      {
+        // 这才是让 /_next/image 产物对浏览器可缓存的那一步，`images.minimumCacheTTL`
+        // 不够：Vercel 不用 Next 自带的图片优化器，它自己那套里 minimumCacheTTL 只管
+        // **边缘缓存**的 TTL，发给浏览器的 Cache-Control 是从**上游源图**派生的。
+        //
+        // 生产实测（#522 上线后）：取一个从未缓存过的尺寸 w=828，x-vercel-cache: MISS
+        // 且 age: 0——是当前部署现生成的——拿到的仍是 max-age=0，因为 /public 下的原图
+        // 就是 max-age=0。所以要改的是源头。
+        //
+        // 30 天而不是 1 年：/_next/image 的 URL 不含源图内容哈希，原地替换同名图片
+        // 拿不到缓存失效。落地页的图会换（#494 换过一轮）。
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }],
       },
     ];
   },

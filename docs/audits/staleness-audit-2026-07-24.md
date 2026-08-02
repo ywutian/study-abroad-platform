@@ -548,6 +548,42 @@ SAT/ACT** 时，band 比较的结果**封顶到 1.0**，并在 evidence 里说�
 - `×45` 是线性近似，College Board 实际 concordance 非线性
   （ACT 20 ≈ SAT 1030，线性算法给 900，低分段偏差很大）
 
+### ✅ 已修（2026-07-26）—— 两步，第二步隔了两天
+
+越界 clamp 当天就补了（`Math.min(1600, act * 45)`），但**线性近似留了下来**，
+只是不再越界。也就是说当时只修掉了看得见的那一半。
+
+换成官方表之后重新量，偏差比这里记的还大 —— 上面「ACT 20 ≈ 1030」是凭记忆写的，
+官方值是 **1040**：
+
+| ACT | 线性 ×45         | 2018 官方 Table A2 | 偏差     |
+| --- | ---------------- | ------------------ | -------- |
+| 36  | 1600（clamp 后） | 1590               | +10      |
+| 30  | 1350             | 1370               | −20      |
+| 26  | 1170             | 1240               | **−70**  |
+| 24  | 1080             | 1180               | **−100** |
+| 20  | 900              | 1040               | **−140** |
+| 16  | 720              | 890                | **−170** |
+
+单向偏低，且越往下越大 —— 中低分段 ACT 考生被系统性地放在了自己真实位置之下。
+与 §3 的 TOEFL `score / max` 同一类错误：用一条直线代替一张已发布的表。
+
+修法：`actToEquivalentSat()` 直接查 2018 ACT/SAT Concordance Table A2
+（ACT 与 College Board 联合发布，覆盖 ACT 9–36，9 以下返回表的下界而不外推）。
+表的 28 行全部写进测试逐个钉住，另加单调性、边界、以及一条"不得再退回线性"的回归守卫。
+
+数字来源不是记忆 —— 是从 ACT 官网 PDF 里读出来的：
+<https://www.act.org/content/dam/act/unsecured/documents/ACT-SAT-Concordance-Tables.pdf>
+
+`COUNSELOR_RULE_VERSION` → `counselor-cold-start-v1.11-act-concordance`。
+外键无需迁移：`ensureCounselorPolicyVersion()` 以该常量为 key upsert，首次持久化自动建行。
+gold set 里没有 ACT 考生（testScores 只有 SAT），所以 gold 基线不动。
+
+> **2026-08-02 更新**：v1.10（substitute-cap）和 v1.11（本节的 ACT 换算表）分别落在
+> 两条分支上，合并后的引擎第一次同时带上两者，因此版本号改为
+> `counselor-cold-start-v1.12-substitute-cap-act-concordance`。沿用任何一个父版本号
+> 都会让 served trace 谎报引擎身份 —— 两者的点估计并不相同。
+
 ---
 
 ## 来源

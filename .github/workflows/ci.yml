@@ -80,7 +80,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -90,6 +90,15 @@ jobs:
 
       - name: Setup Turbo Cache
         uses: dtinth/setup-github-actions-caching-for-turbo@v1
+
+      # 这一步不能省：下面的 lint 是 `pnpm --filter api lint`（直接调，不走 turbo），
+      # 所以 turbo.json 里给 lint 声明的 `dependsOn: ["db:generate"]` 覆盖不到这里。
+      # 没有生成的 Prisma client，@typescript-eslint 的类型感知规则拿到的是残缺类型：
+      # 报出来的东西不可信，而且 `--fix` 会把必需的类型断言当成多余删掉（本地实测
+      # 会写坏 31 个文件 / 新增 70 个 typecheck 错误）。CI 因为 checkout 用完即弃
+      # 而没出事，但这一直意味着 api 的 lint 结果是拿错误类型信息算出来的。
+      - name: Generate Prisma client (lint 的类型感知规则依赖它)
+        run: pnpm --filter api db:generate
 
       - name: Lint all apps (parallel)
         run: |
@@ -175,17 +184,18 @@ jobs:
       #   routes  — client API paths match @Controller() routes
       #   journeys— user-journey path integrity
       #   icons   — no banned AI-feeling lucide icons / emoji in web UI chrome
-      # NOT wired here (and why):
-      #   lint:drift — inherently local-only: its claude-md/manifest rules
-      #     inspect .claude/agents + .claude/manifests, which are gitignored
-      #     (.gitignore keeps only .claude/skills/), so a fresh CI checkout has
-      #     1 agent file / no manifest and the check always errors. Stays a
-      #     pre-push check where those files exist.
-      - name: Cross-layer guards (routes / journeys / icons)
+      #   drift   — CLAUDE.md / BRIEF.md / manifest vs the actual files.
+      #     Was local-only until .claude/agents + .claude/manifests were
+      #     gitignored-by-accident; a fresh checkout had 1 agent file and no
+      #     manifest, so the check errored for everyone but the one machine
+      #     that had them untracked on disk. They travel with the repo now
+      #     (see .gitignore), which is what makes this runnable here.
+      - name: Cross-layer guards (routes / journeys / icons / drift)
         run: |
           pnpm lint:routes
           pnpm lint:journeys
           pnpm quality:icons
+          pnpm lint:drift
 
       # Prettier drift gate: whole-repo `prettier --check` (ts/tsx). lint-staged
       # only formats *changed* files, so old files silently drift when the config
@@ -212,7 +222,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -260,7 +270,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -347,7 +357,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -422,7 +432,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -489,7 +499,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -580,10 +590,10 @@ jobs:
       # stale precache (the 2026-06 "页面无法跳转" incident); redirected
       # robots/sitemap also hid the site from crawlers. Pairs with
       # apps/web/src/proxy.matcher.test.ts (unit level).
-      - name: Assert root public assets bypass proxy (sw.js / robots / sitemap)
+      - name: Assert root public assets bypass proxy (sw.js / robots / sitemap / theme.css)
         run: |
           set -e
-          for p in /sw.js /manifest.json /robots.txt /sitemap.xml; do
+          for p in /sw.js /manifest.json /robots.txt /sitemap.xml /theme.css; do
             code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:4100$p")
             if [ "$code" != "200" ]; then
               echo "❌ $p -> HTTP $code (expected 200 — proxy matcher is intercepting it again)"
@@ -594,6 +604,13 @@ jobs:
           case "$ct" in
             *javascript*) echo "✅ sw.js + manifest + robots + sitemap all 200; sw.js is $ct" ;;
             *) echo "❌ /sw.js content-type '$ct' (expected javascript — likely an HTML 404/redirect body)"; exit 1 ;;
+          esac
+          # A 307 to /{locale}/theme.css still answers 200 with an HTML body, so
+          # the status check alone cannot catch it — assert the type too.
+          ct=$(curl -s -o /dev/null -w "%{content_type}" http://localhost:4100/theme.css)
+          case "$ct" in
+            *css*) echo "✅ theme.css is $ct" ;;
+            *) echo "❌ /theme.css content-type '$ct' (expected css — proxy is locale-redirecting it, every non-critical palette loses its --ds-* values)"; exit 1 ;;
           esac
 
       - name: Run release runtime audit
@@ -649,7 +666,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -770,7 +787,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -1137,7 +1154,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -1248,7 +1265,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'

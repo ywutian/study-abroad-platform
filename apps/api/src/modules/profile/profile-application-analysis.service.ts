@@ -12,7 +12,10 @@ import {
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
-import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
+import {
+  getSchoolDisplayName,
+  resolveSchoolTestingPolicyValue,
+} from '@study-abroad/shared/utils';
 import {
   AnalysisActionPlan,
   AnalysisApplicantType,
@@ -1156,10 +1159,10 @@ function buildPortfolioAnalysis(
 ): PortfolioAnalysis {
   const missingPredictionSchoolNames = focusSchools
     .filter((item) => !predictionMap.has(item.schoolId))
-    .map((item) => item.school.nameZh || item.school.name);
+    .map((item) => getSchoolDisplayName(item.school, locale));
   const missingRoundSchoolNames = schoolListItems
     .filter((item) => !item.round)
-    .map((item) => item.school.nameZh || item.school.name)
+    .map((item) => getSchoolDisplayName(item.school, locale))
     .slice(0, 5);
   const balance = resolvePortfolioBalance(schoolListItems, predictionMap);
   const isZh = locale === 'zh';
@@ -1295,7 +1298,7 @@ function buildTargetSchoolInsight(
   locale: string,
   evidence?: SchoolEvidenceByDimension,
 ): TargetSchoolInsight {
-  const schoolName = item.school.nameZh || item.school.name;
+  const schoolName = getSchoolDisplayName(item.school, locale);
   const isZh = locale === 'zh';
   const factors = asPredictionFactors(prediction?.factors);
   const suggestions = asStringArray(prediction?.suggestions);

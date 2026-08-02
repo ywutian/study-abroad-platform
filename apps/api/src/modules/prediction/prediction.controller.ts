@@ -31,6 +31,7 @@ import type {
   PredictionPublicExplanation,
   PredictionOutcomeLabel,
 } from '@study-abroad/shared';
+import { getSchoolDisplayName } from '@study-abroad/shared/utils';
 import {
   ThrottleAI,
   ThrottleSensitive,
@@ -67,7 +68,7 @@ function readStoredPublicExplanation(
 
   return buildPredictionPublicExplanation({
     locale,
-    schoolName: school?.nameZh || school?.name || row?.schoolName,
+    schoolName: school ? getSchoolDisplayName(school, locale) : row?.schoolName,
     probability: row?.probability != null ? Number(row.probability) : null,
     probabilityLow:
       row?.probabilityLow != null ? Number(row.probabilityLow) : undefined,

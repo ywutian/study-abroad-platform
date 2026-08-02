@@ -137,7 +137,11 @@ export const config = {
   // deploys, while clean profiles worked). Redirected robots/sitemap also hid
   // the site from crawlers. Guarded by proxy.matcher.test.ts + the
   // release-runtime CI assert step ("Assert root public assets bypass proxy").
+  // `css` is in the extension list for the same reason: `/theme.css` (the full
+  // palette sheet, app/theme.css/route.ts) is a root-level static asset, and a
+  // 307 to `/{locale}/theme.css` would 404 it — every non-featured palette
+  // would render with undefined `--ds-*`.
   matcher: [
-    '/((?!api|_next/static|_next/image|\\.well-known|favicon.ico|sw\\.js|workbox-.*\\.js|manifest\\.json|robots\\.txt|sitemap.*\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api|_next/static|_next/image|\\.well-known|favicon.ico|sw\\.js|workbox-.*\\.js|manifest\\.json|robots\\.txt|sitemap.*\\.xml|.*\\.(?:css|svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

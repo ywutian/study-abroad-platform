@@ -98,12 +98,13 @@ export function HeroSection() {
 
       <PageContainer variant="marketing" className="relative">
         <div className="grid min-w-0 items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10"
-          >
+          {/* CSS entrance, not framer-motion: as a motion.div this column was
+              server-rendered at opacity:0 and stayed invisible until ~570 KB of
+              JS hydrated. It holds the h1 and the LCP image, so nothing above
+              the fold painted until then. Also fixes reduced-motion users —
+              useReducedMotion() is false during SSR, so they got the blank hero
+              too; globals.css clamps CSS animations to 0.01ms for them. */}
+          <div className="relative z-10 animate-fade-in-up">
             {denseCopy ? (
               <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
                 <span className="block text-balance">
@@ -191,14 +192,13 @@ export function HeroSection() {
             )}
 
             {isDense && <DenseSocialProofRow />}
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="relative hidden lg:block"
-          >
+          {/* Same treatment. The 0.12s stagger is dropped rather than rebuilt
+              with animation-delay: `forwards` alone renders the element at
+              opacity 1 during the delay and then snaps to 0 — a visible flash.
+              Recreating it would need animation-fill-mode: both. */}
+          <div className="relative hidden lg:block animate-fade-in-up">
             <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full -translate-x-1/2 -translate-y-1/2">
               <div className="absolute left-0 top-2 h-2/3 w-2/3 rounded-full bg-primary/18 blur-[110px]" />
               <div className="absolute bottom-2 right-0 h-2/3 w-2/3 rounded-full bg-[color:var(--ds-info)]/12 blur-[110px]" />
@@ -216,7 +216,7 @@ export function HeroSection() {
               reduced={!!prefersReducedMotion}
               disclosure={home.hero.aiDisclosure}
             />
-          </motion.div>
+          </div>
         </div>
 
         {isDense && <DenseCounselorRow />}
@@ -243,6 +243,18 @@ function MobileHeroPhoto() {
           alt=""
           fill
           sizes="(max-width: 1023px) 100vw, 0px"
+          // Measured LCP element on mobile; `loading="lazy"` made its fetch
+          // wait for first layout and then queue behind ~570 KB of JS.
+          //
+          // Next emits a <head> `<link rel=preload as=image>` for this either
+          // way — verified in the production HTML, it is the first element in
+          // <head>. (An earlier version of this comment claimed eager +
+          // fetchPriority avoided the preload that `priority` adds; it does
+          // not.) What keeps it cheap on desktop, where this block is
+          // lg:hidden, is `sizes` resolving to 0px there, so the preload's
+          // imageSizes picks the smallest srcset candidate.
+          loading="eager"
+          fetchPriority="high"
           className="object-cover object-top"
         />
       </div>

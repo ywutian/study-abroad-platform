@@ -310,14 +310,14 @@ export class PredictionResultDto {
 
   @ApiPropertyOptional({
     description: 'Counselor engine rule version that produced this prediction',
-    example: 'counselor-cold-start-v1.10-substitute-cap',
+    example: 'counselor-cold-start-v1.12-substitute-cap-act-concordance',
   })
   modelVersion?: string;
 
   @ApiPropertyOptional({
     description:
       'Served policy version — equals the counselor engine rule version (the served path is counselor-only)',
-    example: 'counselor-cold-start-v1.10-substitute-cap',
+    example: 'counselor-cold-start-v1.12-substitute-cap-act-concordance',
   })
   servedPolicyVersionId?: string;
 

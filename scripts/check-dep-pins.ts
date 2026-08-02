@@ -26,7 +26,6 @@ import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
 const LOCKFILE = path.join(ROOT, 'pnpm-lock.yaml');
-const PACKAGE_JSON = path.join(ROOT, 'package.json');
 
 interface Pin {
   /** The exact set of major versions allowed to coexist in the lockfile. */
@@ -66,47 +65,91 @@ function resolvedVersions(name: string, lines: string[]): string[] {
 }
 
 /**
- * Duplicate-key guard for `pnpm.overrides`.
+ * Two root-manifest invariants, both learned the same day (2026-07-26):
  *
- * `pnpm.overrides` is where every CVE fix lands (see .claude/rules/security.md).
- * It is also plain JSON — and JSON's own rule is "last duplicate key wins,
- * silently". `JSON.parse` drops the earlier entry without a warning, pnpm never
- * sees it, and no existing gate reads the raw text. So a *second* `"js-yaml@^4"`
- * added months after the first quietly deletes the original pin.
+ * 1. The workspace root must declare NO runtime `dependencies`.
+ *    `pnpm deploy --legacy` (apps/api/Dockerfile) links the root's dependencies
+ *    into every deployed app, so seven frontend packages sitting in the root —
+ *    framer-motion, @sentry/nextjs and friends — shipped inside the NestJS
+ *    production image. @sentry/nextjs peer-depends on `next`, which vendors its
+ *    own copies of tar and brace-expansion under dist/compiled/, and Trivy
+ *    flagged CRITICAL/HIGH CVEs in code the API can never load. Removing them
+ *    took the image's node_modules from 972 MB to 466 MB. Root-level runtime
+ *    deps are never right here: every app declares what it uses.
  *
- * That is a security-gate failure mode, not a style nit: the next `>=x.y.z`
- * added to fix an advisory can be shadowed by a stale looser range sitting
- * above it, and the build stays green while the fix does nothing.
- *
- * This check re-reads package.json as TEXT (never via JSON.parse, which is
- * exactly the blind spot) and fails on any repeated key.
+ * 2. `pnpm.overrides` must have no duplicate keys.
+ *    A merge landed both `"brace-expansion@^1": "1.1.16"` and
+ *    `"brace-expansion@^2": ">=2.1.2 <3"`-style entries twice over; git saw two
+ *    separate lines, not a conflict. JSON parsers keep the last occurrence, so
+ *    the file silently disagreed with itself and which pin applied depended on
+ *    line order. Six keys were affected before this guard existed.
  */
-function duplicateOverrideKeys(): { key: string; values: string[] }[] {
-  const text = fs.readFileSync(PACKAGE_JSON, 'utf8');
-  const lines = text.split('\n');
+function checkRootManifest(): string[] {
+  const errors: string[] = [];
+  const manifestPath = path.join(ROOT, 'package.json');
+  const raw = fs.readFileSync(manifestPath, 'utf8');
+  const manifest = JSON.parse(raw) as {
+    dependencies?: Record<string, string>;
+    pnpm?: { overrides?: Record<string, string> };
+  };
 
-  // Locate the `"overrides": {` line, then walk to its matching close brace.
-  // Values in this block are always strings (no nesting), so brace depth only
-  // moves on the opening line and the final close.
-  const startIdx = lines.findIndex((l) => /^\s*"overrides"\s*:\s*\{\s*$/.test(l));
-  if (startIdx === -1) return [];
-
-  const seen = new Map<string, string[]>();
-  let depth = 1;
-  for (let i = startIdx + 1; i < lines.length && depth > 0; i++) {
-    const line = lines[i];
-    depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
-    if (depth <= 0) break;
-    // `      "pkg@^1": ">=1.2.3",` — key may itself contain `@`, `>`, `<`, spaces.
-    const m = line.match(/^\s*"((?:[^"\\]|\\.)+)"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-    if (!m) continue;
-    const [, key, value] = m;
-    seen.set(key, [...(seen.get(key) ?? []), value]);
+  const rootDeps = Object.keys(manifest.dependencies ?? {});
+  if (rootDeps.length > 0) {
+    errors.push(
+      [
+        `the workspace root declares ${rootDeps.length} runtime \`dependencies\`: ${rootDeps.join(', ')}`,
+        `   \`pnpm deploy\` links these into EVERY deployed app, so they ship inside`,
+        `   apps/api's production image whether or not the API uses them.`,
+        `   → move each one to the app that imports it, or delete it if nothing does.`,
+      ].join('\n')
+    );
   }
 
-  return [...seen.entries()]
-    .filter(([, values]) => values.length > 1)
-    .map(([key, values]) => ({ key, values }));
+  for (const [key, count] of duplicateOverrideKeys(raw)) {
+    errors.push(
+      [
+        `\`pnpm.overrides\` declares "${key}" ${count} times.`,
+        `   JSON keeps the last occurrence, so the effective pin depends on line order`,
+        `   and the file disagrees with itself. Usually a merge that kept both sides.`,
+        `   → keep one entry with the intended range.`,
+      ].join('\n')
+    );
+  }
+
+  return errors;
+}
+
+/** Raw-text scan: JSON.parse collapses duplicates, so the object can't reveal them. */
+function duplicateOverrideKeys(raw: string): Array<[string, number]> {
+  const anchor = raw.indexOf('"overrides"');
+  if (anchor === -1) return [];
+  const open = raw.indexOf('{', anchor);
+  if (open === -1) return [];
+
+  const counts = new Map<string, number>();
+  let depth = 0;
+  for (let i = open; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) break;
+    } else if (ch === '"' && depth === 1) {
+      // A string at depth 1 that is followed by ':' is a key of this object.
+      let j = i + 1;
+      let key = '';
+      while (j < raw.length && raw[j] !== '"') {
+        if (raw[j] === '\\') j++;
+        key += raw[j];
+        j++;
+      }
+      let k = j + 1;
+      while (k < raw.length && /\s/.test(raw[k])) k++;
+      if (raw[k] === ':') counts.set(key, (counts.get(key) ?? 0) + 1);
+      i = j;
+    }
+  }
+  return [...counts.entries()].filter(([, c]) => c > 1);
 }
 
 function main(): void {
@@ -116,18 +159,6 @@ function main(): void {
   }
   const lines = fs.readFileSync(LOCKFILE, 'utf8').split('\n');
   const errors: string[] = [];
-
-  for (const { key, values } of duplicateOverrideKeys()) {
-    errors.push(
-      [
-        `\`pnpm.overrides["${key}"]\` is declared ${values.length}× — JSON keeps only the LAST one.`,
-        `   declared: ${values.map((v) => `"${v}"`).join(' → ')}   (effective: "${values[values.length - 1]}")`,
-        `   why it matters: overrides is the CVE-fix mechanism (.claude/rules/security.md). A duplicate`,
-        `   key silently deletes the earlier pin — a security fix can land, stay green, and do nothing.`,
-        `   → merge the duplicates into ONE entry with the narrowest range that satisfies every reason.`,
-      ].join('\n')
-    );
-  }
 
   for (const [name, pin] of Object.entries(PINS)) {
     const versions = resolvedVersions(name, lines);
@@ -155,6 +186,8 @@ function main(): void {
     }
   }
 
+  errors.push(...checkRootManifest());
+
   if (errors.length > 0) {
     console.error('\n❌ Contested-dependency pin check failed:\n');
     for (const e of errors) console.error('   ' + e + '\n');
@@ -167,7 +200,6 @@ function main(): void {
     .map((n) => `${n} {${PINS[n].allowedMajors.join(',')}}`)
     .join(', ');
   console.log(`✅ Contested-dependency pins hold: ${summary}`);
-  console.log('✅ pnpm.overrides has no duplicate keys (no silently-shadowed CVE pin).');
 }
 
 main();

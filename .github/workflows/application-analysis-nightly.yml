@@ -48,7 +48,7 @@ jobs:
         uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -82,6 +82,21 @@ jobs:
           JWT_REFRESH_SECRET: nightly-refresh-secret
           JWT_EXPIRES_IN: 15m
           JWT_REFRESH_EXPIRES_IN: 7d
+
+      # `gold:fixtures` above rewrites
+      # packages/shared/src/fixtures/application-analysis-render.data.ts, but
+      # nothing had rebuilt the package afterwards, so shared/dist still held
+      # the fixture as committed. The two consumers then disagreed: the web app
+      # resolves shared through the `import` condition and got the fresh .ts,
+      # while the Playwright specs run under Node and got the stale dist. The
+      # page rendered the new data and web-dom-parity compared it against the
+      # old expectedSchoolOrder — a mismatch with no bug behind it.
+      #
+      # ci.yml's governance job has always had this step ("Re-build shared
+      # package (after fixture regen)"); the nightly did not. Any change to the
+      # analysis output would have tripped it; #515 happened to be the first.
+      - name: Re-build shared package (after fixture regen)
+        run: pnpm --filter @study-abroad/shared build
 
       - name: Seed database
         run: pnpm --filter api exec prisma db seed
@@ -143,6 +158,16 @@ jobs:
         run: pnpm application-analysis:governance -- --mode=nightly
         env:
           CI: true
+          # This job starts the web server itself ("Start Web server" above),
+          # then the governance script shells out to Playwright twice. Without
+          # this, Playwright's `webServer` tries to start its OWN dev server on
+          # the same port and aborts with "http://localhost:4100 is already
+          # used" — which is what had been failing this workflow every night.
+          # `playwright.config.ts` reads this flag and nothing in the repo ever
+          # set it, so the reuse path was unreachable. Only set it where a
+          # server is pre-started; the ci.yml Playwright steps deliberately let
+          # Playwright manage its own.
+          PLAYWRIGHT_REUSE_SERVER: 'true'
           ENABLE_E2E_FIXTURES: true
           NEXT_PUBLIC_API_URL: http://localhost:4101
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public

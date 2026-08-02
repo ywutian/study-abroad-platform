@@ -186,6 +186,29 @@ async function main() {
         suiteEnv
       )
     );
+    // Runs in both modes. It used to be nightly-only, which made every
+    // rendering-affecting change invisible to the PR pipeline: a dependency
+    // bump that moved a pixel (Playwright, Next, a font package) went green on
+    // the PR and turned the nightly red the following day, with the cause a
+    // day behind the merge. The suite costs ~30s of a ~224s run and the
+    // servers and browser are already up for web-dom-parity, so there is no
+    // reason to defer it. Deliberately not gated behind a paths filter — the
+    // set of things that can move a pixel is not enumerable, and a stale
+    // allowlist would recreate the same blind spot it was meant to close.
+    suites.push(
+      await runCommand(
+        'web-visual-parity',
+        'pnpm',
+        [
+          'exec',
+          'playwright',
+          'test',
+          'e2e/application-analysis-visual.spec.ts',
+          '--reporter=list',
+        ],
+        suiteEnv
+      )
+    );
     suites.push(
       await runCommand('mobile-rn-parity', 'pnpm', [
         '--filter',
@@ -212,31 +235,30 @@ async function main() {
           '--persist-run',
         ])
       );
-      suites.push(
-        await runCommand(
-          'web-visual-parity',
-          'pnpm',
-          [
-            'exec',
-            'playwright',
-            'test',
-            'e2e/application-analysis-visual.spec.ts',
-            '--reporter=list',
-          ],
-          suiteEnv
-        )
-      );
-      suites.push(
-        await runCommand('runtime-journey-audit', 'pnpm', [
-          'exec',
-          'tsx',
-          'scripts/runtime-journey-audit.ts',
-          '--journeys',
-          'AA1',
-          '--audit-id',
-          'application-analysis-nightly',
-        ])
-      );
+      // runtime-journey-audit is OFF in the nightly (2026-07-27).
+      //
+      // AA1 (`申请分析页 runtime parity`) was its only journey, and AA1 drives
+      // `/profiles/me/ai-analysis`, which cannot complete without a working LLM.
+      // `secrets.OPENAI_API_KEY` does not exist in this repo — the workflow
+      // expression resolves to an empty string — so AA1 was permanently BROKEN.
+      // It had been silently BROKEN for a long time; #526 made the gate honest,
+      // which turned the nightly red for a missing credential rather than for a
+      // real regression.
+      //
+      // To restore: add the OPENAI_API_KEY repo secret, then re-enable the block
+      // below. Do NOT re-enable it without the secret — you'd be back to a red
+      // nightly that says nothing about the product.
+      //
+      //   suites.push(
+      //     await runCommand('runtime-journey-audit', 'pnpm', [
+      //       'exec', 'tsx', 'scripts/runtime-journey-audit.ts',
+      //       '--journeys', 'AA1',
+      //       '--audit-id', 'application-analysis-nightly',
+      //     ])
+      //   );
+      //
+      // `scripts/runtime-journey-audit.ts` itself is unchanged and still exits 1
+      // on a BROKEN journey — run it manually with a key when you need AA1.
       liveReplay = await findLatestReplayRun(prisma, 'gold:live:nightly:v1');
       liveReplayMetrics = asRecord(liveReplay?.metrics);
     }
@@ -250,10 +272,7 @@ async function main() {
       ...asRecord(deterministicReplay.metrics),
       webRenderPass: suites.find((suite) => suite.name === 'web-dom-parity')?.success ?? false,
       mobileRenderPass: suites.find((suite) => suite.name === 'mobile-rn-parity')?.success ?? false,
-      webVisualPass:
-        args.mode === 'nightly'
-          ? (suites.find((suite) => suite.name === 'web-visual-parity')?.success ?? false)
-          : null,
+      webVisualPass: suites.find((suite) => suite.name === 'web-visual-parity')?.success ?? false,
       liveGoldPassRate:
         args.mode === 'nightly'
           ? typeof liveReplayMetrics.goldPassRate === 'number'
@@ -262,11 +281,16 @@ async function main() {
               ? 1
               : 0
           : null,
+      // `null` when the suite did not run, NOT 0. The old shape was
+      // `suites.find(…)?.success ? 1 : 0`, so removing the suite would have
+      // silently recorded "0% of journeys passed" for a suite that never ran —
+      // the same lying-metric class #526 fixed on the other side.
       journeyPassRate:
         args.mode === 'nightly'
-          ? suites.find((suite) => suite.name === 'runtime-journey-audit')?.success
-            ? 1
-            : 0
+          ? (() => {
+              const suite = suites.find((s) => s.name === 'runtime-journey-audit');
+              return suite ? (suite.success ? 1 : 0) : null;
+            })()
           : null,
     } satisfies Record<string, unknown>;
 
@@ -317,7 +341,7 @@ async function main() {
       renderParityMode: {
         web: 'dom_blocking',
         mobile: 'rn_screen',
-        webVisual: args.mode === 'nightly' ? 'screenshot_diff' : null,
+        webVisual: 'screenshot_diff',
       },
     };
 
@@ -344,6 +368,7 @@ async function main() {
             [
               'deterministic-replay',
               'web-dom-parity',
+              'web-visual-parity',
               'mobile-rn-parity',
               'governance-evaluation-record',
             ].includes(suite.name)

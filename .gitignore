@@ -50,10 +50,18 @@ tmp
 temp
 .tmp-runtime-audit/
 
-# Claude Code — most config is per-developer, but skill playbooks are
-# project conventions that should travel with the repo. Track the skills
-# directory; ignore everything else under .claude/.
+# Claude Code — most config is per-developer, but the agent / rule / skill
+# playbooks and the workflow manifest are project conventions that must travel
+# with the repo: CLAUDE.md documents them as mandatory, and `lint:drift`
+# validates CLAUDE.md against them — it can only do that if a fresh checkout
+# actually has them. Ignore everything else under .claude/.
 .claude/*
+!.claude/agents/
+!.claude/agents/**
+!.claude/manifests/
+!.claude/manifests/**
+!.claude/rules/
+!.claude/rules/**
 !.claude/skills/
 !.claude/skills/**
 

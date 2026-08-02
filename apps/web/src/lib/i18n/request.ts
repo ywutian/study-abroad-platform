@@ -1,5 +1,6 @@
 import { getRequestConfig } from 'next-intl/server';
 import { locales, type Locale } from './config';
+import { reportIntlError } from './report-intl-error';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
@@ -12,6 +13,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default,
     timeZone: 'Asia/Shanghai',
+    // 只覆盖服务端；客户端组件 SSR 时也走这里，纯交互触发的动态 key 抓不到
+    onError: reportIntlError,
     formats: {
       dateTime: {
         // 短格式: "2月7日" / "Feb 7"
