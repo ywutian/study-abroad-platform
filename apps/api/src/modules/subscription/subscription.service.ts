@@ -385,14 +385,31 @@ export class SubscriptionService {
   }
 
   // Webhook 处理（用于接收支付网关回调）
-  async handlePaymentWebhook(payload: any, signature: string): Promise<void> {
+  async handlePaymentWebhook(
+    payload: any,
+    signature: string,
+    rawBody?: Buffer,
+  ): Promise<void> {
     this.assertPaymentsEnabled();
     // Verify webhook signature (HMAC-SHA256)
     const webhookSecret = this.configService.get<string>('WEBHOOK_SECRET');
     if (webhookSecret) {
+      // Sign the bytes that arrived, never a re-serialisation of the parsed
+      // object: JSON.stringify(payload) reorders keys, drops whitespace and
+      // re-escapes unicode, so it is a different string from what the sender
+      // hashed. Fail closed if the raw body is missing rather than silently
+      // falling back to the parsed form — a missing rawBody means the parser
+      // in main.ts is no longer mounted on this route, and quietly verifying
+      // the wrong bytes is how a signature check becomes decorative.
+      if (!rawBody) {
+        throw new InternalServerErrorException(
+          'Webhook raw body unavailable — the signature cannot be verified. ' +
+            'Check the express.json({ verify }) mount for this route in main.ts.',
+        );
+      }
       const expectedSignature = crypto
         .createHmac('sha256', webhookSecret)
-        .update(JSON.stringify(payload))
+        .update(rawBody)
         .digest('hex');
       // Constant-time comparison: a plain `!==` leaks timing that can let an
       // attacker recover the expected HMAC byte-by-byte over many requests.

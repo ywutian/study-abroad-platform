@@ -116,11 +116,17 @@ describe('SubscriptionService', () => {
     jest.clearAllMocks();
   });
 
+  // The gateway signs the bytes it sends. Tests must do the same: build the
+  // raw body once, sign THAT, and hand both to the service — signing a
+  // re-serialisation is exactly the bug these tests failed to catch before.
+  const rawOf = (payload: Record<string, any>) =>
+    Buffer.from(JSON.stringify(payload), 'utf8');
+
+  const signRaw = (raw: Buffer) =>
+    crypto.createHmac('sha256', webhookSecret).update(raw).digest('hex');
+
   const signWebhookPayload = (payload: Record<string, any>) =>
-    crypto
-      .createHmac('sha256', webhookSecret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
+    signRaw(rawOf(payload));
 
   // ============================================
   // Plans Tests
@@ -524,7 +530,11 @@ describe('SubscriptionService', () => {
       (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
 
       await expect(
-        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
+        service.handlePaymentWebhook(
+          payload,
+          signWebhookPayload(payload),
+          rawOf(payload),
+        ),
       ).resolves.not.toThrow();
 
       expect(prismaService.payment.update).toHaveBeenCalledWith(
@@ -552,7 +562,11 @@ describe('SubscriptionService', () => {
       });
 
       await expect(
-        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
+        service.handlePaymentWebhook(
+          payload,
+          signWebhookPayload(payload),
+          rawOf(payload),
+        ),
       ).resolves.not.toThrow();
 
       expect(prismaService.payment.update).toHaveBeenCalledWith(
@@ -575,7 +589,11 @@ describe('SubscriptionService', () => {
         id: 'existing-payment',
       });
 
-      await service.handlePaymentWebhook(payload, signWebhookPayload(payload));
+      await service.handlePaymentWebhook(
+        payload,
+        signWebhookPayload(payload),
+        rawOf(payload),
+      );
 
       // Should only call findFirst once (idempotency check) and not proceed
       expect(prismaService.payment.findFirst).toHaveBeenCalledTimes(1);
@@ -590,9 +608,56 @@ describe('SubscriptionService', () => {
       };
 
       await expect(
-        service.handlePaymentWebhook(payload, 'not-the-real-signature'),
+        service.handlePaymentWebhook(
+          payload,
+          'not-the-real-signature',
+          rawOf(payload),
+        ),
       ).rejects.toThrow(UnauthorizedException);
       // Rejected before any processing.
+      expect(prismaService.payment.findFirst).not.toHaveBeenCalled();
+    });
+
+    // ── the signature must cover the bytes that arrived ──────────────────
+    // This verified `JSON.stringify(req.body)` while `req.rawBody` was
+    // declared on the controller but never populated by anything. The two
+    // tests below are the ones that would have caught it.
+
+    it('accepts a body whose exact bytes JSON.stringify would not reproduce', async () => {
+      // A real gateway sends its own formatting: padded whitespace and \u
+      // escapes here. Re-serialising the parsed object yields different bytes,
+      // so the old implementation rejected a perfectly valid delivery — and,
+      // worse, would accept a forgery that happened to re-serialise the same.
+      const rawBody = Buffer.from(
+        '{ "type": "payment.success",\n  "id": "evt-raw",\n  "transactionId": "txn_123",\n  "note": "caf\\u00e9" }',
+        'utf8',
+      );
+      const payload = JSON.parse(rawBody.toString('utf8'));
+      expect(Buffer.from(JSON.stringify(payload), 'utf8').equals(rawBody)).toBe(
+        false,
+      ); // the premise: re-serialising is a different byte string
+
+      (prismaService.payment.findFirst as jest.Mock)
+        .mockResolvedValueOnce(null) // idempotency
+        .mockResolvedValueOnce({ ...mockPayment, status: 'PENDING' });
+      (prismaService.payment.update as jest.Mock).mockResolvedValue(
+        mockPayment,
+      );
+
+      await expect(
+        service.handlePaymentWebhook(payload, signRaw(rawBody), rawBody),
+      ).resolves.not.toThrow();
+    });
+
+    it('fails closed when the raw body is unavailable', async () => {
+      // rawBody undefined means main.ts is no longer capturing it for this
+      // route. Verifying the re-serialised body instead would leave a
+      // signature check that passes without checking the signed bytes.
+      const payload = { type: 'payment.success', id: 'evt-x' };
+
+      await expect(
+        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
+      ).rejects.toThrow(/raw body unavailable/i);
       expect(prismaService.payment.findFirst).not.toHaveBeenCalled();
     });
 
@@ -601,7 +666,11 @@ describe('SubscriptionService', () => {
       (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(
-        service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
+        service.handlePaymentWebhook(
+          payload,
+          signWebhookPayload(payload),
+          rawOf(payload),
+        ),
       ).resolves.not.toThrow();
     });
 
@@ -621,7 +690,11 @@ describe('SubscriptionService', () => {
       });
       (prismaService.user.update as jest.Mock).mockResolvedValue(mockUser);
 
-      await service.handlePaymentWebhook(payload, signWebhookPayload(payload));
+      await service.handlePaymentWebhook(
+        payload,
+        signWebhookPayload(payload),
+        rawOf(payload),
+      );
 
       expect(prismaService.payment.update).toHaveBeenCalledWith(
         expect.objectContaining({

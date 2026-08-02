@@ -102,8 +102,13 @@ export class SubscriptionController {
     if (!signature) {
       throw new BadRequestException('Missing webhook signature');
     }
-    const payload = req.body;
-    await this.subscriptionService.handlePaymentWebhook(payload, signature);
+    // rawBody, not req.body: the HMAC covers the bytes the sender signed.
+    // main.ts mounts a body parser on this exact path to capture them.
+    await this.subscriptionService.handlePaymentWebhook(
+      req.body,
+      signature,
+      req.rawBody,
+    );
     return { received: true };
   }
 }
