@@ -569,6 +569,7 @@ export class TimelineApplicationService {
     const now = new Date();
 
     if (typeof year === 'number') {
+      // governance: system-scope — GlobalEvent is platform-wide calendar data with no User/Profile relation
       return this.prisma.globalEvent.findMany({
         where: {
           isActive: true,
@@ -578,6 +579,7 @@ export class TimelineApplicationService {
       });
     }
 
+    // governance: system-scope — GlobalEvent is platform-wide calendar data with no User/Profile relation
     const events = await this.prisma.globalEvent.findMany({
       where: { isActive: true },
       orderBy: { eventDate: 'asc' },

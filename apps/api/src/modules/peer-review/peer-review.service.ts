@@ -46,6 +46,7 @@ export class PeerReviewService {
 
     // 验证双方都是认证用户
     const [reviewer, reviewee] = await Promise.all([
+      // governance: parent-scoped — scoped by reviewerId/revieweeId — the caller's own identity, checked against each other above
       this.prisma.user.findUnique({
         where: { id: reviewerId },
         select: {
@@ -54,6 +55,7 @@ export class PeerReviewService {
           profile: { select: { realName: true, avatarUrl: true } },
         },
       }),
+      // governance: parent-scoped — scoped by reviewerId/revieweeId — the caller's own identity, checked against each other above
       this.prisma.user.findUnique({
         where: { id: revieweeId },
         select: {
@@ -83,6 +85,7 @@ export class PeerReviewService {
     }
 
     // 检查是否已有未完成的互评
+    // governance: parent-scoped — scoped by reviewerId/revieweeId — the caller's own identity, checked against each other above
     const existingReview = await this.prisma.peerReview.findFirst({
       where: {
         OR: [
@@ -101,6 +104,7 @@ export class PeerReviewService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7天过期
 
+    // governance: parent-scoped — scoped by reviewerId/revieweeId — the caller's own identity, checked against each other above
     const review = await this.prisma.peerReview.create({
       data: {
         reviewerId,

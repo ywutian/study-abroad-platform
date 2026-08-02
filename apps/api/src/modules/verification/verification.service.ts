@@ -177,6 +177,7 @@ export class VerificationService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
       this.prisma.verificationRequest.findMany({
         where: { status: VerificationStatus.PENDING },
         include: {
@@ -196,6 +197,7 @@ export class VerificationService {
         skip,
         take: pageSize,
       }),
+      // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
       this.prisma.verificationRequest.count({
         where: { status: VerificationStatus.PENDING },
       }),
@@ -305,6 +307,7 @@ export class VerificationService {
    * 获取认证详情（管理员）
    */
   async getVerificationDetail(requestId: string) {
+    // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
     const request = await this.prisma.verificationRequest.findUnique({
       where: { id: requestId },
       include: {
@@ -341,15 +344,19 @@ export class VerificationService {
    */
   async getVerificationStats() {
     const [pending, approved, rejected, total] = await Promise.all([
+      // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
       this.prisma.verificationRequest.count({
         where: { status: VerificationStatus.PENDING },
       }),
+      // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
       this.prisma.verificationRequest.count({
         where: { status: VerificationStatus.APPROVED },
       }),
+      // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
       this.prisma.verificationRequest.count({
         where: { status: VerificationStatus.REJECTED },
       }),
+      // governance: admin-scope — verification review surface — every route is @Roles(Role.ADMIN) in verification.controller.ts
       this.prisma.verificationRequest.count(),
     ]);
 

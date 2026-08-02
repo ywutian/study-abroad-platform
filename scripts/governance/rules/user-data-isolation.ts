@@ -33,12 +33,28 @@ const SCAN_DIRS = [
   //
   // Added in order of what a leak would cost: vault (encrypted credentials),
   // profile (the largest surface — 182 Prisma calls), resume (documents).
-  // The remaining modules — essay, timeline, forum, team, case, hall … — are
-  // still uncovered; extend this list one module at a time, annotating as you
-  // go, rather than in one sweep nobody can review.
   path.join(ROOT, 'apps/api/src/modules/vault'),
   path.join(ROOT, 'apps/api/src/modules/profile'),
   path.join(ROOT, 'apps/api/src/modules/resume'),
+  // Second batch. Small enough that every flagged site was read individually
+  // before being annotated — that reading is the point, not the annotation.
+  path.join(ROOT, 'apps/api/src/modules/timeline'),
+  path.join(ROOT, 'apps/api/src/modules/peer-review'),
+  path.join(ROOT, 'apps/api/src/modules/school-list'),
+  path.join(ROOT, 'apps/api/src/modules/verification'),
+  //
+  // STILL UNCOVERED, with the work sized so the next pass can be planned
+  // (counts are flagged sites; ★ = the model has a User/Profile relation, so
+  // the site needs a human decision rather than a schema lookup):
+  //
+  //   essay  70  (46 system / ★24)   forum 22  (5 / ★17)   chat 14 (3 / ★11)
+  //   case   12  ( 0 / ★12)          hall  12  (1 / ★11)   team 11 (6 / ★5)
+  //
+  // Do NOT add them in one sweep. The 2026-08-02 pass over hall found
+  // getListById() returning private lists on a @Public() route, and the
+  // @Public()-route sweep it prompted found the same bug in ranking — both
+  // only because the sites were read. A batch large enough to skim is a batch
+  // that gets annotated instead of audited.
 ];
 
 // Prisma query methods that should include userId filtering
