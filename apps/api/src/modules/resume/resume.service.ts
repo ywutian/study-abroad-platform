@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import mammoth from 'mammoth';
+import { contentAsRecord } from './resume-content.helpers';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
@@ -43,7 +44,11 @@ type ResumeWithSections = Resume & { sections: ResumeSection[] };
 
 const DEFAULT_SECTIONS: Record<
   ResumeType,
-  Array<{ type: ResumeSectionType; title: string; content: any }>
+  Array<{
+    type: ResumeSectionType;
+    title: string;
+    content: Prisma.InputJsonValue;
+  }>
 > = {
   COLLEGE_APPLICATION: [
     {
@@ -431,23 +436,23 @@ export class ResumeService {
         userId,
         title: `${original.title} (Copy)`,
         type: original.type,
-        family: (original as any).family ?? this.familyForType(original.type),
-        variantKind: (original as any).variantKind ?? 'MASTER',
-        targetId: (original as any).targetId,
-        baseResumeId: (original as any).baseResumeId,
+        family: original.family ?? this.familyForType(original.type),
+        variantKind: original.variantKind ?? 'MASTER',
+        targetId: original.targetId,
+        baseResumeId: original.baseResumeId,
         templateId: original.templateId,
         language: original.language,
         settings: original.settings as Prisma.InputJsonValue,
         targetContext: original.targetContext as Prisma.InputJsonValue,
-        qualitySummary: (original as any).qualitySummary ?? {},
+        qualitySummary: original.qualitySummary ?? {},
         sections: {
           create: original.sections.map((s) => ({
             type: s.type,
             title: s.title,
             content: s.content as Prisma.InputJsonValue,
-            contentSchemaVersion: (s as any).contentSchemaVersion ?? 1,
-            contentHash: (s as any).contentHash ?? this.contentHash(s.content),
-            evidenceRefs: (s as any).evidenceRefs ?? [],
+            contentSchemaVersion: s.contentSchemaVersion ?? 1,
+            contentHash: s.contentHash ?? this.contentHash(s.content),
+            evidenceRefs: s.evidenceRefs ?? [],
             isVisible: s.isVisible,
             order: s.order,
           })),
@@ -515,11 +520,10 @@ export class ResumeService {
               type: section.type,
               title: section.title,
               content: section.content as Prisma.InputJsonValue,
-              contentSchemaVersion: (section as any).contentSchemaVersion ?? 1,
+              contentSchemaVersion: section.contentSchemaVersion ?? 1,
               contentHash:
-                (section as any).contentHash ??
-                this.contentHash(section.content),
-              evidenceRefs: (section as any).evidenceRefs ?? [],
+                section.contentHash ?? this.contentHash(section.content),
+              evidenceRefs: section.evidenceRefs ?? [],
               isVisible: true,
               order: index,
             })),
@@ -555,10 +559,10 @@ export class ResumeService {
         startDate: dto.startDate,
         endDate: dto.endDate,
         isCurrent: dto.isCurrent ?? false,
-        tags: (dto.tags ?? []) as Prisma.InputJsonValue,
-        skills: (dto.skills ?? []) as Prisma.InputJsonValue,
+        tags: dto.tags ?? [],
+        skills: dto.skills ?? [],
         metrics: (dto.metrics ?? {}) as Prisma.InputJsonValue,
-        proofLinks: (dto.proofLinks ?? []) as Prisma.InputJsonValue,
+        proofLinks: dto.proofLinks ?? [],
         content: (dto.content ?? {}) as Prisma.InputJsonValue,
         privacyLevel: dto.privacyLevel ?? 'PRIVATE',
       },
@@ -601,7 +605,7 @@ export class ResumeService {
         role: dto.role,
         jobDescription: dto.jobDescription,
         deadline: dto.deadline ? new Date(dto.deadline) : undefined,
-        keywords: (dto.keywords ?? []) as Prisma.InputJsonValue,
+        keywords: dto.keywords ?? [],
         requirements: (dto.requirements ?? {}) as Prisma.InputJsonValue,
         metadata: (dto.metadata ?? {}) as Prisma.InputJsonValue,
       },
@@ -676,9 +680,7 @@ export class ResumeService {
           ? {
               contentHash: this.contentHash(dto.content),
               contentSchemaVersion:
-                dto.contentSchemaVersion ??
-                (section as any).contentSchemaVersion ??
-                1,
+                dto.contentSchemaVersion ?? section.contentSchemaVersion ?? 1,
             }
           : {}),
         evidenceRefs: dto.evidenceRefs as Prisma.InputJsonValue,
@@ -780,9 +782,9 @@ export class ResumeService {
           currentContent: (section?.content ?? {}) as Record<string, unknown>,
           proposedContent: update.content as Record<string, unknown>,
           changeType: 'replace',
-          itemCount: Array.isArray(update.content?.items)
-            ? update.content.items.length
-            : Object.keys(update.content ?? {}).length,
+          itemCount: Array.isArray(contentAsRecord(update.content).items)
+            ? (contentAsRecord(update.content).items as Prisma.JsonArray).length
+            : Object.keys(contentAsRecord(update.content)).length,
         };
       }),
       warnings:
@@ -906,11 +908,11 @@ export class ResumeService {
             organization: item.organization,
             role: item.role,
             description: item.description,
-            tags: (item.tags ?? []) as Prisma.InputJsonValue,
-            skills: (item.skills ?? []) as Prisma.InputJsonValue,
+            tags: item.tags ?? [],
+            skills: item.skills ?? [],
             content: (item.content ?? {}) as Prisma.InputJsonValue,
-            metrics: {} as any,
-            proofLinks: [] as any,
+            metrics: {},
+            proofLinks: [],
             privacyLevel: 'PRIVATE',
             confidence: 0.7,
           })),
@@ -1209,7 +1211,7 @@ export class ResumeService {
 
   private async applySectionContentUpdates(
     resumeId: string,
-    updates: Array<{ id: string; content: any }>,
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     await this.prisma.$transaction([
       ...updates.map((u) =>
@@ -1231,13 +1233,13 @@ export class ResumeService {
   private async buildProfileImportUpdates(
     userId: string,
     resume: ResumeWithSections,
-  ): Promise<Array<{ id: string; content: any }>> {
+  ): Promise<Array<{ id: string; content: Prisma.InputJsonValue }>> {
     const profile = await this.profileService.findByUserId(userId);
     if (!profile) return [];
 
     const profileData = profile as any;
     const sectionMap = new Map(resume.sections.map((s) => [s.type, s]));
-    const updates: Array<{ id: string; content: any }> = [];
+    const updates: Array<{ id: string; content: Prisma.InputJsonValue }> = [];
 
     const headerSection = sectionMap.get('HEADER');
     if (headerSection) {
@@ -1324,7 +1326,7 @@ export class ResumeService {
   private mapCollegeActivities(
     sectionMap: Map<string, ResumeSection>,
     activities: any[],
-    updates: Array<{ id: string; content: any }>,
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const communityService = activities.filter(
       (a: any) => a.category === ActivityCategory.COMMUNITY_SERVICE,
@@ -1377,7 +1379,7 @@ export class ResumeService {
   private mapInternshipActivities(
     sectionMap: Map<string, ResumeSection>,
     activities: any[],
-    updates: Array<{ id: string; content: any }>,
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const workActivities = activities.filter(
       (a: any) => a.category === ActivityCategory.WORK,
@@ -1446,7 +1448,7 @@ export class ResumeService {
   private mapGraduateCVActivities(
     sectionMap: Map<string, ResumeSection>,
     activities: any[],
-    updates: Array<{ id: string; content: any }>,
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const researchActivities = activities.filter(
       (a: any) => a.category === ActivityCategory.RESEARCH,
@@ -1509,22 +1511,22 @@ export class ResumeService {
         data: {
           title: resume.title,
           type: resume.type,
-          family: (resume as any).family,
-          variantKind: (resume as any).variantKind,
-          targetId: (resume as any).targetId,
-          baseResumeId: (resume as any).baseResumeId,
+          family: resume.family,
+          variantKind: resume.variantKind,
+          targetId: resume.targetId,
+          baseResumeId: resume.baseResumeId,
           templateId: resume.templateId,
           language: resume.language,
           settings: resume.settings,
           targetContext: resume.targetContext,
-          qualitySummary: (resume as any).qualitySummary,
+          qualitySummary: resume.qualitySummary,
           sections: resume.sections.map((s) => ({
             type: s.type,
             title: s.title,
             content: s.content,
-            contentSchemaVersion: (s as any).contentSchemaVersion ?? 1,
-            contentHash: (s as any).contentHash ?? this.contentHash(s.content),
-            evidenceRefs: (s as any).evidenceRefs ?? [],
+            contentSchemaVersion: s.contentSchemaVersion ?? 1,
+            contentHash: s.contentHash ?? this.contentHash(s.content),
+            evidenceRefs: s.evidenceRefs ?? [],
             isVisible: s.isVisible,
             order: s.order,
           })),
@@ -1731,7 +1733,7 @@ export class ResumeService {
       data: {
         lastReviewAt: new Date(),
         status: 'REVIEWED',
-        qualitySummary: (await this.computeQualitySummary(resume)) as any,
+        qualitySummary: await this.computeQualitySummary(resume),
       },
     });
 
@@ -1770,7 +1772,7 @@ export class ResumeService {
         confidence: 0.75,
         source: 'AI_REVIEW',
         baseContentHash: section
-          ? ((section as any).contentHash ?? this.contentHash(section.content))
+          ? (section.contentHash ?? this.contentHash(section.content))
           : null,
       }));
     });
@@ -1821,12 +1823,12 @@ export class ResumeService {
     }
 
     const currentHash =
-      (section as any).contentHash ?? this.contentHash(section.content);
+      section.contentHash ?? this.contentHash(section.content);
     const expectedHash = dto.expectedContentHash ?? issue.baseContentHash;
     if (expectedHash && expectedHash !== currentHash) {
       await this.prisma.resumeAIIssue.update({
         where: { id: issue.id },
-        data: { status: 'STALE' as any },
+        data: { status: 'STALE' },
       });
       throw new BadRequestException(
         'Resume section changed since this issue was generated',
@@ -1841,7 +1843,7 @@ export class ResumeService {
     if (!nextContent.applied) {
       await this.prisma.resumeAIIssue.update({
         where: { id: issue.id },
-        data: { status: 'STALE' as any },
+        data: { status: 'STALE' },
       });
       throw new BadRequestException(
         'Original text no longer exists in this section',
@@ -1856,7 +1858,7 @@ export class ResumeService {
       }),
       this.prisma.resumeAIIssue.update({
         where: { id: issue.id },
-        data: { status: 'APPLIED' as any, appliedAt: new Date() },
+        data: { status: 'APPLIED', appliedAt: new Date() },
       }),
       this.prisma.resume.update({
         where: { id: resumeId },
@@ -1867,20 +1869,22 @@ export class ResumeService {
     return this.findById(userId, resumeId);
   }
 
-  private applyTextPatch(content: any, original: string, suggestion: string) {
-    const next = structuredClone(content ?? {});
+  private applyTextPatch(
+    content: Prisma.InputJsonValue,
+    original: string,
+    suggestion: string,
+  ) {
+    const next = contentAsRecord(structuredClone(content ?? {}));
     const items = Array.isArray(next.items) ? next.items : [];
-    for (const item of items) {
-      if (!Array.isArray(item.bullets)) continue;
-      const index = item.bullets.findIndex(
-        (bullet: unknown) =>
-          typeof bullet === 'string' && bullet.includes(original),
+    for (const raw of items) {
+      const item = contentAsRecord(raw);
+      const bullets = item.bullets;
+      if (!Array.isArray(bullets)) continue;
+      const index = bullets.findIndex(
+        (bullet) => typeof bullet === 'string' && bullet.includes(original),
       );
       if (index >= 0) {
-        item.bullets[index] = String(item.bullets[index]).replace(
-          original,
-          suggestion,
-        );
+        bullets[index] = String(bullets[index]).replace(original, suggestion);
         return { applied: true, content: next };
       }
     }
@@ -2095,7 +2099,14 @@ export class ResumeService {
             hasHeader: visibleSections.some(
               (section) => section.type === 'HEADER',
             ),
-            qualityScore: (resume as any).qualitySummary?.score,
+            // qualitySummary is a Json column, so Prisma types it as
+            // JsonValue — narrow it instead of asserting the shape away.
+            qualityScore:
+              resume.qualitySummary &&
+              typeof resume.qualitySummary === 'object' &&
+              !Array.isArray(resume.qualitySummary)
+                ? (resume.qualitySummary as Record<string, unknown>).score
+                : undefined,
             note: 'Client-side artifact record; server-side rendering can attach artifactUrl later.',
           } as any,
           completedAt: new Date(),
@@ -2103,7 +2114,7 @@ export class ResumeService {
       });
       await tx.resume.update({
         where: { id: resumeId },
-        data: { status: 'EXPORTED' as any },
+        data: { status: 'EXPORTED' },
       });
       return record;
     });
