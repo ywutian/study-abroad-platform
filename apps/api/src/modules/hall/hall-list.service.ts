@@ -121,6 +121,7 @@ export class HallListService {
     }
 
     const [lists, total] = await Promise.all([
+      // governance: public-feed — filters `isPublic: true` — the list owner chose to publish
       this.prisma.userList.findMany({
         where,
         skip,
@@ -134,6 +135,7 @@ export class HallListService {
           _count: { select: { votes: true } },
         },
       }),
+      // governance: public-feed — filters `isPublic: true` — the list owner chose to publish
       this.prisma.userList.count({ where }),
     ]);
 
@@ -151,6 +153,7 @@ export class HallListService {
   }
 
   async getListById(listId: string): Promise<UserList> {
+    // governance: public-feed — filters `isPublic` since 52ebf249; before that this @Public() route returned private lists to anyone holding an id
     const list = await this.prisma.userList.findUnique({
       where: { id: listId },
       include: {
@@ -212,6 +215,7 @@ export class HallListService {
   }
 
   async getListVoteCount(listId: string): Promise<number> {
+    // governance: aggregate-only — sums vote values for one list and returns a single integer — no rows, no identities. No small-sample floor and none needed: the figure is a score, not an outcome attributable to a person. Currently has no controller route at all
     const result = await this.prisma.userListVote.aggregate({
       where: { listId },
       _sum: { value: true },

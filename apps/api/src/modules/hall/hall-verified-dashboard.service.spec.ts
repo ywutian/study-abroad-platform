@@ -103,4 +103,82 @@ describe('HallVerifiedDashboardService', () => {
       expect(entry.changePct).toBeLessThan(-15);
     });
   });
+  // These two endpoints are @Public(). They publish, per school and per year,
+  // how many China-mainland applicants were verified and how many got in — so
+  // a cell of size 1 names one identifiable person's outcome to anyone who
+  // loads the page. The class already floored the DERIVED labels
+  // (MIN_YEAR_TOTAL for the difficulty signal, 5 for edTilt) while shipping
+  // the raw counts they came from at any size.
+
+  describe('getChinaAdmitTrend — small-cell suppression', () => {
+    it('drops a year whose total is below the floor', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([
+        ...rows(2024, 1, 0), // total 1 — one identifiable person
+        ...rows(2025, 3, 2), // total 5 — publishable
+      ]);
+
+      const res = await service.getChinaAdmitTrend(['school-1'], 5);
+
+      const years = res.schools[0].yearly.map((y) => y.year);
+      expect(years).toEqual([2025]);
+    });
+
+    it('drops the school entirely when every year is too thin', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([
+        ...rows(2024, 1, 0),
+        ...rows(2025, 1, 1),
+      ]);
+
+      const res = await service.getChinaAdmitTrend(['school-1'], 5);
+
+      // an empty card still says "this school had verified cases"
+      expect(res.schools).toEqual([]);
+    });
+
+    it('leaves a school with enough cases untouched', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue(rows(2025, 4, 3));
+
+      const res = await service.getChinaAdmitTrend(['school-1'], 5);
+
+      expect(res.schools).toHaveLength(1);
+      expect(res.schools[0].yearly).toEqual([
+        { year: 2025, admitted: 4, total: 7 },
+      ]);
+    });
+  });
+
+  describe('getEdRdComparison — small-cell suppression', () => {
+    const edRows = (ed: number, rd: number) => [
+      ...Array.from({ length: ed }, () => ({
+        schoolId: 'school-1',
+        round: 'ED',
+        result: 'ADMITTED',
+        school: { name: 'School 1', nameZh: null, usNewsRank: 1 },
+      })),
+      ...Array.from({ length: rd }, () => ({
+        schoolId: 'school-1',
+        round: 'RD',
+        result: 'ADMITTED',
+        school: { name: 'School 1', nameZh: null, usNewsRank: 1 },
+      })),
+    ];
+
+    it('withholds a school whose ED/RD sample is below the floor', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue(edRows(1, 1));
+
+      const res = await service.getEdRdComparison(['school-1'], 2025);
+
+      // edTilt was already withheld here; the counts it derives from were not
+      expect(res.schools).toEqual([]);
+    });
+
+    it('publishes once the sample clears the floor', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue(edRows(4, 2));
+
+      const res = await service.getEdRdComparison(['school-1'], 2025);
+
+      expect(res.schools).toHaveLength(1);
+      expect(res.schools[0].sampleSize).toBe(6);
+    });
+  });
 });
