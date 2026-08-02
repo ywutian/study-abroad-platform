@@ -30,10 +30,11 @@ pnpm --filter api db:generate || exit 1
 echo ""
 pnpm exec tsx scripts/verify-gate.ts --pre-push --no-test --verbose || exit 1
 
-# Step 2.5: Root guardrails (fast, global — coverage ratchet / audit gate / deploy drift)
+# Step 2.5: Root guardrails (fast, global — coverage / any ratchet / audit gate / deploy drift)
 echo ""
 echo "🛡️  Checking root guardrails..."
 pnpm lint:coverage-ratchet || exit 1
+pnpm lint:any-ratchet || exit 1
 pnpm lint:audit-gate || exit 1
 pnpm lint:dep-pins || exit 1
 pnpm lint:deploy-drift || exit 1
