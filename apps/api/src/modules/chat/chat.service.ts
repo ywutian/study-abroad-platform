@@ -2,6 +2,7 @@ import {
   Injectable,
   ForbiddenException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MessageFilterService } from './message-filter.service';
@@ -260,6 +261,7 @@ export class ChatService {
    * @returns `true` if blockerId has blocked blockedId
    */
   async checkBlocked(blockerId: string, blockedId: string): Promise<boolean> {
+    // governance: parent-scoped — keyed by blockerId/blockedId — the caller's own block list
     const block = await this.prisma.block.findUnique({
       where: { blockerId_blockedId: { blockerId, blockedId } },
     });
@@ -411,6 +413,7 @@ export class ChatService {
     }
 
     // 创建消息
+    // governance: parent-scoped — the enclosing send guarded participation first: conversationParticipant lookup → ForbiddenException("Not a participant of this conversation")
     const message = await this.prisma.message.create({
       data: {
         conversationId,
@@ -424,6 +427,7 @@ export class ChatService {
     });
 
     // 更新会话时间戳
+    // governance: parent-scoped — the enclosing send guarded participation first: conversationParticipant lookup → ForbiddenException("Not a participant of this conversation")
     await this.prisma.conversation.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() },
@@ -482,6 +486,7 @@ export class ChatService {
     );
 
     // 创建消息
+    // governance: parent-scoped — the enclosing send guarded participation first: conversationParticipant lookup → ForbiddenException("Not a participant of this conversation")
     const message = await this.prisma.message.create({
       data: {
         conversationId,
@@ -1172,6 +1177,7 @@ export class ChatService {
     if (blocked) {
       throw new ForbiddenException('Cannot follow this user');
     }
+    // governance: parent-scoped — keyed by followerId/followingId — the caller's own follow edge
     return this.prisma.follow.upsert({
       where: { followerId_followingId: { followerId, followingId } },
       update: {},
@@ -1186,6 +1192,7 @@ export class ChatService {
    * @param followingId - ID of the user to unfollow
    */
   async unfollowUser(followerId: string, followingId: string) {
+    // governance: parent-scoped — keyed by followerId/followingId — the caller's own follow edge
     await this.prisma.follow.deleteMany({
       where: { followerId, followingId },
     });
@@ -1246,6 +1253,7 @@ export class ChatService {
    * @param blockedId - ID of the user to unblock
    */
   async unblockUser(blockerId: string, blockedId: string) {
+    // governance: parent-scoped — keyed by blockerId/blockedId — the caller's own block list
     await this.prisma.block.deleteMany({
       where: { blockerId, blockedId },
     });
@@ -1688,8 +1696,25 @@ export class ChatService {
     let context: object | undefined;
 
     if (targetType === 'MESSAGE') {
-      const message = await this.prisma.message.findUnique({
-        where: { id: targetId },
+      // The participant constraint lives in the WHERE, not in a follow-up
+      // `if`, so it cannot be skipped: this looked the message up by id alone
+      // and then snapshotted the surrounding 10 messages into the report.
+      // Any authenticated user could therefore submit an arbitrary message id
+      // and have a slice of a private conversation they have nothing to do
+      // with copied into a moderation record — visible to the whole
+      // CONTENT_MODERATE queue. The reporter never saw it back (the
+      // controller returns `{ success: true }`), so this was disclosure to a
+      // third party rather than to the attacker, but it is disclosure either
+      // way, and it is trivially triggered.
+      //
+      // Same rule the rest of this service applies before touching a
+      // conversation — see sendMessage's "Not a participant" guard. 404 over
+      // 403 so a probe cannot confirm that a message id exists.
+      const message = await this.prisma.message.findFirst({
+        where: {
+          id: targetId,
+          conversation: { participants: { some: { userId: reporterId } } },
+        },
         include: {
           conversation: {
             include: {
@@ -1698,9 +1723,10 @@ export class ChatService {
           },
         },
       });
-      if (message) {
-        context = message.conversation.messages;
+      if (!message) {
+        throw new NotFoundException('Message not found');
       }
+      context = message.conversation.messages;
     }
 
     // Auto-assign priority: USER reports = HIGH, MESSAGE = MEDIUM, others = LOW

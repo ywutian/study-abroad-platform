@@ -3,7 +3,11 @@ import { ChatService } from './chat.service';
 import { MessageFilterService } from './message-filter.service';
 import { StorageService } from '../../common/storage/storage.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -792,6 +796,62 @@ describe('ChatService', () => {
       expect(prismaService.block.deleteMany).toHaveBeenCalledWith({
         where: { blockerId: 'user-1', blockedId: 'user-2' },
       });
+    });
+  });
+
+  describe('report — MESSAGE context', () => {
+    // The message lookup used to be `findUnique({ where: { id } })` with no
+    // participant check, and it snapshots the surrounding 10 messages into
+    // the Report. Any authenticated user could submit an arbitrary message id
+    // and push a slice of a conversation they have nothing to do with into
+    // the moderation queue.
+
+    it('scopes the message lookup to conversations the reporter is in', async () => {
+      (prismaService.message.findFirst as jest.Mock).mockResolvedValue({
+        id: 'msg-1',
+        conversation: { messages: [{ id: 'msg-1', content: 'hi' }] },
+      });
+      (prismaService.report.create as jest.Mock).mockResolvedValue({
+        id: 'r-1',
+      });
+
+      await service.report('user-1', 'MESSAGE', 'msg-1', 'spam');
+
+      const where = (prismaService.message.findFirst as jest.Mock).mock
+        .calls[0][0].where;
+      expect(where.id).toBe('msg-1');
+      // the participant constraint must be in the WHERE, not a later `if`
+      expect(where.conversation.participants.some.userId).toBe('user-1');
+    });
+
+    it('refuses to snapshot a conversation the reporter is not part of', async () => {
+      // findFirst returns null because the participant constraint excluded it
+      (prismaService.message.findFirst as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        service.report('outsider', 'MESSAGE', 'msg-in-private-chat', 'spam'),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(prismaService.report.create).not.toHaveBeenCalled();
+    });
+
+    it('still records non-MESSAGE reports without touching messages', async () => {
+      (prismaService.report.create as jest.Mock).mockResolvedValue({
+        id: 'r-2',
+      });
+
+      await service.report('user-1', 'USER', 'user-9', 'harassment');
+
+      expect(prismaService.message.findFirst).not.toHaveBeenCalled();
+      expect(prismaService.report.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            reporterId: 'user-1',
+            targetType: 'USER',
+            priority: 'HIGH',
+          }),
+        }),
+      );
     });
   });
 });
