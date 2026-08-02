@@ -35,12 +35,13 @@ describe('PointsConfigService', () => {
   });
 
   describe('isEnabled', () => {
-    it('should return true when enabled', async () => {
+    it('should stay disabled in free-access mode even when persisted settings say enabled', async () => {
       mockSettingsService.getTyped.mockResolvedValue(true);
 
       const result = await service.isEnabled();
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
+      expect(mockSettingsService.getTyped).not.toHaveBeenCalled();
     });
 
     it('should return false when disabled', async () => {
@@ -49,6 +50,23 @@ describe('PointsConfigService', () => {
       const result = await service.isEnabled();
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('setEnabled', () => {
+    it('should reject attempts to re-enable the points economy', async () => {
+      await expect(service.setEnabled(true)).rejects.toThrow(
+        'Points economy is disabled; product features run without points',
+      );
+      expect(mockSettingsService.set).not.toHaveBeenCalled();
+    });
+
+    it('should still persist an explicit disabled setting', async () => {
+      await service.setEnabled(false);
+      expect(mockSettingsService.set).toHaveBeenCalledWith(
+        'points_enabled',
+        'false',
+      );
     });
   });
 

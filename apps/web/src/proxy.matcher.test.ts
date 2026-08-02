@@ -34,6 +34,7 @@ describe('proxy config.matcher', () => {
     '/robots.txt',
     '/sitemap.xml',
     '/favicon.ico',
+    '/.well-known/apple-app-site-association',
     '/api/v1/auth/login',
     '/_next/static/chunks/main.js',
     '/_next/image',

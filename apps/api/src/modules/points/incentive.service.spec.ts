@@ -157,6 +157,25 @@ describe('PointsService', () => {
   });
 
   describe('charge', () => {
+    it('should allow charged features for free when points are disabled', async () => {
+      mockPointsConfig.isEnabled.mockResolvedValue(false);
+
+      const result = await service.charge(
+        'zero-balance-user',
+        PointAction.AI_ANALYSIS,
+      );
+
+      expect(result).toEqual({
+        newBalance: 0,
+        pointHistoryId: undefined,
+        points: 0,
+      });
+      expect(mockPointsConfig.getPointValue).not.toHaveBeenCalled();
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+      expect(mockPrisma.pointHistory.create).not.toHaveBeenCalled();
+    });
+
     it('should deduct points and return new balance', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(-20);
@@ -207,6 +226,8 @@ describe('PointsService', () => {
       );
 
       expect(result).toBe(true);
+      expect(mockPointsConfig.getPointValue).not.toHaveBeenCalled();
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
     });
 
     it('should return true for earn actions', async () => {

@@ -22,6 +22,8 @@ const messages = {
       title: 'Application pipeline',
       viewAll: 'View all →',
       celebrate: '🎉 {count} acceptance(s) — congratulations!',
+      labelOutcomeHint: "Help calibrate Lumni's predictions — log the real result.",
+      labelOutcomeCta: 'Label result',
       status: {
         submitted: 'Submitted',
         accepted: 'Accepted',

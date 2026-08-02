@@ -79,14 +79,14 @@ describe('createAsyncStoragePersister', () => {
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(CACHE_KEY, JSON.stringify(mockClient));
     });
 
-    it('serializes client state including queries and mutations', async () => {
+    it('persists only allowlisted public catalog queries and no mutations', async () => {
       const persister = createAsyncStoragePersister();
       const mockClient = createMockPersistedClient({
         clientState: {
           queries: [
             {
-              queryKey: ['users'],
-              queryHash: '["users"]',
+              queryKey: ['schools'],
+              queryHash: '["schools"]',
               state: {
                 data: [{ id: '1', name: 'Alice' }],
                 dataUpdateCount: 1,
@@ -112,7 +112,29 @@ describe('createAsyncStoragePersister', () => {
       const callArgs = (AsyncStorage.setItem as jest.Mock).mock.calls[0];
       const serialized = JSON.parse(callArgs[1]);
       expect(serialized.clientState.queries).toHaveLength(1);
-      expect(serialized.clientState.queries[0].queryKey).toEqual(['users']);
+      expect(serialized.clientState.queries[0].queryKey).toEqual(['schools']);
+      expect(serialized.clientState.mutations).toEqual([]);
+    });
+
+    it('does not write authenticated profile data to AsyncStorage', async () => {
+      const persister = createAsyncStoragePersister();
+      const mockClient = createMockPersistedClient({
+        clientState: {
+          queries: [
+            {
+              queryKey: ['profile', 'me'],
+              queryHash: '["profile","me"]',
+              state: {} as never,
+            },
+          ],
+          mutations: [],
+        },
+      });
+
+      await persister.persistClient(mockClient);
+
+      const serialized = JSON.parse((AsyncStorage.setItem as jest.Mock).mock.calls[0][1]);
+      expect(serialized.clientState.queries).toEqual([]);
     });
 
     it('handles errors gracefully without throwing', async () => {

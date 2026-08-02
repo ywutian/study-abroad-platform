@@ -8,6 +8,7 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { SubscriptionPlan, SUBSCRIPTION_PLANS } from '@study-abroad/shared';
 import * as crypto from 'crypto';
@@ -15,6 +16,7 @@ import * as crypto from 'crypto';
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
   let prismaService: PrismaService;
+  let configService: ConfigService;
   const webhookSecret = 'test-webhook-secret';
 
   const mockUserId = 'user-123';
@@ -76,6 +78,8 @@ describe('SubscriptionService', () => {
             get: jest.fn((key: string) => {
               if (key === 'WEBHOOK_SECRET') return webhookSecret;
               if (key === 'NODE_ENV') return 'test';
+              if (key === 'PAYMENTS_ENABLED') return 'true';
+              if (key === 'PAYMENT_PROVIDER') return 'simulator';
               return 'test-value';
             }),
           },
@@ -104,9 +108,11 @@ describe('SubscriptionService', () => {
 
     service = module.get<SubscriptionService>(SubscriptionService);
     prismaService = module.get<PrismaService>(PrismaService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
   });
 
@@ -143,6 +149,19 @@ describe('SubscriptionService', () => {
         SUBSCRIPTION_PLANS[SubscriptionPlan.FREE].period,
       );
       expect(freePlan?.features.length).toBeGreaterThan(0);
+    });
+
+    it('returns only the free plan when payments are retired', async () => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+        if (key === 'PAYMENTS_ENABLED') return 'false';
+        if (key === 'PAYMENT_PROVIDER') return 'none';
+        if (key === 'NODE_ENV') return 'test';
+        return 'test-value';
+      });
+
+      const plans = await service.getPlans();
+
+      expect(plans.map((plan) => plan.id)).toEqual([SubscriptionPlan.FREE]);
     });
 
     it('should have correct pro plan details', async () => {
@@ -191,7 +210,7 @@ describe('SubscriptionService', () => {
       expect(result.isActive).toBe(true);
     });
 
-    it('should return pro plan for verified user', async () => {
+    it('does not treat identity verification as a paid subscription', async () => {
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
         ...mockUser,
         role: 'VERIFIED',
@@ -200,10 +219,12 @@ describe('SubscriptionService', () => {
 
       const result = await service.getUserSubscription(mockUserId);
 
-      expect(result.plan).toBe(SubscriptionPlan.PRO);
+      expect(result.plan).toBe(SubscriptionPlan.FREE);
+      expect(result.state).toBe('retired');
+      expect(result.featuresOpen).toBe(true);
     });
 
-    it('should return premium plan for admin', async () => {
+    it('does not treat an admin role as a paid subscription', async () => {
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
         ...mockUser,
         role: 'ADMIN',
@@ -212,22 +233,18 @@ describe('SubscriptionService', () => {
 
       const result = await service.getUserSubscription(mockUserId);
 
-      expect(result.plan).toBe(SubscriptionPlan.PREMIUM);
+      expect(result.plan).toBe(SubscriptionPlan.FREE);
     });
 
-    it('should use last payment date as startDate', async () => {
-      const paymentDate = new Date('2026-02-01');
+    it('uses the account creation date for the always-open free plan', async () => {
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
         ...mockUser,
         role: 'VERIFIED',
       });
-      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue({
-        processedAt: paymentDate,
-      });
-
       const result = await service.getUserSubscription(mockUserId);
 
-      expect(result.startDate).toEqual(paymentDate);
+      expect(result.startDate).toEqual(mockUser.createdAt);
+      expect(prismaService.payment.findFirst).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if user not found', async () => {
@@ -244,6 +261,40 @@ describe('SubscriptionService', () => {
   // ============================================
 
   describe('createSubscription', () => {
+    it('refuses the simulated gateway in production', async () => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+        if (key === 'NODE_ENV') return 'production';
+        if (key === 'PAYMENTS_ENABLED') return 'true';
+        if (key === 'PAYMENT_PROVIDER') return 'simulator';
+        return 'test-value';
+      });
+
+      await expect(
+        service.createSubscription(mockUserId, {
+          plan: SubscriptionPlan.PRO,
+          period: 'monthly',
+        }),
+      ).rejects.toThrow(ServiceUnavailableException);
+      expect(prismaService.payment.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses payment writes when the feature flag is disabled', async () => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+        if (key === 'PAYMENTS_ENABLED') return 'false';
+        if (key === 'PAYMENT_PROVIDER') return 'none';
+        if (key === 'NODE_ENV') return 'test';
+        return 'test-value';
+      });
+
+      await expect(
+        service.createSubscription(mockUserId, {
+          plan: SubscriptionPlan.PRO,
+          period: 'monthly',
+        }),
+      ).rejects.toThrow(ServiceUnavailableException);
+      expect(prismaService.payment.create).not.toHaveBeenCalled();
+    });
+
     it('should create PENDING payment, then SUCCESS on payment success', async () => {
       (prismaService.payment.create as jest.Mock).mockResolvedValue(
         mockPayment,
@@ -278,8 +329,9 @@ describe('SubscriptionService', () => {
         }),
       );
 
-      // Verify transaction was called to update payment + user
+      // The simulator may update the ledger, but never identity roles.
       expect(mockTransaction).toHaveBeenCalled();
+      expect(prismaService.user.update).not.toHaveBeenCalled();
     });
 
     it('should apply yearly discount', async () => {
@@ -343,33 +395,12 @@ describe('SubscriptionService', () => {
   // ============================================
 
   describe('cancelSubscription', () => {
-    it('should cancel subscription and downgrade to free', async () => {
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
-        ...mockUser,
-        role: 'VERIFIED',
-      });
-      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
-      (prismaService.user.update as jest.Mock).mockResolvedValue({
-        ...mockUser,
-        role: 'USER',
-      });
-
-      const result = await service.cancelSubscription(mockUserId);
-
-      expect(result.success).toBe(true);
-      expect(prismaService.user.update).toHaveBeenCalledWith({
-        where: { id: mockUserId },
-        data: { role: 'USER' },
-      });
-    });
-
-    it('should throw BadRequestException if already on free plan', async () => {
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-      (prismaService.payment.findFirst as jest.Mock).mockResolvedValue(null);
-
-      await expect(service.cancelSubscription(mockUserId)).rejects.toThrow(
-        BadRequestException,
+    it('does not mutate roles when subscriptions are retired', async () => {
+      expect(() => service.cancelSubscription(mockUserId)).toThrow(
+        ServiceUnavailableException,
       );
+      expect(prismaService.user.findUnique).not.toHaveBeenCalled();
+      expect(prismaService.user.update).not.toHaveBeenCalled();
     });
   });
 
@@ -462,6 +493,20 @@ describe('SubscriptionService', () => {
   // ============================================
 
   describe('handlePaymentWebhook', () => {
+    it('blocks legacy webhooks when payments are retired', async () => {
+      jest.spyOn(configService, 'get').mockImplementation((key: string) => {
+        if (key === 'PAYMENTS_ENABLED') return 'false';
+        if (key === 'PAYMENT_PROVIDER') return 'none';
+        if (key === 'NODE_ENV') return 'test';
+        return 'test-value';
+      });
+
+      await expect(
+        service.handlePaymentWebhook({ type: 'payment.success' }, 'unused'),
+      ).rejects.toThrow(ServiceUnavailableException);
+      expect(prismaService.payment.findFirst).not.toHaveBeenCalled();
+    });
+
     it('should handle payment success event', async () => {
       const payload = {
         type: 'payment.success',
@@ -482,7 +527,12 @@ describe('SubscriptionService', () => {
         service.handlePaymentWebhook(payload, signWebhookPayload(payload)),
       ).resolves.not.toThrow();
 
-      expect(mockTransaction).toHaveBeenCalled();
+      expect(prismaService.payment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'SUCCESS' }),
+        }),
+      );
+      expect(prismaService.user.update).not.toHaveBeenCalled();
     });
 
     it('should handle payment failed event', async () => {
@@ -573,7 +623,12 @@ describe('SubscriptionService', () => {
 
       await service.handlePaymentWebhook(payload, signWebhookPayload(payload));
 
-      expect(mockTransaction).toHaveBeenCalled();
+      expect(prismaService.payment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'REFUNDED' }),
+        }),
+      );
+      expect(prismaService.user.update).not.toHaveBeenCalled();
     });
   });
 });

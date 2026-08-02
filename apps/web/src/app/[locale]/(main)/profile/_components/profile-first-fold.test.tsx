@@ -65,7 +65,6 @@ vi.mock('@/lib/i18n/navigation', () => ({
 }));
 
 vi.mock('@/components/features', () => ({
-  PointsOverview: () => null,
   VerificationStatusCard: () => null,
 }));
 

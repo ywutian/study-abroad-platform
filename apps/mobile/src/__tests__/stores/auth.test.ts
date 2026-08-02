@@ -16,8 +16,15 @@ jest.mock('@/lib/api/client', () => ({
   apiClient: {
     post: jest.fn(),
     get: jest.fn(),
+    delete: jest.fn(),
     setOnRefreshFailed: jest.fn(),
   },
+}));
+
+jest.mock('@/lib/query-session', () => ({ resetQuerySession: jest.fn() }));
+jest.mock('@/lib/storage/push-token', () => ({
+  getRegisteredPushToken: jest.fn().mockResolvedValue(null),
+  clearRegisteredPushToken: jest.fn(),
 }));
 
 import {
@@ -28,6 +35,7 @@ import {
   getAccessToken,
 } from '@/lib/storage/secure-store';
 import { apiClient } from '@/lib/api/client';
+import { resetQuerySession } from '@/lib/query-session';
 
 describe('Auth Store', () => {
   beforeEach(() => {
@@ -99,6 +107,7 @@ describe('Auth Store', () => {
     expect(state.user).toBeNull();
     expect(state.isAuthenticated).toBe(false);
     expect(clearAuthData).toHaveBeenCalled();
+    expect(resetQuerySession).toHaveBeenCalled();
   });
 
   it('loadAuth restores session from storage', async () => {
