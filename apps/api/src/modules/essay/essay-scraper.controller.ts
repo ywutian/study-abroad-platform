@@ -95,6 +95,7 @@ export class EssayScraperController {
   @Get('pipeline/runs')
   @ApiOperation({ summary: 'Get pipeline run history' })
   async listPipelineRuns(@Query('limit') limit?: number) {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.essayPipelineRun.findMany({
       orderBy: { startedAt: 'desc' },
       take: limit || 10,
@@ -104,6 +105,7 @@ export class EssayScraperController {
   @Get('pipeline/:runId')
   @ApiOperation({ summary: 'Get pipeline run status' })
   async getPipelineStatus(@Param('runId') runId: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.essayPipelineRun.findUnique({
       where: { id: runId },
     });
@@ -123,6 +125,7 @@ export class EssayScraperController {
       totalPrompts,
       pendingCount,
     ] = await Promise.all([
+      // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
       this.prisma.school.count(),
       this.prisma.essayPrompt
         .groupBy({
@@ -136,9 +139,11 @@ export class EssayScraperController {
           where: { year: targetYear, isActive: true, status: 'VERIFIED' },
         })
         .then((r) => r.length),
+      // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
       this.prisma.essayPrompt.count({
         where: { year: targetYear, isActive: true },
       }),
+      // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
       this.prisma.essayPrompt.count({
         where: { year: targetYear, isActive: true, status: 'PENDING' },
       }),
@@ -161,6 +166,7 @@ export class EssayScraperController {
   @Get('dashboard/freshness')
   @ApiOperation({ summary: 'Get scrape freshness by school' })
   async getFreshness() {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.schoolEssaySource.findMany({
       where: { isActive: true },
       select: {
@@ -188,6 +194,7 @@ export class EssayScraperController {
   @ApiOperation({ summary: 'Get annual changes list' })
   async getChanges(@Query('year') year?: number) {
     const targetYear = year || this.getCurrentApplicationYear();
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.essayPrompt.findMany({
       where: {
         year: targetYear,
@@ -207,6 +214,7 @@ export class EssayScraperController {
   @Get('sources')
   @ApiOperation({ summary: 'List all scrape source configurations' })
   async listSources() {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.schoolEssaySource.findMany({
       include: {
         school: {
@@ -225,6 +233,7 @@ export class EssayScraperController {
   @Post('sources')
   @ApiOperation({ summary: 'Add scrape source' })
   async addSource(@Body() dto: CreateSchoolEssaySourceDto) {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.schoolEssaySource.create({
       data: {
         schoolId: dto.schoolId,
@@ -247,6 +256,7 @@ export class EssayScraperController {
     @Param('id') id: string,
     @Body() dto: UpdateSchoolEssaySourceDto,
   ) {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.schoolEssaySource.update({
       where: { id },
       data: dto,
@@ -259,6 +269,7 @@ export class EssayScraperController {
   @Delete('sources/:id')
   @ApiOperation({ summary: 'Delete scrape source' })
   async deleteSource(@Param('id') id: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.ADMIN) — scraper pipeline operations
     return this.prisma.schoolEssaySource.delete({ where: { id } });
   }
 

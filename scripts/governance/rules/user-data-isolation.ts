@@ -68,12 +68,14 @@ const SCAN_DIRS = [
   // whose callers run ensureTeamRole/ensureTeamMember immediately after, and
   // discover() — which turned out to be steerable to PRIVATE (fixed below).
   path.join(ROOT, 'apps/api/src/modules/team'),
+  // essay's 70: 46 are scraped school application questions and scraper
+  // bookkeeping (no User relation), 12 on the @Roles(ADMIN) scraper
+  // controller, and 12 gallery/counselor reads that spread CASE_PUBLIC_WHERE.
+  path.join(ROOT, 'apps/api/src/modules/essay'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
   // the site needs a human decision rather than a schema lookup):
-  //
-  //   essay 70 (46 system / ★24)
   //
   // hall (12) is read but deliberately NOT added yet. Ten of its sites are
   // fine. The other two — hall-verified-dashboard's getChinaAdmitTrend and

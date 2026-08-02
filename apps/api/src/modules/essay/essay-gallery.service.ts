@@ -164,6 +164,7 @@ export class EssayGalleryService {
         : [{ createdAt: 'desc' as const }, { isVerified: 'desc' as const }];
 
     const [cases, total, stats] = await Promise.all([
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.findMany({
         where,
         select: GALLERY_LIST_SELECT,
@@ -171,6 +172,7 @@ export class EssayGalleryService {
         take: pageSize,
         orderBy,
       }),
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.count({ where }),
       this.getGalleryStats(),
     ]);
@@ -230,6 +232,7 @@ export class EssayGalleryService {
     };
 
     const [cases, total] = await Promise.all([
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.findMany({
         where,
         select: GALLERY_LIST_SELECT,
@@ -240,6 +243,7 @@ export class EssayGalleryService {
           { createdAt: 'desc' as const },
         ],
       }),
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.count({ where }),
     ]);
 
@@ -324,6 +328,7 @@ export class EssayGalleryService {
     try {
       await Promise.all(
         updates.map((u) =>
+          // governance: parent-scoped — writes derived provenance columns back onto rows the caller already fetched through a CASE_PUBLIC_WHERE query
           this.prisma.admissionCase.update({
             where: { id: u.id },
             data: {
@@ -346,10 +351,13 @@ export class EssayGalleryService {
     const baseWhere = { ...CASE_PUBLIC_WHERE };
 
     const [total, admitted, top20, byType] = await Promise.all([
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.count({ where: baseWhere }),
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.count({
         where: { ...baseWhere, result: 'ADMITTED' },
       }),
+      // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
       this.prisma.admissionCase.count({
         where: {
           ...baseWhere,
@@ -383,6 +391,7 @@ export class EssayGalleryService {
    * 获取单篇公开文书详情
    */
   async getGalleryEssayDetail(caseId: string) {
+    // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
     const admissionCase = await this.prisma.admissionCase.findFirst({
       where: {
         id: caseId,
@@ -434,6 +443,7 @@ export class EssayGalleryService {
     locale = 'zh',
   ): Promise<GalleryLearningNotesResponse> {
     const requestedLocale = locale === 'en' ? 'en' : 'zh';
+    // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
     const essay = await this.prisma.admissionCase.findFirst({
       where: {
         id: caseId,
@@ -979,27 +989,34 @@ export class EssayGalleryService {
       totalByEssay,
       publicEssays,
     ] = await Promise.all([
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.count({
         where: interactionWhere,
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.count({
         where: { ...interactionWhere, type: 'question' },
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.count({
         where: { ...interactionWhere, type: 'compare' },
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.count({
         where: { ...interactionWhere, status: 'SUCCEEDED' },
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.count({
         where: { ...interactionWhere, status: 'FAILED' },
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.count({
         where: {
           ...interactionWhere,
           refundStatus: { in: ['REFUNDED', 'REFUND_ATTEMPTED'] },
         },
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteraction.aggregate({
         where: interactionWhere,
         _avg: { tokensUsed: true },
@@ -1016,6 +1033,7 @@ export class EssayGalleryService {
         _count: true,
       }),
       // Recent negative feedback with free-text notes (the qualitative signal).
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.galleryEssayAIInteractionFeedback.findMany({
         where: { ...feedbackWhere, sentiment: 'NOT_HELPFUL' },
         orderBy: { createdAt: 'desc' },
@@ -1039,6 +1057,7 @@ export class EssayGalleryService {
         where: interactionWhere,
         _count: true,
       }),
+      // governance: admin-scope — reached only from admin-essay-gallery-ai.controller — @Roles(Role.OPERATOR) + @RequirePermission(DATA_HEALTH)
       this.prisma.admissionCase.findMany({
         where: CASE_PUBLIC_WHERE,
         select: { aiAnalysisCache: true },
@@ -1386,6 +1405,7 @@ export class EssayGalleryService {
     } = {},
   ): Promise<void> {
     try {
+      // governance: parent-scoped — private; marks the one interaction row the caller just created for this request
       await this.prisma.galleryEssayAIInteraction.update({
         where: { id: interactionId },
         data: {
@@ -1556,6 +1576,7 @@ export class EssayGalleryService {
   private async getPublicGalleryCaseForAi(
     caseId: string,
   ): Promise<GalleryDetailCase> {
+    // governance: public-feed — spreads CASE_PUBLIC_WHERE — AdmissionCase.visibility defaults to PRIVATE, so that spread is what keeps unpublished essays out
     const essay = await this.prisma.admissionCase.findFirst({
       where: {
         id: caseId,

@@ -69,6 +69,7 @@ export class LlmScrapeStrategy extends BaseScrapeStrategy {
    */
   async scrape(schoolName: string, year: number): Promise<ScrapeResult | null> {
     // 从 DB 查找该校的 source 配置
+    // governance: system-scope — School / SchoolEssaySource lookups feeding the scraper
     const school = await this.prisma.school.findUnique({
       where: { nameNorm: normalizeSchoolName(schoolName) },
       include: {
@@ -96,6 +97,7 @@ export class LlmScrapeStrategy extends BaseScrapeStrategy {
 
       if (result && result.essays.length > 0) {
         // 更新采集状态
+        // governance: system-scope — School / SchoolEssaySource lookups feeding the scraper
         await this.prisma.schoolEssaySource.update({
           where: { id: source.id },
           data: {

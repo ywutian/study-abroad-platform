@@ -73,6 +73,7 @@ export class EssayScraperScheduler {
   async runPipeline(trigger: string, operatorId?: string): Promise<string> {
     const year = this.getCurrentApplicationYear();
 
+    // governance: system-scope — EssayPipelineRun is scraper bookkeeping, not user data
     const run = await this.prisma.essayPipelineRun.create({
       data: {
         trigger,
@@ -93,6 +94,7 @@ export class EssayScraperScheduler {
   private async executePipeline(runId: string, year: number) {
     const schools = await this.scraperService.getConfiguredSchools();
 
+    // governance: system-scope — EssayPipelineRun is scraper bookkeeping, not user data
     await this.prisma.essayPipelineRun.update({
       where: { id: runId },
       data: { totalSchools: schools.length },
@@ -141,6 +143,7 @@ export class EssayScraperScheduler {
       }
     }
 
+    // governance: system-scope — EssayPipelineRun is scraper bookkeeping, not user data
     await this.prisma.essayPipelineRun.update({
       where: { id: runId },
       data: {

@@ -52,6 +52,7 @@ export class EssayPromptService {
     const { schoolId, sourceType, sourceUrl, ...data } = dto;
 
     // 验证学校存在
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
     });
@@ -60,6 +61,7 @@ export class EssayPromptService {
     }
 
     // 创建文书题目
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const essayPrompt = await this.prisma.essayPrompt.create({
       data: {
         ...data,
@@ -128,6 +130,7 @@ export class EssayPromptService {
     };
 
     const [data, total] = await Promise.all([
+      // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
       this.prisma.essayPrompt.findMany({
         where,
         include: {
@@ -147,6 +150,7 @@ export class EssayPromptService {
         skip,
         take: pageSize,
       }),
+      // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
       this.prisma.essayPrompt.count({ where }),
     ]);
 
@@ -175,6 +179,7 @@ export class EssayPromptService {
    * 获取单个文书题目
    */
   async findOne(id: string) {
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const essayPrompt = await this.prisma.essayPrompt.findUnique({
       where: { id },
       include: {
@@ -200,6 +205,7 @@ export class EssayPromptService {
    * Public-safe version of findOne — excludes auditLogs and sources.
    */
   async findOnePublic(id: string) {
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const essayPrompt = await this.prisma.essayPrompt.findFirst({
       where: {
         id,
@@ -252,6 +258,7 @@ export class EssayPromptService {
       ...(year && { year }),
     };
 
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const prompts = await this.prisma.essayPrompt.findMany({
       where,
       orderBy: [{ sortOrder: 'asc' }, { type: 'asc' }],
@@ -276,6 +283,7 @@ export class EssayPromptService {
   async update(id: string, dto: UpdateEssayPromptDto, operatorId: string) {
     const existing = await this.findOne(id);
 
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const essayPrompt = await this.prisma.essayPrompt.update({
       where: { id },
       data: dto,
@@ -312,6 +320,7 @@ export class EssayPromptService {
       throw new BadRequestException(ERR.BAD_REQUEST.rejectReasonRequired());
     }
 
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     const essayPrompt = await this.prisma.essayPrompt.update({
       where: { id },
       data: {
@@ -378,6 +387,7 @@ export class EssayPromptService {
   async remove(id: string, operatorId: string) {
     const existing = await this.findOne(id);
 
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     await this.prisma.essayPrompt.update({
       where: { id },
       data: { isActive: false },
@@ -405,15 +415,19 @@ export class EssayPromptService {
     };
 
     const [pending, verified, rejected, total, byType] = await Promise.all([
+      // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
       this.prisma.essayPrompt.count({
         where: { ...where, status: EssayStatus.PENDING },
       }),
+      // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
       this.prisma.essayPrompt.count({
         where: { ...where, status: EssayStatus.VERIFIED },
       }),
+      // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
       this.prisma.essayPrompt.count({
         where: { ...where, status: EssayStatus.REJECTED },
       }),
+      // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
       this.prisma.essayPrompt.count({ where }),
       this.prisma.essayPrompt.groupBy({
         by: ['type'],
@@ -482,6 +496,7 @@ export class EssayPromptService {
 
         // Dedup: same school + year + type + prompt prefix
         const promptPrefix = item.prompt.substring(0, DEDUP_PREFIX_LENGTH);
+        // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
         const existing = await this.prisma.essayPrompt.findFirst({
           where: {
             schoolId: school.id,
@@ -507,6 +522,7 @@ export class EssayPromptService {
           ? EssayStatus.VERIFIED
           : EssayStatus.PENDING;
 
+        // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
         const essayPrompt = await this.prisma.essayPrompt.create({
           data: {
             schoolId: school.id,
@@ -570,6 +586,7 @@ export class EssayPromptService {
     operatorType: string,
     extra?: { changes?: any; reason?: string },
   ) {
+    // governance: system-scope — EssayPrompt / School / EssayPromptAudit are scraped application questions — school data with no User or Profile relation. Writes reach this service only through essay-prompt-admin.controller (@Roles(Role.OPERATOR))
     return this.prisma.essayPromptAudit.create({
       data: {
         essayPromptId,
