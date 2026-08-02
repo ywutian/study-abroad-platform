@@ -319,6 +319,7 @@ export class BigFutureScrapeService {
         : {}),
     };
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const schools = await this.prisma.school.findMany({
       where,
       select: { id: true, name: true, website: true, metadata: true },
@@ -353,6 +354,7 @@ export class BigFutureScrapeService {
 
       // Write metrics
       for (const metric of result.metrics) {
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         await this.prisma.schoolMetric.upsert({
           where: {
             schoolId_year_metricKey: {
@@ -373,6 +375,7 @@ export class BigFutureScrapeService {
 
       // Store BigFuture-specific metadata
       if (Object.keys(result.metadata).length > 0) {
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         const school = await this.prisma.school.findUnique({
           where: { id: result.schoolId },
           select: { metadata: true },

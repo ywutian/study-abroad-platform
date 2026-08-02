@@ -46,14 +46,17 @@ export class IpedsDataService {
 
     for (const item of data) {
       const school =
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         (await this.prisma.school.findUnique({
           where: { ipedsId: item.unitId },
         })) ??
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         (await this.prisma.school.findUnique({
           where: { nameNorm: normalizeSchoolName(item.schoolName) },
         }));
 
       if (school) {
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         await this.prisma.schoolMetric.upsert({
           where: {
             schoolId_year_metricKey: {
@@ -85,9 +88,11 @@ export class IpedsDataService {
 
     for (const item of data) {
       const school =
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         (await this.prisma.school.findUnique({
           where: { ipedsId: item.unitId },
         })) ??
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         (await this.prisma.school.findUnique({
           where: { nameNorm: normalizeSchoolName(item.schoolName) },
         }));

@@ -21,6 +21,7 @@ export class AdminOperatorService {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const invite = await this.prisma.operatorInvite.create({
       data: {
         token,
@@ -79,6 +80,7 @@ export class AdminOperatorService {
    * List all invites
    */
   async listInvites() {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const invites = await this.prisma.operatorInvite.findMany({
       orderBy: { createdAt: 'desc' },
       take: 50,

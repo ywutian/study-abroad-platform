@@ -214,6 +214,7 @@ export class SchoolDataMerger {
     source: DataSource,
     provenanceOptions: MergeProvenanceOptions = {},
   ): Promise<{ updatedFields: string[]; skippedFields: string[] }> {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
     });
@@ -295,6 +296,7 @@ export class SchoolDataMerger {
     source: string,
     options: TerminalProvenanceOptions = {},
   ): Promise<{ markedFields: string[]; skippedFields: string[] }> {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
     });
@@ -355,6 +357,7 @@ export class SchoolDataMerger {
     provenanceOptions: MergeProvenanceOptions = {},
   ): Promise<{ updatedFields: string[]; skippedFields: string[] } | null> {
     const nameNorm = normalizeSchoolName(name);
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { nameNorm },
     });
@@ -371,6 +374,7 @@ export class SchoolDataMerger {
    * 获取某学校的 provenance 记录
    */
   async getProvenance(schoolId: string): Promise<ProvenanceRecord | null> {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
       select: { metadata: true },

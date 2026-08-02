@@ -492,6 +492,7 @@ export class SchoolMediaService {
       ...(query.schoolId ? { schoolId: query.schoolId } : {}),
     };
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     return this.prisma.schoolMediaAsset.findMany({
       where,
       include: {
@@ -506,11 +507,13 @@ export class SchoolMediaService {
 
   async getCoverage() {
     const [totalSchools, grouped, approvedPrimary] = await Promise.all([
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       this.prisma.school.count(),
       this.prisma.schoolMediaAsset.groupBy({
         by: ['type', 'status'],
         _count: { _all: true },
       }),
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       this.prisma.schoolMediaAsset.findMany({
         where: {
           type: SchoolMediaType.CAMPUS_COVER,
@@ -1134,14 +1137,16 @@ export class SchoolMediaService {
     forcedStatus?: SchoolMediaStatus,
   ) {
     const existing = candidate.hash
-      ? await this.prisma.schoolMediaAsset.findFirst({
+      ? // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
+        await this.prisma.schoolMediaAsset.findFirst({
           where: {
             schoolId,
             type: SchoolMediaType.CAMPUS_COVER,
             hash: candidate.hash,
           },
         })
-      : await this.prisma.schoolMediaAsset.findFirst({
+      : // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
+        await this.prisma.schoolMediaAsset.findFirst({
           where: {
             schoolId,
             type: SchoolMediaType.CAMPUS_COVER,
@@ -1249,6 +1254,7 @@ export class SchoolMediaService {
       return created;
     }
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     return this.prisma.schoolMediaAsset.create({ data });
   }
 
@@ -1257,6 +1263,7 @@ export class SchoolMediaService {
     website: string | null,
     reason: string,
   ) {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     return this.prisma.schoolMediaAsset.create({
       data: {
         school: { connect: { id: schoolId } },
@@ -1270,6 +1277,7 @@ export class SchoolMediaService {
   }
 
   private async requireAsset(id: string) {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const asset = await this.prisma.schoolMediaAsset.findUnique({
       where: { id },
     });
@@ -1284,10 +1292,12 @@ export class SchoolMediaService {
     data: Prisma.SchoolMediaAssetUpdateInput,
   ) {
     await this.prisma.$transaction([
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       this.prisma.schoolMediaAsset.updateMany({
         where: { schoolId, type, isPrimary: true, id: { not: assetId } },
         data: { isPrimary: false },
       }),
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       this.prisma.schoolMediaAsset.update({
         where: { id: assetId },
         data: { ...data, isPrimary: true },

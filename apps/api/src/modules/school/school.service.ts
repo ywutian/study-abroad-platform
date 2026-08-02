@@ -492,6 +492,7 @@ export class SchoolService {
                 filters,
               )
             : await Promise.all([
+                // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
                 this.prisma.school.findMany({
                   where,
                   skip,
@@ -499,6 +500,7 @@ export class SchoolService {
                   orderBy: this.getListOrderBy(sortBy),
                   include: includeRankings,
                 }),
+                // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
                 this.prisma.school.count({ where }),
               ]);
 
@@ -705,6 +707,7 @@ export class SchoolService {
       ...schoolPublicMediaInclude,
     } satisfies Prisma.SchoolInclude;
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const allSchools = await this.prisma.school.findMany({
       where,
       orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
@@ -729,6 +732,7 @@ export class SchoolService {
       ...schoolPublicMediaInclude,
     } satisfies Prisma.SchoolInclude;
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const allSchools = await this.prisma.school.findMany({
       where,
       orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
@@ -779,6 +783,7 @@ export class SchoolService {
       ...schoolPublicMediaInclude,
     } satisfies Prisma.SchoolInclude;
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const allSchools = await this.prisma.school.findMany({
       where,
       orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
@@ -828,6 +833,7 @@ export class SchoolService {
       // Redis is optional; school detail should keep serving from Postgres.
     }
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { id },
       include: {
@@ -1158,6 +1164,7 @@ export class SchoolService {
 
   // For calculating custom rankings
   async findAllWithMetrics(): Promise<School[]> {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     return this.prisma.school.findMany({
       where: {
         usNewsRank: { not: null },
@@ -1201,6 +1208,7 @@ export class SchoolService {
       'percentNeedMet',
     ] as const;
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const allSchools = await this.prisma.school.findMany({
       select: {
         id: true,
@@ -1456,6 +1464,7 @@ export class SchoolService {
       // Redis is optional for this helper.
     }
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const schools = await this.prisma.school.findMany({
       where: { name: { in: UC_SCHOOL_NAMES } },
       select: { id: true },
@@ -1566,6 +1575,7 @@ export class SchoolService {
       // Redis is optional for ranking metadata.
     }
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const schoolsForRanking = await this.prisma.school.findMany({
       where: {
         OR: [

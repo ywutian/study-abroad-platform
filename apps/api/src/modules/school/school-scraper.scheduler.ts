@@ -59,6 +59,7 @@ export class SchoolScraperScheduler {
       const result = await this.scraperService.scrapeAllSchools();
 
       // 记录审计日志
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       await this.prisma.auditLog.create({
         data: {
           action: 'SCHOOL_SCRAPE',
@@ -81,6 +82,7 @@ export class SchoolScraperScheduler {
         error instanceof Error ? error.message : String(error),
       );
 
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       await this.prisma.auditLog.create({
         data: {
           action: 'SCHOOL_SCRAPE_ERROR',

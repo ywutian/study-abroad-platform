@@ -119,6 +119,7 @@ export class AdminDataSyncService {
 
     for (const id of jobIds) {
       const def = JOB_DEFINITIONS[id];
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       const lastRun = await this.prisma.auditLog.findFirst({
         where: {
           action: DATA_SYNC_ACTION,

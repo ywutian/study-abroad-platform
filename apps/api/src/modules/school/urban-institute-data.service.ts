@@ -321,6 +321,7 @@ export class UrbanInstituteDataService {
     unitid: string,
   ): Promise<{ id: string; name: string } | null> {
     // Try ipedsId column first (indexed)
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const byColumn = await this.prisma.school.findUnique({
       where: { ipedsId: unitid },
       select: { id: true, name: true },
@@ -328,6 +329,7 @@ export class UrbanInstituteDataService {
     if (byColumn) return byColumn;
 
     // Fallback: metadata.ipedsId
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const byMetadata = await this.prisma.school.findFirst({
       where: { metadata: { path: ['ipedsId'], equals: unitid } },
       select: { id: true, name: true },
@@ -344,6 +346,7 @@ export class UrbanInstituteDataService {
     metricKey: string,
     value: number,
   ): Promise<void> {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     await this.prisma.schoolMetric.upsert({
       where: {
         schoolId_year_metricKey: { schoolId, year, metricKey },

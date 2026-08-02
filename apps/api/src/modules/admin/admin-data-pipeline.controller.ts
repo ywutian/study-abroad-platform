@@ -71,6 +71,7 @@ export class AdminDataPipelineController {
   @ThrottleRelaxed()
   @RequirePermission(Permission.DATA_HEALTH)
   async getImportPolicy() {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const setting = await this.prisma.systemSetting.findUnique({
       where: { key: 'import_policy' },
     });
@@ -94,6 +95,7 @@ export class AdminDataPipelineController {
     const current = (await this.getImportPolicy()) as Record<string, unknown>;
     const merged = { ...current, ...dto };
 
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     await this.prisma.systemSetting.upsert({
       where: { key: 'import_policy' },
       create: {

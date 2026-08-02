@@ -716,6 +716,7 @@ export class AdminThemeStyleController {
   ) {}
 
   private async readSetting() {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     let setting = await this.prisma.systemSetting.findUnique({
       where: { key: THEME_STYLE_SETTING_KEY },
     });
@@ -739,11 +740,13 @@ export class AdminThemeStyleController {
         checksum: checksumState(stateNoChecksum),
       });
       try {
+        // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
         setting = await this.prisma.systemSetting.create({
           data: { key: THEME_STYLE_SETTING_KEY, value: seededValue },
         });
       } catch {
         // Race condition (concurrent first-read inserted before us). Re-fetch.
+        // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
         setting = await this.prisma.systemSetting.findUnique({
           where: { key: THEME_STYLE_SETTING_KEY },
         });
@@ -761,6 +764,7 @@ export class AdminThemeStyleController {
     const serialized = JSON.stringify(state);
     if (!setting) {
       try {
+        // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
         await this.prisma.systemSetting.create({
           data: {
             key: THEME_STYLE_SETTING_KEY,
@@ -779,6 +783,7 @@ export class AdminThemeStyleController {
       }
     }
 
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const result = await this.prisma.systemSetting.updateMany({
       where: { key: THEME_STYLE_SETTING_KEY, updatedAt: setting.updatedAt },
       data: {
@@ -1199,6 +1204,7 @@ export class AdminThemeStyleController {
   }
 
   private async findRollbackTarget(body: ThemeStyleRollbackInput) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const logs = await this.prisma.auditLog.findMany({
       where: {
         resource: 'theme-style-library',

@@ -39,6 +39,7 @@ export class AdminRoleService {
    * Get all role permissions grouped by role
    */
   async getAllPermissions() {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const perms = await this.prisma.rolePermission.findMany({
       orderBy: [{ role: 'asc' }, { permission: 'asc' }],
       select: { role: true, permission: true, granted: true },
@@ -89,6 +90,7 @@ export class AdminRoleService {
    * Find a user by email for the promote flow
    */
   async findUserByEmail(email: string) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const user = await this.prisma.user.findFirst({
       where: { email, deletedAt: null },
       select: { id: true, email: true, role: true, createdAt: true },

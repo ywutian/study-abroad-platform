@@ -113,6 +113,22 @@ const SCAN_DIRS = [
   // profileId the controller resolved from @CurrentUser(). Its historical
   // helpers are the first use of `aggregate-only`.
   path.join(ROOT, 'apps/api/src/modules/prediction'),
+  // Ninth batch — admin (118) and school (77), no findings.
+  //
+  // admin is uniform: all 15 of its controllers carry a class-level
+  // @Roles(OPERATOR | ADMIN | SUPER_ADMIN), none has an @Public() route and
+  // none widens @Roles on a method, and no admin service is reachable from a
+  // controller outside the module except AdminReviewService, which
+  // case-admin.controller gates with @Roles(OPERATOR) + CASE_REVIEW. Checked
+  // for method-level escapes specifically — a class-level sweep would not
+  // have caught one.
+  //
+  // school is almost entirely published institution data (School,
+  // SchoolMetric, HighSchool, media, deadlines, scrapers, IPEDS). Its two
+  // exceptions are getSyncStatus (@Roles(ADMIN)) and the nightly high-school
+  // calibration, which is aggregate-only with MIN_CASES = 10.
+  path.join(ROOT, 'apps/api/src/modules/admin'),
+  path.join(ROOT, 'apps/api/src/modules/school'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
