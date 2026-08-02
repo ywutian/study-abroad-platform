@@ -344,6 +344,7 @@ export class SettingsService {
     }
 
     // 2. Query database
+    // governance: system-scope — SystemSetting is the platform-wide config table (feature toggles, point values, prices) — no User or Profile relation; writes come from admin controllers
     const setting = await this.prisma.systemSetting.findUnique({
       where: { key: normalizedKey },
     });
@@ -395,6 +396,7 @@ export class SettingsService {
     const normalizedKey = this.normalizeKey(key);
     const defaultSetting = DEFAULT_SETTINGS[normalizedKey];
 
+    // governance: system-scope — SystemSetting is the platform-wide config table (feature toggles, point values, prices) — no User or Profile relation; writes come from admin controllers
     await this.prisma.systemSetting.upsert({
       where: { key: normalizedKey },
       update: { value, description },
@@ -433,6 +435,7 @@ export class SettingsService {
       category: string;
     }>
   > {
+    // governance: system-scope — SystemSetting is the platform-wide config table (feature toggles, point values, prices) — no User or Profile relation; writes come from admin controllers
     const dbSettings = await this.prisma.systemSetting.findMany({
       orderBy: [{ category: 'asc' }, { key: 'asc' }],
     });
@@ -507,11 +510,13 @@ export class SettingsService {
    */
   async initializeDefaults(): Promise<void> {
     for (const [key, def] of Object.entries(DEFAULT_SETTINGS)) {
+      // governance: system-scope — SystemSetting is the platform-wide config table (feature toggles, point values, prices) — no User or Profile relation; writes come from admin controllers
       const exists = await this.prisma.systemSetting.findUnique({
         where: { key },
       });
 
       if (!exists) {
+        // governance: system-scope — SystemSetting is the platform-wide config table (feature toggles, point values, prices) — no User or Profile relation; writes come from admin controllers
         await this.prisma.systemSetting.create({
           data: {
             key,

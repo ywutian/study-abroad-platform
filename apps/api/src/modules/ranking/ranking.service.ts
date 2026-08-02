@@ -65,6 +65,7 @@ export class RankingService {
 
   // Get public rankings
   async getPublicRankings(): Promise<CustomRanking[]> {
+    // governance: public-feed — filters `isPublic: true`. CustomRanking.isPublic defaults to FALSE, so this filter is the whole access control — findById() beside it lacked the equivalent check and served every private ranking on a @Public() route until 52ebf249
     return this.prisma.customRanking.findMany({
       where: { isPublic: true },
       orderBy: { createdAt: 'desc' },

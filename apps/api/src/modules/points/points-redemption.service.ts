@@ -137,6 +137,7 @@ export class PointsRedemptionService {
     redemptionId: string,
     fulfillmentMetadata?: Record<string, unknown>,
   ): Promise<void> {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); closing out another user's redemption is the job
     const redemption = await this.prisma.pointsRedemption.findUnique({
       where: { id: redemptionId },
     });
@@ -239,6 +240,7 @@ export class PointsRedemptionService {
    * user has been waiting longest for.
    */
   async listPending(limit = 50) {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); closing out another user's redemption is the job
     return this.prisma.pointsRedemption.findMany({
       where: { status: RedemptionStatus.PENDING },
       orderBy: { createdAt: 'asc' },

@@ -46,6 +46,7 @@ export class ProfileAiService {
       acceptanceRate?: number | null;
     }> = [];
     if (request.targetSchools?.length) {
+      // governance: system-scope — School lookup — published institution data
       const schools = await this.prisma.school.findMany({
         where: {
           name: { in: request.targetSchools.slice(0, 3) },

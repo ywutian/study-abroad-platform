@@ -203,6 +203,7 @@ export class HealthController {
       }
 
       const start = Date.now();
+      // governance: system-scope — `SELECT 1` liveness probe — touches no table, only round-trip latency. /health and /health/check are @Public() by design; /health/detailed, which exposes env and build info, is @Roles(Role.ADMIN)
       await this.prisma.$queryRaw`SELECT 1`;
       const latency = Date.now() - start;
 
@@ -248,6 +249,7 @@ export class HealthController {
   private async checkDatabase(): Promise<ComponentCheck> {
     try {
       const start = Date.now();
+      // governance: system-scope — `SELECT 1` liveness probe — touches no table, only round-trip latency. /health and /health/check are @Public() by design; /health/detailed, which exposes env and build info, is @Roles(Role.ADMIN)
       await this.prisma.$queryRaw`SELECT 1`;
       const latencyMs = Date.now() - start;
 

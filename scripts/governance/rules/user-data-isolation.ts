@@ -83,6 +83,17 @@ const SCAN_DIRS = [
   path.join(ROOT, 'apps/api/src/modules/subscription'),
   path.join(ROOT, 'apps/api/src/modules/auth'),
   path.join(ROOT, 'apps/api/src/modules/user'),
+  // Seventh batch — the six small remainders, 15 sites, no findings.
+  // settings/recommendation/ai touch only platform tables; health's two are
+  // `SELECT 1` probes; points' three are the operator fulfilment queue added
+  // in 1cad4be3; ranking's one is the isPublic list beside the findById that
+  // was fixed in 52ebf249.
+  path.join(ROOT, 'apps/api/src/modules/settings'),
+  path.join(ROOT, 'apps/api/src/modules/points'),
+  path.join(ROOT, 'apps/api/src/modules/recommendation'),
+  path.join(ROOT, 'apps/api/src/modules/health'),
+  path.join(ROOT, 'apps/api/src/modules/ai'),
+  path.join(ROOT, 'apps/api/src/modules/ranking'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
