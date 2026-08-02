@@ -95,9 +95,22 @@ export class MemoryManagerService {
       const cached = await this.cache.getConversationMeta(conversationId);
       if (cached?.id) {
         if (cached.userId === userId) {
-          return cached as ConversationRecord;
-        }
-        if (cached.userId) {
+          // A cache hit has been through JSON.stringify, so createdAt/updatedAt
+          // are ISO strings. Rebuild them instead of asserting the shape back —
+          // the old `as ConversationRecord` made both paths look identical to
+          // the compiler while handing callers a different runtime type.
+          if (cached.createdAt && cached.updatedAt) {
+            return {
+              ...cached,
+              id: cached.id,
+              userId: cached.userId,
+              messageCount: cached.messageCount ?? 0,
+              createdAt: new Date(cached.createdAt),
+              updatedAt: new Date(cached.updatedAt),
+            };
+          }
+          // fall through to the database on incomplete metadata
+        } else if (cached.userId) {
           throw new NotFoundException('Conversation not found');
         }
         // 元数据不完整（例如仅写过 title）时回落到数据库校验

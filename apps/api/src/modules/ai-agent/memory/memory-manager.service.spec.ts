@@ -149,6 +149,29 @@ describe('MemoryManagerService', () => {
       expect(result.id).toBe('conv_1');
     });
 
+    it('returns real Dates from cache, not the strings JSON gives back', async () => {
+      // The cache is written with setJSON/JSON.stringify, so a hit hands back
+      // ISO strings — not the Date objects the test above mocks. Feeding the
+      // mock the round-tripped shape is the only way this path is exercised
+      // the way production runs it.
+      const live = {
+        id: 'conv_1',
+        userId: 'user_1',
+        messageCount: 5,
+        createdAt: new Date('2026-01-02T03:04:05.000Z'),
+        updatedAt: new Date('2026-01-02T03:04:05.000Z'),
+      };
+      cache.getConversationMeta.mockResolvedValue(
+        JSON.parse(JSON.stringify(live)),
+      );
+
+      const result = await service.getOrCreateConversation('user_1', 'conv_1');
+
+      expect(result.createdAt).toBeInstanceOf(Date);
+      expect(result.updatedAt).toBeInstanceOf(Date);
+      expect(result.createdAt.toISOString()).toBe('2026-01-02T03:04:05.000Z');
+    });
+
     it('should reject when cached conversation belongs to another user', async () => {
       cache.getConversationMeta.mockResolvedValue({
         id: 'conv_victim',

@@ -7,6 +7,7 @@
  * cache-health 监控面板（消除 #274 那类隐形配额泄漏的盲区）。
  */
 
+import type { MaybeSerialized } from '../../../common/redis/redis-json.types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../../common/redis/redis.service';
@@ -136,14 +137,18 @@ export class RedisCacheService {
    */
   async getConversationMeta(
     conversationId: string,
-  ): Promise<Partial<ConversationRecord> | null> {
+  ): Promise<Partial<MaybeSerialized<ConversationRecord>> | null> {
     const key = `conv:meta:${conversationId}`;
 
     try {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.get(key),
       );
-      return raw ? JSON.parse(raw) : null;
+      // Reads its own key rather than going through getJSON, so state the
+      // round-trip here too: the Dates on ConversationRecord came back strings.
+      return raw
+        ? (JSON.parse(raw) as Partial<MaybeSerialized<ConversationRecord>>)
+        : null;
     } catch (err) {
       this.logger.debug(`Redis getConversationMeta failed: ${String(err)}`);
     }
