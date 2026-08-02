@@ -277,6 +277,7 @@ export class PredictionWorkflowService {
   }
 
   private async getEligibleOutcomeCounts(policyVersionId: string) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const results = await this.prisma.predictionResult.findMany({
       where: { policyVersionId, authority: 'AUTHORITATIVE' },
       select: {
@@ -333,6 +334,7 @@ export class PredictionWorkflowService {
 
     if (observation.highSchoolId && observation.schoolId) {
       const [highSchool, school, feederSignal] = await Promise.all([
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         this.prisma.highSchool.findUnique({
           where: { id: observation.highSchoolId },
           select: {
@@ -341,6 +343,7 @@ export class PredictionWorkflowService {
             resources: true,
           },
         }),
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         this.prisma.school.findUnique({
           where: { id: observation.schoolId },
           select: { acceptanceRate: true },
@@ -456,6 +459,7 @@ export class PredictionWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionSourceObservation.findMany({
         where,
         orderBy: [{ observedAt: 'desc' }, { createdAt: 'desc' }],
@@ -470,6 +474,7 @@ export class PredictionWorkflowService {
           },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionSourceObservation.count({ where }),
     ]);
 
@@ -480,6 +485,7 @@ export class PredictionWorkflowService {
     actorId: string,
     dto: CreatePredictionObservationDto,
   ) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const created = await this.prisma.predictionSourceObservation.create({
       data: {
         profileId: dto.profileId,
@@ -538,6 +544,7 @@ export class PredictionWorkflowService {
     dto: ReviewPredictionObservationDto,
   ) {
     const observation =
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       await this.prisma.predictionSourceObservation.findUnique({
         where: { id },
         select: {
@@ -558,6 +565,7 @@ export class PredictionWorkflowService {
 
     this.validateObservationForReview(observation, dto.status);
 
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const updated = await this.prisma.predictionSourceObservation.update({
       where: { id },
       data: {
@@ -589,6 +597,7 @@ export class PredictionWorkflowService {
     const where = { policyVersionId: query.policyVersionId };
 
     const [priors, drifts, relationships, counts] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolCohortRoundPrior.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -599,6 +608,7 @@ export class PredictionWorkflowService {
           },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolCohortRegimeSignal.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -609,6 +619,7 @@ export class PredictionWorkflowService {
           },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolRelationshipSignal.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -623,8 +634,11 @@ export class PredictionWorkflowService {
         },
       }),
       Promise.all([
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         this.prisma.schoolCohortRoundPrior.count({ where }),
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         this.prisma.schoolCohortRegimeSignal.count({ where }),
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         this.prisma.schoolRelationshipSignal.count({ where }),
       ]),
     ]);
@@ -670,6 +684,7 @@ export class PredictionWorkflowService {
   }
 
   async buildActiveSignals(actorId: string, dto: BuildPredictionSignalsDto) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id: dto.policyVersionId },
     });
@@ -678,6 +693,7 @@ export class PredictionWorkflowService {
       throw new NotFoundException('Prediction policy version not found');
     }
 
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const observations = await this.prisma.predictionSourceObservation.findMany(
       {
         where: {
@@ -946,12 +962,14 @@ export class PredictionWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionPolicyVersion.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: pageSize,
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionPolicyVersion.count({ where }),
     ]);
 
@@ -962,6 +980,7 @@ export class PredictionWorkflowService {
     actorId: string,
     dto: CreatePredictionPolicyVersionDto,
   ) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const created = await this.prisma.predictionPolicyVersion.create({
       data: {
         policyKey: dto.policyKey ?? 'default',
@@ -998,6 +1017,7 @@ export class PredictionWorkflowService {
   }
 
   async promotePolicyToCandidate(actorId: string, id: string) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id },
     });
@@ -1020,6 +1040,7 @@ export class PredictionWorkflowService {
       );
     }
 
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const updated = await this.prisma.predictionPolicyVersion.update({
       where: { id },
       data: {
@@ -1045,6 +1066,7 @@ export class PredictionWorkflowService {
   }
 
   async promotePolicyToShadow(actorId: string, id: string) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id },
     });
@@ -1058,6 +1080,7 @@ export class PredictionWorkflowService {
       );
     }
 
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const updated = await this.prisma.predictionPolicyVersion.update({
       where: { id },
       data: {
@@ -1088,6 +1111,7 @@ export class PredictionWorkflowService {
     id: string,
     metrics: Record<string, unknown>,
   ) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id },
     });
@@ -1099,6 +1123,7 @@ export class PredictionWorkflowService {
     const monitoringConfig =
       (policy.monitoringConfig as Record<string, unknown> | null) ?? {};
 
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const updated = await this.prisma.predictionPolicyVersion.update({
       where: { id },
       data: {
@@ -1125,6 +1150,7 @@ export class PredictionWorkflowService {
   }
 
   async getPolicyGateSummary(id: string) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id },
     });
@@ -1137,6 +1163,7 @@ export class PredictionWorkflowService {
       (policy.thresholds as Record<string, unknown> | null) ?? null,
     );
     const [predictionCount, eligibleCounts] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionResult.count({
         where: { policyVersionId: id },
       }),
@@ -1203,6 +1230,7 @@ export class PredictionWorkflowService {
   }
 
   async activatePolicy(actorId: string, id: string) {
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id },
     });
@@ -1262,10 +1290,12 @@ export class PredictionWorkflowService {
 
   async rollbackPolicy(actorId: string, policyKey = 'default') {
     const [currentActive, previousRetired] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionPolicyVersion.findFirst({
         where: { policyKey, status: 'ACTIVE' },
         orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionPolicyVersion.findFirst({
         where: { policyKey, status: 'RETIRED' },
         orderBy: [{ retiredAt: 'desc' }, { activatedAt: 'desc' }],
@@ -1354,6 +1384,7 @@ export class PredictionWorkflowService {
         // Canary: a PREVIEW row should never carry an outcome label. If this is
         // non-zero, we've somehow labeled a quick-match row as an admission
         // result — investigate before relying on calibration inputs.
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         this.prisma.predictionResult.count({
           where: {
             authority: 'PREVIEW',
@@ -1435,25 +1466,38 @@ export class PredictionWorkflowService {
       schoolMetrics,
       schoolMetricsDistinctKeys,
     ] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.school.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.school.count({ where: { satAvg: { not: null } } }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.school.count({ where: { acceptanceRate: { not: null } } }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.school.count({
         where: {
           satAvg: { not: null },
           acceptanceRate: { not: null },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolProgram.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolProgram.count({
         where: { acceptanceRateEstimate: { not: null } },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolCalibration.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolCohortRoundPrior.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolCohortRegimeSignal.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolRelationshipSignal.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count({ where: { isVerified: true } }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count({
         where: { reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] } },
       }),
@@ -1461,13 +1505,17 @@ export class PredictionWorkflowService {
         by: ['result'],
         _count: { _all: true },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count({
         where: { gpa11: { not: null } },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count({
         where: { testScores: { not: Prisma.JsonNull } },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolMetric.count(),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.schoolMetric.findMany({
         select: { metricKey: true },
         distinct: ['metricKey'],
@@ -1547,12 +1595,14 @@ export class PredictionWorkflowService {
       casesByYear,
       casesBySchool,
     ] = await Promise.all([
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionOutcomeLabelRecord.count({
         where: {
           status: { in: VERIFIED_OUTCOME_STATUSES as never[] },
           result: { in: ['ADMITTED', 'REJECTED'] },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionOutcomeLabelRecord.count({
         where: { status: 'SELF_REPORTED' },
       }),
@@ -1564,6 +1614,7 @@ export class PredictionWorkflowService {
         by: ['result'],
         _count: { _all: true },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.predictionOutcomeLabelRecord.findMany({
         orderBy: { updatedAt: 'desc' },
         take: 5,
@@ -1581,12 +1632,14 @@ export class PredictionWorkflowService {
           },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count({
         where: {
           reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
           result: { in: ['ADMITTED', 'REJECTED'] },
         },
       }),
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       this.prisma.admissionCase.count({
         where: {
           reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
@@ -1755,6 +1808,7 @@ export class PredictionWorkflowService {
     // corresponding structured field is empty. Prisma can't express "any
     // of {satRange,actRange,...} non-null AND matching target null" in
     // one clause cleanly; the OR-of-ANDs below covers the four pairs.
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
@@ -1878,6 +1932,7 @@ export class PredictionWorkflowService {
       }
 
       if (!dryRun) {
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         await this.prisma.admissionCase.update({
           where: { id: c.id },
           data: {
@@ -1948,6 +2003,7 @@ export class PredictionWorkflowService {
       options.setVersion ??
       `backfill-admission-cases-${new Date().toISOString().slice(0, 10)}`;
 
+    // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
@@ -2080,6 +2136,7 @@ export class PredictionWorkflowService {
         notes: `Derived from ${total} verified AdmissionCase rows; see sourceSummary.caseIds.`,
       };
 
+      // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
       const existing = await this.prisma.schoolCohortRoundPrior.findFirst({
         where: {
           schoolId: b.schoolId,
@@ -2092,12 +2149,14 @@ export class PredictionWorkflowService {
       });
 
       if (existing) {
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         await this.prisma.schoolCohortRoundPrior.update({
           where: { id: existing.id },
           data: payload,
         });
         updated++;
       } else {
+        // governance: admin-scope — only reachable from admin-prediction-workflow.controller (@Controller("admin/prediction-workflow") + @Roles(Role.OPERATOR)) — reviewing everyone's prediction inputs is the job
         await this.prisma.schoolCohortRoundPrior.create({
           data: {
             schoolId: b.schoolId,

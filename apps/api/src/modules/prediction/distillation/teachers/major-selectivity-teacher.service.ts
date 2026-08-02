@@ -44,6 +44,7 @@ export class MajorSelectivityTeacherService implements TeacherSignalProvider {
     }
 
     const cipCode = resolveMajorToCip(targetMajor);
+    // governance: system-scope — SchoolProgram — published programme data
     const program = await this.prisma.schoolProgram.findFirst({
       where: {
         schoolId: input.schoolId,

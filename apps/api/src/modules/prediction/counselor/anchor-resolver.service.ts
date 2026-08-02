@@ -175,6 +175,7 @@ export class AnchorResolverService {
 
     for (const gpaBand of gpaBands) {
       for (const candidate of candidates) {
+        // governance: system-scope — SchoolCdsAdmitBand — published admit-rate bands keyed by school
         const row = await this.prisma.schoolCdsAdmitBand.findFirst({
           where: {
             schoolId: school.id,
@@ -235,6 +236,7 @@ export class AnchorResolverService {
     const lowerBands = family.slice(0, family.indexOf(matchedBand));
     if (lowerBands.length === 0) return matchedRate;
 
+    // governance: system-scope — SchoolCdsAdmitBand — published admit-rate bands keyed by school
     const rows = await this.prisma.schoolCdsAdmitBand.findMany({
       where: { schoolId, testType, testBand, gpaBand: { in: lowerBands } },
       orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],

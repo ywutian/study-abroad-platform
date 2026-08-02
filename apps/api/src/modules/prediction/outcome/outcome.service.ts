@@ -328,6 +328,7 @@ export class OutcomeService {
     adminUserId: string,
     dto: VerifyOutcomeDto,
   ): Promise<OutcomeView> {
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const record = await this.prisma.predictionOutcomeLabelRecord.findUnique({
       where: { id: outcomeId },
       include: { predictionResult: true },
@@ -346,6 +347,7 @@ export class OutcomeService {
       );
     }
 
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const updated = await this.prisma.predictionOutcomeLabelRecord.update({
       where: { id: outcomeId },
       data: {
@@ -359,6 +361,7 @@ export class OutcomeService {
       include: { predictionResult: true },
     });
 
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const school = await this.prisma.school.findUnique({
       where: { id: updated.predictionResult.schoolId },
       select: { name: true },
@@ -416,6 +419,7 @@ export class OutcomeService {
    * Admin queue — outcomes pending verification.
    */
   async listPendingVerification(): Promise<OutcomeView[]> {
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const records = await this.prisma.predictionOutcomeLabelRecord.findMany({
       where: { status: 'SELF_REPORTED' },
       include: { predictionResult: true },
@@ -425,6 +429,7 @@ export class OutcomeService {
     const schoolIds = [
       ...new Set(records.map((r) => r.predictionResult.schoolId)),
     ];
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
       select: { id: true, name: true },

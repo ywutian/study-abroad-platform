@@ -38,6 +38,7 @@ export class PredictionCalibrationService {
       actualResult: 'ADMITTED' | 'REJECTED';
     }>
   > {
+    // governance: admin-scope — calibration surface behind @Roles(Role.OPERATOR)
     const records = await this.prisma.predictionResult.findMany({
       where: {
         OR: [
@@ -112,6 +113,7 @@ export class PredictionCalibrationService {
     }
 
     try {
+      // governance: admin-scope — calibration surface behind @Roles(Role.OPERATOR)
       const calibrations = await this.prisma.schoolCalibration.findMany({
         select: { schoolId: true, multiplier: true },
       });
@@ -248,6 +250,7 @@ export class PredictionCalibrationService {
     reducedCount: number;
     distribution: Array<{ range: string; count: number }>;
   }> {
+    // governance: admin-scope — calibration surface behind @Roles(Role.OPERATOR)
     const calibrations = await this.prisma.schoolCalibration.findMany({
       select: { multiplier: true },
     });
@@ -309,6 +312,7 @@ export class PredictionCalibrationService {
     }>
   > {
     // Get schools already calibrated to exclude them
+    // governance: admin-scope — calibration surface behind @Roles(Role.OPERATOR)
     const existingCalibrations = await this.prisma.schoolCalibration.findMany({
       select: { schoolId: true },
     });
@@ -377,6 +381,7 @@ export class PredictionCalibrationService {
 
     // Fetch school details
     const schoolIds = topCandidates.map((c) => c.schoolId);
+    // governance: admin-scope — calibration surface behind @Roles(Role.OPERATOR)
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
       select: { id: true, name: true, nameZh: true, usNewsRank: true },

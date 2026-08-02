@@ -361,6 +361,7 @@ export class PredictionExplanationService {
     text: string,
     publicExplanation: ReturnType<typeof buildPredictionPublicExplanation>,
   ) {
+    // governance: parent-scoped — the row comes from loadUserPrediction(userId, …), which resolves the profile via `where: { userId }` first
     const current = await this.prisma.predictionResult.findUnique({
       where: { id: predictionResultId },
       select: { servedTrace: true },
@@ -369,6 +370,7 @@ export class PredictionExplanationService {
       string,
       unknown
     >;
+    // governance: parent-scoped — the row comes from loadUserPrediction(userId, …), which resolves the profile via `where: { userId }` first
     await this.prisma.predictionResult.update({
       where: { id: predictionResultId },
       data: {

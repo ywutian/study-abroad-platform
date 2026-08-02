@@ -144,6 +144,7 @@ export class DistillationStatsRollupService {
     const startDate = startOfUtcDay(filters.startDate);
     const endDateExclusive = addUtcDays(startOfUtcDay(filters.endDate), 1);
     const observations =
+      // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       (await this.prisma.predictionSourceObservation.findMany({
         where: {
           sourceName: { startsWith: DISTILLATION_SOURCE_PREFIX },
@@ -223,6 +224,7 @@ export class DistillationStatsRollupService {
   }
 
   async getOverview(days = 30) {
+    // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const latestDate = await this.prisma.distillationDailyAggregate.findFirst({
       orderBy: { date: 'desc' },
       select: { date: true },
@@ -230,6 +232,7 @@ export class DistillationStatsRollupService {
 
     const startDate = addUtcDays(startOfUtcDay(new Date()), -days);
     const [teacherDaily, schoolDaily] = await Promise.all([
+      // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.distillationDailyAggregate.findMany({
         where: { date: { gte: startDate } },
         orderBy: [
@@ -238,6 +241,7 @@ export class DistillationStatsRollupService {
           { cohortKey: 'asc' },
         ],
       }),
+      // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.distillationSchoolDailyAggregate.findMany({
         where: { date: { gte: startDate } },
         orderBy: [{ date: 'desc' }, { schoolId: 'asc' }],
@@ -297,6 +301,7 @@ export class DistillationStatsRollupService {
     cohortKey?: string;
   }) {
     const days = Math.max(1, Math.min(90, query?.days ?? 30));
+    // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     return this.prisma.distillationDailyAggregate.findMany({
       where: {
         date: { gte: addUtcDays(startOfUtcDay(new Date()), -days) },
@@ -316,6 +321,7 @@ export class DistillationStatsRollupService {
     limit?: number;
   }) {
     const date = query?.date ? startOfUtcDay(new Date(query.date)) : undefined;
+    // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     return this.prisma.distillationSchoolDailyAggregate.findMany({
       where: {
         ...(date ? { date } : {}),
@@ -345,6 +351,7 @@ export class DistillationStatsRollupService {
     sourceName?: string;
     limit?: number;
   }) {
+    // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     return this.prisma.predictionSourceObservation.findMany({
       where: {
         sourceName: {
@@ -368,6 +375,7 @@ export class DistillationStatsRollupService {
   async getChinaCohortGate(cohortKey: string) {
     const startDate = addUtcDays(startOfUtcDay(new Date()), -30);
     const [blendRows, topSchools] = await Promise.all([
+      // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.distillationDailyAggregate.findMany({
         where: {
           date: { gte: startDate },
@@ -376,6 +384,7 @@ export class DistillationStatsRollupService {
           cohortKey,
         },
       }),
+      // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.school.findMany({
         where: {
           country: 'US',
@@ -413,13 +422,15 @@ export class DistillationStatsRollupService {
       totalResolved > 0 ? brierServedNumerator / totalResolved : null;
 
     const latestDate =
+      // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       await this.prisma.distillationSchoolDailyAggregate.findFirst({
         where: { cohortKey, stage: DISTILLATION_SHADOW_STAGE },
         orderBy: { date: 'desc' },
         select: { date: true },
       });
     const latestSchoolRows = latestDate
-      ? await this.prisma.distillationSchoolDailyAggregate.findMany({
+      ? // governance: admin-scope — distillation rollups behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+        await this.prisma.distillationSchoolDailyAggregate.findMany({
           where: {
             date: latestDate.date,
             cohortKey,

@@ -120,6 +120,7 @@ export class CounselorBackfillService {
       ? { id: { gt: cursor } }
       : {};
 
+    // governance: batch-operation — offline re-scoring of stored predictions across all profiles
     const rows = await this.prisma.predictionResult.findMany({
       where,
       orderBy: { id: 'asc' },
@@ -143,6 +144,7 @@ export class CounselorBackfillService {
 
     // Look up all unique schools in one query to avoid N+1
     const schoolIds = Array.from(new Set(batch.map((r) => r.schoolId)));
+    // governance: batch-operation — offline re-scoring of stored predictions across all profiles
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
     });
@@ -287,6 +289,7 @@ export class CounselorBackfillService {
       );
 
       try {
+        // governance: batch-operation — offline re-scoring of stored predictions across all profiles
         await this.prisma.predictionResult.update({
           where: { id: row.id },
           data: {

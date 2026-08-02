@@ -76,6 +76,7 @@ export class PredictionHistoricalService {
       this.logger.warn(`Distribution cache miss`, error);
     }
 
+    // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         schoolId,
@@ -291,6 +292,7 @@ export class PredictionHistoricalService {
         ...this.buildContextWhere(context),
         nationality: context.nationality,
       };
+      // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
       const cases = await this.prisma.admissionCase.findMany({
         where: { ...baseWhere, ...nationalityWhere },
         select,
@@ -309,6 +311,7 @@ export class PredictionHistoricalService {
     // Tier 1: specific (curriculumType + highSchoolType)
     if (context?.curriculumType && context?.highSchoolType) {
       const specificWhere = this.buildContextWhere(context);
+      // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
       const cases = await this.prisma.admissionCase.findMany({
         where: { ...baseWhere, ...specificWhere },
         select,
@@ -334,6 +337,7 @@ export class PredictionHistoricalService {
           : { isEmpty: true };
       }
 
+      // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
       const cases = await this.prisma.admissionCase.findMany({
         where: { ...baseWhere, ...curriculumWhere },
         select,
@@ -348,6 +352,7 @@ export class PredictionHistoricalService {
     }
 
     // Tier 3: unfiltered (original behavior)
+    // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
     const cases = await this.prisma.admissionCase.findMany({
       where: baseWhere,
       select,
@@ -386,6 +391,7 @@ export class PredictionHistoricalService {
   } | null> {
     const MIN_NATIONALITY_CASES = 3;
 
+    // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         schoolId,
@@ -434,6 +440,7 @@ export class PredictionHistoricalService {
   } | null> {
     const MIN_FEEDER_CASES = 5;
 
+    // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         schoolId,
@@ -492,6 +499,7 @@ export class PredictionHistoricalService {
       // Cache miss
     }
 
+    // governance: aggregate-only — de-identified select (result, GPA/SAT bands, test scores, tags, nationality — no id, no userId, no free text) over `isVerified: true` + CASE_REVIEW_APPROVED_WHERE. Small-sample floor: getCaseComparison returns null below 5 admits / 3 rejects; the distribution and stats helpers have NO floor. Note it filters isVerified + review status but NOT `visibility`, so a PRIVATE-visibility verified case still contributes — the same open product question recorded for hall-verified-dashboard in the rule header
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         schoolId,

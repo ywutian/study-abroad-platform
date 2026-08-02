@@ -73,6 +73,7 @@ export class CaseAggregateBackfillService {
       options.setVersion ??
       `case-aggregate-teachers-${new Date().toISOString().slice(0, 10)}`;
 
+    // governance: batch-operation — offline backfill over all approved cases
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
@@ -146,6 +147,7 @@ export class CaseAggregateBackfillService {
     // Idempotent replace: drop prior rows for this setVersion before
     // inserting fresh ones. Scoped to our 4 teacher sourceNames so this
     // never touches rows owned by other distillation pipelines.
+    // governance: batch-operation — offline backfill over all approved cases
     const deleted = await this.prisma.predictionSourceObservation.deleteMany({
       where: {
         sourceName: { in: TEACHER_SOURCE_NAMES as unknown as string[] },

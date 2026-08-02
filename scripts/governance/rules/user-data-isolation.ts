@@ -26,6 +26,19 @@
  *                                       getListById and ranking's findById
  *                                       shipped private rows on @Public()
  *                                       routes (fixed 2026-08-02, 52ebf249).
+ *   // governance: aggregate-only    — reads many users' rows but emits only
+ *                                       counts or derived statistics, with a
+ *                                       de-identified select (no id, no
+ *                                       userId, no free text). Use ONLY when
+ *                                       the annotation also states the
+ *                                       small-sample floor, or says outright
+ *                                       that there is none: an aggregate over
+ *                                       a thin enough slice re-identifies,
+ *                                       and that risk is the whole reason
+ *                                       this category is separate from
+ *                                       system-scope. Not a licence to skip a
+ *                                       visibility filter — say which filters
+ *                                       ARE applied.
  */
 
 import * as fs from 'fs';
@@ -94,6 +107,12 @@ const SCAN_DIRS = [
   path.join(ROOT, 'apps/api/src/modules/health'),
   path.join(ROOT, 'apps/api/src/modules/ai'),
   path.join(ROOT, 'apps/api/src/modules/ranking'),
+  // Eighth batch — prediction, 163 sites, no findings. 59 of them are the
+  // OPERATOR-gated workflow surface, ~50 are school/CDS/IPEDS platform tables
+  // and distillation teachers, the rest are offline sweeps or reads keyed by a
+  // profileId the controller resolved from @CurrentUser(). Its historical
+  // helpers are the first use of `aggregate-only`.
+  path.join(ROOT, 'apps/api/src/modules/prediction'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
@@ -241,7 +260,8 @@ export function run(): GovernanceIssue[] {
             !contextWindow.includes('// governance: system-scope') &&
             !contextWindow.includes('// governance: parent-scoped') &&
             !contextWindow.includes('// governance: admin-scope') &&
-            !contextWindow.includes('// governance: public-feed')
+            !contextWindow.includes('// governance: public-feed') &&
+            !contextWindow.includes('// governance: aggregate-only')
           ) {
             issues.push({
               rule: 'user-data-isolation',
@@ -269,7 +289,8 @@ export function run(): GovernanceIssue[] {
             !contextWindow.includes('// governance: system-scope') &&
             !contextWindow.includes('// governance: parent-scoped') &&
             !contextWindow.includes('// governance: admin-scope') &&
-            !contextWindow.includes('// governance: public-feed')
+            !contextWindow.includes('// governance: public-feed') &&
+            !contextWindow.includes('// governance: aggregate-only')
           ) {
             issues.push({
               rule: 'user-data-isolation',

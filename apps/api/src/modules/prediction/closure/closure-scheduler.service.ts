@@ -147,6 +147,7 @@ export class ClosureSchedulerService implements OnModuleInit, OnModuleDestroy {
    * real value. Never clobbers engine-set FAILED / UNAVAILABLE / NEEDS_REVIEW.
    */
   private async syncQueue(): Promise<number> {
+    // governance: batch-operation — cron that walks every school/high-school to build closure targets
     const existing = await this.prisma.closureTarget.findMany({
       select: { entityType: true, entityId: true, field: true, status: true },
     });
@@ -158,6 +159,7 @@ export class ClosureSchedulerService implements OnModuleInit, OnModuleDestroy {
     );
     let changed = 0;
 
+    // governance: batch-operation — cron that walks every school/high-school to build closure targets
     const schools = await this.prisma.school.findMany();
     for (const s of schools) {
       const rankWeight = s.usNewsRank
@@ -178,6 +180,7 @@ export class ClosureSchedulerService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
+    // governance: batch-operation — cron that walks every school/high-school to build closure targets
     const highSchools = await this.prisma.highSchool.findMany();
     for (const h of highSchools) {
       for (const [field, cfg] of Object.entries(HS_FIELDS)) {
@@ -211,6 +214,7 @@ export class ClosureSchedulerService implements OnModuleInit, OnModuleDestroy {
     const isNull = value == null;
     const existingStatus = statusByKey.get(key);
     if (existingStatus === undefined) {
+      // governance: batch-operation — cron that walks every school/high-school to build closure targets
       await this.prisma.closureTarget.create({
         data: {
           wave,
@@ -226,6 +230,7 @@ export class ClosureSchedulerService implements OnModuleInit, OnModuleDestroy {
       return 1;
     }
     if (!isNull && existingStatus === 'PENDING') {
+      // governance: batch-operation — cron that walks every school/high-school to build closure targets
       await this.prisma.closureTarget.updateMany({
         where: { entityType, entityId, field },
         data: { status: 'CLOSED' },
@@ -242,6 +247,7 @@ export class ClosureSchedulerService implements OnModuleInit, OnModuleDestroy {
    */
   private async reopenStale(): Promise<number> {
     const cutoff = new Date(Date.now() - this.freshnessDays * 86_400_000);
+    // governance: batch-operation — cron that walks every school/high-school to build closure targets
     const res = await this.prisma.closureTarget.updateMany({
       where: { status: 'CLOSED', updatedAt: { lt: cutoff } },
       data: { status: 'PENDING' },

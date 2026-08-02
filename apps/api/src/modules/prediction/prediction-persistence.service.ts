@@ -52,6 +52,7 @@ export class PredictionPersistenceService {
   constructor(private readonly prisma: PrismaService) {}
 
   private async ensureLegacyPolicyVersion(): Promise<string> {
+    // governance: parent-scoped — persists the result just computed for the profile the caller resolved
     const policy = await this.prisma.predictionPolicyVersion.upsert({
       where: { id: LEGACY_PREDICTION_POLICY_VERSION },
       update: {},
@@ -83,6 +84,7 @@ export class PredictionPersistenceService {
    * is persisted, and reactivated if it had been retired.
    */
   private async ensureCounselorPolicyVersion(): Promise<string> {
+    // governance: parent-scoped — persists the result just computed for the profile the caller resolved
     const policy = await this.prisma.predictionPolicyVersion.upsert({
       where: { id: COUNSELOR_RULE_VERSION },
       update: { status: 'ACTIVE' },
@@ -110,6 +112,7 @@ export class PredictionPersistenceService {
       return undefined;
     }
 
+    // governance: parent-scoped — persists the result just computed for the profile the caller resolved
     const existing = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id: policyVersionId },
       select: { id: true },
@@ -164,6 +167,7 @@ export class PredictionPersistenceService {
         result.policyVersionId,
       );
 
+      // governance: parent-scoped — persists the result just computed for the profile the caller resolved
       const persistedResult = await this.prisma.predictionResult.upsert({
         where: {
           profileId_schoolId: { profileId, schoolId },
@@ -217,6 +221,7 @@ export class PredictionPersistenceService {
       });
 
       // 写入历史快照（用于趋势追踪）
+      // governance: parent-scoped — persists the result just computed for the profile the caller resolved
       const snapshot = await this.prisma.predictionSnapshot.create({
         data: {
           profileId,

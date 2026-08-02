@@ -93,7 +93,9 @@ export class PredictionBenchmarkService {
     const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20));
 
     const [total, runs] = await this.prisma.$transaction([
+      // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.predictionBenchmarkRun.count(),
+      // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.predictionBenchmarkRun.findMany({
         select: RUN_SUMMARY_SELECT,
         orderBy: { ranAt: 'desc' },
@@ -114,6 +116,7 @@ export class PredictionBenchmarkService {
   }
 
   async getLatestRun(): Promise<BenchmarkRunWithComments | null> {
+    // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const latest = await this.prisma.predictionBenchmarkRun.findFirst({
       orderBy: { ranAt: 'desc' },
       select: { id: true },
@@ -123,6 +126,7 @@ export class PredictionBenchmarkService {
   }
 
   async getRun(id: string): Promise<BenchmarkRunWithComments> {
+    // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const run = await this.prisma.predictionBenchmarkRun.findUnique({
       where: { id },
       select: {
@@ -152,6 +156,7 @@ export class PredictionBenchmarkService {
   ) {
     // Validate run exists (foreign key would also catch this but we want a
     // clean 404 instead of an FK violation 500).
+    // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const run = await this.prisma.predictionBenchmarkRun.findUnique({
       where: { id: runId },
       select: { id: true },
@@ -160,6 +165,7 @@ export class PredictionBenchmarkService {
       throw new NotFoundException(`Benchmark run ${runId} not found`);
     }
 
+    // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const created = await this.prisma.predictionBenchmarkComment.create({
       data: {
         runId,
@@ -182,6 +188,7 @@ export class PredictionBenchmarkService {
   }
 
   async deleteComment(commentId: string, requesterUserId: string) {
+    // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const comment = await this.prisma.predictionBenchmarkComment.findUnique({
       where: { id: commentId },
       select: { authorId: true },
@@ -196,6 +203,7 @@ export class PredictionBenchmarkService {
       // — for a co-review surface that erases history fast.)
       throw new NotFoundException(`Comment ${commentId} not found`);
     }
+    // governance: admin-scope — @Controller("admin/prediction-benchmarks") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     await this.prisma.predictionBenchmarkComment.delete({
       where: { id: commentId },
     });

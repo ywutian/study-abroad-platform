@@ -784,6 +784,7 @@ export class PredictionTransformerService {
     profileId: string,
   ): Promise<ProfileInput> {
     try {
+      // governance: parent-scoped — reads the EssayAIResult belonging to the analysis being transformed
       const latestReview = await this.prisma.essayAIResult.findFirst({
         where: {
           essay: { profileId },

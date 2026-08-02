@@ -30,6 +30,7 @@ export class PredictionPolicyShadowService {
 
   @Cron('30 3 * * *')
   async refreshAllShadowPolicies() {
+    // governance: batch-operation — shadow-policy evaluation sweeping stored results; PredictionPolicyVersion is platform config
     const policies = await this.prisma.predictionPolicyVersion.findMany({
       where: { status: 'SHADOW' },
       select: { id: true },
@@ -64,6 +65,7 @@ export class PredictionPolicyShadowService {
       ece: number | null;
     }>;
   }> {
+    // governance: batch-operation — shadow-policy evaluation sweeping stored results; PredictionPolicyVersion is platform config
     const results = await this.prisma.predictionResult.findMany({
       where: { policyVersionId, authority: 'AUTHORITATIVE' },
       take: 5000,
@@ -197,6 +199,7 @@ export class PredictionPolicyShadowService {
   }
 
   async refreshPolicyShadowMetrics(policyVersionId: string, actorId?: string) {
+    // governance: batch-operation — shadow-policy evaluation sweeping stored results; PredictionPolicyVersion is platform config
     const policy = await this.prisma.predictionPolicyVersion.findUnique({
       where: { id: policyVersionId },
     });
@@ -205,6 +208,7 @@ export class PredictionPolicyShadowService {
       throw new NotFoundException('Prediction policy version not found');
     }
 
+    // governance: batch-operation — shadow-policy evaluation sweeping stored results; PredictionPolicyVersion is platform config
     const baselinePolicy = await this.prisma.predictionPolicyVersion.findFirst({
       where: {
         policyKey: policy.policyKey,
@@ -264,6 +268,7 @@ export class PredictionPolicyShadowService {
     } else {
       const monitoringConfig =
         (policy.monitoringConfig as Record<string, unknown> | null) ?? {};
+      // governance: batch-operation — shadow-policy evaluation sweeping stored results; PredictionPolicyVersion is platform config
       await this.prisma.predictionPolicyVersion.update({
         where: { id: policyVersionId },
         data: {

@@ -47,6 +47,7 @@ export class EdBoostTeacherService implements TeacherSignalProvider {
       ]);
     }
 
+    // governance: system-scope — SchoolMetric — published institution data
     const metric = await this.prisma.schoolMetric.findFirst({
       where: {
         schoolId: input.schoolId,

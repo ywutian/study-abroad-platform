@@ -470,7 +470,8 @@ export class CounselorEngineService {
 
     const cipCode = resolveMajorToCip(profile.targetMajor);
     const cipProgram = cipCode
-      ? await this.prisma.schoolProgram.findFirst({
+      ? // governance: system-scope — SchoolProgram — published programme data
+        await this.prisma.schoolProgram.findFirst({
           where: {
             schoolId: school.id,
             cipCode,
@@ -484,6 +485,7 @@ export class CounselorEngineService {
     }
 
     // Fuzzy name match for unknown aliases or rows whose CIP code is missing.
+    // governance: system-scope — SchoolProgram — published programme data
     const program = await this.prisma.schoolProgram.findFirst({
       where: {
         schoolId: school.id,
@@ -512,6 +514,7 @@ export class CounselorEngineService {
     // constant.
     const bucketCip = resolveMajorToProgramBucket(profile.targetMajor);
     if (bucketCip && bucketCip !== cipCode) {
+      // governance: system-scope — SchoolProgram — published programme data
       const bucketProgram = await this.prisma.schoolProgram.findFirst({
         where: { schoolId: school.id, cipCode: bucketCip },
         select: { acceptanceRateEstimate: true },
