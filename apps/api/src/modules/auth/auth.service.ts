@@ -208,10 +208,19 @@ export class AuthService {
         },
       });
 
-      await tx.operatorInvite.update({
-        where: { id: invite.id },
+      // Conditional claim, not update-by-id: the `if (invite.usedBy)` guard
+      // above runs OUTSIDE this transaction, so two requests with the same
+      // token both read `usedBy: null` and an unconditional update lets both
+      // win — one invite, two accounts at invite.role (OPERATOR by default).
+      // No unique constraint on usedBy backs this up. Throwing on count 0
+      // rolls back the user created just above.
+      const claimed = await tx.operatorInvite.updateMany({
+        where: { id: invite.id, usedBy: null },
         data: { usedBy: newUser.id, usedAt: new Date() },
       });
+      if (claimed.count === 0) {
+        throw new BadRequestException('Invite already used');
+      }
 
       return newUser;
     });

@@ -1,6 +1,6 @@
 {
   "_comment": "One-way ceiling on oversized source files, per package. The number is Σ max(0, lines − 500) — the total lines past the limit, NOT a file count, so splitting a large file always lowers it and never trips the gate. check-file-size-ratchet.ts fails when a package's number RISES. After splitting something, run `pnpm lint:file-size --update` to lock the win; --update never raises a floor. Raising a number requires editing this file in the same PR.",
-  "apps/api/src": 43854,
+  "apps/api/src": 43863,
   "apps/api/scripts": 41352,
   "apps/api/prisma": 11948,
   "apps/web/src": 16284,

@@ -61,6 +61,11 @@ describe('AuthService', () => {
               user: {
                 findFirst: jest.fn(),
                 update: jest.fn(),
+                create: jest.fn(),
+              },
+              operatorInvite: {
+                findUnique: jest.fn(),
+                updateMany: jest.fn(),
               },
               // $transaction executes the callback with the prisma mock itself
               $transaction: jest.fn((fn: (tx: any) => Promise<any>) =>
@@ -623,6 +628,81 @@ describe('AuthService', () => {
       await service.login({ email: 'test@example.com', password: 'pass' });
 
       expect(prismaService.refreshToken.deleteMany).not.toHaveBeenCalled();
+    });
+  });
+  describe('registerWithInvite — invite consumption', () => {
+    // The `if (invite.usedBy)` guard runs before the transaction, so two
+    // requests carrying the same token both read `usedBy: null` and both
+    // reach the consume. OperatorInvite has no unique constraint on usedBy,
+    // and the role granted is invite.role — OPERATOR by default — so an
+    // unconditional update-by-id let one invite mint two privileged accounts.
+
+    const validInvite = {
+      id: 'inv-1',
+      token: 'tok-1',
+      email: null,
+      role: 'OPERATOR',
+      usedBy: null,
+      expiresAt: new Date(Date.now() + 3_600_000),
+    };
+    const dto = {
+      email: 'op@example.com',
+      password: 'Passw0rd!x',
+      inviteToken: 'tok-1',
+      locale: 'zh',
+    };
+
+    beforeEach(() => {
+      (prismaService as any).operatorInvite.findUnique.mockResolvedValue(
+        validInvite,
+      );
+      (userService.findByEmail as jest.Mock).mockResolvedValue(null);
+      (prismaService as any).user.create.mockResolvedValue({
+        ...mockUser,
+        role: 'OPERATOR',
+      });
+      (prismaService as any).operatorInvite.updateMany.mockResolvedValue({
+        count: 1,
+      });
+    });
+
+    it('claims the invite conditionally on usedBy being null', async () => {
+      await service.registerWithInvite(dto);
+
+      expect(
+        (prismaService as any).operatorInvite.updateMany,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'inv-1', usedBy: null },
+        }),
+      );
+      // never an unconditional update-by-id
+      expect((prismaService as any).operatorInvite.update).toBeUndefined();
+    });
+
+    it('rejects the loser of a race instead of minting a second operator', async () => {
+      // The other request committed first, so the conditional claim matches
+      // nothing even though the pre-transaction read saw usedBy: null.
+      (prismaService as any).operatorInvite.updateMany.mockResolvedValue({
+        count: 0,
+      });
+
+      await expect(service.registerWithInvite(dto as never)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('takes the role from the invite, never from the request body', async () => {
+      await service.registerWithInvite({
+        ...dto,
+        role: 'SUPER_ADMIN',
+      } as never);
+
+      expect((prismaService as any).user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ role: 'OPERATOR' }),
+        }),
+      );
     });
   });
 });
