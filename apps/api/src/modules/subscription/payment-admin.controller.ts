@@ -103,15 +103,22 @@ export class PaymentAdminController {
       monthlyRevenueResult,
       byPlan,
     ] = await Promise.all([
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count(),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.SUCCESS } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.FAILED } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.REFUNDED } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.PENDING } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.aggregate({
         where: { status: PaymentStatus.SUCCESS },
         _sum: { amount: true },
       }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.aggregate({
         where: {
           status: PaymentStatus.SUCCESS,
@@ -149,6 +156,7 @@ export class PaymentAdminController {
   @RequirePermission(Permission.PAYMENT_VIEW)
   @ApiOperation({ summary: 'Payment details' })
   async getPayment(@Param('id') id: string) {
+    // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
     const payment = await this.prisma.payment.findUnique({
       where: { id },
       include: {

@@ -75,6 +75,14 @@ const SCAN_DIRS = [
   // essay-debate is a SEPARATE module from essay — easy to miss, and missing
   // it is how the unvalidated debate targets survived this long.
   path.join(ROOT, 'apps/api/src/modules/essay-debate'),
+  // Sixth batch — the three small, entirely user-linked modules. 29 sites, no
+  // findings: auth resolves every row from verified credentials or a bearer
+  // token, user.service is generic building blocks whose controller always
+  // passes @CurrentUser().id, and subscription's remaining writes are the
+  // HMAC-verified gateway callback plus a read-only OPERATOR surface.
+  path.join(ROOT, 'apps/api/src/modules/subscription'),
+  path.join(ROOT, 'apps/api/src/modules/auth'),
+  path.join(ROOT, 'apps/api/src/modules/user'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so

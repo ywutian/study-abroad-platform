@@ -22,6 +22,7 @@ export class UserService {
    * @returns The user if found, or null if not found or soft-deleted
    */
   async findById(id: string): Promise<User | null> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.findUnique({
       where: { id, deletedAt: null },
     });
@@ -33,6 +34,7 @@ export class UserService {
    * @returns The user if found, or null if no user matches the email or is soft-deleted
    */
   async findByEmail(email: string): Promise<User | null> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.findFirst({
       where: { email, deletedAt: null },
     });
@@ -58,6 +60,7 @@ export class UserService {
    * @returns The newly created user
    */
   async create(data: Prisma.UserCreateInput): Promise<User> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.create({ data });
   }
 
@@ -68,6 +71,7 @@ export class UserService {
    * @returns The updated user
    */
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.update({
       where: { id },
       data,
@@ -205,6 +209,7 @@ export class UserService {
    * @returns An object containing the export date and the user's data (profile, cases, followers, following)
    */
   async exportUserData(id: string): Promise<Record<string, any>> {
+    // governance: parent-scoped — GDPR export — reached only from @Get("me/export"), which passes @CurrentUser().id
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -368,6 +373,7 @@ export class UserService {
     const normalizedCode = referralCode.trim().toUpperCase();
     if (!normalizedCode) return null;
 
+    // governance: parent-scoped — keyed by a referral code, a value its owner hands out deliberately; returns only the referrer id, nothing else about them
     const referrer = await this.prisma.user.findUnique({
       where: { referralCode: normalizedCode },
       select: { id: true },

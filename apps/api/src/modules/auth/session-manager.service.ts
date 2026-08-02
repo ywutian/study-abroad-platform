@@ -43,6 +43,7 @@ export class SessionManager {
    * @returns Whether the token was found and deleted
    */
   async invalidateToken(token: string): Promise<boolean> {
+    // governance: parent-scoped — keyed by the refresh-token VALUE, which only its holder has — possession is the scope, the same way a session cookie is
     const result = await this.prisma.refreshToken.deleteMany({
       where: { token },
     });

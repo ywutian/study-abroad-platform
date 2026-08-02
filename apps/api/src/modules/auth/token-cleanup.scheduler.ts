@@ -16,6 +16,7 @@ export class TokenCleanupScheduler {
     this.logger.log('Starting expired refresh token cleanup...');
 
     try {
+      // governance: batch-operation — nightly cron deleting every expired refresh token across all users
       const result = await this.prisma.refreshToken.deleteMany({
         where: {
           expiresAt: {

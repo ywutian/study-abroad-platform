@@ -440,6 +440,7 @@ export class SubscriptionService {
 
     // 幂等性检查：防止重复处理同一 webhook
     if (gatewayId) {
+      // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
       const existing = await this.prisma.payment.findFirst({
         where: {
           metadata: { path: ['webhookEventId'], equals: gatewayId },
@@ -453,10 +454,12 @@ export class SubscriptionService {
 
     switch (eventType) {
       case 'payment.success': {
+        // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
         const payment = await this.prisma.payment.findFirst({
           where: { transactionId: payload.transactionId, status: 'PENDING' },
         });
         if (payment) {
+          // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
           await this.prisma.payment.update({
             where: { id: payment.id },
             data: {
@@ -473,10 +476,12 @@ export class SubscriptionService {
       }
 
       case 'payment.failed': {
+        // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
         const payment = await this.prisma.payment.findFirst({
           where: { transactionId: payload.transactionId, status: 'PENDING' },
         });
         if (payment) {
+          // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
           await this.prisma.payment.update({
             where: { id: payment.id },
             data: {
@@ -494,10 +499,12 @@ export class SubscriptionService {
       }
 
       case 'payment.refunded': {
+        // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
         const payment = await this.prisma.payment.findFirst({
           where: { transactionId: payload.transactionId, status: 'SUCCESS' },
         });
         if (payment) {
+          // governance: admin-scope — gateway callback, not a user request: cross-user by design and gated by an HMAC over the raw body rather than a role, with assertPaymentsEnabled() making it unreachable in production (paymentsEnabled requires NODE_ENV !== production). The payment row is resolved from the signed payload
           await this.prisma.payment.update({
             where: { id: payment.id },
             data: {
