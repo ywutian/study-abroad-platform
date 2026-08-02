@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Lumni 留学申请平台 — 全面技术深度报告（含 AI Agent）</title>
+<style>
+:root{
+  --bg:#080d18;--elev:#0f1628;--card:#141e33;--border:rgba(148,163,184,.16);
+  --text:#e8eef9;--muted:#94a3b8;--faint:#64748b;
+  --sky:#38bdf8;--green:#34d399;--amber:#fbbf24;--violet:#a78bfa;--rose:#f87171;--cyan:#22d3ee;
+  --font:"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"SF Mono","JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7;font-size:15.5px}
+a{color:var(--sky);text-decoration:none}a:hover{text-decoration:underline}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.sidebar{position:relative!important;height:auto!important;max-height:none;border-right:none;border-bottom:1px solid var(--border)}}
+.sidebar{position:sticky;top:0;height:100vh;overflow:auto;padding:20px 14px 40px;border-right:1px solid var(--border);background:linear-gradient(180deg,#0b1220,#0a101c);font-size:13px}
+.sidebar .brand{font-weight:700;font-size:14px;letter-spacing:-.01em;margin-bottom:4px}
+.sidebar .sub{color:var(--muted);font-size:11px;margin-bottom:16px}
+.sidebar nav a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);margin-bottom:2px}
+.sidebar nav a:hover,.sidebar nav a.active{background:rgba(56,189,248,.1);color:var(--text);text-decoration:none}
+.sidebar nav .g{margin-top:12px;padding:4px 10px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.main{padding:28px 28px 80px;max-width:980px}
+.hero{padding:36px 32px;border:1px solid var(--border);border-radius:20px;background:
+  radial-gradient(700px 280px at 0% 0%,rgba(56,189,248,.18),transparent 55%),
+  radial-gradient(500px 240px at 100% 0%,rgba(167,139,250,.14),transparent 50%),
+  var(--elev);margin-bottom:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--sky);font-weight:700;margin-bottom:10px}
+.hero h1{margin:0 0 12px;font-size:clamp(1.6rem,3.5vw,2.35rem);line-height:1.2;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:0 0 18px;max-width:760px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03);font-size:12px;color:var(--muted)}
+.chip b{color:var(--text);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0 0}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.main{padding:18px 14px 60px}}
+.stat{text-align:center;padding:14px 8px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.stat .v{font-family:var(--mono);font-size:1.45rem;font-weight:700;color:var(--sky);line-height:1.1}
+.stat .l{font-size:11px;color:var(--muted);margin-top:4px}
+section{margin:0 0 28px;padding:26px 24px 12px;border:1px solid var(--border);border-radius:16px;background:var(--elev);scroll-margin-top:16px}
+section>h2{margin:0 0 6px;font-size:1.35rem;display:flex;gap:10px;align-items:baseline}
+section>h2 .n{font-family:var(--mono);font-size:.85rem;color:var(--sky)}
+.sd{color:var(--muted);margin:0 0 18px;font-size:.92rem}
+h3{margin:26px 0 10px;font-size:1.08rem;color:#cbd5e1;border-bottom:1px solid var(--border);padding-bottom:6px}
+h4{margin:16px 0 8px;font-size:.98rem;color:#e2e8f0}
+p{margin:0 0 12px}ul,ol{margin:0 0 14px;padding-left:1.2rem}li{margin-bottom:5px}li::marker{color:var(--sky)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:800px){.g2,.g3{grid-template-columns:1fr}}
+.card{border:1px solid var(--border);border-radius:12px;padding:14px 14px 12px;background:var(--card)}
+.card h4{margin-top:0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 16px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:650;background:rgba(255,255,255,.02)}
+tr:hover td{background:rgba(56,189,248,.03)}
+code,.mono{font-family:var(--mono);font-size:.86em;color:#7dd3fc}
+pre{background:#060a14;border:1px solid var(--border);border-radius:12px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.55;color:#cbd5e1;margin:0 0 16px;white-space:pre}
+.callout{border-left:3px solid var(--sky);background:rgba(56,189,248,.07);padding:12px 14px;border-radius:0 10px 10px 0;margin:0 0 14px;font-size:.93rem}
+.callout.warn{border-left-color:var(--amber);background:rgba(251,191,36,.08)}
+.callout.ok{border-left-color:var(--green);background:rgba(52,211,153,.08)}
+.callout.violet{border-left-color:var(--violet);background:rgba(167,139,250,.1)}
+.callout.rose{border-left-color:var(--rose);background:rgba(248,113,113,.08)}
+.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:700;margin:0 3px 3px 0}
+.tag.sky{background:rgba(56,189,248,.15);color:#7dd3fc}
+.tag.green{background:rgba(52,211,153,.15);color:#6ee7b7}
+.tag.amber{background:rgba(251,191,36,.15);color:#fcd34d}
+.tag.violet{background:rgba(167,139,250,.15);color:#c4b5fd}
+.tag.rose{background:rgba(248,113,113,.15);color:#fca5a5}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 14px}
+.flow .s{padding:7px 11px;border-radius:8px;background:var(--card);border:1px solid var(--border);font-size:12.5px;font-weight:550}
+.flow .a{color:var(--muted);font-size:13px}
+.agent{border:1px solid var(--border);border-radius:12px;padding:16px;background:linear-gradient(160deg,var(--card),#0c1324);margin-bottom:12px}
+.agent .nm{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--sky);margin-bottom:4px}
+.agent .rl{font-size:14px;margin-bottom:8px}
+.agent .meta{font-size:12px;color:var(--muted)}
+.tool-list{columns:2;column-gap:18px;font-size:13px;margin:0 0 14px}
+@media(max-width:700px){.tool-list{columns:1}}
+.tool-list li{break-inside:avoid}
+.toc-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 0}
+.toc-mini a{display:block;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:13px}
+.toc-mini a span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.toc-mini a:hover{border-color:rgba(56,189,248,.4);text-decoration:none}
+.footer{margin-top:24px;padding:18px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--border)}
+.kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(--border);border-radius:4px;background:rgba(255,255,255,.04)}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">Lumni · 深度技术报告</div>
+  <div class="sub">v2 · 2026-07-17 · AI Agent 重点</div>
+  <nav>
+    <div class="g">总览</div>
+    <a href="#s0">0. 阅读指南</a>
+    <a href="#s1">1. 产品定位</a>
+    <a href="#s2">2. 技术栈与仓库</a>
+    <a href="#s3">3. 系统架构</a>
+    <a href="#s4">4. 功能全景</a>
+    <div class="g">AI 核心</div>
+    <a href="#s5">5. AI 三层模型</a>
+    <a href="#s6">6. Agent 架构总览</a>
+    <a href="#s7">7. 六大专家 Agent</a>
+    <a href="#s8">8. 45 工具全表</a>
+    <a href="#s9">9. ReWOO 执行引擎</a>
+    <a href="#s10">10. 三级路由</a>
+    <a href="#s11">11. 记忆系统</a>
+    <a href="#s12">12. 安全与治理</a>
+    <a href="#s13">13. LLM / 韧性 / 观测</a>
+    <a href="#s14">14. 配额与积分</a>
+    <a href="#s15">15. 端到端调用链</a>
+    <a href="#s16">16. 前端 AI UX</a>
+    <div class="g">领域 AI</div>
+    <a href="#s17">17. 预测 × AI 边界</a>
+    <a href="#s18">18. 文书 / 推荐 / 分析</a>
+    <a href="#s19">19. 数据与 PDF 流水线</a>
+    <div class="g">工程</div>
+    <a href="#s20">20. 研发 Agent 工作流</a>
+    <a href="#s21">21. 规模与指标</a>
+    <a href="#s22">22. 设计决策汇总</a>
+  </nav>
+</aside>
+<main class="main">
+
+<header class="hero" id="top">
+  <div class="eyebrow">Comprehensive Technical Deep Dive</div>
+  <h1>Lumni 留学申请平台<br/>全面技术深度报告</h1>
+  <p class="lead">仓库 <code>study-abroad-platform</code>。本文在源码与官方文档对照基础上，系统说明产品做了什么、技术栈、模块实现，并<strong>重点展开 AI Agent 子系统</strong>（6 专家 · ReWOO · 45 Tools · 三层记忆 · 三层安全 · Counselor 录取引擎边界）。</p>
+  <div class="chips">
+    <span class="chip"><b>产品</b> Lumni · DIY + B2B</span>
+    <span class="chip"><b>端</b> Web · Mobile · API · Extension</span>
+    <span class="chip"><b>AI 模块 LOC</b> ~34k–45k</span>
+    <span class="chip"><b>数据</b> 157 models · pgvector</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="v">29</div><div class="l">NestJS 业务模块</div></div>
+    <div class="stat"><div class="v">6</div><div class="l">运行时 Agents</div></div>
+    <div class="stat"><div class="v">45</div><div class="l">LLM 可见 Tools</div></div>
+    <div class="stat"><div class="v">82</div><div class="l">Web page.tsx 路由</div></div>
+  </div>
+</header>
+
+<!-- 0 -->
+<section id="s0">
+<h2><span class="n">00</span> 阅读指南与术语边界</h2>
+<p class="sd">避免把「开发时用的 Claude / Codex」和「用户打开的 Lumni AI」混为一谈。</p>
+<div class="callout violet">
+<strong>三套「Agent」不要混用：</strong><br/>
+① <b>产品运行时 Agent</b> — <code>apps/api/src/modules/ai-agent/</code>，用户聊天的 6 专家；<br/>
+② <b>研发审查 Agent</b> — <code>.claude/agents/</code> 13 个，Step 0 相关性过滤，保证工程质量；<br/>
+③ <b>数据闭环脚本 Agent</b> — <code>closure-agents/*.ts</code> 等，调研结论固化为 <code>TARGETS[]</code> 写库，运行时不再调 Claude。
+</div>
+<div class="callout warn">
+<strong>文档漂移注意：</strong>部分旧文档仍写「5 agents / 32 tools」或「~163 tools」。以源码为准：
+<strong>6 agents / 45 LLM-visible tools</strong>（~163 是各 Tool Service 内部方法量级，非 OpenAI function schema 数）。
+</div>
+</section>
+
+<!-- 1 -->
+<section id="s1">
+<h2><span class="n">01</span> 产品定位：做了什么</h2>
+<p class="sd">AI 驱动的智能留学申请辅助平台，把申请旅程产品化，并用确定性引擎出概率、用多 Agent 当顾问。</p>
+<div class="g2">
+  <div class="card">
+    <h4>目标用户</h4>
+    <ul>
+      <li><b>DIY 申请者</b>（学生 / 家长）— 主用户，中英双语</li>
+      <li><b>COUNSELOR</b> — B2B 顾问工作台</li>
+      <li><b>OPERATOR</b> — 学校 / CDS / 案例数据录入审核</li>
+      <li><b>ADMIN / SUPER_ADMIN</b> — 运维、预测健康、AI 运维、Feature Flag</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>核心价值主张</h4>
+    <ul>
+      <li>档案中心（类 Common App 结构化材料）</li>
+      <li><b>CDS 锚定、可解释的录取概率</b>（非黑盒 AI 猜数）</li>
+      <li>多专家 AI：文书 / 选校 / 档案 / 规划 / 简历</li>
+      <li>社区：案例、论坛、大厅、组队、互评</li>
+      <li>浏览器扩展：Common App 自动填表</li>
+    </ul>
+  </div>
+</div>
+<h3>四大产品支柱</h3>
+<div class="g2">
+  <div class="card"><h4>Find Your College</h4><p>搜索、筛选、对比、Reach/Target/Safety 清单、自定义加权排名。</p></div>
+  <div class="card"><h4>Uncommon App</h4><p>档案中心 + 选校清单 + AI 申请评估 / 活动优化。</p></div>
+  <div class="card"><h4>Feature Hall</h4><p>滑动发现、榜单、互评、招生官视角类体验。</p></div>
+  <div class="card"><h4>Social</h4><p>论坛、WebSocket 私信、Teams 竞赛招人滑动匹配、案例分享。</p></div>
+</div>
+<div class="callout ok">
+<strong>对外口径金句：</strong>AI 负责对话、工具调用、解释与写作辅助；
+<strong>用户看到的录取概率数字由 Counselor 确定性引擎产出</strong>（CDS / AR 锚定 × 有界修正），LLM 不得发明评分引擎来「猜录取率」。艺术/音乐作品集校刻意 Tier 4 不给概率。
+</div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+<h2><span class="n">02</span> 技术栈与仓库结构</h2>
+<p class="sd">Turbo + pnpm monorepo · Node 20 · 部署以 GCP Cloud Run 为主。</p>
+<table>
+<thead><tr><th>层级</th><th>技术</th><th>版本 / 说明</th></tr></thead>
+<tbody>
+<tr><td>Monorepo</td><td>Turbo + pnpm workspaces</td><td>Turbo ^2.10 · pnpm 10.22 · Node 20.x</td></tr>
+<tr><td>API</td><td>NestJS 11</td><td>JWT · Socket.IO · Swagger <code>:4101/api/docs</code></td></tr>
+<tr><td>ORM / DB</td><td>Prisma 5.22 + PostgreSQL 16</td><td><code>pgvector</code>；约 5339 行 schema · <b>157 models · 112 enums</b></td></tr>
+<tr><td>缓存</td><td>Redis 7</td><td>热记忆、限流、circuit breaker、会话</td></tr>
+<tr><td>Web</td><td>Next.js 16.2 + React 19</td><td>Tailwind 4 · TanStack Query · Zustand · next-intl · Framer Motion</td></tr>
+<tr><td>Mobile</td><td>Expo 54 + RN 0.81</td><td>expo-router · SecureStore · 推送 · 离线 Query</td></tr>
+<tr><td>Shared</td><td><code>@study-abroad/shared</code></td><td>类型 · 评分算法 · Zod · design tokens</td></tr>
+<tr><td>AI Runtime</td><td>OpenAI-compatible Chat Completions</td><td>默认 <code>gpt-4o-mini</code> · embedding <code>text-embedding-3-small</code> 1536d</td></tr>
+<tr><td>观测</td><td>Sentry + Prometheus/OTEL</td><td>Nest / Next / RN</td></tr>
+<tr><td>测试</td><td>Jest · Vitest · Playwright</td><td>API / Web / Mobile / E2E</td></tr>
+<tr><td>扩展</td><td>Chrome Extension</td><td>Common App autofill</td></tr>
+</tbody>
+</table>
+<pre>study-abroad-platform/
+├── apps/api/          # NestJS (:4101) — 29 modules incl. ai-agent
+├── apps/web/          # Next.js (:4100) — 82 page.tsx
+├── apps/mobile/       # Expo 54
+├── packages/shared/   # AgentType, StreamEvent, PredictionResult, scoring…
+├── packages/browser-extension/
+├── docs/              # 100+ MD（architecture/ai-system, PREDICTION_SYSTEM, ADR…）
+├── e2e/ · scripts/ · docker-compose.yml
+└── .claude/           # 13 review agents + skills + manifests</pre>
+<p>统一响应信封：<code>{ success, data, meta }</code>（TransformInterceptor）；前端 <code>apiClient</code> 自动 unwrap。</p>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+<h2><span class="n">03</span> 系统架构：模块 · 权限 · 数据</h2>
+<p class="sd">29 个 Nest 业务模块 + common 基础设施（Prisma / Redis / Feature Flags / Audit / Authorization）。</p>
+<table>
+<thead><tr><th>领域</th><th>模块</th><th>职责</th></tr></thead>
+<tbody>
+<tr><td>认证用户</td><td>auth · user · settings · notification · subscription · points</td><td>JWT、订阅、积分、通知、全局 KV</td></tr>
+<tr><td>档案学校</td><td>profile · school · school-list · ranking</td><td>材料、院校库、目标清单、加权排名</td></tr>
+<tr><td>AI 核心</td><td><b>ai-agent</b> · essay · essay-debate · recommendation · prediction · assessment · resume · ai(遗留)</td><td>多 Agent、文书、预测、测评</td></tr>
+<tr><td>案例认证</td><td>case · verification</td><td>录取案例、材料认证→VERIFIED</td></tr>
+<tr><td>社交</td><td>forum · chat · hall · peer-review · team</td><td>论坛、私信、大厅、互评、组队</td></tr>
+<tr><td>工具运维</td><td>timeline · vault · admin · health</td><td>时间线、AES-256 保险库、Admin、探针</td></tr>
+</tbody>
+</table>
+<h3>角色层次</h3>
+<div class="flow">
+<span class="s">USER 0</span><span class="a">→</span>
+<span class="s">VERIFIED 1</span><span class="a">→</span>
+<span class="s">OPERATOR 2</span><span class="a">→</span>
+<span class="s">COUNSELOR 2.5</span><span class="a">→</span>
+<span class="s">ADMIN 3</span><span class="a">→</span>
+<span class="s">SUPER_ADMIN 4</span>
+</div>
+<p>认证：Access JWT（短）+ Refresh httpOnly Cookie（轮换）；Redis 暴力破解防护；Vault 需 <code>VAULT_ENCRYPTION_KEY</code>。</p>
+<h3>与 AI 强相关的数据实体</h3>
+<ul>
+<li><code>AgentConversation</code> / <code>AgentMessage</code> / <code>Memory</code>（pgvector）/ TokenUsage / AgentAuditLog</li>
+<li><code>PredictionResult</code> / Snapshot / Feedback / PolicyVersion / <code>SchoolCdsAdmitBand</code></li>
+<li><code>Essay</code> / <code>EssayAIResult</code> / <code>EssayDebateSession</code></li>
+<li><code>ApplicationAnalysis*</code> 治理族；<code>SchoolRecommendation</code></li>
+</ul>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+<h2><span class="n">04</span> 功能全景：实现了什么</h2>
+<table>
+<thead><tr><th>功能</th><th>用户得到什么</th><th>关键实现</th></tr></thead>
+<tbody>
+<tr><td>智能选校</td><td>搜索/对比/清单/排名</td><td>多源 enrichment（Scorecard/IPEDS 等）</td></tr>
+<tr><td>录取预测</td><td>概率+置信度+公开解释</td><td><b>Counselor 引擎</b> counselor-cold-start-v1.7</td></tr>
+<tr><td>AI 推荐</td><td>Reach/Match/Safety 集</td><td>LLM JSON + 档案；积分 −25</td></tr>
+<tr><td>Uncommon App</td><td>完整申请材料中心</td><td>学校感知申请分析合同</td></tr>
+<tr><td>文书 AI</td><td>润色/评审/头脑风暴/画廊</td><td><code>/essay-ai/*</code> + Agent 工具</td></tr>
+<tr><td>文书辩论</td><td>对点评的反驳对话</td><td>verbatim evidence 强制</td></tr>
+<tr><td>时间线</td><td>按校截止任务自动生成</td><td>个人+全局事件</td></tr>
+<tr><td>案例社区</td><td>真实结果分享/浏览</td><td>质量分；训练数据源</td></tr>
+<tr><td>Hall/Forum/Chat/Teams</td><td>发现·讨论·私信·组队</td><td>WebSocket 实时</td></tr>
+<tr><td>简历/Vault/测评</td><td>简历 AI、加密证件、MBTI+Holland</td><td>测评写入 Agent 记忆</td></tr>
+<tr><td>AI 顾问</td><td>多专家+工具+记忆流式对话</td><td>SSE / WS · 见第 6–16 章</td></tr>
+<tr><td>Admin</td><td>CDS、预测健康、AI 运维</td><td>30+ 管理子页</td></tr>
+<tr><td>Extension</td><td>Common App 自动填表</td><td>从平台档案同步</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+<h2><span class="n">05</span> AI 三层模型（必读）</h2>
+<p class="sd">写 BP / 对外材料时必须分开三层，不可混谈「我们用了 Claude / GPT-5 Vision」。</p>
+<pre>Layer 1 — 研发/运营 AI（建设期）
+  Claude Code · Codex · Cursor
+  → 产出代码、规则、文档、closure 数据文件
+  → ≠ 用户打开的 Lumni App
+
+Layer 2 — 仓库内批量流水线
+  pdftotext / pdf-parse / mammoth / cheerio
+  → 文本 LLM → JSON（CDS 等）写入 PostgreSQL
+  → 模型常见 gpt-4.1-mini / gpt-5.4-mini / gpt-4o-mini
+
+Layer 3 — 线上产品（NestJS，终端用户）
+  LLM_PROVIDER=openai · OPENAI_MODEL=gpt-4o-mini
+  仅文本 Chat Completions（content: string）
+  Embedding: text-embedding-3-small
+  → /ai、文书、申请分析、预测解释</pre>
+<div class="callout rose">
+<strong>没有线上 Vision：</strong>请求体从不带 <code>image_url</code>；无 GeminiProvider；Anthropic 仅 env 枚举预留，生产只注册 OpenAIProvider。
+截图上传只存储展示，不进模型。作品集校 = Tier 4 insufficient_data，刻意不做视觉评估。
+</div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+<h2><span class="n">06</span> AI Agent 架构总览</h2>
+<p class="sd">源码：<code>apps/api/src/modules/ai-agent/</code> · 文档：<code>docs/architecture/ai-system.md</code> · ADR-0003。</p>
+<pre>Clients: Next.js SSE · Socket.IO /ai-assistant · Expo
+    ↓
+Entry: AiAgentController · AiAgentGateway
+       AgentThrottleGuard · AgentSecurityMiddleware · PromptGuard
+    ↓
+Routing: L1 FastRouter → L2 EmbeddingRouter → L3 Orchestrator LLM
+    ↓
+OrchestratorService → AgentRunnerService → WorkflowEngineService (ReWOO)
+    ↓                        ↓
+LLMService (global)     ToolExecutorService (45 tools / 13 services)
+OpenAIProvider          MemoryManager (Redis + PG + pgvector)
+    ↓
+Domain one-shots also inject LLMService:
+  essay · recommendation · profile ai-analysis · resume · hall-ranking</pre>
+<div class="g3">
+  <div class="card"><h4>目录规模</h4><p>17 子目录；core / memory / security / tools / infrastructure / admin / providers / queue…</p></div>
+  <div class="card"><h4>组合依赖</h4><p>Prediction · Assessment · Forum · Hall · Resume · Essay · Recommendation 等域模块</p></div>
+  <div class="card"><h4>全局 LLM</h4><p><code>LLMProvidersModule.forRoot()</code> global — 任意模块可注入 LLMService</p></div>
+</div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+<h2><span class="n">07</span> 六大专家 Agent 详解</h2>
+<p class="sd">配置：<code>config/agents.config.ts</code> · 类型：<code>packages/shared/src/types/ai-agent.ts</code> · AgentType enum。</p>
+
+<div class="agent">
+  <div class="nm">ORCHESTRATOR · 留学助手</div>
+  <div class="rl">智能路由与任务协调；不亲自做文书/选校业务，委托专家。</div>
+  <div class="meta">gpt-4o-mini · temp <b>0.3</b> · maxTokens <b>2000</b> · 可委托全部 5 专家 · 工具 12</div>
+  <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">Prompt 主题：按意图 delegate；论坛/案例预测游戏/档案排名可直调；<code>web_search</code> 用于政策签证趋势；范围分 core / related（disclaimer）/ unrelated（礼貌拒绝）。</p>
+</div>
+<div class="agent">
+  <div class="nm">ESSAY · 文书专家</div>
+  <div class="rl">评估 · 润色 · 头脑风暴 · 大纲 · Prompt 检索。</div>
+  <div class="meta">temp <b>0.7</b> · max <b>4000</b> · 工具 7 · 委托回 Orchestrator</div>
+  <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">标准：真实性、细节、结构、自然声音、贴合题干。<b>禁止代写全文</b>。流程：get_profile → get_essays → search_essay_prompts → 可执行建议。</p>
+</div>
+<div class="agent">
+  <div class="nm">SCHOOL · 选校专家 <span class="tag green">enableReflection</span></div>
+  <div class="rl">搜校、对比、推荐、录取分析与预测解释。</div>
+  <div class="meta">temp <b>0.5</b> · max <b>4000</b> · 工具 14 · reflectionModel gpt-4o-mini</div>
+  <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">分层：Reach &lt;30% / Match 30–70% / Safety &gt;70%。推荐须附结构化学校 JSON 卡片。预测：优先 history/dashboard/list/trace；<code>analyze_admission_chance</code> 仅刷新。只解释公开字段，永不暴露 servedTrace / shadow / policy gate。</p>
+</div>
+<div class="agent">
+  <div class="nm">PROFILE · 档案分析师</div>
+  <div class="rl">多维档案审阅、优劣势、测评解读。</div>
+  <div class="meta">temp <b>0.5</b> · max <b>3000</b> · 工具 6</div>
+  <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">维度：学业、高中档、标化、活动、奖项、MBTI/Holland。输出可执行提升项。</p>
+</div>
+<div class="agent">
+  <div class="nm">TIMELINE · 规划顾问</div>
+  <div class="rl">ED/EA/ED2/RD、竞赛、考试、暑期、材料时间线。</div>
+  <div class="meta">temp <b>0.5</b> · max <b>3000</b> · 工具 7</div>
+  <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">缓冲：文书提前 2–3 月；标化 2 次机会；推荐信提前 1 月；提交留 1 周。优先级 🔴≤2w / 🟡2–8w / 🟢8w+。禁止空泛通用时间表。</p>
+</div>
+<div class="agent">
+  <div class="nm">RESUME · 简历专家</div>
+  <div class="rl">大学申请向简历（AO 阅读，非 ATS 求职简历）。</div>
+  <div class="meta">temp <b>0.4</b> · max <b>4000</b> · 工具 6</div>
+  <p style="margin-top:10px;font-size:13.5px;color:var(--muted)">一页；顺序 Education→Awards→Activities→Service→Research→Work→Skills。权重：领导力 30% / 持续性 20% / 影响力 20% / 格式 15% / 匹配 15%。逐条 keep/condense/remove。</p>
+</div>
+
+<div class="callout">
+<strong>委托拓扑：</strong>专家之间不能互聊，只能 <code>delegate_to_agent</code> 回 ORCHESTRATOR；最大深度 <code>AGENT_MAX_DELEGATION_DEPTH</code>（默认 3）。
+UI 可用 <code>agentHint</code> + <code>context</code>（prediction-results / selected-schools）偏置路由。
+</div>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+<h2><span class="n">08</span> 全部 45 个 LLM 可见工具</h2>
+<p class="sd">定义：<code>config/tools.config.ts</code>。只读工具并行；可变工具串行。超时 30s · 重试 2 次 · Redis 熔断。</p>
+
+<h3>按功能分组</h3>
+<ul class="tool-list">
+<li><code>delegate_to_agent</code> — 委派专家</li>
+<li><code>get_profile</code> / <code>update_profile</code> — 读/更新档案</li>
+<li><code>search_schools</code> / <code>get_school_details</code> / <code>compare_schools</code></li>
+<li><code>get_essays</code> · <code>review_essay</code> · <code>polish_essay</code></li>
+<li><code>generate_outline</code> · <code>brainstorm_ideas</code> · <code>search_essay_prompts</code></li>
+<li><code>recommend_schools</code> · <code>analyze_admission_chance</code></li>
+<li><code>search_cases</code> · <code>find_similar_cases</code> · <code>find_similar_applicants</code></li>
+<li><code>get_deadlines</code> · <code>create_timeline</code></li>
+<li><code>get_personal_events</code> · <code>create_personal_event</code></li>
+<li><code>get_assessment_results</code> · <code>interpret_assessment</code></li>
+<li><code>suggest_activities_from_assessment</code></li>
+<li><code>search_forum_posts</code> · <code>get_popular_discussions</code> · <code>answer_forum_question</code></li>
+<li><code>explain_case_result</code> · <code>analyze_prediction_accuracy</code></li>
+<li><code>compare_case_with_profile</code> · <code>analyze_intl_competitiveness</code></li>
+<li><code>analyze_profile_ranking</code> · <code>suggest_profile_improvements</code></li>
+<li><code>compare_with_admitted_profiles</code></li>
+<li><code>get_prediction_history</code> · <code>get_prediction_dashboard</code></li>
+<li><code>get_school_list_predictions</code> · <code>get_prediction_trace_summary</code></li>
+<li><code>get_resume_list</code> · <code>get_resume_details</code> · <code>review_resume</code></li>
+<li><code>optimize_resume_bullets</code> · <code>suggest_resume_content</code></li>
+<li><code>web_search</code>（Tavily/Google）· <code>search_school_website</code></li>
+</ul>
+
+<h3>13 个 Tool Service（实现层）</h3>
+<table>
+<thead><tr><th>Service</th><th>代表能力</th></tr></thead>
+<tbody>
+<tr><td>profile-tools</td><td>档案读写、相似申请者</td></tr>
+<tr><td>school-tools</td><td>搜索/详情/对比</td></tr>
+<tr><td>essay-tools</td><td>评审润色大纲头脑风暴</td></tr>
+<tr><td>recommendation-tools</td><td>选校推荐 + preflight</td></tr>
+<tr><td>prediction-tools</td><td>历史/仪表盘/trace/刷新预测</td></tr>
+<tr><td>case-tools · similarity-tools</td><td>案例检索与相似度</td></tr>
+<tr><td>timeline-tools</td><td>截止日与个人事件 CRUD</td></tr>
+<tr><td>assessment-tools</td><td>MBTI/Holland 解读</td></tr>
+<tr><td>forum-tools · ranking-tools</td><td>论坛与档案排名叙事</td></tr>
+<tr><td>resume-tools · search-tools</td><td>简历与外部搜索</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+架构文档中的「~163 tools」指各 service 内部方法规模；LLM function-calling 注册表是 <b>45</b> 个。以 <code>tools.config.ts</code> 为准。
+</div>
+</section>
+
+<!-- 9 -->
+<section id="s9">
+<h2><span class="n">09</span> ReWOO 执行引擎（ADR-0003）</h2>
+<p class="sd">相对 ReAct「每工具一轮 LLM」，固定 <b>2 次 LLM 调用</b>（PLAN + SOLVE），只读工具可并行 — 文档称可减少约 67% LLM 调用。</p>
+<div class="flow">
+<span class="s">PLAN · 调 LLM 一次规划全部 tool_calls</span><span class="a">→</span>
+<span class="s">EXECUTE · 不调 LLM · 并行只读 / 串行可变</span><span class="a">→</span>
+<span class="s">SOLVE · 流式综合答案（失败降级非流式）</span>
+</div>
+<table>
+<thead><tr><th>维度</th><th>ReAct</th><th>本项目 ReWOO</th></tr></thead>
+<tbody>
+<tr><td>LLM 次数</td><td>O(N)</td><td><b>2</b></td></tr>
+<tr><td>延迟</td><td>~5–15s</td><td>~3–5s（量级）</td></tr>
+<tr><td>并行</td><td>无</td><td>只读工具 Promise.all</td></tr>
+<tr><td>职责拆分</td><td>Runner 膨胀</td><td>Runner 管上下文；Engine 管工作流</td></tr>
+</tbody>
+</table>
+<p>可观测 timing：<code>planMs / executeMs / solveMs / totalMs</code>。School Agent 另有 reflection 自我校验阶段。</p>
+</section>
+
+<!-- 10 -->
+<section id="s10">
+<h2><span class="n">10</span> 三级路由</h2>
+<table>
+<thead><tr><th>级</th><th>服务</th><th>机制</th><th>阈值</th><th>成本</th></tr></thead>
+<tbody>
+<tr><td><span class="tag sky">L1</span></td><td>FastRouterService</td><td>关键词+正则；问候可跳过 LLM</td><td>≥0.8</td><td>≈0 · &lt;1ms</td></tr>
+<tr><td><span class="tag green">L2</span></td><td>EmbeddingRouterService</td><td>pgvector 余弦</td><td>≥0.82</td><td>embedding · ~50ms</td></tr>
+<tr><td><span class="tag violet">L3</span></td><td>Orchestrator LLM</td><td>意图理解 + delegate</td><td>兜底</td><td>完整调用 · ~1s</td></tr>
+</tbody>
+</table>
+<p>L2 模式：<b>SHADOW</b>（只记日志）→ 连续 7 天准确率 &gt;90% → <b>ACTIVE</b>（高置信直接路由）。</p>
+<table>
+<thead><tr><th>用户输入示例</th><th>路由</th></tr></thead>
+<tbody>
+<tr><td>「帮我看看文书」</td><td>L1 → ESSAY</td></tr>
+<tr><td>「哪些学校适合我」</td><td>L2 → SCHOOL</td></tr>
+<tr><td>「我想了解美国文化」</td><td>L3 → ORCHESTRATOR</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- 11 -->
+<section id="s11">
+<h2><span class="n">11</span> 记忆系统（三层 / 四层）</h2>
+<p class="sd">规范：<code>docs/AI_AGENT_MEMORY_SYSTEM_SPEC.md</code> · 11 个 memory services。</p>
+<div class="g2">
+  <div class="card"><h4>热层 Redis</h4><p>会话缓冲，TTL 默认 86400s（<code>MEMORY_CACHE_TTL</code>）。Redis 宕机可降级内存。</p></div>
+  <div class="card"><h4>冷层 PostgreSQL</h4><p>事实/实体/消息持久化；多租户强制 <code>userId</code>。</p></div>
+  <div class="card"><h4>语义层 pgvector</h4><p><code>text-embedding-3-small</code> 余弦召回。</p></div>
+  <div class="card"><h4>工作层 / 归档</h4><p>L1 WORKING（进程内）· L4 ARCHIVE（衰减后冷归档）。</p></div>
+</div>
+<table>
+<thead><tr><th>Service</th><th>职责</th></tr></thead>
+<tbody>
+<tr><td>memory-manager</td><td>统一编排入口</td></tr>
+<tr><td>embedding · persistent-memory · redis-cache</td><td>嵌入 / PG+向量 / Redis</td></tr>
+<tr><td>memory-scorer</td><td>Score = 0.4·Importance + 0.3·Freshness + 0.3·Confidence + AccessBonus≤0.1</td></tr>
+<tr><td>memory-decay</td><td>Cron 03:00；decayRate 0.01/天；180d 归档 / 365d 删除</td></tr>
+<tr><td>memory-compaction</td><td>Cron 04:00；相似度 0.92 去重合并摘要</td></tr>
+<tr><td>memory-conflict</td><td>KEEP_LATEST / HIGHEST / MERGE / ASK_USER…</td></tr>
+<tr><td>summarizer · sanitizer · user-data</td><td>摘要降本 · PII 脱敏 · GDPR 导出删除</td></tr>
+</tbody>
+</table>
+<p>Memory 类型（实现侧可能含 FACT / PREFERENCE / DECISION / SUMMARY / FEEDBACK 等）；Entity：SCHOOL / PERSON / EVENT / TOPIC。审计结论：75+ 查询带 userId，0 多租户泄露风险（2026-04-12）。</p>
+</section>
+
+<!-- 12 -->
+<section id="s12">
+<h2><span class="n">12</span> 安全与治理</h2>
+<h3>三层纵深防御</h3>
+<table>
+<thead><tr><th>层</th><th>服务</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td>① 输入</td><td>PromptGuardService</td><td>9 类威胁：注入、越狱、角色操纵、prompt 泄露、指令覆盖、编码攻击、分隔符、间接注入、长度攻击 → ALLOW/WARN/BLOCK</td></tr>
+<tr><td>② 输出</td><td>ContentModerationService</td><td>PII、有害、过度法律/医疗/金融建议 → ALLOW/WARN/SANITIZE/BLOCK</td></tr>
+<tr><td>③ 审计</td><td>AuditService</td><td>LLM/工具/安全事件/Agent 切换全量；AgentAuditLog ≈90 天</td></tr>
+</tbody>
+</table>
+<p>所有 NL 端点：<code>@ThrottleAI()</code>（20/min）+ Middleware 注册 + <code>nl-endpoints.json</code>。启动 <code>ArchitectureValidatorService</code> 校验治理 G1–G5（安全依赖不可 Optional、端点覆盖、配置一致、user-data 隔离、无死 Provider）。</p>
+</section>
+
+<!-- 13 -->
+<section id="s13">
+<h2><span class="n">13</span> LLM Provider · 韧性 · 可观测性</h2>
+<table>
+<thead><tr><th>项</th><th>细节</th></tr></thead>
+<tbody>
+<tr><td>接口</td><td><code>ILLMProvider</code>：chat / chatStream / supportsModel</td></tr>
+<tr><td>实现</td><td><b>仅 OpenAIProvider</b>；可通过 <code>OPENAI_BASE_URL</code> 接 Azure / DeepSeek</td></tr>
+<tr><td>主力模型</td><td>全部 Agent 默认 <code>gpt-4o-mini</code>；可升 <code>gpt-4o</code></td></tr>
+<tr><td>API</td><td><code>chatSimple</code> · <code>chatSimpleGuarded</code> · <code>call</code> · <code>callStream</code></td></tr>
+<tr><td>Token</td><td><code>js-tiktoken</code> · TokenTrackerService</td></tr>
+<tr><td>超时 env</td><td><code>AI_REQUEST_TIMEOUT_MS</code> 默认 120000</td></tr>
+</tbody>
+</table>
+<h3>ResilienceService</h3>
+<ul>
+<li>重试：最多 3 · base 1s · max 10s；429/5xx/网络错误</li>
+<li>熔断：失败阈值 5 · 重置 30s · halfOpen 2；Redis <code>circuit:</code> 键，Admin 可查/清</li>
+<li>堆栈：circuit → retry → timeout</li>
+</ul>
+<h3>观测指标（节选）</h3>
+<pre>agent_requests_total{agent,status}
+agent_latency_seconds{agent,phase}
+agent_tokens_total{agent,direction}
+agent_tool_calls_total{tool,status}
+agent_errors_total{type,severity}
+agent_memory_operations_total{tier,operation}
+circuit_breaker_state</pre>
+<p>另有 StructuredLogger（correlation ID + PII 脱敏）、OTEL、Grafana dashboard、AlertChannel（邮件/Slack/PagerDuty）。</p>
+</section>
+
+<!-- 14 -->
+<section id="s14">
+<h2><span class="n">14</span> 配额与积分双轨计费</h2>
+<div class="g2">
+  <div class="card">
+    <h4>Token 配额（聊天主路径）</h4>
+    <ul>
+      <li>Free：100k 日 / 2M 月 · 成本帽 $5/$100</li>
+      <li>Pro：300k / 6M · $15/$300</li>
+      <li>Premium：1M / 20M · $50/$1000</li>
+      <li>gpt-4o-mini：$0.00015 / $0.0006 per 1k in/out</li>
+    </ul>
+    <p>限流默认：user 10/min · conversation 20 · IP 30 · agent 50 · tool 100</p>
+  </div>
+  <div class="card">
+    <h4>积分消耗（领域功能）</h4>
+    <ul>
+      <li>AI_ANALYSIS −30</li>
+      <li>AI_ESSAY_POLISH −20 · REVIEW −30 · BRAINSTORM −15</li>
+      <li>AI_SCHOOL_RECOMMENDATION −25</li>
+      <li>AI_ACTIVITY_REFINE −15</li>
+      <li>ESSAY_DEBATE_TURN / RANKING_ANALYZED 现为 0（骨架/灰度）</li>
+    </ul>
+    <p>失败可退还积分；与 Token 配额并行。</p>
+  </div>
+</div>
+</section>
+
+<!-- 15 -->
+<section id="s15">
+<h2><span class="n">15</span> 端到端调用链与 API</h2>
+<pre>User → POST /ai-agent/chat?stream
+  → AgentThrottleGuard（配额+限流）
+  → PromptGuard（输入）
+  → Orchestrator.chatStream
+      → L1 → L2 → L3 选 Agent
+      → 加载 Memory
+      → WorkflowEngine: PLAN → EXECUTE → SOLVE(stream)
+  → ContentModeration（输出）
+  → SSE StreamEvent → Client
+  异步并行: Memory.store · Metrics · Audit</pre>
+<table>
+<thead><tr><th>StreamEvent.type</th><th>UI 效果</th></tr></thead>
+<tbody>
+<tr><td><code>start</code></td><td>设定 agent / conversationId / title</td></tr>
+<tr><td><code>content</code></td><td>追加流式文本</td></tr>
+<tr><td><code>tool_start</code> / <code>tool_end</code></td><td>工具卡片 running → completed + result</td></tr>
+<tr><td><code>agent_switch</code></td><td>切换专家徽章</td></tr>
+<tr><td><code>done</code></td><td>结束；附 response / actions / memoryContext</td></tr>
+<tr><td><code>error</code></td><td>错误文案</td></tr>
+</tbody>
+</table>
+<p>其他入口：<code>POST /ai-agent/agent</code>（直连专家）· <code>GET usage|quota|health|conversations</code> · <code>DELETE conversation</code> · WS <code>/ai-assistant</code> · GDPR <code>/ai-agent/user-data/*</code> · Admin <code>/admin/ai-agent/*</code>。</p>
+<p>Web 为避免 Next 代理缓冲，SSE <b>直连</b> <code>NEXT_PUBLIC_API_URL</code>；客户端断开即中止生成省 token。</p>
+</section>
+
+<!-- 16 -->
+<section id="s16">
+<h2><span class="n">16</span> 前端 AI UX</h2>
+<p class="sd">组件目录：<code>apps/web/src/components/features/agent-chat/</code></p>
+<table>
+<thead><tr><th>文件</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td>agent-workspace.tsx</td><td>完整 <code>/ai</code> 工作台（侧栏+聊天+任务）</td></tr>
+<tr><td>use-agent-chat.ts</td><td>SSE 客户端；按 StreamEvent 分支更新状态</td></tr>
+<tr><td>floating-chat.tsx</td><td>全局 FAB；隐藏于 /ai、/chat</td></tr>
+<tr><td>floating-chat-bridge.ts</td><td><code>openFloatingAgentChat({message,context,agentHint})</code></td></tr>
+<tr><td>tool-call-card · school-recommendation-cards</td><td>工具态与学校 JSON 卡片</td></tr>
+<tr><td>chat-message · message-content</td><td>消息渲染</td></tr>
+</tbody>
+</table>
+<p>入口：页面 <code>/[locale]/ai</code> · 全局浮动聊天（常绑定 <span class="kbd">⌘/Ctrl+K</span>）· Dashboard QuickAsk · 预测详情「问 AI」（强制 <code>agentHint: SCHOOL</code> + prediction-results 上下文，已消毒，无 servedTrace）。</p>
+</section>
+
+<!-- 17 -->
+<section id="s17">
+<h2><span class="n">17</span> 录取预测 × AI 边界（关键设计）</h2>
+<p class="sd">文档：<code>docs/PREDICTION_SYSTEM.md</code>。Served path = counselor-primary only。</p>
+<div class="callout ok">
+<strong>公式：</strong>学校 Anchor × 有界 Modifiers，再 clamp 到 <code>anchor × [0.3, 2.5]</code> 与绝对 <code>[0.02, 0.98]</code>。
+<strong>LLM 不输出 served 概率。</strong>
+</div>
+<table>
+<thead><tr><th>Tier</th><th>锚点</th><th>行为</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>SchoolCdsAdmitBand CDS 格子</td><td>抑制已在格子里的 GPA/标化修正</td></tr>
+<tr><td>2</td><td>录取率 + SAT/ACT band</td><td>率锚 + 档案修正</td></tr>
+<tr><td>3</td><td>仅录取率</td><td>缺失数据中性回退</td></tr>
+<tr><td>4</td><td>无可用锚 / 作品集校</td><td><code>insufficient_data</code>，概率 null，不持久化</td></tr>
+</tbody>
+</table>
+<p>修正项（确定性）：GPA CDS 百分位、考试政策、ACT vs act25/75、ED/EA 轮次倍率、专业 CIP、国际生等。仅 Tier 1–3 写入 PredictionResult/Snapshot。</p>
+<h3>AI 能做什么 / 不能做什么</h3>
+<div class="g2">
+  <div class="card">
+    <h4>能</h4>
+    <ul>
+      <li>读 history / dashboard / list</li>
+      <li>调 analyze_admission_chance（跑 Counselor，非 LLM 猜数）</li>
+      <li>用 trace_summary 解释公开字段</li>
+      <li>从预测 UI 打开带上下文的浮动聊天</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>不能</h4>
+    <ul>
+      <li>发明/服务 LLM 概率</li>
+      <li>暴露 servedTrace / shadow fusion / policy gate</li>
+      <li>用纯自报标签做校准真值</li>
+      <li>对艺术/音乐作品集校硬给概率</li>
+    </ul>
+  </div>
+</div>
+<p>公开解释字段：<code>sourceSummary</code> · <code>uncertaintyReasons</code> · <code>confidenceReason</code> · <code>roundContext</code> · <code>publicExplanation</code> · <code>latestOutcomeLabel</code> · <code>insufficientData</code> 等。</p>
+</section>
+
+<!-- 18 -->
+<section id="s18">
+<h2><span class="n">18</span> 领域 AI 功能（非多 Agent 循环）</h2>
+<p class="sd">这些路径多数直接 <code>LLMService.chatSimple(Guarded)</code> + <code>*.prompts.ts</code> + <strong>强制</strong> <code>extractJsonFromLlm()</code>。</p>
+<table>
+<thead><tr><th>域</th><th>端点</th><th>结构化产出</th></tr></thead>
+<tbody>
+<tr><td>文书</td><td><code>POST /essay-ai/polish|review|brainstorm|…</code></td><td>review：overallScore、五维分、cliches、suggestions、verdict</td></tr>
+<tr><td>推荐</td><td><code>POST /recommendations</code></td><td>recommendations[] + analysis + summerPrograms</td></tr>
+<tr><td>申请分析</td><td><code>GET /profiles/me/ai-analysis</code></td><td>共享 <code>AIAnalysisResult</code>；只综合证据不造概率</td></tr>
+<tr><td>简历</td><td><code>POST /resumes/:id/ai/review|optimize-bullets|…</code></td><td>0–100 + 五维 + sectionFeedback</td></tr>
+<tr><td>文书辩论</td><td><code>POST /essay-debate/turn</code></td><td>rebuttal + verbatim evidence + openQuestion；禁谄媚开场</td></tr>
+<tr><td>Hall 排名</td><td><code>POST /halls/ranking-analysis</code></td><td>先确定性算分，LLM 只叙事；禁止暗示录取率</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- 19 -->
+<section id="s19">
+<h2><span class="n">19</span> 数据建设与 PDF 流水线（Layer 2）</h2>
+<pre>PDF  → pdftotext (poppler) 或 pdf-parse → 纯文本
+     → pdf_regex（确定性）或 pdf_llm（文本 JSON）
+HTML → cheerio · DOCX → mammoth
+官网 → Playwright + cheerio
+截图 → 仅存储，不进模型</pre>
+<p>CDS 批量作业成功率（运维口径，非字段真值准确率）约 <b>79.2%</b>（1292 success / 340 failures，2026-05 扫库）。学校库约 240 所 US：录取率字段 100%；CDS Tier1 真分格约 9 校（4%）。</p>
+</section>
+
+<!-- 20 -->
+<section id="s20">
+<h2><span class="n">20</span> 研发侧 Agent 工作流（非产品）</h2>
+<p>Manifest：<code>.claude/manifests/agent-workflow.yml</code>。</p>
+<p>13 Agents：Study Abroad Expert · Applicant Simulator · Design Reviewer · Architect · Integration Checker · Data Model Reviewer · Security Reviewer · <b>AI Prompt Engineer</b> · i18n · Test Engineer · Mobile · Feedback Processor · User Journey Auditor。</p>
+<p>每轮 Step 0 判断相关性（N/A 约 10s 退出）。严重度 <code>BLOCK | WARN | INFO | N_A</code>。<code>ai_feature</code> 变更通常强制 Prompt Engineer + 留学专家 + 安全 + 测试。</p>
+</section>
+
+<!-- 21 -->
+<section id="s21">
+<h2><span class="n">21</span> 规模、指标与诚实边界</h2>
+<table>
+<thead><tr><th>指标</th><th>数值</th></tr></thead>
+<tbody>
+<tr><td>API 模块</td><td>29</td></tr>
+<tr><td>Prisma models / enums</td><td>157 / 112</td></tr>
+<tr><td>Web page.tsx</td><td>82</td></tr>
+<tr><td>ai-agent TypeScript（含/近似）</td><td>~34k–45k LOC</td></tr>
+<tr><td>运行时 Agents / Tools</td><td>6 / 45</td></tr>
+<tr><td>预测 verifiedCount（校准）</td><td>0（冷启动；≥50 才 Platt，≥200 才对外准确率宣称）</td></tr>
+<tr><td>对外固定准确率宣称</td><td><b>禁止</b></td></tr>
+<tr><td>ECE ≤ 0.05</td><td>设计目标，无冻结测量</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+产品诚实性：冷启动阶段不夸大准确率；Tier 4 明确「数据不足」；AI 解释与确定性数字严格解耦。
+</div>
+</section>
+
+<!-- 22 -->
+<section id="s22">
+<h2><span class="n">22</span> 设计决策汇总与一句话结论</h2>
+<ol>
+<li><b>ReWOO &gt; ReAct</b> — 控延迟与成本（ADR-0003）</li>
+<li><b>Counselor-primary 概率</b> — LLM 解释，不拥有 served odds</li>
+<li><b>全局 LLMService</b> — 域模块无环依赖</li>
+<li><b>三级路由</b> — 便宜路径优先</li>
+<li><b>纵深安全</b> — Guard → PromptGuard → Moderation → Audit + CI G1–G5</li>
+<li><b>企业记忆</b> — Redis + PG + pgvector + 衰减/冲突/GDPR</li>
+<li><b>结构化合同</b> — extractJsonFromLlm，禁止正则刮 JSON</li>
+<li><b>OpenAI 兼容单适配器</b> — Azure/DeepSeek 换 base URL</li>
+<li><b>积分 + Token 双轨</b> + ThrottleAI</li>
+<li><b>SSE 断开感知</b> — 不空烧 token</li>
+<li><b>无线上 Vision</b> — 文本抽取 + 文本 LLM；作品集校拒绝假概率</li>
+<li><b>研发 Agent ≠ 产品 Agent</b> — 三层 AI 模型对外表述必分</li>
+</ol>
+<div class="callout ok">
+<strong>一句话：</strong>Lumni 是生产级留学申请全链路平台（Web/Mobile/API/Extension）——
+用 <b>Counselor 确定性引擎</b>提供可校准、可审计的录取概率，
+用 <b>企业级多 Agent 编排</b>（6 专家 · ReWOO · 45 Tools · 三层记忆 · 三层安全）提供对话、工具、写作与解释能力；
+建设期另有 Claude/Codex 与 CDS 文本流水线，但不等于用户 App 内的模型服务。
+</div>
+<p>主要源码/文档路径：</p>
+<ul>
+<li><code>apps/api/src/modules/ai-agent/</code></li>
+<li><code>docs/architecture/ai-system.md</code> · <code>docs/AI_AGENT_MEMORY_SYSTEM_SPEC.md</code></li>
+<li><code>docs/PREDICTION_SYSTEM.md</code> · <code>docs/PROJECT_TECHNICAL_OVERVIEW.md</code></li>
+<li><code>docs/adr/0003-ai-agent-workflow-engine-architecture.md</code></li>
+<li><code>packages/shared/src/types/ai-agent.ts</code></li>
+</ul>
+</section>
+
+<footer class="footer">
+  Lumni / study-abroad-platform · 深度报告 v2 · 2026-07-17<br/>
+  文件：<code>docs/reports/project-summary-ai-agent.html</code> · 基于源码与文档对照整理
+</footer>
+
+</main>
+</div>
+<script>
+// Highlight sidebar link on scroll
+const links=[...document.querySelectorAll('.sidebar nav a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove('active'));
+      const hit=links.find(l=>l.getAttribute('href')==='#'+e.target.id);
+      if(hit) hit.classList.add('active');
+    }
+  });
+},{rootMargin:'-20% 0px -70% 0px',threshold:0});
+secs.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>

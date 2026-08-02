@@ -13,7 +13,6 @@ import type { ComponentType } from 'react';
 import {
   Bell,
   Clock,
-  CreditCard,
   FileText,
   HelpCircle,
   Languages,
@@ -205,23 +204,6 @@ export default function SettingsPage() {
       ],
     },
     {
-      id: 'subscription',
-      title: t('settings.sections.subscription'),
-      icon: CreditCard,
-      color: 'emerald',
-      items: [
-        {
-          id: 'subscription',
-          icon: CreditCard,
-          label: t('settings.items.subscription'),
-          description:
-            user?.role === 'VERIFIED' ? t('common.verified') : t('settings.items.subscriptionDesc'),
-          type: 'link',
-          href: '/settings/subscription',
-        },
-      ],
-    },
-    {
       id: 'help',
       title: t('settings.sections.help'),
       icon: HelpCircle,
@@ -349,14 +331,17 @@ export default function SettingsPage() {
           return (
             <motion.div
               key={section.id}
+              className="min-w-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: sectionIndex * 0.08 }}
             >
-              <Card className={cn('h-full overflow-hidden', section.comingSoon && 'opacity-60')}>
+              <Card
+                className={cn('h-full min-w-0 overflow-hidden', section.comingSoon && 'opacity-60')}
+              >
                 <div className={cn('h-1 bg-gradient-to-r', colors.border)} />
                 <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 flex-wrap items-center gap-3">
                     <div
                       className={cn(
                         'flex h-9 w-9 items-center justify-center rounded-lg',

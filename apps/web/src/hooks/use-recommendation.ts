@@ -45,7 +45,7 @@ export interface GenerateRecommendationDto {
 // Hooks
 // ============================================
 
-/** 预检查：档案完整度 + 积分余额 */
+/** 预检查：档案完整度与生成资格（积分系统已下线） */
 export function useRecommendationPreflight() {
   return useQuery<RecommendationPreflight>({
     queryKey: recommendationKeys.preflight(),

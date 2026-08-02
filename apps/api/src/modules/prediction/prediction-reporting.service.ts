@@ -422,6 +422,13 @@ export class PredictionReportingService {
   ): Promise<void> {
     try {
       const now = new Date();
+      const owner = await this.prisma.profile.findUnique({
+        where: { id: profileId },
+        select: { userId: true },
+      });
+      if (!owner) {
+        throw new NotFoundException('Profile not found');
+      }
       const prediction = await this.prisma.predictionResult.findFirst({
         where: { profileId, schoolId, authority: 'AUTHORITATIVE' },
         select: {
@@ -462,6 +469,9 @@ export class PredictionReportingService {
               evidenceUrl: options?.evidenceUrl,
               round: options?.round,
               isFinal: options?.isFinal ?? false,
+              // Both reporting APIs use the owning User id so /outcomes can
+              // read records created through the legacy school-based route.
+              reportedBy: owner.userId,
             },
           });
 
@@ -514,7 +524,7 @@ export class PredictionReportingService {
               evidenceUrl: options?.evidenceUrl,
               round: options?.round,
               isFinal: options?.isFinal ?? false,
-              reportedBy: profileId,
+              reportedBy: owner.userId,
             },
           });
 
@@ -564,7 +574,7 @@ export class PredictionReportingService {
 
       // Write prediction feedback to memory system
       if (this.memoryManager) {
-        const [prediction, school, profile] = await Promise.all([
+        const [prediction, school] = await Promise.all([
           this.prisma.predictionResult.findFirst({
             where: { profileId, schoolId, authority: 'AUTHORITATIVE' },
           }),
@@ -572,13 +582,9 @@ export class PredictionReportingService {
             where: { id: schoolId },
             select: { name: true },
           }),
-          this.prisma.profile.findUnique({
-            where: { id: profileId },
-            select: { userId: true },
-          }),
         ]);
 
-        if (prediction && profile?.userId) {
+        if (prediction) {
           const probability = Number(prediction.probability);
           const calibrationEligible =
             actualResult === 'ADMITTED' || actualResult === 'REJECTED';
@@ -593,7 +599,7 @@ export class PredictionReportingService {
             : '（仅记录结果，不计入校准准确性）';
 
           fireAndForget(
-            this.memoryManager.remember(profile.userId, {
+            this.memoryManager.remember(owner.userId, {
               type: MemoryType.FACT,
               category: 'prediction_feedback',
               content: `预测结果反馈：${school?.name ?? schoolId} 预测概率 ${Math.round(probability * 100)}%，实际结果 ${actualResult}${accuracyLabel}`,

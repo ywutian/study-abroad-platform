@@ -10,6 +10,24 @@ import type { PersistedClient, Persister } from '@tanstack/react-query-persist-c
 
 const CACHE_KEY = 'REACT_QUERY_OFFLINE_CACHE';
 
+// Only anonymous catalog data may be written to unencrypted AsyncStorage.
+// User/profile/chat/vault/resume/prediction data must stay memory-only.
+const PUBLIC_QUERY_PREFIXES = new Set(['schools', 'find-college-schools']);
+
+export function sanitizePersistedClient(client: PersistedClient): PersistedClient {
+  return {
+    ...client,
+    clientState: {
+      ...client.clientState,
+      mutations: [],
+      queries: client.clientState.queries.filter((query) => {
+        const [prefix] = Array.isArray(query.queryKey) ? query.queryKey : [];
+        return typeof prefix === 'string' && PUBLIC_QUERY_PREFIXES.has(prefix);
+      }),
+    },
+  };
+}
+
 /**
  * Maximum age of the persisted cache (24 hours).
  * After this time the entire cache is discarded on the next cold start.
@@ -23,7 +41,7 @@ export function createAsyncStoragePersister(): Persister {
   return {
     persistClient: async (client: PersistedClient) => {
       try {
-        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(client));
+        await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(sanitizePersistedClient(client)));
       } catch (error) {
         console.warn('[QueryPersister] Failed to persist cache:', error);
       }

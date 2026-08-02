@@ -91,9 +91,9 @@ export default function AdminAiOperationsPage() {
       />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
-        <TabsList>
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:inline-flex lg:w-auto">
           {TAB_CONFIG.map(({ value, icon: Icon, labelKey }) => (
-            <TabsTrigger key={value} value={value} className="gap-1.5">
+            <TabsTrigger key={value} value={value} className="min-w-0 gap-1.5 px-2 sm:px-3">
               <Icon className="h-4 w-4" />
               {t(labelKey)}
             </TabsTrigger>

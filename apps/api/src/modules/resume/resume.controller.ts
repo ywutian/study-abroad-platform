@@ -120,6 +120,18 @@ export class ResumeController {
     return this.resumeService.addSection(user.id, id, dto);
   }
 
+  // Keep this static suffix above `:sid`; otherwise Express treats "reorder"
+  // as a section id and the real reorder operation returns 404.
+  @Put(':id/sections/reorder')
+  @ApiOperation({ summary: 'Reorder sections' })
+  reorderSections(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() dto: ReorderSectionsDto,
+  ) {
+    return this.resumeService.reorderSections(user.id, id, dto);
+  }
+
   @Put(':id/sections/:sid')
   @ApiOperation({ summary: 'Update a resume section' })
   updateSection(
@@ -140,16 +152,6 @@ export class ResumeController {
   ) {
     await this.resumeService.deleteSection(user.id, id, sid);
     return { message: 'Section deleted' };
-  }
-
-  @Put(':id/sections/reorder')
-  @ApiOperation({ summary: 'Reorder sections' })
-  reorderSections(
-    @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-    @Body() dto: ReorderSectionsDto,
-  ) {
-    return this.resumeService.reorderSections(user.id, id, dto);
   }
 
   // ============================================

@@ -9,7 +9,6 @@ import type {
   PredictionPreviewRequest,
   PredictionPreviewResponse,
   PredictionResponse,
-  PredictionResult,
   PredictionDashboardData,
   PredictionPublicExplanation,
   PredictionSourceSummary,
@@ -184,6 +183,7 @@ export function useRunPrediction() {
 /** Run a read-only what-if preview. Does not write prediction history. */
 export function usePreviewPrediction() {
   return useMutation<PredictionPreviewResponse, Error, PredictionPreviewRequest>({
+    // @cache-invalidation-allowed: read-only what-if preview; backend does not persist prediction history or mutate cached resources
     mutationFn: (dto) =>
       apiClient.post<PredictionPreviewResponse>(predictionRoutes.preview(), dto, {
         timeout: AI_TIMEOUTS.AI_REQUEST,

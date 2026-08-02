@@ -26,7 +26,6 @@ import { MessageContent } from './message-content';
 const ALLOWED_ACTIONS: Record<string, string> = {
   'navigate:/schools': '/schools',
   'navigate:/cases': '/cases',
-  'navigate:/pricing': '/settings/subscription',
   'navigate:/ranking': '/ranking',
   'navigate:/profile': '/profile',
 };

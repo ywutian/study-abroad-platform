@@ -49,7 +49,7 @@ export class EssayAiController {
   ) {}
 
   @Post('polish')
-  @ApiOperation({ summary: 'AI essay polish - costs 20 points' })
+  @ApiOperation({ summary: 'AI essay polish' })
   @ApiResponse({ status: 200, type: EssayPolishResponseDto })
   async polishEssay(
     @CurrentUser() user: CurrentUserPayload,
@@ -60,8 +60,7 @@ export class EssayAiController {
 
   @Post('review')
   @ApiOperation({
-    summary:
-      'AI essay review (admissions officer perspective) - costs 30 points',
+    summary: 'AI essay review (admissions officer perspective)',
   })
   @ApiResponse({ status: 200, type: EssayReviewResponseDto })
   async reviewEssay(
@@ -73,7 +72,7 @@ export class EssayAiController {
 
   @Post('suggest-edits')
   @ApiOperation({
-    summary: 'AI essay edit suggestions - costs polish points',
+    summary: 'AI essay edit suggestions',
   })
   @ApiResponse({ status: 200, type: EssaySuggestEditsResponseDto })
   async suggestEdits(
@@ -84,7 +83,7 @@ export class EssayAiController {
   }
 
   @Post('brainstorm')
-  @ApiOperation({ summary: 'AI essay brainstorm - costs 15 points' })
+  @ApiOperation({ summary: 'AI essay brainstorm' })
   @ApiResponse({ status: 200, type: EssayBrainstormResponseDto })
   async brainstormIdeas(
     @CurrentUser() user: CurrentUserPayload,
@@ -394,8 +393,7 @@ export class EssayAiController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary:
-      'Paragraph-by-paragraph analysis of public essay - costs 20 points',
+    summary: 'Paragraph-by-paragraph analysis of public essay',
   })
   async analyzeGalleryEssay(
     @CurrentUser() user: CurrentUserPayload,

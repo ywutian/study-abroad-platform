@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { PageHeader, PageContainer } from '@/components/layout';
 import { toast } from 'sonner';
 import { apiClient as api } from '@/lib/api';
+import { vaultRoutes } from '@study-abroad/shared';
 
 import type {
   VaultItem,
   VaultItemDetail,
   VaultStats as VaultStatsType,
-  ApiResponse,
 } from './_components/vault-types';
 import { VaultStats } from './_components/vault-stats';
 import { VaultSidebar } from './_components/vault-sidebar';
@@ -28,6 +28,7 @@ export default function VaultPage() {
   const [items, setItems] = useState<VaultItem[]>([]);
   const [stats, setStats] = useState<VaultStatsType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [selectedType, setSelectedType] = useState<'ALL' | VaultItem['type']>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,6 +42,7 @@ export default function VaultPage() {
   // Fetch items and stats
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const params = new URLSearchParams();
       if (selectedType !== 'ALL') params.append('type', selectedType);
@@ -48,63 +50,20 @@ export default function VaultPage() {
       if (searchQuery) params.append('search', searchQuery);
 
       const [itemsRes, statsRes] = await Promise.all([
-        api.get<ApiResponse<VaultItem[]>>(`/vaults?${params.toString()}`),
-        api.get<ApiResponse<VaultStatsType>>('/vaults/stats'),
+        api.get<VaultItem[]>(`${vaultRoutes.list()}?${params.toString()}`),
+        api.get<VaultStatsType>(vaultRoutes.stats()),
       ]);
 
-      if (itemsRes.success) {
-        setItems(itemsRes.data);
-      }
-      if (statsRes.success) {
-        setStats(statsRes.data);
-      }
+      setItems(itemsRes);
+      setStats(statsRes);
     } catch (_error) {
-      // Fetch failed — fall back to demo data
-      setItems([
-        {
-          id: '1',
-          type: 'CREDENTIAL',
-          title: t('demo.commonAppTitle'),
-          category: t('demo.applicationCategory'),
-          tags: [t('demo.applicationTag'), t('demo.importantTag')],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          type: 'DOCUMENT',
-          title: t('demo.satTitle'),
-          category: t('demo.testScoreCategory'),
-          tags: ['SAT', t('demo.standardizedTag')],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          type: 'NOTE',
-          title: t('demo.schoolNotesTitle'),
-          category: t('demo.planningCategory'),
-          tags: [t('demo.schoolSelectionTag')],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ]);
-      setStats({
-        totalItems: 3,
-        credentialCount: 1,
-        documentCount: 1,
-        noteCount: 1,
-        certificateCount: 0,
-        categories: [
-          t('demo.applicationCategory'),
-          t('demo.testScoreCategory'),
-          t('demo.planningCategory'),
-        ],
-      });
+      setItems([]);
+      setStats(null);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
-  }, [selectedType, selectedCategory, searchQuery, t]);
+  }, [selectedType, selectedCategory, searchQuery]);
 
   useEffect(() => {
     fetchData();
@@ -113,34 +72,17 @@ export default function VaultPage() {
   // View item detail
   const viewItem = async (itemId: string) => {
     try {
-      const res = await api.get<ApiResponse<VaultItemDetail>>(`/vaults/${itemId}`);
-      if (res.success) {
-        setShowViewDialog(res.data);
-      }
+      const res = await api.get<VaultItemDetail>(vaultRoutes.byId(itemId));
+      setShowViewDialog(res);
     } catch (_error) {
-      // Demo data
-      setShowViewDialog({
-        id: itemId,
-        type: 'CREDENTIAL',
-        title: t('demo.commonAppTitle'),
-        category: t('demo.applicationCategory'),
-        tags: [t('demo.applicationTag'), t('demo.importantTag')],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        data: JSON.stringify({
-          username: 'student@email.com',
-          password: 'SecurePass123!',
-          website: 'https://commonapp.org',
-          notes: t('demo.mainAccountNote'),
-        }),
-      });
+      toast.error(t('loadError'));
     }
   };
 
   // Delete item
   const handleDelete = async (itemId: string) => {
     try {
-      await api.delete(`/vaults/${itemId}`);
+      await api.delete(vaultRoutes.byId(itemId));
       setShowDeleteDialog(null);
       setShowViewDialog(null);
       fetchData();
@@ -175,6 +117,14 @@ export default function VaultPage() {
       />
 
       <PageContainer maxWidth="7xl">
+        {loadError && (
+          <div className="mb-6 flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+            <span>{t('loadError')}</span>
+            <Button variant="outline" size="sm" onClick={fetchData}>
+              {t('retry')}
+            </Button>
+          </div>
+        )}
         {/* Stats Cards */}
         {stats && <VaultStats stats={stats} />}
 

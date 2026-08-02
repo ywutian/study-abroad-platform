@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
-import { VerificationStatusCard, PointsOverview } from '@/components/features';
+import { VerificationStatusCard } from '@/components/features';
 import type { ProfileData } from './types';
 
 interface ProfileActionBarProps {
@@ -410,18 +410,11 @@ export function ProfileSecondaryWorkflows({
       </div>
 
       {profile && (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="mt-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-          >
-            <PointsOverview compact />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
           >
             <VerificationStatusCard userId={profile.userId} compact />
           </motion.div>

@@ -8,6 +8,15 @@
  * When a controller prefix changes, update HERE and all consumers auto-sync.
  */
 
+/**
+ * Global prefix set by `app.setGlobalPrefix()` in `apps/api/src/main.ts`.
+ * Sits in front of every API_ROUTES entry. Browser callers go through the
+ * Next rewrite and get this from `apiClient`; server-side callers that build
+ * an absolute URL (sitemap.ts) prepend it themselves — both from here, so the
+ * version can't drift between them.
+ */
+export const API_VERSION_PREFIX = '/api/v1';
+
 // ─── Route Prefixes ──────────────────────────────────────────────────────────
 // Each key maps to a backend @Controller('prefix') decorator.
 // ALL prefixes use plural nouns (NestJS convention in this project).
@@ -107,6 +116,7 @@ export const forumRoutes = {
   postLike: (id: string) => `${API_ROUTES.FORUMS}/posts/${id}/like`,
   postApply: (id: string) => `${API_ROUTES.FORUMS}/posts/${id}/apply`,
   postReport: (id: string) => `${API_ROUTES.FORUMS}/posts/${id}/report`,
+  commentReport: (id: string) => `${API_ROUTES.FORUMS}/comments/${id}/report`,
   comments: (postId: string) => `${API_ROUTES.FORUMS}/posts/${postId}/comments`,
 };
 
@@ -241,6 +251,8 @@ export const authRoutes = {
   register: () => `${API_ROUTES.AUTH}/register`,
   refresh: () => `${API_ROUTES.AUTH}/refresh`,
   logout: () => `${API_ROUTES.AUTH}/logout`,
+  /** Omit refreshToken in the request body to revoke every session. */
+  logoutAllSessions: () => `${API_ROUTES.AUTH}/logout`,
   verifyEmail: () => `${API_ROUTES.AUTH}/verify-email`,
   changePassword: () => `${API_ROUTES.AUTH}/change-password`,
   forgotPassword: () => `${API_ROUTES.AUTH}/forgot-password`,
@@ -354,6 +366,7 @@ export const schoolListRoutes = {
 
 export const caseRoutes = {
   list: () => API_ROUTES.CASES,
+  mine: () => `${API_ROUTES.CASES}/me`,
   byId: (id: string) => `${API_ROUTES.CASES}/${id}`,
 };
 
@@ -372,7 +385,6 @@ export const notificationRoutes = {
 export const verificationRoutes = {
   submit: () => API_ROUTES.VERIFICATIONS,
   my: () => `${API_ROUTES.VERIFICATIONS}/my`,
-  history: () => `${API_ROUTES.VERIFICATIONS}/history`,
   status: () => `${API_ROUTES.VERIFICATIONS}/status`,
   stats: () => `${API_ROUTES.VERIFICATIONS}/stats`,
   pending: () => `${API_ROUTES.VERIFICATIONS}/pending`,
@@ -467,6 +479,13 @@ export const pointsRoutes = {
   summary: () => `${API_ROUTES.USERS}/me/points/summary`,
   history: () => `${API_ROUTES.USERS}/me/points/history`,
   rules: () => `${API_ROUTES.USERS}/me/points/rules`,
+};
+
+export const vaultRoutes = {
+  list: () => API_ROUTES.VAULTS,
+  stats: () => `${API_ROUTES.VAULTS}/stats`,
+  generatePassword: () => `${API_ROUTES.VAULTS}/generate-password`,
+  byId: (id: string) => `${API_ROUTES.VAULTS}/${id}`,
 };
 
 export const adminFeatureFlagRoutes = {

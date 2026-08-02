@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { GraduationCap, Trophy, Upload, ShieldCheck } from 'lucide-react';
+import { GraduationCap, Upload, ShieldCheck } from 'lucide-react';
 import { outcomeRoutes } from '@study-abroad/shared';
 
 import { PageContainer, PageHeader } from '@/components/layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -39,7 +39,6 @@ interface MyStats {
   totalReported: number;
   selfReported: number;
   verified: number;
-  pointsEarned: number;
 }
 
 /**

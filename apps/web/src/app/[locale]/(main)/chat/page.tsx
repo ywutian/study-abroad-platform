@@ -617,7 +617,7 @@ export default function ChatPage() {
             <p className="text-sm text-muted-foreground">{t('chat.workbenchDescription')}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant={isConnected ? 'success' : 'warning'} className="gap-1.5">
             {isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
             {isConnected ? t('chat.connected') : t('chat.connecting')}

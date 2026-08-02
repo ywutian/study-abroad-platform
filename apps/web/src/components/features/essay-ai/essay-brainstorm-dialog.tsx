@@ -22,7 +22,6 @@ import { Loader2, Lightbulb, ChevronRight, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
-import { AI_POINT_COSTS } from '@/lib/constants';
 
 interface EssayBrainstormDialogProps {
   open: boolean;
@@ -153,10 +152,6 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
                   onChange={(e) => setMajor(e.target.value)}
                 />
               </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{t('brainstorm.cost', { points: AI_POINT_COSTS.ESSAY_BRAINSTORM })}</span>
             </div>
           </div>
         ) : (

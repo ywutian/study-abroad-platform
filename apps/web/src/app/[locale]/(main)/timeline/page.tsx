@@ -259,6 +259,7 @@ export default function TimelinePage() {
     mutationFn: ({ timelineId, title }: AddTaskVars) =>
       apiClient.post(timelineRoutes.tasks(), { timelineId, title }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateTimelineQueries() invalidates timeline detail, list, and overview caches
       toast.success(t('schoolTimelines.taskAdded'));
       invalidateTimelineQueries();
     },
@@ -270,6 +271,7 @@ export default function TimelinePage() {
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId: string) => apiClient.delete(`${API_ROUTES.TIMELINES}/tasks/${taskId}`),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidateTimelineQueries() invalidates timeline detail, list, and overview caches
       toast.success(t('deleteSuccess'));
       invalidateTimelineQueries();
     },
@@ -298,6 +300,7 @@ export default function TimelinePage() {
     mutationFn: ({ eventId, title }: AddPersonalTaskVars) =>
       apiClient.post(`${API_ROUTES.TIMELINES}/personal-tasks`, { eventId, title }),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePersonalEventQueries() invalidates personal event detail/list and timeline overview caches
       toast.success(t('schoolTimelines.taskAdded'));
       invalidatePersonalEventQueries();
     },
@@ -310,6 +313,7 @@ export default function TimelinePage() {
     mutationFn: (taskId: string) =>
       apiClient.delete(`${API_ROUTES.TIMELINES}/personal-tasks/${taskId}`),
     onSuccess: () => {
+      // @cache-invalidation-allowed: invalidatePersonalEventQueries() invalidates personal event detail/list and timeline overview caches
       toast.success(t('deleteSuccess'));
       invalidatePersonalEventQueries();
     },

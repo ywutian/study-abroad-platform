@@ -259,12 +259,23 @@ const POINT_ACTION_REGISTRY: Record<
 export class PointsConfigService {
   private readonly logger = new Logger(PointsConfigService.name);
 
+  /**
+   * Product decision: the points economy is disabled and product capabilities
+   * are available without point checks or deductions.
+   *
+   * Keep the persisted settings and ledger data intact so the feature can be
+   * restored later, but never let an old `points_enabled=true` setting revive
+   * charging/rewards while every client surface is hidden.
+   */
+  private static readonly FEATURE_AVAILABLE = false;
+
   constructor(private readonly settingsService: SettingsService) {}
 
   /**
    * Check if the points system is enabled (runtime, from DB/Redis cache)
    */
   async isEnabled(): Promise<boolean> {
+    if (!PointsConfigService.FEATURE_AVAILABLE) return false;
     return this.settingsService.getTyped(SETTING_KEYS.POINTS_ENABLED, false);
   }
 
@@ -325,6 +336,11 @@ export class PointsConfigService {
    * Toggle the points system on/off
    */
   async setEnabled(enabled: boolean): Promise<void> {
+    if (enabled && !PointsConfigService.FEATURE_AVAILABLE) {
+      throw new BadRequestException(
+        'Points economy is disabled; product features run without points',
+      );
+    }
     await this.settingsService.set(
       SETTING_KEYS.POINTS_ENABLED,
       String(enabled),

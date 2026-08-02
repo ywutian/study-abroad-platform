@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { LayoutGrid, List, SlidersHorizontal, Trophy, X } from 'lucide-react';
+import { GitCompareArrows, LayoutGrid, List, SlidersHorizontal, Trophy, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Link } from '@/lib/i18n/navigation';
 import {
   SCHOOL_DEFAULT_RANKING_LIST,
   type SchoolFilters,
@@ -175,6 +176,7 @@ export function SchoolToolbar({
   const t = useTranslations('schools');
   const tt = useTranslations('schools.toolbar');
   const tc = useTranslations('common');
+  const compareT = useTranslations('schoolCompare');
   const format = useFormatter();
 
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -409,6 +411,12 @@ export function SchoolToolbar({
         </h2>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" className="h-10">
+            <Link href="/schools/compare">
+              <GitCompareArrows className="mr-1.5 h-3.5 w-3.5" />
+              {compareT('title')}
+            </Link>
+          </Button>
           {/* Sort */}
           <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SchoolSortBy)}>
             <SelectTrigger className="h-10 w-[148px]" aria-label={tt('sortLabel')}>

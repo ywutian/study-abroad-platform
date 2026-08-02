@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
+import { createHash } from 'crypto';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -118,7 +119,7 @@ const NOTIFICATION_TEMPLATES: Record<
   },
   [NotificationType.CASE_HELPFUL]: {
     title: '案例获赞',
-    content: '你的案例被标记为有帮助，获得 +10 积分',
+    content: '你的案例被标记为有帮助',
   },
   [NotificationType.ESSAY_COMMENT]: {
     title: '文书评论',
@@ -134,7 +135,7 @@ const NOTIFICATION_TEMPLATES: Record<
   },
   [NotificationType.VERIFICATION_APPROVED]: {
     title: '认证通过',
-    content: '恭喜！你的身份认证已通过，获得 +100 积分',
+    content: '恭喜！你的身份认证已通过',
   },
   [NotificationType.VERIFICATION_REJECTED]: {
     title: '认证未通过',
@@ -154,7 +155,7 @@ const NOTIFICATION_TEMPLATES: Record<
   },
   [NotificationType.PROFILE_INCOMPLETE]: {
     title: '完善档案',
-    content: '完善你的档案可获得 +30 积分',
+    content: '完善档案可以获得更准确的分析和预测',
   },
   [NotificationType.CASE_REVIEW_APPROVED]: {
     title: '案例审核通过',
@@ -180,6 +181,8 @@ export class NotificationService {
   private readonly NOTIFICATION_KEY_PREFIX = 'notifications:';
   private readonly UNREAD_COUNT_KEY_PREFIX = 'unread_count:';
   private readonly PUSH_TOKEN_KEY_PREFIX = 'notification_push_tokens:';
+  private readonly PUSH_TOKEN_OWNER_KEY_PREFIX =
+    'notification_push_token_owner:';
   private readonly MAX_NOTIFICATIONS = 100;
   private readonly NOTIFICATION_TTL = REDIS_TTL.NOTIFICATION;
   private readonly PUSH_TOKEN_TTL = REDIS_TTL.PUSH_TOKEN;
@@ -275,12 +278,37 @@ export class NotificationService {
       return;
     }
 
+    const ownerKey = this.getPushTokenOwnerKey(normalizedToken);
+    const previousOwner = await this.redis.get(ownerKey);
+    if (previousOwner && previousOwner !== userId) {
+      await this.redis.srem(
+        this.getPushTokenKey(previousOwner),
+        normalizedToken,
+      );
+    }
+
     const key = this.getPushTokenKey(userId);
     await this.redis.sadd(key, normalizedToken);
     await this.redis.expire(key, this.PUSH_TOKEN_TTL);
+    await this.redis.set(ownerKey, userId, this.PUSH_TOKEN_TTL);
     this.logger.log(
       `Push token registered for user ${userId} on ${platform}: ${normalizedToken.slice(0, 24)}...`,
     );
+  }
+
+  async unregisterPushToken(userId: string, token: string): Promise<void> {
+    const normalizedToken = token.trim();
+    if (!normalizedToken) return;
+
+    await this.removePushToken(userId, normalizedToken);
+  }
+
+  private async removePushToken(userId: string, token: string): Promise<void> {
+    await this.redis.srem(this.getPushTokenKey(userId), token);
+    const ownerKey = this.getPushTokenOwnerKey(token);
+    if ((await this.redis.get(ownerKey)) === userId) {
+      await this.redis.del(ownerKey);
+    }
   }
 
   async getPreferences(userId: string): Promise<NotificationPreferences> {
@@ -521,6 +549,11 @@ export class NotificationService {
     return `${this.PUSH_TOKEN_KEY_PREFIX}${userId}`;
   }
 
+  private getPushTokenOwnerKey(token: string): string {
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    return `${this.PUSH_TOKEN_OWNER_KEY_PREFIX}${tokenHash}`;
+  }
+
   private get preferenceModel() {
     return (this.prisma as unknown as Record<string, any>)
       .userNotificationPreference;
@@ -577,6 +610,11 @@ export class NotificationService {
   }
 
   private async sendRemotePush(notification: Notification): Promise<void> {
+    const preferences = await this.getPreferences(notification.userId);
+    if (preferences.source !== 'user' || !preferences.readiness.remotePush) {
+      return;
+    }
+
     const pushTokens = await this.getValidExpoPushTokens(notification.userId);
 
     if (pushTokens.length === 0) {
@@ -632,9 +670,10 @@ export class NotificationService {
         .filter((token): token is string => !!token);
 
       if (invalidTokens.length > 0) {
-        await this.redis.srem(
-          this.getPushTokenKey(notification.userId),
-          ...invalidTokens,
+        await Promise.all(
+          invalidTokens.map((token) =>
+            this.removePushToken(notification.userId, token),
+          ),
         );
         this.logger.warn(
           `Removed ${invalidTokens.length} stale Expo push token(s) for user ${notification.userId}`,

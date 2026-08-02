@@ -23,7 +23,6 @@ const PRESET_COLORS = [
   '#555d3c',
   '#1d4ed8',
   '#fff9ef',
-  '#fff9ef',
 ];
 
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;

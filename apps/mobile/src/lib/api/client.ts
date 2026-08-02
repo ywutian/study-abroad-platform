@@ -197,6 +197,7 @@ class ApiClient {
 
       try {
         const response = await fetch(url, {
+          // @route-lint-ignore: generic HTTP transport; concrete callers are checked at their call sites.
           ...init,
           headers,
           signal: controller.signal,
@@ -321,6 +322,7 @@ class ApiClient {
     // expoFetch gives a streamable body in React Native; cast to the DOM Response
     // shape used by the stream() reader below (status/ok/body.getReader()).
     return expoFetch(`${this.baseUrl}${API_VERSION}${endpoint}`, {
+      // @route-lint-ignore: generic SSE transport; the endpoint is checked where stream() is called.
       method: 'POST',
       headers,
       body: data ? JSON.stringify(data) : undefined,
@@ -361,10 +363,17 @@ class ApiClient {
     try {
       while (true) {
         const readPromise = reader.read();
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Stream chunk timeout')), CHUNK_TIMEOUT_MS)
-        );
-        const { done, value } = await Promise.race([readPromise, timeoutPromise]);
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Stream chunk timeout')), CHUNK_TIMEOUT_MS);
+        });
+        let chunk: ReadableStreamReadResult<Uint8Array>;
+        try {
+          chunk = await Promise.race([readPromise, timeoutPromise]);
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId);
+        }
+        const { done, value } = chunk;
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });

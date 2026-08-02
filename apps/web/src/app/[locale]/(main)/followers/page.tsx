@@ -14,6 +14,7 @@ import type {
   SocialRelationType,
   SocialRelationshipFilter,
   SocialRoleFilter,
+  SocialUser,
 } from '@study-abroad/shared';
 import { chatRoutes } from '@study-abroad/shared';
 import {
@@ -113,7 +114,9 @@ export default function FollowersPage() {
   const [role, setRole] = useState<SocialRoleFilter>('all');
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [previewUserId, setPreviewUserId] = useState<string | null>(null);
+  const [previewUser, setPreviewUser] = useState<
+    (SocialUser & { isFollowing?: boolean; isFollowedBy?: boolean }) | null
+  >(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
 
   useEffect(() => {
@@ -248,6 +251,18 @@ export default function FollowersPage() {
     total: relationsQuery.data?.total ?? 0,
   });
 
+  const openPreview = (userId: string) => {
+    const relation = relations.find((item) => item.user.id === userId);
+    const recommendation = overviewQuery.data?.recommendations.find((item) => item.id === userId);
+    const user = relation?.user ?? recommendation;
+    if (!user) return;
+    setPreviewUser({
+      ...user,
+      isFollowing: relation?.relationType === 'following' || relation?.relationship === 'mutual',
+      isFollowedBy: relation?.relationType === 'followers' || relation?.relationship === 'mutual',
+    });
+  };
+
   return (
     <PageContainer maxWidth="7xl">
       <PageHeader
@@ -318,14 +333,15 @@ export default function FollowersPage() {
               )}
 
               <div className="flex items-center justify-between gap-3 border-y border-border py-3">
-                <label className="flex min-w-0 items-center gap-3 text-sm text-muted-foreground">
+                <label className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
                   <Checkbox
+                    className="w-10 min-w-10 max-w-10 sm:w-8 sm:min-w-8 sm:max-w-8"
                     checked={allSelected}
                     onCheckedChange={(checked) => toggleAll(Boolean(checked))}
                     aria-label={t('followers.bulk.selectPage')}
                     disabled={relations.length === 0 || relationsQuery.isLoading}
                   />
-                  <span className="truncate">{t('followers.bulk.selectPage')}</span>
+                  <span className="whitespace-nowrap">{t('followers.bulk.selectPage')}</span>
                 </label>
                 <p className="shrink-0 text-xs text-muted-foreground">{pageSummary}</p>
               </div>
@@ -343,7 +359,7 @@ export default function FollowersPage() {
                     onToggleSelected={(userId, checked) =>
                       setSelectedIds((current) => toggleSelectedId(current, userId, checked))
                     }
-                    onPreview={setPreviewUserId}
+                    onPreview={openPreview}
                     onMessage={startConversation}
                     onAction={requestAction}
                   />
@@ -383,7 +399,7 @@ export default function FollowersPage() {
             users={overviewQuery.data?.recommendations ?? []}
             loading={overviewQuery.isLoading}
             pending={bulkMutation.isPending}
-            onPreview={setPreviewUserId}
+            onPreview={openPreview}
             onFollow={(userId) => requestAction('follow', [userId])}
           />
           <SafetyPanel
@@ -423,9 +439,9 @@ export default function FollowersPage() {
       </AlertDialog>
 
       <UserProfilePreview
-        userId={previewUserId}
-        open={!!previewUserId}
-        onOpenChange={(open) => !open && setPreviewUserId(null)}
+        user={previewUser}
+        open={!!previewUser}
+        onOpenChange={(open) => !open && setPreviewUser(null)}
       />
     </PageContainer>
   );
@@ -476,7 +492,7 @@ function SocialToolbar({
               key={tab}
               value={tab}
               onClick={() => onTabChange(tab)}
-              className="gap-2 px-3"
+              className="gap-1 px-1 sm:gap-2 sm:px-3"
             >
               <Icon className="h-4 w-4" />
               <span>{t(`followers.tabs.${tab}`)}</span>
@@ -744,7 +760,7 @@ function RelationRow({
           <button
             type="button"
             onClick={() => onPreview(item.user.id)}
-            className="min-w-0 truncate text-left text-base font-semibold text-foreground hover:underline"
+            className="min-w-0 truncate text-left text-base font-semibold text-foreground hover:underline max-sm:flex max-sm:min-h-10 max-sm:items-center"
           >
             {displayName}
           </button>
@@ -966,7 +982,7 @@ function RecommendationPanel({
                     <button
                       type="button"
                       onClick={() => onPreview(user.id)}
-                      className="truncate text-sm font-semibold hover:underline"
+                      className="truncate text-sm font-semibold hover:underline max-sm:flex max-sm:min-h-10 max-sm:items-center"
                     >
                       {displayName}
                     </button>

@@ -33,7 +33,7 @@ export class RecommendationController {
 
   @Post()
   @ApiOperation({
-    summary: 'Generate AI school recommendation - costs 25 points',
+    summary: 'Generate AI school recommendation',
   })
   @ApiResponse({ status: 200, type: SchoolRecommendationResponseDto })
   async generateRecommendation(

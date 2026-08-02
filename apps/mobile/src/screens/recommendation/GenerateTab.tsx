@@ -26,7 +26,6 @@ import {
   RecommendationResult,
   RecommendationPreflight,
   GenerateRecommendationDto,
-  POINT_COST,
   REGION_OPTIONS,
   MAJOR_OPTIONS,
   BUDGET_OPTIONS,
@@ -169,7 +168,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
     if (preflightLoading) return null;
     if (!preflight) return null;
 
-    const { profileComplete, missingFields, points, profileSummary } = preflight;
+    const { profileComplete, missingFields, profileSummary } = preflight;
 
     return (
       <Animated.View entering={FadeInDown.duration(400).springify()}>
@@ -199,16 +198,6 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                 ? t('recommendation.profileComplete')
                 : t('recommendation.profileIncomplete')}
             </Text>
-            <View
-              style={[styles.pointsBadge, { backgroundColor: withOpacity(colors.primary, 0.08) }]}
-            >
-              <Ionicons name="diamond-outline" size={14} color={colors.primary} />
-              <Text
-                style={[styles.pointsText, { color: colors.primary, fontFamily: fontFamily.mono }]}
-              >
-                {points}
-              </Text>
-            </View>
           </View>
 
           {profileSummary && (
@@ -466,18 +455,11 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
         >
           {t('recommendation.generate')}
         </AnimatedButton>
-        <Text style={[styles.pointCostText, { color: colors.foregroundMuted }]}>
-          <Ionicons name="diamond-outline" size={12} color={colors.foregroundMuted} />{' '}
-          {t('recommendation.pointCost', { cost: POINT_COST })}
-        </Text>
-
         {preflight && !preflight.canGenerate && (
           <Text style={[styles.cannotGenerateText, { color: colors.error }]}>
             {!preflight.profileComplete
               ? t('recommendation.completeProfileFirst')
-              : preflight.points < POINT_COST
-                ? t('recommendation.insufficientPoints')
-                : t('recommendation.cannotGenerate')}
+              : t('recommendation.cannotGenerate')}
           </Text>
         )}
       </View>
@@ -744,18 +726,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
   },
-  pointsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-  },
-  pointsText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
   profileSummaryRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -875,10 +845,6 @@ const styles = StyleSheet.create({
   },
   generateButton: {
     width: '100%',
-  },
-  pointCostText: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.sm,
   },
   cannotGenerateText: {
     fontSize: fontSize.xs,

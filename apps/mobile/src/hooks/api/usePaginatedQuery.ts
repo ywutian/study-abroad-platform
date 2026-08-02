@@ -44,6 +44,7 @@ export function usePaginatedQuery<T>({
     queryKey,
     queryFn: async ({ pageParam = 1 }) => {
       return apiClient.get<PaginatedResponse<T>>(endpoint, {
+        // @route-lint-ignore generic pagination hook; callers supply shared routes
         params: {
           page: pageParam,
           pageSize: limit,

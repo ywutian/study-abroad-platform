@@ -1,6 +1,7 @@
 ---
-description: "Security patterns and authentication rules"
-globs: ["**/auth/**", "**/guards/**", "**/vault/**", "**/common/guards/**", "**/common/interceptors/**"]
+description: 'Security patterns and authentication rules'
+globs:
+  ['**/auth/**', '**/guards/**', '**/vault/**', '**/common/guards/**', '**/common/interceptors/**']
 ---
 
 # Security Rules
@@ -29,8 +30,13 @@ globs: ["**/auth/**", "**/guards/**", "**/vault/**", "**/common/guards/**", "**/
 
 ## CSP
 
-- **`'unsafe-eval'` is dev-only — production must NEVER include it** (prod uses the narrower `'wasm-unsafe-eval'`). Pinned by `lib/security/csp.test.ts`.
-- `'unsafe-inline'` IS allowed in prod `script-src`/`style-src`: Next.js App Router emits inline hydration/RSC scripts that can't be nonced together with next-intl middleware (decided in #fdadba28). CSP logic lives in `lib/security/csp.ts`.
+CSP logic lives in `lib/security/csp.ts`, pinned by `lib/security/csp.test.ts`.
+
+- **`'unsafe-eval'` is dev-only — production must NEVER include it** (prod uses the narrower `'wasm-unsafe-eval'`).
+- **Prod `script-src` carries a per-request `'nonce-…'`.** Any CSP3 browser ignores `'unsafe-inline'` once a nonce is present, so the `'unsafe-inline'` still listed after it is only the CSP2-only fallback — never the modern behaviour. Adding a new inline `<script>` therefore MUST pass the nonce (`headers().get('x-nonce')` in a server component, or the library's own `nonce` prop — that is why `ThemeProvider` takes one). `type="application/ld+json"` blocks are data, not scripts, and need none.
+- **Dev ships NO nonce on purpose** — the dev server's HMR/error-overlay inline scripts aren't all nonced, and dev CSP isn't a security boundary. Verify nonce work against a **production build** (`.claude/launch.json` → `web-prod`); `next dev` cannot exercise it.
+- **`style-src` stays nonce-free** with `'unsafe-inline'`: next/font and React inject unnonced inline styles, and noncing styles would disable them under the same CSP3 rule.
+- Next reads the nonce out of the **request** `content-security-policy` header (`app-render.js` → `getScriptNonceFromHeader`) to stamp its own hydration/RSC scripts. Setting CSP only on the _response_ is why the earlier attempt (#411101a8, reverted in #fdadba28 with the wrong conclusion "can't be nonced together with next-intl") silently never worked. `proxy.ts` must keep forwarding `content-security-policy` + `x-nonce` as request headers.
 
 ## Vault
 

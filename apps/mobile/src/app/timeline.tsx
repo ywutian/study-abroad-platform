@@ -1038,11 +1038,12 @@ function InlineTaskList({
   onToggle: (id: string) => void;
   onAdd: () => void;
 }) {
-  const { data: tasks, isLoading } = useQuery<TaskResponse[]>({
+  const { data: timeline, isLoading } = useQuery<{ tasks?: TaskResponse[] }>({
     queryKey: qk.timeline.tasks(timelineId),
-    queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/${timelineId}/tasks`),
+    queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/${timelineId}`),
     staleTime: 30_000,
   });
+  const tasks = timeline?.tasks ?? [];
   if (isLoading) return <Loading size="small" />;
   return (
     <View style={{ gap: spacing.xs }}>

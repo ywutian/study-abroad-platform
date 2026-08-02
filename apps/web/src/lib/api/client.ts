@@ -1,5 +1,10 @@
 import { toast } from 'sonner';
-import { normalizeLocale, toBcp47, type SupportedLocale } from '@study-abroad/shared';
+import {
+  API_VERSION_PREFIX,
+  normalizeLocale,
+  toBcp47,
+  type SupportedLocale,
+} from '@study-abroad/shared';
 import { useAuthStore } from '@/stores/auth';
 import { env } from '@/lib/env';
 import { ApiError } from './api-error';
@@ -45,7 +50,7 @@ export function getApiLocale(): SupportedLocale {
 // API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
 const RESOLVED_API_URL = '';
 const DIRECT_API_URL = env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
-const API_VERSION = '/api/v1';
+const API_VERSION = API_VERSION_PREFIX;
 
 interface RequestConfig extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -212,6 +217,7 @@ class ApiClient {
 
       try {
         const response = await fetch(url, {
+          // @route-lint-ignore: generic HTTP transport; concrete callers are checked at their call sites.
           ...init,
           headers,
           signal: abortSignal,

@@ -13,16 +13,16 @@ import path from 'path';
 const SRC_DIR = path.resolve(__dirname, '../src');
 const MESSAGES_DIR = path.join(SRC_DIR, 'messages');
 
-/** 需要扫描的源码目录 */
-const SCAN_DIRS = [
-  path.join(SRC_DIR, 'app'),
-  path.join(SRC_DIR, 'components'),
-  path.join(SRC_DIR, 'hooks'),
-  path.join(SRC_DIR, 'lib'),
-];
+/**
+ * 需要扫描的源码目录
+ *
+ * 整个 src 全扫，别再列白名单。原先只列 app/components/hooks/lib，
+ * 漏掉了 stores/、types/ 和 src 根目录下的 proxy.ts 等文件。
+ */
+const SCAN_DIRS = [SRC_DIR];
 
 /** 排除的目录/文件 */
-const EXCLUDE_PATTERNS = ['node_modules', '.next', 'messages/zh.json', 'messages/en.json'];
+const EXCLUDE_PATTERNS = ['node_modules', '.next', path.join(SRC_DIR, 'messages')];
 
 /**
  * 已确认通过动态模式引用的 key（静态扫描无法检测到）
@@ -57,6 +57,17 @@ const DYNAMIC_KEY_PATTERNS: string[] = [
   // t.raw(`plans.${planKey}.features`) — subscription/page.tsx
   'subscription.plans.*.features',
   'subscription.plans.*.period',
+
+  // packages/shared/src/schemas/* 的 createXxxSchema(t) 工厂发出 'validation.foo'，
+  // 由调用方传入的、带命名空间的 t 解析出完整 key。这条链路跨了 package，扫不到。
+  // createPersonalEventSchema(t) — timeline/page.tsx:118，t = useTranslations('timeline')
+  'timeline.validation.titleRequired',
+  'timeline.validation.titleTooLong',
+  'timeline.validation.categoryRequired',
+  'timeline.validation.dateRequired',
+  'timeline.validation.invalidUrl',
+  // createSubmitCaseSchema(t) — submit-case-dialog.tsx:93，t = useTranslations('submitCase')
+  'submitCase.validation.resultRequired',
 ];
 
 /**

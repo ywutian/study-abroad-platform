@@ -8,13 +8,9 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { hallRoutes, pointsRedemptionRoutes, API_ROUTES } from '@study-abroad/shared';
+import { hallRoutes, API_ROUTES } from '@study-abroad/shared';
 import type {
-  HallOverviewPayload,
   ChallengeAttemptResult,
-  RedemptionType,
-  RedemptionResult,
-  RedemptionCatalogItem,
   ChinaAdmitTrendResponse,
   DifficultySignalEntry,
 } from '@study-abroad/shared';
@@ -36,10 +32,6 @@ export const hallKeys = {
   swipeStats: () => [...hallKeys.all, 'swipeStats'] as const,
   targetRanking: () => [...hallKeys.all, 'targetRanking'] as const,
   ranking: (schoolIds: string[]) => [...hallKeys.all, 'ranking', ...schoolIds] as const,
-  // Hall refactor Stage 1-7 — new query keys
-  overview: () => [...hallKeys.all, 'overview'] as const,
-  redemptionCatalog: () => [...hallKeys.all, 'redemptionCatalog'] as const,
-  redemptionHistory: () => [...hallKeys.all, 'redemptionHistory'] as const,
   // Hall refactor Stage 3 — Verified China Admit Dashboard
   chinaAdmitTrend: (schoolIds: string[], years: number) =>
     [...hallKeys.all, 'chinaAdmitTrend', years, ...schoolIds] as const,
@@ -127,23 +119,6 @@ export function useAiAnalysis() {
 // tab had already been folded into `verified`.
 // ============================================
 
-/**
- * Aggregated /halls/me/overview — powers the Points Center (points balance,
- * recent activity) in a single round trip.
- *
- * Hall §7 Decision B: the reviewer-status hooks (useReportReview,
- * useReviewerQualificationQuiz, useSubmitReviewerQualification,
- * useReviewCoachInsight) were removed with the retired peer-review subsystem.
- */
-export function useHallOverview(enabled = true) {
-  return useQuery({
-    queryKey: hallKeys.overview(),
-    queryFn: () => apiClient.get<HallOverviewPayload>(hallRoutes.meOverview()),
-    enabled,
-    staleTime: 30_000,
-  });
-}
-
 // ============================================
 // Hall refactor Stage 1 — Challenge submission (persisted)
 // ============================================
@@ -157,44 +132,7 @@ export function useSubmitChallenge() {
         guesses,
       }),
     onSuccess: () => {
-      // Daily challenge counts toward CHALLENGE_COMPLETE — refresh overview.
-      queryClient.invalidateQueries({ queryKey: hallKeys.overview() });
       queryClient.invalidateQueries({ queryKey: hallKeys.swipeStats() });
-    },
-  });
-}
-
-// ============================================
-// Hall refactor Stage 7 — Points redemption (cross-module spend)
-// ============================================
-
-export function useRedemptionCatalog(enabled = true) {
-  return useQuery({
-    queryKey: hallKeys.redemptionCatalog(),
-    queryFn: () =>
-      apiClient.get<RedemptionCatalogItem[]>(pointsRedemptionRoutes.redemptionsCatalog()),
-    enabled,
-    staleTime: 5 * 60_000,
-  });
-}
-
-export function useRedemptionHistory(enabled = true) {
-  return useQuery({
-    queryKey: hallKeys.redemptionHistory(),
-    queryFn: () => apiClient.get(pointsRedemptionRoutes.redemptions() + '?limit=20'),
-    enabled,
-  });
-}
-
-export function useRedeem() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { type: RedemptionType; metadata?: Record<string, unknown> }) =>
-      apiClient.post<RedemptionResult>(pointsRedemptionRoutes.redemptions(), data),
-    onSuccess: () => {
-      // Balance changed; refresh overview + history.
-      queryClient.invalidateQueries({ queryKey: hallKeys.overview() });
-      queryClient.invalidateQueries({ queryKey: hallKeys.redemptionHistory() });
     },
   });
 }

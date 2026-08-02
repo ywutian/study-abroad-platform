@@ -29,7 +29,6 @@ import {
   borderRadius,
 } from '@/utils/theme';
 import {
-  API_ROUTES,
   authRoutes,
   getPasswordPolicyChecks,
   isPasswordCompliant,
@@ -153,7 +152,7 @@ export default function SecurityScreen() {
 
   // -- Active Sessions --
   const logoutAllMutation = useMutation({
-    mutationFn: () => apiClient.post(`${API_ROUTES.AUTH}/logout-all`),
+    mutationFn: () => apiClient.post(authRoutes.logoutAllSessions()),
     onSuccess: async () => {
       toast.success(t('security.loggedOutAll'));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

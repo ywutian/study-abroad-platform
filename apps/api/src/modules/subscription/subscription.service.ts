@@ -4,13 +4,12 @@ import {
   BadRequestException,
   InternalServerErrorException,
   NotFoundException,
+  ServiceUnavailableException,
   UnauthorizedException,
-  Optional,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import { EmailService } from '../../common/email/email.service';
 import {
   SubscriptionPlan,
   SUBSCRIPTION_PLANS,
@@ -18,6 +17,7 @@ import {
   YEARLY_DISCOUNT_MULTIPLIER,
 } from '@study-abroad/shared';
 import { SettingsService, SETTING_KEYS } from '../settings/settings.service';
+import type { CreateSubscriptionDto } from './dto/create-subscription.dto';
 
 // Re-export so existing imports from './subscription.service' still work
 export { SubscriptionPlan } from '@study-abroad/shared';
@@ -30,7 +30,7 @@ const PLAN_NAMES_ZH: Record<string, string> = {
 };
 
 const PLAN_FEATURES_ZH: Record<string, string[]> = {
-  free: ['浏览学校信息', '查看公开案例', '基础 AI 对话 (每日5次)', '档案管理'],
+  free: ['所有产品功能已开放', '无需付费订阅', '不受积分限制'],
   pro: [
     '免费版所有功能',
     '无限 AI 对话',
@@ -56,12 +56,6 @@ export interface PlanDetails {
   currency: string;
   period: 'monthly' | 'yearly' | 'lifetime';
   features: string[];
-}
-
-export interface CreateSubscriptionDto {
-  plan: SubscriptionPlan;
-  period: 'monthly' | 'yearly';
-  paymentMethod?: string;
 }
 
 export interface PaymentResult {
@@ -93,8 +87,28 @@ export class SubscriptionService {
     private prisma: PrismaService,
     private configService: ConfigService,
     private settingsService: SettingsService,
-    @Optional() private emailService?: EmailService,
   ) {}
+
+  /**
+   * Paid subscriptions are retired. The simulator is retained solely so
+   * explicit local fixtures can exercise the legacy ledger; it is impossible
+   * to enable in production and is never selected by default.
+   */
+  private paymentsEnabled(): boolean {
+    return (
+      this.configService.get<string>('PAYMENTS_ENABLED') === 'true' &&
+      this.configService.get<string>('PAYMENT_PROVIDER') === 'simulator' &&
+      this.configService.get<string>('NODE_ENV') !== 'production'
+    );
+  }
+
+  private assertPaymentsEnabled(): void {
+    if (!this.paymentsEnabled()) {
+      throw new ServiceUnavailableException(
+        'Paid subscriptions are retired; all product features are open.',
+      );
+    }
+  }
 
   /**
    * Get dynamic price for a plan from SystemSetting (admin-configurable)
@@ -153,6 +167,9 @@ export class SubscriptionService {
 
   // 获取所有计划（动态定价）
   async getPlans(): Promise<PlanDetails[]> {
+    if (!this.paymentsEnabled()) {
+      return [await this.toPlanDetailsAsync(SubscriptionPlan.FREE)];
+    }
     const plans: PlanDetails[] = [];
     for (const plan of SUBSCRIPTION_PLAN_LIST) {
       plans.push(await this.toPlanDetailsAsync(plan.id));
@@ -166,6 +183,9 @@ export class SubscriptionService {
     if (!plan) {
       throw new NotFoundException(`Plan ${planId} not found`);
     }
+    if (planId !== SubscriptionPlan.FREE) {
+      this.assertPaymentsEnabled();
+    }
     return this.toPlanDetailsAsync(planId);
   }
 
@@ -175,8 +195,6 @@ export class SubscriptionService {
       where: { id: userId },
       select: {
         id: true,
-        email: true,
-        role: true,
         createdAt: true,
       },
     });
@@ -185,28 +203,17 @@ export class SubscriptionService {
       throw new NotFoundException('User not found');
     }
 
-    // 根据 role 判断当前订阅等级
-    const currentPlan =
-      user.role === 'ADMIN'
-        ? SubscriptionPlan.PREMIUM
-        : user.role === 'VERIFIED'
-          ? SubscriptionPlan.PRO
-          : SubscriptionPlan.FREE;
-
-    // 获取最近一次成功支付来确定订阅起止时间
-    const lastPayment = await this.prisma.payment.findFirst({
-      where: { userId, status: 'SUCCESS' },
-      orderBy: { createdAt: 'desc' },
-    });
-
     return {
       userId: user.id,
-      plan: currentPlan,
-      planDetails: this.toPlanDetails(currentPlan),
-      startDate: lastPayment?.processedAt || user.createdAt,
+      plan: SubscriptionPlan.FREE,
+      planDetails: this.toPlanDetails(SubscriptionPlan.FREE),
+      startDate: user.createdAt,
       endDate: null,
       isActive: true,
       autoRenew: false,
+      state: 'retired' as const,
+      featuresOpen: true,
+      paymentsEnabled: false,
     };
   }
 
@@ -215,6 +222,8 @@ export class SubscriptionService {
     userId: string,
     dto: CreateSubscriptionDto,
   ): Promise<PaymentResult> {
+    this.assertPaymentsEnabled();
+
     const planConfig = SUBSCRIPTION_PLANS[dto.plan];
 
     if (!planConfig || planConfig.id === SubscriptionPlan.FREE) {
@@ -262,8 +271,9 @@ export class SubscriptionService {
     );
 
     if (gatewayResult.success) {
-      // 3. 支付成功：更新 Payment + 用户角色（事务）
-      const user = await this.prisma.$transaction(async (tx) => {
+      // 3. Simulator success updates the legacy ledger only. Identity roles
+      // must never be used as subscription entitlements.
+      await this.prisma.$transaction(async (tx) => {
         await tx.payment.update({
           where: { id: payment.id },
           data: {
@@ -271,31 +281,9 @@ export class SubscriptionService {
             processedAt: new Date(),
           },
         });
-
-        // 所有付费用户统一为 VERIFIED 角色；PRO/PREMIUM 的区别通过 Payment.plan 和 token 配额区分
-        const newRole = 'VERIFIED';
-        return tx.user.update({
-          where: { id: userId },
-          data: { role: newRole },
-          select: { email: true },
-        });
       });
 
       this.logger.log(`Subscription created: ${transactionId}`);
-
-      // 4. 异步发送确认邮件（不阻塞响应）
-      if (this.emailService && user.email) {
-        this.emailService
-          .sendSubscriptionConfirmationEmail(
-            user.email,
-            planName,
-            price,
-            planConfig.currency,
-          )
-          .catch((err) =>
-            this.logger.error('Failed to send subscription email', err),
-          );
-      }
 
       return {
         success: true,
@@ -326,27 +314,13 @@ export class SubscriptionService {
   }
 
   // 取消订阅
-  async cancelSubscription(
+  cancelSubscription(
     userId: string,
   ): Promise<{ success: boolean; message: string }> {
-    const subscription = await this.getUserSubscription(userId);
-
-    if (subscription.plan === SubscriptionPlan.FREE) {
-      throw new BadRequestException('No active subscription to cancel');
-    }
-
-    // 降级到免费版
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { role: 'USER' },
-    });
-
-    this.logger.log(`Subscription cancelled for user ${userId}`);
-
-    return {
-      success: true,
-      message: '订阅已取消，您已降级至免费版',
-    };
+    void userId;
+    throw new ServiceUnavailableException(
+      'Paid subscriptions are retired; there is no subscription to cancel.',
+    );
   }
 
   // 获取账单历史
@@ -412,6 +386,7 @@ export class SubscriptionService {
 
   // Webhook 处理（用于接收支付网关回调）
   async handlePaymentWebhook(payload: any, signature: string): Promise<void> {
+    this.assertPaymentsEnabled();
     // Verify webhook signature (HMAC-SHA256)
     const webhookSecret = this.configService.get<string>('WEBHOOK_SECRET');
     if (webhookSecret) {
@@ -465,21 +440,13 @@ export class SubscriptionService {
           where: { transactionId: payload.transactionId, status: 'PENDING' },
         });
         if (payment) {
-          await this.prisma.$transaction(async (tx) => {
-            await tx.payment.update({
-              where: { id: payment.id },
-              data: {
-                status: 'SUCCESS',
-                processedAt: new Date(),
-                metadata: { webhookEventId: gatewayId, payload },
-              },
-            });
-            // 所有付费用户统一为 VERIFIED 角色
-            const newRole = 'VERIFIED';
-            await tx.user.update({
-              where: { id: payment.userId },
-              data: { role: newRole },
-            });
+          await this.prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: 'SUCCESS',
+              processedAt: new Date(),
+              metadata: { webhookEventId: gatewayId, payload },
+            },
           });
           this.logger.log(
             `Payment confirmed via webhook: ${payment.transactionId}`,
@@ -514,19 +481,12 @@ export class SubscriptionService {
           where: { transactionId: payload.transactionId, status: 'SUCCESS' },
         });
         if (payment) {
-          await this.prisma.$transaction(async (tx) => {
-            await tx.payment.update({
-              where: { id: payment.id },
-              data: {
-                status: 'REFUNDED',
-                metadata: { webhookEventId: gatewayId, payload },
-              },
-            });
-            // 降级用户
-            await tx.user.update({
-              where: { id: payment.userId },
-              data: { role: 'USER' },
-            });
+          await this.prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: 'REFUNDED',
+              metadata: { webhookEventId: gatewayId, payload },
+            },
           });
           this.logger.log(
             `Payment refunded via webhook: ${payment.transactionId}`,
@@ -536,15 +496,7 @@ export class SubscriptionService {
       }
 
       case 'subscription.cancelled': {
-        if (payload.userId) {
-          await this.prisma.user.update({
-            where: { id: payload.userId },
-            data: { role: 'USER' },
-          });
-          this.logger.log(
-            `Subscription cancelled via webhook for user ${payload.userId}`,
-          );
-        }
+        this.logger.log('Legacy subscription cancellation recorded as a no-op');
         break;
       }
 

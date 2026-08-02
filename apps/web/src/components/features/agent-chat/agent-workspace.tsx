@@ -207,7 +207,7 @@ function ConversationRail({
         <CardHeader className="border-b px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-sm">{t('workspace.conversations.title')}</CardTitle>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onNewConversation}>
+            <Button variant="ghost" size="icon-sm" onClick={onNewConversation}>
               <MessageSquarePlus className="h-4 w-4" />
               <span className="sr-only">{t('newConversation')}</span>
             </Button>

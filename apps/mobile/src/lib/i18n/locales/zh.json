@@ -434,7 +434,7 @@
       "toeflRange": "TOEFL 须在 0-120 之间",
       "ieltsRange": "IELTS 须在 0-9 之间",
       "privacySetting": "隐私设置",
-      "submitSuccess": "案例提交成功，审核通过后将获得积分",
+      "submitSuccess": "案例提交成功，等待审核",
       "submitFailed": "提交失败",
       "stepProgress": "第 {{step}} 步，共 {{total}} 步",
       "stepN": "第 {{n}} 步"
@@ -1006,6 +1006,7 @@
     "whyThisEstimate": "为什么是这个预估",
     "uncertaintyHint": "注意项：{{reason}}",
     "lastUpdated": "{{value}} 前更新",
+    "detailsUnavailable": "此结果暂时没有可用的详细因素和建议。",
     "confidenceDisclaimer": "“数据参考程度”反映当前档案与公开数据是否充足，不代表录取希望高低。",
     "tierDisclaimer": "“冲刺 / 匹配 / 保底” 用于选校策略，不是学校官方评级。",
     "analysisCard": {
@@ -1042,6 +1043,9 @@
     "loading": {
       "description": "正在生成最新的学校级申请分析。"
     },
+    "error": {
+      "description": "申请分析加载失败，请检查网络后重试。"
+    },
     "empty": {
       "title": "还没有申请分析",
       "description": "运行申请分析后，这里会显示学校级策略建议。"
@@ -1049,6 +1053,9 @@
     "emptyList": "暂无内容",
     "overallScore": "综合评分",
     "focusSchools": "重点学校",
+    "evidenceSummary": "证据与来源",
+    "confidenceSummary": "置信度摘要",
+    "freshnessSummary": "数据新鲜度",
     "predictionContext": {
       "staleHint": "{{count}} 所学校的预测已过期或缺失，去刷新"
     },
@@ -1236,8 +1243,6 @@
     },
     "personalInfo": "个人信息",
     "accountSecurity": "账号安全",
-    "subscription": "会员订阅",
-    "freeVersion": "免费版",
     "pushNotification": "推送通知",
     "biometrics": "生物识别登录",
     "biometricVerify": "验证您的身份",
@@ -1518,7 +1523,7 @@
         "startAnalysis": "开始分析",
         "analysisError": "分析失败",
         "loginRequired": "请登录后使用 AI 分析",
-        "costHint": "此功能消耗 20 积分"
+        "costHint": "获取专业招生官视角的逐段分析"
       },
       "analysis": {
         "score": "评分",
@@ -1791,90 +1796,6 @@
       "subtitle": "可以询问选校、文书、时间线和申请策略。"
     }
   },
-  "subscription": {
-    "title": "订阅管理",
-    "currentPlan": "当前方案",
-    "active": "生效中",
-    "expired": "已过期",
-    "cancelled": "已取消",
-    "expiresOn": "到期时间 {{date}}",
-    "upgradePrompt": "升级解锁更多功能",
-    "period": {
-      "monthly": "月付",
-      "yearly": "年付",
-      "yearlyDiscount": "省约17%"
-    },
-    "plans": {
-      "free": {
-        "name": "免费版",
-        "price": "免费"
-      },
-      "pro": {
-        "name": "专业版",
-        "badge": "热门"
-      },
-      "premium": {
-        "name": "旗舰版",
-        "badge": "超值"
-      }
-    },
-    "features": {
-      "browseSchools": "浏览学校",
-      "publicCases": "查看公开案例",
-      "basicAi": "基础 AI（每日5次）",
-      "unlimitedAi": "无限 AI 对话",
-      "prediction": "录取预测",
-      "essayReview": "文书评估",
-      "detailedCases": "详细案例",
-      "prioritySupport": "优先客服",
-      "dedicatedAdvisor": "专属顾问",
-      "strategy": "申请策略",
-      "deepEssay": "深度文书修改",
-      "vipCommunity": "VIP 社区"
-    },
-    "subscribe": "订阅",
-    "currentLabel": "当前方案",
-    "upgrade": "升级",
-    "switchPlan": "切换方案",
-    "cancel": "取消订阅",
-    "cancelConfirm": "确定取消订阅吗？你将失去高级功能的访问权限。",
-    "billing": {
-      "title": "账单记录",
-      "empty": "暂无账单记录",
-      "status": {
-        "SUCCESS": "已支付",
-        "PENDING": "待支付",
-        "FAILED": "支付失败",
-        "REFUNDED": "已退款"
-      }
-    },
-    "subscribeSuccess": "订阅已更新！",
-    "subscribeFailed": "订阅失败",
-    "cancelSuccess": "订阅已取消",
-    "cancelFailed": "取消订阅失败",
-    "loading": "正在加载订阅...",
-    "popular": "热门",
-    "bestValue": "最划算",
-    "free": "免费",
-    "month": "月",
-    "billedYearly": "每年计费 {{amount}}",
-    "currentPlanLabel": "当前计划",
-    "freePlan": "免费版",
-    "billingHistory": "账单历史",
-    "billingHistoryDesc": "查看历史交易",
-    "loadingBilling": "加载历史中...",
-    "noInvoices": "暂无账单",
-    "cancelSubscription": "取消订阅",
-    "heroTitle": "订阅计划",
-    "heroSubtitle": "选择适合你的计划",
-    "monthly": "月付",
-    "yearly": "年付",
-    "yearlyDiscount": "节省约 17%",
-    "cancelConfirmTitle": "取消订阅？",
-    "cancelConfirmMessage": "取消后当前周期结束前仍可使用已订阅功能，之后将回到免费计划。",
-    "confirmCancel": "取消订阅",
-    "keepPlan": "保留计划"
-  },
   "security": {
     "title": "安全设置",
     "changePassword": "修改密码",
@@ -1941,13 +1862,12 @@
     "cases": "案例",
     "groupApply": "申请工具",
     "groupCommunity": "社区",
-    "groupAccount": "账户与奖励",
+    "groupAccount": "账户",
     "essays": "文书",
     "resume": "简历",
     "vault": "保险箱",
     "teams": "团队",
     "points": "积分",
-    "peerReview": "同行评审",
     "referral": "推荐",
     "verification": "验证",
     "ranking": "排名",
@@ -1961,6 +1881,31 @@
   "resume": {
     "title": "简历构建器",
     "description": "创建和管理你的简历",
+    "managerDescription": "移动端简历管理与预览",
+    "create": "创建简历",
+    "created": "简历已创建",
+    "saved": "简历已保存",
+    "deleted": "简历已删除",
+    "duplicated": "简历已复制",
+    "imported": "档案数据已导入",
+    "duplicate": "复制",
+    "sections": "个分区",
+    "emptySection": "此分区暂无内容",
+    "name": "简历标题",
+    "type": "简历类型",
+    "status": "状态",
+    "importProfile": "从我的档案导入",
+    "importConfirm": "使用当前档案重新刷新这份简历吗？",
+    "webEditorNote": "高级内容编辑、AI 优化和 PDF 导出请使用 Web 工作台。",
+    "deleteTitle": "删除简历？",
+    "deleteBody": "{{title}} 将被永久删除。",
+    "loadError": "简历加载失败",
+    "types": {
+      "COLLEGE_APPLICATION": "本科申请",
+      "INTERNSHIP": "实习",
+      "GRADUATE_CV": "研究生 CV",
+      "FULL_TIME_JOB": "全职求职"
+    },
     "empty": {
       "title": "还没有简历",
       "description": "创建你的第一份简历开始吧"
@@ -1969,6 +1914,32 @@
   "vault": {
     "title": "安全保险箱",
     "description": "安全存储你的证书和文档",
+    "total": "总数",
+    "credentials": "凭据",
+    "documents": "文档",
+    "add": "添加安全项目",
+    "edit": "编辑安全项目",
+    "saved": "保险箱项目已保存",
+    "deleted": "保险箱项目已删除",
+    "search": "搜索保险箱",
+    "all": "全部类型",
+    "allCategories": "全部分类",
+    "type": "类型",
+    "itemTitle": "标题",
+    "category": "分类",
+    "content": "加密内容",
+    "generatePassword": "生成安全密码",
+    "deleteTitle": "删除安全项目？",
+    "deleteBody": "{{title}} 将被永久删除。",
+    "loadError": "保险箱加载失败，未使用示例数据替代。",
+    "types": {
+      "PASSWORD": "密码",
+      "CREDENTIAL": "账号凭据",
+      "DOCUMENT": "文档",
+      "NOTE": "笔记",
+      "API_KEY": "API 密钥",
+      "OTHER": "其他"
+    },
     "empty": {
       "title": "保险箱为空",
       "description": "添加证书、文档或笔记到你的保险箱"
@@ -2081,22 +2052,27 @@
   "points": {
     "title": "积分与徽章",
     "description": "追踪你的成就和奖励",
+    "balance": "当前余额",
+    "unit": "积分",
+    "catalog": "可兑换奖励",
+    "history": "积分流水",
+    "rules": "获取与消费规则",
+    "redemptions": "兑换记录",
+    "redeem": "兑换",
+    "insufficient": "积分不足",
+    "confirmTitle": "确认兑换",
+    "confirmBody": "使用 {{cost}} 积分兑换 {{name}}？",
+    "redeemSuccess": "兑换成功",
+    "redeemError": "兑换失败",
+    "loadError": "积分加载失败",
     "empty": {
       "title": "开始赚取积分",
       "description": "完成活动以赚取积分和解锁徽章"
     }
   },
-  "peerReview": {
-    "title": "同行评审",
-    "description": "评审文书并获取反馈",
-    "empty": {
-      "title": "暂无可评审内容",
-      "description": "稍后再来查看可评审的文书"
-    }
-  },
   "referral": {
-    "title": "推荐有礼",
-    "description": "邀请好友获取奖励",
+    "title": "邀请好友",
+    "description": "邀请好友加入 Lumni",
     "yourCode": "你的推荐码",
     "copy": "复制推荐码",
     "copied": "推荐码已复制到剪贴板！"
@@ -2104,6 +2080,26 @@
   "verification": {
     "title": "身份验证",
     "description": "验证你的身份和录取信息",
+    "currentStatus": "认证状态",
+    "approved": "已认证",
+    "notVerified": "未认证",
+    "submitTitle": "提交录取证明",
+    "case": "录取案例",
+    "selectCase": "选择案例",
+    "proofType": "证明类型",
+    "offerLetter": "录取通知书",
+    "enrollmentProof": "入学证明",
+    "studentId": "学生证",
+    "chooseFile": "选择 JPG、PNG、WebP 或 PDF",
+    "fileHint": "原文件最大 7 MiB",
+    "submit": "提交审核",
+    "history": "提交记录",
+    "submitSuccess": "认证申请已提交",
+    "missingFields": "请选择案例和证明文件",
+    "invalidFile": "不支持的文件类型",
+    "fileTooLarge": "文件超过 7 MiB",
+    "loadError": "认证数据加载失败",
+    "noCases": "请先创建录取案例，再提交认证。",
     "empty": {
       "title": "尚未验证",
       "description": "提交文档以验证你的身份"

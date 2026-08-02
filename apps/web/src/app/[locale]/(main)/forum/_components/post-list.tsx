@@ -305,7 +305,7 @@ function PostCard({
         <div className="flex items-center justify-between border-t px-3 py-2 text-sm text-muted-foreground sm:px-4">
           <div className="flex items-center gap-1.5">
             <button
-              className={`inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors ${
+              className={`inline-flex min-h-10 min-w-10 items-center justify-center gap-1 rounded-md px-2 py-1 transition-colors ${
                 post.isLiked ? 'text-red-500' : 'hover:bg-muted hover:text-red-500'
               }`}
               onClick={(event) => onLike(post.id, event)}

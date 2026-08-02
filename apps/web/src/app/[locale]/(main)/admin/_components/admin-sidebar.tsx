@@ -22,7 +22,6 @@ import {
   ScrollText,
   MessageCircle,
   ClipboardCheck,
-  Coins,
   FileCheck,
   ShieldCheck,
   CreditCard,
@@ -192,6 +191,24 @@ export function AdminSidebar() {
           requiredPermission: 'system:calibration',
         },
         {
+          href: '/admin/prediction-health',
+          icon: Activity,
+          label: t('sidebar.predictionHealth'),
+          requiredPermission: 'system:calibration',
+        },
+        {
+          href: '/admin/outcomes-verification',
+          icon: ShieldCheck,
+          label: t('sidebar.outcomesVerification'),
+          minRole: 'ADMIN',
+        },
+        {
+          href: '/admin/debate-eval',
+          icon: ClipboardCheck,
+          label: t('sidebar.debateEval'),
+          minRole: 'ADMIN',
+        },
+        {
           href: '/admin/cds-bands',
           icon: Database,
           label: t('sidebar.cdsBands'),
@@ -201,6 +218,12 @@ export function AdminSidebar() {
           href: '/admin/data-coverage',
           icon: BarChart3,
           label: t('sidebar.dataCoverage'),
+          requiredPermission: 'data:health',
+        },
+        {
+          href: '/admin/data-quality',
+          icon: BarChart3,
+          label: t('sidebar.dataQualityPage'),
           requiredPermission: 'data:health',
         },
         {
@@ -227,7 +250,6 @@ export function AdminSidebar() {
           label: t('sidebar.activityTemplates'),
           requiredPermission: 'data:health',
         },
-        { href: '/admin/points', icon: Coins, label: t('sidebar.points'), minRole: 'ADMIN' },
       ],
     },
     {

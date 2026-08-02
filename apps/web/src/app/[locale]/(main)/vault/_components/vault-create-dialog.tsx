@@ -15,9 +15,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { MAX_VAULT_TAGS } from '@study-abroad/shared';
+import {
+  MAX_VAULT_TAGS,
+  VaultItemType as VaultType,
+  vaultRoutes,
+  type CreateVaultItemInput,
+  type UpdateVaultItemInput,
+} from '@study-abroad/shared';
 import { apiClient as api } from '@/lib/api';
-import type { VaultItemType, VaultItemDetail, CredentialData, ApiResponse } from './vault-types';
+import type { VaultItemType, VaultItemDetail, CredentialData } from './vault-types';
 import { typeIcons, typeColors, VAULT_ITEM_TYPES } from './vault-constants';
 
 interface VaultCreateDialogProps {
@@ -44,7 +50,7 @@ export function VaultCreateDialog({
   const t = useTranslations('vault');
 
   // All form state is internal
-  const [formType, setFormType] = useState<VaultItemType>('CREDENTIAL');
+  const [formType, setFormType] = useState<VaultItemType>(VaultType.CREDENTIAL);
   const [formTitle, setFormTitle] = useState('');
   const [formCategory, setFormCategory] = useState('');
   const [formTags, setFormTags] = useState<string[]>([]);
@@ -62,7 +68,15 @@ export function VaultCreateDialog({
 
   // Populate form when editingItem changes
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setFormData('');
+      setFormUsername('');
+      setFormPassword('');
+      setFormWebsite('');
+      setFormNotes('');
+      setShowPassword(false);
+      return;
+    }
 
     if (editingItem) {
       setFormType(editingItem.type);
@@ -81,7 +95,7 @@ export function VaultCreateDialog({
       }
     } else {
       // Reset for create mode
-      setFormType('CREDENTIAL');
+      setFormType(VaultType.CREDENTIAL);
       setFormTitle('');
       setFormCategory('');
       setFormTags([]);
@@ -118,21 +132,14 @@ export function VaultCreateDialog({
 
   const generatePassword = useCallback(async () => {
     try {
-      const res = await api.get<ApiResponse<{ password: string }>>(
-        '/vaults/generate-password?length=16'
+      const res = await api.get<{ password: string }>(
+        `${vaultRoutes.generatePassword()}?length=16`
       );
-      if (res.success) {
-        setFormPassword(res.data.password);
-      }
+      setFormPassword(res.password);
     } catch {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-      let pass = '';
-      for (let i = 0; i < 16; i++) {
-        pass += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      setFormPassword(pass);
+      toast.error(t('passwordGenerateError'));
     }
-  }, []);
+  }, [t]);
 
   const handleSave = useCallback(async () => {
     if (!formTitle.trim()) return;
@@ -150,18 +157,18 @@ export function VaultCreateDialog({
         });
       }
 
-      const payload = {
-        type: formType,
+      const commonPayload = {
         title: formTitle,
         data: dataToSave,
         category: formCategory || undefined,
         tags: formTags,
-      };
+      } satisfies UpdateVaultItemInput;
 
       if (editingItem) {
-        await api.put(`/vaults/${editingItem.id}`, payload);
+        await api.put(vaultRoutes.byId(editingItem.id), commonPayload);
       } else {
-        await api.post('/vaults', payload);
+        const createPayload: CreateVaultItemInput = { ...commonPayload, type: formType };
+        await api.post(vaultRoutes.list(), createPayload);
       }
 
       onOpenChange(false);

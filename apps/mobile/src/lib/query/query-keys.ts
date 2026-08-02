@@ -54,6 +54,7 @@ export const qk = {
   cases: {
     all: ['cases'] as const,
     list: (params: Params = {}) => ['cases', 'list', params] as const,
+    mine: () => ['cases', 'mine'] as const,
     /** "Students like you" comparison for a school's prediction card. */
     similar: (schoolId: string) => ['cases', 'similar', schoolId] as const,
     detail: (id: string) => ['cases', 'detail', id] as const,
@@ -142,6 +143,8 @@ export const qk = {
     list: (userId: string | null) => ['notifications', userId ?? 'anonymous'] as const,
     unreadCount: (userId: string | null) =>
       ['notifications', userId ?? 'anonymous', 'unread-count'] as const,
+    preferences: (userId: string | null) =>
+      ['notifications', userId ?? 'anonymous', 'preferences'] as const,
   },
 
   swipe: {
@@ -170,12 +173,6 @@ export const qk = {
   },
 
   // ════════════════════════════ Billing / misc single-key ══════════════════════
-  subscription: {
-    all: ['subscription'] as const,
-    plans: () => ['subscription', 'plans'] as const,
-    current: () => ['subscription', 'current'] as const,
-    billing: () => ['subscription', 'billing'] as const,
-  },
   timeline: {
     all: ['timeline'] as const,
     list: () => ['timeline', 'list'] as const,
@@ -185,10 +182,8 @@ export const qk = {
     tasks: (id: string) => ['timeline', 'tasks', id] as const,
   },
   verification: { all: ['verification'] as const },
-  points: { all: ['points'] as const },
   referral: { all: ['referral'] as const },
   vault: { all: ['vault'] as const },
   resume: { all: ['resumes'] as const },
-  peerReview: { all: ['peer-review'] as const },
   aiAgent: { all: ['ai-agent'] as const },
 } as const;

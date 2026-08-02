@@ -1,20 +1,38 @@
 /**
  * Content-Security-Policy builder. Extracted from proxy.ts so the prod/dev
- * directive set can be unit-tested (csp.test.ts) — the CSP went through a
- * tighten→break→relax loop (#5f0797f0 → #411101a8 nonce → #fdadba28) that
- * converged on a deliberate compromise:
+ * directive set can be unit-tested (csp.test.ts).
  *
- *   - `'unsafe-inline'` IS allowed in prod: Next.js App Router emits inline
- *     hydration/RSC scripts that can't reliably be nonced together with
- *     next-intl middleware. This is the documented, accepted trade-off.
+ *   - PROD `script-src` carries a per-request `'nonce-…'`. Any CSP Level 3
+ *     browser ignores `'unsafe-inline'` once a nonce is present, so injected
+ *     inline scripts are blocked; `'unsafe-inline'` stays only as the
+ *     backwards-compatible fallback for CSP2-only browsers (this is the shape
+ *     Google's strict-CSP guide recommends), never as the modern behaviour.
+ *   - DEV deliberately ships NO nonce: the dev server's HMR/error-overlay
+ *     inline scripts are not all nonced, and dev CSP is not a security
+ *     boundary. Adding one there would only break the dev overlay.
  *   - `'unsafe-eval'` is **dev-only** and must NEVER appear in prod. (prod uses
  *     the far narrower `'wasm-unsafe-eval'` for WASM instantiation only.)
  *
- * The test pins exactly this so a future blind "tighten" can't silently break
- * hydration, and a blind "loosen" can't reintroduce `unsafe-eval` in prod.
- * See .claude/rules/security.md (CSP).
+ * History: an earlier nonce attempt (#411101a8) was reverted to plain
+ * `'unsafe-inline'` (#fdadba28) after it broke hydration, and the code was
+ * annotated "can't be nonced together with next-intl". That diagnosis was
+ * wrong — the nonce was never reaching Next at all. Next reads it from the
+ * **request** `content-security-policy` header (app-render.js →
+ * getScriptNonceFromHeader), and all three legs were broken: this builder
+ * ignored its own `nonce` argument, the CSP was only ever set as a *response*
+ * header, and proxy.ts's request-header forwarding never registered its keys
+ * in `x-middleware-override-headers`. Fixing the plumbing makes the nonce work
+ * with next-intl untouched.
+ *
+ * `style-src` keeps `'unsafe-inline'` with NO nonce on purpose: next/font and
+ * React inject inline styles that carry no nonce, so noncing styles would
+ * disable them via the same CSP3 rule and drop critical CSS.
+ *
+ * The test pins all of this so a future blind "tighten" can't break hydration,
+ * and a blind "loosen" can't drop the nonce or reintroduce `unsafe-eval` in
+ * prod. See .claude/rules/security.md (CSP).
  */
-export function buildCspHeader(_nonce: string): string {
+export function buildCspHeader(nonce: string): string {
   const isDev = process.env.NODE_ENV !== 'production';
 
   // connect-src: allow API, WebSocket, and Sentry
@@ -41,13 +59,12 @@ export function buildCspHeader(_nonce: string): string {
 
   const directives = [
     "default-src 'self'",
-    // Next.js App Router generates inline scripts (hydration, RSC payload) that
-    // cannot reliably receive nonce attributes when combined with next-intl middleware.
-    // 'unsafe-inline' is needed for these framework scripts in both dev and prod.
-    // 'unsafe-eval' stays DEV-ONLY; prod uses the narrower 'wasm-unsafe-eval'.
+    // Nonce first so CSP3 browsers enforce it and ignore the trailing
+    // 'unsafe-inline' (kept only for CSP2-only browsers). Dev gets no nonce —
+    // see the file header. 'unsafe-eval' stays DEV-ONLY.
     isDev
       ? `script-src 'self' 'unsafe-eval' 'unsafe-inline'`
-      : `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'`,
+      : `script-src 'self' 'nonce-${nonce}' 'unsafe-inline' 'wasm-unsafe-eval'`,
     `style-src 'self' 'unsafe-inline'`,
     "img-src 'self' data: https:",
     `connect-src ${connectSrcParts.join(' ')} data:`,

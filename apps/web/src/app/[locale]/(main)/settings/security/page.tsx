@@ -108,6 +108,7 @@ export default function SecurityPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
+                    aria-label={showCurrentPassword ? t('hidePassword') : t('showPassword')}
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   >
@@ -136,6 +137,7 @@ export default function SecurityPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
+                    aria-label={showNewPassword ? t('hidePassword') : t('showPassword')}
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >

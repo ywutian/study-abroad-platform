@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["7XZ842N72B.com.studyabroad.mobile"],
+        "components": [
+          {
+            "/": "/*",
+            "comment": "Open Lumni application links in the iOS app"
+          }
+        ]
+      }
+    ]
+  }
+}

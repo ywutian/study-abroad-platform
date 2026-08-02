@@ -46,24 +46,39 @@ export default function AdminHighSchoolsPage() {
 
       <div className="mt-6">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="list" className="flex items-center gap-2">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:w-fit lg:flex-wrap">
+            <TabsTrigger
+              value="list"
+              className="min-w-0 items-center gap-2 px-2 sm:px-3 lg:flex-none"
+            >
               <List className="h-4 w-4" />
               {t('tabs.list')}
             </TabsTrigger>
-            <TabsTrigger value="tiers" className="flex items-center gap-2">
+            <TabsTrigger
+              value="tiers"
+              className="min-w-0 items-center gap-2 px-2 sm:px-3 lg:flex-none"
+            >
               <Layers className="h-4 w-4" />
               {t('tabs.tiers')}
             </TabsTrigger>
-            <TabsTrigger value="suggestions" className="flex items-center gap-2">
+            <TabsTrigger
+              value="suggestions"
+              className="min-w-0 items-center gap-2 px-2 sm:px-3 lg:flex-none"
+            >
               <Lightbulb className="h-4 w-4" />
               {t('tabs.suggestions')}
             </TabsTrigger>
-            <TabsTrigger value="review" className="flex items-center gap-2">
+            <TabsTrigger
+              value="review"
+              className="min-w-0 items-center gap-2 px-2 sm:px-3 lg:flex-none"
+            >
               <AlertTriangle className="h-4 w-4" />
               {t('tabs.review')}
             </TabsTrigger>
-            <TabsTrigger value="import" className="flex items-center gap-2">
+            <TabsTrigger
+              value="import"
+              className="min-w-0 items-center gap-2 px-2 sm:px-3 lg:flex-none"
+            >
               <Upload className="h-4 w-4" />
               {t('tabs.import')}
             </TabsTrigger>

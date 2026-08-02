@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
-import { SchoolJsonLd } from '@/components/seo';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
@@ -154,22 +153,9 @@ export default function SchoolDetailPage() {
 
   return (
     <PageContainer maxWidth="6xl">
-      {school && (
-        <SchoolJsonLd
-          name={school.name}
-          url={school.website}
-          description={locale === 'zh' ? school.descriptionZh : school.description}
-          address={
-            school.city || school.state
-              ? {
-                  addressLocality: school.city,
-                  addressRegion: school.state,
-                  addressCountry: school.country || 'US',
-                }
-              : undefined
-          }
-        />
-      )}
+      {/* JSON-LD moved to layout.tsx: emitted here it only appeared after the
+          client query resolved, so it was absent from the server-rendered HTML
+          crawlers actually read. */}
 
       {/* Back Button */}
       <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4 gap-2">

@@ -2,11 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { VerificationIcon } from '@/components/features';
-import { ExternalLink } from 'lucide-react';
-import { Link } from '@/lib/i18n/navigation';
 
 interface UserProfileCardProps {
   user: {
@@ -59,13 +56,6 @@ export function UserProfileCard({ user, children }: UserProfileCardProps) {
           {user.profile?.bio && (
             <p className="text-sm text-muted-foreground line-clamp-3">{user.profile.bio}</p>
           )}
-
-          <Link href={`/profile/${user.id}`}>
-            <Button variant="outline" size="sm" className="w-full gap-1.5">
-              <ExternalLink className="h-3.5 w-3.5" />
-              {t('viewProfile')}
-            </Button>
-          </Link>
         </div>
       </PopoverContent>
     </Popover>

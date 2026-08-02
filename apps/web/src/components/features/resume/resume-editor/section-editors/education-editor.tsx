@@ -46,7 +46,8 @@ export function EducationEditor({ content, onChange }: EducationEditorProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-destructive"
+              className="h-10 w-10 text-destructive sm:h-8 sm:w-8"
+              aria-label="Remove education item"
               onClick={() => removeItem(index)}
             >
               <Trash2 className="h-3 w-3" />

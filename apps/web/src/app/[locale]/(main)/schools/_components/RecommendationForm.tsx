@@ -118,7 +118,7 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
                 <Label>{t('schoolCountLabel')}</Label>
                 <Input
                   type="number"
-                  min={3}
+                  min={5}
                   max={20}
                   value={schoolCount}
                   onChange={(e) => setSchoolCount(Number(e.target.value))}
@@ -165,7 +165,7 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
             </Button>
             {!canSubmit && preflight && (
               <p className="text-sm text-muted-foreground text-center">
-                {!preflight.profileComplete ? t('completeProfileFirst') : t('insufficientPoints')}
+                {!preflight.profileComplete ? t('completeProfileFirst') : t('cannotGenerate')}
               </p>
             )}
           </form>

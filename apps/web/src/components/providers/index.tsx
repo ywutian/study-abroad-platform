@@ -12,7 +12,6 @@ import { OfflineIndicator } from '@/components/ui/offline-indicator';
 import { StaleAssetReloader } from '@/components/common/stale-asset-reloader';
 import { TourProvider } from '@/components/features/onboarding/tour-provider';
 import { FeedbackWidget } from '@/components/features/feedback/feedback-widget';
-import { PointsEarnWatcher } from '@/components/features/points/PointsEarnWatcher';
 import { OverflowDetector } from '@/components/dev/overflow-detector';
 import { useAuthStore, startTokenRefreshInterval, stopTokenRefreshInterval } from '@/stores/auth';
 import { ThemeAppearanceManager } from '@/hooks/use-theme-appearance-overrides';
@@ -51,9 +50,17 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children, nonce }: { children: React.ReactNode; nonce?: string }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    // next-themes injects its own inline bootstrap <script>; without the nonce
+    // it is the one script CSP3 blocks, and the page flashes the wrong theme.
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+      nonce={nonce}
+    >
       <SmoothScrollProvider>
         <ErrorBoundary>
           <QueryProvider>
@@ -63,9 +70,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   <ThemeAppearanceManager />
                   <HeroVisualManager />
                   <AuthInitializer>{children}</AuthInitializer>
-                  {/* Golden-moment points loop: toast a spend CTA the moment a
-                      user's lifetime earned points rises. */}
-                  <PointsEarnWatcher />
                   {/* Hard-reload a tab whose chunks/RSC went stale after a deploy
                       so a "dead" navigation recovers instead of silently hanging. */}
                   <StaleAssetReloader />

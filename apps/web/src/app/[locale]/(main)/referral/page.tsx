@@ -10,8 +10,6 @@ import {
   Copy,
   Check,
   Users,
-  Trophy,
-  Star,
   ArrowRight,
   Mail,
   MessageCircle,
@@ -33,7 +31,6 @@ interface ReferralData {
   referralCode: string;
   referralLink: string;
   referralCount: number;
-  totalPointsEarned: number;
 }
 
 interface ReferralListData {
@@ -41,7 +38,6 @@ interface ReferralListData {
     id: string;
     email: string;
     joinedAt: string;
-    pointsEarned: number;
   }>;
   total: number;
 }
@@ -228,7 +224,7 @@ export default function ReferralPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
               <Card className="border-border">
                 <CardContent className="flex items-center gap-4 p-5">
@@ -257,20 +253,6 @@ export default function ReferralPage() {
                   </div>
                 </CardContent>
               </Card>
-
-              <Card className="border-border">
-                <CardContent className="flex items-center gap-4 p-5">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                    <Trophy className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">
-                      {referralData?.totalPointsEarned ?? 0}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{t('stats.points')}</p>
-                  </div>
-                </CardContent>
-              </Card>
             </motion.div>
 
             {/* How It Works */}
@@ -285,7 +267,7 @@ export default function ReferralPage() {
                   <CardTitle className="text-lg text-foreground">{t('howItWorks')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[
                       {
                         step: 1,
@@ -300,13 +282,6 @@ export default function ReferralPage() {
                         title: t('step2'),
                         desc: t('step2Desc'),
                         color: 'text-violet-600 dark:text-violet-400 bg-violet-500/10',
-                      },
-                      {
-                        step: 3,
-                        icon: Star,
-                        title: t('step3'),
-                        desc: t('step3Desc'),
-                        color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
                       },
                     ].map((item, idx) => (
                       <div
@@ -333,7 +308,7 @@ export default function ReferralPage() {
                           <p className="font-medium text-foreground">{item.title}</p>
                           <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
                         </div>
-                        {idx < 2 && (
+                        {idx < 1 && (
                           <ArrowRight className="hidden md:block h-5 w-5 text-muted-foreground absolute" />
                         )}
                       </div>
@@ -380,12 +355,6 @@ export default function ReferralPage() {
                               </p>
                             </div>
                           </div>
-                          <Badge
-                            variant="secondary"
-                            className="bg-green-500/10 text-green-700 dark:text-green-400 border-0"
-                          >
-                            {t('pointsAwarded', { points: referral.pointsEarned })}
-                          </Badge>
                         </div>
                       ))}
                     </div>

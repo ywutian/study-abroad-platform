@@ -81,8 +81,12 @@ export function DecaySection() {
             {decayConfig && (
               <div className="space-y-4 rounded-lg border p-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">{t('decayEnabled')}</Label>
+                  <Label htmlFor="memory-decay-enabled" className="text-sm font-medium">
+                    {t('decayEnabled')}
+                  </Label>
                   <Switch
+                    id="memory-decay-enabled"
+                    aria-label={t('decayEnabled')}
                     checked={decayForm.enabled ?? decayConfig.enabled}
                     onCheckedChange={(v) => setDecayForm({ ...decayForm, enabled: v })}
                   />

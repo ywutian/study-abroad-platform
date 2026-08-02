@@ -21,6 +21,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { REPORT_REASONS, type ReportReason } from '@/types/forum';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
+import { chatRoutes, forumRoutes } from '@study-abroad/shared';
 
 interface ReportDialogProps {
   open: boolean;
@@ -37,19 +38,23 @@ export function ReportDialog({ open, onOpenChange, targetType, targetId }: Repor
 
   const reportMutation = useMutation({
     mutationFn: async () => {
-      let endpoint = '';
       if (targetType === 'POST') {
-        endpoint = `/forums/posts/${targetId}/report`;
-      } else if (targetType === 'COMMENT') {
-        endpoint = `/forums/comments/${targetId}/report`;
-      } else {
-        endpoint = '/chats/report';
+        return apiClient.post(forumRoutes.postReport(targetId), {
+          reason,
+          detail: detail || undefined,
+        });
       }
-
-      return apiClient.post(endpoint, {
+      if (targetType === 'COMMENT') {
+        return apiClient.post(forumRoutes.commentReport(targetId), {
+          reason,
+          detail: detail || undefined,
+        });
+      }
+      return apiClient.post(chatRoutes.report(), {
         reason,
         detail: detail || undefined,
-        ...(targetType === 'USER' || targetType === 'MESSAGE' ? { targetType, targetId } : {}),
+        targetType,
+        targetId,
       });
     },
     onSuccess: () => {

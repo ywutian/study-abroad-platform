@@ -160,7 +160,7 @@ export default function DashboardPage() {
       if (item.mutation?.type !== 'timeline-task-toggle') {
         return Promise.resolve();
       }
-      return apiClient.post(item.mutation.endpoint);
+      return apiClient.post(item.mutation.endpoint); // @route-lint-ignore server-authored timeline task route
     },
     onMutate: (item) => {
       setCompletingTaskId(item.id.replace(/^task-/, ''));

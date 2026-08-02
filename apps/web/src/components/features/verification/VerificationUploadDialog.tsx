@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import {
@@ -27,7 +27,13 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { verificationRoutes } from '@study-abroad/shared';
+import {
+  caseRoutes,
+  verificationRoutes,
+  VERIFICATION_PROOF_TYPE,
+  type VerificationProofType,
+  type VerificationSubmission,
+} from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import {
   Upload,
@@ -50,14 +56,23 @@ interface VerificationUploadDialogProps {
   schoolName?: string;
 }
 
-type ProofType = 'OFFER_LETTER' | 'ENROLLMENT_CONFIRMATION' | 'STUDENT_ID' | 'OTHER';
-
-const PROOF_TYPES: { value: ProofType; labelKey: string }[] = [
-  { value: 'OFFER_LETTER', labelKey: 'verification.proofType.offerLetter' },
-  { value: 'ENROLLMENT_CONFIRMATION', labelKey: 'verification.proofType.enrollment' },
-  { value: 'STUDENT_ID', labelKey: 'verification.proofType.studentId' },
-  { value: 'OTHER', labelKey: 'verification.proofType.other' },
+const PROOF_TYPES: { value: VerificationProofType; labelKey: string }[] = [
+  { value: VERIFICATION_PROOF_TYPE.OFFER_LETTER, labelKey: 'verification.proofType.offerLetter' },
+  {
+    value: VERIFICATION_PROOF_TYPE.ENROLLMENT_PROOF,
+    labelKey: 'verification.proofType.enrollment',
+  },
+  { value: VERIFICATION_PROOF_TYPE.STUDENT_ID, labelKey: 'verification.proofType.studentId' },
 ];
+
+interface MyCase {
+  id: string;
+  school?: { name?: string; nameZh?: string };
+  schoolName?: string;
+  year?: number;
+}
+
+const MAX_FILE_SIZE = 7 * 1024 * 1024;
 
 export function VerificationUploadDialog({
   open,
@@ -69,24 +84,45 @@ export function VerificationUploadDialog({
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(1);
-  const [proofType, setProofType] = useState<ProofType>('OFFER_LETTER');
+  const [proofType, setProofType] = useState<VerificationProofType>(
+    VERIFICATION_PROOF_TYPE.OFFER_LETTER
+  );
+  const [selectedCaseId, setSelectedCaseId] = useState(caseId ?? '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+
+  const { data: myCases = [] } = useQuery<MyCase[]>({
+    queryKey: ['myCases'],
+    queryFn: () => apiClient.get(caseRoutes.mine()),
+    enabled: open && !caseId,
+  });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
       setSelectedFile(file);
       if (file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
+        setPreviewUrl((current) => {
+          if (current) URL.revokeObjectURL(current);
+          return URL.createObjectURL(file);
+        });
       } else {
-        setPreviewUrl(null);
+        setPreviewUrl((current) => {
+          if (current) URL.revokeObjectURL(current);
+          return null;
+        });
       }
     }
   }, []);
+
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -96,40 +132,38 @@ export function VerificationUploadDialog({
       'image/webp': ['.webp'],
       'application/pdf': ['.pdf'],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: MAX_FILE_SIZE,
     multiple: false,
+    onDropRejected: (rejections) =>
+      toast.error(
+        rejections.some((item) => item.errors.some((error) => error.code === 'file-too-large'))
+          ? t('verification.fileTooLarge')
+          : t('verification.invalidFileType')
+      ),
   });
 
   const submitMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedFile || !caseId) {
+      const resolvedCaseId = caseId ?? selectedCaseId;
+      if (!selectedFile || !resolvedCaseId) {
         throw new Error(t('verification.pleaseSelectFile'));
       }
-
-      // 模拟上传进度
-      setUploadProgress(0);
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => Math.min(prev + 10, 90));
-      }, 200);
-
-      // 先上传文件
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      const uploadRes = await apiClient.post<{ url: string; key: string }>(
-        '/verifications/upload',
-        formData
-      );
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      // 提交认证申请
-      return apiClient.post(verificationRoutes.submit(), {
-        caseId,
-        proofType,
-        proofUrl: uploadRes.url,
+      setUploadProgress(20);
+      const proofData = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error ?? new Error('Unable to read file'));
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsDataURL(selectedFile);
       });
+      setUploadProgress(80);
+      const payload: VerificationSubmission = {
+        caseId: resolvedCaseId,
+        proofType,
+        proofData,
+      };
+      const result = await apiClient.post(verificationRoutes.submit(), payload);
+      setUploadProgress(100);
+      return result;
     },
     onSuccess: () => {
       toast.success(t('verification.submitSuccess'));
@@ -146,9 +180,13 @@ export function VerificationUploadDialog({
   const handleClose = () => {
     setStep(1);
     setSelectedFile(null);
-    setPreviewUrl(null);
+    setPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return null;
+    });
     setUploadProgress(0);
-    setProofType('OFFER_LETTER');
+    setProofType(VERIFICATION_PROOF_TYPE.OFFER_LETTER);
+    setSelectedCaseId(caseId ?? '');
     onOpenChange(false);
   };
 
@@ -219,10 +257,34 @@ export function VerificationUploadDialog({
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
+                {!caseId && (
+                  <div className="space-y-2">
+                    <Label>{t('verification.caseLabel')}</Label>
+                    <Select value={selectedCaseId} onValueChange={setSelectedCaseId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('verification.selectCase')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {myCases.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.school?.nameZh || item.school?.name || item.schoolName || item.id}
+                            {item.year ? ` · ${item.year}` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {myCases.length === 0 && (
+                      <p className="text-xs text-muted-foreground">{t('verification.noCases')}</p>
+                    )}
+                  </div>
+                )}
                 {/* 证明类型选择 */}
                 <div className="space-y-2">
                   <Label>{t('verification.proofTypeLabel')}</Label>
-                  <Select value={proofType} onValueChange={(v) => setProofType(v as ProofType)}>
+                  <Select
+                    value={proofType}
+                    onValueChange={(v) => setProofType(v as VerificationProofType)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -349,7 +411,7 @@ export function VerificationUploadDialog({
                   </Button>
                   <Button
                     onClick={() => setStep(2)}
-                    disabled={!selectedFile}
+                    disabled={!selectedFile || !(caseId ?? selectedCaseId)}
                     className="bg-primary hover:opacity-90"
                   >
                     {t('common.next')}

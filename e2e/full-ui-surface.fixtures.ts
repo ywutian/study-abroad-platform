@@ -189,7 +189,19 @@ const E2E_RESUMES = [
     templateId: 'classic',
     language: 'en',
     version: 1,
-    sections: [{ id: 'education', title: 'Education' }],
+    sections: [
+      {
+        id: 'education',
+        resumeId: 'e2e-resume',
+        type: 'EDUCATION',
+        title: 'Education',
+        content: { items: [] },
+        isVisible: true,
+        order: 0,
+        createdAt: new Date('2026-04-01T12:00:00Z').toISOString(),
+        updatedAt: new Date('2026-04-15T12:00:00Z').toISOString(),
+      },
+    ],
     _count: { sections: 1 },
   },
 ];
@@ -206,7 +218,19 @@ const E2E_RECOMMENDED_USERS = [
       visibility: 'PUBLIC',
       completeness: { testScores: 1, activities: 3, awards: 2 },
     },
-    stats: { followers: 12, cases: 1 },
+    stats: { followers: 12, following: 7, cases: 1 },
+    score: 0.91,
+    reasons: ['verified', 'sameMajor'],
+  },
+];
+
+const E2E_SOCIAL_RELATIONS = [
+  {
+    relationId: 'follow-1',
+    relationType: 'followers',
+    createdAt: new Date('2026-04-16T12:00:00Z').toISOString(),
+    user: E2E_RECOMMENDED_USERS[0],
+    relationship: 'mutual',
   },
 ];
 
@@ -1375,6 +1399,31 @@ function apiData(path: string, role: FullUiRole, method: string) {
       return { data: responseData(E2E_HALL_CHALLENGE_RESULT) };
     }
 
+    if (/^\/resumes\/[^/]+\/ai\/suggest-content$/.test(path)) {
+      return {
+        data: responseData({
+          suggestions: [
+            {
+              text: 'Describe one measurable academic or community outcome.',
+              category: 'impact',
+              priority: 'medium',
+            },
+          ],
+          tips: ['Lead with a concrete action and quantify the result when possible.'],
+          exampleBullets: [],
+        }),
+      };
+    }
+
+    if (/^\/resumes\/[^/]+\/ai\/optimize-bullets$/.test(path)) {
+      return {
+        data: responseData({
+          optimized: [],
+          newSuggestions: ['Add a quantified result to this section.'],
+        }),
+      };
+    }
+
     if (path === '/admin/application-analysis-workflow/experiments/sweep') {
       return {
         data: responseData({
@@ -1418,6 +1467,113 @@ function apiData(path: string, role: FullUiRole, method: string) {
     if (!user)
       return { status: 401, data: { success: false, error: { message: 'Unauthenticated' } } };
     return { data: responseData(user) };
+  }
+
+  if (path === '/admin/cache-health') {
+    return {
+      data: responseData({
+        connection: {
+          connected: true,
+          status: 'ok',
+          latencyMs: 4,
+        },
+        podStartedAt: new Date('2026-04-20T10:00:00Z').toISOString(),
+        uptimeMs: 7_200_000,
+        totals: {
+          totalOps: 12,
+          totalErrors: 0,
+          totalHits: 8,
+          totalMisses: 2,
+          overallHitRatio: 0.8,
+          errorRate: 0,
+        },
+        ops: [],
+        hotKeys: [],
+        errorsByKind: {},
+        recentErrors: [],
+      }),
+    };
+  }
+
+  if (path === '/admin/essay-gallery-ai/metrics') {
+    return {
+      data: responseData({
+        generatedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+        totals: {
+          interactions: 12,
+          questions: 8,
+          compares: 4,
+          succeeded: 11,
+          failed: 1,
+          refunded: 1,
+          feedback: 6,
+          helpful: 5,
+          notHelpful: 1,
+        },
+        rates: {
+          helpfulRate: 5 / 6,
+          failureRate: 1 / 12,
+        },
+        tokens: { average: 640 },
+        learningNotes: {
+          publicEssayCount: 10,
+          readyCount: 8,
+          missingCount: 2,
+          missingRate: 0.2,
+        },
+        feedbackByCategory: [{ category: 'wrong_evidence', count: 1 }],
+        recentNotHelpful: [
+          {
+            interactionId: 'e2e-gallery-interaction',
+            essayId: E2E_ESSAYS[0].id,
+            type: 'question',
+            category: 'wrong_evidence',
+            notes: 'The explanation needs a more specific reference to the essay.',
+            createdAt: new Date('2026-04-19T12:00:00Z').toISOString(),
+          },
+        ],
+        topFailingEssays: [{ essayId: E2E_ESSAYS[0].id, failed: 1, total: 4 }],
+      }),
+    };
+  }
+
+  if (path === '/admin/schools/data-health') {
+    return {
+      data: responseData({
+        generatedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+        focus: 'intl',
+        totalSchoolsConsidered: E2E_SCHOOLS.length,
+        rowsReturned: 1,
+        rows: [
+          {
+            schoolId: E2E_SCHOOLS[0].id,
+            schoolName: E2E_SCHOOLS[0].name,
+            schoolNameZh: E2E_SCHOOLS[0].nameZh,
+            usNewsRank: E2E_SCHOOLS[0].usNewsRank,
+            country: E2E_SCHOOLS[0].country,
+            state: E2E_SCHOOLS[0].state,
+            gapFields: [{ field: 'intlAcceptanceRate', bucket: 'missing', weight: 1 }],
+            importanceWeight: 1,
+            gapWeight: 1,
+            priorityScore: 1,
+          },
+        ],
+        totalsByField: [
+          {
+            field: 'intlAcceptanceRate',
+            missing: 1,
+            heuristic: 0,
+            stale: 0,
+            terminal: 0,
+            official: 2,
+          },
+        ],
+      }),
+    };
+  }
+
+  if (path === '/admin/predictions/outcomes/pending-verification') {
+    return { data: responseData([]) };
   }
 
   if (path === '/users/me/dashboard') {
@@ -1632,6 +1788,10 @@ function apiData(path: string, role: FullUiRole, method: string) {
     return { data: responseData(E2E_SCHOOL_LIST_ITEMS) };
   }
 
+  if (path === '/cases/me') {
+    return { data: responseData(E2E_CASES) };
+  }
+
   if (path === '/cases' || path === '/cases/public') {
     return { data: responseData(pageResult(E2E_CASES)) };
   }
@@ -1706,6 +1866,48 @@ function apiData(path: string, role: FullUiRole, method: string) {
     return { data: responseData([E2E_RECOMMENDATION]) };
   }
 
+  if (path === '/predictions/outcomes/pending-decisions') {
+    return {
+      data: responseData([
+        {
+          predictionResultId: 'e2e-prediction-purdue',
+          schoolId: E2E_SCHOOLS[2].id,
+          schoolName: E2E_SCHOOLS[2].name,
+          probability: 0.81,
+          tier: 'safety',
+          applicationRound: 'RD',
+          predictedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+        },
+      ]),
+    };
+  }
+
+  if (path === '/predictions/outcomes/me') {
+    return {
+      data: responseData([
+        {
+          id: 'e2e-outcome',
+          predictionResultId: 'e2e-prediction-purdue',
+          result: 'ADMITTED',
+          status: 'SELF_REPORTED',
+          notes: 'E2E reported outcome',
+          evidenceUrl: null,
+          round: 'RD',
+          isFinal: true,
+          createdAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+          schoolName: E2E_SCHOOLS[2].name,
+          predictionProbability: 0.81,
+        },
+      ]),
+    };
+  }
+
+  if (path === '/predictions/outcomes/me/stats') {
+    return {
+      data: responseData({ totalReported: 1, selfReported: 1, verified: 0 }),
+    };
+  }
+
   if (path.startsWith('/prediction')) {
     return {
       data: responseData({
@@ -1776,10 +1978,114 @@ function apiData(path: string, role: FullUiRole, method: string) {
     return { data: responseData(E2E_RESUMES) };
   }
 
+  // Resume workbench collection endpoints must remain arrays. Returning a generic
+  // resume object here hides API-shape regressions and crashes array consumers.
+  if (path === '/resume/targets') {
+    return {
+      data: responseData([
+        {
+          id: 'e2e-resume-target',
+          userId: E2E_USER.id,
+          type: 'STUDY_ABROAD',
+          status: 'ACTIVE',
+          title: 'Purdue Computer Science',
+          school: 'Purdue University',
+          program: 'Computer Science',
+          major: 'Computer Science',
+          applicationRound: 'RD',
+          keywords: ['research', 'leadership'],
+          requirements: {},
+          metadata: {},
+          createdAt: new Date('2026-04-01T12:00:00Z').toISOString(),
+          updatedAt: new Date('2026-04-15T12:00:00Z').toISOString(),
+        },
+      ]),
+    };
+  }
+
+  if (path === '/resume/evidence') {
+    return { data: responseData([]) };
+  }
+
+  if (/^\/resumes\/[^/]+\/snapshots$/.test(path)) {
+    return {
+      data: responseData([
+        {
+          id: 'e2e-resume-snapshot',
+          version: 1,
+          description: 'Initial profile import',
+          createdAt: new Date('2026-04-19T12:00:00Z').toISOString(),
+        },
+      ]),
+    };
+  }
+
+  if (/^\/resumes\/[^/]+\/quality$/.test(path)) {
+    return {
+      data: responseData({
+        score: 72,
+        family: 'STUDY_ABROAD',
+        rubricVersion: '2026-04',
+        dimensions: [],
+        gaps: [],
+        updatedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+      }),
+    };
+  }
+
+  if (
+    /^\/resumes\/[^/]+\/(?:ai\/issues|comments|exports)$/.test(path) ||
+    /^\/resumes\/[^/]+\/ai\/reviews$/.test(path)
+  ) {
+    return { data: responseData([]) };
+  }
+
+  if (/^\/resumes\/[^/]+\/ai\/reviews\/latest$/.test(path)) {
+    return { data: responseData(null) };
+  }
+
   const resumeId = matchId(path, '/resumes/') ?? matchId(path, '/resume/');
   if (resumeId) {
     return {
       data: responseData(E2E_RESUMES.find((resume) => resume.id === resumeId) ?? E2E_RESUMES[0]),
+    };
+  }
+
+  const e2eVaultItem = {
+    id: 'e2e-vault-item',
+    type: 'CREDENTIAL',
+    title: 'Application portal',
+    category: 'Applications',
+    tags: ['admissions'],
+    icon: null,
+    createdAt: new Date('2026-04-18T12:00:00Z').toISOString(),
+    updatedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+  };
+
+  if (path === '/vaults') {
+    return { data: responseData([e2eVaultItem]) };
+  }
+
+  if (path === '/vaults/stats') {
+    return {
+      data: responseData({
+        totalItems: 1,
+        credentialCount: 1,
+        documentCount: 0,
+        noteCount: 0,
+        certificateCount: 0,
+        categories: ['Applications'],
+      }),
+    };
+  }
+
+  if (path === '/vaults/generate-password') {
+    return { data: responseData({ password: 'E2E-secure-password-42!' }) };
+  }
+
+  if (path === `/vaults/${e2eVaultItem.id}`) {
+    return {
+      data: responseData({ ...e2eVaultItem, data: 'username=e2e@example.com' }),
     };
   }
 
@@ -1789,6 +2095,28 @@ function apiData(path: string, role: FullUiRole, method: string) {
 
   if (path === '/chats/conversations') {
     return { data: responseData(E2E_CONVERSATIONS) };
+  }
+
+  if (path === '/chats/social/overview') {
+    return {
+      data: responseData({
+        counts: { followers: 1, following: 1, mutual: 1, blocked: 0 },
+        recommendations: E2E_RECOMMENDED_USERS,
+      }),
+    };
+  }
+
+  if (path === '/chats/social/relations') {
+    return { data: responseData(pageResult(E2E_SOCIAL_RELATIONS)) };
+  }
+
+  if (path === '/chats/social/bulk') {
+    return {
+      data: responseData({
+        action: 'follow',
+        results: [{ userId: E2E_RECOMMENDED_USERS[0].id, success: true }],
+      }),
+    };
   }
 
   if (path.startsWith('/chats/conversations/') && path.endsWith('/context')) {
@@ -1903,6 +2231,43 @@ function apiData(path: string, role: FullUiRole, method: string) {
         total: 1,
         hasMore: false,
       }),
+    };
+  }
+
+  if (path === '/halls/verified/china-admit-trend') {
+    return {
+      data: responseData({
+        schools: [
+          {
+            schoolId: E2E_SCHOOLS[2].id,
+            schoolName: E2E_SCHOOLS[2].name,
+            schoolNameZh: E2E_SCHOOLS[2].nameZh,
+            schoolRank: E2E_SCHOOLS[2].usNewsRank,
+            yearly: [
+              { year: 2025, admitted: 4, total: 9 },
+              { year: 2026, admitted: 5, total: 11 },
+            ],
+            reliability: 'A',
+            sampleSize: 11,
+          },
+        ],
+        lastUpdated: new Date('2026-04-20T12:00:00Z').toISOString(),
+      }),
+    };
+  }
+
+  if (path === '/halls/verified/difficulty-signal') {
+    return {
+      data: responseData([
+        {
+          schoolId: E2E_SCHOOLS[2].id,
+          schoolName: E2E_SCHOOLS[2].name,
+          schoolNameZh: E2E_SCHOOLS[2].nameZh,
+          signal: 'stable',
+          changePct: 1.1,
+          sampleSize: 11,
+        },
+      ]),
     };
   }
 

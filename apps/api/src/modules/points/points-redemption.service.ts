@@ -47,6 +47,12 @@ export class PointsRedemptionService {
     newBalance: number;
     status: RedemptionStatus;
   }> {
+    if (!(await this.pointsConfig.isEnabled())) {
+      throw new BadRequestException(
+        'Points redemption is unavailable while the points economy is disabled',
+      );
+    }
+
     const cost = REDEMPTION_COSTS[type];
     if (!cost) {
       throw new BadRequestException(`Unknown redemption type: ${type}`);
@@ -177,7 +183,8 @@ export class PointsRedemptionService {
   /**
    * Get the public catalog of available redemptions (with current costs).
    */
-  getCatalog() {
+  async getCatalog() {
+    if (!(await this.pointsConfig.isEnabled())) return [];
     return Object.entries(REDEMPTION_COSTS).map(([type, cost]) => ({
       type: type as RedemptionType,
       cost,

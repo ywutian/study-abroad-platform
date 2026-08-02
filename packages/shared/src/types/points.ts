@@ -46,3 +46,34 @@ export const POINT_ACTION = {
 } as const;
 
 export type PointAction = (typeof POINT_ACTION)[keyof typeof POINT_ACTION];
+
+export interface PointsSummary {
+  currentPoints: number;
+  totalEarned: number;
+  totalSpent: number;
+  transactionCount: number;
+  actionStats: Record<string, number>;
+}
+
+export interface PointsHistoryItem {
+  id: string;
+  action: string;
+  points: number;
+  description: string;
+  type: 'earn' | 'spend';
+  createdAt: string;
+}
+
+export interface PointsRule {
+  action: string;
+  points: number;
+  description: string;
+  type: 'earn' | 'spend';
+  enabled?: boolean;
+}
+
+export interface PointsRulesResponse {
+  enabled: boolean;
+  earn: PointsRule[];
+  spend: PointsRule[];
+}

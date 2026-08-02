@@ -18,9 +18,8 @@ import { useEffect } from 'react';
  * enabled via NODE_ENV) and walks every element in the body, looking
  * for nodes whose `scrollWidth` exceeds their `clientWidth` — the
  * unambiguous signal of horizontal overflow. The offending element is
- * outlined in red and a structured warning is logged with:
+ * and logs a warning with:
  *
- *   - the element (clickable in DevTools)
  *   - its tag + id + first className
  *   - the overflow magnitude (px)
  *   - a short DOM-path crumb so you know where in the tree it lives
@@ -75,9 +74,26 @@ function scanForOverflow(seen: WeakMap<Element, WarnRecord>) {
   for (let i = 0; i < all.length; i++) {
     const el = all[i];
     if (ALLOWED_TAGS.has(el.tagName)) continue;
-    if (el.hasAttribute('data-allow-overflow-x')) continue;
-    const sw = (el as HTMLElement).scrollWidth;
-    const cw = (el as HTMLElement).clientWidth;
+    if (el.closest('[data-allow-overflow-x]')) continue;
+    const htmlEl = el as HTMLElement;
+    const style = window.getComputedStyle(htmlEl);
+    // These nodes intentionally hide or clip intrinsic content. Counting their
+    // scrollWidth produces false positives for truncation, screen-reader labels,
+    // and floating feedback controls without creating document-level overflow.
+    if (
+      htmlEl.classList.contains('sr-only') ||
+      style.textOverflow === 'ellipsis' ||
+      style.overflowX === 'hidden' ||
+      style.overflowX === 'clip' ||
+      style.overflowX === 'auto' ||
+      style.overflowX === 'scroll' ||
+      style.position === 'fixed' ||
+      htmlEl.closest('.fixed')
+    ) {
+      continue;
+    }
+    const sw = htmlEl.scrollWidth;
+    const cw = htmlEl.clientWidth;
     if (cw <= 0) continue; // collapsed / hidden
     const delta = sw - cw;
     if (delta <= MIN_DELTA_PX) continue;
@@ -90,22 +106,14 @@ function scanForOverflow(seen: WeakMap<Element, WarnRecord>) {
     seen.set(el, { delta, at: now });
     flagged += 1;
 
-    // Outline the culprit so it's visible in the live DOM.
-    const htmlEl = el as HTMLElement;
-    const prevOutline = htmlEl.style.outline;
-    htmlEl.style.outline = '2px solid red';
-    htmlEl.style.outlineOffset = '-2px';
-    // Restore after 4s so the page doesn't look permanently broken.
-    setTimeout(() => {
-      htmlEl.style.outline = prevOutline;
-    }, 4000);
-
-    // Structured console warn — DevTools will render `el` as
-    // clickable, jumping straight to the offending node.
+    // Keep this string-only. Passing a DOM node as a structured console value
+    // makes Next's development logger enumerate framework-owned React props,
+    // which itself emits false "params/searchParams must be unwrapped" warnings.
+    // Do not mutate the element to visually outline it: changing SSR-owned DOM
+    // before hydration settles makes the detector create hydration mismatches.
     // eslint-disable-next-line no-console
     console.warn(
-      `[OverflowDetector] horizontal overflow +${delta}px on <${el.tagName.toLowerCase()}> — ${shortPath(el)}`,
-      { element: el, scrollWidth: sw, clientWidth: cw, delta }
+      `[OverflowDetector] horizontal overflow +${delta}px on <${el.tagName.toLowerCase()}> — ${shortPath(el)} (scrollWidth=${sw}, clientWidth=${cw})`
     );
   }
   if (flagged > 5) {

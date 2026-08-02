@@ -20,24 +20,11 @@ import {
 } from '@/components/ui';
 import { ListItem, ListGroup } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
-import {
-  profileRoutes,
-  API_ROUTES,
-  verificationRoutes,
-  type AIAnalysisResult,
-} from '@study-abroad/shared';
+import { profileRoutes, verificationRoutes, type AIAnalysisResult } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
-import {
-  useColors,
-  withOpacity,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-} from '@/utils/theme';
+import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
 
 export default function ProfileScreen() {
@@ -63,14 +50,6 @@ export default function ProfileScreen() {
       apiClient.get<{ emailVerified: boolean; identityVerified: boolean }>(
         verificationRoutes.status()
       ),
-    enabled: isAuthenticated,
-  });
-
-  const { data: pointsData } = useQuery({
-    queryKey: ['points', 'balance'],
-    // Canonical endpoint is GET /users/me/points -> { points } (there is no
-    // /points/balance route — that 404'd and the card never rendered).
-    queryFn: () => apiClient.get<{ points: number }>(`${API_ROUTES.USERS}/me/points`),
     enabled: isAuthenticated,
   });
 
@@ -341,26 +320,6 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {/* Points Balance */}
-      {pointsData && (
-        <TouchableOpacity
-          onPress={() => router.push('/points')}
-          style={[styles.pointsCard, { backgroundColor: withOpacity(colors.warning, 0.1) }]}
-        >
-          <Ionicons name="star" size={20} color={colors.warning} />
-          <Text style={[styles.pointsValue, { color: colors.warning }]}>{pointsData.points}</Text>
-          <Text style={[styles.pointsLabel, { color: colors.foregroundMuted }]}>
-            {t('profile.points')}
-          </Text>
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color={colors.foregroundMuted}
-            style={{ marginLeft: 'auto' }}
-          />
-        </TouchableOpacity>
-      )}
-
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.foregroundMuted }]}>
           {t('applicationAnalysis.title')}
@@ -494,11 +453,6 @@ export default function ProfileScreen() {
             title={t('more.verification')}
             leftIcon="shield-checkmark-outline"
             onPress={() => router.push('/verification' as Href)}
-          />
-          <ListItem
-            title={t('more.points')}
-            leftIcon="star-outline"
-            onPress={() => router.push('/points' as Href)}
           />
         </ListGroup>
       </View>
@@ -665,24 +619,6 @@ const styles = StyleSheet.create({
   verifyText: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
-  },
-  pointsCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.lg,
-  },
-  pointsValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    fontFamily: fontFamily.mono,
-  },
-  pointsLabel: {
-    fontSize: fontSize.sm,
   },
   analysisHeader: {
     flexDirection: 'row',

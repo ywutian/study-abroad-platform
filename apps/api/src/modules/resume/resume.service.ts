@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import mammoth from 'mammoth';
-import { PDFParse } from 'pdf-parse';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import {
@@ -935,6 +934,10 @@ export class ResumeService {
         return result.value;
       }
       if (name.endsWith('.pdf') || mime.includes('pdf')) {
+        // pdf-parse loads a native canvas binding. Keep it off the application
+        // startup path so non-PDF requests and test discovery do not retain the
+        // binding's CustomGC handle.
+        const { PDFParse } = await import('pdf-parse');
         const parser = new PDFParse({ data: file.buffer });
         try {
           const result = await parser.getText();

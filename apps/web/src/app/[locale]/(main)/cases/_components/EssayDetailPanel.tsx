@@ -22,7 +22,6 @@ import {
   MessageCircle,
   GitCompare,
   ArrowRight,
-  Coins,
   ThumbsDown,
   ThumbsUp,
   Languages,
@@ -45,10 +44,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api/client';
 import {
-  POINT_ACTION,
   essayAiRoutes,
   getArchiveLabel,
-  pointsRoutes,
   profileRoutes,
   type GalleryEssayAIInteractionItem,
   type GalleryEssayCompareFocus,
@@ -126,23 +123,10 @@ interface AnalysisResult {
   /**
    * Backend signal: result served from `aiAnalysisCache[locale]` precompute
    * rather than a fresh LLM round-trip. We surface this so users understand
-   * why the response was instant; the 20-point cost still applies per spec.
+   * why the response was instant.
    */
   cached?: boolean;
   generatedAt?: string;
-}
-
-interface PointRule {
-  action: string;
-  points: number;
-  description: string;
-  type: 'earn' | 'spend';
-}
-
-interface PointRulesResponse {
-  enabled?: boolean;
-  earn: PointRule[];
-  spend: PointRule[];
 }
 
 /**
@@ -482,12 +466,6 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
     enabled: compareOpen && !!accessToken,
   });
 
-  const pointsRulesQuery = useQuery({
-    queryKey: ['points-rules'],
-    queryFn: () => apiClient.get<PointRulesResponse>(pointsRoutes.rules()),
-    enabled: !!accessToken && (questionOpen || compareOpen),
-  });
-
   const questionHistoryQuery = useQuery({
     queryKey: ['essay-gallery-interactions', essayId, 'question'],
     queryFn: () =>
@@ -505,19 +483,6 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
       }),
     enabled: compareOpen && !!accessToken,
   });
-
-  const pointCosts = useMemo(() => {
-    const spend = pointsRulesQuery.data?.spend ?? [];
-    const findCost = (action: string, fallback: number) => {
-      const rule = spend.find((item) => item.action === action);
-      return Math.abs(rule?.points ?? fallback);
-    };
-    return {
-      enabled: pointsRulesQuery.data?.enabled ?? true,
-      ask: findCost(POINT_ACTION.AI_ESSAY_GALLERY_ASK, 5),
-      compare: findCost(POINT_ACTION.AI_ESSAY_COMPARE, 15),
-    };
-  }, [pointsRulesQuery.data]);
 
   const feedbackMutation = useMutation({
     // @cache-invalidation-allowed: onSuccess refetches affected gallery interaction history queries directly
@@ -812,17 +777,6 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
     t('detail.qa.quick.copyRisk'),
     t('detail.qa.quick.fit'),
   ];
-  const renderPointCost = (cost: number) => (
-    <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-      <Coins className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-      <span>
-        {pointCosts.enabled
-          ? t('detail.points.cost', { points: cost })
-          : t('detail.points.disabled')}
-      </span>
-    </div>
-  );
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* ── 固定头部 ── */}
@@ -1228,8 +1182,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                 <p className="line-clamp-3 leading-relaxed">&ldquo;{questionSelectedText}&rdquo;</p>
               </div>
             )}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {renderPointCost(pointCosts.ask)}
+            <div className="flex justify-end">
               <Button
                 onClick={submitQuestion}
                 disabled={
@@ -1404,8 +1357,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                     ))}
                   </div>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  {renderPointCost(pointCosts.compare)}
+                <div className="flex justify-end">
                   <Button
                     onClick={submitCompare}
                     disabled={
