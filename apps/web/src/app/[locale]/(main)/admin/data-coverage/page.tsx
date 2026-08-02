@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { isSafeUrl } from '@/lib/utils/url';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { BarChart3, RefreshCw, PencilLine } from 'lucide-react';
@@ -340,7 +341,7 @@ export default function AdminDataCoveragePage() {
                               </div>
                               <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                                 <div>{field.source ?? field.realDataStatus ?? t('unknown')}</div>
-                                {field.sourceUrl ? (
+                                {isSafeUrl(field.sourceUrl) ? (
                                   <a
                                     href={field.sourceUrl}
                                     target="_blank"

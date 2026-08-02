@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { isSafeUrl } from '@/lib/utils/url';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -827,15 +828,21 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
               </span>
               {essay.sourceAuthor && ` · ${essay.sourceAuthor}`}
             </span>
-            <a
-              href={essay.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex shrink-0 items-center gap-0.5 text-primary hover:underline"
-            >
-              {t('detail.viewOriginal')}
-              <ExternalLink className="h-3 w-3" />
-            </a>
+            {/* React does not sanitise href, so a `javascript:` value would run on
+                click. Safe today only because parseEssayProvenance (another
+                package) accepts nothing but `source:http(s)://` — the four
+                other link sites here check locally rather than trust that. */}
+            {isSafeUrl(essay.sourceUrl) && (
+              <a
+                href={essay.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex shrink-0 items-center gap-0.5 text-primary hover:underline"
+              >
+                {t('detail.viewOriginal')}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
           </div>
         )}
       </div>
