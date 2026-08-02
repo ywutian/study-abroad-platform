@@ -619,6 +619,45 @@ function gatherParenText(
 }
 
 // Rule 8: raw redis.getClient() bypasses metrics + circuit breaker (#274 blind spot).
+// Rule 12: a cache read that JSON.parses without saying what survived.
+//
+// JSON.parse returns `any`, so `return raw ? JSON.parse(raw) : null` silently
+// satisfies whatever the method declares — including a Prisma model whose
+// DateTime fields are strings by the time they come back out of Redis. That is
+// how the profile-import crash (f0e5511b) and two latent siblings shipped:
+// every one of them read a cache and claimed a type it no longer had.
+//
+// Scoped to files that actually touch Redis, and only to `return` positions,
+// because that is where the unchecked value escapes into a declared type. An
+// intermediate `const x = JSON.parse(...)` that gets validated before it is
+// returned is fine and is not flagged.
+function checkUnassertedCacheParse(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (filePath.endsWith('.spec.ts')) return issues;
+  const source = lines.join('\n');
+  if (!/redis|Redis/.test(source)) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim().startsWith('//') || line.trim().startsWith('*')) continue;
+    if (!/JSON\.parse\s*\(/.test(line)) continue;
+    // Only the escaping position: a return, or a callback inside one.
+    if (!/\breturn\b/.test(line)) continue;
+    if (/\bas\s+[A-Z]|\bas\s+unknown|satisfies\s+/.test(line)) continue;
+    if (hasIgnoreTag(lines, i, '@cache-parse-allowed')) continue;
+
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-unasserted-cache-parse',
+      message:
+        "JSON.parse returns `any` and will silently satisfy this method's declared return type. A cached Prisma model has ISO strings where the type promises Dates (see f0e5511b). Assert the parsed shape, or rehydrate it. Suppress with // @cache-parse-allowed.",
+      severity: 'error',
+    });
+  }
+  return issues;
+}
+
 function checkRawRedisGetClient(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (filePath.endsWith('.spec.ts')) return issues;
@@ -743,6 +782,7 @@ function main() {
       ...checkRawRedisGetClient(filePath, lines),
       ...checkHardcodedRedisTtl(filePath, lines),
       ...checkRedisPollWithoutBackoff(filePath, lines),
+      ...checkUnassertedCacheParse(filePath, lines),
     );
   }
 

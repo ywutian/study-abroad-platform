@@ -358,6 +358,7 @@ export class CaseBatchService {
     const data = await this.redis.get(`import:progress:${batchId}`);
     if (!data) return { status: 'not_found' };
     try {
+      // @cache-parse-allowed - progress counters only, no Date fields
       return { status: 'in_progress', ...JSON.parse(data) };
     } catch {
       return { status: 'unknown' };

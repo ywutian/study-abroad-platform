@@ -212,6 +212,7 @@ export class RedisCacheService {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.get(key),
       );
+      // @cache-parse-allowed - Record<string, any>; the type claims nothing
       return raw ? JSON.parse(raw) : null;
     } catch (err) {
       this.logger.debug(`Redis getUserContext failed: ${String(err)}`);

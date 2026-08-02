@@ -8,6 +8,7 @@
  * 4. 任务持久化
  */
 
+import type { MaybeSerialized } from '../../../common/redis/redis-json.types';
 import {
   Injectable,
   Logger,
@@ -468,7 +469,22 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
         (client) => client.zpopmin(this.QUEUE_KEY),
       );
       if (result && result.length > 0) {
-        return JSON.parse(result[0]);
+        // Task carries four Date fields and this came out of Redis, so they
+        // are ISO strings. executeTask reads none of them today — rehydrate
+        // anyway so the Redis path and the DB fallback below return the same
+        // runtime type rather than merely the same declared one.
+        const task = JSON.parse(result[0]) as MaybeSerialized<Task>;
+        return {
+          ...task,
+          scheduledAt: task.scheduledAt
+            ? new Date(task.scheduledAt)
+            : undefined,
+          startedAt: task.startedAt ? new Date(task.startedAt) : undefined,
+          completedAt: task.completedAt
+            ? new Date(task.completedAt)
+            : undefined,
+          createdAt: new Date(task.createdAt),
+        };
       }
     } catch (err) {
       this.logger.debug(

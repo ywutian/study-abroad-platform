@@ -1,6 +1,6 @@
 ---
-description: "Backend development rules for NestJS API"
-globs: ["apps/api/**"]
+description: 'Backend development rules for NestJS API'
+globs: ['apps/api/**']
 ---
 
 # Backend Rules
@@ -63,10 +63,12 @@ Shared constants in `common/constants/prisma-selects.ts`: `SCHOOL_BASIC_SELECT`,
 ## Feature Flags
 
 Database-backed with Redis caching (60s TTL). Usage:
+
 ```typescript
 @FeatureFlag('prediction-v4')  // Endpoint-level
 await this.featureFlagService.isEnabled('new-algo', { userId, role });  // Service-level
 ```
+
 Key files: `common/feature-flags/` (@Global()), `admin/admin-feature-flag.controller.ts`
 Rules JSON: `{ "roles": ["ADMIN"], "userIds": ["uuid"], "percentage": 50 }`. Evaluation: roles -> userIds -> percentage (any match = enabled).
 
@@ -83,20 +85,21 @@ Rules JSON: `{ "roles": ["ADMIN"], "userIds": ["uuid"], "percentage": 50 }`. Eva
 
 ## API Quality Checks (`check-api-quality.ts`)
 
-| Rule | Severity | Catches |
-|------|----------|---------|
-| `no-inline-body` | error | `@Body() body: { ... }` inline types |
-| `no-unthrottled-ai` | warning | AI route without `@Throttle*` |
-| `no-generic-throw` | warning | `throw new Error()` in services |
-| `no-missing-maxlength` | warning | `@IsString()` without `@MaxLength()` |
-| `no-missing-test` | error (staged) / warning (full-scan) | NEW service without `.spec.ts` blocks at pre-commit; existing backlog stays a full-scan warning |
-| `no-duplicated-select` | warning | Same select block repeated 2+ times |
-| `no-select-mapping-drift` | warning | SELECT field not in mapper |
-| `no-raw-redis-getclient` | error | `redis.getClient()` bypassing metrics/circuit-breaker — use a wrapper or `redis.withClient()` (suppress `// @redis-raw-allowed`) |
-| `no-hardcoded-redis-ttl` | error | Numeric TTL literal on a Redis write — use `REDIS_TTL.*` from `common/redis/redis-ttl.constants` (suppress `// @redis-ttl-allowed`) |
-| `no-redis-poll-without-backoff` | error | `setInterval` polling Redis on a fixed <30s cadence (the #274 quota-burn) — use setTimeout-reschedule + backoff (suppress `// @redis-poll-allowed`) |
-| `no-magic-arraysize` | error (staged) / warning (full-scan) | Numeric `@ArrayMaxSize(N)` literal on a user-facing DTO array — use a shared cap constant (`packages/shared`) so FE+BE caps can't drift (the #396–398 silent-400 class). Suppress a deliberate fixed-set cap with `// @arraysize-literal-allowed` |
-| `no-uncapped-array` | error (staged) / warning (full-scan) | User-facing DTO array field (`@IsArray`) with NO `@ArrayMaxSize` → a user can POST an unbounded array (DoS / payload bloat). Add `@ArrayMaxSize(<shared const>)` (the #399 close). Skips `/modules/admin/`, `batch`/`bulk` filenames, `/distillation/`; suppress with `// @arraysize-uncapped-allowed` |
+| Rule                            | Severity                             | Catches                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `no-inline-body`                | error                                | `@Body() body: { ... }` inline types                                                                                                                                                                                                                                                                                                                                                                     |
+| `no-unthrottled-ai`             | warning                              | AI route without `@Throttle*`                                                                                                                                                                                                                                                                                                                                                                            |
+| `no-generic-throw`              | warning                              | `throw new Error()` in services                                                                                                                                                                                                                                                                                                                                                                          |
+| `no-missing-maxlength`          | warning                              | `@IsString()` without `@MaxLength()`                                                                                                                                                                                                                                                                                                                                                                     |
+| `no-missing-test`               | error (staged) / warning (full-scan) | NEW service without `.spec.ts` blocks at pre-commit; existing backlog stays a full-scan warning                                                                                                                                                                                                                                                                                                          |
+| `no-duplicated-select`          | warning                              | Same select block repeated 2+ times                                                                                                                                                                                                                                                                                                                                                                      |
+| `no-select-mapping-drift`       | warning                              | SELECT field not in mapper                                                                                                                                                                                                                                                                                                                                                                               |
+| `no-raw-redis-getclient`        | error                                | `redis.getClient()` bypassing metrics/circuit-breaker — use a wrapper or `redis.withClient()` (suppress `// @redis-raw-allowed`)                                                                                                                                                                                                                                                                         |
+| `no-hardcoded-redis-ttl`        | error                                | Numeric TTL literal on a Redis write — use `REDIS_TTL.*` from `common/redis/redis-ttl.constants` (suppress `// @redis-ttl-allowed`)                                                                                                                                                                                                                                                                      |
+| `no-redis-poll-without-backoff` | error                                | `setInterval` polling Redis on a fixed <30s cadence (the #274 quota-burn) — use setTimeout-reschedule + backoff (suppress `// @redis-poll-allowed`)                                                                                                                                                                                                                                                      |
+| `no-magic-arraysize`            | error (staged) / warning (full-scan) | Numeric `@ArrayMaxSize(N)` literal on a user-facing DTO array — use a shared cap constant (`packages/shared`) so FE+BE caps can't drift (the #396–398 silent-400 class). Suppress a deliberate fixed-set cap with `// @arraysize-literal-allowed`                                                                                                                                                        |
+| `no-uncapped-array`             | error (staged) / warning (full-scan) | User-facing DTO array field (`@IsArray`) with NO `@ArrayMaxSize` → a user can POST an unbounded array (DoS / payload bloat). Add `@ArrayMaxSize(<shared const>)` (the #399 close). Skips `/modules/admin/`, `batch`/`bulk` filenames, `/distillation/`; suppress with `// @arraysize-uncapped-allowed`                                                                                                   |
+| `no-unasserted-cache-parse`     | error                                | `return JSON.parse(...)` with no assertion in a Redis-touching file. JSON.parse is `any`, so it silently satisfies the declared return type — which is how a cached Prisma model kept promising `Date` while handing back ISO strings (the f0e5511b profile-import crash). Assert the parsed shape or rehydrate it; suppress with `// @cache-parse-allowed` **and say why the type has no Date to lose** |
 
 ## Deep Dive
 

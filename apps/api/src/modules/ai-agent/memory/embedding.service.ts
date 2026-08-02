@@ -307,6 +307,7 @@ export class EmbeddingService {
     const raw = await this.redis.get(redisKey);
     if (raw) {
       try {
+        // @cache-parse-allowed - number[]; no Date to lose
         return JSON.parse(raw);
       } catch {
         // corrupt entry — fall through to memory
