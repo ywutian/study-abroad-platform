@@ -240,15 +240,29 @@ export class VerificationService {
 
     // 使用事务更新
     const updatedRequest = await this.prisma.$transaction(async (tx) => {
-      // 更新认证请求
-      const updated = await tx.verificationRequest.update({
-        where: { id: requestId },
+      // Claim the request conditionally. The `status !== PENDING` check above
+      // runs outside this transaction, so two reviewers opening the same
+      // request both pass it. Writing the status twice would be harmless if
+      // they agreed — but one approving while the other rejects leaves the
+      // request REJECTED with `role: VERIFIED` already granted and the case
+      // marked isVerified, because the reject branch does not undo either.
+      // A rejected identity verification that still carries the trust role is
+      // the failure that matters here, not the duplicate write.
+      const claimed = await tx.verificationRequest.updateMany({
+        where: { id: requestId, status: VerificationStatus.PENDING },
         data: {
           status: newStatus,
           reviewerId,
           reviewNote: dto.note,
           reviewedAt: new Date(),
         },
+      });
+      if (claimed.count === 0) {
+        throw new ConflictException(ERR.CONFLICT.alreadyProcessed());
+      }
+
+      const updated = await tx.verificationRequest.findUniqueOrThrow({
+        where: { id: requestId },
       });
 
       // 如果通过，更新案例和用户状态

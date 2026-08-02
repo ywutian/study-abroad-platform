@@ -58,6 +58,8 @@ describe('VerificationService', () => {
               findMany: jest.fn(),
               create: jest.fn(),
               update: jest.fn(),
+              updateMany: jest.fn(),
+              findUniqueOrThrow: jest.fn(),
               count: jest.fn(),
             },
             user: {
@@ -66,6 +68,14 @@ describe('VerificationService', () => {
             $transaction: jest.fn((fn) =>
               fn({
                 verificationRequest: {
+                  // The review now CLAIMS the request conditionally
+                  // (updateMany where status: PENDING) and re-reads it, so a
+                  // second reviewer racing the first gets count 0 instead of
+                  // overwriting a decision that already granted the role.
+                  updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+                  findUniqueOrThrow: jest
+                    .fn()
+                    .mockResolvedValue(mockVerificationRequest),
                   update: jest.fn().mockResolvedValue(mockVerificationRequest),
                 },
                 admissionCase: { update: jest.fn() },
@@ -301,6 +311,11 @@ describe('VerificationService', () => {
 
       const txMock = {
         verificationRequest: {
+          // The review claims the row conditionally now — updateMany on
+          // status: PENDING, then a re-read. count 0 means another
+          // reviewer already decided it.
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: jest.fn().mockResolvedValue(pendingRequest),
           update: jest.fn().mockResolvedValue({
             ...pendingRequest,
             status: VerificationStatus.APPROVED,
@@ -340,6 +355,11 @@ describe('VerificationService', () => {
 
       const txMock = {
         verificationRequest: {
+          // The review claims the row conditionally now — updateMany on
+          // status: PENDING, then a re-read. count 0 means another
+          // reviewer already decided it.
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: jest.fn().mockResolvedValue(pendingRequest),
           update: jest.fn().mockResolvedValue({
             ...pendingRequest,
             status: VerificationStatus.REJECTED,
@@ -395,6 +415,11 @@ describe('VerificationService', () => {
 
       const txMock = {
         verificationRequest: {
+          // The review claims the row conditionally now — updateMany on
+          // status: PENDING, then a re-read. count 0 means another
+          // reviewer already decided it.
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: jest.fn().mockResolvedValue(pendingRequest),
           update: jest.fn().mockResolvedValue({
             ...pendingRequest,
             status: VerificationStatus.APPROVED,
@@ -414,6 +439,43 @@ describe('VerificationService', () => {
           action: ReviewAction.APPROVE,
         }),
       ).resolves.toBeDefined();
+    });
+
+    it('rejects the second reviewer instead of overwriting the first decision', async () => {
+      // Both reviewers read the request while it is still PENDING — the
+      // status check sits outside the transaction. Left unguarded, one
+      // approving while the other rejects ends with the request REJECTED and
+      // `role: VERIFIED` already granted, because the reject branch does not
+      // undo the grant.
+      const pendingRequest = {
+        ...mockVerificationRequest,
+        status: VerificationStatus.PENDING,
+      };
+      (prisma.verificationRequest.findUnique as jest.Mock).mockResolvedValue(
+        pendingRequest,
+      );
+
+      const txMock = {
+        verificationRequest: {
+          // the other reviewer committed first, so the claim matches nothing
+          updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+          findUniqueOrThrow: jest.fn(),
+          update: jest.fn(),
+        },
+        admissionCase: { update: jest.fn() },
+        user: { update: jest.fn() },
+      };
+      (prisma.$transaction as jest.Mock).mockImplementation((fn) => fn(txMock));
+
+      await expect(
+        service.reviewVerification('vr-1', 'admin-2', {
+          action: ReviewAction.REJECT,
+        }),
+      ).rejects.toThrow(ConflictException);
+
+      // and above all: no role grant, no case flag, from the losing reviewer
+      expect(txMock.user.update).not.toHaveBeenCalled();
+      expect(txMock.admissionCase.update).not.toHaveBeenCalled();
     });
   });
 
