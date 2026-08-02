@@ -162,7 +162,14 @@ export class HallListService {
       },
     });
 
-    if (!list) {
+    // `isPublic` is the access control on this route, and it was missing.
+    // GET /halls/lists/:id is @Public() — unauthenticated — so without this
+    // check anyone holding an id could read a list its owner had marked
+    // private, while getPublicLists() right above filters on `isPublic: true`
+    // and voteList() right below rejects the same rows. Only this reader was
+    // skipped. 404 rather than 403: a private list should not confirm it
+    // exists. Owners read their own lists through getMyLists().
+    if (!list || !list.isPublic) {
       throw new NotFoundException('List not found');
     }
 

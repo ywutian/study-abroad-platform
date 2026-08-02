@@ -582,16 +582,52 @@ describe('RankingService', () => {
 
   describe('findById', () => {
     it('should return the ranking when found', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...mockCustomRanking,
+        isPublic: true,
+      });
 
       const result = await service.findById(mockRankingId);
 
-      expect(result).toEqual(mockCustomRanking);
+      expect(result).toEqual({ ...mockCustomRanking, isPublic: true });
       expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
         where: { id: mockRankingId },
       });
+    });
+
+    // GET /rankings/:id is @Public(). This had no visibility check at all,
+    // and CustomRanking.isPublic defaults to FALSE — so every ranking anyone
+    // had ever saved was readable by an anonymous caller holding an id.
+
+    it('hides a private ranking from an anonymous caller', async () => {
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...mockCustomRanking,
+        isPublic: false,
+      });
+
+      await expect(service.findById(mockRankingId)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('hides a private ranking from a different signed-in user', async () => {
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...mockCustomRanking,
+        isPublic: false,
+      });
+
+      await expect(
+        service.findById(mockRankingId, 'some-other-user'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('still returns a private ranking to its owner', async () => {
+      const own = { ...mockCustomRanking, isPublic: false };
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(own);
+
+      await expect(
+        service.findById(mockRankingId, mockUserId),
+      ).resolves.toEqual(own);
     });
 
     it('should throw NotFoundException when ranking is not found', async () => {

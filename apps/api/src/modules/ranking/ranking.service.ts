@@ -72,7 +72,19 @@ export class RankingService {
     });
   }
 
-  async findById(id: string): Promise<CustomRanking> {
+  /**
+   * `viewerId` — who is asking. Omitted means an anonymous caller.
+   *
+   * GET /rankings/:id is @Public(), and this had no visibility check at all,
+   * so anyone with an id could read any ranking. `CustomRanking.isPublic`
+   * defaults to **false**, so that was every ranking anyone had ever saved,
+   * not an unlucky few — while getPublicRankings() right above filters on
+   * `isPublic: true`.
+   *
+   * 404 rather than 403 for a private ranking: the response must not confirm
+   * that an id exists.
+   */
+  async findById(id: string, viewerId?: string): Promise<CustomRanking> {
     const ranking = await this.prisma.customRanking.findUnique({
       where: { id },
     });
@@ -81,11 +93,16 @@ export class RankingService {
       throw new NotFoundException('Ranking not found');
     }
 
+    if (!ranking.isPublic && ranking.userId !== viewerId) {
+      throw new NotFoundException('Ranking not found');
+    }
+
     return ranking;
   }
 
   async deleteRanking(id: string, userId: string): Promise<void> {
-    const ranking = await this.findById(id);
+    // Pass the owner as viewer, or deleting your own private ranking 404s.
+    const ranking = await this.findById(id, userId);
 
     if (ranking.userId !== userId) {
       throw new NotFoundException('Ranking not found');
