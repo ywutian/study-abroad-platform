@@ -1,8 +1,28 @@
 {
   "_comment": "Coverage-threshold FLOOR per app. check-coverage-ratchet.ts fails if any app's configured coverageThreshold drops below these. Raising is free; LOWERING requires editing this baseline in the same PR — turning the historically-silent 'fix(ci): lower coverage thresholds' drift into an explicit, reviewable change. To lock a higher floor after adding tests, bump both the config and this file.",
-  "api": { "statements": 38, "branches": 25, "functions": 34, "lines": 39 },
-  "mobile": { "statements": 30, "branches": 29, "functions": 25, "lines": 31 },
   "_web_note": "2026-08-02: branches 10→9 and functions 10→7. This is NOT the drift this file exists to block. apps/web/vitest.config.ts stopped excluding src/app/**/page.tsx + layout.tsx, adding ~4.5k always-untested statements to the denominator; the same test suite therefore measures lower. The old 10/10/10/10 was also never enforced — CI ran `pnpm --filter web test` (= plain `vitest run`, no --coverage), so no web threshold had been checked in CI at all. Both gaps closed in the same change: CI now runs coverage for web and mobile. Floors are set just under the measured 10.24/9.54/7.43/10.41.",
-  "web": { "statements": 10, "branches": 9, "functions": 7, "lines": 10 },
-  "shared": { "statements": 90, "branches": 80, "functions": 95, "lines": 90 }
+  "api": {
+    "statements": 57,
+    "branches": 43,
+    "functions": 53,
+    "lines": 58
+  },
+  "mobile": {
+    "statements": 30,
+    "branches": 29,
+    "functions": 25,
+    "lines": 31
+  },
+  "web": {
+    "statements": 10,
+    "branches": 9,
+    "functions": 7,
+    "lines": 10
+  },
+  "shared": {
+    "statements": 90,
+    "branches": 80,
+    "functions": 95,
+    "lines": 90
+  }
 }

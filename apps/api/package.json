@@ -279,10 +279,10 @@
     "testEnvironment": "node",
     "coverageThreshold": {
       "global": {
-        "statements": 38,
-        "branches": 25,
-        "functions": 34,
-        "lines": 39
+        "statements": 57,
+        "branches": 43,
+        "functions": 53,
+        "lines": 58
       }
     },
     "coveragePathIgnorePatterns": [
