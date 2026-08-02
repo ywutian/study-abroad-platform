@@ -902,4 +902,68 @@ describe('ResumeService', () => {
       );
     });
   });
+
+  describe('profile import — cached profile', () => {
+    // ProfileCrudService.findByUserId caches the profile through
+    // JSON.stringify, so within REDIS_TTL.PROFILE (5 min) every DateTime on it
+    // comes back as an ISO string. The import path used to call
+    // `.toISOString()` on those directly, which threw for every import after
+    // the one that warmed the cache. `as any` on the profile is what hid it.
+    const live = {
+      id: 'p1',
+      activities: [
+        {
+          id: 'a1',
+          name: 'Robotics',
+          role: 'Lead',
+          organization: null,
+          category: 'CLUB',
+          description: null,
+          startDate: new Date('2024-01-15'),
+          endDate: new Date('2024-06-20'),
+        },
+      ],
+      education: [],
+      testScores: [],
+      awards: [],
+    };
+    // byte-for-byte what RedisService.getJSON hands back on a hit
+    const cached = JSON.parse(JSON.stringify(live));
+
+    beforeEach(() => {
+      mockPrisma.resume.findUnique.mockResolvedValue({
+        id: 'r1',
+        userId: 'u1',
+        type: 'COLLEGE_APPLICATION',
+        sections: [
+          {
+            id: 's1',
+            type: 'ACTIVITIES',
+            title: 'Activities',
+            order: 0,
+            content: {},
+            isVisible: true,
+          },
+        ],
+      });
+      mockAuth.verifyOwnership.mockImplementation((r: unknown) => r);
+    });
+
+    it('produces identical output whether the profile came from cache or DB', async () => {
+      mockProfileService.findByUserId.mockResolvedValue(live);
+      const fromDb = await service.previewProfileImport('u1', 'r1');
+
+      mockProfileService.findByUserId.mockResolvedValue(cached);
+      const fromCache = await service.previewProfileImport('u1', 'r1');
+
+      expect(fromCache).toEqual(fromDb);
+      const items = (
+        fromCache.sections[0].proposedContent as {
+          items: { startDate: string; endDate: string }[];
+        }
+      ).items;
+      expect(items[0].startDate).toBe('2024-01');
+      expect(items[0].endDate).toBe('2024-06');
+    });
+  });
 });

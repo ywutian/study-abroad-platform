@@ -1,3 +1,4 @@
+import type { MaybeSerialized } from './redis-json.types';
 import {
   Injectable,
   Logger,
@@ -754,11 +755,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   // JSON 操作
-  async getJSON<T>(key: string): Promise<T | null> {
+  async getJSON<T>(key: string): Promise<MaybeSerialized<T> | null> {
     const value = await this.get(key);
     if (!value) return null;
     try {
-      return JSON.parse(value) as T;
+      return JSON.parse(value) as MaybeSerialized<T>;
     } catch {
       return null;
     }

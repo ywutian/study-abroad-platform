@@ -7,8 +7,9 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import mammoth from 'mammoth';
-import { contentAsRecord } from './resume-content.helpers';
+import { contentAsRecord, toMonth } from './resume-content.helpers';
 import { Prisma } from '@prisma/client';
+import type { MaybeSerialized } from '../../common/redis/redis-json.types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import {
@@ -17,6 +18,7 @@ import {
   ResumeSnapshot,
   ResumeType,
   ResumeSectionType,
+  Activity,
   ActivityCategory,
 } from '@prisma/client';
 import { CreateResumeDto } from './dto/create-resume.dto';
@@ -1237,7 +1239,7 @@ export class ResumeService {
     const profile = await this.profileService.findByUserId(userId);
     if (!profile) return [];
 
-    const profileData = profile as any;
+    const profileData = profile;
     const sectionMap = new Map(resume.sections.map((s) => [s.type, s]));
     const updates: Array<{ id: string; content: Prisma.InputJsonValue }> = [];
 
@@ -1265,8 +1267,8 @@ export class ResumeService {
             major: e.major ?? '',
             gpa: e.gpa ? Number(e.gpa) : undefined,
             gpaScale: e.gpaScale ? Number(e.gpaScale) : undefined,
-            startDate: e.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: e.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(e.startDate),
+            endDate: toMonth(e.endDate),
             coursework: [],
             honors: [],
           })),
@@ -1325,14 +1327,14 @@ export class ResumeService {
 
   private mapCollegeActivities(
     sectionMap: Map<string, ResumeSection>,
-    activities: any[],
+    activities: MaybeSerialized<Activity>[],
     updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const communityService = activities.filter(
-      (a: any) => a.category === ActivityCategory.COMMUNITY_SERVICE,
+      (a) => a.category === ActivityCategory.COMMUNITY_SERVICE,
     );
     const otherActivities = activities.filter(
-      (a: any) => a.category !== ActivityCategory.COMMUNITY_SERVICE,
+      (a) => a.category !== ActivityCategory.COMMUNITY_SERVICE,
     );
 
     const activitiesSection = sectionMap.get('ACTIVITIES');
@@ -1340,14 +1342,14 @@ export class ResumeService {
       updates.push({
         id: activitiesSection.id,
         content: {
-          items: otherActivities.map((a: any) => ({
+          items: otherActivities.map((a) => ({
             id: a.id,
             name: a.name,
             role: a.role,
             organization: a.organization ?? '',
             category: a.category,
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             isOngoing: a.isOngoing,
             bullets: a.description ? [a.description] : [],
             hoursPerWeek: a.hoursPerWeek,
@@ -1362,13 +1364,13 @@ export class ResumeService {
       updates.push({
         id: csSection.id,
         content: {
-          items: communityService.map((a: any) => ({
+          items: communityService.map((a) => ({
             id: a.id,
             name: a.name,
             role: a.role,
             organization: a.organization ?? '',
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             bullets: a.description ? [a.description] : [],
           })),
         },
@@ -1378,17 +1380,17 @@ export class ResumeService {
 
   private mapInternshipActivities(
     sectionMap: Map<string, ResumeSection>,
-    activities: any[],
+    activities: MaybeSerialized<Activity>[],
     updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const workActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.WORK,
+      (a) => a.category === ActivityCategory.WORK,
     );
     const researchActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.RESEARCH,
+      (a) => a.category === ActivityCategory.RESEARCH,
     );
     const otherActivities = activities.filter(
-      (a: any) =>
+      (a) =>
         a.category !== ActivityCategory.WORK &&
         a.category !== ActivityCategory.RESEARCH,
     );
@@ -1398,12 +1400,12 @@ export class ResumeService {
       updates.push({
         id: workSection.id,
         content: {
-          items: workActivities.map((a: any) => ({
+          items: workActivities.map((a) => ({
             id: a.id,
             title: a.role,
             company: a.organization ?? a.name,
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             isCurrent: a.isOngoing,
             bullets: a.description ? [a.description] : [],
           })),
@@ -1416,12 +1418,12 @@ export class ResumeService {
       updates.push({
         id: projectsSection.id,
         content: {
-          items: researchActivities.map((a: any) => ({
+          items: researchActivities.map((a) => ({
             id: a.id,
             name: a.name,
             techStack: [],
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             bullets: a.description ? [a.description] : [],
           })),
         },
@@ -1433,7 +1435,7 @@ export class ResumeService {
       updates.push({
         id: activitiesSection.id,
         content: {
-          items: otherActivities.slice(0, 3).map((a: any) => ({
+          items: otherActivities.slice(0, 3).map((a) => ({
             id: a.id,
             name: a.name,
             role: a.role,
@@ -1447,14 +1449,14 @@ export class ResumeService {
 
   private mapGraduateCVActivities(
     sectionMap: Map<string, ResumeSection>,
-    activities: any[],
+    activities: MaybeSerialized<Activity>[],
     updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const researchActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.RESEARCH,
+      (a) => a.category === ActivityCategory.RESEARCH,
     );
     const workActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.WORK,
+      (a) => a.category === ActivityCategory.WORK,
     );
 
     const researchSection = sectionMap.get('RESEARCH');
@@ -1462,12 +1464,12 @@ export class ResumeService {
       updates.push({
         id: researchSection.id,
         content: {
-          items: researchActivities.map((a: any) => ({
+          items: researchActivities.map((a) => ({
             id: a.id,
             title: a.name,
             institution: a.organization ?? '',
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             bullets: a.description ? [a.description] : [],
           })),
         },
@@ -1479,12 +1481,12 @@ export class ResumeService {
       updates.push({
         id: workSection.id,
         content: {
-          items: workActivities.map((a: any) => ({
+          items: workActivities.map((a) => ({
             id: a.id,
             title: a.role,
             company: a.organization ?? a.name,
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             isCurrent: a.isOngoing,
             bullets: a.description ? [a.description] : [],
           })),

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import type { MaybeSerialized } from '../../common/redis/redis-json.types';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { Profile, Prisma, Visibility, Role } from '@prisma/client';
@@ -20,6 +21,33 @@ import {
  * Handles core profile CRUD operations: find, create, update, upsert,
  * visibility checks, and anonymization.
  */
+/**
+ * The include used by findByUserId. Named so the payload type below is derived
+ * from the query rather than restated next to it.
+ */
+const PROFILE_INCLUDE = {
+  testScores: { orderBy: { createdAt: 'desc' } },
+  activities: {
+    orderBy: { order: 'asc' },
+    include: { activityTemplate: true },
+  },
+  awards: { orderBy: { order: 'asc' }, include: { competition: true } },
+  education: { include: { highSchool: true } },
+  essays: true,
+  semesterGpas: { orderBy: { order: 'asc' } },
+} as const satisfies Prisma.ProfileInclude;
+
+export type ProfileWithRelations = Prisma.ProfileGetPayload<{
+  include: typeof PROFILE_INCLUDE;
+}>;
+
+/**
+ * What findByUserId actually hands back. The old `Profile` was wrong twice: it
+ * dropped all six relations, and it promised Dates that a cache hit does not
+ * have. Callers reading a DateTime off this must go through `new Date(...)`.
+ */
+export type CachedProfile = MaybeSerialized<ProfileWithRelations>;
+
 @Injectable()
 export class ProfileCrudService {
   private readonly logger = new Logger(ProfileCrudService.name);
@@ -39,24 +67,14 @@ export class ProfileCrudService {
    * @param userId - The user identifier
    * @returns The full profile with relations, or null if not found
    */
-  async findByUserId(userId: string): Promise<Profile | null> {
+  async findByUserId(userId: string): Promise<CachedProfile | null> {
     const cacheKey = `profile:${userId}`;
-    const cached = await this.redis.getJSON<Profile>(cacheKey);
+    const cached = await this.redis.getJSON<ProfileWithRelations>(cacheKey);
     if (cached) return cached;
 
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
-      include: {
-        testScores: { orderBy: { createdAt: 'desc' } },
-        activities: {
-          orderBy: { order: 'asc' },
-          include: { activityTemplate: true },
-        },
-        awards: { orderBy: { order: 'asc' }, include: { competition: true } },
-        education: { include: { highSchool: true } },
-        essays: true,
-        semesterGpas: { orderBy: { order: 'asc' } },
-      },
+      include: PROFILE_INCLUDE,
     });
 
     if (profile) {

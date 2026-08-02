@@ -32,6 +32,7 @@ import {
   UpdateSemesterGpaDto,
 } from './dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { CachedProfile } from './profile-crud.service';
 import { ProfileCrudService } from './profile-crud.service';
 import { ProfileScoresService } from './profile-scores.service';
 import { ProfileEducationService } from './profile-education.service';
@@ -71,7 +72,7 @@ export class ProfileService {
   // Profile CRUD (delegated to ProfileCrudService)
   // ============================================
 
-  async findByUserId(userId: string): Promise<Profile | null> {
+  async findByUserId(userId: string): Promise<CachedProfile | null> {
     return this.crudService.findByUserId(userId);
   }
 

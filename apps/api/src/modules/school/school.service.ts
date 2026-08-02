@@ -17,6 +17,7 @@ import {
 } from '@study-abroad/shared/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import type { MaybeSerialized } from '../../common/redis/redis-json.types';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import {
   Prisma,
@@ -301,11 +302,13 @@ export class SchoolService {
     pagination: PaginationDto,
     filters?: SchoolFilters,
   ): Promise<
-    PaginatedResponseDto<
-      School & {
-        fieldSources: SchoolFieldSources;
-        communityRatingSummary: SchoolCommunityRatingSummary;
-      }
+    MaybeSerialized<
+      PaginatedResponseDto<
+        School & {
+          fieldSources: SchoolFieldSources;
+          communityRatingSummary: SchoolCommunityRatingSummary;
+        }
+      >
     >
   > {
     const { page = 1, pageSize = 20 } = pagination;
