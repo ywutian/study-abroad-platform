@@ -58,6 +58,7 @@ describe('TeamService', () => {
             team: {
               findUnique: jest.fn(),
               findMany: jest.fn(),
+              count: jest.fn(),
               create: jest.fn(),
               update: jest.fn(),
               delete: jest.fn(),
@@ -98,6 +99,50 @@ describe('TeamService', () => {
     prisma = module.get<PrismaService>(PrismaService);
     auditLog = module.get<AuditLogService>(AuditLogService);
     jest.clearAllMocks();
+  });
+
+  describe('discover', () => {
+    // GET /teams is @Public(). `where.visibility` used to read
+    // `query.visibility ?? 'PUBLIC'`, with `visibility` bound straight off the
+    // query string and PRIVATE an accepted enum value — so
+    // `GET /teams?visibility=PRIVATE` returned every private team to an
+    // unauthenticated caller, contradicting discover()'s own doc comment.
+
+    beforeEach(() => {
+      (prisma.team.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.team.count as jest.Mock).mockResolvedValue(0);
+    });
+
+    it('pins the visibility filter to PUBLIC', async () => {
+      await service.discover({});
+
+      const where = (prisma.team.findMany as jest.Mock).mock.calls[0][0].where;
+      expect(where.visibility).toBe('PUBLIC');
+    });
+
+    it('cannot be steered to private teams by the query', async () => {
+      // The DTO no longer carries `visibility`; this asserts that even when a
+      // caller smuggles one through, it never reaches the where clause.
+      await service.discover({ visibility: 'PRIVATE' } as never);
+
+      const where = (prisma.team.findMany as jest.Mock).mock.calls[0][0].where;
+      expect(where.visibility).toBe('PUBLIC');
+      const countWhere = (prisma.team.count as jest.Mock).mock.calls[0][0]
+        .where;
+      expect(countWhere.visibility).toBe('PUBLIC');
+    });
+
+    it('still honours the non-sensitive filters', async () => {
+      await service.discover({
+        schoolId: 'school-1',
+        joinPolicy: 'OPEN',
+      } as never);
+
+      const where = (prisma.team.findMany as jest.Mock).mock.calls[0][0].where;
+      expect(where.schoolId).toBe('school-1');
+      expect(where.joinPolicy).toBe('OPEN');
+      expect(where.visibility).toBe('PUBLIC');
+    });
   });
 
   describe('create', () => {
