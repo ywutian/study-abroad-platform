@@ -13,6 +13,19 @@
  *                                       @Roles(ADMIN)
  *   // governance: system-scope       — global/non-user data (e.g. routing table)
  *   // governance: batch-operation    — system maintenance batch over all users
+ *   // governance: public-feed        — user-owned rows the owner published, and
+ *                                       the query filters on that publication
+ *                                       flag (visibility / isPublic / review
+ *                                       status). NOT interchangeable with
+ *                                       parent-scoped: the claim is "the owner
+ *                                       chose to publish this", not "we checked
+ *                                       who is asking". A public-feed query
+ *                                       must carry the filter — if the filter
+ *                                       goes missing the annotation is a lie,
+ *                                       which is exactly how hall's
+ *                                       getListById and ranking's findById
+ *                                       shipped private rows on @Public()
+ *                                       routes (fixed 2026-08-02, 52ebf249).
  */
 
 import * as fs from 'fs';
@@ -47,13 +60,32 @@ const SCAN_DIRS = [
   // reporterId/authorId. chat's 14 turned up a real one — see report().
   path.join(ROOT, 'apps/api/src/modules/forum'),
   path.join(ROOT, 'apps/api/src/modules/chat'),
+  // Fourth batch. case's 12 are all AdmissionCase and all correctly scoped:
+  // 9 on the OPERATOR + CASE_REVIEW admin surface, 3 in findSimilar() behind a
+  // visibility+reviewStatus filter — the first use of `public-feed`.
+  path.join(ROOT, 'apps/api/src/modules/case'),
+  // team's 11: 6 platform competition config, 3 private fetch-or-throw helpers
+  // whose callers run ensureTeamRole/ensureTeamMember immediately after, and
+  // discover() — which turned out to be steerable to PRIVATE (fixed below).
+  path.join(ROOT, 'apps/api/src/modules/team'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
   // the site needs a human decision rather than a schema lookup):
   //
-  //   essay  70  (46 system / ★24)   case 12 (0 / ★12)
-  //   hall   12  ( 1 / ★11)          team 11 (6 / ★5)
+  //   essay 70 (46 system / ★24)
+  //
+  // hall (12) is read but deliberately NOT added yet. Ten of its sites are
+  // fine. The other two — hall-verified-dashboard's getChinaAdmitTrend and
+  // getEdRdComparison — compose VERIFIED_CASE_WHERE, which filters
+  // isVerified + approved review but NOT `visibility`, on @Public() routes.
+  // hall.constants.ts documents that omission as deliberate ("the public
+  // ranking adds a visibility filter … the China dashboard adds
+  // verificationLevel"), and the queries return per-school/per-year counts
+  // with no identifying fields — so it is a product decision about whether a
+  // PRIVATE case may feed a public statistic, not a defect to patch in
+  // passing. Annotating it either way would launder that decision into a
+  // governed exception. Resolve it, then add hall.
   //
   // Do NOT add them in one sweep. The 2026-08-02 pass over hall found
   // getListById() returning private lists on a @Public() route, and the
@@ -184,7 +216,8 @@ export function run(): GovernanceIssue[] {
             !contextWindow.includes('// governance: batch-operation') &&
             !contextWindow.includes('// governance: system-scope') &&
             !contextWindow.includes('// governance: parent-scoped') &&
-            !contextWindow.includes('// governance: admin-scope')
+            !contextWindow.includes('// governance: admin-scope') &&
+            !contextWindow.includes('// governance: public-feed')
           ) {
             issues.push({
               rule: 'user-data-isolation',
@@ -211,7 +244,8 @@ export function run(): GovernanceIssue[] {
             !contextWindow.includes('// governance: batch-operation') &&
             !contextWindow.includes('// governance: system-scope') &&
             !contextWindow.includes('// governance: parent-scoped') &&
-            !contextWindow.includes('// governance: admin-scope')
+            !contextWindow.includes('// governance: admin-scope') &&
+            !contextWindow.includes('// governance: public-feed')
           ) {
             issues.push({
               rule: 'user-data-isolation',

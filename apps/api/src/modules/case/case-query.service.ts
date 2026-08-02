@@ -406,13 +406,17 @@ export class CaseQueryService {
    */
   async getAdminStats() {
     const [total, withEssay, verified, pendingEssays] = await Promise.all([
+      // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
       this.prisma.admissionCase.count(),
+      // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
       this.prisma.admissionCase.count({
         where: { essayContent: { not: null } },
       }),
+      // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
       this.prisma.admissionCase.count({
         where: { isVerified: true },
       }),
+      // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
       this.prisma.admissionCase.count({
         where: {
           essayContent: { not: null },

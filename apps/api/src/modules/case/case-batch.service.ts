@@ -379,6 +379,7 @@ export class CaseBatchService {
     };
 
     const [data, total] = await Promise.all([
+      // governance: admin-scope — reached only from case-admin.controller, which is @Roles(Role.OPERATOR) + @RequirePermission(CASE_REVIEW) — reviewing other people's submissions is the job
       this.prisma.admissionCase.findMany({
         where,
         skip,
@@ -388,6 +389,7 @@ export class CaseBatchService {
           school: { select: SCHOOL_NAME_SELECT },
         },
       }),
+      // governance: admin-scope — reached only from case-admin.controller, which is @Roles(Role.OPERATOR) + @RequirePermission(CASE_REVIEW) — reviewing other people's submissions is the job
       this.prisma.admissionCase.count({ where }),
     ]);
 
@@ -402,6 +404,7 @@ export class CaseBatchService {
    * @returns The updated admission case with associated school information
    */
   async reviewCaseEssay(id: string, dto: ReviewCaseEssayDto) {
+    // governance: admin-scope — reached only from case-admin.controller, which is @Roles(Role.OPERATOR) + @RequirePermission(CASE_REVIEW) — reviewing other people's submissions is the job
     const caseItem = await this.prisma.admissionCase.findUnique({
       where: { id },
     });
@@ -411,6 +414,7 @@ export class CaseBatchService {
     }
 
     if (dto.action === 'APPROVE') {
+      // governance: admin-scope — reached only from case-admin.controller, which is @Roles(Role.OPERATOR) + @RequirePermission(CASE_REVIEW) — reviewing other people's submissions is the job
       return this.prisma.admissionCase.update({
         where: { id },
         data: {
@@ -425,6 +429,7 @@ export class CaseBatchService {
       });
     } else {
       // REJECT: hide from gallery and record rejection status
+      // governance: admin-scope — reached only from case-admin.controller, which is @Roles(Role.OPERATOR) + @RequirePermission(CASE_REVIEW) — reviewing other people's submissions is the job
       return this.prisma.admissionCase.update({
         where: { id },
         data: {
