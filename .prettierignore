@@ -15,6 +15,14 @@ pnpm-lock.yaml
 apps/mobile/android
 apps/mobile/ios
 
+# Framework-generated ambient declarations. Both are gitignored, so a fresh CI
+# checkout never has them and `format:check` stayed green there — but Next and
+# Expo write them the first time you run the app, and from then on every local
+# `pnpm lint:all` fails on files nobody wrote and nobody may edit (Next rewrites
+# next-env.d.ts on each build). CI isolation was hiding a local-only red.
+apps/web/next-env.d.ts
+apps/mobile/expo-env.d.ts
+
 # Test fixtures / gold snapshots — reformatting can break snapshot comparisons
 apps/api/gold-cases
 
