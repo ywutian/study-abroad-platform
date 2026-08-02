@@ -129,28 +129,37 @@ const SCAN_DIRS = [
   // calibration, which is aggregate-only with MIN_CASES = 10.
   path.join(ROOT, 'apps/api/src/modules/admin'),
   path.join(ROOT, 'apps/api/src/modules/school'),
+  // Tenth batch — hall, the last module. Held out for six rounds because two
+  // of its sites were a product question, not a code defect; see below for
+  // what was decided and what deliberately was not.
+  path.join(ROOT, 'apps/api/src/modules/hall'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
   // the site needs a human decision rather than a schema lookup):
   //
-  // hall (12) is read but deliberately NOT added yet. Ten of its sites are
-  // fine. The other two — hall-verified-dashboard's getChinaAdmitTrend and
-  // getEdRdComparison — compose VERIFIED_CASE_WHERE, which filters
-  // isVerified + approved review but NOT `visibility`, on @Public() routes.
-  // hall.constants.ts documents that omission as deliberate ("the public
-  // ranking adds a visibility filter … the China dashboard adds
-  // verificationLevel"), and the queries return per-school/per-year counts
-  // with no identifying fields — so it is a product decision about whether a
-  // PRIVATE case may feed a public statistic, not a defect to patch in
-  // passing. Annotating it either way would launder that decision into a
-  // governed exception. Resolve it, then add hall.
+  // COVERAGE IS COMPLETE — every module under apps/api/src/modules is scanned.
   //
-  // Do NOT add them in one sweep. The 2026-08-02 pass over hall found
-  // getListById() returning private lists on a @Public() route, and the
-  // @Public()-route sweep it prompted found the same bug in ranking — both
-  // only because the sites were read. A batch large enough to skim is a batch
-  // that gets annotated instead of audited.
+  // hall's two dashboard endpoints were the last open item. They compose
+  // VERIFIED_CASE_WHERE, which filters isVerified + approved review but NOT
+  // `visibility`, on @Public() routes. Two separable questions were tangled
+  // there, and only one of them was mine to answer:
+  //
+  //   1. May a PRIVATE case feed a public aggregate at all? A product call.
+  //      hall.constants.ts documents the omission as deliberate. UNCHANGED —
+  //      still yes, still needs an owner's decision if that is wrong.
+  //   2. May that aggregate be thin enough to identify one person? A security
+  //      question with an answer already in this codebase, twice: school's
+  //      high-school calibration floors at MIN_CASES = 10, prediction's
+  //      getCaseComparison at 5 admits / 3 rejects. hall floored its derived
+  //      LABELS (MIN_YEAR_TOTAL for the difficulty signal, 5 for edTilt) while
+  //      publishing the raw counts they came from at any size — so a
+  //      `{ admitted: 1, total: 1 }` cell named one person's outcome to an
+  //      unauthenticated visitor. FIXED: the same floors now suppress the data,
+  //      not just its caption.
+  //
+  // The lesson worth keeping: a reliability GRADE is not a control. hall
+  // already labelled small samples 'C' and shipped the exact numbers anyway.
 ];
 
 // Prisma query methods that should include userId filtering
