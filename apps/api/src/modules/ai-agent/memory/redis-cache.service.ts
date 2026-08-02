@@ -95,7 +95,14 @@ export class RedisCacheService {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.lrange(key, 0, -1),
       );
-      return raw.map((r) => JSON.parse(r));
+      // Rehydrate rather than widen the signature: callers merge this list
+      // with the database path, and the two must hand back the same runtime
+      // type. Nothing currently calls a Date method on `createdAt`, so this is
+      // closing the shape, not fixing a crash.
+      return raw.map((r) => {
+        const msg = JSON.parse(r) as MaybeSerialized<MessageRecord>;
+        return { ...msg, createdAt: new Date(msg.createdAt) };
+      });
     } catch (err) {
       this.logger.debug(`Redis getConversationMessages failed: ${String(err)}`);
     }
