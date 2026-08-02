@@ -366,6 +366,7 @@ export class ApplicationAnalysisWorkflowService {
     analysisVersion: string,
   ) {
     const policies =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findMany({
         where: {
           analysisVersion,
@@ -396,6 +397,7 @@ export class ApplicationAnalysisWorkflowService {
 
   private async findLatestGoldReplayRun(analysisVersion: string) {
     const deterministicReplay =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisReplayRun.findFirst({
         where: {
           analysisVersion,
@@ -409,6 +411,7 @@ export class ApplicationAnalysisWorkflowService {
       return deterministicReplay;
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     return this.prisma.applicationAnalysisReplayRun.findFirst({
       where: {
         analysisVersion,
@@ -468,6 +471,7 @@ export class ApplicationAnalysisWorkflowService {
   }
 
   private async syncRunFeedbackMetrics(runId: string) {
+    // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
     const run = await this.prisma.applicationAnalysisRun.findUnique({
       where: { id: runId },
       select: {
@@ -478,6 +482,7 @@ export class ApplicationAnalysisWorkflowService {
     if (!run) return;
 
     const feedback =
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       await this.prisma.applicationAnalysisFeedbackRecord.findMany({
         where: { applicationAnalysisRunId: runId },
         select: {
@@ -487,6 +492,7 @@ export class ApplicationAnalysisWorkflowService {
         },
       });
 
+    // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
     await this.prisma.applicationAnalysisRun.update({
       where: { id: runId },
       data: {
@@ -500,6 +506,7 @@ export class ApplicationAnalysisWorkflowService {
 
   private async computeApplicantFeedbackSignals(analysisVersion: string) {
     const feedback =
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       await this.prisma.applicationAnalysisFeedbackRecord.findMany({
         where: {
           applicationAnalysisRunId: { not: null },
@@ -534,12 +541,14 @@ export class ApplicationAnalysisWorkflowService {
     rules: Prisma.InputJsonValue | null,
     description: string,
   ) {
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const existing = await this.prisma.featureFlag.findUnique({
       where: { key },
       select: { id: true },
     });
 
     if (existing) {
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.featureFlag.update({
         where: { id: existing.id },
         data: {
@@ -552,6 +561,7 @@ export class ApplicationAnalysisWorkflowService {
       return;
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     await this.prisma.featureFlag.create({
       data: {
         key,
@@ -565,6 +575,7 @@ export class ApplicationAnalysisWorkflowService {
 
   private async syncExperimentFeatureFlags() {
     const experiments =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findMany({
         where: { status: { in: ['ACTIVE', 'CANARY'] } },
         orderBy: [{ updatedAt: 'desc' }],
@@ -751,6 +762,7 @@ export class ApplicationAnalysisWorkflowService {
     details?: Record<string, unknown>;
   }) {
     const incident =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentIncident.create({
         data: {
           experimentVersionId: input.experimentVersionId ?? undefined,
@@ -766,6 +778,7 @@ export class ApplicationAnalysisWorkflowService {
 
     if (input.experimentVersionId) {
       const experiment =
+        // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
         await this.prisma.applicationAnalysisExperimentVersion.findUnique({
           where: { id: input.experimentVersionId },
           select: { monitoringConfig: true },
@@ -774,6 +787,7 @@ export class ApplicationAnalysisWorkflowService {
         const monitoringConfig = this.normalizeExperimentMonitoringConfig(
           this.asRecord(experiment.monitoringConfig),
         );
+        // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
         await this.prisma.applicationAnalysisExperimentVersion.update({
           where: { id: input.experimentVersionId },
           data: {
@@ -830,12 +844,14 @@ export class ApplicationAnalysisWorkflowService {
   }> {
     const [policy, liveSignals, openIncidents] = await Promise.all([
       experiment.policyVersionId
-        ? this.prisma.applicationAnalysisPolicyVersion.findUnique({
+        ? // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisPolicyVersion.findUnique({
             where: { id: experiment.policyVersionId },
             select: { analysisVersion: true },
           })
         : Promise.resolve(null),
       this.computeExperimentLiveSignals(experiment.id),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentIncident.findMany({
         where: {
           experimentVersionId: experiment.id,
@@ -976,6 +992,7 @@ export class ApplicationAnalysisWorkflowService {
   }
 
   async getActivePolicyVersion() {
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     return this.prisma.applicationAnalysisPolicyVersion.findFirst({
       where: { status: 'ACTIVE' },
       orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
@@ -1080,6 +1097,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async listApprovedEvidenceBySchool(schoolIds: string[]) {
     if (schoolIds.length === 0) return [];
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     return this.prisma.schoolPolicyEvidence.findMany({
       where: {
         schoolId: { in: schoolIds },
@@ -1124,6 +1142,7 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.schoolPolicyEvidence.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -1135,6 +1154,7 @@ export class ApplicationAnalysisWorkflowService {
           },
         },
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.schoolPolicyEvidence.count({ where }),
     ]);
 
@@ -1150,6 +1170,7 @@ export class ApplicationAnalysisWorkflowService {
   }
 
   async createEvidence(actorId: string, dto: CreateSchoolPolicyEvidenceDto) {
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const created = await this.prisma.schoolPolicyEvidence.create({
       data: {
         schoolId: dto.schoolId,
@@ -1192,6 +1213,7 @@ export class ApplicationAnalysisWorkflowService {
     id: string,
     dto: ReviewSchoolPolicyEvidenceDto,
   ) {
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const evidence = await this.prisma.schoolPolicyEvidence.findUnique({
       where: { id },
       select: {
@@ -1206,6 +1228,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const reviewedAt = this.normalizeDate(dto.reviewedAt) ?? new Date();
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const updated = await this.prisma.schoolPolicyEvidence.update({
       where: { id },
       data: {
@@ -1254,12 +1277,14 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisPolicyVersion.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: pageSize,
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisPolicyVersion.count({ where }),
     ]);
 
@@ -1270,6 +1295,7 @@ export class ApplicationAnalysisWorkflowService {
     actorId: string,
     dto: CreateApplicationAnalysisPolicyVersionDto,
   ) {
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const created = await this.prisma.applicationAnalysisPolicyVersion.create({
       data: {
         policyKey: dto.policyKey ?? 'default',
@@ -1306,6 +1332,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async promotePolicyToCandidate(actorId: string, id: string) {
     const policy =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id },
       });
@@ -1321,6 +1348,7 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const updated = await this.prisma.applicationAnalysisPolicyVersion.update({
       where: { id },
       data: {
@@ -1349,6 +1377,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async promotePolicyToShadow(actorId: string, id: string) {
     const policy =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id },
       });
@@ -1364,6 +1393,7 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const updated = await this.prisma.applicationAnalysisPolicyVersion.update({
       where: { id },
       data: {
@@ -1399,6 +1429,7 @@ export class ApplicationAnalysisWorkflowService {
     } = {},
   ) {
     const policy =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id: policyVersionId },
       });
@@ -1409,6 +1440,7 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const approvedEvidence = await this.prisma.schoolPolicyEvidence.findMany({
       where: {
         status: 'APPROVED',
@@ -1472,6 +1504,7 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const run = await this.prisma.applicationAnalysisEvaluationRun.create({
       data: {
         policyVersionId,
@@ -1521,6 +1554,7 @@ export class ApplicationAnalysisWorkflowService {
 
     const monitoringConfig =
       (policy.monitoringConfig as Record<string, unknown> | null) ?? {};
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     await this.prisma.applicationAnalysisPolicyVersion.update({
       where: { id: policyVersionId },
       data: {
@@ -1551,6 +1585,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async refreshShadowEvaluation(actorId: string, id: string) {
     const policy =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id },
       });
@@ -1581,6 +1616,7 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisEvaluationRun.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }],
@@ -1598,6 +1634,7 @@ export class ApplicationAnalysisWorkflowService {
           },
         },
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisEvaluationRun.count({ where }),
     ]);
 
@@ -1618,6 +1655,7 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentVersion.findMany({
         where,
         orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -1635,6 +1673,7 @@ export class ApplicationAnalysisWorkflowService {
           },
         },
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentVersion.count({ where }),
     ]);
 
@@ -1647,6 +1686,7 @@ export class ApplicationAnalysisWorkflowService {
   ) {
     const capability = dto.capability;
     const created =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.create({
         data: {
           capability: capability,
@@ -1703,6 +1743,7 @@ export class ApplicationAnalysisWorkflowService {
     actorId: string,
   ) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id: experimentVersionId },
       });
@@ -1721,7 +1762,8 @@ export class ApplicationAnalysisWorkflowService {
       });
     const latestReplay =
       latestReplayId != null
-        ? await this.prisma.applicationAnalysisReplayRun.findUnique({
+        ? // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          await this.prisma.applicationAnalysisReplayRun.findUnique({
             where: { id: latestReplayId },
           })
         : null;
@@ -1729,6 +1771,7 @@ export class ApplicationAnalysisWorkflowService {
     const goldReplayCaseCount = this.getReplayCaseCount(latestReplay);
 
     const run =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentEvaluationRun.create({
         data: {
           experimentVersionId,
@@ -1768,6 +1811,7 @@ export class ApplicationAnalysisWorkflowService {
       });
 
     const monitoringConfig = this.asRecord(experiment.monitoringConfig);
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     await this.prisma.applicationAnalysisExperimentVersion.update({
       where: { id: experimentVersionId },
       data: {
@@ -1798,6 +1842,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async promoteExperimentToShadow(actorId: string, id: string) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -1814,6 +1859,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const updated =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.update({
         where: { id },
         data: {
@@ -1848,6 +1894,7 @@ export class ApplicationAnalysisWorkflowService {
     mode?: ApplicationAnalysisExperimentEvaluationMode,
   ) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -1869,6 +1916,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async promoteExperimentToCanary(actorId: string, id: string) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -1892,6 +1940,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const updated =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.update({
         where: { id },
         data: {
@@ -1957,6 +2006,7 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentEvaluationRun.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }],
@@ -1974,6 +2024,7 @@ export class ApplicationAnalysisWorkflowService {
           },
         },
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentEvaluationRun.count({ where }),
     ]);
 
@@ -1992,12 +2043,14 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentSweepRun.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }],
         skip,
         take: pageSize,
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentSweepRun.count({ where }),
     ]);
 
@@ -2024,12 +2077,14 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentIncident.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }],
         skip,
         take: pageSize,
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisExperimentIncident.count({ where }),
     ]);
 
@@ -2042,6 +2097,7 @@ export class ApplicationAnalysisWorkflowService {
     dto?: AcknowledgeApplicationAnalysisExperimentIncidentDto,
   ) {
     const incident =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentIncident.findUnique({
         where: { id },
       });
@@ -2053,6 +2109,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const updated =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentIncident.update({
         where: { id },
         data: {
@@ -2106,12 +2163,14 @@ export class ApplicationAnalysisWorkflowService {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       this.prisma.applicationAnalysisFeedbackRecord.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }],
         skip,
         take: pageSize,
       }),
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       this.prisma.applicationAnalysisFeedbackRecord.count({ where }),
     ]);
 
@@ -2124,6 +2183,7 @@ export class ApplicationAnalysisWorkflowService {
     dto: UpdateApplicationAnalysisExperimentConfigDto,
   ) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -2178,6 +2238,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const updated =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.update({
         where: { id },
         data: {
@@ -2433,6 +2494,7 @@ export class ApplicationAnalysisWorkflowService {
 
   private async computeExperimentLiveSignals(experimentVersionId: string) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id: experimentVersionId },
       });
@@ -2443,11 +2505,13 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const exposures =
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       await this.prisma.applicationAnalysisExposureRecord.findMany({
         where: { experimentVersionId },
         orderBy: [{ generatedAt: 'desc' }],
       });
     const feedback =
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       await this.prisma.applicationAnalysisFeedbackRecord.findMany({
         where: {
           exposureRecord: {
@@ -2492,6 +2556,7 @@ export class ApplicationAnalysisWorkflowService {
     let outcomeRegressionDelta = 0;
     let outcomeSampleCount = 0;
     if (profileIds.length > 0 && schoolIds.length > 0) {
+      // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
       const predictionResults = await this.prisma.predictionResult.findMany({
         where: {
           profileId: { in: profileIds },
@@ -2638,6 +2703,7 @@ export class ApplicationAnalysisWorkflowService {
     rolloutPatch?: Record<string, unknown>,
   ) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id: experimentId },
         select: {
@@ -2656,6 +2722,7 @@ export class ApplicationAnalysisWorkflowService {
       this.asRecord(experiment.rolloutConfig),
     );
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     await this.prisma.applicationAnalysisExperimentVersion.update({
       where: { id: experimentId },
       data: {
@@ -2784,6 +2851,7 @@ export class ApplicationAnalysisWorkflowService {
     const release = await this.acquireAutomationLock(mode, ttlSeconds);
     const lockKey = this.getSweepLockKey(mode);
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const run = await this.prisma.applicationAnalysisExperimentSweepRun.create({
       data: {
         mode: mode,
@@ -2794,6 +2862,7 @@ export class ApplicationAnalysisWorkflowService {
     });
 
     if (!release) {
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentSweepRun.update({
         where: { id: run.id },
         data: {
@@ -2832,6 +2901,7 @@ export class ApplicationAnalysisWorkflowService {
           : ['SHADOW', 'CANARY', 'ACTIVE'];
 
     const experiments =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findMany({
         where: {
           status: { in: statuses },
@@ -3039,6 +3109,7 @@ export class ApplicationAnalysisWorkflowService {
         }
       }
 
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentSweepRun.update({
         where: { id: run.id },
         data: {
@@ -3052,6 +3123,7 @@ export class ApplicationAnalysisWorkflowService {
       return summary;
     } catch (error) {
       const message = String(error instanceof Error ? error.message : error);
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentSweepRun.update({
         where: { id: run.id },
         data: {
@@ -3086,6 +3158,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async getExperimentGateSummary(id: string) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -3103,6 +3176,7 @@ export class ApplicationAnalysisWorkflowService {
     ) as Record<string, number | boolean>;
 
     const latestEvaluation =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentEvaluationRun.findFirst({
         where: {
           experimentVersionId: id,
@@ -3243,6 +3317,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async activateExperiment(actorId: string, id: string) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -3304,6 +3379,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async retireExperiment(actorId: string, id: string, reason?: string) {
     const experiment =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.findUnique({
         where: { id },
       });
@@ -3315,6 +3391,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const updated =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentVersion.update({
         where: { id },
         data: {
@@ -3348,6 +3425,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async getPolicyGateSummary(id: string) {
     const policy =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id },
       });
@@ -3363,6 +3441,7 @@ export class ApplicationAnalysisWorkflowService {
     );
 
     const [latestShadow, latestGoldSet] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisEvaluationRun.findFirst({
         where: {
           policyVersionId: id,
@@ -3382,6 +3461,7 @@ export class ApplicationAnalysisWorkflowService {
           },
         },
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisEvaluationRun.findFirst({
         where: {
           policyVersionId: id,
@@ -3495,6 +3575,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async activatePolicy(actorId: string, id: string) {
     const policy =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id },
       });
@@ -3573,10 +3654,12 @@ export class ApplicationAnalysisWorkflowService {
 
   async rollbackPolicy(actorId: string, policyKey = 'default') {
     const [currentActive, previousRetired] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisPolicyVersion.findFirst({
         where: { policyKey, status: 'ACTIVE' },
         orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisPolicyVersion.findFirst({
         where: { policyKey, status: 'RETIRED' },
         orderBy: [{ retiredAt: 'desc' }, { activatedAt: 'desc' }],
@@ -3643,14 +3726,17 @@ export class ApplicationAnalysisWorkflowService {
 
   async recoursePreview(dto: ApplicationAnalysisRecoursePreviewDto) {
     const [policy, experiment] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id: dto.policyVersionId },
       }),
       dto.experimentVersionId
-        ? this.prisma.applicationAnalysisExperimentVersion.findUnique({
+        ? // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisExperimentVersion.findUnique({
             where: { id: dto.experimentVersionId },
           })
-        : this.prisma.applicationAnalysisExperimentVersion.findFirst({
+        : // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisExperimentVersion.findFirst({
             where: {
               capability: 'RECOURSE',
               status: { in: ['ACTIVE', 'CANARY'] },
@@ -3725,14 +3811,17 @@ export class ApplicationAnalysisWorkflowService {
 
   async uncertaintyPreview(dto: ApplicationAnalysisUncertaintyPreviewDto) {
     const [policy, experiment] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisPolicyVersion.findUnique({
         where: { id: dto.policyVersionId },
       }),
       dto.experimentVersionId
-        ? this.prisma.applicationAnalysisExperimentVersion.findUnique({
+        ? // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisExperimentVersion.findUnique({
             where: { id: dto.experimentVersionId },
           })
-        : this.prisma.applicationAnalysisExperimentVersion.findFirst({
+        : // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisExperimentVersion.findFirst({
             where: {
               capability: 'UNCERTAINTY',
               status: { in: ['ACTIVE', 'CANARY'] },
@@ -3747,6 +3836,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const latestEvaluation =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentEvaluationRun.findFirst({
         where: {
           experimentVersionId: experiment?.id ?? '',
@@ -3815,15 +3905,18 @@ export class ApplicationAnalysisWorkflowService {
   async fairnessReport(query: ApplicationAnalysisFairnessReportQueryDto) {
     const [policy, experiment] = await Promise.all([
       query.policyVersionId
-        ? this.prisma.applicationAnalysisPolicyVersion.findUnique({
+        ? // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisPolicyVersion.findUnique({
             where: { id: query.policyVersionId },
           })
         : this.getActivePolicyVersion(),
       query.experimentVersionId
-        ? this.prisma.applicationAnalysisExperimentVersion.findUnique({
+        ? // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisExperimentVersion.findUnique({
             where: { id: query.experimentVersionId },
           })
-        : this.prisma.applicationAnalysisExperimentVersion.findFirst({
+        : // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
+          this.prisma.applicationAnalysisExperimentVersion.findFirst({
             where: {
               capability: 'FAIRNESS',
               status: { in: ['ACTIVE', 'CANARY'] },
@@ -3839,6 +3932,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const latestEvaluation =
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisExperimentEvaluationRun.findFirst({
         where: { experimentVersionId: experiment?.id ?? '' },
         orderBy: [{ finishedAt: 'desc' }, { createdAt: 'desc' }],

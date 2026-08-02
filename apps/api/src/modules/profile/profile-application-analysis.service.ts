@@ -716,6 +716,7 @@ export class ProfileApplicationAnalysisService {
   ): Promise<LoadedPrediction[]> {
     if (schoolIds.length === 0) return [];
 
+    // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
     return this.prisma.predictionResult.findMany({
       where: {
         profileId,

@@ -24,6 +24,21 @@ const ROOT = path.resolve(__dirname, '../../..');
 const SCAN_DIRS = [
   path.join(ROOT, 'apps/api/src/modules/ai-agent/memory'),
   path.join(ROOT, 'apps/api/src/modules/ai-agent/core'),
+  // Extended 2026-08-02. The rule shipped covering ai-agent only — 58 of the
+  // 1,312 Prisma calls in apps/api/src/modules, 4.4%. Every module holding
+  // user-owned records was outside it, including vault, which stores
+  // AES-256-encrypted credentials. The isolation discipline in those modules
+  // is real (verifyOwnership / verifyProfileOwnership / parent-scoped reads);
+  // nothing automated was checking it stayed that way.
+  //
+  // Added in order of what a leak would cost: vault (encrypted credentials),
+  // profile (the largest surface — 182 Prisma calls), resume (documents).
+  // The remaining modules — essay, timeline, forum, team, case, hall … — are
+  // still uncovered; extend this list one module at a time, annotating as you
+  // go, rather than in one sweep nobody can review.
+  path.join(ROOT, 'apps/api/src/modules/vault'),
+  path.join(ROOT, 'apps/api/src/modules/profile'),
+  path.join(ROOT, 'apps/api/src/modules/resume'),
 ];
 
 // Prisma query methods that should include userId filtering
@@ -44,6 +59,62 @@ const PRISMA_METHODS = [
 ];
 
 const PRISMA_PATTERN = new RegExp(`this\\.prisma\\.\\w+\\.(${PRISMA_METHODS.join('|')})\\(`);
+
+/**
+ * The isolation primitives this codebase actually uses.
+ *
+ * The rule was written against ai-agent, where scoping is a literal `userId`
+ * in the where-clause. Domain modules do it differently: fetch by id, include
+ * the owner, then assert through a shared helper —
+ *
+ *   this.auth.verifyOwnership(
+ *     await this.prisma.vaultItem.findUnique({ where: { id: itemId } }),
+ *     userId, …);
+ *
+ * — and the assertion often sits well outside a ±10-line window from the query
+ * it protects (vault.service.ts:138 verifies ~20 lines earlier, then updates).
+ * Matching on a fixed line window reported those as leaks, which is how a gate
+ * teaches people to annotate their way past it. Scope the search to the
+ * enclosing method instead, and count the three helpers as scoping evidence.
+ */
+const OWNERSHIP_HELPERS = ['verifyOwnership', 'verifyProfileOwnership', 'verifyNestedOwnership'];
+
+/**
+ * Body of the class method containing `lineIndex`, found by brace matching
+ * from the nearest preceding method signature. Falls back to a wide window
+ * when no enclosing method is found (top-level code, odd formatting).
+ */
+function enclosingMethod(lines: string[], lineIndex: number): string {
+  const SIG = /^ {2}(?:public |private |protected )?(?:async )?[a-zA-Z_]\w*\s*\(/;
+  let start = -1;
+  for (let i = lineIndex; i >= 0; i--) {
+    if (SIG.test(lines[i])) {
+      start = i;
+      break;
+    }
+  }
+  if (start === -1) {
+    return lines.slice(Math.max(0, lineIndex - 20), lineIndex + 20).join('\n');
+  }
+  let depth = 0;
+  let started = false;
+  let end = start;
+  for (let i = start; i < lines.length; i++) {
+    for (const ch of lines[i]) {
+      if (ch === '{') {
+        depth++;
+        started = true;
+      } else if (ch === '}') depth--;
+    }
+    end = i;
+    if (started && depth === 0) break;
+  }
+  // If the query is somehow past the matched method, fall back to a window.
+  if (lineIndex > end) {
+    return lines.slice(Math.max(0, lineIndex - 20), lineIndex + 20).join('\n');
+  }
+  return lines.slice(start, end + 1).join('\n');
+}
 
 function getAllTsFiles(dir: string): string[] {
   const results: string[] = [];
@@ -83,12 +154,12 @@ export function run(): GovernanceIssue[] {
 
         // Check for Prisma ORM calls
         if (PRISMA_PATTERN.test(line)) {
-          // Look back 5 lines + ahead 10 lines for userId or governance annotations
-          const contextWindow = lines
-            .slice(Math.max(0, i - 5), Math.min(i + 10, lines.length))
-            .join('\n');
+          // Scope to the enclosing method, not a fixed line window — see the
+          // note on OWNERSHIP_HELPERS for why ±10 lines gave false leaks.
+          const contextWindow = enclosingMethod(lines, i);
           if (
             !contextWindow.includes('userId') &&
+            !OWNERSHIP_HELPERS.some((h) => contextWindow.includes(h)) &&
             !contextWindow.includes('// governance: batch-operation') &&
             !contextWindow.includes('// governance: system-scope') &&
             !contextWindow.includes('// governance: parent-scoped') &&

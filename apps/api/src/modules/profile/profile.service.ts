@@ -545,6 +545,7 @@ export class ProfileService {
 
   async searchActivityTemplates(query: string, limit = 10) {
     if (!query || query.length < 1) {
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       return this.prisma.activityTemplate.findMany({
         where: { isActive: true },
         orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }],
@@ -552,6 +553,7 @@ export class ProfileService {
       });
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     return this.prisma.activityTemplate.findMany({
       where: {
         isActive: true,
