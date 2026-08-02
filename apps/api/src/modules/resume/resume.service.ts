@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import mammoth from 'mammoth';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import {
@@ -363,7 +364,7 @@ export class ResumeService {
         baseResumeId: dto.baseResumeId,
         templateId: dto.templateId ?? 'jake-classic',
         language: dto.language ?? 'en',
-        targetContext: (dto.targetContext ?? {}) as any,
+        targetContext: (dto.targetContext ?? {}) as Prisma.InputJsonValue,
         sections: {
           create: defaultSections.map((s, i) => ({
             type: s.type,
@@ -400,15 +401,15 @@ export class ResumeService {
       where: { id },
       data: {
         title: dto.title,
-        status: dto.status as any,
+        status: dto.status,
         templateId: dto.templateId,
         language: dto.language,
-        family: dto.family as any,
-        variantKind: dto.variantKind as any,
+        family: dto.family,
+        variantKind: dto.variantKind,
         targetId: dto.targetId,
         baseResumeId: dto.baseResumeId,
-        settings: dto.settings as any,
-        targetContext: dto.targetContext as any,
+        settings: dto.settings as Prisma.InputJsonValue,
+        targetContext: dto.targetContext as Prisma.InputJsonValue,
       },
     });
   }
@@ -436,14 +437,14 @@ export class ResumeService {
         baseResumeId: (original as any).baseResumeId,
         templateId: original.templateId,
         language: original.language,
-        settings: original.settings as any,
-        targetContext: original.targetContext as any,
+        settings: original.settings as Prisma.InputJsonValue,
+        targetContext: original.targetContext as Prisma.InputJsonValue,
         qualitySummary: (original as any).qualitySummary ?? {},
         sections: {
           create: original.sections.map((s) => ({
             type: s.type,
             title: s.title,
-            content: s.content as any,
+            content: s.content as Prisma.InputJsonValue,
             contentSchemaVersion: (s as any).contentSchemaVersion ?? 1,
             contentHash: (s as any).contentHash ?? this.contentHash(s.content),
             evidenceRefs: (s as any).evidenceRefs ?? [],
@@ -505,15 +506,15 @@ export class ResumeService {
         baseResumeId: base.id,
         templateId: base.templateId,
         language: base.language,
-        settings: base.settings as any,
-        targetContext: targetContext as any,
+        settings: base.settings as Prisma.InputJsonValue,
+        targetContext: targetContext as Prisma.InputJsonValue,
         sections: {
           create: base.sections
             .filter((section) => section.isVisible)
             .map((section, index) => ({
               type: section.type,
               title: section.title,
-              content: section.content as any,
+              content: section.content as Prisma.InputJsonValue,
               contentSchemaVersion: (section as any).contentSchemaVersion ?? 1,
               contentHash:
                 (section as any).contentHash ??
@@ -545,7 +546,7 @@ export class ResumeService {
     return this.prisma.resumeEvidence.create({
       data: {
         userId,
-        kind: dto.kind as any,
+        kind: dto.kind,
         source: 'MANUAL',
         title: dto.title,
         organization: dto.organization,
@@ -554,12 +555,12 @@ export class ResumeService {
         startDate: dto.startDate,
         endDate: dto.endDate,
         isCurrent: dto.isCurrent ?? false,
-        tags: (dto.tags ?? []) as any,
-        skills: (dto.skills ?? []) as any,
-        metrics: (dto.metrics ?? {}) as any,
-        proofLinks: (dto.proofLinks ?? []) as any,
-        content: (dto.content ?? {}) as any,
-        privacyLevel: (dto.privacyLevel ?? 'PRIVATE') as any,
+        tags: (dto.tags ?? []) as Prisma.InputJsonValue,
+        skills: (dto.skills ?? []) as Prisma.InputJsonValue,
+        metrics: (dto.metrics ?? {}) as Prisma.InputJsonValue,
+        proofLinks: (dto.proofLinks ?? []) as Prisma.InputJsonValue,
+        content: (dto.content ?? {}) as Prisma.InputJsonValue,
+        privacyLevel: dto.privacyLevel ?? 'PRIVATE',
       },
     });
   }
@@ -586,8 +587,8 @@ export class ResumeService {
     return this.prisma.resumeTarget.create({
       data: {
         userId,
-        type: dto.type as any,
-        status: (dto.status ?? 'DRAFT') as any,
+        type: dto.type,
+        status: dto.status ?? 'DRAFT',
         title: dto.title,
         school: dto.school,
         program: dto.program,
@@ -600,9 +601,9 @@ export class ResumeService {
         role: dto.role,
         jobDescription: dto.jobDescription,
         deadline: dto.deadline ? new Date(dto.deadline) : undefined,
-        keywords: (dto.keywords ?? []) as any,
-        requirements: (dto.requirements ?? {}) as any,
-        metadata: (dto.metadata ?? {}) as any,
+        keywords: (dto.keywords ?? []) as Prisma.InputJsonValue,
+        requirements: (dto.requirements ?? {}) as Prisma.InputJsonValue,
+        metadata: (dto.metadata ?? {}) as Prisma.InputJsonValue,
       },
     });
   }
@@ -638,10 +639,10 @@ export class ResumeService {
         resumeId,
         type: dto.type,
         title: dto.title ?? dto.type.replace(/_/g, ' '),
-        content: (dto.content ?? {}) as any,
+        content: (dto.content ?? {}) as Prisma.InputJsonValue,
         contentSchemaVersion: dto.contentSchemaVersion ?? 1,
         contentHash: this.contentHash(dto.content ?? {}),
-        evidenceRefs: (dto.evidenceRefs ?? []) as any,
+        evidenceRefs: (dto.evidenceRefs ?? []) as Prisma.InputJsonValue,
         order: (maxOrder._max.order ?? -1) + 1,
       },
     });
@@ -670,7 +671,7 @@ export class ResumeService {
       where: { id: sectionId },
       data: {
         title: dto.title,
-        content: dto.content as any,
+        content: dto.content as Prisma.InputJsonValue,
         ...(dto.content !== undefined
           ? {
               contentHash: this.contentHash(dto.content),
@@ -680,7 +681,7 @@ export class ResumeService {
                 1,
             }
           : {}),
-        evidenceRefs: dto.evidenceRefs as any,
+        evidenceRefs: dto.evidenceRefs as Prisma.InputJsonValue,
         isVisible: dto.isVisible,
       },
     });
@@ -873,7 +874,7 @@ export class ResumeService {
             data: {
               type,
               title: section.title,
-              content: section.content as any,
+              content: section.content as Prisma.InputJsonValue,
               contentHash,
               contentSchemaVersion: 1,
               isVisible: section.isVisible ?? true,
@@ -885,7 +886,7 @@ export class ResumeService {
               resumeId,
               type,
               title: section.title || this.sectionTitleForType(type),
-              content: section.content as any,
+              content: section.content as Prisma.InputJsonValue,
               contentHash,
               contentSchemaVersion: 1,
               isVisible: section.isVisible ?? true,
@@ -899,18 +900,18 @@ export class ResumeService {
         await tx.resumeEvidence.createMany({
           data: evidence.map((item) => ({
             userId,
-            kind: item.kind as any,
-            source: 'RESUME_IMPORT' as any,
+            kind: item.kind,
+            source: 'RESUME_IMPORT',
             title: item.title,
             organization: item.organization,
             role: item.role,
             description: item.description,
-            tags: (item.tags ?? []) as any,
-            skills: (item.skills ?? []) as any,
-            content: (item.content ?? {}) as any,
+            tags: (item.tags ?? []) as Prisma.InputJsonValue,
+            skills: (item.skills ?? []) as Prisma.InputJsonValue,
+            content: (item.content ?? {}) as Prisma.InputJsonValue,
             metrics: {} as any,
             proofLinks: [] as any,
-            privacyLevel: 'PRIVATE' as any,
+            privacyLevel: 'PRIVATE',
             confidence: 0.7,
           })),
         });
@@ -1696,8 +1697,10 @@ export class ResumeService {
       data: {
         resumeId,
         type: 'full_review',
-        input: effectiveTargetContext as any,
-        output: result as any,
+        input: effectiveTargetContext,
+        // Typed shape into a Json column — unlike `as any`, this still
+        // type-checks every field that builds `result`.
+        output: result as unknown as Prisma.InputJsonValue,
         overallScore: result.overallScore,
         resumeVersion: resume.version,
         rubricVersion:
@@ -1727,7 +1730,7 @@ export class ResumeService {
       where: { id: resumeId },
       data: {
         lastReviewAt: new Date(),
-        status: 'REVIEWED' as any,
+        status: 'REVIEWED',
         qualitySummary: (await this.computeQualitySummary(resume)) as any,
       },
     });
@@ -2077,8 +2080,8 @@ export class ResumeService {
       const record = await tx.resumeExport.create({
         data: {
           resumeId,
-          format: (dto.format ?? 'PDF') as any,
-          status: 'COMPLETED' as any,
+          format: dto.format ?? 'PDF',
+          status: 'COMPLETED',
           templateId: dto.templateId ?? resume.templateId,
           pageSize:
             dto.pageSize ??
@@ -2232,7 +2235,7 @@ export class ResumeService {
         resumeId,
         type: 'bullet_optimize',
         input: { sectionId, itemId, bullets, targetContext: context } as any,
-        output: result as any,
+        output: result,
       },
     });
 
@@ -2275,7 +2278,7 @@ export class ResumeService {
         resumeId,
         type: 'content_suggest',
         input: { sectionType, targetContext: effectiveTargetContext } as any,
-        output: result as any,
+        output: result,
       },
     });
 
