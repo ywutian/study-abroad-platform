@@ -13,6 +13,7 @@ import { randomUUID } from 'crypto';
 
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CASE_PUBLIC_WHERE } from '../essay/constants/essay-gallery.constants';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { PointAction, PointsService } from '../points/incentive.service';
 import { DebateBudgetService } from './debate-budget.service';
@@ -119,6 +120,18 @@ export class EssayDebateService {
       }
       if (session && session.status === 'CLOSED') {
         throw new BadRequestException('This debate session is closed');
+      }
+      // A NEW session takes its target ids straight off the request body, and
+      // those ids decide which essay the debate is ABOUT: the context loader
+      // reads whatever they point at and feeds its full text to the model,
+      // which discusses it with the caller turn by turn. Unchecked,
+      // `admissionCaseId` reached any AdmissionCase — including
+      // `visibility: PRIVATE` — and `essayId` reached any user's private
+      // draft. The guards above cover the session; nothing covered what the
+      // session was pointed at. In this try so a rejected target refunds the
+      // turn, like the other caller-fault paths.
+      if (!session) {
+        await this.assertDebatableTargets(userId, dto);
       }
     } catch (err) {
       // Caller's fault — don't penalise them with a lost turn.
@@ -355,6 +368,45 @@ export class EssayDebateService {
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────
+
+  /**
+   * Reject a debate aimed at material the caller may not read.
+   *
+   * Two vectors, both from the request body of a new session:
+   *   - `admissionCaseId` — must be a case the gallery publishes. Reuses
+   *     CASE_PUBLIC_WHERE so this surface tracks the gallery instead of
+   *     restating its rules; AdmissionCase.visibility defaults to PRIVATE.
+   *   - `essayId` — must belong to the caller's own profile. Essay is keyed
+   *     by profileId, so the check joins through it rather than trusting the
+   *     id.
+   *
+   * NotFound rather than Forbidden: a rejected id must not tell the caller
+   * whether it exists.
+   */
+  private async assertDebatableTargets(
+    userId: string,
+    dto: CreateDebateTurnDto,
+  ): Promise<void> {
+    if (dto.admissionCaseId) {
+      const gallery = await this.prisma.admissionCase.findFirst({
+        where: { id: dto.admissionCaseId, ...CASE_PUBLIC_WHERE },
+        select: { id: true },
+      });
+      if (!gallery) {
+        throw new NotFoundException('Admission case not found');
+      }
+    }
+
+    if (dto.essayId) {
+      const own = await this.prisma.essay.findFirst({
+        where: { id: dto.essayId, profile: { userId } },
+        select: { id: true },
+      });
+      if (!own) {
+        throw new NotFoundException('Essay not found');
+      }
+    }
+  }
 
   /**
    * Refund the per-user daily cap counter when the request fails on a

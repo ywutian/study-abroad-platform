@@ -61,6 +61,7 @@ export class DebateBlindEvalService {
     //    lives inside the JSON turns blob — Postgres can do this with `@>`
     //    but the pool is small enough that the simpler in-app filter is fine
     //    and survives schema evolution.
+    // governance: admin-scope — the blind-eval queue and rating live only on admin-debate-eval.controller (@Roles(Role.ADMIN), enforced by the global RolesGuard APP_GUARD); the ~40-row pool is curated for evaluation, and an evaluator seeing every session is the point
     const allSessions = await this.prisma.essayDebateSession.findMany({
       include: {
         admissionCase: {
@@ -139,6 +140,7 @@ export class DebateBlindEvalService {
     }
 
     // 2. Load already-rated tuples for this evaluator.
+    // governance: admin-scope — the blind-eval queue and rating live only on admin-debate-eval.controller (@Roles(Role.ADMIN), enforced by the global RolesGuard APP_GUARD); the ~40-row pool is curated for evaluation, and an evaluator seeing every session is the point
     const rated = await this.prisma.essayDebateEvaluation.findMany({
       where: { evaluatorId },
       select: { sessionId: true, turnIndex: true },
@@ -184,6 +186,7 @@ export class DebateBlindEvalService {
   async rate(dto: RateDebateTurnDto): Promise<RateDebateTurnResponseDto> {
     // Verify the session + turnIndex actually exist before writing — the
     // FK only guards sessionId; turnIndex bounds are app-layer.
+    // governance: admin-scope — the blind-eval queue and rating live only on admin-debate-eval.controller (@Roles(Role.ADMIN), enforced by the global RolesGuard APP_GUARD); the ~40-row pool is curated for evaluation, and an evaluator seeing every session is the point
     const session = await this.prisma.essayDebateSession.findUnique({
       where: { id: dto.sessionId },
       select: { id: true, turns: true },
@@ -198,6 +201,7 @@ export class DebateBlindEvalService {
       );
     }
 
+    // governance: admin-scope — the blind-eval queue and rating live only on admin-debate-eval.controller (@Roles(Role.ADMIN), enforced by the global RolesGuard APP_GUARD); the ~40-row pool is curated for evaluation, and an evaluator seeing every session is the point
     const existing = await this.prisma.essayDebateEvaluation.findUnique({
       where: {
         sessionId_turnIndex_evaluatorId: {
@@ -209,6 +213,7 @@ export class DebateBlindEvalService {
       select: { id: true },
     });
 
+    // governance: admin-scope — the blind-eval queue and rating live only on admin-debate-eval.controller (@Roles(Role.ADMIN), enforced by the global RolesGuard APP_GUARD); the ~40-row pool is curated for evaluation, and an evaluator seeing every session is the point
     const row = await this.prisma.essayDebateEvaluation.upsert({
       where: {
         sessionId_turnIndex_evaluatorId: {
