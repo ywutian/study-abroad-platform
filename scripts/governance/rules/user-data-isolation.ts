@@ -72,6 +72,9 @@ const SCAN_DIRS = [
   // bookkeeping (no User relation), 12 on the @Roles(ADMIN) scraper
   // controller, and 12 gallery/counselor reads that spread CASE_PUBLIC_WHERE.
   path.join(ROOT, 'apps/api/src/modules/essay'),
+  // essay-debate is a SEPARATE module from essay — easy to miss, and missing
+  // it is how the unvalidated debate targets survived this long.
+  path.join(ROOT, 'apps/api/src/modules/essay-debate'),
   //
   // STILL UNCOVERED, with the work sized so the next pass can be planned
   // (counts are flagged sites; ★ = the model has a User/Profile relation, so
