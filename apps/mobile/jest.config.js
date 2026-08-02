@@ -32,10 +32,10 @@ module.exports = {
   // scripts/coverage-thresholds.baseline.json — raise as coverage grows, never lower.
   coverageThreshold: {
     global: {
-      branches: 22,
-      functions: 20,
-      lines: 25,
-      statements: 24,
+      branches: 29,
+      functions: 25,
+      lines: 31,
+      statements: 30,
     },
   },
 };

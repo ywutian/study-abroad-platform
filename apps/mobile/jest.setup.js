@@ -185,6 +185,24 @@ jest.mock('expo-linear-gradient', () => ({
   LinearGradient: 'LinearGradient',
 }));
 
+// React Query intentionally schedules long cache-GC timers. In Jest those
+// timers should preserve their behavior without keeping the Node process alive.
+const { timeoutManager } = require('@tanstack/react-query');
+timeoutManager.setTimeoutProvider({
+  setTimeout: (callback, delay) => {
+    const timer = setTimeout(callback, delay);
+    timer.unref?.();
+    return timer;
+  },
+  clearTimeout: (timer) => clearTimeout(timer),
+  setInterval: (callback, delay) => {
+    const timer = setInterval(callback, delay);
+    timer.unref?.();
+    return timer;
+  },
+  clearInterval: (timer) => clearInterval(timer),
+});
+
 // Silence React Native logs in tests
 global.console = {
   ...console,
