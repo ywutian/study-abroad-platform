@@ -1,4 +1,13 @@
-import { Controller, Get, Put, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -10,11 +19,13 @@ import { Permission } from '../../common/constants/permissions';
 import { Role } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PointsConfigService, PointAction } from './points-config.service';
+import { PointsRedemptionService } from './points-redemption.service';
 import {
   TogglePointsDto,
   UpdatePointActionDto,
   BatchUpdatePointActionsDto,
 } from './dto/points-config.dto';
+import { CancelRedemptionDto, FulfillRedemptionDto } from './redeem.dto';
 
 @ApiTags('admin/points')
 @ApiBearerAuth()
@@ -23,7 +34,57 @@ import {
 @Roles(Role.ADMIN)
 @RequirePermission(Permission.SYSTEM_SETTINGS)
 export class PointsAdminController {
-  constructor(private readonly pointsConfigService: PointsConfigService) {}
+  constructor(
+    private readonly pointsConfigService: PointsConfigService,
+    private readonly redemptionService: PointsRedemptionService,
+  ) {}
+
+  // ── Redemption fulfilment queue ──────────────────────────────────────────
+  // Every RedemptionType is delivered by a person, so these three routes are
+  // the whole fulfilment mechanism. Before they existed `markFulfilled` and
+  // `cancel` had no caller in the repo and a redemption could only ever sit
+  // PENDING: the user's points were spent and there was no way to deliver the
+  // benefit or give them back.
+
+  @Get('redemptions/pending')
+  @ApiOperation({
+    summary: 'Redemptions awaiting fulfilment, oldest first (the work queue)',
+  })
+  @ApiResponse({ status: 200, description: 'Pending redemptions' })
+  async listPendingRedemptions(@Query('limit') limit?: string) {
+    return this.redemptionService.listPending(
+      limit ? Number(limit) : undefined,
+    );
+  }
+
+  @Patch('redemptions/:id/fulfil')
+  @ApiOperation({
+    summary: 'Mark a redemption delivered (records what was delivered)',
+  })
+  @ApiResponse({ status: 200, description: 'Redemption marked fulfilled' })
+  async fulfilRedemption(
+    @Param('id') id: string,
+    @Body() dto: FulfillRedemptionDto,
+  ) {
+    await this.redemptionService.markFulfilled(id, dto.fulfillment);
+    return { success: true, id, status: 'FULFILLED' };
+  }
+
+  @Patch('redemptions/:id/cancel')
+  @ApiOperation({
+    summary: 'Cancel a redemption and refund the points spent',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Redemption cancelled, points refunded',
+  })
+  async cancelRedemption(
+    @Param('id') id: string,
+    @Body() dto: CancelRedemptionDto,
+  ) {
+    await this.redemptionService.cancel(id, dto.reason);
+    return { success: true, id, status: 'CANCELLED' };
+  }
 
   @Get('config')
   @ApiOperation({

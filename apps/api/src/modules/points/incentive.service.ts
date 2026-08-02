@@ -1,5 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsConfigService, PointAction } from './points-config.service';
 import {
@@ -28,9 +29,16 @@ export class PointsService {
 
   /**
    * 获取用户积分
+   *
+   * `tx` lets a caller read the balance inside its own transaction, so a
+   * check-then-debit sequence sees a consistent snapshot instead of a value
+   * that another request may already have spent.
    */
-  async getUserPoints(userId: string): Promise<number> {
-    const user = await this.prisma.user.findUnique({
+  async getUserPoints(
+    userId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number> {
+    const user = await (tx ?? this.prisma).user.findUnique({
       where: { id: userId },
       select: { points: true },
     });
@@ -39,12 +47,21 @@ export class PointsService {
 
   /**
    * 统一增加/扣除积分（核心方法）
+   *
+   * `tx` — run every write of this adjustment inside the caller's transaction.
+   *
+   * Without it this method is itself two separate writes (balance, then
+   * PointHistory), so a failure between them moves a user's balance with no
+   * record of why. Callers that pair an adjustment with a write of their own
+   * — a redemption row, an unlock — must pass `tx`, or a crash in between
+   * leaves points debited for something that does not exist.
    */
   async adjustPoints(
     userId: string,
     action: PointAction | string,
     metadata?: Record<string, unknown>,
     pointsOverride?: number,
+    tx?: Prisma.TransactionClient,
   ): Promise<{
     success: boolean;
     newBalance: number;
@@ -52,6 +69,7 @@ export class PointsService {
     pointHistoryId?: string;
     points?: number;
   }> {
+    const db = tx ?? this.prisma;
     const enabled = await this.pointsConfig.isEnabled();
     if (!enabled) {
       return { success: true, newBalance: 0, points: 0 };
@@ -83,12 +101,12 @@ export class PointsService {
       }
       return {
         success: true,
-        newBalance: await this.getUserPoints(userId),
+        newBalance: await this.getUserPoints(userId, tx),
         points: 0,
       };
     }
 
-    const currentPoints = await this.getUserPoints(userId);
+    const currentPoints = await this.getUserPoints(userId, tx);
 
     // 检查是否有足够积分（扣除情况）
     if (pointValue < 0 && currentPoints + pointValue < 0) {
@@ -100,14 +118,14 @@ export class PointsService {
     }
 
     // 更新积分
-    const updated = await this.prisma.user.update({
+    const updated = await db.user.update({
       where: { id: userId },
       data: { points: { increment: pointValue } },
       select: { points: true },
     });
 
     // 记录积分变动
-    const pointHistory = await this.prisma.pointHistory.create({
+    const pointHistory = await db.pointHistory.create({
       data: {
         userId,
         action: String(action),
