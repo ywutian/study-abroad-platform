@@ -293,14 +293,21 @@ jobs:
 
       - name: Run Web tests
         if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
-        run: pnpm --filter web test
+        # `--coverage` is REQUIRED, not a nicety: the `thresholds` block in
+        # vitest.config.ts is only evaluated on a coverage run. Without it this
+        # step was a plain `vitest run` and web's coverage floor — the number
+        # `lint:coverage-ratchet` so carefully protects from being lowered — had
+        # never once been checked in CI. Same for mobile below.
+        run: pnpm --filter web exec vitest run --coverage
 
       - name: Run Mobile tests
         if: needs.detect-changes.outputs.mobile == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         # `exec jest` (not `test -- …`) so jest receives the flags instead of reading
         # them as a test-path pattern; `--filter mobile` matched no project (the package
         # is `study-abroad-mobile`), so this step had been a silent no-op in CI.
-        run: pnpm --filter study-abroad-mobile exec jest --forceExit
+        # `--runInBand` matches the package's own test scripts (parallel workers
+        # were flaky here); keep the two in sync or CI and local diverge.
+        run: pnpm --filter study-abroad-mobile exec jest --runInBand --coverage --forceExit
 
   # ── E2E Tests ─────────────────────────────────────────────
   e2e:

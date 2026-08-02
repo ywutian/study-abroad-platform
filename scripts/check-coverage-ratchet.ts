@@ -92,7 +92,11 @@ function main() {
       console.error('❌ Cannot --update: ' + errors.join('; '));
       process.exit(1);
     }
-    const out = { _comment: baseline._comment as unknown as string, ...updated };
+    // Carry over every `_`-prefixed key, not just `_comment` — per-app notes
+    // record WHY a floor moved, and dropping them on --update would re-create
+    // the silent-drift problem this baseline exists to prevent.
+    const notes = Object.fromEntries(Object.entries(baseline).filter(([k]) => k.startsWith('_')));
+    const out = { ...notes, ...updated };
     fs.writeFileSync(BASELINE_FILE, JSON.stringify(out, null, 2) + '\n');
     console.log('✅ Coverage baseline updated (only-up).');
     process.exit(0);
