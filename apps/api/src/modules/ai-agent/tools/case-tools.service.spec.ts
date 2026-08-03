@@ -5,10 +5,20 @@ import { LLMService } from '../core/llm.service';
 import { SwipeService } from '../../hall/swipe.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
+import {
+  RequestContextMiddleware,
+  UserContextMiddleware,
+} from '../infrastructure/context/request-context';
 
 describe('CaseToolsService', () => {
   let service: CaseToolsService;
-  let prisma: { admissionCase: { findMany: jest.Mock; findUnique: jest.Mock } };
+  let prisma: {
+    admissionCase: {
+      findMany: jest.Mock;
+      findUnique: jest.Mock;
+      findFirst: jest.Mock;
+    };
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,6 +30,7 @@ describe('CaseToolsService', () => {
             admissionCase: {
               findMany: jest.fn().mockResolvedValue([]),
               findUnique: jest.fn(),
+              findFirst: jest.fn().mockResolvedValue(null),
             },
             predictionResult: { findMany: jest.fn().mockResolvedValue([]) },
           },
@@ -67,6 +78,83 @@ describe('CaseToolsService', () => {
     prisma.admissionCase.findMany.mockResolvedValue([]);
     const result = await service.searchCases({ schoolName: 'Stanford' }, 'en');
     expect(result).toBeDefined();
+  });
+
+  describe("VERIFIED_ONLY follows the caller's role", () => {
+    // The tool layer must grant what GET /cases/:id grants the same caller —
+    // no more (that is the escalation #531 fixed) and no less (that is the
+    // feature a VERIFIED user paid for). The role comes from the request
+    // context, so these drive it through the real accessor.
+    const runAs = async (role: string | undefined, fn: () => Promise<void>) => {
+      const scope = new RequestContextMiddleware();
+      const userCtx = new UserContextMiddleware();
+      const req = (u?: unknown) =>
+        ({
+          path: '/ai-agent/chat',
+          method: 'POST',
+          headers: {},
+          socket: {},
+          user: u,
+        }) as any;
+      const res = {
+        setHeader: jest.fn(),
+        on: jest.fn(),
+        statusCode: 200,
+      } as any;
+
+      await new Promise<void>((resolve, reject) => {
+        scope.use(req(), res, () => {
+          userCtx.use(req(role ? { sub: 'u-1', role } : undefined), res, () => {
+            fn().then(resolve, reject);
+          });
+        });
+      });
+    };
+
+    const visibilityOf = () =>
+      prisma.admissionCase.findFirst.mock.calls[0][0].where.visibility.in;
+
+    it('includes VERIFIED_ONLY for a VERIFIED caller', async () => {
+      prisma.admissionCase.findFirst.mockResolvedValue(null);
+
+      await runAs('VERIFIED', async () => {
+        await service.explainCaseResult('case-1', 'en');
+      });
+
+      expect(visibilityOf()).toEqual(
+        expect.arrayContaining(['ANONYMOUS', 'PUBLIC', 'VERIFIED_ONLY']),
+      );
+    });
+
+    it('excludes it for a plain USER', async () => {
+      prisma.admissionCase.findFirst.mockResolvedValue(null);
+
+      await runAs('USER', async () => {
+        await service.explainCaseResult('case-1', 'en');
+      });
+
+      expect(visibilityOf()).not.toContain('VERIFIED_ONLY');
+    });
+
+    it('excludes it when there is no request context at all', async () => {
+      // Background/queue execution, or a route the middleware does not cover.
+      // Absent role must read as "no role", never as trusted.
+      prisma.admissionCase.findFirst.mockResolvedValue(null);
+
+      await service.explainCaseResult('case-1', 'en');
+
+      expect(visibilityOf()).not.toContain('VERIFIED_ONLY');
+    });
+
+    it('never widens past VERIFIED_ONLY — PRIVATE stays out for everyone', async () => {
+      prisma.admissionCase.findFirst.mockResolvedValue(null);
+
+      await runAs('SUPER_ADMIN', async () => {
+        await service.explainCaseResult('case-1', 'en');
+      });
+
+      expect(visibilityOf()).not.toContain('PRIVATE');
+    });
   });
 
   describe('analyzeIntlCompetitiveness — small-cohort suppression', () => {

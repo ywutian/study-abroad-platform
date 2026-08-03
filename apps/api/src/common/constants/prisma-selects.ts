@@ -1,6 +1,7 @@
 import {
   Prisma,
   DataReviewStatus,
+  Role,
   SchoolMediaSourceType,
   SchoolMediaStatus,
   Visibility,
@@ -28,6 +29,39 @@ export const CASE_PUBLIC_VISIBILITY_WHERE = {
   visibility: { in: [Visibility.ANONYMOUS, Visibility.PUBLIC] },
   ...CASE_REVIEW_APPROVED_WHERE,
 };
+
+/**
+ * The same clause for a caller whose role IS known.
+ *
+ * Mirrors `case-query.service.findOne` exactly, and deliberately grants nothing
+ * beyond it: VERIFIED_ONLY means "visible to Role.VERIFIED", and ADMIN /
+ * SUPER_ADMIN reach the same rows through the owner-and-admin bypass above that
+ * check. Any other role — USER, COUNSELOR, OPERATOR, or none — gets the public
+ * set. A surface that can name the caller's role should grant what the REST
+ * route grants for that role, no more and no less; anything wider is an
+ * escalation, anything narrower is a feature the user paid for and cannot use.
+ *
+ * `undefined` is the unauthenticated answer AND the "no request context here"
+ * answer, and both must land on the public set. Fail closed: the cost of being
+ * wrong that way is a thinner result, not a leak.
+ */
+export function caseVisibilityWhereForRole(role?: string | null) {
+  const mayReadVerifiedOnly =
+    role === Role.VERIFIED || role === Role.ADMIN || role === Role.SUPER_ADMIN;
+
+  return mayReadVerifiedOnly
+    ? {
+        visibility: {
+          in: [
+            Visibility.ANONYMOUS,
+            Visibility.PUBLIC,
+            Visibility.VERIFIED_ONLY,
+          ],
+        },
+        ...CASE_REVIEW_APPROVED_WHERE,
+      }
+    : CASE_PUBLIC_VISIBILITY_WHERE;
+}
 
 /**
  * School basic fields — shared across school-list, recommendation, hall, case, swipe.

@@ -10,8 +10,9 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
 import {
   CASE_REVIEW_APPROVED_WHERE,
-  CASE_PUBLIC_VISIBILITY_WHERE,
+  caseVisibilityWhereForRole,
 } from '../../../common/constants/prisma-selects';
+import { getCurrentUserRole } from '../infrastructure/context/request-context';
 import {
   parseCaseActivities,
   parseCaseAwards,
@@ -121,10 +122,9 @@ export class CaseToolsService implements IToolHandlerProvider {
       where.nationality = { equals: args.nationality, mode: 'insensitive' };
     }
 
-    where.visibility = { in: ['ANONYMOUS', 'PUBLIC'] };
-    where.reviewStatus = CASE_REVIEW_APPROVED_WHERE.reviewStatus;
+    Object.assign(where, caseVisibilityWhereForRole(getCurrentUserRole()));
 
-    // governance: public-feed — visibility pinned two lines above; AdmissionCase.visibility defaults to PRIVATE, so that pin is the whole access control here
+    // governance: public-feed — the pin assigned above is the whole access control here, and grants this caller exactly what GET /cases would
     const cases = await this.prisma.admissionCase.findMany({
       where,
       take: 10,
@@ -178,7 +178,10 @@ export class CaseToolsService implements IToolHandlerProvider {
     try {
       // governance: public-feed — CASE_PUBLIC_VISIBILITY_WHERE; caseId is an LLM arg, so review status alone was not access control (see backend.md)
       const admissionCase = await this.prisma.admissionCase.findFirst({
-        where: { id: caseId, ...CASE_PUBLIC_VISIBILITY_WHERE },
+        where: {
+          id: caseId,
+          ...caseVisibilityWhereForRole(getCurrentUserRole()),
+        },
         include: { school: true },
       });
 
@@ -328,9 +331,12 @@ Analyze the user's judgement strengths and provide tips to improve accuracy.`,
     const isZh = locale === 'zh';
     try {
       const [admissionCase, profile] = await Promise.all([
-        // governance: public-feed — same pin as explainCaseResult; the method's userId scopes only the profile half, which is why G4 never flagged this
+        // governance: public-feed — same role-scoped pin as explainCaseResult
         this.prisma.admissionCase.findFirst({
-          where: { id: caseId, ...CASE_PUBLIC_VISIBILITY_WHERE },
+          where: {
+            id: caseId,
+            ...caseVisibilityWhereForRole(getCurrentUserRole()),
+          },
           include: { school: true },
         }),
         this.profileLoader.loadProfile(userId, locale),
