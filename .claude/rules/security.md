@@ -40,8 +40,21 @@ CSP logic lives in `lib/security/csp.ts`, pinned by `lib/security/csp.test.ts`.
 
 ## Vault
 
-- End-to-end encryption (AES-256 with IV)
-- Encryption key derived from userId
+**Server-side encryption at rest — NOT end-to-end.** AES-256-GCM, fresh random
+IV per record, auth tag appended. The per-user key is `scrypt(masterKey, userId)`
+and the master key is `VAULT_ENCRYPTION_KEY` from the server's env (production
+fails fast without it). The server therefore _can_ decrypt everything, by
+necessity — it is what serves the plaintext back to the owner.
+
+Call it what it is. "End-to-end" means the server cannot decrypt, and two
+user-facing strings currently claim it — `vault.subtitle` and
+`helpCenter.faqItems.dataPrivacy.answer` in `apps/web/src/messages/{zh,en}.json`.
+That is a privacy claim users may rely on when deciding what to store; either
+the copy changes or the design does, and neither is a change to make silently.
+
+- `deriveUserKey` is cached per user. scryptSync is synchronous and blocks the
+  whole event loop for ~22ms; `exportAll` decrypts every item of one user, so
+  deriving per item made a 100-item vault a ~2.2s process-wide stall.
 
 ## Dependency CVEs
 
