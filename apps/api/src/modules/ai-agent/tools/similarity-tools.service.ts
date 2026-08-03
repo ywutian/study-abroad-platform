@@ -10,7 +10,8 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { CASE_PUBLIC_VISIBILITY_WHERE } from '../../../common/constants/prisma-selects';
+import { caseVisibilityWhereForRole } from '../../../common/constants/prisma-selects';
+import { getCurrentUserRole } from '../infrastructure/context/request-context';
 import {
   parseCaseActivities,
   parseCaseAwards,
@@ -112,11 +113,17 @@ export class SimilarityToolsService implements IToolHandlerProvider {
       }
 
       // ── Query candidates with loose filters ──
-      // governance: public-feed — CASE_PUBLIC_VISIBILITY_WHERE. This used to add
-      // VERIFIED_ONLY, which this layer cannot honour (UserContext has no role).
+      // governance: public-feed — the visibility pin IS the access control here,
+      // and it now grants exactly what GET /cases/:id grants this same caller: a
+      // VERIFIED user sees VERIFIED_ONLY cases, anyone else does not. Either way
+      // the emitted shape carries no id and no userId.
+      //
+      // The role comes from the request context, never from the cached
+      // UserContext — see getCurrentUserRole. No context means the public set,
+      // which is the safe direction to be wrong in.
       const where: any = {
         isVerified: true,
-        ...CASE_PUBLIC_VISIBILITY_WHERE,
+        ...caseVisibilityWhereForRole(getCurrentUserRole()),
       };
 
       if (schoolId) {
@@ -127,7 +134,7 @@ export class SimilarityToolsService implements IToolHandlerProvider {
         where.result = 'ADMITTED';
       }
 
-      // governance: public-feed — `where` spreads CASE_PUBLIC_VISIBILITY_WHERE (see above); the emitted shape carries no id and no userId
+      // governance: public-feed — `where` spreads the role-scoped clause built above; the emitted shape carries no id and no userId
       const candidates = await this.prisma.admissionCase.findMany({
         where,
         take: take * 5, // Over-fetch for scoring/filtering
