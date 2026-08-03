@@ -63,14 +63,36 @@ export class RankingService {
     });
   }
 
+  /**
+   * A ranking served to someone other than its owner must not carry `userId`.
+   *
+   * `CustomRanking.userId` is the value `GET /forum/posts` publishes as
+   * `author.id` beside `profile.realName` — both unauthenticated — so shipping
+   * it on a `@Public()` route hands over the join key that links a published
+   * ranking back to a named person. 52ebf249 fixed *who* may read these rows;
+   * this fixes *what* the row says about its author. Nothing renders a
+   * ranking's owner on either client.
+   *
+   * The owner keeps it, and findById needs the column for its own ownership
+   * check — so this strips on the way out rather than narrowing the query.
+   */
+  private stripOwner(ranking: CustomRanking, viewerId?: string): CustomRanking {
+    if (viewerId && ranking.userId === viewerId) return ranking;
+    const { userId: _userId, ...rest } = ranking;
+    return rest as CustomRanking;
+  }
+
   // Get public rankings
   async getPublicRankings(): Promise<CustomRanking[]> {
     // governance: public-feed — filters `isPublic: true`. CustomRanking.isPublic defaults to FALSE, so this filter is the whole access control — findById() beside it lacked the equivalent check and served every private ranking on a @Public() route until 52ebf249
-    return this.prisma.customRanking.findMany({
+    const rankings = await this.prisma.customRanking.findMany({
       where: { isPublic: true },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
+    // No viewer is threaded here: this list is public by definition, so the
+    // owner id comes off every row.
+    return rankings.map((r) => this.stripOwner(r));
   }
 
   /**
@@ -98,7 +120,7 @@ export class RankingService {
       throw new NotFoundException('Ranking not found');
     }
 
-    return ranking;
+    return this.stripOwner(ranking, viewerId);
   }
 
   async deleteRanking(id: string, userId: string): Promise<void> {

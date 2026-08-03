@@ -13,6 +13,7 @@ import {
   createPaginatedResponse,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
+import { stripListOwner } from './hall.constants';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { PointsService, PointAction } from '../points/incentive.service';
 
@@ -128,10 +129,10 @@ export class HallListService {
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          // 2026-05 Hall Plan C (security): the list creator's email is
-          // PII and these are public-facing list endpoints — expose only
-          // the opaque id, never the email.
-          user: { select: { id: true } },
+          // The creator relation is gone, not narrowed: nothing displays a
+          // list's creator, and `{ select: { id: true } }` was handing over
+          // the forum join key. stripListOwner removes the `userId` scalar
+          // that `include` leaves behind.
           _count: { select: { votes: true } },
         },
       }),
@@ -139,7 +140,12 @@ export class HallListService {
       this.prisma.userList.count({ where }),
     ]);
 
-    return createPaginatedResponse(lists, total, page, pageSize);
+    return createPaginatedResponse(
+      lists.map(stripListOwner),
+      total,
+      page,
+      pageSize,
+    );
   }
 
   async getMyLists(userId: string): Promise<UserList[]> {
@@ -157,10 +163,8 @@ export class HallListService {
     const list = await this.prisma.userList.findUnique({
       where: { id: listId },
       include: {
-        // 2026-05 Hall Plan C (security): the list creator's email is PII
-        // and this is a public-facing list endpoint — expose only the
-        // opaque id, never the email.
-        user: { select: { id: true } },
+        // See getPublicLists: the creator relation is gone and the `userId`
+        // scalar is stripped below.
         _count: { select: { votes: true } },
       },
     });
@@ -176,7 +180,7 @@ export class HallListService {
       throw new NotFoundException('List not found');
     }
 
-    return list;
+    return stripListOwner(list);
   }
 
   async voteList(listId: string, userId: string, value: 1 | -1) {

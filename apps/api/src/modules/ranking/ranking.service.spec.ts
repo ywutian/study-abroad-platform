@@ -554,7 +554,10 @@ describe('RankingService', () => {
 
       const result = await service.getPublicRankings();
 
-      expect(result).toEqual(mockPublicRankings);
+      // `userId` is deliberately absent (see the strip tests below); this used
+      // to assert the whole row, which pinned the leak, not the behaviour.
+      const { userId: _ownerId, ...withoutOwner } = mockPublicRankings[0];
+      expect(result).toEqual([withoutOwner]);
       expect(prisma.customRanking.findMany).toHaveBeenCalledWith({
         where: { isPublic: true },
         orderBy: { createdAt: 'desc' },
@@ -589,7 +592,9 @@ describe('RankingService', () => {
 
       const result = await service.findById(mockRankingId);
 
-      expect(result).toEqual({ ...mockCustomRanking, isPublic: true });
+      // No viewer passed, so this is an anonymous read: same strip as above.
+      const { userId: _ownerId, ...withoutOwner } = mockCustomRanking;
+      expect(result).toEqual({ ...withoutOwner, isPublic: true });
       expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
         where: { id: mockRankingId },
       });
@@ -689,6 +694,44 @@ describe('RankingService', () => {
       ).rejects.toThrow(NotFoundException);
 
       expect(prisma.customRanking.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('published rankings do not carry the owner id', () => {
+    // CustomRanking.userId is what GET /forum/posts publishes as author.id
+    // beside profile.realName — both unauthenticated — so a public ranking
+    // linked back to a named person. 52ebf249 fixed who may read these rows.
+    const row = {
+      id: mockRankingId,
+      userId: 'owner-secret',
+      name: 'My weights',
+      isPublic: true,
+      weights: {},
+    };
+
+    it('strips it from the public list', async () => {
+      (prisma.customRanking.findMany as jest.Mock).mockResolvedValue([
+        { ...row },
+      ]);
+
+      const res = await service.getPublicRankings();
+
+      expect(res[0]).not.toHaveProperty('userId');
+      expect(JSON.stringify(res)).not.toContain('owner-secret');
+      expect(res[0].name).toBe('My weights');
+    });
+
+    it('strips it for a non-owner reading by id, and keeps it for the owner', async () => {
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...row,
+      });
+
+      const stranger = await service.findById(mockRankingId, 'someone-else');
+      expect(stranger).not.toHaveProperty('userId');
+      expect(JSON.stringify(stranger)).not.toContain('owner-secret');
+
+      const owner = await service.findById(mockRankingId, 'owner-secret');
+      expect(owner.userId).toBe('owner-secret');
     });
   });
 });
