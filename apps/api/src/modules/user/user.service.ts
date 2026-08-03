@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { User, Prisma } from '@prisma/client';
+import { User, Prisma, TeamStatus } from '@prisma/client';
 import { safeDelete } from '../../common/utils/safe-delete';
 import { randomBytes } from 'crypto';
 
@@ -195,6 +195,44 @@ export class UserService {
         tx.profile.deleteMany({ where: { userId: id } }),
         ctx('profile'),
       );
+
+      // ForumPost.currentSize is denormalised and TeamMember cascades off
+      // User, so deleting an account silently removed someone from a team
+      // without recounting: a FULL team stayed FULL forever, showing a
+      // headcount that included the deleted member, and the freed slot never
+      // reopened. leaveTeam already does this recount — the cascade cannot.
+      // (Teams the user OWNED need no handling: ForumPost cascades off
+      // authorId, so those posts go with them.)
+      const memberships = await tx.teamMember.findMany({
+        where: { userId: id },
+        select: { postId: true },
+      });
+      if (memberships.length > 0) {
+        await safeDelete(
+          tx.teamMember.deleteMany({ where: { userId: id } }),
+          ctx('teamMember'),
+        );
+        for (const postId of new Set(memberships.map((m) => m.postId))) {
+          const memberCount = await tx.teamMember.count({ where: { postId } });
+          const post = await tx.forumPost.findUnique({
+            where: { id: postId },
+            select: { teamStatus: true, teamSize: true },
+          });
+          await tx.forumPost.update({
+            where: { id: postId },
+            data: {
+              currentSize: memberCount,
+              // Only undo a FULL that is no longer true. CLOSED is the owner
+              // deciding recruitment is over, and losing a member is not a
+              // reason to overrule that.
+              ...(post?.teamStatus === TeamStatus.FULL &&
+              (!post.teamSize || memberCount < post.teamSize)
+                ? { teamStatus: TeamStatus.RECRUITING }
+                : {}),
+            },
+          });
+        }
+      }
 
       await tx.user.delete({ where: { id } });
     });

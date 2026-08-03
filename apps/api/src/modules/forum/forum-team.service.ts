@@ -312,7 +312,11 @@ export class ForumTeamService {
       where: { id: postId },
       data: {
         currentSize: memberCount,
-        teamStatus: TeamStatus.RECRUITING, // 重新开放招募
+        // 重新开放招募 —— 但只撤销一个不再成立的 FULL。CLOSED 是发帖人
+        // 主动结束招募，成员退出不构成推翻它的理由。
+        ...(member.post.teamStatus === TeamStatus.FULL
+          ? { teamStatus: TeamStatus.RECRUITING }
+          : {}),
       },
     });
   }

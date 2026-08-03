@@ -333,11 +333,12 @@ describe('ForumTeamService', () => {
 
   describe('leaveTeam', () => {
     it('should remove member and re-open recruitment', async () => {
+      // the post must actually be FULL for "re-open" to mean anything
       (prisma.teamMember.findUnique as jest.Mock).mockResolvedValue({
         id: 'tm-1',
         userId: 'user-2',
         role: 'member',
-        post: mockPost,
+        post: { ...mockPost, teamStatus: 'FULL' },
       });
       (prisma.teamMember.delete as jest.Mock).mockResolvedValue({});
       (prisma.teamMember.count as jest.Mock).mockResolvedValue(1);
@@ -351,6 +352,24 @@ describe('ForumTeamService', () => {
           data: expect.objectContaining({ teamStatus: 'RECRUITING' }),
         }),
       );
+    });
+
+    it('does not re-open a team the owner deliberately CLOSED', async () => {
+      (prisma.teamMember.findUnique as jest.Mock).mockResolvedValue({
+        id: 'tm-1',
+        userId: 'user-2',
+        role: 'member',
+        post: { ...mockPost, teamStatus: 'CLOSED' },
+      });
+      (prisma.teamMember.delete as jest.Mock).mockResolvedValue({});
+      (prisma.teamMember.count as jest.Mock).mockResolvedValue(1);
+      (prisma.forumPost.update as jest.Mock).mockResolvedValue({});
+
+      await service.leaveTeam('post-1', 'user-2');
+
+      const data = (prisma.forumPost.update as jest.Mock).mock.calls[0][0].data;
+      expect(data.currentSize).toBe(1);
+      expect(data).not.toHaveProperty('teamStatus');
     });
 
     it('should throw NotFoundException when user is not a member', async () => {

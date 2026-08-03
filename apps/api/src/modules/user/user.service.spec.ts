@@ -7,6 +7,15 @@ describe('UserService', () => {
   let service: UserService;
   let prismaService: PrismaService;
 
+  // hoisted so hardDelete tests can drive the team-headcount recount
+  const txTeamMember = {
+    findMany: jest.fn().mockResolvedValue([]),
+    deleteMany: jest.fn().mockReturnValue(Promise.resolve({})),
+    count: jest.fn().mockResolvedValue(0),
+  };
+  const txForumPostFindUnique = jest.fn().mockResolvedValue(null);
+  const txForumPostUpdate = jest.fn().mockResolvedValue({});
+
   const mockUser = {
     id: 'user-123',
     email: 'test@example.com',
@@ -63,7 +72,10 @@ describe('UserService', () => {
                 forumPost: {
                   updateMany: createChainableMock(),
                   deleteMany: createChainableMock(),
+                  findUnique: txForumPostFindUnique,
+                  update: txForumPostUpdate,
                 },
+                teamMember: txTeamMember,
                 forumComment: {
                   updateMany: createChainableMock(),
                   deleteMany: createChainableMock(),
@@ -210,6 +222,45 @@ describe('UserService', () => {
 
       expect(result.deletedAt).toBeDefined();
       expect(prismaService.$transaction).toHaveBeenCalled();
+    });
+  });
+
+  describe('hardDelete — team headcounts', () => {
+    beforeEach(() => {
+      txTeamMember.findMany.mockResolvedValue([{ postId: 'post-1' }]);
+      txTeamMember.count.mockResolvedValue(2);
+      txForumPostUpdate.mockClear();
+    });
+
+    it('recounts and re-opens a team the deleted account had filled', async () => {
+      // TeamMember cascades off User, so without this the row vanishes and
+      // ForumPost.currentSize keeps counting the deleted member forever.
+      txForumPostFindUnique.mockResolvedValue({
+        teamStatus: 'FULL',
+        teamSize: 3,
+      });
+
+      await service.hardDelete('user-123');
+
+      expect(txForumPostUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'post-1' },
+          data: { currentSize: 2, teamStatus: 'RECRUITING' },
+        }),
+      );
+    });
+
+    it('recounts but leaves a CLOSED team closed', async () => {
+      txForumPostFindUnique.mockResolvedValue({
+        teamStatus: 'CLOSED',
+        teamSize: 3,
+      });
+
+      await service.hardDelete('user-123');
+
+      const data = txForumPostUpdate.mock.calls[0][0].data;
+      expect(data.currentSize).toBe(2);
+      expect(data).not.toHaveProperty('teamStatus');
     });
   });
 });
