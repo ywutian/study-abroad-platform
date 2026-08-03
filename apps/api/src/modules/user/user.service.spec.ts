@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PeerReviewService } from '../peer-review/peer-review.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('UserService', () => {
@@ -26,6 +27,8 @@ describe('UserService', () => {
     count: jest.fn().mockResolvedValue(0),
   };
   const txForumPostFindMany = jest.fn().mockResolvedValue([]);
+  const txPeerReviewFindMany = jest.fn().mockResolvedValue([]);
+  const mockPeerReviewService = { updateUserRating: jest.fn() };
   const txForumPostCount = jest.fn().mockResolvedValue(0);
   const txForumCommunityUpdate = jest.fn().mockResolvedValue({});
 
@@ -45,6 +48,7 @@ describe('UserService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
+        { provide: PeerReviewService, useValue: mockPeerReviewService },
         {
           provide: PrismaService,
           useValue: {
@@ -91,6 +95,7 @@ describe('UserService', () => {
                   count: txForumPostCount,
                 },
                 teamMember: txTeamMember,
+                peerReview: { findMany: txPeerReviewFindMany },
                 forumCommunityFollow: txForumCommunityFollow,
                 forumCommunity: { update: txForumCommunityUpdate },
                 forumComment: txForumComment,
@@ -317,6 +322,43 @@ describe('UserService', () => {
         where: { id: 'com-1' },
         data: { postCount: 7, followerCount: 4 },
       });
+    });
+  });
+
+  describe('hardDelete — peer-review aggregates', () => {
+    beforeEach(() => {
+      mockPeerReviewService.updateUserRating.mockReset();
+      mockPeerReviewService.updateUserRating.mockResolvedValue(undefined);
+      txPeerReviewFindMany.mockReset();
+    });
+
+    it('recomputes ratings for everyone the account reviewed or was reviewed by', async () => {
+      // PeerReview cascades off both sides; each counterparty's stored
+      // aggregate mixes forward and reverse scores, so both directions matter.
+      txPeerReviewFindMany
+        .mockResolvedValueOnce([
+          { revieweeId: 'user-b' },
+          { revieweeId: 'user-c' },
+        ]) // reviews given
+        .mockResolvedValueOnce([{ reviewerId: 'user-c' }]); // reviews received
+
+      await service.hardDelete('user-123');
+
+      const recomputed = mockPeerReviewService.updateUserRating.mock.calls
+        .map((c) => c[0])
+        .sort();
+      expect(recomputed).toEqual(['user-b', 'user-c']); // deduped, self excluded
+    });
+
+    it('does not fail deletion when a recompute fails', async () => {
+      txPeerReviewFindMany
+        .mockResolvedValueOnce([{ revieweeId: 'user-b' }])
+        .mockResolvedValueOnce([]);
+      mockPeerReviewService.updateUserRating.mockRejectedValue(
+        new Error('db down'),
+      );
+
+      await expect(service.hardDelete('user-123')).resolves.toBeUndefined();
     });
   });
 });

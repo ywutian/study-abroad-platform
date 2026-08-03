@@ -8,13 +8,17 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { User, Prisma, TeamStatus } from '@prisma/client';
 import { safeDelete } from '../../common/utils/safe-delete';
+import { PeerReviewService } from '../peer-review/peer-review.service';
 import { randomBytes } from 'crypto';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private peerReviewService: PeerReviewService,
+  ) {}
 
   /**
    * Find a user by their unique ID, excluding soft-deleted users
@@ -162,6 +166,7 @@ export class UserService {
       operation: 'hardDelete' as const,
     });
 
+    let ratingCounterparties: string[] = [];
     await this.prisma.$transaction(async (tx) => {
       await safeDelete(
         tx.refreshToken.deleteMany({ where: { userId: id } }),
@@ -236,8 +241,44 @@ export class UserService {
 
       await this.recountForumDenormals(tx, id);
 
+      // PeerReview cascades off BOTH sides, and a user's stored rating
+      // (peerAvgRating/peerReviewCount, written whole by updateUserRating)
+      // mixes forward scores from reviews they received with reverse scores
+      // from reviews they gave. So deleting this account silently changes the
+      // input set of every counterparty — collect them now, while the rows
+      // still exist; recompute after commit, when the cascade has run and
+      // updateUserRating reads the post-delete truth.
+      const [given, received] = await Promise.all([
+        tx.peerReview.findMany({
+          where: { reviewerId: id },
+          select: { revieweeId: true },
+        }),
+        tx.peerReview.findMany({
+          where: { revieweeId: id },
+          select: { reviewerId: true },
+        }),
+      ]);
+      ratingCounterparties = [
+        ...new Set([
+          ...given.map((r) => r.revieweeId),
+          ...received.map((r) => r.reviewerId),
+        ]),
+      ].filter((uid) => uid !== id);
+
       await tx.user.delete({ where: { id } });
     });
+
+    // Post-commit, best-effort: the account is gone either way, and a missed
+    // recompute here only re-freezes an aggregate nothing currently reads.
+    for (const uid of ratingCounterparties) {
+      await this.peerReviewService
+        .updateUserRating(uid)
+        .catch((err) =>
+          this.logger.warn(
+            `Rating recompute failed for ${uid} after deleting ${id}: ${String(err)}`,
+          ),
+        );
+    }
 
     this.logger.warn(`User ${id} hard deleted`);
   }

@@ -357,7 +357,10 @@ export class PeerReviewService {
     return follows.length === 2;
   }
 
-  private async updateUserRating(userId: string): Promise<void> {
+  // Public because user.hardDelete recomputes counterparties' aggregates after
+  // the account's PeerReview rows cascade away — same single authority, one
+  // extra caller. Reads live rows, so post-commit it sees the post-cascade truth.
+  async updateUserRating(userId: string): Promise<void> {
     const rating = await this.getUserRating(userId);
 
     // Hall refactor Phase 1: dual-write the legacy avgRating/reviewCount fields
