@@ -222,4 +222,38 @@ describe('HallVerifiedService', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('verified ranking anonymity', () => {
+    // The leaderboard is built from ANONYMOUS/VERIFIED_ONLY cases while
+    // GET /forum/posts publishes author.id beside profile.realName — both
+    // unauthenticated. Neither the id nor a suffix of it may appear here.
+    it('never emits the user id, in full or as a label', async () => {
+      const userId = 'user-abcdefgh1234';
+      mockPrisma.admissionCase.findMany.mockResolvedValue([
+        {
+          id: 'case-zzzz9999',
+          userId,
+          gpaRange: null,
+          satRange: null,
+          actRange: null,
+          toeflRange: null,
+          school: { name: 'X', nameZh: null, usNewsRank: 1 },
+          result: 'ADMITTED',
+          year: 2026,
+          round: null,
+          major: null,
+          isVerified: true,
+          verifiedAt: null,
+        },
+      ]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+
+      const res = await service.getVerifiedRanking({});
+      const row = res.users[0];
+
+      expect(row).not.toHaveProperty('userId');
+      expect(JSON.stringify(row)).not.toContain(userId.slice(-4));
+      expect(row.userName).toBe('用户9999'); // derived from caseId
+    });
+  });
 });

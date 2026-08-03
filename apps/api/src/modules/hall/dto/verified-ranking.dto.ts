@@ -54,9 +54,6 @@ export class VerifiedUserDto {
   caseId: string;
 
   @ApiProperty()
-  userId: string;
-
-  @ApiProperty()
   userName?: string;
 
   @ApiProperty()

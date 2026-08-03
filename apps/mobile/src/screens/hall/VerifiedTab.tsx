@@ -149,7 +149,7 @@ export function VerifiedTab() {
         <EmptyState icon="shield-checkmark-outline" title={t('hall.verified.empty')} />
       ) : (
         users.map((item: VerifiedUserDto) => (
-          <VerifiedItem key={item.userId} item={item} colors={c} />
+          <VerifiedItem key={item.caseId} item={item} colors={c} />
         ))
       )}
     </ScrollView>

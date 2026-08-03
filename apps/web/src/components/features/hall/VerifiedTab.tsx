@@ -40,7 +40,6 @@ import { ChinaAdmitDashboard } from './ChinaAdmitDashboard';
 interface VerifiedUser {
   rank: number;
   caseId: string;
-  userId: string;
   userName?: string;
   gpaRange?: string;
   satRange?: string;

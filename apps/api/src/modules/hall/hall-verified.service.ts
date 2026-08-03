@@ -103,9 +103,16 @@ export class HallVerifiedService {
     const users: VerifiedUserDto[] = cases.map((c, index) => ({
       rank: offset + index + 1,
       caseId: c.id,
-      userId: c.userId,
       // 2026-05 Hall Plan C (security B4): masked label, never realName.
-      userName: `用户${c.userId.slice(-4)}`,
+      //
+      // 2026-08: and never the user id either, in any form. This leaderboard is
+      // built from `visibility in (ANONYMOUS, VERIFIED_ONLY)` cases, while
+      // GET /forum/posts publishes author.id next to profile.realName — both
+      // unauthenticated. Shipping `userId` handed over the join key outright,
+      // and deriving the label from it was barely better: a 4-char suffix of a
+      // cuid narrows a few-thousand-user forum to a single author. Each row
+      // here IS a case (the lists key off caseId), so label the case.
+      userName: `用户${c.id.slice(-4)}`,
       gpaRange: c.gpaRange || undefined,
       satRange: c.satRange || undefined,
       actRange: c.actRange || undefined,
