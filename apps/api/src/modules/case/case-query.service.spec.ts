@@ -183,7 +183,7 @@ describe('CaseQueryService', () => {
     // the same commit, so nothing new can match. The number can only go down —
     // if it climbs, a new creation path is forgetting to set visibility.
     it('counts PRIVATE cases with no source, separately from the other stats', async () => {
-      const count = mockPrisma.admissionCase.count as jest.Mock;
+      const count = mockPrisma.admissionCase.count;
       count.mockResolvedValue(0);
       count.mockResolvedValueOnce(100); // total
       count.mockResolvedValueOnce(40); // withEssay
