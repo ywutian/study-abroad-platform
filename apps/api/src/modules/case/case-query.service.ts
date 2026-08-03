@@ -22,6 +22,7 @@ import {
 import { PointsService } from '../points/incentive.service';
 import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
 import { CaseMemoryService } from './case-memory.service';
+import { stripCaseIdentity } from './case.constants';
 
 interface CaseFilters {
   schoolId?: string;
@@ -175,11 +176,17 @@ export class CaseQueryService {
       resultStats.map((r) => [r.result, r._count]),
     );
 
-    return createPaginatedResponse(cases, total, page, pageSize, {
-      admitted: statsMap['ADMITTED'] || 0,
-      rejected: statsMap['REJECTED'] || 0,
-      waitlisted: statsMap['WAITLISTED'] || 0,
-    });
+    return createPaginatedResponse(
+      cases.map((c) => stripCaseIdentity(c, requesterId)),
+      total,
+      page,
+      pageSize,
+      {
+        admitted: statsMap['ADMITTED'] || 0,
+        rejected: statsMap['REJECTED'] || 0,
+        waitlisted: statsMap['WAITLISTED'] || 0,
+      },
+    );
   }
 
   /**
@@ -218,6 +225,9 @@ export class CaseQueryService {
     if (isOwner || isAdmin) {
       return caseItem;
     }
+    // Everything below this line is served to someone who does not own the
+    // case; strip the identifying columns before any of those paths return it.
+    const publicCase = stripCaseIdentity(caseItem, requesterId);
 
     // Non-admin, non-owner: block unreviewed cases
     if (
@@ -261,7 +271,7 @@ export class CaseQueryService {
       );
     }
 
-    return caseItem;
+    return publicCase;
   }
 
   /**

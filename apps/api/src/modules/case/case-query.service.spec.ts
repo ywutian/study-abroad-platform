@@ -130,4 +130,49 @@ describe('CaseQueryService', () => {
       expect(result.pendingEssays).toBe(10);
     });
   });
+
+  describe("identity is not served with other people's cases", () => {
+    // AdmissionCase.userId is the same value the public forum feed publishes as
+    // author.id next to profile.realName, so returning it here let anyone join
+    // an ANONYMOUS case to a real name over two unauthenticated endpoints.
+    const row = {
+      id: 'case-1',
+      userId: 'owner-1',
+      verifiedBy: 'admin-9',
+      result: 'ADMITTED',
+      visibility: 'ANONYMOUS',
+      reviewStatus: 'APPROVED',
+      school: { id: 's1', name: 'X' },
+    };
+
+    it('omits userId from the public list', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([row]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+
+      const res = await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        null,
+        null,
+      );
+
+      expect(res.items[0]).not.toHaveProperty('userId');
+      expect(res.items[0]).not.toHaveProperty('verifiedBy');
+      expect(res.items[0].result).toBe('ADMITTED'); // display fields survive
+    });
+
+    it('keeps userId for the owner', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([row]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+
+      const res = await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        'owner-1',
+        null,
+      );
+
+      expect(res.items[0]).toHaveProperty('userId', 'owner-1');
+    });
+  });
 });
