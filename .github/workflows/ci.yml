@@ -1081,7 +1081,15 @@ jobs:
       - name: Scan repo for secrets
         # `--redact` masks any matched secret value in the log so the report
         # itself can't leak. Non-zero exit means findings present → CI fails.
-        run: gitleaks detect --source . --redact --verbose --no-banner
+        #
+        # `--log-opts HEAD` is load-bearing: gitleaks defaults to `git log --all`,
+        # and `fetch-depth: 0` above fetches every branch, so without it the scan
+        # covers refs that have nothing to do with this commit — one unmerged
+        # branch's test fixture turns every other PR red. HEAD limits it to this
+        # commit's own ancestry, which is exactly what can reach main. Verified
+        # both ways on gitleaks 8.18.4: a leak on a sibling branch stops being
+        # reported, a leak in HEAD's own history still is.
+        run: gitleaks detect --source . --log-opts HEAD --redact --verbose --no-banner
 
   # ── SAST Scan ─────────────────────────────────────────────
   sast:
