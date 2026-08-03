@@ -444,7 +444,8 @@ describe('CaseService', () => {
         .mockResolvedValueOnce(100)
         .mockResolvedValueOnce(40)
         .mockResolvedValueOnce(30)
-        .mockResolvedValueOnce(10);
+        .mockResolvedValueOnce(10)
+        .mockResolvedValueOnce(13);
 
       const result = await service.getAdminStats();
 
@@ -453,8 +454,10 @@ describe('CaseService', () => {
         withEssay: 40,
         verified: 30,
         pendingEssays: 10,
+        // share consents taken before ba725e79 and never honoured
+        unhonouredShareConsents: 13,
       });
-      expect(prismaService.admissionCase.count).toHaveBeenCalledTimes(4);
+      expect(prismaService.admissionCase.count).toHaveBeenCalledTimes(5);
     });
   });
 

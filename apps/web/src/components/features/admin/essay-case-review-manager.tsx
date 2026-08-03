@@ -31,7 +31,18 @@ import { adminRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { PaginationControls } from '@/app/[locale]/(main)/admin/_components/pagination-controls';
-import { CheckCircle, Clock, Loader2, FileText, Eye, Check, X, Shield, Search } from 'lucide-react';
+import {
+  CheckCircle,
+  Clock,
+  Loader2,
+  FileText,
+  Eye,
+  Check,
+  X,
+  Shield,
+  Search,
+  HeartHandshake,
+} from 'lucide-react';
 
 interface CaseEssay {
   id: string;
@@ -58,6 +69,8 @@ interface CaseAdminStats {
   withEssay: number;
   verified: number;
   pendingEssays: number;
+  /** Share consents collected and never honoured — see the card below. */
+  unhonouredShareConsents: number;
 }
 
 export function EssayCaseReviewManager() {
@@ -156,7 +169,7 @@ export function EssayCaseReviewManager() {
   return (
     <div className="space-y-6">
       {/* 统计卡片 */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -199,6 +212,35 @@ export function EssayCaseReviewManager() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-violet-600">{stats?.total || 0}</div>
+          </CardContent>
+        </Card>
+        {/* Students who ticked "share with future applicants" and whose case was
+            filed invisible anyway. Only counts rows written before the fix, so
+            it can only go down — a climb means a new creation path forgets to
+            set visibility. Rose when it is non-zero, muted at zero, because at
+            zero it is a healthy gauge rather than a to-do. */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <HeartHandshake
+                className={`h-4 w-4 ${
+                  stats?.unhonouredShareConsents ? 'text-rose-500' : 'text-muted-foreground'
+                }`}
+              />
+              {t('caseStats.unhonouredShareConsents')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-3xl font-bold ${
+                stats?.unhonouredShareConsents ? 'text-rose-600' : 'text-muted-foreground'
+              }`}
+            >
+              {stats?.unhonouredShareConsents || 0}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('caseStats.unhonouredShareConsentsHint')}
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -175,4 +175,28 @@ describe('CaseQueryService', () => {
       expect(res.items[0]).toHaveProperty('userId', 'owner-1');
     });
   });
+
+  describe('unhonoured share consents', () => {
+    // Counts cases written before ba725e79, when verifying an opted-in outcome
+    // filed the case at @default(PRIVATE) and no surface ever served it. The
+    // `source: null` half is what dates them: outcome_self_report was added in
+    // the same commit, so nothing new can match. The number can only go down —
+    // if it climbs, a new creation path is forgetting to set visibility.
+    it('counts PRIVATE cases with no source, separately from the other stats', async () => {
+      const count = mockPrisma.admissionCase.count as jest.Mock;
+      count.mockResolvedValue(0);
+      count.mockResolvedValueOnce(100); // total
+      count.mockResolvedValueOnce(40); // withEssay
+      count.mockResolvedValueOnce(25); // verified
+      count.mockResolvedValueOnce(7); // pendingEssays
+      count.mockResolvedValueOnce(13); // unhonoured share consents
+
+      const stats = await service.getAdminStats();
+
+      expect(stats.unhonouredShareConsents).toBe(13);
+      expect(count).toHaveBeenCalledWith({
+        where: { visibility: 'PRIVATE', source: null },
+      });
+    });
+  });
 });

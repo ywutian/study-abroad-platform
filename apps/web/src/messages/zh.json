@@ -11269,7 +11269,9 @@
       "pending": "待审核",
       "verified": "已通过",
       "withEssay": "含文书",
-      "total": "总案例"
+      "total": "总案例",
+      "unhonouredShareConsents": "待兑现的分享同意",
+      "unhonouredShareConsentsHint": "学生勾了「分享给学弟学妹」但案例被存为私密，从未展示过"
     }
   },
   "essayPipeline": {

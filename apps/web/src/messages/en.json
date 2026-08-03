@@ -11296,7 +11296,9 @@
       "pending": "Pending Review",
       "verified": "Verified",
       "withEssay": "With Essay",
-      "total": "Total Cases"
+      "total": "Total Cases",
+      "unhonouredShareConsents": "Unhonoured share consents",
+      "unhonouredShareConsentsHint": "Students who opted in to share, whose case was filed private and never shown"
     }
   },
   "essayPipeline": {
