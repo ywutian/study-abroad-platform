@@ -143,6 +143,21 @@ describe('TeamService', () => {
       expect(where.joinPolicy).toBe('OPEN');
       expect(where.visibility).toBe('PUBLIC');
     });
+
+    it('never asks for a member email', async () => {
+      // GET /teams and GET /teams/:id are both @Public(), and nothing
+      // downstream strips fields: there is no ClassSerializerInterceptor and
+      // no @Exclude in this repo, and TransformInterceptor only wraps the
+      // payload. So an email selected here leaves the process. Asserting the
+      // SELECT is what catches a re-add — a response-shape assertion would
+      // pass on a fixture that simply has no email.
+      await service.discover({});
+
+      const include = (prisma.team.findMany as jest.Mock).mock.calls[0][0]
+        .include;
+      expect(include.creator.select).not.toHaveProperty('email');
+      expect(JSON.stringify(include)).not.toContain('email');
+    });
   });
 
   describe('create', () => {

@@ -1243,7 +1243,7 @@ export class TeamRecruitmentService {
             participants: {
               include: {
                 user: {
-                  select: TEAM_USER_SELECT,
+                  select: { ...TEAM_USER_SELECT, email: true }, // authed, member-scoped — see TEAM_USER_SELECT
                 },
               },
             },
