@@ -232,4 +232,67 @@ describe('PointsRedemptionService', () => {
       BadRequestException,
     );
   });
+
+  // ── the 15 minutes have to leave a trace ────────────────────────────────
+  // FULFILLED only says a booking link went out. Without an outcome there is
+  // no way to know whether people attend, whether they convert, or whether
+  // 2000 points is the right threshold — the three numbers pricing needs.
+
+  it('records a consultation outcome on a fulfilled redemption', async () => {
+    const update = jest.fn().mockResolvedValue({});
+    const { prisma } = txPrisma({
+      pointsRedemption: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'r-1',
+          userId: 'user-1',
+          type: RedemptionType.CONSULT_15MIN,
+          status: RedemptionStatus.FULFILLED,
+          metadata: { fulfillment: { bookingUrl: 'https://cal/x' } },
+        }),
+        update,
+      },
+    });
+    const service = new PointsRedemptionService(
+      prisma,
+      {} as unknown as PointsService,
+      enabledConfig(),
+    );
+
+    await service.recordConsultationOutcome('r-1', {
+      attended: true,
+      intent: 'HOT',
+      quotedAmount: 8000,
+      converted: true,
+    });
+
+    const written = update.mock.calls[0][0].data.metadata;
+    expect(written.outcome).toMatchObject({
+      attended: true,
+      intent: 'HOT',
+      converted: true,
+    });
+    // the fulfilment record survives — outcome is added beside it, not over it
+    expect(written.fulfillment).toEqual({ bookingUrl: 'https://cal/x' });
+  });
+
+  it('refuses an outcome before the booking went out', async () => {
+    const { prisma } = txPrisma({
+      pointsRedemption: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'r-1',
+          status: RedemptionStatus.PENDING,
+        }),
+        update: jest.fn(),
+      },
+    });
+    const service = new PointsRedemptionService(
+      prisma,
+      {} as unknown as PointsService,
+      enabledConfig(),
+    );
+
+    await expect(
+      service.recordConsultationOutcome('r-1', { attended: true }),
+    ).rejects.toThrow(/only exists once it has been fulfilled/);
+  });
 });

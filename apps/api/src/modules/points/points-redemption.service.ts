@@ -133,6 +133,50 @@ export class PointsRedemptionService {
    * Reached from `PATCH /admin/points/redemptions/:id/fulfil` — there is no
    * "owning module" that does this automatically; see the class doc.
    */
+  /**
+   * Record what came of a consultation a redemption bought.
+   *
+   * Only valid on a FULFILLED redemption — the booking has to have gone out
+   * before there is a session to have an outcome. Written under
+   * `metadata.outcome`; see RecordConsultationOutcomeDto for why this is a Json
+   * field rather than columns, and what would have to be true to change that.
+   *
+   * Idempotent by overwrite rather than append-only: a counselor correcting
+   * "did not convert" to "converted, ¥8000" two weeks later is the expected
+   * case, not an anomaly, and the audit trail for that lives in AuditLog.
+   */
+  async recordConsultationOutcome(
+    redemptionId: string,
+    outcome: Record<string, unknown>,
+  ): Promise<void> {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); recording another user's consultation result is the job
+    const redemption = await this.prisma.pointsRedemption.findUnique({
+      where: { id: redemptionId },
+    });
+    if (!redemption) {
+      throw new NotFoundException('Redemption not found');
+    }
+    if (redemption.status !== RedemptionStatus.FULFILLED) {
+      throw new BadRequestException(
+        `Redemption is ${redemption.status}; an outcome only exists once it has been fulfilled`,
+      );
+    }
+
+    await this.prisma.pointsRedemption.update({
+      where: { id: redemptionId },
+      data: {
+        metadata: {
+          ...(redemption.metadata as Record<string, unknown> | null),
+          outcome: { ...outcome, recordedAt: new Date().toISOString() },
+        } as Prisma.InputJsonValue,
+      },
+    });
+
+    this.logger.log(
+      `Consultation outcome recorded for redemption ${redemptionId}`,
+    );
+  }
+
   async markFulfilled(
     redemptionId: string,
     fulfillmentMetadata?: Record<string, unknown>,

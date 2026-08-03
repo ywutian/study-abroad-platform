@@ -25,7 +25,11 @@ import {
   UpdatePointActionDto,
   BatchUpdatePointActionsDto,
 } from './dto/points-config.dto';
-import { CancelRedemptionDto, FulfillRedemptionDto } from './redeem.dto';
+import {
+  CancelRedemptionDto,
+  FulfillRedemptionDto,
+  RecordConsultationOutcomeDto,
+} from './redeem.dto';
 
 @ApiTags('admin/points')
 @ApiBearerAuth()
@@ -68,6 +72,20 @@ export class PointsAdminController {
   ) {
     await this.redemptionService.markFulfilled(id, dto.fulfillment);
     return { success: true, id, status: 'FULFILLED' };
+  }
+
+  @Patch('redemptions/:id/outcome')
+  @ApiOperation({
+    summary:
+      'Record what came of a fulfilled consultation (attendance, intent, conversion)',
+  })
+  @ApiResponse({ status: 200, description: 'Outcome recorded' })
+  async recordRedemptionOutcome(
+    @Param('id') id: string,
+    @Body() dto: RecordConsultationOutcomeDto,
+  ) {
+    await this.redemptionService.recordConsultationOutcome(id, { ...dto });
+    return { success: true, id };
   }
 
   @Patch('redemptions/:id/cancel')
