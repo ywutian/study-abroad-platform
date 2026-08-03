@@ -8319,7 +8319,8 @@
         "ai": "AI System",
         "system": "System"
       },
-      "dataHealth": "Data Health"
+      "dataHealth": "Data Health",
+      "pointsRedemptions": "Redemption queue"
     },
     "cacheHealth": {
       "title": "Cache Health",
@@ -11143,6 +11144,38 @@
       "rankBadgeUnranked": "Unranked",
       "loading": "Loading data health...",
       "error": "Failed to load data health."
+    },
+    "pointsRedemptions": {
+      "title": "Points redemption queue",
+      "description": "Fulfilment to-do plus consultation outcomes — every row has already been charged",
+      "pendingTitle": "Awaiting fulfilment",
+      "pendingEmpty": "Nothing awaiting fulfilment",
+      "consultTitle": "Consultations awaiting an outcome",
+      "consultEmpty": "No fulfilled consultations yet",
+      "spent": "Points spent",
+      "bookingUrl": "Booking link",
+      "fulfil": "Mark delivered",
+      "cancel": "Cancel and refund",
+      "cancelReason": "Reason for cancelling (written to the audit log)",
+      "outcomeRecorded": "Recorded",
+      "outcomeMissing": "Not recorded",
+      "attended": "Attended",
+      "noShow": "No-show",
+      "intent": "Intent",
+      "intentHot": "Hot",
+      "intentWarm": "Warm",
+      "intentCold": "Cold",
+      "quotedAmount": "Amount quoted (CNY)",
+      "converted": "Converted",
+      "lostReason": "Why it did not convert",
+      "counselorId": "Counselor",
+      "save": "Save outcome",
+      "saved": "Saved",
+      "saveFailed": "Could not save",
+      "fulfilled": "Marked delivered",
+      "cancelled": "Cancelled and refunded",
+      "actionFailed": "Action failed",
+      "warning": "These redemptions have already been charged. Cancelling refunds the points; marking delivered does not."
     }
   },
   "essayAdmin": {

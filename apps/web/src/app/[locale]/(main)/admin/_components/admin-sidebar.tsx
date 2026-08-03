@@ -24,6 +24,7 @@ import {
   ClipboardCheck,
   FileCheck,
   ShieldCheck,
+  Coins,
   CreditCard,
   Settings,
   Layers,
@@ -268,6 +269,12 @@ export function AdminSidebar() {
           icon: CreditCard,
           label: t('sidebar.payments'),
           requiredPermission: 'payment:view',
+        },
+        {
+          href: '/admin/points-redemptions',
+          icon: Coins,
+          label: t('sidebar.pointsRedemptions'),
+          minRole: 'ADMIN',
         },
         {
           href: '/admin/audit-logs',

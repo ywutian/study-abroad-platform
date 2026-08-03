@@ -61,6 +61,18 @@ export class PointsAdminController {
     );
   }
 
+  @Get('redemptions/consultations')
+  @ApiOperation({
+    summary:
+      'Fulfilled consultations, newest first — the queue for recording outcomes',
+  })
+  @ApiResponse({ status: 200, description: 'Fulfilled consultations' })
+  async listFulfilledConsultations(@Query('limit') limit?: string) {
+    return this.redemptionService.listFulfilledConsultations(
+      limit ? Number(limit) : undefined,
+    );
+  }
+
   @Patch('redemptions/:id/fulfil')
   @ApiOperation({
     summary: 'Mark a redemption delivered (records what was delivered)',

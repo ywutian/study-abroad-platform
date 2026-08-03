@@ -199,6 +199,14 @@ export const outcomeRoutes = {
     `${API_ROUTES.ADMIN}/predictions/outcomes/${outcomeId}/verify`,
 };
 
+export const pointsAdminRoutes = {
+  pendingRedemptions: () => `${API_ROUTES.ADMIN}/points/redemptions/pending`,
+  fulfilledConsultations: () => `${API_ROUTES.ADMIN}/points/redemptions/consultations`,
+  fulfil: (id: string) => `${API_ROUTES.ADMIN}/points/redemptions/${id}/fulfil`,
+  cancel: (id: string) => `${API_ROUTES.ADMIN}/points/redemptions/${id}/cancel`,
+  recordOutcome: (id: string) => `${API_ROUTES.ADMIN}/points/redemptions/${id}/outcome`,
+};
+
 export const recommendationRoutes = {
   generate: () => API_ROUTES.RECOMMENDATIONS,
   history: () => `${API_ROUTES.RECOMMENDATIONS}/history`,

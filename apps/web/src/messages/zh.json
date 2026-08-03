@@ -8292,7 +8292,8 @@
       "outcomesVerification": "录取结果核验",
       "debateEval": "辩论盲测评估",
       "dataQualityPage": "院校数据质量",
-      "dataHealth": "数据健康度"
+      "dataHealth": "数据健康度",
+      "pointsRedemptions": "积分兑换队列"
     },
     "cacheHealth": {
       "title": "缓存健康",
@@ -11116,6 +11117,38 @@
       "rankBadgeUnranked": "未排名",
       "loading": "正在加载数据健康度...",
       "error": "加载数据健康度失败。"
+    },
+    "pointsRedemptions": {
+      "title": "积分兑换队列",
+      "description": "履约待办 + 咨询结果记录 —— 每笔都已扣掉用户积分",
+      "pendingTitle": "待履约",
+      "pendingEmpty": "没有待履约的兑换",
+      "consultTitle": "咨询结果待记录",
+      "consultEmpty": "暂无已履约的咨询",
+      "spent": "已扣积分",
+      "bookingUrl": "预约链接",
+      "fulfil": "标记已交付",
+      "cancel": "取消并退分",
+      "cancelReason": "取消原因（会写入审计）",
+      "outcomeRecorded": "已记录",
+      "outcomeMissing": "待记录",
+      "attended": "已赴约",
+      "noShow": "未赴约",
+      "intent": "意向",
+      "intentHot": "高",
+      "intentWarm": "中",
+      "intentCold": "低",
+      "quotedAmount": "报价（元）",
+      "converted": "已成交",
+      "lostReason": "未成交原因",
+      "counselorId": "接待顾问",
+      "save": "保存结果",
+      "saved": "已保存",
+      "saveFailed": "保存失败",
+      "fulfilled": "已标记交付",
+      "cancelled": "已取消并退分",
+      "actionFailed": "操作失败",
+      "warning": "这些兑换的积分已经扣除。取消会退还，标记交付不会。"
     }
   },
   "essayAdmin": {

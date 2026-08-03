@@ -5,7 +5,7 @@
   "apps/api/prisma": 11948,
   "apps/web/src": 16298,
   "apps/mobile/src": 8658,
-  "packages/shared": 6694,
+  "packages/shared": 6704,
   "packages/browser-extension": 0,
   "scripts": 10799
 }

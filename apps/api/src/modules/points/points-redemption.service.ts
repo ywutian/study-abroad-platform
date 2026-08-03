@@ -168,7 +168,7 @@ export class PointsRedemptionService {
         metadata: {
           ...(redemption.metadata as Record<string, unknown> | null),
           outcome: { ...outcome, recordedAt: new Date().toISOString() },
-        } as Prisma.InputJsonValue,
+        },
       },
     });
 
@@ -293,6 +293,35 @@ export class PointsRedemptionService {
         // Shared shape plus email: fulfilling a CONSULT_15MIN means sending the
         // user a booking link, so the operator needs a way to reach them. This
         // route is ADMIN + SYSTEM_SETTINGS gated.
+        user: { select: { ...USER_SUMMARY_SELECT, email: true } },
+      },
+    });
+  }
+
+  /**
+   * Fulfilled consultations, newest first — the outcome queue.
+   *
+   * listPending() covers "a booking still has to go out". This covers the step
+   * after it, which had no route at all: once fulfilled, a redemption vanished
+   * from every operator surface, so there was no way to find the sessions whose
+   * result still needed recording.
+   *
+   * Returns recorded and unrecorded together rather than filtering on
+   * `metadata.outcome` being absent. Filtering a missing Json key is awkward in
+   * Prisma and would hide the ones already done, which is exactly what an
+   * operator wants to see to know the queue is being worked. The caller splits
+   * them; at this volume the whole list fits in one page.
+   */
+  async listFulfilledConsultations(limit = 50) {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); reading another user's redemption is the job
+    return this.prisma.pointsRedemption.findMany({
+      where: {
+        status: RedemptionStatus.FULFILLED,
+        type: RedemptionType.CONSULT_15MIN,
+      },
+      orderBy: { fulfilledAt: 'desc' },
+      take: Math.min(200, Math.max(1, limit)),
+      include: {
         user: { select: { ...USER_SUMMARY_SELECT, email: true } },
       },
     });
