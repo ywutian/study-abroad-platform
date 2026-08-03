@@ -26,6 +26,7 @@ describe('UserService', () => {
     deleteMany: jest.fn().mockReturnValue(Promise.resolve({})),
     count: jest.fn().mockResolvedValue(0),
   };
+  const txProfileUpdateMany = jest.fn().mockReturnValue(Promise.resolve({}));
   const txForumPostFindMany = jest.fn().mockResolvedValue([]);
   const txPeerReviewFindMany = jest.fn().mockResolvedValue([]);
   const mockPeerReviewService = { updateUserRating: jest.fn() };
@@ -77,6 +78,7 @@ describe('UserService', () => {
                 },
                 profile: {
                   update: createChainableMock(),
+                  updateMany: txProfileUpdateMany,
                   deleteMany: createChainableMock(),
                 },
                 refreshToken: {
@@ -359,6 +361,30 @@ describe('UserService', () => {
       );
 
       await expect(service.hardDelete('user-123')).resolves.toBeUndefined();
+    });
+  });
+
+  describe('softDelete — profile anonymisation', () => {
+    it('clears the identifiers the profile actually holds', async () => {
+      // The endpoint is labelled 注销账号 / 永久删除您的账户和数据 and answers
+      // "permanently removed within 30 days". Nothing filters deletedAt when
+      // serving profiles or forum posts, and mapForumAuthor reads realName and
+      // avatarUrl — so leaving these meant the account stayed named on every
+      // post it had written.
+      txProfileUpdateMany.mockClear();
+
+      await service.softDelete('user-123');
+
+      expect(txProfileUpdateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-123' },
+        data: {
+          realName: null,
+          nickname: null,
+          avatarUrl: null,
+          bio: null,
+          birthday: null,
+        },
+      });
     });
   });
 });

@@ -123,6 +123,26 @@ export class UserService {
         }),
         ctx('admissionCase'),
       );
+      // The profile is where the identifiers actually live. softDelete
+      // anonymised User.email and Message.content and then stopped, so after
+      // "注销账号 — 永久删除您的账户和数据" the real name, photo, bio and date of
+      // birth stayed on the profile — and nothing filters `deletedAt` when
+      // serving it, so every forum post the account wrote kept rendering
+      // author.name and author.avatar (mapForumAuthor reads exactly these two).
+      // Same field set that anonymizeProfile strips for ANONYMOUS viewing.
+      await safeDelete(
+        tx.profile.updateMany({
+          where: { userId: id },
+          data: {
+            realName: null,
+            nickname: null,
+            avatarUrl: null,
+            bio: null,
+            birthday: null,
+          },
+        }),
+        ctx('profile'),
+      );
       await safeDelete(
         tx.follow.deleteMany({
           where: { OR: [{ followerId: id }, { followingId: id }] },
