@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { GraduationCap, Lightbulb, ListChecks, Search, ShieldCheck } from 'lucide-react';
+import { GraduationCap, Lightbulb, ListChecks, Scale, Search, ShieldCheck } from 'lucide-react';
 import { EnterpriseStatusStrip, PageContainer, PageHeader } from '@/components/layout';
 import {
   Breadcrumb,
@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
 import { BrowseTab } from './_components/BrowseTab';
 import { RecommendTab } from './_components/RecommendTab';
@@ -21,6 +22,7 @@ export default function SchoolsPage() {
   const t = useTranslations('schools');
   const tc = useTranslations('common');
   const statusT = useTranslations('enterpriseStatus');
+  const compareT = useTranslations('schoolCompare');
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'recommend' ? 'recommend' : 'browse';
 
@@ -45,6 +47,14 @@ export default function SchoolsPage() {
         description={t('description')}
         icon={GraduationCap}
         color="blue"
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/schools/compare">
+              <Scale className="mr-2 size-4" aria-hidden="true" />
+              {compareT('title')}
+            </Link>
+          </Button>
+        }
       />
 
       <EnterpriseStatusStrip

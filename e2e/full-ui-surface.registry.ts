@@ -283,6 +283,12 @@ export const FULL_UI_SURFACE_ROUTES: FullUiSurfaceRoute[] = [
   },
   { name: 'Admin payments', pattern: '/admin/payments', path: '/admin/payments', role: 'admin' },
   {
+    name: 'Admin points redemptions',
+    pattern: '/admin/points-redemptions',
+    path: '/admin/points-redemptions',
+    role: 'admin',
+  },
+  {
     name: 'Admin prediction benchmark',
     pattern: '/admin/prediction-benchmark',
     path: '/admin/prediction-benchmark',
