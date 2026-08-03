@@ -43,6 +43,9 @@ export class SchoolLookupHelper {
     };
     const selectFields = select || defaultSelect;
 
+    // governance: system-scope — School is published institution data
+    // (name/aliases/rank/tuition/state) with no User or Profile relation; every
+    // lookup below is keyed by a school id or name from the tool args.
     if (schoolId) {
       return this.prisma.school.findUnique({
         where: { id: schoolId },
@@ -53,6 +56,7 @@ export class SchoolLookupHelper {
     if (schoolName) {
       // Try exact normalized name first (uses UNIQUE index)
       const norm = normalizeSchoolName(schoolName);
+      // governance: system-scope — School, no User relation (see findSchool above)
       const school = await (this.prisma.school.findUnique({
         where: { nameNorm: norm },
         select: selectFields as any,
@@ -61,6 +65,7 @@ export class SchoolLookupHelper {
 
       // Fallback: fuzzy search
       const searchTerm = schoolName.trim();
+      // governance: system-scope — School, no User relation (see findSchool above)
       return this.prisma.school.findFirst({
         where: {
           OR: [
@@ -136,6 +141,8 @@ export class SchoolLookupHelper {
       where.state = args.state;
     }
 
+    // governance: system-scope — School is published institution data with no
+    // User relation; the filters are tuition/state/name from the tool args.
     const schools = await this.prisma.school.findMany({
       where,
       orderBy: { usNewsRank: 'asc' },

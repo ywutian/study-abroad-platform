@@ -68,4 +68,56 @@ describe('CaseToolsService', () => {
     const result = await service.searchCases({ schoolName: 'Stanford' }, 'en');
     expect(result).toBeDefined();
   });
+
+  describe('analyzeIntlCompetitiveness — small-cohort suppression', () => {
+    const admitted = (n: number) =>
+      Array.from({ length: n }, () => ({ result: 'ADMITTED' }));
+    const rejected = (n: number) =>
+      Array.from({ length: n }, () => ({ result: 'REJECTED' }));
+
+    it('withholds outcomes for a cohort under the floor', async () => {
+      // One Chinese applicant at this school. "1 case, 100% admitted" states
+      // where that identifiable person got in — the count may go out, the
+      // outcome may not.
+      prisma.admissionCase.findMany
+        .mockResolvedValueOnce(admitted(1)) // nationality slice
+        .mockResolvedValueOnce([...admitted(15), ...rejected(5)]); // all international
+
+      const r: any = await service.analyzeIntlCompetitiveness(
+        { schoolId: 's-1', nationality: 'China' },
+        'en',
+      );
+
+      expect(r.nationality.insufficientData).toBe(true);
+      expect(r.nationality.totalCases).toBe(1);
+      expect(r.nationality).not.toHaveProperty('admitted');
+      expect(r.nationality).not.toHaveProperty('admitRate');
+
+      // The prose is fed to the LLM, so it must not restate what the fields
+      // withhold. Assert on the nationality segment only — the other slice
+      // clears the floor and is allowed to carry a rate.
+      const [natSegment] = r.summary.split(';');
+      expect(natSegment).toContain('withheld');
+      expect(natSegment).not.toMatch(/%/);
+
+      // the slice that clears the floor still reports normally
+      expect(r.allInternational.admitRate).toBe('75.0%');
+    });
+
+    it('reports outcomes once the cohort reaches the floor', async () => {
+      prisma.admissionCase.findMany
+        .mockResolvedValueOnce([...admitted(4), { result: 'REJECTED' }]) // exactly 5
+        .mockResolvedValueOnce(admitted(20));
+
+      const r: any = await service.analyzeIntlCompetitiveness(
+        { schoolId: 's-1', nationality: 'China' },
+        'en',
+      );
+
+      expect(r.nationality).not.toHaveProperty('insufficientData');
+      expect(r.nationality.totalCases).toBe(5);
+      expect(r.nationality.admitted).toBe(4);
+      expect(r.nationality.admitRate).toBe('80.0%');
+    });
+  });
 });

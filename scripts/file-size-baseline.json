@@ -1,6 +1,7 @@
 {
   "_comment": "One-way ceiling on oversized source files, per package. The number is \u03a3 max(0, lines \u2212 500) \u2014 the total lines past the limit, NOT a file count, so splitting a large file always lowers it and never trips the gate. check-file-size-ratchet.ts fails when a package's number RISES. After splitting something, run `pnpm lint:file-size --update` to lock the win; --update never raises a floor. Raising a number requires editing this file in the same PR.",
-  "apps/api/src": 43947,
+  "_apps_api_src_note": "43947 → 44016 (+69). Extending G4 to ai-agent surfaced four defects and 41 sites needing a written justification; the annotations, the two access-control fixes in ai-agent/tools, the owner predicates in task-queue, the small-cohort suppression in analyzeIntlCompetitiveness, and the anonymizeProfile regression test all land in files already past 500 lines. Rationale was moved to .claude/rules/backend.md wherever it was policy rather than local detail; what is left is the guards themselves. Splitting a service to fit a comment budget would be the ratchet driving the design, so this is raised deliberately — it is guards and comments, not new behaviour, and the next split should take it back down.",
+  "apps/api/src": 44016,
   "apps/api/scripts": 41392,
   "apps/api/prisma": 11948,
   "apps/web/src": 16319,

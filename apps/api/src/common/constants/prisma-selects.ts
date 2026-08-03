@@ -3,6 +3,7 @@ import {
   DataReviewStatus,
   SchoolMediaSourceType,
   SchoolMediaStatus,
+  Visibility,
 } from '@prisma/client';
 
 /**
@@ -15,6 +16,17 @@ export const CASE_REVIEW_APPROVED_WHERE = {
       DataReviewStatus.APPROVED,
     ] as DataReviewStatus[],
   },
+};
+
+/**
+ * Serving a case to a caller whose role is unknown. Review status is not access
+ * control and `visibility` defaults to PRIVATE, so review-only filters served
+ * PRIVATE and VERIFIED_ONLY rows to anyone with an id. VERIFIED_ONLY is excluded
+ * on purpose: it needs a role. Do not widen — see `.claude/rules/backend.md`.
+ */
+export const CASE_PUBLIC_VISIBILITY_WHERE = {
+  visibility: { in: [Visibility.ANONYMOUS, Visibility.PUBLIC] },
+  ...CASE_REVIEW_APPROVED_WHERE,
 };
 
 /**

@@ -180,6 +180,9 @@ export class PredictionToolsService implements IToolHandlerProvider {
           },
         },
       }),
+      // governance: parent-scoped — keyed by profileId, resolved from
+      // profileLoader.getProfileId(userId) at the top of this method; the LLM
+      // supplies only schoolId/schoolName.
       this.prisma.predictionSnapshot.findMany({
         where: {
           profileId,

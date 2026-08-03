@@ -48,8 +48,9 @@ import type { GovernanceIssue } from '../types';
 const ROOT = path.resolve(__dirname, '../../..');
 
 const SCAN_DIRS = [
-  path.join(ROOT, 'apps/api/src/modules/ai-agent/memory'),
-  path.join(ROOT, 'apps/api/src/modules/ai-agent/core'),
+  // ai-agent/memory + ai-agent/core were the rule's original two entries; the
+  // whole module is covered from the eleventh batch below, which subsumes them.
+  //
   // Extended 2026-08-02. The rule shipped covering ai-agent only — 58 of the
   // 1,312 Prisma calls in apps/api/src/modules, 4.4%. Every module holding
   // user-owned records was outside it, including vault, which stores
@@ -129,16 +130,25 @@ const SCAN_DIRS = [
   // calibration, which is aggregate-only with MIN_CASES = 10.
   path.join(ROOT, 'apps/api/src/modules/admin'),
   path.join(ROOT, 'apps/api/src/modules/school'),
-  // Tenth batch — hall, the last module. Held out for six rounds because two
-  // of its sites were a product question, not a code defect; see below for
-  // what was decided and what deliberately was not.
+  // Tenth batch — hall, the last of the modules known to be outstanding at the
+  // time. Held out for six rounds because two of its sites were a product
+  // question, not a code defect; see below for what was decided and what
+  // deliberately was not.
   path.join(ROOT, 'apps/api/src/modules/hall'),
+  // Eleventh batch — the three that the completeness claim had skipped.
   //
-  // STILL UNCOVERED, with the work sized so the next pass can be planned
-  // (counts are flagged sites; ★ = the model has a User/Profile relation, so
-  // the site needs a human decision rather than a schema lookup):
-  //
-  // COVERAGE IS COMPLETE — every module under apps/api/src/modules is scanned.
+  // The list asserted "COVERAGE IS COMPLETE — every module under
+  // apps/api/src/modules is scanned" while `assessment` and `notification` had
+  // never been added, and `ai-agent` was still pinned to the two
+  // subdirectories the rule originally shipped with — so `ai-agent/tools`,
+  // `/admin`, `/infrastructure` and `/security` were outside it, which is 76
+  // of the module's Prisma calls including the case and school tool surfaces.
+  // A hand-maintained list cannot be evidence about itself: the claim is gone
+  // and assertCoverage() reconciles the list against the filesystem instead,
+  // so omitting a module now fails the rule rather than narrowing it silently.
+  path.join(ROOT, 'apps/api/src/modules/assessment'),
+  path.join(ROOT, 'apps/api/src/modules/notification'),
+  path.join(ROOT, 'apps/api/src/modules/ai-agent'),
   //
   // hall's two dashboard endpoints were the last open item. They compose
   // VERIFIED_CASE_WHERE, which filters isVerified + approved review but NOT
@@ -256,8 +266,45 @@ function getAllTsFiles(dir: string): string[] {
   return results;
 }
 
+const MODULES_ROOT = path.join(ROOT, 'apps/api/src/modules');
+
+/**
+ * Reconcile SCAN_DIRS against the filesystem.
+ *
+ * The list above spent several rounds asserting "COVERAGE IS COMPLETE — every
+ * module under apps/api/src/modules is scanned" while three were missing:
+ * `assessment` and `notification` had never been added, and `ai-agent` was
+ * pinned to the two subdirectories the rule originally shipped with. A
+ * hand-maintained list is not evidence about itself, and the claim was the
+ * only thing standing between a reviewer and that gap.
+ *
+ * So the completeness claim is computed now, not written. Adding a module
+ * without adding it here fails the rule rather than silently narrowing it.
+ */
+function assertCoverage(): GovernanceIssue[] {
+  if (!fs.existsSync(MODULES_ROOT)) return [];
+
+  const covered = new Set(
+    SCAN_DIRS.filter((d) => path.dirname(d) === MODULES_ROOT).map((d) => path.basename(d))
+  );
+
+  return fs
+    .readdirSync(MODULES_ROOT, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !covered.has(e.name))
+    .map((e) => ({
+      rule: 'user-data-isolation',
+      severity: 'error' as const,
+      file: 'scripts/governance/rules/user-data-isolation.ts',
+      line: 1,
+      message:
+        `Module "${e.name}" is not in SCAN_DIRS, so none of its Prisma calls are ` +
+        `checked for user scoping. Add it (whole module, not a subdirectory) and ` +
+        `read what it flags — the reading is the point, not the annotation.`,
+    }));
+}
+
 export function run(): GovernanceIssue[] {
-  const issues: GovernanceIssue[] = [];
+  const issues: GovernanceIssue[] = assertCoverage();
 
   for (const dir of SCAN_DIRS) {
     for (const filePath of getAllTsFiles(dir)) {

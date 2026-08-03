@@ -8,7 +8,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
-import { CASE_REVIEW_APPROVED_WHERE } from '../../../common/constants/prisma-selects';
+import {
+  CASE_REVIEW_APPROVED_WHERE,
+  CASE_PUBLIC_VISIBILITY_WHERE,
+} from '../../../common/constants/prisma-selects';
 import {
   parseCaseActivities,
   parseCaseAwards,
@@ -121,6 +124,7 @@ export class CaseToolsService implements IToolHandlerProvider {
     where.visibility = { in: ['ANONYMOUS', 'PUBLIC'] };
     where.reviewStatus = CASE_REVIEW_APPROVED_WHERE.reviewStatus;
 
+    // governance: public-feed — visibility pinned two lines above; AdmissionCase.visibility defaults to PRIVATE, so that pin is the whole access control here
     const cases = await this.prisma.admissionCase.findMany({
       where,
       take: 10,
@@ -172,8 +176,9 @@ export class CaseToolsService implements IToolHandlerProvider {
   async explainCaseResult(caseId: string, locale = 'zh') {
     const isZh = locale === 'zh';
     try {
+      // governance: public-feed — CASE_PUBLIC_VISIBILITY_WHERE; caseId is an LLM arg, so review status alone was not access control (see backend.md)
       const admissionCase = await this.prisma.admissionCase.findFirst({
-        where: { id: caseId, ...CASE_REVIEW_APPROVED_WHERE },
+        where: { id: caseId, ...CASE_PUBLIC_VISIBILITY_WHERE },
         include: { school: true },
       });
 
@@ -323,8 +328,9 @@ Analyze the user's judgement strengths and provide tips to improve accuracy.`,
     const isZh = locale === 'zh';
     try {
       const [admissionCase, profile] = await Promise.all([
+        // governance: public-feed — same pin as explainCaseResult; the method's userId scopes only the profile half, which is why G4 never flagged this
         this.prisma.admissionCase.findFirst({
-          where: { id: caseId, ...CASE_REVIEW_APPROVED_WHERE },
+          where: { id: caseId, ...CASE_PUBLIC_VISIBILITY_WHERE },
           include: { school: true },
         }),
         this.profileLoader.loadProfile(userId, locale),
@@ -614,6 +620,7 @@ ${
       }
 
       // Nationality-aware matching: prefer same-nationality cases, fallback to all
+      // governance: public-feed — all three queries below spread the base `where` (visibility in (ANONYMOUS, PUBLIC) + approved reviewStatus), only adding filters
       let cases: any[];
       let nationalityMatched = false;
 
@@ -638,6 +645,7 @@ ${
           // Not enough same-nationality cases — fill remaining slots with any cases
           const remaining = take - cases.length;
           const sameIds = cases.map((c: any) => c.id);
+          // governance: public-feed — spreads the same base `where` (visibility in (ANONYMOUS, PUBLIC) + approved reviewStatus)
           const fallbackCases = await this.prisma.admissionCase.findMany({
             where: {
               ...where,
@@ -651,6 +659,7 @@ ${
           nationalityMatched = cases.length > 0 && sameIds.length > 0;
         }
       } else {
+        // governance: public-feed — spreads the same base `where` (visibility in (ANONYMOUS, PUBLIC) + approved reviewStatus)
         cases = await this.prisma.admissionCase.findMany({
           where,
           take,
@@ -714,6 +723,32 @@ ${
     }
   }
 
+  /**
+   * Smallest cohort whose outcomes may be reported. Counts still go out; the
+   * breakdown and the rate do not. See `.claude/rules/backend.md`.
+   */
+  private static readonly MIN_REPORTABLE_COHORT = 5;
+
+  private summarizeOutcomes(cases: Array<{ result: string }>) {
+    const totalCases = cases.length;
+    if (totalCases < CaseToolsService.MIN_REPORTABLE_COHORT) {
+      return {
+        totalCases,
+        insufficientData: true as const,
+        minimumRequired: CaseToolsService.MIN_REPORTABLE_COHORT,
+      };
+    }
+    const admitted = cases.filter((c) => c.result === 'ADMITTED').length;
+    const rejected = cases.filter((c) => c.result === 'REJECTED').length;
+    return {
+      totalCases,
+      admitted,
+      rejected,
+      waitlistedOrDeferred: totalCases - admitted - rejected,
+      admitRate: `${((admitted / totalCases) * 100).toFixed(1)}%`,
+    };
+  }
+
   async analyzeIntlCompetitiveness(
     args: { schoolId: string; nationality: string },
     locale = 'zh',
@@ -723,6 +758,9 @@ ${
       const { schoolId, nationality } = args;
 
       // Query cases for the specific nationality at this school
+      // governance: aggregate-only — select is `{ result: true }`; only counts
+      // leave, and outcomes are withheld below MIN_REPORTABLE_COHORT. One caveat
+      // stated not hidden: no visibility filter, so PRIVATE cases count.
       const nationalityCases = await this.prisma.admissionCase.findMany({
         where: {
           schoolId,
@@ -732,17 +770,11 @@ ${
         select: { result: true },
       });
 
-      const natTotal = nationalityCases.length;
-      const natAdmit = nationalityCases.filter(
-        (c) => c.result === 'ADMITTED',
-      ).length;
-      const natReject = nationalityCases.filter(
-        (c) => c.result === 'REJECTED',
-      ).length;
-      const natAdmitRate =
-        natTotal > 0 ? ((natAdmit / natTotal) * 100).toFixed(1) : null;
+      const nat = this.summarizeOutcomes(nationalityCases);
 
       // Query all international student cases at this school
+      // governance: aggregate-only — same shape and same caveat as the
+      // nationality query above; same cohort floor applies.
       const intlCases = await this.prisma.admissionCase.findMany({
         where: {
           schoolId,
@@ -752,15 +784,9 @@ ${
         select: { result: true },
       });
 
-      const intlTotal = intlCases.length;
-      const intlAdmit = intlCases.filter((c) => c.result === 'ADMITTED').length;
-      const intlReject = intlCases.filter(
-        (c) => c.result === 'REJECTED',
-      ).length;
-      const intlAdmitRate =
-        intlTotal > 0 ? ((intlAdmit / intlTotal) * 100).toFixed(1) : null;
+      const intl = this.summarizeOutcomes(intlCases);
 
-      if (natTotal === 0 && intlTotal === 0) {
+      if (nat.totalCases === 0 && intl.totalCases === 0) {
         return {
           message: isZh
             ? `未找到该学校的国际生录取案例数据`
@@ -768,25 +794,30 @@ ${
         };
       }
 
+      // The summary is prose fed to the LLM, so it has to honour the floor too —
+      // withholding the fields and then restating the rate here would leak it.
+      const describe = (
+        label: string,
+        s: ReturnType<typeof this.summarizeOutcomes>,
+      ) =>
+        'insufficientData' in s
+          ? isZh
+            ? `${label}: ${s.totalCases}例，样本不足${s.minimumRequired}例，不报录取结果`
+            : `${label}: ${s.totalCases} cases, below the ${s.minimumRequired}-case reporting floor, outcomes withheld`
+          : isZh
+            ? `${label}: ${s.totalCases}例, 录取${s.admitted}例(${s.admitRate})`
+            : `${label}: ${s.totalCases} cases, ${s.admitted} admitted (${s.admitRate})`;
+
       return {
-        nationality: {
-          country: nationality,
-          totalCases: natTotal,
-          admitted: natAdmit,
-          rejected: natReject,
-          waitlistedOrDeferred: natTotal - natAdmit - natReject,
-          admitRate: natAdmitRate ? `${natAdmitRate}%` : 'N/A',
-        },
-        allInternational: {
-          totalCases: intlTotal,
-          admitted: intlAdmit,
-          rejected: intlReject,
-          waitlistedOrDeferred: intlTotal - intlAdmit - intlReject,
-          admitRate: intlAdmitRate ? `${intlAdmitRate}%` : 'N/A',
-        },
-        summary: isZh
-          ? `${nationality}申请者: ${natTotal}例, 录取${natAdmit}例(${natAdmitRate ?? 'N/A'}%); 全部国际生: ${intlTotal}例, 录取${intlAdmit}例(${intlAdmitRate ?? 'N/A'}%)`
-          : `${nationality} applicants: ${natTotal} cases, ${natAdmit} admitted (${natAdmitRate ?? 'N/A'}%); All international: ${intlTotal} cases, ${intlAdmit} admitted (${intlAdmitRate ?? 'N/A'}%)`,
+        nationality: { country: nationality, ...nat },
+        allInternational: intl,
+        summary: [
+          describe(
+            isZh ? `${nationality}申请者` : `${nationality} applicants`,
+            nat,
+          ),
+          describe(isZh ? '全部国际生' : 'All international', intl),
+        ].join('; '),
       };
     } catch (error) {
       this.logger.error('Failed to analyze intl competitiveness', error);
