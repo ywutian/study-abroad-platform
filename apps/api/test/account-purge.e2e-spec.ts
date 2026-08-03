@@ -133,6 +133,69 @@ describe('Account purge (e2e)', () => {
     await users.hardDelete(author.id).catch(() => {});
   }, 30000);
 
+  it('reopens a FULL team the purged member was holding, and leaves CLOSED alone', async () => {
+    // The branch worth covering: losing a member is a reason to undo a FULL
+    // that is no longer true, and not a reason to overrule an owner who closed
+    // recruitment. A cascade does neither — it just removes the TeamMember row
+    // and leaves currentSize and teamStatus as they were.
+    const owner = await mkUser('team-owner');
+    const leaver = await mkUser('team-leaver');
+
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const category = await prisma.forumCategory.create({
+      data: { name: `purge-team-${stamp}`, nameZh: `清除组队-${stamp}` },
+    });
+
+    const mkTeam = async (teamStatus: 'FULL' | 'CLOSED') => {
+      const post = await prisma.forumPost.create({
+        data: {
+          title: `team ${teamStatus}`,
+          content: 'x',
+          authorId: owner.id,
+          categoryId: category.id,
+          isTeamPost: true,
+          teamSize: 2,
+          currentSize: 2,
+          teamStatus,
+        },
+      });
+      await prisma.teamMember.create({
+        data: { postId: post.id, userId: owner.id },
+      });
+      await prisma.teamMember.create({
+        data: { postId: post.id, userId: leaver.id },
+      });
+      return post.id;
+    };
+
+    const fullId = await mkTeam('FULL');
+    const closedId = await mkTeam('CLOSED');
+
+    await users.hardDelete(leaver.id);
+
+    const full = await prisma.forumPost.findUnique({
+      where: { id: fullId },
+      select: { teamStatus: true, currentSize: true },
+    });
+    expect(full?.currentSize).toBe(1);
+    expect(full?.teamStatus).toBe('RECRUITING');
+
+    const closed = await prisma.forumPost.findUnique({
+      where: { id: closedId },
+      select: { teamStatus: true, currentSize: true },
+    });
+    expect(closed?.currentSize).toBe(1);
+    expect(closed?.teamStatus).toBe('CLOSED');
+
+    await prisma.forumPost.deleteMany({
+      where: { id: { in: [fullId, closedId] } },
+    });
+    await prisma.forumCategory
+      .delete({ where: { id: category.id } })
+      .catch(() => {});
+    await users.hardDelete(owner.id).catch(() => {});
+  }, 30000);
+
   it('honours the grace window and the dry-run switch', async () => {
     const fresh = await mkUser('fresh');
     const stale = await mkUser('stale');

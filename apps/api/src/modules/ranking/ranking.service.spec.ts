@@ -119,6 +119,7 @@ describe('RankingService', () => {
               findMany: jest.fn(),
               findUnique: jest.fn(),
               delete: jest.fn(),
+              deleteMany: jest.fn(),
             },
           },
         },
@@ -652,48 +653,48 @@ describe('RankingService', () => {
   // ============================================
 
   describe('deleteRanking', () => {
-    it('should delete a ranking owned by the user', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
-      (prisma.customRanking.delete as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
+    // Ownership is the WHERE now, so these assert the predicate rather than a
+    // findById round trip. The old shape compared `ranking.userId !== userId`
+    // against a row findById had already stripped for non-owners — correct by
+    // accident, and untested on the one branch where it mattered.
+    it("deletes the caller's own ranking", async () => {
+      (prisma.customRanking.deleteMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
 
       await service.deleteRanking(mockRankingId, mockUserId);
 
-      expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
-        where: { id: mockRankingId },
-      });
-      expect(prisma.customRanking.delete).toHaveBeenCalledWith({
-        where: { id: mockRankingId },
+      expect(prisma.customRanking.deleteMany).toHaveBeenCalledWith({
+        where: { id: mockRankingId, userId: mockUserId },
       });
     });
 
-    it('should throw NotFoundException when userId does not match ranking owner', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
+    it('will not delete a PUBLIC ranking belonging to someone else', async () => {
+      // The gap: the previous test for this used a PRIVATE fixture, which 404s
+      // at findById's visibility check before ownership is ever considered. A
+      // public ranking reaches the ownership check, which is the branch that
+      // changed.
+      (prisma.customRanking.deleteMany as jest.Mock).mockResolvedValue({
+        count: 0,
+      });
 
       await expect(
         service.deleteRanking(mockRankingId, 'other-user-id'),
       ).rejects.toThrow(NotFoundException);
 
-      expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
-        where: { id: mockRankingId },
+      expect(prisma.customRanking.deleteMany).toHaveBeenCalledWith({
+        where: { id: mockRankingId, userId: 'other-user-id' },
       });
-      // delete should NOT have been called
-      expect(prisma.customRanking.delete).not.toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException when ranking does not exist', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(null);
+    it('throws when the ranking does not exist', async () => {
+      (prisma.customRanking.deleteMany as jest.Mock).mockResolvedValue({
+        count: 0,
+      });
 
       await expect(
         service.deleteRanking('nonexistent', mockUserId),
       ).rejects.toThrow(NotFoundException);
-
-      expect(prisma.customRanking.delete).not.toHaveBeenCalled();
     });
   });
 

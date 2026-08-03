@@ -124,15 +124,21 @@ export class RankingService {
   }
 
   async deleteRanking(id: string, userId: string): Promise<void> {
-    // Pass the owner as viewer, or deleting your own private ranking 404s.
-    const ranking = await this.findById(id, userId);
+    // Ownership belongs in the WHERE, not in a comparison against a field the
+    // reader may have removed. This used to call findById and then check
+    // `ranking.userId !== userId` — and once findById started stripping the
+    // owner id for everyone but the owner, that comparison was reading
+    // `undefined` for a non-owner deleting a PUBLIC ranking. It failed closed,
+    // but by accident, and the only test covering the branch used a PRIVATE
+    // fixture that 404s earlier, so nothing was watching.
+    const { count } = await this.prisma.customRanking.deleteMany({
+      where: { id, userId },
+    });
 
-    if (ranking.userId !== userId) {
+    // Nothing matched: no such id, or not this caller's row. 404 either way —
+    // a delete must not confirm that someone else's ranking exists.
+    if (count === 0) {
       throw new NotFoundException('Ranking not found');
     }
-
-    await this.prisma.customRanking.delete({
-      where: { id },
-    });
   }
 }
