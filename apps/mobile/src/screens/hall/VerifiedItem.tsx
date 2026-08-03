@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { AnimatedCard, CardContent, Badge, Avatar } from '@/components/ui';
+import { AnimatedCard, CardContent, Badge } from '@/components/ui';
 import {
   spacing,
   fontSize,
@@ -31,28 +31,31 @@ export const VerifiedItem = memo(function VerifiedItem({ item, colors: c }: Veri
     <AnimatedCard style={S.verifiedCard}>
       <CardContent>
         <View style={S.verifiedRow}>
-          <Avatar source={item.avatarUrl} name={item.nickname} size="default" />
+          {/* No avatar. This row is an ANONYMOUS / VERIFIED_ONLY case, and an
+              avatar URL joins to the real name on the public forum feed exactly
+              as a userId does — the endpoint does not send one, and this card
+              must not ask for one. */}
           <View style={S.verifiedInfo}>
             <View style={S.verifiedNameRow}>
               <Text style={[S.verifiedName, { color: c.foreground }]} numberOfLines={1}>
-                {item.nickname}
+                {item.userName}
               </Text>
               <Ionicons name="checkmark-circle" size={16} color={c.success} />
             </View>
             <Text style={[S.verifiedSchool, { color: c.foregroundMuted }]} numberOfLines={1}>
-              {item.schoolNameZh || item.school}
+              {item.schoolNameZh || item.schoolName}
               {item.major ? ` - ${item.major}` : ''}
             </Text>
             <View style={S.verifiedBadges}>
               <Badge variant={resultVariant}>{item.result}</Badge>
-              {item.gpa != null && (
+              {item.gpaRange && (
                 <View style={[S.gpaBadge, { backgroundColor: withOpacity(c.info, 0.08) }]}>
-                  <Text style={[S.gpaBadgeText, { color: c.info }]}>GPA {item.gpa}</Text>
+                  <Text style={[S.gpaBadgeText, { color: c.info }]}>GPA {item.gpaRange}</Text>
                 </View>
               )}
-              {item.sat != null && (
+              {item.satRange && (
                 <View style={[S.gpaBadge, { backgroundColor: withOpacity(c.warning, 0.08) }]}>
-                  <Text style={[S.gpaBadgeText, { color: c.warning }]}>SAT {item.sat}</Text>
+                  <Text style={[S.gpaBadgeText, { color: c.warning }]}>SAT {item.satRange}</Text>
                 </View>
               )}
             </View>

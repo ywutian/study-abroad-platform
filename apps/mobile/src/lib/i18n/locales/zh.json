@@ -856,7 +856,7 @@
       "stats": {
         "total": "已认证",
         "admitted": "已录取",
-        "avgGpa": "平均 GPA"
+        "ivy": "藤校录取"
       },
       "empty": "暂无认证用户",
       "points": "积分",

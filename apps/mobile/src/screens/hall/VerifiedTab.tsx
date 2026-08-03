@@ -67,7 +67,7 @@ export function VerifiedTab() {
 
   if (isLoading) return <Loading text={t('hall.loading')} />;
 
-  const users = verifiedData?.items || [];
+  const users = verifiedData?.users || [];
   const stats = verifiedData?.stats;
 
   return (
@@ -100,18 +100,17 @@ export function VerifiedTab() {
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
-            <Text style={[S.vStatValue, { color: c.success }]}>{stats.admittedCount}</Text>
+            <Text style={[S.vStatValue, { color: c.success }]}>{stats.totalAdmitted}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
               {t('hall.verified.stats.admitted')}
             </Text>
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
-            <Text style={[S.vStatValue, { color: c.info }]}>
-              {stats.avgGpa != null ? stats.avgGpa.toFixed(2) : '—'}
-            </Text>
+            {/* was stats.avgGpa — this endpoint has never returned one */}
+            <Text style={[S.vStatValue, { color: c.info }]}>{stats.ivyCount}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hall.verified.stats.avgGpa')}
+              {t('hall.verified.stats.ivy')}
             </Text>
           </View>
         </Animated.View>

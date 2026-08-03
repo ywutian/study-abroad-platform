@@ -856,7 +856,7 @@
       "stats": {
         "total": "Verified",
         "admitted": "Admitted",
-        "avgGpa": "Avg GPA"
+        "ivy": "Ivy admits"
       },
       "empty": "No verified users yet",
       "points": "pts",
