@@ -372,6 +372,36 @@ describe('ProfileCrudService', () => {
       expect(result.currentSchool).toBe('Private School');
     });
 
+    it('removes the join key and the other identifying fields', () => {
+      // The fixture above carries only realName/currentSchool/gpa, so it could
+      // never show that the spread kept everything else. "他人可见但隐藏身份"
+      // is not kept by masking the name while shipping the user id, a photo,
+      // and a self-written bio.
+      const profile = {
+        id: 'profile-1',
+        userId: 'user-secret',
+        realName: 'John Doe',
+        nickname: 'jd',
+        avatarUrl: 'https://cdn/avatar.png',
+        bio: 'Hi, I am John from MIT',
+        birthday: new Date('2007-04-01'),
+        currentSchool: 'MIT',
+        gpa: new Prisma.Decimal(3.95),
+        targetMajor: 'CS',
+      } as any;
+
+      const result = service.anonymizeProfile(profile);
+
+      expect(result).not.toHaveProperty('userId');
+      expect(result).not.toHaveProperty('avatarUrl');
+      expect(result).not.toHaveProperty('bio');
+      expect(result).not.toHaveProperty('birthday');
+      expect(JSON.stringify(result)).not.toContain('user-secret');
+      // the pseudonym and the academic fields are the point of the surface
+      expect(result.nickname).toBe('jd');
+      expect(result.targetMajor).toBe('CS');
+    });
+
     it('should bucket GPA into ranges', () => {
       const profile = {
         realName: 'Test',

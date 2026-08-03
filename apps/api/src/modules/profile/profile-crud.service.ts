@@ -154,6 +154,24 @@ export class ProfileCrudService {
   /**
    * Strip personally identifiable information from a profile for anonymous viewing.
    *
+   * The user was told "他人可见但隐藏身份". Masking realName is not enough to keep
+   * that promise, because the spread carried everything else through:
+   *
+   *  - `userId` is the join key. GET /forum/posts publishes it as author.id
+   *    beside profile.realName, so one lookup undoes the whole masking — the
+   *    same defect fixed in feaa8cce / afb38270 / 21d666d1.
+   *  - `avatarUrl` is a photograph of the person.
+   *  - `bio` is free text they wrote about themselves; it routinely contains a
+   *    name or a school.
+   *  - `birthday` is a date of birth.
+   *
+   * `nickname` stays: a pseudonymous handle is what an anonymous profile is for.
+   * Academic fields stay — the point of the surface is comparing profiles.
+   *
+   * Deny-list, not an allow-list, for the same reason as stripCaseIdentity:
+   * Profile has ~40 columns and enumerating them here would be the more
+   * dangerous change.
+   *
    * Replaces realName with null, school name with "Private School", and buckets GPA
    * into ranges (3.9+, 3.7+, 3.5+, 3.3+, 3.0+, 2.5+).
    *
@@ -171,11 +189,22 @@ export class ProfileCrudService {
     activities?: unknown[];
     awards?: unknown[];
   } {
+    const {
+      userId: _userId,
+      avatarUrl: _avatarUrl,
+      bio: _bio,
+      birthday: _birthday,
+      ...rest
+    } = profile;
     return {
-      ...profile,
+      ...rest,
       realName: null,
       currentSchool: this.anonymizeSchool(profile.currentSchool),
       gpa: profile.gpa ? this.anonymizeGpa(Number(profile.gpa)) : null,
+    } as Profile & {
+      testScores?: unknown[];
+      activities?: unknown[];
+      awards?: unknown[];
     };
   }
 
