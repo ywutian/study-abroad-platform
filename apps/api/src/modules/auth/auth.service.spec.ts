@@ -647,7 +647,7 @@ describe('AuthService', () => {
     };
     const dto = {
       email: 'op@example.com',
-      password: 'Passw0rd!x',
+      password: 'password123',
       inviteToken: 'tok-1',
       locale: 'zh',
     };
