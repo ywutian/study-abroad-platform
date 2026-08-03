@@ -100,6 +100,22 @@ export function getCurrentUserId(): string | undefined {
   return requestContext.get()?.userId;
 }
 
+/**
+ * The caller's role, for code that runs below the controller and cannot take it
+ * as a parameter — the agent tool layer in particular.
+ *
+ * Read it, do not cache it. `MemoryService.loadUserContext` keeps a TTL'd
+ * per-user snapshot, and an authorisation input does not belong in one: a user
+ * demoted mid-TTL would keep the access their old role granted. This reads the
+ * value the auth guard put on *this* request.
+ *
+ * `undefined` means unauthenticated OR that UserContextMiddleware did not run
+ * for this route — treat it as "no role", never as "trusted".
+ */
+export function getCurrentUserRole(): string | undefined {
+  return requestContext.get()?.userRole;
+}
+
 export function getCurrentConversationId(): string | undefined {
   return requestContext.get()?.conversationId;
 }

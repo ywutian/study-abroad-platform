@@ -90,7 +90,10 @@ import { AgentAdminController } from './admin/agent-admin.controller';
 import { UserDataController } from './user-data.controller';
 
 // Middleware
-import { RequestContextMiddleware } from './infrastructure/context/request-context';
+import {
+  RequestContextMiddleware,
+  UserContextMiddleware,
+} from './infrastructure/context/request-context';
 import { AgentSecurityMiddleware } from './middleware/security.middleware';
 
 @Module({
@@ -189,8 +192,17 @@ export class AiAgentModule implements OnModuleInit, NestModule {
   }
 
   configure(consumer: MiddlewareConsumer) {
+    // Order matters, and both are required.
+    //
+    // RequestContextMiddleware opens the AsyncLocalStorage scope;
+    // UserContextMiddleware fills in who is asking, and can only do that after
+    // the auth guard has attached `req.user`. Only the first was ever
+    // registered, so `userId`, `userRole` and `isVip` were never set —
+    // silently, because every accessor answers `undefined` without complaint.
+    // The agent audit log recorded its entries with no subject for as long as
+    // that was true.
     consumer
-      .apply(RequestContextMiddleware)
+      .apply(RequestContextMiddleware, UserContextMiddleware)
       .forRoutes('ai-agent', 'admin/ai-agent');
 
     consumer
