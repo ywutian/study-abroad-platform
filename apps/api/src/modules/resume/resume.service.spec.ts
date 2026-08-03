@@ -923,8 +923,26 @@ describe('ResumeService', () => {
           endDate: new Date('2024-06-20'),
         },
       ],
-      education: [],
-      testScores: [],
+      education: [
+        {
+          id: 'e1',
+          schoolName: 'X High',
+          startDate: new Date('2022-09-01'),
+          endDate: new Date('2026-06-01'),
+        },
+      ],
+      // testScores has its own date field name — the first version of this
+      // test only carried activities, which is why testDate kept the bug
+      // after the rest of the import was fixed.
+      testScores: [
+        {
+          id: 't1',
+          type: 'SAT',
+          score: 1500,
+          subScores: null,
+          testDate: new Date('2025-03-10'),
+        },
+      ],
       awards: [],
     };
     // byte-for-byte what RedisService.getJSON hands back on a hit
@@ -935,16 +953,19 @@ describe('ResumeService', () => {
         id: 'r1',
         userId: 'u1',
         type: 'COLLEGE_APPLICATION',
-        sections: [
-          {
-            id: 's1',
-            type: 'ACTIVITIES',
-            title: 'Activities',
-            order: 0,
+        // every section the profile import writes into — a resume carrying
+        // only ACTIVITIES silently skips the education/testScores branches,
+        // which is how testDate kept its bug through the first fix
+        sections: ['ACTIVITIES', 'EDUCATION', 'TEST_SCORES'].map(
+          (type, order) => ({
+            id: `s${order + 1}`,
+            type,
+            title: type,
+            order,
             content: {},
             isVisible: true,
-          },
-        ],
+          }),
+        ),
       });
       mockAuth.verifyOwnership.mockImplementation((r: unknown) => r);
     });
@@ -957,13 +978,24 @@ describe('ResumeService', () => {
       const fromCache = await service.previewProfileImport('u1', 'r1');
 
       expect(fromCache).toEqual(fromDb);
-      const items = (
-        fromCache.sections[0].proposedContent as {
-          items: { startDate: string; endDate: string }[];
-        }
-      ).items;
-      expect(items[0].startDate).toBe('2024-01');
-      expect(items[0].endDate).toBe('2024-06');
+
+      // by section type, not index — the import pushes education before
+      // activities, so an index here silently asserts the wrong section
+      const itemsOf = (type: string) =>
+        (
+          fromCache.sections.find((s) => s.sectionType === type)
+            ?.proposedContent as { items: Record<string, string>[] }
+        ).items;
+
+      expect(itemsOf('ACTIVITIES')[0]).toMatchObject({
+        startDate: '2024-01',
+        endDate: '2024-06',
+      });
+      expect(itemsOf('EDUCATION')[0]).toMatchObject({
+        startDate: '2022-09',
+        endDate: '2026-06',
+      });
+      expect(itemsOf('TEST_SCORES')[0]).toMatchObject({ testDate: '2025-03' });
     });
   });
 });
