@@ -16,7 +16,7 @@ import { Prisma } from '@prisma/client';
  */
 export function contentAsRecord(content: unknown): Prisma.JsonObject {
   return content && typeof content === 'object' && !Array.isArray(content)
-    ? (content as Prisma.JsonObject)
+    ? content
     : {};
 }
 

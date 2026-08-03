@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import mammoth from 'mammoth';
+import { RESUME_COMMENT_INCLUDE } from './resume.constants';
 import type { ResumeReviewResult } from '@study-abroad/shared';
 import {
   asArray,
@@ -1786,7 +1787,7 @@ export class ResumeService {
       sections.map((section) => [section.id, section]),
     );
     return (result.sectionFeedback ?? []).flatMap((feedback) => {
-      const sectionId = feedback.sectionId as string | undefined;
+      const sectionId = feedback.sectionId;
       const section = sectionId ? sectionById.get(sectionId) : undefined;
       return (feedback.issues ?? []).map((issue) => ({
         resumeId,
@@ -2166,9 +2167,7 @@ export class ResumeService {
     return this.prisma.resumeComment.findMany({
       where: { resumeId },
       orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
-      include: {
-        author: { select: { id: true, email: true, role: true } },
-      },
+      include: RESUME_COMMENT_INCLUDE,
     });
   }
 
@@ -2193,9 +2192,7 @@ export class ResumeService {
         role: dto.role ?? 'STUDENT',
         body: dto.body,
       },
-      include: {
-        author: { select: { id: true, email: true, role: true } },
-      },
+      include: RESUME_COMMENT_INCLUDE,
     });
   }
 
@@ -2223,9 +2220,7 @@ export class ResumeService {
         status: dto.status,
         resolvedAt: dto.status === 'RESOLVED' ? new Date() : undefined,
       },
-      include: {
-        author: { select: { id: true, email: true, role: true } },
-      },
+      include: RESUME_COMMENT_INCLUDE,
     });
   }
 
