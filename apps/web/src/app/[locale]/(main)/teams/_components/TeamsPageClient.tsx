@@ -1502,7 +1502,11 @@ export function TeamsPageClient() {
                           onClick={() =>
                             matchInviteMutation.mutate({
                               matchId: match.id,
-                              inviteeIds: match.otherCard.members.map((member) => member.userId),
+                              // matched cards are serialized with fullAccess, so every id is
+                              // present — filter to prove it rather than assert
+                              inviteeIds: match.otherCard.members
+                                .map((member) => member.userId)
+                                .filter((id): id is string => !!id),
                               sourceTeamId: match.myCard.team.id,
                             })
                           }
@@ -2268,7 +2272,10 @@ function RecruitmentCardPreview({
           <p className="text-sm font-medium">{t('recruitment.card.members')}</p>
           <div className="grid gap-2">
             {card.members.map((member) => (
-              <div key={member.userId} className="rounded-xl border bg-background/70 p-3">
+              <div
+                key={member.userId ?? member.displayName}
+                className="rounded-xl border bg-background/70 p-3"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-medium">{member.displayName}</p>

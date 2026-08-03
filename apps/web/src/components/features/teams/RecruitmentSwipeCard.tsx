@@ -234,7 +234,7 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
               <div className="flex flex-wrap items-center gap-2">
                 {visibleMembers.map((m) => (
                   <div
-                    key={m.userId}
+                    key={m.userId ?? m.displayName}
                     className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1"
                   >
                     <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-2xs font-bold text-primary shrink-0">

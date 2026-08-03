@@ -666,7 +666,7 @@ function RecruitmentCard({ card, locale }: { card: TeamRecruitmentCardFrontDto; 
         <View style={styles.memberRow}>
           {visibleMembers.map((member) => (
             <BadgeLike
-              key={member.userId}
+              key={member.userId ?? member.displayName}
               label={member.displayName || member.role}
               colors={colors}
             />

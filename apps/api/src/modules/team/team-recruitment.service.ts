@@ -1849,7 +1849,15 @@ export class TeamRecruitmentService {
           : getVisibleDisplaySettings(displayProfile, highlightOptions);
 
         return {
-          userId: member.userId,
+          // Only for viewers who already have full access to this card (their
+          // own card, or one they matched with — the invite flow reads it off
+          // match.otherCard). The guest deck at /teams/recruitments/deck/preview
+          // is @Public() and deliberately degrades displayName to "Member N"
+          // and withholds school/grade without consent — shipping the user id
+          // beside that handed back the join key to GET /forum/posts, which
+          // publishes author.id next to profile.realName. Same defect as
+          // afb38270 and feaa8cce.
+          ...(fullAccess ? { userId: member.userId } : {}),
           role: member.role,
           displayName,
           avatarUrl: member.user.profile?.avatarUrl,
