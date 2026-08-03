@@ -49,6 +49,34 @@ export function mapMyResult(item: MyResult) { return { ... }; }
 
 Shared constants in `common/constants/prisma-selects.ts`: `SCHOOL_BASIC_SELECT`, `SCHOOL_NAME_SELECT`, `SCHOOL_NAME_RANK_SELECT`, `USER_SUMMARY_SELECT`.
 
+### `include` does not restrict scalars — three live leaks came from this
+
+`findMany({ where, include: { school: … } })` returns **every scalar column of
+the model**, not just the relation you asked for. Only a top-level `select`
+narrows scalars. So a `@Public()` route querying with `include` ships `userId`,
+and `AdmissionCase.userId` is the same value `GET /forum/posts` publishes as
+`author.id` beside `profile.realName` — both unauthenticated. Pull the public
+list, match the id against the forum feed, read the name.
+
+Fixed in feaa8cce (case list/detail), afb38270 (hall verified leaderboard) and
+21d666d1 (team guest deck). The last two had already been hardened _against
+this exact concern_ — hall's mapper carries "Plan C security B4: masked label,
+never realName", team's serializer degrades displayName to `Member N` and gates
+school/grade on consent — and both then emitted the id that undoes the masking.
+Masking the name is not the job; removing the join key is.
+
+Rules for a response that leaves an unauthenticated route:
+
+- Never return `userId` / `authorId` / `verifiedBy` unless the viewer owns the
+  row or is privileged. Strip in the mapper (the query often still needs the
+  column for its own ownership check).
+- A derived pseudonym must not be derived from the id either. `用户${userId.slice(-4)}`
+  was 4 chars of a cuid, which narrows a few-thousand-author forum to one
+  person. Derive it from the row's own id instead.
+- Assert it in the spec: `expect(row).not.toHaveProperty('userId')` plus
+  `expect(JSON.stringify(row)).not.toContain(theId)` — the second is what
+  catches a pseudonym built out of the id.
+
 ## Health Endpoints
 
 - `/health`, `/health/live`, `/health/ready`, `/health/startup` — `@Public()` (probes)
