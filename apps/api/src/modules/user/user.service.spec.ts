@@ -15,6 +15,19 @@ describe('UserService', () => {
   };
   const txForumPostFindUnique = jest.fn().mockResolvedValue(null);
   const txForumPostUpdate = jest.fn().mockResolvedValue({});
+  const txForumComment = {
+    findMany: jest.fn().mockResolvedValue([]),
+    deleteMany: jest.fn().mockReturnValue(Promise.resolve({})),
+    count: jest.fn().mockResolvedValue(0),
+  };
+  const txForumCommunityFollow = {
+    findMany: jest.fn().mockResolvedValue([]),
+    deleteMany: jest.fn().mockReturnValue(Promise.resolve({})),
+    count: jest.fn().mockResolvedValue(0),
+  };
+  const txForumPostFindMany = jest.fn().mockResolvedValue([]);
+  const txForumPostCount = jest.fn().mockResolvedValue(0);
+  const txForumCommunityUpdate = jest.fn().mockResolvedValue({});
 
   const mockUser = {
     id: 'user-123',
@@ -74,12 +87,13 @@ describe('UserService', () => {
                   deleteMany: createChainableMock(),
                   findUnique: txForumPostFindUnique,
                   update: txForumPostUpdate,
+                  findMany: txForumPostFindMany,
+                  count: txForumPostCount,
                 },
                 teamMember: txTeamMember,
-                forumComment: {
-                  updateMany: createChainableMock(),
-                  deleteMany: createChainableMock(),
-                },
+                forumCommunityFollow: txForumCommunityFollow,
+                forumCommunity: { update: txForumCommunityUpdate },
+                forumComment: txForumComment,
                 admissionCase: {
                   updateMany: createChainableMock(),
                   deleteMany: createChainableMock(),
@@ -261,6 +275,48 @@ describe('UserService', () => {
       const data = txForumPostUpdate.mock.calls[0][0].data;
       expect(data.currentSize).toBe(2);
       expect(data).not.toHaveProperty('teamStatus');
+    });
+  });
+
+  describe('hardDelete — forum counters', () => {
+    beforeEach(() => {
+      txForumPostUpdate.mockClear();
+      txForumCommunityUpdate.mockClear();
+      txForumPostFindUnique.mockResolvedValue(null);
+      txTeamMember.findMany.mockResolvedValue([]);
+    });
+
+    it('recounts commentCount on posts the account had commented on', async () => {
+      // ForumComment cascades off User, so these rows vanish with no code run.
+      txForumComment.findMany.mockResolvedValue([
+        { postId: 'post-9' },
+        { postId: 'post-9' },
+      ]);
+      txForumComment.count.mockResolvedValue(3); // survivors after the delete
+
+      await service.hardDelete('user-123');
+
+      expect(txForumPostUpdate).toHaveBeenCalledWith({
+        where: { id: 'post-9' },
+        data: { commentCount: 3 },
+      });
+    });
+
+    it('recounts community postCount and followerCount', async () => {
+      txForumComment.findMany.mockResolvedValue([]);
+      txForumPostFindMany.mockResolvedValue([{ communityId: 'com-1' }]);
+      txForumCommunityFollow.findMany.mockResolvedValue([
+        { communityId: 'com-1' },
+      ]);
+      txForumPostCount.mockResolvedValue(7);
+      txForumCommunityFollow.count.mockResolvedValue(4);
+
+      await service.hardDelete('user-123');
+
+      expect(txForumCommunityUpdate).toHaveBeenCalledWith({
+        where: { id: 'com-1' },
+        data: { postCount: 7, followerCount: 4 },
+      });
     });
   });
 });

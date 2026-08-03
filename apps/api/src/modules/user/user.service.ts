@@ -234,6 +234,8 @@ export class UserService {
         }
       }
 
+      await this.recountForumDenormals(tx, id);
+
       await tx.user.delete({ where: { id } });
     });
 
@@ -417,5 +419,96 @@ export class UserService {
       select: { id: true },
     });
     return referrer?.id ?? null;
+  }
+
+  /**
+   * Repair the forum's denormalised counters before the account's rows vanish.
+   *
+   * ForumComment, ForumPost and ForumCommunityFollow all cascade off User, and
+   * ForumPost.commentCount / ForumCommunity.postCount / .followerCount are
+   * columns the application increments by hand. A database cascade runs no
+   * application code, so every one of those counters kept counting rows that no
+   * longer existed — permanently, and commentCount and postCount are both
+   * indexed and used for ORDER BY.
+   *
+   * Recounts rather than decrementing by the number of rows removed: deleting
+   * one of this user's comments also cascades away OTHER users' replies to it
+   * (ForumComment.parent is Cascade too), so the rows that disappear are not
+   * the rows we enumerated. Recounting is exact regardless of depth, and heals
+   * any drift already on the row.
+   *
+   * ponytail: one UPDATE per affected parent. Account deletion is rare and
+   * already a large transaction; if a user with thousands of comments ever
+   * makes this slow, group the updates by resulting count.
+   */
+  private async recountForumDenormals(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<void> {
+    // Posts this user commented on. Their OWN posts cascade away with them, so
+    // those counters go too — harmless to touch, not worth a second query.
+    const commentedPostIds = [
+      ...new Set(
+        (
+          await tx.forumComment.findMany({
+            where: { authorId: userId },
+            select: { postId: true },
+          })
+        ).map((c) => c.postId),
+      ),
+    ];
+    const communityIds = [
+      ...new Set(
+        [
+          ...(
+            await tx.forumPost.findMany({
+              where: { authorId: userId, communityId: { not: null } },
+              select: { communityId: true },
+            })
+          ).map((p) => p.communityId),
+          ...(
+            await tx.forumCommunityFollow.findMany({
+              where: { userId },
+              select: { communityId: true },
+            })
+          ).map((f) => f.communityId),
+        ].filter((c): c is string => c !== null),
+      ),
+    ];
+
+    await safeDelete(
+      tx.forumComment.deleteMany({ where: { authorId: userId } }),
+      { entity: 'forumComment', userId, operation: 'hardDelete' as const },
+    );
+    await safeDelete(
+      tx.forumCommunityFollow.deleteMany({ where: { userId } }),
+      {
+        entity: 'forumCommunityFollow',
+        userId,
+        operation: 'hardDelete' as const,
+      },
+    );
+    await safeDelete(tx.forumPost.deleteMany({ where: { authorId: userId } }), {
+      entity: 'forumPost',
+      userId,
+      operation: 'hardDelete' as const,
+    });
+
+    for (const postId of commentedPostIds) {
+      const commentCount = await tx.forumComment.count({ where: { postId } });
+      await tx.forumPost
+        .update({ where: { id: postId }, data: { commentCount } })
+        .catch(() => undefined); // the post itself may have just been deleted
+    }
+    for (const communityId of communityIds) {
+      const [postCount, followerCount] = await Promise.all([
+        tx.forumPost.count({ where: { communityId } }),
+        tx.forumCommunityFollow.count({ where: { communityId } }),
+      ]);
+      await tx.forumCommunity.update({
+        where: { id: communityId },
+        data: { postCount, followerCount },
+      });
+    }
   }
 }
