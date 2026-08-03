@@ -2866,7 +2866,7 @@ model AdmissionCase {
   reviewStatus  DataReviewStatus @default(PENDING_REVIEW)
   reviewedBy    String?
   reviewedAt    DateTime?
-  source        String? // reddit, onepoint3acres, user, manual, csv_import
+  source        String? // reddit, onepoint3acres, user, manual, csv_import, outcome_self_report
   importBatchId String? // 批次 ID（回滚用）
 
   // Verification

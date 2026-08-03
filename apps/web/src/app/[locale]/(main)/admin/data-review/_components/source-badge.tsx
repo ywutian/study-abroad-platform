@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Globe, FileText, User, MessageSquare } from 'lucide-react';
+import { Globe, FileText, User, MessageSquare, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const SOURCE_CONFIG: Record<
@@ -35,6 +35,15 @@ const SOURCE_CONFIG: Record<
     label: 'Manual',
     className:
       'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-800',
+  },
+  // Auto-generated when a student's self-reported prediction outcome is
+  // verified — not something they submitted for publication. Distinct colour
+  // so a reviewer can tell at a glance that the student never wrote this row.
+  outcome_self_report: {
+    icon: Sparkles,
+    label: 'Outcome',
+    className:
+      'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
   },
 };
 
