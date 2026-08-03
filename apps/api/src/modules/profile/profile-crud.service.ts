@@ -117,7 +117,6 @@ export class ProfileCrudService {
         },
         awards: { orderBy: { order: 'asc' }, include: { competition: true } },
         semesterGpas: { orderBy: { order: 'asc' } },
-        user: { select: { id: true } },
       },
     });
 
@@ -160,6 +159,8 @@ export class ProfileCrudService {
    *  - `userId` is the join key. GET /forum/posts publishes it as author.id
    *    beside profile.realName, so one lookup undoes the whole masking — the
    *    same defect fixed in feaa8cce / afb38270 / 21d666d1.
+   *  - `user` carries that same id one level down; the include is gone now, but
+   *    the strip stays — this must hold for whatever it is handed.
    *  - `avatarUrl` is a photograph of the person.
    *  - `bio` is free text they wrote about themselves; it routinely contains a
    *    name or a school.
@@ -191,11 +192,12 @@ export class ProfileCrudService {
   } {
     const {
       userId: _userId,
+      user: _user,
       avatarUrl: _avatarUrl,
       bio: _bio,
       birthday: _birthday,
       ...rest
-    } = profile;
+    } = profile as typeof profile & { user?: unknown };
     return {
       ...rest,
       realName: null,
