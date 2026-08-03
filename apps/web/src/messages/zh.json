@@ -3254,7 +3254,7 @@
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
       "deleteAccount": "删除账户",
-      "deleteAccountDesc": "永久删除您的账户和数据",
+      "deleteAccountDesc": "注销后将无法登录，身份信息会被清除",
       "subscription": "订阅管理",
       "subscriptionDesc": "管理您的订阅计划"
     },
@@ -3263,7 +3263,7 @@
       "logoutTitle": "退出登录",
       "logoutDesc": "确定要退出登录吗？",
       "deleteTitle": "删除账户",
-      "deleteDesc": "此操作不可撤销，您的所有数据将被永久删除。",
+      "deleteDesc": "此操作不可撤销。注销后您将无法登录；姓名、头像、简介等身份信息会被清除，已发送的消息会被隐去，您提交的案例将转为私密、不再对外展示。",
       "cancel": "取消",
       "confirm": "确认"
     },
@@ -4884,7 +4884,7 @@
     "loggedOutAll": "已从所有其他设备登出",
     "revoke": "撤销",
     "dangerZone": "危险操作",
-    "dangerZoneDesc": "删除账户将永久删除您的所有数据，此操作不可逆。",
+    "dangerZoneDesc": "注销账户不可撤销：您将无法登录，身份信息会被清除，已提交的案例将转为私密。",
     "deleteAccount": "删除账户"
   },
   "helpCenter": {

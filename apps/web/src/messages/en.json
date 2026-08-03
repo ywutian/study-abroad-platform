@@ -3281,7 +3281,7 @@
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data",
+      "deleteAccountDesc": "Sign-in is disabled and your identifying information is cleared",
       "subscription": "Subscription",
       "subscriptionDesc": "Manage your subscription plan"
     },
@@ -3290,7 +3290,7 @@
       "logoutTitle": "Logout",
       "logoutDesc": "Are you sure you want to logout?",
       "deleteTitle": "Delete Account",
-      "deleteDesc": "This action cannot be undone. All your data will be permanently deleted.",
+      "deleteDesc": "This cannot be undone. You will no longer be able to sign in; your name, avatar and bio are cleared, messages you sent are redacted, and cases you submitted become private and are no longer shown.",
       "cancel": "Cancel",
       "confirm": "Confirm"
     },
@@ -4911,7 +4911,7 @@
     "loggedOutAll": "Logged out from all other devices",
     "revoke": "Revoke",
     "dangerZone": "Danger Zone",
-    "dangerZoneDesc": "Deleting your account will permanently remove all your data. This action cannot be undone.",
+    "dangerZoneDesc": "Deleting your account cannot be undone: sign-in is disabled, your identifying information is cleared, and cases you submitted become private.",
     "deleteAccount": "Delete Account"
   },
   "helpCenter": {

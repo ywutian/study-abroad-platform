@@ -70,10 +70,13 @@ removed within 30 days" — a retention commitment with nothing behind it, now
 removed.
 
 Do not re-add a retention promise, in the API response or in UI copy, without
-the job that honours it. Three user-facing strings still claim more than the
-system does — `settings.items.deleteAccountDesc`, `settings.dialogs.deleteDesc`
-and `security.dangerZoneDesc` in `apps/web/src/messages/{zh,en}.json` all say
-数据将被永久删除. Either they change or a purge job ships.
+the job that honours it. The three strings that used to claim
+数据将被永久删除 — `settings.items.deleteAccountDesc`,
+`settings.dialogs.deleteDesc` and `security.dangerZoneDesc` — now describe what
+the user actually experiences: sign-in disabled, identifiers cleared, messages
+redacted, cases turned private. They deliberately do NOT state that rows are
+retained; that belongs in the privacy policy, not a confirm dialog. What they
+must never do again is claim a deletion the system does not perform.
 
 ## Dependency CVEs
 
