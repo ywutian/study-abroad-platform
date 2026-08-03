@@ -78,10 +78,13 @@ export class PointsRedemptionService {
     // The debit and the redemption row MUST land together. Charging first and
     // creating the row afterwards — as this did — means a failure in between
     // takes the user's points and leaves no redemption to fulfil or cancel:
-    // the balance is gone and nothing records what it bought. The balance
-    // re-check inside adjustPoints now also reads through `tx`, so two
-    // concurrent redemptions cannot both pass a check against the same
-    // pre-spend balance.
+    // the balance is gone and nothing records what it bought.
+    //
+    // Concurrency is handled inside adjustPoints, by the balance precondition
+    // living in the debit's own WHERE. Sharing `tx` is what makes the debit and
+    // this row atomic; it is NOT what makes two concurrent redemptions safe.
+    // (An earlier version of this comment claimed it was. Under READ COMMITTED
+    // both transactions read the same pre-spend balance and both passed.)
     const { result, redemption } = await this.prisma.$transaction(
       async (tx) => {
         // Charge via the central PointsService so PointHistory captures the

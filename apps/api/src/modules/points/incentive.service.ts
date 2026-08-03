@@ -106,23 +106,35 @@ export class PointsService {
       };
     }
 
-    const currentPoints = await this.getUserPoints(userId, tx);
+    // The sufficiency check and the debit must be one statement. This used to
+    // read, compare, then increment unconditionally — so two concurrent debits
+    // both passed against the same pre-spend balance and `User.points` (no CHECK
+    // constraint) went negative. See `.claude/rules/backend.md`.
+    const claimed = await db.user.updateMany({
+      where:
+        pointValue < 0
+          ? { id: userId, points: { gte: -pointValue } }
+          : { id: userId },
+      data: { points: { increment: pointValue } },
+    });
 
-    // 检查是否有足够积分（扣除情况）
-    if (pointValue < 0 && currentPoints + pointValue < 0) {
+    if (claimed.count === 0) {
+      // Nothing was written. For a debit that means the balance moved under us
+      // or was never enough; for a credit the row simply is not there, and
+      // saying "积分不足" about a top-up would be nonsense.
+      const currentPoints = await this.getUserPoints(userId, tx);
+      this.logger.warn(
+        `Points adjustment did not apply: userId=${userId} action="${String(action)}" ` +
+          `delta=${pointValue} balance=${currentPoints}`,
+      );
       return {
         success: false,
         newBalance: currentPoints,
-        message: '积分不足',
+        message: pointValue < 0 ? '积分不足' : '用户不存在',
       };
     }
 
-    // 更新积分
-    const updated = await db.user.update({
-      where: { id: userId },
-      data: { points: { increment: pointValue } },
-      select: { points: true },
-    });
+    const newBalance = await this.getUserPoints(userId, tx);
 
     // 记录积分变动
     const pointHistory = await db.pointHistory.create({
@@ -140,7 +152,7 @@ export class PointsService {
 
     return {
       success: true,
-      newBalance: updated.points,
+      newBalance,
       pointHistoryId: pointHistory.id,
       points: pointValue,
     };
