@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Globe, FileText, User, MessageSquare, Sparkles } from 'lucide-react';
+import { Globe, FileText, User, MessageSquare, CircleCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const SOURCE_CONFIG: Record<
@@ -40,7 +40,11 @@ const SOURCE_CONFIG: Record<
   // verified — not something they submitted for publication. Distinct colour
   // so a reviewer can tell at a glance that the student never wrote this row.
   outcome_self_report: {
-    icon: Sparkles,
+    // A check, not a wand: this row is derived from a *verified* outcome, so
+    // the badge should say "checked", not "generated". The icon it replaced was
+    // on check-icon-language's banned list — and reading as AI-generated was
+    // exactly the wrong signal for a row a student did not write.
+    icon: CircleCheck,
     label: 'Outcome',
     className:
       'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
