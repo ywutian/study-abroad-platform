@@ -46,11 +46,19 @@ and the master key is `VAULT_ENCRYPTION_KEY` from the server's env (production
 fails fast without it). The server therefore _can_ decrypt everything, by
 necessity — it is what serves the plaintext back to the owner.
 
-Call it what it is. "End-to-end" means the server cannot decrypt, and two
-user-facing strings currently claim it — `vault.subtitle` and
-`helpCenter.faqItems.dataPrivacy.answer` in `apps/web/src/messages/{zh,en}.json`.
-That is a privacy claim users may rely on when deciding what to store; either
-the copy changes or the design does, and neither is a change to make silently.
+Call it what it is. "End-to-end" means the server cannot decrypt. Two
+user-facing strings claimed it — `vault.subtitle` and
+`helpCenter.faqItems.dataPrivacy.answer` — and a third, unrendered
+`vault.security.zeroKnowledge` ("零知识架构"), claimed something stronger still:
+zero-knowledge means the operator _has no ability_ to read the data, which is
+the exact opposite of a server-held master key. All three are gone; the copy now
+says AES-256 encryption at rest, which is what this is. The unused key was
+deleted rather than reworded — an untrue claim sitting in a locale file is a
+landmine for whoever builds the security badge it was written for.
+
+This is a privacy claim users act on when deciding what to put in the vault.
+Never restore an end-to-end or zero-knowledge claim without a design where the
+key never reaches the server.
 
 - `deriveUserKey` is cached per user. scryptSync is synchronous and blocks the
   whole event loop for ~22ms; `exportAll` decrypts every item of one user, so

@@ -4957,7 +4957,7 @@
       },
       "dataPrivacy": {
         "question": "Is my data secure?",
-        "answer": "We use end-to-end encryption to protect your data and never share with third parties."
+        "answer": "Sensitive data is stored with AES-256 encryption and is never shared with third parties."
       },
       "deleteAccount": {
         "question": "How do I delete my account?",
@@ -6902,10 +6902,9 @@
   "vault": {
     "title": "Secure Vault",
     "description": "Securely store your sensitive information",
-    "subtitle": "End-to-end encryption keeps your data safe",
+    "subtitle": "Contents are stored with AES-256 encryption",
     "security": {
-      "encryption": "AES-256 Encryption",
-      "zeroKnowledge": "Zero-Knowledge"
+      "encryption": "AES-256 Encryption"
     },
     "addItem": "Add Item",
     "allItems": "All",

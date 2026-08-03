@@ -4930,7 +4930,7 @@
       },
       "dataPrivacy": {
         "question": "我的数据安全吗？",
-        "answer": "我们采用端到端加密保护您的数据，绝不会泄露给第三方。"
+        "answer": "敏感数据以 AES-256 加密存储，绝不会泄露给第三方。"
       },
       "deleteAccount": {
         "question": "如何删除账户？",
@@ -6875,13 +6875,12 @@
   "vault": {
     "title": "安全保险库",
     "description": "安全存储您的敏感信息",
-    "subtitle": "采用端到端加密，确保您的数据安全",
+    "subtitle": "内容以 AES-256 加密存储",
     "loadError": "保险库加载失败，未使用示例数据替代。",
     "retry": "重试",
     "passwordGenerateError": "密码生成失败",
     "security": {
-      "encryption": "AES-256 加密",
-      "zeroKnowledge": "零知识架构"
+      "encryption": "AES-256 加密"
     },
     "addItem": "添加项目",
     "allItems": "全部",
