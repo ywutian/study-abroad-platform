@@ -32,20 +32,19 @@ export class TeamService {
 
   /** Discover: only PUBLIC teams (or UNLISTED if we add link-based discover later). */
   async discover(query: TeamQueryDto) {
-    const {
-      page = 1,
-      pageSize = 20,
-      schoolId,
-      visibility,
-      joinPolicy,
-      sort,
-    } = query;
+    const { page = 1, pageSize = 20, schoolId, joinPolicy, sort } = query;
     const where: {
       visibility: TeamVisibility;
       schoolId?: string;
       joinPolicy?: TeamJoinPolicy;
     } = {
-      visibility: visibility ?? 'PUBLIC',
+      // Pinned, never taken from the query. This read `visibility ?? 'PUBLIC'`
+      // with `visibility` bound straight off the query string, so
+      // `GET /teams?visibility=PRIVATE` — an unauthenticated route — listed
+      // every private team. The doc comment above already said "only PUBLIC
+      // teams"; the code just did not enforce it. UNLISTED stays out too: it
+      // means reachable by link, which is the opposite of discoverable.
+      visibility: 'PUBLIC',
     };
     if (schoolId) where.schoolId = schoolId;
     if (joinPolicy) where.joinPolicy = joinPolicy;
@@ -57,6 +56,7 @@ export class TeamService {
 
     const [items, total] = await Promise.all([
       this.prisma.team.findMany({
+        // governance: public-feed — Team.visibility is pinned to PUBLIC in the where above and is NOT taken from the query — see the note there for the @Public() route that used to accept ?visibility=PRIVATE
         where,
         include: {
           creator: {
@@ -70,6 +70,7 @@ export class TeamService {
         take: pageSize,
       }),
       this.prisma.team.count({ where }),
+      // governance: public-feed — Team.visibility is pinned to PUBLIC in the where above and is NOT taken from the query — see the note there for the @Public() route that used to accept ?visibility=PRIVATE
     ]);
 
     return {
@@ -477,6 +478,7 @@ export class TeamService {
   }
 
   private async invalidateRecruitmentCards(teamId: string) {
+    // governance: parent-scoped — private; invalidates the cards of one team after a membership change the caller already authorised via teamMembership
     await this.prisma.teamRecruitmentCard.updateMany({
       where: {
         teamId,

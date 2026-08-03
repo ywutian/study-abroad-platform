@@ -64,6 +64,7 @@ export class CohortPriorTeacherService implements TeacherSignalProvider {
 
     // Tier 1 (narrowest): exact (schoolId, cohortKey, round)
     if (round) {
+      // governance: system-scope — SchoolCohortRoundPrior — derived school-level priors, no User relation
       const exact = await this.prisma.schoolCohortRoundPrior.findFirst({
         where: {
           schoolId: input.schoolId,
@@ -79,6 +80,7 @@ export class CohortPriorTeacherService implements TeacherSignalProvider {
     }
 
     // Tier 2: any round for (schoolId, cohortKey)
+    // governance: system-scope — SchoolCohortRoundPrior — derived school-level priors, no User relation
     const cohortAny = await this.prisma.schoolCohortRoundPrior.findFirst({
       where: {
         schoolId: input.schoolId,
@@ -101,6 +103,7 @@ export class CohortPriorTeacherService implements TeacherSignalProvider {
     // Tier 3: any cohort for (schoolId, round) — captures "this round is
     // binding at this school" without cohort specificity
     if (round) {
+      // governance: system-scope — SchoolCohortRoundPrior — derived school-level priors, no User relation
       const schoolRound = await this.prisma.schoolCohortRoundPrior.findFirst({
         where: {
           schoolId: input.schoolId,
@@ -120,6 +123,7 @@ export class CohortPriorTeacherService implements TeacherSignalProvider {
     }
 
     // Tier 4 (widest): any cell for this school
+    // governance: system-scope — SchoolCohortRoundPrior — derived school-level priors, no User relation
     const schoolAny = await this.prisma.schoolCohortRoundPrior.findFirst({
       where: {
         schoolId: input.schoolId,

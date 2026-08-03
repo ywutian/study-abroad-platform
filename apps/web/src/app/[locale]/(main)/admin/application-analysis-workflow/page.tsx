@@ -52,7 +52,7 @@ export default function AdminApplicationAnalysisWorkflowPage() {
         </div>
       ) : (
         <Tabs value={tab} onValueChange={setTab} className="mt-6">
-          <TabsList>
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:w-fit lg:flex-wrap">
             <TabsTrigger value="evidence">{t('tabs.evidence')}</TabsTrigger>
             <TabsTrigger value="policies">{t('tabs.policies')}</TabsTrigger>
             <TabsTrigger value="evaluations">{t('tabs.evaluations')}</TabsTrigger>

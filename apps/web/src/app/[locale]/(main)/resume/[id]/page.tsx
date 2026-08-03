@@ -46,7 +46,7 @@ import { cn } from '@/lib/utils';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -1201,7 +1201,7 @@ export default function ResumeEditPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9"
+              className="h-10 w-10 sm:h-9 sm:w-9"
               aria-label={t('workbench.actions.back')}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -1235,7 +1235,7 @@ export default function ResumeEditPage() {
                   setTitleDraft(resume.title);
                   setEditingTitle(true);
                 }}
-                className="block max-w-[360px] truncate text-left text-base font-semibold hover:text-primary"
+                className="block min-h-10 max-w-[360px] truncate py-2 text-left text-base font-semibold hover:text-primary sm:min-h-8 sm:py-1"
               >
                 {resume.title || t('workbench.summary.untitledResume')}
               </button>
@@ -1307,7 +1307,7 @@ export default function ResumeEditPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-9 w-9"
+                className="h-10 w-10 sm:h-9 sm:w-9"
                 aria-label={t('workbench.actions.more')}
               >
                 <MoreVertical className="h-4 w-4" />
@@ -1884,7 +1884,10 @@ function WorkbenchSectionCard({
             <DragHandle {...dragHandleProps} className="mt-0.5 shrink-0" />
             <button
               type="button"
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted sm:h-8 sm:w-8"
+              aria-label={t(
+                expanded ? 'workbench.section.collapseSection' : 'workbench.section.expandSection'
+              )}
               aria-expanded={expanded}
               onClick={() => setExpanded((current) => !current)}
             >
@@ -1912,12 +1915,14 @@ function WorkbenchSectionCard({
                     autoFocus
                   />
                 ) : (
-                  <CardTitle
-                    className="cursor-pointer truncate text-sm hover:text-primary"
+                  <button
+                    type="button"
+                    aria-label={t('workbench.section.editTitle', { title: section.title })}
+                    className="min-h-10 max-w-full truncate py-2 text-left text-sm font-semibold hover:text-primary sm:min-h-8 sm:py-1"
                     onClick={() => setEditingTitle(true)}
                   >
                     {getSectionTypeLabel(t, section.type, section.title)}
-                  </CardTitle>
+                  </button>
                 )}
                 {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
                 {!section.isVisible && (
@@ -1942,13 +1947,24 @@ function WorkbenchSectionCard({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleVisibility}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 sm:h-8 sm:w-8"
+              aria-label={t(
+                section.isVisible
+                  ? 'workbench.section.hideSection'
+                  : 'workbench.section.showSection'
+              )}
+              onClick={onToggleVisibility}
+            >
               {section.isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-destructive"
+              className="h-10 w-10 text-destructive sm:h-8 sm:w-8"
+              aria-label={t('workbench.section.deleteSection')}
               onClick={onDelete}
             >
               <Trash2 className="h-4 w-4" />

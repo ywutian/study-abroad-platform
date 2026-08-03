@@ -348,6 +348,7 @@ export class SchoolCommunityRatingService {
   }
 
   private async ensureSchoolExists(schoolId: string): Promise<void> {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
       select: { id: true },

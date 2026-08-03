@@ -46,6 +46,7 @@ export class ChatAdminController {
     }
 
     const [conversations, total] = await Promise.all([
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE) — moderating other people's conversations is the purpose
       this.prisma.conversation.findMany({
         where,
         skip: (p - 1) * ps,
@@ -60,6 +61,7 @@ export class ChatAdminController {
           _count: { select: { messages: true } },
         },
       }),
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE) — moderating other people's conversations is the purpose
       this.prisma.conversation.count({ where }),
     ]);
 
@@ -85,6 +87,7 @@ export class ChatAdminController {
     const ps = Number(pageSize) || 50;
 
     const [messages, total] = await Promise.all([
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE) — moderating other people's conversations is the purpose
       this.prisma.message.findMany({
         where: { conversationId },
         skip: (p - 1) * ps,
@@ -94,6 +97,7 @@ export class ChatAdminController {
           sender: { select: { id: true, email: true, role: true } },
         },
       }),
+      // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE) — moderating other people's conversations is the purpose
       this.prisma.message.count({ where: { conversationId } }),
     ]);
 
@@ -109,6 +113,7 @@ export class ChatAdminController {
   @Delete('messages/:id')
   @ApiOperation({ summary: 'Admin delete message' })
   async deleteMessage(@Param('id') id: string) {
+    // governance: admin-scope — whole controller is @Roles(Role.OPERATOR) + @RequirePermission(CONTENT_MODERATE) — moderating other people's conversations is the purpose
     await this.prisma.message.delete({
       where: { id },
     });

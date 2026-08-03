@@ -36,21 +36,21 @@ export default function AdminEssaysPage() {
       />
       <div className="mt-6">
         <Tabs defaultValue="prompts">
-          <div className="flex items-center justify-between mb-4">
-            <TabsList>
-              <TabsTrigger value="prompts" className="gap-2">
+          <div className="mb-4">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4 lg:flex lg:w-fit lg:flex-wrap">
+              <TabsTrigger value="prompts" className="min-w-0 gap-2 px-2 sm:px-3 lg:flex-none">
                 <FileText className="h-4 w-4" />
                 {tEssay('tabPrompts')}
               </TabsTrigger>
-              <TabsTrigger value="cases" className="gap-2">
+              <TabsTrigger value="cases" className="min-w-0 gap-2 px-2 sm:px-3 lg:flex-none">
                 <BookOpen className="h-4 w-4" />
                 {tEssay('tabCases')}
               </TabsTrigger>
-              <TabsTrigger value="pipeline" className="gap-2">
+              <TabsTrigger value="pipeline" className="min-w-0 gap-2 px-2 sm:px-3 lg:flex-none">
                 <Workflow className="h-4 w-4" />
                 {tEssay('tabPipeline')}
               </TabsTrigger>
-              <TabsTrigger value="gallery-ai" className="gap-2">
+              <TabsTrigger value="gallery-ai" className="min-w-0 gap-2 px-2 sm:px-3 lg:flex-none">
                 <BarChart3 className="h-4 w-4" />
                 {tEssay('tabGalleryAi')}
               </TabsTrigger>

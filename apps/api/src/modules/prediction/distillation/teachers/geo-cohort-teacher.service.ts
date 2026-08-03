@@ -24,6 +24,7 @@ export class GeoCohortTeacherService implements TeacherSignalProvider {
   ): Promise<
     Omit<DistillationTeacherSignal, 'configuredWeight' | 'effectiveBlendWeight'>
   > {
+    // governance: system-scope — School / SchoolMetric — published institution data
     const school = await this.prisma.school.findUnique({
       where: { id: input.schoolId },
       select: { state: true, isPrivate: true },
@@ -47,6 +48,7 @@ export class GeoCohortTeacherService implements TeacherSignalProvider {
       ? 'in_state_acceptance_rate'
       : 'out_of_state_acceptance_rate';
 
+    // governance: system-scope — School / SchoolMetric — published institution data
     const metric = await this.prisma.schoolMetric.findFirst({
       where: { schoolId: input.schoolId, metricKey },
       orderBy: [{ year: 'desc' }, { updatedAt: 'desc' }],

@@ -34,6 +34,7 @@ describe('NotificationController', () => {
             getNotifications: jest.fn().mockResolvedValue([mockNotification]),
             getUnreadCount: jest.fn().mockResolvedValue(5),
             registerPushToken: jest.fn().mockResolvedValue(undefined),
+            unregisterPushToken: jest.fn().mockResolvedValue(undefined),
             getPreferences: jest.fn().mockResolvedValue({
               source: 'default',
               readiness: {
@@ -116,6 +117,20 @@ describe('NotificationController', () => {
         'user-1',
         'ExponentPushToken[test-token]',
         'android',
+      );
+      expect(result).toEqual({ success: true });
+    });
+  });
+
+  describe('unregisterPushToken', () => {
+    it('removes the current installation token', async () => {
+      const result = await controller.unregisterPushToken(mockUser, {
+        token: 'ExponentPushToken[test-token]',
+      });
+
+      expect(notificationService.unregisterPushToken).toHaveBeenCalledWith(
+        'user-1',
+        'ExponentPushToken[test-token]',
       );
       expect(result).toEqual({ success: true });
     });

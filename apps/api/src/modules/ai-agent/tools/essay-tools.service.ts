@@ -300,6 +300,7 @@ export class EssayToolsService implements IToolHandlerProvider {
 
     let resolvedSchoolId = schoolId;
     if (!resolvedSchoolId && schoolName) {
+      // governance: system-scope — School is published institution data with no User or Profile relation; resolving a school name from the tool args to an id
       const school = await this.prisma.school.findFirst({
         where: {
           OR: [
@@ -328,6 +329,7 @@ export class EssayToolsService implements IToolHandlerProvider {
       ...(year && { year: +year }),
     };
 
+    // governance: system-scope — EssayPrompt rows are scraped school application questions with no User or Profile relation; the where restricts to active, VERIFIED, source-backed prompts
     const prompts = await this.prisma.essayPrompt.findMany({
       where,
       include: {

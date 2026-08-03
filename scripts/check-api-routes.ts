@@ -1,459 +1,442 @@
 /**
- * API route consistency checker.
- * Scans backend controllers for route prefixes, then verifies that all
- * client-side API calls (web + mobile) reference a valid controller prefix.
+ * Exact client/API route consistency gate.
  *
- * Catches:
- *   - Frontend/mobile apiClient calls to paths whose prefix has no matching
- *     backend @Controller('prefix')
- *
- * Usage:
- *   npx tsx scripts/check-api-routes.ts           # Check all client files
- *   npx tsx scripts/check-api-routes.ts --staged   # Check staged client files only
+ * Unlike the previous prefix-only regex, this builds the backend's complete
+ * HTTP method + path table and statically evaluates route helpers used by every
+ * web/mobile api client call. Dynamic values normalize to `:param`.
  */
-
-import { execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-
-// ── Config ──────────────────────────────────────────────────
+import { execSync } from 'node:child_process';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+  CallExpression,
+  Node,
+  Project,
+  SourceFile,
+  SyntaxKind,
+  type Expression,
+  ts,
+} from 'ts-morph';
 
 const ROOT = path.resolve(__dirname, '..');
-const CONTROLLER_DIR = path.resolve(ROOT, 'apps/api/src/modules');
-const CLIENT_DIRS = [path.resolve(ROOT, 'apps/web/src'), path.resolve(ROOT, 'apps/mobile/src')];
-
-const isCI = !!process.env.CI;
+const CLIENT_ROOTS = ['apps/web/src', 'apps/mobile/src'].map((item) => path.join(ROOT, item));
+const API_ROOT = path.join(ROOT, 'apps/api/src');
+const METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'upload']);
 const stagedOnly = process.argv.includes('--staged');
 
-// Known valid controller prefixes (verified from backend).
-// This acts as a fallback in case controller scanning misses dynamic registrations.
-const KNOWN_PREFIXES = new Set([
-  'auth',
-  'users',
-  'profiles',
-  'schools',
-  'high-schools',
-  'school-lists',
-  'rankings',
-  'cases',
-  'predictions',
-  'recommendations',
-  'assessments',
-  'forums',
-  'halls',
-  'chats',
-  'teams',
-  'peer-reviews',
-  'essay-ai',
-  'essay-prompts',
-  'ai-agent',
-  'timelines',
-  'notifications',
-  'subscriptions',
-  'resumes',
-  'verifications',
-  'vaults',
-  'points',
-  'settings',
-  'health',
-  'admin',
-  // 2026-05 Phase 4 #35: lives in apps/api/src/common/feature-flags/
-  // (not apps/api/src/modules/) so the controller scan above misses it.
-  // Adding here explicitly keeps the routes check honest.
-  'feature-flags',
-]);
-
-// Prefixes that are not backend API routes (navigation, static assets, etc.)
-const IGNORED_PREFIXES = new Set([
-  'api', // proxy prefix — the actual prefix is the segment after /api/
-  'auth', // also used for frontend auth pages (e.g., /auth/login route)
-  'images',
-  'static',
-  'favicon',
-  '_next',
-  'locales',
-]);
-
-// Files to skip entirely (test files, mocks, type definitions)
-const SKIP_PATTERNS = [
-  '.spec.ts',
-  '.spec.tsx',
-  '.test.ts',
-  '.test.tsx',
-  '.d.ts',
-  '__tests__',
-  '__mocks__',
-  'node_modules',
-  'dist',
-  '.next',
-];
-
-interface Issue {
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+interface RouteIssue {
   file: string;
   line: number;
-  path: string;
-  prefix: string;
   message: string;
 }
 
-// ── Helpers ─────────────────────────────────────────────────
-
-function getAllFiles(dir: string, extensions: string[] = ['.ts', '.tsx']): string[] {
-  const results: string[] = [];
-  if (!fs.existsSync(dir)) return results;
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
+function walk(root: string, predicate: (file: string) => boolean): string[] {
+  if (!fs.existsSync(root)) return [];
+  const output: string[] = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    const full = path.join(root, entry.name);
     if (entry.isDirectory()) {
-      if (
-        ['node_modules', 'dist', '.next', 'test', '__tests__', '__mocks__'].includes(entry.name)
-      ) {
-        continue;
+      if (!['node_modules', 'dist', '.next', '__tests__', '__mocks__'].includes(entry.name)) {
+        output.push(...walk(full, predicate));
       }
-      results.push(...getAllFiles(fullPath, extensions));
-    } else if (extensions.some((ext) => entry.name.endsWith(ext))) {
-      results.push(fullPath);
-    }
+    } else if (predicate(full)) output.push(full);
   }
-  return results;
+  return output;
 }
 
-function getStagedClientFiles(): string[] {
-  try {
-    const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
-      encoding: 'utf8',
-      cwd: ROOT,
-    });
-    return output
-      .split('\n')
-      .filter((f) => {
-        if (!f.endsWith('.ts') && !f.endsWith('.tsx')) return false;
-        return f.startsWith('apps/web/src/') || f.startsWith('apps/mobile/src/');
-      })
-      .map((f) => path.resolve(ROOT, f));
-  } catch {
+export function normalizeRoute(value: string): string {
+  const withoutQuery = value
+    .split('?')[0]
+    .replace(/^https?:\/\/[^/]+/, '')
+    .replace(/^.*\/api\/v1(?=\/)/, '');
+  const normalized = withoutQuery
+    .replace(/\$\{[^}]+\}/g, ':param')
+    .replace(/__PARAM__/g, ':param')
+    .replace(/\/+/g, '/')
+    .replace(/\/$/, '');
+  return normalized.startsWith('/') ? normalized || '/' : `/${normalized}`;
+}
+
+function normalizeBackendRoute(value: string): string {
+  return normalizeRoute(value.replace(/(^|\/):[A-Za-z0-9_]+/g, '$1:param'));
+}
+
+/** Parse decorators without assuming one method per path. */
+export function extractControllerRoutes(content: string): Set<string> {
+  const routes = new Set<string>();
+  const controller = content.match(/@Controller\(\s*['"]([^'"]*)['"]\s*\)/)?.[1];
+  if (controller == null) return routes;
+  const decorator = /@(Get|Post|Put|Patch|Delete)\(\s*(?:['"]([^'"]*)['"])?\s*\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = decorator.exec(content))) {
+    const method = match[1].toUpperCase() as HttpMethod;
+    const suffix = match[2] ?? '';
+    routes.add(`${method} ${normalizeBackendRoute(`${controller}/${suffix}`)}`);
+  }
+  return routes;
+}
+
+function buildBackendRoutes(): Set<string> {
+  const routes = new Set<string>();
+  for (const file of walk(API_ROOT, (item) => item.endsWith('.controller.ts'))) {
+    for (const route of extractControllerRoutes(fs.readFileSync(file, 'utf8'))) routes.add(route);
+  }
+  return routes;
+}
+
+type Bindings = Map<string, string[]>;
+
+function definitionsFor(node: Node) {
+  const target = Node.isPropertyAccessExpression(node) ? node.getNameNode() : node;
+  if (!Node.isIdentifier(target)) return [];
+  return target
+    .getDefinitions()
+    .map((definition) => definition.getDeclarationNode())
+    .filter(Boolean) as Node[];
+}
+
+function combine(left: string[], right: string[]): string[] {
+  const output: string[] = [];
+  for (const a of left) for (const b of right) output.push(a + b);
+  return output;
+}
+
+/** Recursively resolve literals, imported route helpers, aliases and local wrappers. */
+export function evaluateRouteExpression(
+  expression: Expression,
+  bindings: Bindings = new Map(),
+  seen = new Set<Node>()
+): string[] {
+  if (seen.has(expression)) return [];
+  seen.add(expression);
+  if (Node.isStringLiteral(expression) || Node.isNoSubstitutionTemplateLiteral(expression)) {
+    return [expression.getLiteralText()];
+  }
+  if (Node.isTemplateExpression(expression)) {
+    let values = [expression.getHead().getLiteralText()];
+    for (const span of expression.getTemplateSpans()) {
+      const dynamic = evaluateRouteExpression(span.getExpression(), bindings, new Set(seen));
+      values = combine(values, dynamic.length ? dynamic : [':param']);
+      values = values.map((value) => value + span.getLiteral().getLiteralText());
+    }
+    return values;
+  }
+  if (Node.isParenthesizedExpression(expression) || Node.isAsExpression(expression)) {
+    return evaluateRouteExpression(expression.getExpression(), bindings, seen);
+  }
+  if (Node.isConditionalExpression(expression)) {
+    return [
+      ...evaluateRouteExpression(expression.getWhenTrue(), bindings, new Set(seen)),
+      ...evaluateRouteExpression(expression.getWhenFalse(), bindings, new Set(seen)),
+    ];
+  }
+  if (
+    Node.isBinaryExpression(expression) &&
+    expression.getOperatorToken().getKind() === SyntaxKind.PlusToken
+  ) {
+    return combine(
+      evaluateRouteExpression(expression.getLeft(), bindings, new Set(seen)),
+      evaluateRouteExpression(expression.getRight(), bindings, new Set(seen))
+    );
+  }
+  if (Node.isIdentifier(expression)) {
+    const bound = bindings.get(expression.getText());
+    if (bound) return bound;
+    for (const declaration of definitionsFor(expression)) {
+      if (Node.isVariableDeclaration(declaration) && declaration.getInitializer()) {
+        return evaluateRouteExpression(
+          declaration.getInitializerOrThrow(),
+          bindings,
+          new Set(seen)
+        );
+      }
+      if (Node.isParameterDeclaration(declaration)) return [':param'];
+      if (Node.isImportSpecifier(declaration)) {
+        const symbol = expression.getSymbol()?.getAliasedSymbol();
+        for (const item of symbol?.getDeclarations() ?? []) {
+          if (Node.isVariableDeclaration(item) && item.getInitializer()) {
+            return evaluateRouteExpression(item.getInitializerOrThrow(), bindings, new Set(seen));
+          }
+        }
+      }
+    }
+    return [':param'];
+  }
+  if (Node.isPropertyAccessExpression(expression)) {
+    for (const declaration of definitionsFor(expression)) {
+      if (Node.isPropertyAssignment(declaration)) {
+        return evaluateRouteExpression(declaration.getInitializer(), bindings, new Set(seen));
+      }
+      if (Node.isShorthandPropertyAssignment(declaration)) {
+        const local = declaration.getLocalTargetSymbol()?.getDeclarations()[0];
+        if (local && Node.isVariableDeclaration(local) && local.getInitializer()) {
+          return evaluateRouteExpression(local.getInitializerOrThrow(), bindings, new Set(seen));
+        }
+      }
+    }
+    return [':param'];
+  }
+  if (Node.isCallExpression(expression)) {
+    const callable = expression.getExpression();
+    const args = expression.getArguments();
+    const declarations = definitionsFor(callable);
+    for (const declaration of declarations) {
+      let fn: Node | undefined = declaration;
+      if (Node.isPropertyAssignment(declaration)) fn = declaration.getInitializer();
+      if (Node.isVariableDeclaration(declaration)) fn = declaration.getInitializer();
+      if (
+        fn &&
+        (Node.isArrowFunction(fn) ||
+          Node.isFunctionExpression(fn) ||
+          Node.isFunctionDeclaration(fn) ||
+          Node.isMethodDeclaration(fn))
+      ) {
+        const next = new Map(bindings);
+        fn.getParameters().forEach((parameter, index) => {
+          const argument = args[index];
+          next.set(
+            parameter.getName(),
+            argument && Node.isExpression(argument)
+              ? evaluateRouteExpression(argument, bindings, new Set(seen))
+              : [':param']
+          );
+        });
+        const body = fn.getBody();
+        if (Node.isExpression(body)) return evaluateRouteExpression(body, next, new Set(seen));
+        const returned = body?.getDescendantsOfKind(SyntaxKind.ReturnStatement)[0]?.getExpression();
+        if (returned) return evaluateRouteExpression(returned, next, new Set(seen));
+      }
+    }
+    // Encoding/string conversion around a path parameter.
+    if (
+      Node.isIdentifier(callable) &&
+      ['encodeURIComponent', 'String'].includes(callable.getText())
+    ) {
+      return args[0] && Node.isExpression(args[0])
+        ? evaluateRouteExpression(args[0], bindings, new Set(seen))
+        : [':param'];
+    }
     return [];
   }
+  return [];
 }
 
-function relativePath(filePath: string): string {
-  return path.relative(ROOT, filePath);
-}
-
-function shouldSkipFile(filePath: string): boolean {
-  return SKIP_PATTERNS.some((pattern) => filePath.includes(pattern));
-}
-
-// ── Controller Scanning ─────────────────────────────────────
-
-/**
- * Scan all *.controller.ts files to extract @Controller('prefix') route prefixes.
- * Returns a Set of all discovered prefixes.
- */
-function scanControllerPrefixes(): Set<string> {
-  const prefixes = new Set<string>(KNOWN_PREFIXES);
-  const controllerFiles = getAllFiles(CONTROLLER_DIR, ['.controller.ts']);
-  const controllerRegex = /@Controller\(\s*['"]([^'"]+)['"]\s*\)/g;
-
-  for (const filePath of controllerFiles) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    let match: RegExpExecArray | null;
-
-    while ((match = controllerRegex.exec(content)) !== null) {
-      const fullPrefix = match[1];
-      // Extract the first segment as the primary prefix
-      // e.g., 'admin/ai-agent' -> 'admin'
-      const firstSegment = fullPrefix.split('/')[0];
-      prefixes.add(firstSegment);
-      // Also add the full prefix for multi-segment matching
-      prefixes.add(fullPrefix);
+function apiAliases(source: SourceFile): Set<string> {
+  const names = new Set(['apiClient']);
+  for (const declaration of source.getImportDeclarations()) {
+    const specifier = declaration.getModuleSpecifierValue();
+    if (!specifier.includes('/lib/api') && specifier !== '@/lib/api') continue;
+    for (const item of declaration.getNamedImports()) {
+      if (item.getName() === 'apiClient')
+        names.add(item.getAliasNode()?.getText() ?? item.getName());
     }
-
-    // Reset regex lastIndex for next file
-    controllerRegex.lastIndex = 0;
   }
-
-  return prefixes;
+  return names;
 }
 
-// ── Client Path Extraction ──────────────────────────────────
-
-/**
- * Regex patterns to match apiClient method calls with path arguments.
- *
- * Matches:
- *   apiClient.get('/path...')
- *   apiClient.post('/path...')
- *   apiClient.get<Type>('/path...')
- *   apiClient.delete(`/path/${id}`)
- *   apiClient.put<Type>(`/path/${id}`)
- */
-const API_CALL_PATTERNS = [
-  // Single-quoted paths: apiClient.method('/path') or apiClient.method<T>('/path')
-  /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*'(\/[^']+)'/g,
-  // Double-quoted paths: apiClient.method("/path") or apiClient.method<T>("/path")
-  /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*"(\/[^"]+)"/g,
-  // Template literal paths: apiClient.method(`/path/${var}`) or apiClient.method<T>(`/path/${var}`)
-  /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*`(\/[^`]+)`/g,
-];
-
-interface ExtractedPath {
-  path: string;
-  line: number;
-}
-
-/**
- * Extract API paths from a client source file.
- */
-function extractApiPaths(content: string): ExtractedPath[] {
-  const results: ExtractedPath[] = [];
-  const lines = content.split('\n');
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Skip comments
-    const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
-      continue;
-    }
-
-    // Skip navigation/router calls (not API calls)
-    if (/router\.(push|replace|navigate)\s*\(/.test(line)) continue;
-    if (/href\s*[:=]/.test(line)) continue;
-
-    for (const pattern of API_CALL_PATTERNS) {
-      // Clone regex to avoid state issues
-      const regex = new RegExp(pattern.source, pattern.flags);
-      let match: RegExpExecArray | null;
-
-      while ((match = regex.exec(line)) !== null) {
-        const apiPath = match[1];
-        // Clean template literal expressions: /schools/${id} -> /schools/__PARAM__
-        // Strip query parameters: /notifications?limit=50 -> /notifications
-        const cleanedPath = apiPath.replace(/\$\{[^}]*\}/g, '__PARAM__').replace(/\?.*$/, '');
-        results.push({ path: cleanedPath, line: i + 1 });
+function callMethod(
+  call: CallExpression,
+  aliases: Set<string>
+): { method: HttpMethod; argument: Expression } | null {
+  const expression = call.getExpression();
+  if (Node.isIdentifier(expression) && ['fetch', 'expoFetch'].includes(expression.getText())) {
+    const argument = call.getArguments()[0];
+    if (!argument || !Node.isExpression(argument)) return null;
+    const options = call.getArguments()[1];
+    let method: HttpMethod = 'GET';
+    if (options && Node.isObjectLiteralExpression(options)) {
+      const methodProperty = options.getProperty('method');
+      if (methodProperty && Node.isPropertyAssignment(methodProperty)) {
+        const initializer = methodProperty.getInitializer();
+        if (initializer && Node.isStringLiteral(initializer)) {
+          method = initializer.getLiteralText().toUpperCase() as HttpMethod;
+        }
       }
     }
+    return { method, argument };
   }
-
-  return results;
+  if (!Node.isPropertyAccessExpression(expression)) return null;
+  if (!aliases.has(expression.getExpression().getText())) return null;
+  const name = expression.getName();
+  if (!METHODS.has(name)) return null;
+  const argument = call.getArguments()[0];
+  if (!argument || !Node.isExpression(argument)) return null;
+  return { method: (name === 'upload' ? 'POST' : name.toUpperCase()) as HttpMethod, argument };
 }
 
-/**
- * Extract the route prefix from an API path.
- * Handles /api/ proxy prefix stripping and /admin/ sub-routes.
- *
- * Examples:
- *   /schools/123        -> 'schools'
- *   /admin/users        -> 'admin'
- *   /api/schools/123    -> 'schools' (strips /api/ proxy prefix)
- *   /auth/login         -> 'auth'
- */
-function extractPrefix(apiPath: string): string | null {
-  // Remove leading slash and split
-  const segments = apiPath.replace(/^\/+/, '').split('/').filter(Boolean);
-
-  if (segments.length === 0) return null;
-
-  // Strip /api/ proxy prefix if present
-  let startIndex = 0;
-  if (segments[0] === 'api') {
-    startIndex = 1;
-  }
-  // Strip version prefix like /v1/
-  if (segments[startIndex] && /^v\d+$/.test(segments[startIndex])) {
-    startIndex++;
-  }
-
-  if (startIndex >= segments.length) return null;
-
-  const prefix = segments[startIndex];
-
-  // Clean up template literal params
-  if (prefix === '__PARAM__') return null;
-
-  return prefix;
+function stagedFiles(): string[] {
+  const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  return output
+    .split('\n')
+    .filter((file) => /apps\/(web|mobile)\/src\/.*\.tsx?$/.test(file))
+    .map((file) => path.join(ROOT, file));
 }
 
-// ── Main Check ──────────────────────────────────────────────
-
-function checkClientFiles(clientFiles: string[], controllerPrefixes: Set<string>): Issue[] {
-  const issues: Issue[] = [];
-
-  for (const filePath of clientFiles) {
-    if (!fs.existsSync(filePath)) continue;
-    if (shouldSkipFile(filePath)) continue;
-
-    const content = fs.readFileSync(filePath, 'utf8');
-
-    // Skip files that don't contain apiClient calls
-    if (!content.includes('apiClient.')) continue;
-
-    const extracted = extractApiPaths(content);
-
-    for (const { path: apiPath, line } of extracted) {
-      const prefix = extractPrefix(apiPath);
-      if (!prefix) continue;
-
-      // Skip known non-API prefixes
-      if (IGNORED_PREFIXES.has(prefix)) continue;
-
-      if (!controllerPrefixes.has(prefix)) {
+function checkClientRoutes(project: Project, backend: Set<string>, files: string[]): RouteIssue[] {
+  const issues: RouteIssue[] = [];
+  for (const file of files) {
+    const source = project.getSourceFile(file);
+    if (!source) continue;
+    const aliases = apiAliases(source);
+    for (const call of source.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+      const apiCall = callMethod(call, aliases);
+      if (!apiCall) continue;
+      const line = call.getStartLineNumber();
+      const sourceLines = source.getFullText().split('\n');
+      const callContext = sourceLines.slice(line - 1, call.getEndLineNumber()).join('\n');
+      if (callContext.includes('@route-lint-ignore')) continue;
+      const evaluated = evaluateRouteExpression(apiCall.argument).map(normalizeRoute);
+      if (evaluated.length === 0 || evaluated.every((route) => !route.startsWith('/'))) {
         issues.push({
-          file: relativePath(filePath),
+          file: path.relative(ROOT, file),
           line,
-          path: apiPath,
-          prefix,
-          message: `API path '${apiPath}' has prefix '${prefix}' which does not match any backend @Controller() prefix.`,
+          message: `Cannot statically resolve ${apiCall.method} route; use a shared route helper or add a documented @route-lint-ignore.`,
         });
+        continue;
       }
-    }
-  }
-
-  return issues;
-}
-
-// ── Hardcoded Route Detection ────────────────────────────────
-
-/**
- * Detect apiClient calls using hardcoded string literals instead of API_ROUTES constants.
- * A call is considered "hardcoded" when the first argument is a plain string literal
- * (single-quoted, double-quoted, or template literal starting with '/') rather than
- * a variable, function call, or expression using API_ROUTES.
- */
-function checkHardcodedRoutes(clientFiles: string[]): Issue[] {
-  const issues: Issue[] = [];
-
-  // Match apiClient.method('/path') or apiClient.method(`/path`)
-  // but NOT apiClient.method(someVar) or apiClient.method(`${API_ROUTES.X}/path`)
-  const hardcodedPatterns = [
-    /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*'(\/[^']+)'/g,
-    /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*"(\/[^"]+)"/g,
-  ];
-
-  // Template literals starting with a bare / are hardcoded; those starting with ${ are dynamic
-  const hardcodedTemplateLiteral =
-    /apiClient\.(?:get|post|put|patch|delete|upload)\s*(?:<[^>]*>)?\(\s*`(\/[^`$]+)`/g;
-
-  for (const filePath of clientFiles) {
-    if (!fs.existsSync(filePath)) continue;
-    if (shouldSkipFile(filePath)) continue;
-
-    const content = fs.readFileSync(filePath, 'utf8');
-    if (!content.includes('apiClient.')) continue;
-
-    // Skip files that already import API_ROUTES (they may still have some hardcoded, but lower priority)
-    const hasApiRoutesImport =
-      content.includes('API_ROUTES') ||
-      content.includes('Routes') ||
-      content.includes("from '@study-abroad/shared'");
-
-    const lines = content.split('\n');
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmed = line.trim();
-      if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue;
-
-      for (const pattern of [...hardcodedPatterns, hardcodedTemplateLiteral]) {
-        const regex = new RegExp(pattern.source, pattern.flags);
-        let match: RegExpExecArray | null;
-
-        while ((match = regex.exec(line)) !== null) {
+      for (const route of new Set(evaluated)) {
+        const key = `${apiCall.method} ${normalizeBackendRoute(route)}`;
+        const [method, clientPath] = key.split(' ', 2);
+        const clientSegments = clientPath.split('/').filter(Boolean);
+        if (clientSegments.length > 0 && clientSegments.every((segment) => segment === ':param')) {
           issues.push({
-            file: relativePath(filePath),
-            line: i + 1,
-            path: match[1],
-            prefix: extractPrefix(match[1]) || 'unknown',
-            message: `Hardcoded route '${match[1]}' — use API_ROUTES constant or route helper instead${hasApiRoutesImport ? ' (file already imports shared)' : ''}`,
+            file: path.relative(ROOT, file),
+            line,
+            message: `Cannot prove ${apiCall.method} ${clientPath}; generic endpoint helpers require a documented @route-lint-ignore at the call site.`,
+          });
+          continue;
+        }
+        const compatible = [...backend].some((candidate) => {
+          const [backendMethod, backendPath] = candidate.split(' ', 2);
+          if (backendMethod !== method) return false;
+          const backendSegments = backendPath.split('/').filter(Boolean);
+          return (
+            clientSegments.length === backendSegments.length &&
+            clientSegments.every(
+              (segment, index) =>
+                segment === ':param' ||
+                backendSegments[index] === ':param' ||
+                segment === backendSegments[index]
+            )
+          );
+        });
+        if (!compatible) {
+          issues.push({
+            file: path.relative(ROOT, file),
+            line,
+            message: `${key} does not match any backend controller method.`,
           });
         }
       }
     }
   }
-
   return issues;
 }
 
-// ── Entry Point ─────────────────────────────────────────────
-
-function main() {
-  const warnHardcoded = process.argv.includes('--warn-hardcoded');
-  console.log(
-    stagedOnly ? '🔍 Checking staged client files...' : '🔍 Checking all client files...'
-  );
-  console.log('');
-
-  // Step 1: Scan backend controllers
-  const controllerPrefixes = scanControllerPrefixes();
-  console.log(
-    `📋 Found ${controllerPrefixes.size} controller prefixes: ${[...controllerPrefixes].sort().join(', ')}`
-  );
-  console.log('');
-
-  // Step 2: Get client files to check
-  let clientFiles: string[];
-  if (stagedOnly) {
-    clientFiles = getStagedClientFiles();
-  } else {
-    clientFiles = [];
-    for (const dir of CLIENT_DIRS) {
-      clientFiles.push(...getAllFiles(dir));
-    }
-  }
-
-  if (clientFiles.length === 0) {
-    console.log('No client files to check.');
-    process.exit(0);
-  }
-
-  console.log(`📂 Scanning ${clientFiles.length} client file(s)...`);
-  console.log('');
-
-  // Step 3: Check client files for prefix mismatches (ERROR — blocks CI)
-  const issues = checkClientFiles(clientFiles, controllerPrefixes);
-
-  if (issues.length > 0) {
-    console.log(
-      `❌ route-prefix-mismatch (${issues.length} issue${issues.length > 1 ? 's' : ''}):`
+export function main() {
+  if (process.argv.includes('--self-test')) {
+    const routes = extractControllerRoutes(`
+      @Controller('widgets') class C {
+        @Get(':id') read() {}
+        @Post(':id') write() {}
+      }
+    `);
+    assert.deepEqual(routes, new Set(['GET /widgets/:param', 'POST /widgets/:param']));
+    const fixture = new Project({ useInMemoryFileSystem: true }).createSourceFile(
+      'fixture.ts',
+      `
+      const base = '/widgets';
+      const routes = { byId: (id: string) => \`\${base}/\${id}\` };
+      const wrapper = (id: string) => routes.byId(id);
+      apiClient.get(wrapper(widgetId));
+    `
     );
-    for (const issue of issues.slice(0, 20)) {
-      console.log(`   ${issue.file}:${issue.line} — ${issue.message}`);
-    }
-    if (issues.length > 20) {
-      console.log(`   ... and ${issues.length - 20} more`);
-    }
-    console.log('');
-    console.log(`Total: ${issues.length} error(s)`);
-    console.log('');
-    process.exit(1);
+    const call = fixture
+      .getDescendantsOfKind(SyntaxKind.CallExpression)
+      .find((item) => item.getText().startsWith('apiClient.get'))!;
+    assert.equal(
+      normalizeRoute(evaluateRouteExpression(call.getArguments()[0] as Expression)[0]),
+      '/widgets/:param'
+    );
+    assert.equal(normalizeRoute('/widgets/${id}?preview=1'), '/widgets/:param');
+    const fixtureProject = new Project({ useInMemoryFileSystem: true });
+    const validFixture = fixtureProject.createSourceFile(
+      '/fixtures/valid.ts',
+      `
+        const base = '/widgets';
+        const routes = { byId: (id: string) => \`\${base}/\${id}\` };
+        const extractedHelper = (id: string) => routes.byId(id);
+        apiClient.get(extractedHelper(widgetId));
+        apiClient.post('/widgets', { name: 'valid' });
+        fetch('https://api.example.test/api/v1/widgets/widget-1');
+        fetch('/api/v1/widgets', { method: 'POST' });
+      `
+    );
+    const invalidFixture = fixtureProject.createSourceFile(
+      '/fixtures/invalid.ts',
+      `
+        apiClient.delete('/widgets');
+        apiClient.get(\`/widgets/\${widgetId}/tasks\`);
+        fetch('/api/v1/widgets', { method: 'DELETE' });
+      `
+    );
+    const fixtureBackend = new Set(['GET /widgets/:param', 'POST /widgets']);
+    assert.deepEqual(
+      checkClientRoutes(fixtureProject, fixtureBackend, [validFixture.getFilePath()]),
+      []
+    );
+    const rejected = checkClientRoutes(fixtureProject, fixtureBackend, [
+      invalidFixture.getFilePath(),
+    ]);
+    assert.equal(rejected.length, 3);
+    assert.ok(rejected.some((issue) => issue.message.includes('DELETE /widgets')));
+    assert.ok(rejected.some((issue) => issue.message.includes('GET /widgets/:param/tasks')));
+    console.log(
+      '✅ Exact route gate fixtures passed (valid calls, wrong methods, wrong suffixes, multi-method, helper extraction, dynamic params, query normalization).'
+    );
+    return;
   }
-
-  // Step 4: Check for hardcoded routes (WARNING — non-blocking, opt-in)
-  if (warnHardcoded) {
-    const hardcodedIssues = checkHardcodedRoutes(clientFiles);
-    if (hardcodedIssues.length > 0) {
-      console.log(
-        `⚠️  hardcoded-route (${hardcodedIssues.length} warning${hardcodedIssues.length > 1 ? 's' : ''}):`
+  const backend = buildBackendRoutes();
+  const project = new Project({
+    compilerOptions: {
+      baseUrl: ROOT,
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      paths: {
+        '@study-abroad/shared': ['packages/shared/src/index.ts'],
+        '@study-abroad/shared/*': ['packages/shared/src/*'],
+      },
+    },
+    skipFileDependencyResolution: false,
+  });
+  project.addSourceFilesAtPaths([
+    path.join(ROOT, 'packages/shared/src/**/*.ts'),
+    ...CLIENT_ROOTS.map((root) => path.join(root, '**/*.{ts,tsx}')),
+  ]);
+  const files = stagedOnly
+    ? stagedFiles()
+    : CLIENT_ROOTS.flatMap((root) =>
+        walk(root, (file) => /\.tsx?$/.test(file) && !/\.(spec|test)\./.test(file))
       );
-      for (const issue of hardcodedIssues.slice(0, 30)) {
-        console.log(`   ${issue.file}:${issue.line} — ${issue.message}`);
-      }
-      if (hardcodedIssues.length > 30) {
-        console.log(`   ... and ${hardcodedIssues.length - 30} more`);
-      }
-      console.log('');
-      console.log(
-        `Total: ${hardcodedIssues.length} hardcoded route(s). Run migration to use API_ROUTES constants.`
-      );
-      console.log('');
-    }
+  const issues = checkClientRoutes(project, backend, files);
+  console.log(
+    `🔍 Exact route gate scanned ${files.length} client files against ${backend.size} backend method/path pairs.`
+  );
+  if (issues.length) {
+    for (const issue of issues.slice(0, 80))
+      console.error(`❌ ${issue.file}:${issue.line} — ${issue.message}`);
+    if (issues.length > 80) console.error(`… and ${issues.length - 80} more`);
+    process.exitCode = 1;
+    return;
   }
-
-  console.log('✅ API route consistency check passed! All client paths match backend controllers.');
-  process.exit(0);
+  console.log(
+    '✅ Every statically declared client API call matches an exact backend method + path.'
+  );
 }
 
-main();
+if (require.main === module) main();

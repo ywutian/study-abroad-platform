@@ -692,4 +692,64 @@ describe('TeamRecruitmentService', () => {
     // Synthetic-seed edition (no sourceMeta) → verified false, no provenance.
     expect(result.items[1]).toMatchObject({ verified: false, sourceUrl: null });
   });
+
+  describe('guest deck anonymity', () => {
+    // serializeCard(card, false) already degrades displayName to "Member N" and
+    // withholds school/grade without consent. It must withhold the user id too:
+    // GET /forum/posts publishes author.id beside profile.realName, and both
+    // endpoints are @Public().
+    it('omits member userId when fullAccess is false', () => {
+      const card = {
+        id: 'card-1',
+        recruitmentContextId: 'ctx-1',
+        phase: 'PUBLISHED',
+        version: 1,
+        headline: 'h',
+        detailNote: null,
+        highlightTitle: null,
+        offerRoles: [],
+        needRoles: [],
+        skillTags: [],
+        availabilityBand: null,
+        collaborationMode: null,
+        timezone: null,
+        city: null,
+        languages: [],
+        intentMode: 'TEAM_UP',
+        publishedAt: null,
+        memberProfiles: [],
+        recruitmentContext: { id: 'ctx-1', tags: [] },
+        team: { id: 't1', name: 'T', members: [] },
+      } as never;
+      const withMember = {
+        ...(card as object),
+        team: {
+          id: 't1',
+          name: 'T',
+          members: [
+            {
+              userId: 'user-secret',
+              role: 'member',
+              user: { role: 'USER', emailVerified: true, profile: null },
+            },
+          ],
+        },
+      } as never;
+
+      const guest = (
+        service as unknown as {
+          serializeCard: (c: never, f: boolean) => { members: unknown[] };
+        }
+      ).serializeCard(withMember, false);
+      const owner = (
+        service as unknown as {
+          serializeCard: (c: never, f: boolean) => { members: unknown[] };
+        }
+      ).serializeCard(withMember, true);
+
+      expect(guest.members[0]).not.toHaveProperty('userId');
+      expect(JSON.stringify(guest)).not.toContain('user-secret');
+      expect(owner.members[0]).toHaveProperty('userId', 'user-secret');
+    });
+  });
 });

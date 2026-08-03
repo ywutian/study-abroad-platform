@@ -13,6 +13,7 @@ import {
   Info,
   LayoutDashboard,
   Lightbulb,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -531,20 +532,28 @@ export default function PredictionPage() {
             onValueChange={(v) => setActiveTab(v as 'workspace' | 'history' | 'evidence')}
             className="mb-4"
           >
-            <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
-              <TabsTrigger value="workspace" className="gap-1.5">
-                <LayoutDashboard className="h-3.5 w-3.5" />
-                {t('prediction.tabs.workspace')}
-              </TabsTrigger>
-              <TabsTrigger value="history" className="gap-1.5">
-                <History className="h-3.5 w-3.5" />
-                {t('prediction.tabs.history')}
-              </TabsTrigger>
-              <TabsTrigger value="evidence" className="gap-1.5">
-                <Lightbulb className="h-3.5 w-3.5" />
-                {t('prediction.tabs.evidence')}
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+                <TabsTrigger value="workspace" className="gap-1.5">
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  {t('prediction.tabs.workspace')}
+                </TabsTrigger>
+                <TabsTrigger value="history" className="gap-1.5">
+                  <History className="h-3.5 w-3.5" />
+                  {t('prediction.tabs.history')}
+                </TabsTrigger>
+                <TabsTrigger value="evidence" className="gap-1.5">
+                  <Lightbulb className="h-3.5 w-3.5" />
+                  {t('prediction.tabs.evidence')}
+                </TabsTrigger>
+              </TabsList>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/outcomes">
+                  <ClipboardCheck className="mr-1.5 h-3.5 w-3.5" />
+                  {t('Outcome.pageTitle')}
+                </Link>
+              </Button>
+            </div>
           </Tabs>
         </div>
 

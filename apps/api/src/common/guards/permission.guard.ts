@@ -79,6 +79,7 @@ export class PermissionGuard implements CanActivate {
     // Try user-specific cache first
     const cached = await this.redis.get(cacheKey);
     if (cached) {
+      // @cache-parse-allowed - returns string[]; no Date to lose
       return JSON.parse(cached);
     }
 
@@ -121,6 +122,7 @@ export class PermissionGuard implements CanActivate {
     // Try Redis cache
     const cached = await this.redis.get(cacheKey);
     if (cached) {
+      // @cache-parse-allowed - returns string[]; no Date to lose
       return JSON.parse(cached);
     }
 

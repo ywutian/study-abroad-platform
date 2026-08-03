@@ -89,6 +89,7 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
     const raw = await this.redis.get(`${this.keyPrefix}${key}`);
     if (raw) {
       try {
+        // @cache-parse-allowed - CircuitBreakerState keeps lastFailureTime as a number
         return JSON.parse(raw);
       } catch (err) {
         this.logger.debug(`Redis getState parse failed: ${String(err)}`);

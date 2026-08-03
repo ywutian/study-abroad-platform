@@ -111,7 +111,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
     error,
   } = useQuery<TItem[]>({
     queryKey,
-    queryFn: () => apiClient.get<TItem[]>(basePath),
+    queryFn: () => apiClient.get<TItem[]>(basePath), // @route-lint-ignore generic CRUD hook; callers supply shared routes
     enabled,
     ...queryOptions,
   });
@@ -125,7 +125,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
   // Create mutation
   const createMutation = useMutation({
     mutationFn: (data: TFormData) =>
-      apiClient.post(basePath, transformCreate ? transformCreate(data) : data),
+      apiClient.post(basePath, transformCreate ? transformCreate(data) : data), // @route-lint-ignore generic CRUD hook
     onSuccess: () => {
       // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for the configured queryKey + invalidateKeys
       invalidateAll();
@@ -140,7 +140,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: TFormData }) =>
-      apiClient.put(`${basePath}/${id}`, transformUpdate ? transformUpdate(data) : data),
+      apiClient.put(`${basePath}/${id}`, transformUpdate ? transformUpdate(data) : data), // @route-lint-ignore generic CRUD hook
     onSuccess: () => {
       // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for the configured queryKey + invalidateKeys
       invalidateAll();
@@ -154,7 +154,7 @@ export function useCRUD<TItem extends { id: string }, TFormData = Partial<TItem>
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`${basePath}/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`${basePath}/${id}`), // @route-lint-ignore generic CRUD hook
     onSuccess: () => {
       // @cache-invalidation-allowed: invalidateAll() helper calls queryClient.invalidateQueries for the configured queryKey + invalidateKeys
       invalidateAll();

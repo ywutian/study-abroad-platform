@@ -59,7 +59,7 @@ describe('middleware route protection', () => {
 
     it('handles nested protected paths', () => {
       expect(isProtectedRoute('/zh/profile/education')).toBe(true);
-      expect(isProtectedRoute('/en/settings/subscription')).toBe(true);
+      expect(isProtectedRoute('/en/settings/security')).toBe(true);
       expect(isProtectedRoute('/zh/chat/abc-123')).toBe(true);
     });
   });

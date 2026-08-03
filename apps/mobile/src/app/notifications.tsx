@@ -21,6 +21,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { EmptyState } from '@/components/ui';
 import {
   useNotifications,
+  navigateToNotification,
   type Notification,
   type NotificationType,
 } from '@/hooks/useNotifications';
@@ -54,6 +55,9 @@ const NOTIFICATION_ICON_MAP: Record<NotificationType, { icon: IoniconsName; colo
   LEVEL_UP: { icon: 'trophy', colorKey: 'warning' },
   DEADLINE_REMINDER: { icon: 'alarm', colorKey: 'error' },
   PROFILE_INCOMPLETE: { icon: 'alert-circle', colorKey: 'warning' },
+  CASE_REVIEW_APPROVED: { icon: 'checkmark-circle', colorKey: 'success' },
+  CASE_REVIEW_REJECTED: { icon: 'close-circle', colorKey: 'error' },
+  NEW_ESSAY_PROMPTS: { icon: 'document-text', colorKey: 'violet' },
   SYSTEM_BROADCAST: { icon: 'megaphone', colorKey: 'info' },
 };
 
@@ -191,6 +195,7 @@ export default function NotificationsScreen() {
       if (!item.read) {
         await markAsRead(item.id);
       }
+      navigateToNotification(item);
     },
     [markAsRead]
   );

@@ -217,6 +217,7 @@ class ApiClient {
 
       try {
         const response = await fetch(url, {
+          // @route-lint-ignore: generic HTTP transport; concrete callers are checked at their call sites.
           ...init,
           headers,
           signal: abortSignal,

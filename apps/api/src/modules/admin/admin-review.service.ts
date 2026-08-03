@@ -209,12 +209,14 @@ export class AdminReviewService {
     if (params.source) where.source = params.source;
 
     const [items, total] = await Promise.all([
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.dataImportStaging.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: pageSize,
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.dataImportStaging.count({ where }),
     ]);
 
@@ -237,6 +239,7 @@ export class AdminReviewService {
     const where = { reviewStatus: DataReviewStatus.PENDING_REVIEW };
 
     const [rawItems, total] = await Promise.all([
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.admissionCase.findMany({
         where,
         select: {
@@ -280,6 +283,7 @@ export class AdminReviewService {
         skip,
         take: pageSize,
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.admissionCase.count({ where }),
     ]);
 
@@ -659,24 +663,29 @@ export class AdminReviewService {
       rejectedToday,
       totalStaging,
     ] = await Promise.all([
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.dataImportStaging.count({
         where: { status: StagingStatus.PENDING },
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.admissionCase.count({
         where: { reviewStatus: DataReviewStatus.PENDING_REVIEW },
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.dataImportStaging.count({
         where: {
           status: StagingStatus.APPROVED,
           reviewedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.dataImportStaging.count({
         where: {
           status: StagingStatus.REJECTED,
           reviewedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.dataImportStaging.count(),
     ]);
 

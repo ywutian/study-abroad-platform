@@ -40,31 +40,51 @@ export interface RankingResult {
   // reach/match/safety. Ranking shows a relative percentile only.
 }
 
+/**
+ * Mirrors `VerifiedUserDto` in apps/api (hall/dto/verified-ranking.dto.ts).
+ *
+ * This type had drifted to an older contract entirely — it declared `userId`,
+ * `email`, `nickname`, `avatarUrl`, `gpa`, `sat` and `pointsTotal`, none of
+ * which this endpoint has sent for some time, and the response wrapper read
+ * `items` where the API returns `users`. The tab therefore rendered its empty
+ * state unconditionally, which is why the drift went unnoticed.
+ *
+ * The identity fields are absent by design, not by omission: this leaderboard
+ * is built from ANONYMOUS / VERIFIED_ONLY cases while GET /forum/posts
+ * publishes author.id beside profile.realName, so a userId — or an avatar URL,
+ * which joins just as well — hands over the key that undoes the masking. Each
+ * row is a case; `userName` is a label derived from the case id. Do not add a
+ * user-scoped field back to this type without re-reading that endpoint.
+ */
 export interface VerifiedUserDto {
   rank: number;
-  userId: string;
-  email: string;
-  nickname: string;
-  avatarUrl?: string | null;
-  school: string;
+  caseId: string;
+  userName?: string;
+  gpaRange?: string;
+  satRange?: string;
+  actRange?: string;
+  toeflRange?: string;
+  schoolName: string;
   schoolNameZh?: string;
-  major?: string;
-  year?: number;
+  schoolRank?: number;
   result: string;
-  gpa?: number;
-  sat?: number;
-  act?: number;
-  pointsTotal: number;
+  year: number;
+  round?: string;
+  major?: string;
+  isVerified: boolean;
+  verifiedAt?: string;
 }
 
 export interface VerifiedRankingResponse {
-  items: VerifiedUserDto[];
-  total: number;
+  users: VerifiedUserDto[];
   stats?: {
     totalVerified: number;
-    avgGpa: number;
-    admittedCount: number;
+    totalAdmitted: number;
+    topSchoolsCount: number;
+    ivyCount: number;
   };
+  total: number;
+  hasMore: boolean;
 }
 
 /**

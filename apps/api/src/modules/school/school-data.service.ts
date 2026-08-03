@@ -233,7 +233,9 @@ export class SchoolDataService {
     const nameNorm = normalizeSchoolName(name);
 
     const existing =
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       (await this.prisma.school.findUnique({ where: { scorecardId } })) ??
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       (await this.prisma.school.findUnique({ where: { nameNorm } }));
 
     const fetchedAt = new Date().toISOString();
@@ -284,6 +286,7 @@ export class SchoolDataService {
 
     for (const entry of metricEntries) {
       if (entry.value == null || !schoolIdOut) continue;
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       await this.prisma.schoolMetric.upsert({
         where: {
           schoolId_year_metricKey: {

@@ -7,8 +7,7 @@ import {
   Query,
   Body,
   NotFoundException,
-  BadRequestException,
-  ForbiddenException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,11 +17,10 @@ import {
 } from '@nestjs/swagger';
 import { Roles, CurrentUser, RequirePermission } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { Role, PaymentStatus, Prisma } from '@prisma/client';
+import { PaymentStatus, Prisma, Role } from '@prisma/client';
 import { Permission } from '../../common/constants/permissions';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
-import { SubscriptionPlan } from '@study-abroad/shared';
 import {
   RefundPaymentDto,
   UpdateSubscriptionDto,
@@ -35,6 +33,12 @@ import {
 @Roles(Role.OPERATOR)
 export class PaymentAdminController {
   constructor(private readonly prisma: PrismaService) {}
+
+  private assertPaymentWritesEnabled(): never {
+    throw new ServiceUnavailableException(
+      'Payment administration is read-only while paid subscriptions are retired.',
+    );
+  }
 
   @Get()
   @RequirePermission(Permission.PAYMENT_VIEW)
@@ -99,15 +103,22 @@ export class PaymentAdminController {
       monthlyRevenueResult,
       byPlan,
     ] = await Promise.all([
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count(),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.SUCCESS } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.FAILED } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.REFUNDED } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.count({ where: { status: PaymentStatus.PENDING } }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.aggregate({
         where: { status: PaymentStatus.SUCCESS },
         _sum: { amount: true },
       }),
+      // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
       this.prisma.payment.aggregate({
         where: {
           status: PaymentStatus.SUCCESS,
@@ -145,6 +156,7 @@ export class PaymentAdminController {
   @RequirePermission(Permission.PAYMENT_VIEW)
   @ApiOperation({ summary: 'Payment details' })
   async getPayment(@Param('id') id: string) {
+    // governance: admin-scope — controller is @Roles(Role.OPERATOR) with @RequirePermission(PAYMENT_VIEW) on each route; the surface is read-only since the refund/adjust actions were removed
     const payment = await this.prisma.payment.findUnique({
       where: { id },
       include: {
@@ -158,102 +170,24 @@ export class PaymentAdminController {
   @Post(':id/refund')
   @RequirePermission(Permission.PAYMENT_MANAGE)
   @ApiOperation({ summary: 'Manual refund' })
-  async refundPayment(@Param('id') id: string, @Body() dto: RefundPaymentDto) {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
-      include: { user: { select: { id: true, role: true } } },
-    });
-
-    if (!payment) throw new NotFoundException('Payment not found');
-    if (payment.status !== PaymentStatus.SUCCESS) {
-      throw new BadRequestException('Only successful payments can be refunded');
-    }
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const refundedPayment = await tx.payment.update({
-        where: { id },
-        data: {
-          status: PaymentStatus.REFUNDED,
-          processedAt: new Date(),
-          metadata: {
-            ...(payment.metadata as any),
-            refundReason: dto.reason,
-            refundedAt: new Date().toISOString(),
-          },
-        },
-      });
-
-      if (payment.user.role !== Role.ADMIN) {
-        const remainingSuccessfulPayments = await tx.payment.count({
-          where: {
-            userId: payment.userId,
-            status: PaymentStatus.SUCCESS,
-            id: { not: id },
-          },
-        });
-
-        const targetRole =
-          remainingSuccessfulPayments > 0 ? Role.VERIFIED : Role.USER;
-        await tx.user.update({
-          where: { id: payment.userId },
-          data: { role: targetRole },
-        });
-      }
-
-      return refundedPayment;
-    });
-
-    return updated;
+  refundPayment(@Param('id') id: string, @Body() dto: RefundPaymentDto) {
+    void id;
+    void dto;
+    return this.assertPaymentWritesEnabled();
   }
 
   @Put('users/:userId/subscription')
   @RequirePermission(Permission.PAYMENT_MANAGE)
   @ApiOperation({ summary: 'Manually adjust user subscription tier' })
-  async updateSubscription(
+  updateSubscription(
     @Param('userId') userId: string,
     @Body() dto: UpdateSubscriptionDto,
     @CurrentUser() admin: CurrentUserPayload,
   ) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, role: true },
-    });
-    if (!user) throw new NotFoundException('User not found');
-
-    const targetRole = this.resolveTargetRole(dto);
-    if (!targetRole) {
-      throw new BadRequestException('Either plan or role must be provided');
-    }
-    if (targetRole === Role.ADMIN && user.role !== Role.ADMIN) {
-      throw new ForbiddenException(
-        'Promoting users to ADMIN is not allowed in payment admin endpoint',
-      );
-    }
-
-    const updated = await this.prisma.user.update({
-      where: { id: userId },
-      data: { role: targetRole },
-      select: { id: true, email: true, role: true },
-    });
-
-    // Create audit log
-    await this.prisma.auditLog.create({
-      data: {
-        userId: admin.id,
-        action: 'UPDATE_USER_ROLE',
-        resource: 'subscription',
-        resourceId: userId,
-        metadata: {
-          oldRole: user.role,
-          newRole: targetRole,
-          requestedPlan: dto.plan ?? null,
-          reason: dto.reason,
-          method: 'manual_subscription_override',
-        } as any,
-      },
-    });
-
-    return updated;
+    void userId;
+    void dto;
+    void admin;
+    return this.assertPaymentWritesEnabled();
   }
 
   private parsePaymentStatus(status?: string): PaymentStatus | undefined {
@@ -262,19 +196,5 @@ export class PaymentAdminController {
     return (
       (PaymentStatus as Record<string, PaymentStatus>)[normalized] || undefined
     );
-  }
-
-  private resolveTargetRole(dto: UpdateSubscriptionDto): Role | undefined {
-    if (dto.role) return dto.role;
-    if (!dto.plan) return undefined;
-
-    if (dto.plan === SubscriptionPlan.FREE) return Role.USER;
-    if (
-      dto.plan === SubscriptionPlan.PRO ||
-      dto.plan === SubscriptionPlan.PREMIUM
-    ) {
-      return Role.VERIFIED;
-    }
-    return undefined;
   }
 }

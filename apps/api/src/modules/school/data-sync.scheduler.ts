@@ -178,6 +178,7 @@ export class DataSyncScheduler {
     errorCount: number,
     message?: string,
   ) {
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     await this.prisma.auditLog.create({
       data: {
         action: 'DATA_SYNC',
@@ -276,6 +277,7 @@ export class ManualSyncService {
 
     if (!unitId || !instnm) return;
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findFirst({
       where: {
         OR: [
@@ -321,6 +323,7 @@ export class ManualSyncService {
       const applications = parseInt(row['APPLCN']);
       const admissions = parseInt(row['ADMSSN']);
       if (applications > 0) {
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         await this.prisma.schoolMetric.upsert({
           where: {
             schoolId_year_metricKey: {
@@ -337,6 +340,7 @@ export class ManualSyncService {
             value: applications,
           },
         });
+        // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
         await this.prisma.schoolMetric.upsert({
           where: {
             schoolId_year_metricKey: {
@@ -374,6 +378,7 @@ export class ManualSyncService {
     if (totalStudents > 0 && intlStudents >= 0) {
       const intlPct = (intlStudents / totalStudents) * 100;
 
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       await this.prisma.schoolMetric.upsert({
         where: {
           schoolId_year_metricKey: {
@@ -391,6 +396,7 @@ export class ManualSyncService {
         },
       });
 
+      // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
       await this.prisma.schoolMetric.upsert({
         where: {
           schoolId_year_metricKey: {
@@ -418,6 +424,7 @@ export class ManualSyncService {
     // APPLFEEU - 本科申请费
     // ROOM, BOARD - 食宿费用
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
     });

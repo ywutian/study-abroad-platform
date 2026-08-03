@@ -114,6 +114,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
     }
 
     // Fetch full school data
+    // governance: system-scope — School is published institution data (name/aliases/rank/tuition) with no User or Profile relation; keyed by a school id or name from the tool args
     const fullSchool = await this.prisma.school.findUnique({
       where: { id: school.id },
       include: {
@@ -166,6 +167,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
 
     const metadata = (fullSchool.metadata as any) || {};
     const applicationYear = this.getCurrentApplicationYear();
+    // governance: system-scope — SchoolDeadline holds scraped application deadlines keyed by schoolId + year, no User relation
     const sourcedDeadlines = await this.prisma.schoolDeadline.findMany({
       where: {
         schoolId: fullSchool.id,
@@ -291,6 +293,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
       };
     }
 
+    // governance: system-scope — School is published institution data (name/aliases/rank/tuition) with no User or Profile relation; keyed by a school id or name from the tool args
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
       include: {

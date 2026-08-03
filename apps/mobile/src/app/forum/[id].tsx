@@ -106,6 +106,7 @@ interface PostDto {
   isLiked: boolean;
   createdAt: string;
   updatedAt: string;
+  comments: CommentDto[];
 }
 
 // ---------------------------------------------------------------------------
@@ -172,15 +173,8 @@ export default function ForumPostDetailPage() {
     enabled: !!id,
   });
 
-  const {
-    data: comments,
-    isLoading: commentsLoading,
-    refetch: refetchComments,
-  } = useQuery<CommentDto[]>({
-    queryKey: qk.forum.comments(id),
-    queryFn: () => apiClient.get<CommentDto[]>(forumRoutes.comments(id!)),
-    enabled: !!id,
-  });
+  const comments = useMemo(() => post?.comments ?? [], [post?.comments]);
+  const commentsLoading = postLoading;
 
   // ---- Mutations ----
 
@@ -199,7 +193,6 @@ export default function ForumPostDetailPage() {
   const commentMutation = useMutation<CommentDto, Error, { content: string; parentId?: string }>({
     mutationFn: (dto) => apiClient.post<CommentDto>(forumRoutes.comments(id!), dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: qk.forum.comments(id) });
       queryClient.invalidateQueries({ queryKey: qk.forum.detail(id) });
       setCommentText('');
       setReplyTo(null);
@@ -260,9 +253,9 @@ export default function ForumPostDetailPage() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetchPost(), refetchComments()]);
+    await refetchPost();
     setRefreshing(false);
-  }, [refetchPost, refetchComments]);
+  }, [refetchPost]);
 
   const isOwnPost = post?.author.id === user?.id;
 

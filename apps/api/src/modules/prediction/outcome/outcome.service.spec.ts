@@ -34,6 +34,10 @@ const mockPrisma = {
   profile: {
     findUnique: jest.fn(),
   },
+  admissionCase: {
+    create: jest.fn(),
+    findFirst: jest.fn().mockResolvedValue(null),
+  },
 };
 
 const mockIncentive = {
@@ -413,6 +417,53 @@ describe('OutcomeService', () => {
       expect(result.verified).toBe(2);
       // 3*50 + 1*150 + 1*300 = 600
       expect(result.pointsEarned).toBe(600);
+    });
+  });
+
+  describe('share opt-in → AdmissionCase', () => {
+    // The opt-in copy promises "匿名分享给学弟学妹 … 加入案例库". A case born
+    // @default(PRIVATE) is served by no public surface, and admin approval only
+    // moves reviewStatus — so the promise was never kept.
+    const outcomeRecord = {
+      id: 'out1',
+      reportedBy: 'user-1',
+      result: 'ADMITTED',
+      round: 'ED',
+      notes: 'got in [share=true]',
+      predictionResult: {
+        schoolId: 'school-1',
+        applicationRound: 'ED',
+        profile: {
+          user: { id: 'user-1' },
+          targetMajor: 'CS',
+          testScores: [],
+          activities: [],
+          awards: [],
+          education: [],
+        },
+      },
+    };
+
+    it('creates the case as ANONYMOUS and tags its source', async () => {
+      mockPrisma.predictionOutcomeLabelRecord.findUnique.mockResolvedValue(
+        outcomeRecord,
+      );
+      mockPrisma.admissionCase.create.mockResolvedValue({ id: 'case-1' });
+
+      await (
+        service as unknown as {
+          createAdmissionCaseFromOutcome: (id: string) => Promise<void>;
+        }
+      ).createAdmissionCaseFromOutcome('out1');
+
+      expect(mockPrisma.admissionCase.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            visibility: 'ANONYMOUS',
+            source: 'outcome_self_report',
+          }),
+        }),
+      );
     });
   });
 });

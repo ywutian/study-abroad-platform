@@ -24,6 +24,7 @@ export function AdminBreadcrumb() {
     calibrations: t('sidebar.calibrations'),
     essays: t('sidebar.essays'),
     points: t('sidebar.points'),
+    'points-redemptions': t('sidebar.pointsRedemptions'),
     verifications: t('sidebar.verifications'),
     moderation: t('sidebar.moderation'),
     payments: t('sidebar.payments'),

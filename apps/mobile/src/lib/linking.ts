@@ -5,7 +5,7 @@
  * This module provides utilities for constructing and parsing deep link URLs.
  *
  * URL Scheme: studyabroad://
- * Universal Links: https://studyabroad.app/
+ * Universal Links: https://www.lumniedu.com/
  *
  * Route mapping (expo-router handles this from file structure):
  *   studyabroad://school/:id      → /school/[id]
@@ -29,7 +29,7 @@ import type { Href } from 'expo-router';
 export const SCHEME = 'studyabroad';
 
 /** The universal link domain (production) */
-export const UNIVERSAL_LINK_DOMAIN = 'studyabroad.app';
+export const UNIVERSAL_LINK_DOMAIN = 'www.lumniedu.com';
 
 /**
  * Build an internal deep link URL
@@ -41,7 +41,7 @@ export function buildDeepLink(path: string): string {
 
 /**
  * Build a universal link URL for sharing
- * e.g. buildShareLink('/school/abc123') → 'https://studyabroad.app/school/abc123'
+ * e.g. buildShareLink('/school/abc123') → 'https://www.lumniedu.com/school/abc123'
  */
 export function buildShareLink(path: string): string {
   return `https://${UNIVERSAL_LINK_DOMAIN}${path}`;

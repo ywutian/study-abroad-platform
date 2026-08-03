@@ -87,6 +87,7 @@ export class CaseSimilarityService {
 
     try {
       if (profile.nationality) {
+        // governance: public-feed — every query spreads the base `where` built at the top of findSimilar(): visibility in (ANONYMOUS, PUBLIC) AND an approved reviewStatus. AdmissionCase.visibility defaults to PRIVATE, so dropping that spread would start serving unpublished cases
         const sameNationality = await this.prisma.admissionCase.findMany({
           where: {
             ...where,
@@ -102,6 +103,7 @@ export class CaseSimilarityService {
           nationalityMatched = true;
         } else {
           // Top up with cross-nationality cases — flagged so the UI can caveat.
+          // governance: public-feed — every query spreads the base `where` built at the top of findSimilar(): visibility in (ANONYMOUS, PUBLIC) AND an approved reviewStatus. AdmissionCase.visibility defaults to PRIVATE, so dropping that spread would start serving unpublished cases
           const fallback = await this.prisma.admissionCase.findMany({
             where: {
               ...where,
@@ -116,6 +118,7 @@ export class CaseSimilarityService {
             fallback.length === 0 && sameNationality.length > 0;
         }
       } else {
+        // governance: public-feed — every query spreads the base `where` built at the top of findSimilar(): visibility in (ANONYMOUS, PUBLIC) AND an approved reviewStatus. AdmissionCase.visibility defaults to PRIVATE, so dropping that spread would start serving unpublished cases
         rows = await this.prisma.admissionCase.findMany({
           where,
           take,

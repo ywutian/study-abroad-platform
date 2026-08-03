@@ -366,6 +366,7 @@ export class AuditService {
     eventId: string,
     resolution: { resolvedBy: string; notes?: string },
   ): Promise<void> {
+    // governance: system-scope — AgentSecurityEvent is the platform security log (no User relation); this write touches only resolution bookkeeping
     await this.prisma.agentSecurityEvent.update({
       where: { id: eventId },
       data: {

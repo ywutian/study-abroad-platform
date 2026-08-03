@@ -1,5 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsConfigService, PointAction } from './points-config.service';
 import {
@@ -28,9 +29,16 @@ export class PointsService {
 
   /**
    * 获取用户积分
+   *
+   * `tx` lets a caller read the balance inside its own transaction, so a
+   * check-then-debit sequence sees a consistent snapshot instead of a value
+   * that another request may already have spent.
    */
-  async getUserPoints(userId: string): Promise<number> {
-    const user = await this.prisma.user.findUnique({
+  async getUserPoints(
+    userId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number> {
+    const user = await (tx ?? this.prisma).user.findUnique({
       where: { id: userId },
       select: { points: true },
     });
@@ -39,12 +47,21 @@ export class PointsService {
 
   /**
    * 统一增加/扣除积分（核心方法）
+   *
+   * `tx` — run every write of this adjustment inside the caller's transaction.
+   *
+   * Without it this method is itself two separate writes (balance, then
+   * PointHistory), so a failure between them moves a user's balance with no
+   * record of why. Callers that pair an adjustment with a write of their own
+   * — a redemption row, an unlock — must pass `tx`, or a crash in between
+   * leaves points debited for something that does not exist.
    */
   async adjustPoints(
     userId: string,
     action: PointAction | string,
     metadata?: Record<string, unknown>,
     pointsOverride?: number,
+    tx?: Prisma.TransactionClient,
   ): Promise<{
     success: boolean;
     newBalance: number;
@@ -52,6 +69,7 @@ export class PointsService {
     pointHistoryId?: string;
     points?: number;
   }> {
+    const db = tx ?? this.prisma;
     const enabled = await this.pointsConfig.isEnabled();
     if (!enabled) {
       return { success: true, newBalance: 0, points: 0 };
@@ -83,31 +101,43 @@ export class PointsService {
       }
       return {
         success: true,
-        newBalance: await this.getUserPoints(userId),
+        newBalance: await this.getUserPoints(userId, tx),
         points: 0,
       };
     }
 
-    const currentPoints = await this.getUserPoints(userId);
+    // The sufficiency check and the debit must be one statement. This used to
+    // read, compare, then increment unconditionally — so two concurrent debits
+    // both passed against the same pre-spend balance and `User.points` (no CHECK
+    // constraint) went negative. See `.claude/rules/backend.md`.
+    const claimed = await db.user.updateMany({
+      where:
+        pointValue < 0
+          ? { id: userId, points: { gte: -pointValue } }
+          : { id: userId },
+      data: { points: { increment: pointValue } },
+    });
 
-    // 检查是否有足够积分（扣除情况）
-    if (pointValue < 0 && currentPoints + pointValue < 0) {
+    if (claimed.count === 0) {
+      // Nothing was written. For a debit that means the balance moved under us
+      // or was never enough; for a credit the row simply is not there, and
+      // saying "积分不足" about a top-up would be nonsense.
+      const currentPoints = await this.getUserPoints(userId, tx);
+      this.logger.warn(
+        `Points adjustment did not apply: userId=${userId} action="${String(action)}" ` +
+          `delta=${pointValue} balance=${currentPoints}`,
+      );
       return {
         success: false,
         newBalance: currentPoints,
-        message: '积分不足',
+        message: pointValue < 0 ? '积分不足' : '用户不存在',
       };
     }
 
-    // 更新积分
-    const updated = await this.prisma.user.update({
-      where: { id: userId },
-      data: { points: { increment: pointValue } },
-      select: { points: true },
-    });
+    const newBalance = await this.getUserPoints(userId, tx);
 
     // 记录积分变动
-    const pointHistory = await this.prisma.pointHistory.create({
+    const pointHistory = await db.pointHistory.create({
       data: {
         userId,
         action: String(action),
@@ -122,7 +152,7 @@ export class PointsService {
 
     return {
       success: true,
-      newBalance: updated.points,
+      newBalance,
       pointHistoryId: pointHistory.id,
       points: pointValue,
     };

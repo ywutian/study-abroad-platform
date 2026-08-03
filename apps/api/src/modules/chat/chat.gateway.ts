@@ -238,6 +238,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (!client.userId) return;
 
+    // `client.to(room)` reaches the room's members whether or not the sender
+    // is one of them, and conversationId comes straight off the wire — so any
+    // authenticated socket could push "userX is typing" into a private
+    // conversation it has nothing to do with, attributed to itself.
+    //
+    // Membership of `conversation:*` is already participant-gated by
+    // handleJoinConversation, so requiring the sender to be in the room is
+    // exact and costs no query. (handleMarkRead needs no equivalent line only
+    // because markAsRead uses `update` on the compound key, which THROWS for a
+    // non-participant before the broadcast runs — if that ever becomes
+    // `updateMany`, it needs this guard too.)
+    if (!client.rooms.has(`conversation:${data.conversationId}`)) return;
+
     client.to(`conversation:${data.conversationId}`).emit('userTyping', {
       conversationId: data.conversationId,
       userId: client.userId,

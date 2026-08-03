@@ -49,6 +49,25 @@ describe('ProfileAnalysisScreen', () => {
     jest.clearAllMocks();
   });
 
+  it('shows an explanatory loading state instead of a blank screen', () => {
+    (apiClient.get as jest.Mock).mockReturnValue(new Promise(() => undefined));
+
+    const screen = renderWithProviders(<ProfileAnalysisScreen />);
+
+    expect(screen.getByText('applicationAnalysis.loading.description')).toBeTruthy();
+  });
+
+  it('shows a retryable error state when analysis loading fails', async () => {
+    (apiClient.get as jest.Mock).mockRejectedValue(new Error('network unavailable'));
+
+    const screen = renderWithProviders(<ProfileAnalysisScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText('applicationAnalysis.error.description')).toBeTruthy();
+    });
+    expect(screen.getByText('common.retry')).toBeTruthy();
+  });
+
   it.each(renderFixtures)(
     'renders the canonical application-analysis contract for $caseId',
     async (fixture) => {

@@ -200,6 +200,7 @@ export function useListQuery<TItem, TResponse = PaginatedResponse<TItem>>(
     queryKey,
     queryFn: () =>
       apiClient.get<TResponse>(endpoint, {
+        // @route-lint-ignore generic list hook; callers supply shared routes
         params: { ...stableParams, page: effectivePage, pageSize },
         suppressErrorToast: true,
       }),

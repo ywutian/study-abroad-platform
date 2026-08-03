@@ -1,38 +1,17 @@
-export type VaultItemType = 'CREDENTIAL' | 'DOCUMENT' | 'NOTE' | 'CERTIFICATE';
+import type {
+  VaultItem as SharedVaultItem,
+  VaultItemDetail as SharedVaultItemDetail,
+  VaultStats as SharedVaultStats,
+} from '@study-abroad/shared';
 
-export interface VaultItem {
-  id: string;
-  type: VaultItemType;
-  title: string;
-  category?: string;
-  tags: string[];
-  icon?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VaultItemDetail extends VaultItem {
-  data: string;
-}
-
-export interface VaultStats {
-  totalItems: number;
-  credentialCount: number;
-  documentCount: number;
-  noteCount: number;
-  certificateCount: number;
-  categories: string[];
-}
+export type VaultItem = SharedVaultItem;
+export type VaultItemDetail = SharedVaultItemDetail;
+export type VaultStats = SharedVaultStats;
+export type VaultItemType = SharedVaultItem['type'];
 
 export interface CredentialData {
   username?: string;
   password?: string;
   website?: string;
   notes?: string;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
 }

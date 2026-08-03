@@ -23,7 +23,6 @@ import {
   Calendar,
   AlertTriangle,
   Lightbulb,
-  Trophy,
 } from 'lucide-react';
 
 interface VerificationRequest {
@@ -221,14 +220,10 @@ export function VerificationStatusCard({
                     <Lightbulb className="h-3 w-3" />
                     {t('verification.benefits.title')}
                   </p>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <BadgeCheck className="h-3 w-3 text-blue-500" />
                       {t('verification.benefits.badge')}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Trophy className="h-3 w-3 text-amber-500" />
-                      {t('verification.benefits.points')}
                     </div>
                   </div>
                 </div>

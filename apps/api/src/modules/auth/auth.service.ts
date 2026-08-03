@@ -208,10 +208,19 @@ export class AuthService {
         },
       });
 
-      await tx.operatorInvite.update({
-        where: { id: invite.id },
+      // Conditional claim, not update-by-id: the `if (invite.usedBy)` guard
+      // above runs OUTSIDE this transaction, so two requests with the same
+      // token both read `usedBy: null` and an unconditional update lets both
+      // win — one invite, two accounts at invite.role (OPERATOR by default).
+      // No unique constraint on usedBy backs this up. Throwing on count 0
+      // rolls back the user created just above.
+      const claimed = await tx.operatorInvite.updateMany({
+        where: { id: invite.id, usedBy: null },
         data: { usedBy: newUser.id, usedAt: new Date() },
       });
+      if (claimed.count === 0) {
+        throw new BadRequestException('Invite already used');
+      }
 
       return newUser;
     });
@@ -282,6 +291,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user);
 
     // Update lastLoginAt
+    // governance: parent-scoped — updates the user whose credentials were just verified
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
@@ -346,6 +356,7 @@ export class AuthService {
    * @returns A success message confirming the email was verified
    */
   async verifyEmail(token: string): Promise<{ message: string }> {
+    // governance: parent-scoped — resolved by emailVerifyToken — a bearer secret mailed to that address; the update targets that same row
     const user = await this.prisma.user.findFirst({
       where: { emailVerifyToken: token },
     });
@@ -368,6 +379,7 @@ export class AuthService {
       );
     }
 
+    // governance: parent-scoped — resolved by emailVerifyToken — a bearer secret mailed to that address; the update targets that same row
     await this.prisma.user.update({
       where: { id: user.id },
       // ponytail: keep the token (single-purpose, expires in 24h, overwritten on
@@ -408,6 +420,7 @@ export class AuthService {
     const emailVerifyToken = randomBytes(32).toString('hex');
     const emailVerifyTokenExp = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
+    // governance: parent-scoped — updates the user resolved above from the verified request
     await this.prisma.user.update({
       where: { id: user.id },
       data: { emailVerifyToken, emailVerifyTokenExp },
@@ -444,6 +457,7 @@ export class AuthService {
     const resetToken = randomBytes(32).toString('hex');
     const resetExpires = new Date(Date.now() + 3600000); // 1 hour
 
+    // governance: parent-scoped — password-reset request: the row is resolved by email and the response is identical either way ("If the email exists…"), so it cannot be used to probe
     await this.prisma.user.update({
       where: { id: user.id },
       data: {

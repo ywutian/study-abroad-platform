@@ -46,7 +46,7 @@ export const AgentThrottleType =
 
 // 并发限制配置
 const MAX_CONCURRENT_REQUESTS = 2; // 每用户最大并发请求数
-const VIP_MAX_CONCURRENT = 5; // VIP 用户
+const ADMIN_MAX_CONCURRENT = 5; // 管理员排障与运营任务
 
 @Injectable()
 export class AgentThrottleGuard implements CanActivate {
@@ -80,8 +80,11 @@ export class AgentThrottleGuard implements CanActivate {
     }
 
     const userId = user.sub;
-    const isVip = user.role === 'VIP' || user.role === 'ADMIN';
-    const maxConcurrent = isVip ? VIP_MAX_CONCURRENT : MAX_CONCURRENT_REQUESTS;
+    const hasElevatedOperationalLimit =
+      user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+    const maxConcurrent = hasElevatedOperationalLimit
+      ? ADMIN_MAX_CONCURRENT
+      : MAX_CONCURRENT_REQUESTS;
 
     // 获取限流类型
     const throttleType =
@@ -109,7 +112,7 @@ export class AgentThrottleGuard implements CanActivate {
     const limitResult = await this.rateLimiter.checkLimit(
       userId,
       throttleType,
-      isVip,
+      hasElevatedOperationalLimit,
     );
     if (!limitResult.allowed) {
       throw new HttpException(

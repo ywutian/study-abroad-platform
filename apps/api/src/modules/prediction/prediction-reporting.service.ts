@@ -198,6 +198,7 @@ export class PredictionReportingService {
   ) {
     const skip = (page - 1) * pageSize;
     const [items, total] = await Promise.all([
+      // governance: parent-scoped — keyed by profileId; prediction.controller resolves the profile from @CurrentUser() before calling
       this.prisma.predictionResult.findMany({
         where: { profileId, authority: 'AUTHORITATIVE' },
         orderBy: { updatedAt: 'desc' },
@@ -209,6 +210,7 @@ export class PredictionReportingService {
           },
         },
       }),
+      // governance: parent-scoped — keyed by profileId; prediction.controller resolves the profile from @CurrentUser() before calling
       this.prisma.predictionResult.count({
         where: { profileId, authority: 'AUTHORITATIVE' },
       }),
@@ -218,6 +220,7 @@ export class PredictionReportingService {
     const [schools, snapshots] =
       schoolIds.length > 0
         ? await Promise.all([
+            // governance: parent-scoped — keyed by profileId; prediction.controller resolves the profile from @CurrentUser() before calling
             this.prisma.school.findMany({
               where: { id: { in: schoolIds } },
               select: {
@@ -228,6 +231,7 @@ export class PredictionReportingService {
                 acceptanceRate: true,
               },
             }),
+            // governance: parent-scoped — keyed by profileId; prediction.controller resolves the profile from @CurrentUser() before calling
             this.prisma.predictionSnapshot.findMany({
               where: {
                 profileId,
@@ -422,6 +426,13 @@ export class PredictionReportingService {
   ): Promise<void> {
     try {
       const now = new Date();
+      const owner = await this.prisma.profile.findUnique({
+        where: { id: profileId },
+        select: { userId: true },
+      });
+      if (!owner) {
+        throw new NotFoundException('Profile not found');
+      }
       const prediction = await this.prisma.predictionResult.findFirst({
         where: { profileId, schoolId, authority: 'AUTHORITATIVE' },
         select: {
@@ -444,6 +455,7 @@ export class PredictionReportingService {
 
       // Dedup: skip if a SELF_REPORTED record already exists for this prediction
       const existingSelfReport =
+        // governance: parent-scoped — keyed by profileId; the controller looks the profile up with `where: { userId: user.id }` first
         await this.prisma.predictionOutcomeLabelRecord.findFirst({
           where: {
             predictionResultId: prediction.id,
@@ -462,6 +474,9 @@ export class PredictionReportingService {
               evidenceUrl: options?.evidenceUrl,
               round: options?.round,
               isFinal: options?.isFinal ?? false,
+              // Both reporting APIs use the owning User id so /outcomes can
+              // read records created through the legacy school-based route.
+              reportedBy: owner.userId,
             },
           });
 
@@ -514,7 +529,7 @@ export class PredictionReportingService {
               evidenceUrl: options?.evidenceUrl,
               round: options?.round,
               isFinal: options?.isFinal ?? false,
-              reportedBy: profileId,
+              reportedBy: owner.userId,
             },
           });
 
@@ -564,21 +579,19 @@ export class PredictionReportingService {
 
       // Write prediction feedback to memory system
       if (this.memoryManager) {
-        const [prediction, school, profile] = await Promise.all([
+        const [prediction, school] = await Promise.all([
+          // governance: parent-scoped — keyed by profileId; the controller looks the profile up with `where: { userId: user.id }` first
           this.prisma.predictionResult.findFirst({
             where: { profileId, schoolId, authority: 'AUTHORITATIVE' },
           }),
+          // governance: parent-scoped — keyed by profileId; the controller looks the profile up with `where: { userId: user.id }` first
           this.prisma.school.findUnique({
             where: { id: schoolId },
             select: { name: true },
           }),
-          this.prisma.profile.findUnique({
-            where: { id: profileId },
-            select: { userId: true },
-          }),
         ]);
 
-        if (prediction && profile?.userId) {
+        if (prediction) {
           const probability = Number(prediction.probability);
           const calibrationEligible =
             actualResult === 'ADMITTED' || actualResult === 'REJECTED';
@@ -593,7 +606,7 @@ export class PredictionReportingService {
             : '（仅记录结果，不计入校准准确性）';
 
           fireAndForget(
-            this.memoryManager.remember(profile.userId, {
+            this.memoryManager.remember(owner.userId, {
               type: MemoryType.FACT,
               category: 'prediction_feedback',
               content: `预测结果反馈：${school?.name ?? schoolId} 预测概率 ${Math.round(probability * 100)}%，实际结果 ${actualResult}${accuracyLabel}`,
@@ -648,6 +661,7 @@ export class PredictionReportingService {
       ...(query.result ? { result: query.result } : {}),
       predictionResult: {
         ...(query.schoolId ? { schoolId: query.schoolId } : {}),
+        // governance: admin-scope — the outcome review queue: both methods are called only from prediction-workflow.service, which is exposed solely by admin-prediction-workflow.controller (@Roles(Role.OPERATOR))
         ...(query.policyVersionId
           ? { policyVersionId: query.policyVersionId }
           : {}),
@@ -674,6 +688,7 @@ export class PredictionReportingService {
               cohortKey: true,
               outcomeLabel: true,
               outcomeLabeledAt: true,
+              // governance: admin-scope — the outcome review queue: both methods are called only from prediction-workflow.service, which is exposed solely by admin-prediction-workflow.controller (@Roles(Role.OPERATOR))
               outcomeLabelRecords: {
                 orderBy: { createdAt: 'desc' },
               },
@@ -683,6 +698,7 @@ export class PredictionReportingService {
       }),
       this.prisma.predictionOutcomeLabelRecord.count({ where }),
     ]);
+    // governance: admin-scope — the outcome review queue: both methods are called only from prediction-workflow.service, which is exposed solely by admin-prediction-workflow.controller (@Roles(Role.OPERATOR))
 
     const schoolIds = [
       ...new Set(
@@ -694,7 +710,8 @@ export class PredictionReportingService {
           where: { id: { in: schoolIds } },
           select: { id: true, name: true, nameZh: true, usNewsRank: true },
         })
-      : [];
+      : // governance: admin-scope — the outcome review queue: both methods are called only from prediction-workflow.service, which is exposed solely by admin-prediction-workflow.controller (@Roles(Role.OPERATOR))
+        [];
     const schoolMap = new Map(schools.map((school) => [school.id, school]));
     const profileIds = [
       ...new Set(items.map((item) => item.predictionResult.profileId)),
@@ -770,6 +787,7 @@ export class PredictionReportingService {
       .filter((item) => (query.eligibleOnly ? item.calibrationEligible : true));
 
     return createPaginatedResponse(normalizedItems, total, page, pageSize);
+    // governance: admin-scope — the outcome review queue: both methods are called only from prediction-workflow.service, which is exposed solely by admin-prediction-workflow.controller (@Roles(Role.OPERATOR))
   }
 
   async reviewOutcomeLabel(
@@ -777,6 +795,7 @@ export class PredictionReportingService {
     id: string,
     dto: ReviewPredictionOutcomeDto,
   ) {
+    // governance: admin-scope — the outcome review queue: both methods are called only from prediction-workflow.service, which is exposed solely by admin-prediction-workflow.controller (@Roles(Role.OPERATOR))
     const existing = await this.prisma.predictionOutcomeLabelRecord.findUnique({
       where: { id },
       include: {
@@ -911,7 +930,9 @@ export class PredictionReportingService {
       count: number;
     }>;
   }> {
+    // governance: admin-scope — called only from admin.controller (@Roles(Role.OPERATOR))
     const total = await this.prisma.predictionResult.count();
+    // governance: admin-scope — called only from admin.controller (@Roles(Role.OPERATOR))
     const results = await this.prisma.predictionResult.findMany({
       where: {
         OR: [

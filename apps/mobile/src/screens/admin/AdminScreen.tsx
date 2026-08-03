@@ -158,7 +158,7 @@ export default function AdminScreen() {
 
   const updateUserRoleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-      apiClient.put(adminRoutes.userRole(userId), { role }),
+      apiClient.post(adminRoutes.userRoleAssign(userId), { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk.admin.usersAll });
       setSelectedUser(null);

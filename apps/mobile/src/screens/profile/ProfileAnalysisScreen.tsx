@@ -10,6 +10,7 @@ import type {
   AnalysisState,
   ApplicationAnalysisSchoolResult,
 } from '@study-abroad/shared';
+import { normalizeApplicationAnalysis } from '@study-abroad/shared';
 import {
   Badge,
   Card,
@@ -17,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
   EmptyState,
+  ErrorState,
   Loading,
 } from '@/components/ui';
 import { aiService } from '@/lib/api/services/ai';
@@ -66,12 +68,17 @@ export default function ProfileAnalysisScreen() {
   const {
     data: analysis,
     isLoading,
+    isError,
     isRefetching,
     refetch,
   } = useQuery({
     queryKey: qk.profile.aiAnalysis(),
     queryFn: () => aiService.profileAnalysis(),
     enabled: isAuthenticated,
+    // Application analysis is an expensive server-side fan-out. Avoid stacking
+    // React Query retries on top of the transport timeout; the error UI exposes
+    // an explicit user-controlled retry instead.
+    retry: false,
   });
 
   if (!isAuthenticated) {
@@ -90,6 +97,20 @@ export default function ProfileAnalysisScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Loading fullScreen />
+        <Text style={[styles.loadingDescription, { color: colors.foregroundMuted }]}>
+          {t('applicationAnalysis.loading.description')}
+        </Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ErrorState
+          description={t('applicationAnalysis.error.description')}
+          onRetry={() => void refetch()}
+        />
       </View>
     );
   }
@@ -117,6 +138,7 @@ export default function ProfileAnalysisScreen() {
   const stalePredictionCount =
     (predictionContext?.staleSchoolIds?.length ?? 0) +
     (predictionContext?.missingSchoolIds?.length ?? 0);
+  const normalized = normalizeApplicationAnalysis(analysis);
 
   return (
     <ScrollView
@@ -134,8 +156,8 @@ export default function ProfileAnalysisScreen() {
                 {t('applicationAnalysis.subtitle')}
               </Text>
             </View>
-            <Badge variant={getFreshnessVariant(analysis.status)}>
-              {t(`applicationAnalysis.freshness.${analysis.status ?? 'fresh'}`)}
+            <Badge variant={getFreshnessVariant(normalized.freshnessSummary.status)}>
+              {t(`applicationAnalysis.freshness.${normalized.freshnessSummary.status}`)}
             </Badge>
           </View>
         </CardHeader>
@@ -146,7 +168,7 @@ export default function ProfileAnalysisScreen() {
             <Badge variant="secondary">{analysis.meta?.analysisVersion}</Badge>
           </View>
           <Text style={[styles.summaryVerdict, { color: colors.foreground }]}>
-            {analysis.portfolioSummary.verdict}
+            {normalized.overallVerdict}
           </Text>
           {analysis.meta?.degradedReason ? (
             <Text style={[styles.summaryBody, { color: colors.foregroundMuted }]}>
@@ -185,7 +207,7 @@ export default function ProfileAnalysisScreen() {
           >
             <MetricBlock
               label={t('applicationAnalysis.focusSchools')}
-              value={String(analysis.schools.length)}
+              value={String(normalized.schoolCards.length)}
             />
             <View style={[styles.metricDivider, { backgroundColor: colors.border }]} />
             <MetricBlock label="Trace" value={analysis.meta.traceId.slice(0, 8)} />
@@ -248,11 +270,11 @@ export default function ProfileAnalysisScreen() {
             <Text style={[styles.sectionBody, { color: colors.foregroundMuted }]}>
               {stateCopy.description}
             </Text>
-            <BulletList items={analysis.portfolioSummary.keyReasons} />
-            {analysis.portfolioSummary.riskBoundaries.length ? (
+            <BulletList items={normalized.topReasons} />
+            {normalized.topRisks.length ? (
               <ListBlock
                 title={t('applicationAnalysis.riskBoundaries')}
-                items={analysis.portfolioSummary.riskBoundaries}
+                items={normalized.topRisks}
                 compact
               />
             ) : null}
@@ -261,8 +283,8 @@ export default function ProfileAnalysisScreen() {
       </Section>
 
       <Section title={t('applicationAnalysis.focusSchools')}>
-        {analysis.schools.length ? (
-          analysis.schools.map((school) => (
+        {normalized.schoolCards.length ? (
+          normalized.schoolCards.map((school) => (
             <FocusSchoolCard key={school.schoolId} school={school} />
           ))
         ) : (
@@ -283,17 +305,61 @@ export default function ProfileAnalysisScreen() {
         <View style={styles.columnStack}>
           <ListBlock
             title={t('applicationAnalysis.actionPlan.now')}
-            items={analysis.actionPlan.now}
-          />
-          <ListBlock
-            title={t('applicationAnalysis.actionPlan.next90Days')}
-            items={analysis.actionPlan.next90Days}
-          />
-          <ListBlock
-            title={t('applicationAnalysis.actionPlan.beforeSubmission')}
-            items={analysis.actionPlan.beforeSubmission}
+            items={normalized.nextActions}
           />
         </View>
+      </Section>
+
+      <Section title={t('applicationAnalysis.evidenceSummary')}>
+        <Card>
+          <CardContent>
+            {normalized.evidenceSummary.length ? (
+              normalized.evidenceSummary.map((item) => (
+                <View
+                  key={`${item.type}-${item.label}-${item.schoolId ?? ''}`}
+                  style={styles.evidenceItem}
+                >
+                  <Text style={[styles.evidenceLabel, { color: colors.foreground }]}>
+                    {item.label}
+                  </Text>
+                  <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
+                    {item.detail}
+                  </Text>
+                  {!!item.sourceName && (
+                    <Text style={[styles.sourceText, { color: colors.primary }]}>
+                      {item.sourceName}
+                    </Text>
+                  )}
+                </View>
+              ))
+            ) : (
+              <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
+                {stateCopy.description}
+              </Text>
+            )}
+          </CardContent>
+        </Card>
+      </Section>
+
+      <Section title={t('applicationAnalysis.confidenceSummary')}>
+        <View style={styles.infoGrid}>
+          <InfoCard
+            label={t('applicationAnalysis.confidenceSummary')}
+            value={`${normalized.confidenceSummary.level}: ${normalized.confidenceSummary.summary}`}
+          />
+          <InfoCard
+            label={t('applicationAnalysis.freshnessSummary')}
+            value={
+              [
+                normalized.freshnessSummary.summary,
+                formatDate(normalized.freshnessSummary.generatedAt),
+              ]
+                .filter(Boolean)
+                .join(' · ') || stateCopy.description
+            }
+          />
+        </View>
+        <BulletList items={normalized.confidenceSummary.signals} />
       </Section>
 
       {analysis.unknowns.length ? (
@@ -525,6 +591,13 @@ function BulletList({ items }: { items: string[] }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingDescription: {
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.xl,
+    fontSize: fontSize.sm,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
   contentContainer: {
     padding: spacing.md,
     paddingBottom: spacing.xl * 2,
@@ -614,4 +687,7 @@ const styles = StyleSheet.create({
   listItemCompact: { gap: spacing.xs },
   listBullet: { fontSize: fontSize.base, lineHeight: 20 },
   listText: { flex: 1, fontSize: fontSize.sm, lineHeight: 20 },
+  evidenceItem: { gap: spacing.xs, paddingVertical: spacing.sm },
+  evidenceLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  sourceText: { fontSize: fontSize.xs },
 });

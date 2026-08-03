@@ -50,6 +50,50 @@ describe('HallListService', () => {
   });
 
   // ============================================
+  // owner identity on the public read paths
+  // ============================================
+
+  describe('public lists do not carry the creator id', () => {
+    // `UserList.userId` is what GET /forum/posts publishes as author.id beside
+    // profile.realName — both unauthenticated — so a published list used to
+    // link straight back to a named person. The relation that sat here was
+    // annotated as exposing "only the opaque id"; the id is the join key.
+    const row = {
+      id: 'list-1',
+      userId: 'owner-secret',
+      isPublic: true,
+      title: 'My picks',
+      _count: { votes: 3 },
+    };
+
+    it('strips it from the public list', async () => {
+      mockPrisma.userList.findMany.mockResolvedValue([{ ...row }]);
+      mockPrisma.userList.count.mockResolvedValue(1);
+
+      const res = await service.getPublicLists({ page: 1, pageSize: 20 });
+
+      expect(res.items[0]).not.toHaveProperty('userId');
+      expect(res.items[0]).not.toHaveProperty('user');
+      expect(JSON.stringify(res.items)).not.toContain('owner-secret');
+      // the list itself still works
+      expect(res.items[0].title).toBe('My picks');
+    });
+
+    it('strips it from the by-id read, and never queries the relation', async () => {
+      mockPrisma.userList.findUnique.mockResolvedValue({ ...row });
+
+      const res = await service.getListById('list-1');
+
+      expect(res).not.toHaveProperty('userId');
+      expect(res).not.toHaveProperty('user');
+      expect(JSON.stringify(res)).not.toContain('owner-secret');
+      expect(
+        mockPrisma.userList.findUnique.mock.calls[0][0].include,
+      ).not.toHaveProperty('user');
+    });
+  });
+
+  // ============================================
   // createList
   // ============================================
 
@@ -247,7 +291,7 @@ describe('HallListService', () => {
 
   describe('getListById', () => {
     it('should return list by id', async () => {
-      const list = { id: 'list-1', title: 'Test List' };
+      const list = { id: 'list-1', title: 'Test List', isPublic: true };
       mockPrisma.userList.findUnique.mockResolvedValue(list);
 
       const result = await service.getListById('list-1');
@@ -259,6 +303,24 @@ describe('HallListService', () => {
       mockPrisma.userList.findUnique.mockResolvedValue(null);
 
       await expect(service.getListById('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('hides a private list from this @Public() route', async () => {
+      // GET /halls/lists/:id is unauthenticated. Without an isPublic check,
+      // anyone holding an id could read a list its owner had marked private —
+      // getPublicLists() filters on isPublic and voteList() rejects private
+      // rows; only this reader did not. 404, not 403: the response must not
+      // confirm the list exists.
+      mockPrisma.userList.findUnique.mockResolvedValue({
+        id: 'list-private',
+        title: "Someone's private list",
+        userId: 'other-user',
+        isPublic: false,
+      });
+
+      await expect(service.getListById('list-private')).rejects.toThrow(
         NotFoundException,
       );
     });

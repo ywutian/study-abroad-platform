@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAuthReady, useAuthGatedQuery } from './use-auth-gated-query';
@@ -48,8 +48,7 @@ describe('useAuthGatedQuery', () => {
     renderHook(() => useAuthGatedQuery({ queryKey: ['gated2'], queryFn }), {
       wrapper,
     });
-    await new Promise((r) => setTimeout(r, 20));
-    expect(queryFn).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(queryFn).toHaveBeenCalledTimes(1));
   });
 
   it('still respects a caller-supplied enabled:false', async () => {

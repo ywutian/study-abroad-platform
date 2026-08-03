@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock react-i18next
@@ -164,6 +164,48 @@ describe('TimelinePage', () => {
       expect(getByText('Harvard University')).toBeTruthy();
       expect(getByText('Stanford University')).toBeTruthy();
     });
+  });
+
+  it('loads inline tasks from the timeline detail endpoint when expanded', async () => {
+    const timeline = {
+      id: 'tl-1',
+      schoolId: 's-1',
+      schoolName: 'Harvard University',
+      round: 'ED',
+      deadline: '2026-11-01T00:00:00Z',
+      status: 'IN_PROGRESS',
+      progress: 40,
+      priority: 1,
+      notes: null,
+      tasksTotal: 1,
+      tasksCompleted: 0,
+      createdAt: '2026-01-01T00:00:00Z',
+    };
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url === '/timelines') return Promise.resolve([timeline]);
+      if (url === '/timelines/tl-1') {
+        return Promise.resolve({
+          ...timeline,
+          tasks: [
+            {
+              id: 'task-1',
+              title: 'Submit recommendation request',
+              type: 'RECOMMENDATION',
+              completed: false,
+            },
+          ],
+        });
+      }
+      return Promise.resolve([]);
+    });
+
+    const { getByLabelText, getByText } = renderWithProviders(<TimelinePage />);
+    await waitFor(() => expect(getByText('Harvard University')).toBeTruthy());
+    fireEvent.press(getByLabelText('Harvard University'));
+
+    await waitFor(() => expect(getByText('Submit recommendation request')).toBeTruthy());
+    expect(apiClient.get).toHaveBeenCalledWith('/timelines/tl-1');
+    expect(apiClient.get).not.toHaveBeenCalledWith('/timelines/tl-1/tasks');
   });
 
   it('renders the segment tabs for schools, events, and overview', () => {

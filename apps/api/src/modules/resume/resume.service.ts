@@ -7,7 +7,24 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'crypto';
 import mammoth from 'mammoth';
-import { PDFParse } from 'pdf-parse';
+import { RESUME_COMMENT_INCLUDE } from './resume.constants';
+import type { ResumeReviewResult } from '@study-abroad/shared';
+import {
+  asArray,
+  contentAsRecord,
+  enumOrUndefined,
+  numberOrUndefined,
+  stringOrUndefined,
+  toJsonInput,
+  toMonth,
+} from './resume-content.helpers';
+import {
+  Prisma,
+  ResumeTarget,
+  ResumeFamily,
+  ResumeVariantKind,
+} from '@prisma/client';
+import type { MaybeSerialized } from '../../common/redis/redis-json.types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
 import {
@@ -16,6 +33,7 @@ import {
   ResumeSnapshot,
   ResumeType,
   ResumeSectionType,
+  Activity,
   ActivityCategory,
 } from '@prisma/client';
 import { CreateResumeDto } from './dto/create-resume.dto';
@@ -43,7 +61,11 @@ type ResumeWithSections = Resume & { sections: ResumeSection[] };
 
 const DEFAULT_SECTIONS: Record<
   ResumeType,
-  Array<{ type: ResumeSectionType; title: string; content: any }>
+  Array<{
+    type: ResumeSectionType;
+    title: string;
+    content: Prisma.InputJsonValue;
+  }>
 > = {
   COLLEGE_APPLICATION: [
     {
@@ -297,11 +319,11 @@ export class ResumeService {
   private contentItemCount(content: Record<string, unknown>) {
     if (Array.isArray(content.items)) return content.items.length;
     if (Array.isArray(content.categories)) {
-      return content.categories.reduce((sum, category: any) => {
-        return (
-          sum + (Array.isArray(category.items) ? category.items.length : 0)
-        );
-      }, 0);
+      return asArray(content.categories).reduce<number>(
+        (sum, category) =>
+          sum + asArray(contentAsRecord(category).items).length,
+        0,
+      );
     }
     return Object.values(content).filter(Boolean).length;
   }
@@ -364,7 +386,7 @@ export class ResumeService {
         baseResumeId: dto.baseResumeId,
         templateId: dto.templateId ?? 'jake-classic',
         language: dto.language ?? 'en',
-        targetContext: (dto.targetContext ?? {}) as any,
+        targetContext: (dto.targetContext ?? {}) as Prisma.InputJsonValue,
         sections: {
           create: defaultSections.map((s, i) => ({
             type: s.type,
@@ -401,15 +423,15 @@ export class ResumeService {
       where: { id },
       data: {
         title: dto.title,
-        status: dto.status as any,
+        status: dto.status,
         templateId: dto.templateId,
         language: dto.language,
-        family: dto.family as any,
-        variantKind: dto.variantKind as any,
+        family: dto.family,
+        variantKind: dto.variantKind,
         targetId: dto.targetId,
         baseResumeId: dto.baseResumeId,
-        settings: dto.settings as any,
-        targetContext: dto.targetContext as any,
+        settings: dto.settings as Prisma.InputJsonValue,
+        targetContext: dto.targetContext as Prisma.InputJsonValue,
       },
     });
   }
@@ -431,23 +453,23 @@ export class ResumeService {
         userId,
         title: `${original.title} (Copy)`,
         type: original.type,
-        family: (original as any).family ?? this.familyForType(original.type),
-        variantKind: (original as any).variantKind ?? 'MASTER',
-        targetId: (original as any).targetId,
-        baseResumeId: (original as any).baseResumeId,
+        family: original.family ?? this.familyForType(original.type),
+        variantKind: original.variantKind ?? 'MASTER',
+        targetId: original.targetId,
+        baseResumeId: original.baseResumeId,
         templateId: original.templateId,
         language: original.language,
-        settings: original.settings as any,
-        targetContext: original.targetContext as any,
-        qualitySummary: (original as any).qualitySummary ?? {},
+        settings: original.settings as Prisma.InputJsonValue,
+        targetContext: original.targetContext as Prisma.InputJsonValue,
+        qualitySummary: original.qualitySummary ?? {},
         sections: {
           create: original.sections.map((s) => ({
             type: s.type,
             title: s.title,
-            content: s.content as any,
-            contentSchemaVersion: (s as any).contentSchemaVersion ?? 1,
-            contentHash: (s as any).contentHash ?? this.contentHash(s.content),
-            evidenceRefs: (s as any).evidenceRefs ?? [],
+            content: s.content as Prisma.InputJsonValue,
+            contentSchemaVersion: s.contentSchemaVersion ?? 1,
+            contentHash: s.contentHash ?? this.contentHash(s.content),
+            evidenceRefs: s.evidenceRefs ?? [],
             isVisible: s.isVisible,
             order: s.order,
           })),
@@ -465,7 +487,7 @@ export class ResumeService {
     dto: TailorResumeDto,
   ): Promise<ResumeWithSections> {
     const base = await this.findById(userId, baseResumeId);
-    let target: any = null;
+    let target: ResumeTarget | null = null;
 
     if (dto.targetId) {
       target = await this.prisma.resumeTarget.findFirst({
@@ -506,20 +528,19 @@ export class ResumeService {
         baseResumeId: base.id,
         templateId: base.templateId,
         language: base.language,
-        settings: base.settings as any,
-        targetContext: targetContext as any,
+        settings: base.settings as Prisma.InputJsonValue,
+        targetContext: targetContext as Prisma.InputJsonValue,
         sections: {
           create: base.sections
             .filter((section) => section.isVisible)
             .map((section, index) => ({
               type: section.type,
               title: section.title,
-              content: section.content as any,
-              contentSchemaVersion: (section as any).contentSchemaVersion ?? 1,
+              content: section.content as Prisma.InputJsonValue,
+              contentSchemaVersion: section.contentSchemaVersion ?? 1,
               contentHash:
-                (section as any).contentHash ??
-                this.contentHash(section.content),
-              evidenceRefs: (section as any).evidenceRefs ?? [],
+                section.contentHash ?? this.contentHash(section.content),
+              evidenceRefs: section.evidenceRefs ?? [],
               isVisible: true,
               order: index,
             })),
@@ -546,7 +567,7 @@ export class ResumeService {
     return this.prisma.resumeEvidence.create({
       data: {
         userId,
-        kind: dto.kind as any,
+        kind: dto.kind,
         source: 'MANUAL',
         title: dto.title,
         organization: dto.organization,
@@ -555,12 +576,12 @@ export class ResumeService {
         startDate: dto.startDate,
         endDate: dto.endDate,
         isCurrent: dto.isCurrent ?? false,
-        tags: (dto.tags ?? []) as any,
-        skills: (dto.skills ?? []) as any,
-        metrics: (dto.metrics ?? {}) as any,
-        proofLinks: (dto.proofLinks ?? []) as any,
-        content: (dto.content ?? {}) as any,
-        privacyLevel: (dto.privacyLevel ?? 'PRIVATE') as any,
+        tags: dto.tags ?? [],
+        skills: dto.skills ?? [],
+        metrics: (dto.metrics ?? {}) as Prisma.InputJsonValue,
+        proofLinks: dto.proofLinks ?? [],
+        content: (dto.content ?? {}) as Prisma.InputJsonValue,
+        privacyLevel: dto.privacyLevel ?? 'PRIVATE',
       },
     });
   }
@@ -587,8 +608,8 @@ export class ResumeService {
     return this.prisma.resumeTarget.create({
       data: {
         userId,
-        type: dto.type as any,
-        status: (dto.status ?? 'DRAFT') as any,
+        type: dto.type,
+        status: dto.status ?? 'DRAFT',
         title: dto.title,
         school: dto.school,
         program: dto.program,
@@ -601,9 +622,9 @@ export class ResumeService {
         role: dto.role,
         jobDescription: dto.jobDescription,
         deadline: dto.deadline ? new Date(dto.deadline) : undefined,
-        keywords: (dto.keywords ?? []) as any,
-        requirements: (dto.requirements ?? {}) as any,
-        metadata: (dto.metadata ?? {}) as any,
+        keywords: dto.keywords ?? [],
+        requirements: (dto.requirements ?? {}) as Prisma.InputJsonValue,
+        metadata: (dto.metadata ?? {}) as Prisma.InputJsonValue,
       },
     });
   }
@@ -639,10 +660,10 @@ export class ResumeService {
         resumeId,
         type: dto.type,
         title: dto.title ?? dto.type.replace(/_/g, ' '),
-        content: (dto.content ?? {}) as any,
+        content: (dto.content ?? {}) as Prisma.InputJsonValue,
         contentSchemaVersion: dto.contentSchemaVersion ?? 1,
         contentHash: this.contentHash(dto.content ?? {}),
-        evidenceRefs: (dto.evidenceRefs ?? []) as any,
+        evidenceRefs: (dto.evidenceRefs ?? []) as Prisma.InputJsonValue,
         order: (maxOrder._max.order ?? -1) + 1,
       },
     });
@@ -671,17 +692,15 @@ export class ResumeService {
       where: { id: sectionId },
       data: {
         title: dto.title,
-        content: dto.content as any,
+        content: dto.content as Prisma.InputJsonValue,
         ...(dto.content !== undefined
           ? {
               contentHash: this.contentHash(dto.content),
               contentSchemaVersion:
-                dto.contentSchemaVersion ??
-                (section as any).contentSchemaVersion ??
-                1,
+                dto.contentSchemaVersion ?? section.contentSchemaVersion ?? 1,
             }
           : {}),
-        evidenceRefs: dto.evidenceRefs as any,
+        evidenceRefs: dto.evidenceRefs as Prisma.InputJsonValue,
         isVisible: dto.isVisible,
       },
     });
@@ -780,9 +799,9 @@ export class ResumeService {
           currentContent: (section?.content ?? {}) as Record<string, unknown>,
           proposedContent: update.content as Record<string, unknown>,
           changeType: 'replace',
-          itemCount: Array.isArray(update.content?.items)
-            ? update.content.items.length
-            : Object.keys(update.content ?? {}).length,
+          itemCount: Array.isArray(contentAsRecord(update.content).items)
+            ? (contentAsRecord(update.content).items as Prisma.JsonArray).length
+            : Object.keys(contentAsRecord(update.content)).length,
         };
       }),
       warnings:
@@ -874,7 +893,7 @@ export class ResumeService {
             data: {
               type,
               title: section.title,
-              content: section.content as any,
+              content: section.content as Prisma.InputJsonValue,
               contentHash,
               contentSchemaVersion: 1,
               isVisible: section.isVisible ?? true,
@@ -886,7 +905,7 @@ export class ResumeService {
               resumeId,
               type,
               title: section.title || this.sectionTitleForType(type),
-              content: section.content as any,
+              content: section.content as Prisma.InputJsonValue,
               contentHash,
               contentSchemaVersion: 1,
               isVisible: section.isVisible ?? true,
@@ -900,18 +919,18 @@ export class ResumeService {
         await tx.resumeEvidence.createMany({
           data: evidence.map((item) => ({
             userId,
-            kind: item.kind as any,
-            source: 'RESUME_IMPORT' as any,
+            kind: item.kind,
+            source: 'RESUME_IMPORT',
             title: item.title,
             organization: item.organization,
             role: item.role,
             description: item.description,
-            tags: (item.tags ?? []) as any,
-            skills: (item.skills ?? []) as any,
-            content: (item.content ?? {}) as any,
-            metrics: {} as any,
-            proofLinks: [] as any,
-            privacyLevel: 'PRIVATE' as any,
+            tags: item.tags ?? [],
+            skills: item.skills ?? [],
+            content: (item.content ?? {}) as Prisma.InputJsonValue,
+            metrics: {},
+            proofLinks: [],
+            privacyLevel: 'PRIVATE',
             confidence: 0.7,
           })),
         });
@@ -935,6 +954,10 @@ export class ResumeService {
         return result.value;
       }
       if (name.endsWith('.pdf') || mime.includes('pdf')) {
+        // pdf-parse loads a native canvas binding. Keep it off the application
+        // startup path so non-PDF requests and test discovery do not retain the
+        // binding's CustomGC handle.
+        const { PDFParse } = await import('pdf-parse');
         const parser = new PDFParse({ data: file.buffer });
         try {
           const result = await parser.getText();
@@ -1158,8 +1181,8 @@ export class ResumeService {
         ? section.content.items
         : [];
       if (section.sectionType === 'SKILLS') {
-        const skills = ((section.content.categories as any[]) ?? []).flatMap(
-          (category) => (Array.isArray(category.items) ? category.items : []),
+        const skills = asArray(section.content.categories).flatMap((category) =>
+          asArray(contentAsRecord(category).items),
         );
         return skills.length
           ? [
@@ -1176,23 +1199,30 @@ export class ResumeService {
             ]
           : [];
       }
-      return items.slice(0, 20).map((item: any) => ({
-        kind,
-        title:
-          item.name ??
-          item.schoolName ??
-          item.title ??
-          item.role ??
-          this.sectionTitleForType(section.sectionType),
-        organization: item.company ?? item.organization ?? item.institution,
-        role: item.role ?? item.title,
-        description: Array.isArray(item.bullets)
-          ? item.bullets.join('\n')
-          : item.description,
-        tags: ['resume-import'],
-        skills: [],
-        content: item,
-      }));
+      return items.slice(0, 20).map((raw) => {
+        const item = contentAsRecord(raw);
+        const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
+        return {
+          kind,
+          title:
+            str(item.name) ??
+            str(item.schoolName) ??
+            str(item.title) ??
+            str(item.role) ??
+            this.sectionTitleForType(section.sectionType),
+          organization:
+            str(item.company) ??
+            str(item.organization) ??
+            str(item.institution),
+          role: str(item.role) ?? str(item.title),
+          description: Array.isArray(item.bullets)
+            ? asArray(item.bullets).join('\n')
+            : str(item.description),
+          tags: ['resume-import'],
+          skills: [],
+          content: item,
+        };
+      });
     });
   }
 
@@ -1205,7 +1235,7 @@ export class ResumeService {
 
   private async applySectionContentUpdates(
     resumeId: string,
-    updates: Array<{ id: string; content: any }>,
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     await this.prisma.$transaction([
       ...updates.map((u) =>
@@ -1227,20 +1257,20 @@ export class ResumeService {
   private async buildProfileImportUpdates(
     userId: string,
     resume: ResumeWithSections,
-  ): Promise<Array<{ id: string; content: any }>> {
+  ): Promise<Array<{ id: string; content: Prisma.InputJsonValue }>> {
     const profile = await this.profileService.findByUserId(userId);
     if (!profile) return [];
 
-    const profileData = profile as any;
+    const profileData = profile;
     const sectionMap = new Map(resume.sections.map((s) => [s.type, s]));
-    const updates: Array<{ id: string; content: any }> = [];
+    const updates: Array<{ id: string; content: Prisma.InputJsonValue }> = [];
 
     const headerSection = sectionMap.get('HEADER');
     if (headerSection) {
       updates.push({
         id: headerSection.id,
         content: {
-          ...(headerSection.content as any),
+          ...contentAsRecord(headerSection.content),
           name: profile.realName ?? '',
           targetMajor: profile.targetMajor ?? '',
         },
@@ -1252,15 +1282,15 @@ export class ResumeService {
       updates.push({
         id: eduSection.id,
         content: {
-          items: profileData.education.map((e: any) => ({
+          items: profileData.education.map((e) => ({
             id: e.id,
             schoolName: e.schoolName,
             degree: e.degree ?? '',
             major: e.major ?? '',
             gpa: e.gpa ? Number(e.gpa) : undefined,
             gpaScale: e.gpaScale ? Number(e.gpaScale) : undefined,
-            startDate: e.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: e.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(e.startDate),
+            endDate: toMonth(e.endDate),
             coursework: [],
             honors: [],
           })),
@@ -1273,12 +1303,12 @@ export class ResumeService {
       updates.push({
         id: testSection.id,
         content: {
-          items: profileData.testScores.map((t: any) => ({
+          items: profileData.testScores.map((t) => ({
             id: t.id,
             type: t.type,
             score: t.score,
             subScores: t.subScores ?? {},
-            testDate: t.testDate?.toISOString().slice(0, 7) ?? '',
+            testDate: toMonth(t.testDate),
           })),
           displayFormat: 'inline',
         },
@@ -1290,7 +1320,7 @@ export class ResumeService {
       updates.push({
         id: awardsSection.id,
         content: {
-          items: profileData.awards.map((a: any) => ({
+          items: profileData.awards.map((a) => ({
             id: a.id,
             name: a.name,
             level: a.level,
@@ -1319,14 +1349,14 @@ export class ResumeService {
 
   private mapCollegeActivities(
     sectionMap: Map<string, ResumeSection>,
-    activities: any[],
-    updates: Array<{ id: string; content: any }>,
+    activities: MaybeSerialized<Activity>[],
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const communityService = activities.filter(
-      (a: any) => a.category === ActivityCategory.COMMUNITY_SERVICE,
+      (a) => a.category === ActivityCategory.COMMUNITY_SERVICE,
     );
     const otherActivities = activities.filter(
-      (a: any) => a.category !== ActivityCategory.COMMUNITY_SERVICE,
+      (a) => a.category !== ActivityCategory.COMMUNITY_SERVICE,
     );
 
     const activitiesSection = sectionMap.get('ACTIVITIES');
@@ -1334,14 +1364,14 @@ export class ResumeService {
       updates.push({
         id: activitiesSection.id,
         content: {
-          items: otherActivities.map((a: any) => ({
+          items: otherActivities.map((a) => ({
             id: a.id,
             name: a.name,
             role: a.role,
             organization: a.organization ?? '',
             category: a.category,
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             isOngoing: a.isOngoing,
             bullets: a.description ? [a.description] : [],
             hoursPerWeek: a.hoursPerWeek,
@@ -1356,13 +1386,13 @@ export class ResumeService {
       updates.push({
         id: csSection.id,
         content: {
-          items: communityService.map((a: any) => ({
+          items: communityService.map((a) => ({
             id: a.id,
             name: a.name,
             role: a.role,
             organization: a.organization ?? '',
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             bullets: a.description ? [a.description] : [],
           })),
         },
@@ -1372,17 +1402,17 @@ export class ResumeService {
 
   private mapInternshipActivities(
     sectionMap: Map<string, ResumeSection>,
-    activities: any[],
-    updates: Array<{ id: string; content: any }>,
+    activities: MaybeSerialized<Activity>[],
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const workActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.WORK,
+      (a) => a.category === ActivityCategory.WORK,
     );
     const researchActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.RESEARCH,
+      (a) => a.category === ActivityCategory.RESEARCH,
     );
     const otherActivities = activities.filter(
-      (a: any) =>
+      (a) =>
         a.category !== ActivityCategory.WORK &&
         a.category !== ActivityCategory.RESEARCH,
     );
@@ -1392,12 +1422,12 @@ export class ResumeService {
       updates.push({
         id: workSection.id,
         content: {
-          items: workActivities.map((a: any) => ({
+          items: workActivities.map((a) => ({
             id: a.id,
             title: a.role,
             company: a.organization ?? a.name,
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             isCurrent: a.isOngoing,
             bullets: a.description ? [a.description] : [],
           })),
@@ -1410,12 +1440,12 @@ export class ResumeService {
       updates.push({
         id: projectsSection.id,
         content: {
-          items: researchActivities.map((a: any) => ({
+          items: researchActivities.map((a) => ({
             id: a.id,
             name: a.name,
             techStack: [],
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             bullets: a.description ? [a.description] : [],
           })),
         },
@@ -1427,7 +1457,7 @@ export class ResumeService {
       updates.push({
         id: activitiesSection.id,
         content: {
-          items: otherActivities.slice(0, 3).map((a: any) => ({
+          items: otherActivities.slice(0, 3).map((a) => ({
             id: a.id,
             name: a.name,
             role: a.role,
@@ -1441,14 +1471,14 @@ export class ResumeService {
 
   private mapGraduateCVActivities(
     sectionMap: Map<string, ResumeSection>,
-    activities: any[],
-    updates: Array<{ id: string; content: any }>,
+    activities: MaybeSerialized<Activity>[],
+    updates: Array<{ id: string; content: Prisma.InputJsonValue }>,
   ) {
     const researchActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.RESEARCH,
+      (a) => a.category === ActivityCategory.RESEARCH,
     );
     const workActivities = activities.filter(
-      (a: any) => a.category === ActivityCategory.WORK,
+      (a) => a.category === ActivityCategory.WORK,
     );
 
     const researchSection = sectionMap.get('RESEARCH');
@@ -1456,12 +1486,12 @@ export class ResumeService {
       updates.push({
         id: researchSection.id,
         content: {
-          items: researchActivities.map((a: any) => ({
+          items: researchActivities.map((a) => ({
             id: a.id,
             title: a.name,
             institution: a.organization ?? '',
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             bullets: a.description ? [a.description] : [],
           })),
         },
@@ -1473,12 +1503,12 @@ export class ResumeService {
       updates.push({
         id: workSection.id,
         content: {
-          items: workActivities.map((a: any) => ({
+          items: workActivities.map((a) => ({
             id: a.id,
             title: a.role,
             company: a.organization ?? a.name,
-            startDate: a.startDate?.toISOString().slice(0, 7) ?? '',
-            endDate: a.endDate?.toISOString().slice(0, 7) ?? '',
+            startDate: toMonth(a.startDate),
+            endDate: toMonth(a.endDate),
             isCurrent: a.isOngoing,
             bullets: a.description ? [a.description] : [],
           })),
@@ -1505,22 +1535,22 @@ export class ResumeService {
         data: {
           title: resume.title,
           type: resume.type,
-          family: (resume as any).family,
-          variantKind: (resume as any).variantKind,
-          targetId: (resume as any).targetId,
-          baseResumeId: (resume as any).baseResumeId,
+          family: resume.family,
+          variantKind: resume.variantKind,
+          targetId: resume.targetId,
+          baseResumeId: resume.baseResumeId,
           templateId: resume.templateId,
           language: resume.language,
           settings: resume.settings,
           targetContext: resume.targetContext,
-          qualitySummary: (resume as any).qualitySummary,
+          qualitySummary: resume.qualitySummary,
           sections: resume.sections.map((s) => ({
             type: s.type,
             title: s.title,
             content: s.content,
-            contentSchemaVersion: (s as any).contentSchemaVersion ?? 1,
-            contentHash: (s as any).contentHash ?? this.contentHash(s.content),
-            evidenceRefs: (s as any).evidenceRefs ?? [],
+            contentSchemaVersion: s.contentSchemaVersion ?? 1,
+            contentHash: s.contentHash ?? this.contentHash(s.content),
+            evidenceRefs: s.evidenceRefs ?? [],
             isVisible: s.isVisible,
             order: s.order,
           })),
@@ -1566,7 +1596,7 @@ export class ResumeService {
       throw new NotFoundException('Snapshot not found');
     }
 
-    const data = snapshot.data as any;
+    const data = contentAsRecord(snapshot.data);
 
     // Delete existing sections and recreate from snapshot
     await this.prisma.$transaction(async (tx) => {
@@ -1574,33 +1604,46 @@ export class ResumeService {
 
       await tx.resume.update({
         where: { id: resumeId },
+        // A snapshot's `data` is a Json column, so every field here is a
+        // JsonValue. The old `as any` fed them straight into typed columns —
+        // including two enums, where a snapshot written by an older schema (or
+        // hand-edited) would reach Postgres unvalidated. Undefined fields are
+        // omitted by Prisma, so a snapshot missing one leaves the column as-is,
+        // which is the same behaviour the cast produced for `undefined`.
         data: {
-          title: data.title,
-          family: data.family,
-          variantKind: data.variantKind,
-          targetId: data.targetId,
-          baseResumeId: data.baseResumeId,
-          templateId: data.templateId,
-          language: data.language,
-          settings: data.settings,
-          targetContext: data.targetContext ?? {},
-          qualitySummary: data.qualitySummary ?? {},
+          title: stringOrUndefined(data.title),
+          family: enumOrUndefined(data.family, ResumeFamily),
+          variantKind: enumOrUndefined(data.variantKind, ResumeVariantKind),
+          targetId: stringOrUndefined(data.targetId) ?? null,
+          baseResumeId: stringOrUndefined(data.baseResumeId) ?? null,
+          templateId: stringOrUndefined(data.templateId),
+          language: stringOrUndefined(data.language),
+          settings: contentAsRecord(data.settings),
+          targetContext: contentAsRecord(data.targetContext),
+          qualitySummary: contentAsRecord(data.qualitySummary),
           version: { increment: 1 },
         },
       });
 
-      if (data.sections?.length > 0) {
+      const snapshotSections = asArray(data.sections);
+      if (snapshotSections.length > 0) {
         await tx.resumeSection.createMany({
-          data: data.sections.map((s: any) => ({
+          data: snapshotSections.map(contentAsRecord).map((s) => ({
             resumeId,
-            type: s.type,
-            title: s.title,
-            content: s.content,
-            contentSchemaVersion: s.contentSchemaVersion ?? 1,
-            contentHash: s.contentHash ?? this.contentHash(s.content),
-            evidenceRefs: s.evidenceRefs ?? [],
-            isVisible: s.isVisible ?? true,
-            order: s.order,
+            type:
+              enumOrUndefined(s.type, ResumeSectionType) ??
+              ResumeSectionType.CUSTOM,
+            title: stringOrUndefined(s.title) ?? '',
+            content: contentAsRecord(s.content),
+            contentSchemaVersion:
+              numberOrUndefined(s.contentSchemaVersion) ?? 1,
+            contentHash:
+              stringOrUndefined(s.contentHash) ?? this.contentHash(s.content),
+            evidenceRefs: asArray(s.evidenceRefs).filter(
+              (r): r is string => typeof r === 'string',
+            ),
+            isVisible: typeof s.isVisible === 'boolean' ? s.isVisible : true,
+            order: numberOrUndefined(s.order) ?? 0,
           })),
         });
       }
@@ -1693,8 +1736,10 @@ export class ResumeService {
       data: {
         resumeId,
         type: 'full_review',
-        input: effectiveTargetContext as any,
-        output: result as any,
+        input: effectiveTargetContext,
+        // Typed shape into a Json column — unlike `as any`, this still
+        // type-checks every field that builds `result`.
+        output: result as unknown as Prisma.InputJsonValue,
         overallScore: result.overallScore,
         resumeVersion: resume.version,
         rubricVersion:
@@ -1724,8 +1769,8 @@ export class ResumeService {
       where: { id: resumeId },
       data: {
         lastReviewAt: new Date(),
-        status: 'REVIEWED' as any,
-        qualitySummary: (await this.computeQualitySummary(resume)) as any,
+        status: 'REVIEWED',
+        qualitySummary: await this.computeQualitySummary(resume),
       },
     });
 
@@ -1736,15 +1781,15 @@ export class ResumeService {
     resumeId: string,
     reviewId: string,
     sections: ResumeSection[],
-    result: any,
+    result: ResumeReviewResult,
   ) {
     const sectionById = new Map(
       sections.map((section) => [section.id, section]),
     );
-    return (result.sectionFeedback ?? []).flatMap((feedback: any) => {
-      const sectionId = feedback.sectionId as string | undefined;
+    return (result.sectionFeedback ?? []).flatMap((feedback) => {
+      const sectionId = feedback.sectionId;
       const section = sectionId ? sectionById.get(sectionId) : undefined;
-      return (feedback.issues ?? []).map((issue: any) => ({
+      return (feedback.issues ?? []).map((issue) => ({
         resumeId,
         reviewId,
         sectionId,
@@ -1760,11 +1805,11 @@ export class ResumeService {
           original: issue.original,
           suggestion: issue.suggestion,
           bulletIndex: issue.bulletIndex,
-        } as any,
+        },
         confidence: 0.75,
         source: 'AI_REVIEW',
         baseContentHash: section
-          ? ((section as any).contentHash ?? this.contentHash(section.content))
+          ? (section.contentHash ?? this.contentHash(section.content))
           : null,
       }));
     });
@@ -1815,12 +1860,12 @@ export class ResumeService {
     }
 
     const currentHash =
-      (section as any).contentHash ?? this.contentHash(section.content);
+      section.contentHash ?? this.contentHash(section.content);
     const expectedHash = dto.expectedContentHash ?? issue.baseContentHash;
     if (expectedHash && expectedHash !== currentHash) {
       await this.prisma.resumeAIIssue.update({
         where: { id: issue.id },
-        data: { status: 'STALE' as any },
+        data: { status: 'STALE' },
       });
       throw new BadRequestException(
         'Resume section changed since this issue was generated',
@@ -1828,14 +1873,14 @@ export class ResumeService {
     }
 
     const nextContent = this.applyTextPatch(
-      section.content as any,
+      section.content as Prisma.InputJsonValue,
       issue.original,
       issue.suggestion,
     );
     if (!nextContent.applied) {
       await this.prisma.resumeAIIssue.update({
         where: { id: issue.id },
-        data: { status: 'STALE' as any },
+        data: { status: 'STALE' },
       });
       throw new BadRequestException(
         'Original text no longer exists in this section',
@@ -1850,7 +1895,7 @@ export class ResumeService {
       }),
       this.prisma.resumeAIIssue.update({
         where: { id: issue.id },
-        data: { status: 'APPLIED' as any, appliedAt: new Date() },
+        data: { status: 'APPLIED', appliedAt: new Date() },
       }),
       this.prisma.resume.update({
         where: { id: resumeId },
@@ -1861,20 +1906,22 @@ export class ResumeService {
     return this.findById(userId, resumeId);
   }
 
-  private applyTextPatch(content: any, original: string, suggestion: string) {
-    const next = structuredClone(content ?? {});
+  private applyTextPatch(
+    content: Prisma.InputJsonValue,
+    original: string,
+    suggestion: string,
+  ) {
+    const next = contentAsRecord(structuredClone(content ?? {}));
     const items = Array.isArray(next.items) ? next.items : [];
-    for (const item of items) {
-      if (!Array.isArray(item.bullets)) continue;
-      const index = item.bullets.findIndex(
-        (bullet: unknown) =>
-          typeof bullet === 'string' && bullet.includes(original),
+    for (const raw of items) {
+      const item = contentAsRecord(raw);
+      const bullets = item.bullets;
+      if (!Array.isArray(bullets)) continue;
+      const index = bullets.findIndex(
+        (bullet) => typeof bullet === 'string' && bullet.includes(original),
       );
       if (index >= 0) {
-        item.bullets[index] = String(item.bullets[index]).replace(
-          original,
-          suggestion,
-        );
+        bullets[index] = String(bullets[index]).replace(original, suggestion);
         return { applied: true, content: next };
       }
     }
@@ -1886,7 +1933,7 @@ export class ResumeService {
     const summary = await this.computeQualitySummary(resume);
     await this.prisma.resume.update({
       where: { id: resumeId },
-      data: { qualitySummary: summary as any },
+      data: { qualitySummary: summary },
     });
     return summary;
   }
@@ -1898,10 +1945,8 @@ export class ResumeService {
     const targetContext =
       (resume.targetContext as Record<string, unknown> | null) ?? {};
     const bullets = visible.flatMap((section) => {
-      const items = (section.content as any)?.items;
-      if (!Array.isArray(items)) return [];
-      return items.flatMap((item: any) =>
-        Array.isArray(item.bullets) ? item.bullets : [],
+      return asArray(contentAsRecord(section.content).items).flatMap((item) =>
+        asArray(contentAsRecord(item).bullets),
       );
     });
     const metricBullets = bullets.filter((bullet) =>
@@ -1917,11 +1962,11 @@ export class ResumeService {
         label: 'Completeness',
         score: Math.round(
           (visible.filter((section) => {
-            const content = section.content as any;
-            if (Array.isArray(content?.items)) return content.items.length > 0;
-            if (Array.isArray(content?.categories))
+            const content = contentAsRecord(section.content);
+            if (Array.isArray(content.items)) return content.items.length > 0;
+            if (Array.isArray(content.categories))
               return content.categories.length > 0;
-            return Object.values(content ?? {}).some(Boolean);
+            return Object.values(content).some(Boolean);
           }).length /
             Math.max(1, visible.length)) *
             100,
@@ -2074,12 +2119,15 @@ export class ResumeService {
       const record = await tx.resumeExport.create({
         data: {
           resumeId,
-          format: (dto.format ?? 'PDF') as any,
-          status: 'COMPLETED' as any,
+          format: dto.format ?? 'PDF',
+          status: 'COMPLETED',
           templateId: dto.templateId ?? resume.templateId,
           pageSize:
             dto.pageSize ??
-            (resume.settings as any)?.decorations?.pageSize ??
+            stringOrUndefined(
+              contentAsRecord(contentAsRecord(resume.settings).decorations)
+                .pageSize,
+            ) ??
             'LETTER',
           pageCount: dto.pageCount,
           textExtractable: dto.textExtractable ?? true,
@@ -2089,15 +2137,22 @@ export class ResumeService {
             hasHeader: visibleSections.some(
               (section) => section.type === 'HEADER',
             ),
-            qualityScore: (resume as any).qualitySummary?.score,
+            // qualitySummary is a Json column, so Prisma types it as
+            // JsonValue. Narrow all the way to a number: this value is being
+            // written straight back into another Json column, and `unknown`
+            // is not writable there — the old `as any` on this object was
+            // what let a non-serialisable score through.
+            qualityScore: numberOrUndefined(
+              contentAsRecord(resume.qualitySummary).score,
+            ),
             note: 'Client-side artifact record; server-side rendering can attach artifactUrl later.',
-          } as any,
+          },
           completedAt: new Date(),
         },
       });
       await tx.resume.update({
         where: { id: resumeId },
-        data: { status: 'EXPORTED' as any },
+        data: { status: 'EXPORTED' },
       });
       return record;
     });
@@ -2112,9 +2167,7 @@ export class ResumeService {
     return this.prisma.resumeComment.findMany({
       where: { resumeId },
       orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
-      include: {
-        author: { select: { id: true, email: true, role: true } },
-      },
+      include: RESUME_COMMENT_INCLUDE,
     });
   }
 
@@ -2139,9 +2192,7 @@ export class ResumeService {
         role: dto.role ?? 'STUDENT',
         body: dto.body,
       },
-      include: {
-        author: { select: { id: true, email: true, role: true } },
-      },
+      include: RESUME_COMMENT_INCLUDE,
     });
   }
 
@@ -2169,9 +2220,7 @@ export class ResumeService {
         status: dto.status,
         resolvedAt: dto.status === 'RESOLVED' ? new Date() : undefined,
       },
-      include: {
-        author: { select: { id: true, email: true, role: true } },
-      },
+      include: RESUME_COMMENT_INCLUDE,
     });
   }
 
@@ -2191,27 +2240,60 @@ export class ResumeService {
       throw new NotFoundException('Section not found');
     }
 
-    const content = section.content as any;
+    const content = contentAsRecord(section.content);
     let bullets: string[] = [];
-    const context: any = {
-      sectionType: section.type,
-      ...((resume.targetContext as Record<string, unknown> | null) ?? {}),
+    // Built field by field against optimizeResumeBullets' declared parameter
+    // rather than spreading the stored Json in: targetContext is a Json column,
+    // so a spread makes every one of these `unknown` and the old `as any` was
+    // the only thing letting that reach a typed signature.
+    const merged = {
+      ...contentAsRecord(resume.targetContext),
       ...(targetContext ?? {}),
-      ...(targetSchool ? { targetSchool } : {}),
-      ...(targetMajor ? { targetMajor } : {}),
+    };
+    const context: {
+      sectionType: string;
+      role?: string;
+      organization?: string;
+      targetSchool?: string;
+      targetMajor?: string;
+      resumeType?: string;
+      targetContext?: Record<string, unknown>;
+      targetRole?: string;
+      company?: string;
+      jobDescription?: string;
+      keywords?: string[];
+    } = {
+      sectionType: section.type,
       resumeType: resume.type,
+      targetContext: merged,
+      targetSchool: targetSchool ?? stringOrUndefined(merged.targetSchool),
+      targetMajor: targetMajor ?? stringOrUndefined(merged.targetMajor),
+      targetRole: stringOrUndefined(merged.targetRole),
+      company: stringOrUndefined(merged.company),
+      jobDescription: stringOrUndefined(merged.jobDescription),
+      keywords: asArray(merged.keywords).filter(
+        (k): k is string => typeof k === 'string',
+      ),
     };
 
-    if (content.items) {
-      const item = itemId
-        ? content.items.find((i: any) => i.id === itemId)
-        : content.items[0];
+    const contentItems = asArray(content.items);
+    if (contentItems.length > 0) {
+      const item = contentAsRecord(
+        itemId
+          ? contentItems.find((i) => contentAsRecord(i).id === itemId)
+          : contentItems[0],
+      );
 
       if (item) {
-        bullets = item.bullets ?? [];
-        context.role = item.role ?? item.title;
+        bullets = asArray(item.bullets).filter(
+          (b): b is string => typeof b === 'string',
+        );
+        context.role =
+          stringOrUndefined(item.role) ?? stringOrUndefined(item.title);
         context.organization =
-          item.organization ?? item.company ?? item.institution;
+          stringOrUndefined(item.organization) ??
+          stringOrUndefined(item.company) ??
+          stringOrUndefined(item.institution);
       }
     }
 
@@ -2228,8 +2310,13 @@ export class ResumeService {
       data: {
         resumeId,
         type: 'bullet_optimize',
-        input: { sectionId, itemId, bullets, targetContext: context } as any,
-        output: result as any,
+        input: toJsonInput({
+          sectionId,
+          itemId,
+          bullets,
+          targetContext: context,
+        }),
+        output: result,
       },
     });
 
@@ -2247,7 +2334,7 @@ export class ResumeService {
     const section = resume.sections.find((s) => s.type === sectionType);
 
     const profile = await this.profileService.findByUserId(userId);
-    const profileData = profile as any;
+    const profileData = profile;
     const effectiveTargetContext = {
       ...((resume.targetContext as Record<string, unknown> | null) ?? {}),
       ...(targetContext ?? {}),
@@ -2261,7 +2348,7 @@ export class ResumeService {
         resumeType: resume.type,
         targetMajor: effectiveTargetContext.targetMajor,
         targetContext: effectiveTargetContext,
-        grade: profileData?.grade,
+        grade: profileData?.grade ?? undefined,
         profileActivities: profileData?.activities,
         profileAwards: profileData?.awards,
       },
@@ -2271,8 +2358,8 @@ export class ResumeService {
       data: {
         resumeId,
         type: 'content_suggest',
-        input: { sectionType, targetContext: effectiveTargetContext } as any,
-        output: result as any,
+        input: { sectionType, targetContext: effectiveTargetContext },
+        output: result,
       },
     });
 

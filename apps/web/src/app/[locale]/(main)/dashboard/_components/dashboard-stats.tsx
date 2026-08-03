@@ -41,8 +41,8 @@ interface StatTile {
  * mental models. The Hub keeps 3 nav columns; this card is the at-a-glance
  * counter panel.
  *
- * Renders 9 tiles (the same set the Hub showed):
- *   Followers / Following / Cases / Predictions / Points
+ * Renders 8 tiles:
+ *   Followers / Following / Cases / Predictions
  *   + Phase 2b: Assessment / Recommendations / Verification / Chat unread
  *
  * Each tile is a Link that fires the existing
@@ -64,7 +64,6 @@ export function DashboardStats({ dashboard, defaultOpen = false }: DashboardStat
       value: dashboard?.stats.predictions ?? 0,
       href: '/prediction',
     },
-    { label: t('stats.points'), value: dashboard?.user.points ?? 0, href: '/referral' },
     {
       label: t('stats.assessment'),
       value: signals?.assessment?.mbti ?? signals?.assessment?.holland ?? '—',

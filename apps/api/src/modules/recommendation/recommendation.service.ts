@@ -562,6 +562,7 @@ export class RecommendationService {
     const schoolNames = recommendations.map((r: any) => r.schoolName);
 
     // Three-tier matching: exact + alias + fuzzy
+    // governance: system-scope — School / EssayPrompt lookups — published institution data used to score a recommendation, no User relation
     const schools = await this.prisma.school.findMany({
       where: {
         OR: [
@@ -608,6 +609,7 @@ export class RecommendationService {
       .map((r) => r.schoolId!);
     if (matchedIds.length === 0) return;
 
+    // governance: system-scope — School / EssayPrompt lookups — published institution data used to score a recommendation, no User relation
     const schools = await this.prisma.school.findMany({
       where: { id: { in: matchedIds } },
       select: {
@@ -688,6 +690,7 @@ export class RecommendationService {
         },
         _count: true,
       }),
+      // governance: system-scope — School / EssayPrompt lookups — published institution data used to score a recommendation, no User relation
       this.prisma.essayPrompt.findMany({
         where: {
           schoolId: { in: matchedIds },

@@ -11,6 +11,7 @@ describe('PointsService', () => {
     user: {
       findUnique: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
     pointHistory: {
       create: jest.fn().mockResolvedValue({ id: 'point-history-1' }),
@@ -81,8 +82,8 @@ describe('PointsService', () => {
     it('should add points for earn actions', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(50);
-      mockPrisma.user.findUnique.mockResolvedValue({ points: 100 });
-      mockPrisma.user.update.mockResolvedValue({ points: 150 });
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 150 });
 
       const result = await service.adjustPoints(
         'user-1',
@@ -93,10 +94,10 @@ describe('PointsService', () => {
       expect(result.newBalance).toBe(150);
       expect(result.pointHistoryId).toBe('point-history-1');
       expect(result.points).toBe(50);
-      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+      // A credit needs no precondition — only the row must exist.
+      expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
         where: { id: 'user-1' },
         data: { points: { increment: 50 } },
-        select: { points: true },
       });
       expect(mockPrisma.pointHistory.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -107,9 +108,39 @@ describe('PointsService', () => {
       });
     });
 
+    it('carries the balance precondition in the debit WHERE, not a prior read', async () => {
+      // This is the whole fix. The old code read the balance, compared, then
+      // incremented unconditionally — so two concurrent debits both saw the
+      // pre-spend balance and both went through, taking `User.points` negative
+      // (no CHECK constraint backstops it). Sharing a `tx` does not help under
+      // READ COMMITTED; only the WHERE makes the check and the write one lock.
+      //
+      // Asserting the WHERE is what fails if anyone moves the guard back into
+      // a preceding read: the call still succeeds, but the precondition is gone.
+      mockPointsConfig.isEnabled.mockResolvedValue(true);
+      mockPointsConfig.getPointValue.mockResolvedValue(-30);
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 70 });
+
+      const result = await service.adjustPoints(
+        'user-1',
+        PointAction.AI_ANALYSIS,
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.newBalance).toBe(70);
+      expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
+        where: { id: 'user-1', points: { gte: 30 } },
+        data: { points: { increment: -30 } },
+      });
+    });
+
     it('should fail when insufficient points for deduction', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(-30);
+      // The database matched no row: the balance was below the cost, or another
+      // debit got there first. Nothing was written either way.
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 0 });
       mockPrisma.user.findUnique.mockResolvedValue({ points: 20 });
 
       const result = await service.adjustPoints(
@@ -120,7 +151,8 @@ describe('PointsService', () => {
       expect(result.success).toBe(false);
       expect(result.newBalance).toBe(20);
       expect(result.message).toBe('积分不足');
-      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+      // No history row for a spend that did not happen.
+      expect(mockPrisma.pointHistory.create).not.toHaveBeenCalled();
     });
 
     it('should return current balance when point value is 0', async () => {
@@ -136,13 +168,13 @@ describe('PointsService', () => {
       expect(result.success).toBe(true);
       expect(result.newBalance).toBe(100);
       expect(result.points).toBe(0);
-      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+      expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
     });
 
     it('should use pointsOverride when provided', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
-      mockPrisma.user.findUnique.mockResolvedValue({ points: 100 });
-      mockPrisma.user.update.mockResolvedValue({ points: 110 });
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 110 });
 
       const result = await service.adjustPoints(
         'user-1',
@@ -157,11 +189,30 @@ describe('PointsService', () => {
   });
 
   describe('charge', () => {
+    it('should allow charged features for free when points are disabled', async () => {
+      mockPointsConfig.isEnabled.mockResolvedValue(false);
+
+      const result = await service.charge(
+        'zero-balance-user',
+        PointAction.AI_ANALYSIS,
+      );
+
+      expect(result).toEqual({
+        newBalance: 0,
+        pointHistoryId: undefined,
+        points: 0,
+      });
+      expect(mockPointsConfig.getPointValue).not.toHaveBeenCalled();
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+      expect(mockPrisma.pointHistory.create).not.toHaveBeenCalled();
+    });
+
     it('should deduct points and return new balance', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(-20);
-      mockPrisma.user.findUnique.mockResolvedValue({ points: 100 });
-      mockPrisma.user.update.mockResolvedValue({ points: 80 });
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 80 });
 
       const result = await service.charge(
         'user-1',
@@ -176,6 +227,7 @@ describe('PointsService', () => {
     it('should throw BadRequestException when insufficient points', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(-30);
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 0 });
       mockPrisma.user.findUnique.mockResolvedValue({ points: 10 });
 
       await expect(
@@ -188,8 +240,8 @@ describe('PointsService', () => {
     it('should add points and return new balance', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(50);
-      mockPrisma.user.findUnique.mockResolvedValue({ points: 100 });
-      mockPrisma.user.update.mockResolvedValue({ points: 150 });
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 150 });
 
       const result = await service.reward('user-1', PointAction.SUBMIT_CASE);
 
@@ -207,6 +259,8 @@ describe('PointsService', () => {
       );
 
       expect(result).toBe(true);
+      expect(mockPointsConfig.getPointValue).not.toHaveBeenCalled();
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
     });
 
     it('should return true for earn actions', async () => {
@@ -264,15 +318,15 @@ describe('PointsService', () => {
       const result = await service.chargeViewCaseDetail('user-1', 'case-1');
 
       expect(result).toBe(true);
-      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+      expect(mockPrisma.user.updateMany).not.toHaveBeenCalled();
     });
 
     it('should charge and create view record on first view', async () => {
       mockPrisma.caseView.findUnique.mockResolvedValue(null);
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(-20);
-      mockPrisma.user.findUnique.mockResolvedValue({ points: 100 });
-      mockPrisma.user.update.mockResolvedValue({ points: 80 });
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 80 });
 
       const result = await service.chargeViewCaseDetail('user-1', 'case-1');
 
@@ -286,6 +340,7 @@ describe('PointsService', () => {
       mockPrisma.caseView.findUnique.mockResolvedValue(null);
       mockPointsConfig.isEnabled.mockResolvedValue(true);
       mockPointsConfig.getPointValue.mockResolvedValue(-20);
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 0 });
       mockPrisma.user.findUnique.mockResolvedValue({ points: 5 });
 
       const result = await service.chargeViewCaseDetail('user-1', 'case-1');

@@ -126,7 +126,7 @@ export function DashboardQuickAsk({ personalizedSuggestions }: DashboardQuickAsk
             type="button"
             onClick={() => handleSuggestion(suggestion, index)}
             className={cn(
-              'rounded-full border border-border bg-[color:var(--theme-control-bg)]',
+              'inline-flex min-h-8 items-center rounded-full border border-border bg-[color:var(--theme-control-bg)] max-sm:min-h-10',
               'px-2.5 py-0.5 text-xs text-muted-foreground transition-colors',
               'hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)] hover:text-foreground'
             )}

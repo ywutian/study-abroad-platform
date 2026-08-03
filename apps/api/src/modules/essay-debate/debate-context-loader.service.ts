@@ -279,6 +279,7 @@ export class DebateContextLoaderService {
   private async loadCaseProfileSnapshot(
     caseId: string,
   ): Promise<DebateContext['profile']> {
+    // governance: parent-scoped — reads the snapshot of the case the session points at; assertDebatableTargets validated that id against CASE_PUBLIC_WHERE before the session was created
     const ac = await this.prisma.admissionCase.findUnique({
       where: { id: caseId },
       select: {

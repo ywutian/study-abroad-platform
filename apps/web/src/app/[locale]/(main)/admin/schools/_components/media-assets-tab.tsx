@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isSafeUrl } from '@/lib/utils/url';
 import { useTranslations } from 'next-intl';
 import { Check, ImageIcon, Loader2, RefreshCw, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -251,7 +252,7 @@ export function MediaAssetsTab() {
                     </TableCell>
                     <TableCell className="text-sm">
                       <div>{asset.sourceType}</div>
-                      {asset.sourcePageUrl && (
+                      {isSafeUrl(asset.sourcePageUrl) && (
                         <a
                           href={asset.sourcePageUrl}
                           target="_blank"

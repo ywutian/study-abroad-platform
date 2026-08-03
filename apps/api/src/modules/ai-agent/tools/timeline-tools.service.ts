@@ -55,6 +55,9 @@ export class TimelineToolsService implements IToolHandlerProvider {
 
     const normalizedRound = round?.trim().toUpperCase();
     const applicationYear = this.getCurrentApplicationYear();
+    // governance: system-scope — SchoolDeadline holds scraped application
+    // deadlines keyed by schoolId + year, no User relation; the source/notes
+    // filters keep it to source-backed rows.
     const deadlineRows = await this.prisma.schoolDeadline.findMany({
       where: {
         schoolId: { in: schoolIds },

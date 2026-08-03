@@ -17,9 +17,13 @@ export default function LoginScreen() {
   const toast = useToast();
   const login = useAuthStore((state) => state.login);
   const autoLoginAttemptedRef = useRef(false);
-  const devAutoLoginEnabled = __DEV__ && process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN === '1';
-  const devAutoLoginEmail = process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN_EMAIL?.trim() ?? '';
-  const devAutoLoginPassword = process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN_PASSWORD ?? '';
+  const devAutoLoginEnabled = __DEV__ ? process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN === '1' : false;
+  const devAutoLoginEmail = __DEV__
+    ? (process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN_EMAIL?.trim() ?? '')
+    : '';
+  const devAutoLoginPassword = __DEV__
+    ? (process.env.EXPO_PUBLIC_AUDIT_AUTO_LOGIN_PASSWORD ?? '')
+    : '';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -201,6 +205,9 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.xl,
     minHeight: '100%',
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   header: {
     alignItems: 'center',

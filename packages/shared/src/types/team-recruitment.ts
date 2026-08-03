@@ -144,7 +144,8 @@ export interface CommunityRecruitmentContextDto {
 }
 
 export interface TeamRecruitmentMemberDto {
-  userId: string;
+  /** Absent on cards the viewer has no full access to — see serializeCard. */
+  userId?: string;
   role: string;
   displayName: string;
   avatarUrl?: string | null;

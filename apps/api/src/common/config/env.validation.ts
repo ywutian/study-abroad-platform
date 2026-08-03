@@ -154,6 +154,18 @@ const envSchema = z.object({
   PAYMENTS_ENABLED: z.enum(['true', 'false']).default('false'),
   PAYMENT_PROVIDER: z.enum(['none', 'simulator']).default('none'),
 
+  // --- Account purge (the job behind the deletion promise) ---
+  // Ships DISABLED on purpose. `DELETE /users/me` has always been a soft delete
+  // and the backlog of already-soft-deleted accounts is purged on the first
+  // enabled run — irreversibly, in bulk. Left false, the job still runs and
+  // logs exactly what it would remove, so the blast radius is a log line rather
+  // than a guess. Turn it on once that number looks right, and only then may UI
+  // copy state a retention period again.
+  ACCOUNT_PURGE_ENABLED: z.enum(['true', 'false']).default('false'),
+  // Grace window between the deletion request and the purge. 30 days is what
+  // the old (unhonoured) copy promised and the usual recovery window.
+  ACCOUNT_PURGE_GRACE_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+
   // --- Email Verification ---
   SKIP_EMAIL_VERIFICATION: z.enum(['true', 'false']).default('false'),
 

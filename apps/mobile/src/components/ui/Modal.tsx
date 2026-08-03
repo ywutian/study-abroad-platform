@@ -44,14 +44,15 @@ export function Modal({
 
   return (
     <RNModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={closeOnBackdrop ? onClose : undefined}>
+      <TouchableWithoutFeedback onPress={closeOnBackdrop ? onClose : undefined} accessible={false}>
         <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.keyboardAvoid}
           >
-            <TouchableWithoutFeedback>
+            <TouchableWithoutFeedback accessible={false}>
               <View
+                accessibilityViewIsModal
                 style={[
                   styles.container,
                   {
@@ -118,10 +119,11 @@ export function BottomSheet({ visible, onClose, title, children }: BottomSheetPr
 
   return (
     <RNModal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
+      <TouchableWithoutFeedback onPress={onClose} accessible={false}>
         <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-          <TouchableWithoutFeedback>
+          <TouchableWithoutFeedback accessible={false}>
             <View
+              accessibilityViewIsModal
               style={[
                 styles.bottomSheet,
                 {

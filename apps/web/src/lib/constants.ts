@@ -48,13 +48,6 @@ export const GC_TIME = {
   DEFAULT: QUERY_CACHE_TIERS.realtime.gcTime,
 } as const;
 
-// ── AI Point Costs ──────────────────────────────────────────
-export const AI_POINT_COSTS = {
-  ESSAY_REVIEW: 30,
-  ESSAY_POLISH: 20,
-  ESSAY_BRAINSTORM: 15,
-} as const;
-
 // ── UI Timers ───────────────────────────────────────────────
 export const UI_TIMERS = {
   /** "Copied!" feedback duration */

@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, RedemptionStatus, RedemptionType } from '@prisma/client';
+import { USER_SUMMARY_SELECT } from '../../common/constants/prisma-selects';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsService } from './incentive.service';
 import { PointsConfigService } from './points-config.service';
@@ -15,10 +16,19 @@ import { PointsConfigService } from './points-config.service';
  * Closes the loop on the points economy: users earn via hall/case/profile
  * actions, and now they can spend via concrete outlets (consultations,
  * memberships, content unlocks). Each redemption:
- *   1. Charges the user via PointsService (which uses dynamic admin config)
- *   2. Persists a PointsRedemption ledger entry (PENDING)
- *   3. The owning module (vault/subscription/case/...) marks it FULFILLED
- *      when the actual benefit is delivered. On failure, points refund.
+ *   1. Charges the user AND writes the PointsRedemption ledger entry (PENDING)
+ *      in one transaction — see redeem() for why they cannot be split
+ *   2. An operator delivers the benefit and closes it out via
+ *      `PATCH /admin/points/redemptions/:id/{fulfil,cancel}`. Cancelling
+ *      refunds the points, in the same transaction as the status change.
+ *
+ * Step 2 used to read "the owning module (vault/subscription/case/…) marks it
+ * FULFILLED". That module was never built: `markFulfilled` and `cancel` had
+ * zero callers anywhere in the repo, so every redemption stayed PENDING for
+ * good — points spent, nothing delivered, no refund path. Every value of
+ * RedemptionType is delivered by a human (a counselor slot, a manual unlock),
+ * so there is nothing to automate here; the fix is an operator route, not a
+ * caller in another service. Do not re-describe this as automatic.
  *
  * Costs come from PointsConfig (admin-tunable) — never hardcoded here.
  */
@@ -47,6 +57,12 @@ export class PointsRedemptionService {
     newBalance: number;
     status: RedemptionStatus;
   }> {
+    if (!(await this.pointsConfig.isEnabled())) {
+      throw new BadRequestException(
+        'Points redemption is unavailable while the points economy is disabled',
+      );
+    }
+
     const cost = REDEMPTION_COSTS[type];
     if (!cost) {
       throw new BadRequestException(`Unknown redemption type: ${type}`);
@@ -59,29 +75,48 @@ export class PointsRedemptionService {
       );
     }
 
-    // Charge via the central PointsService so PointHistory captures the spend
-    // alongside earnings, and the admin enabled-toggle is honored.
-    const result = await this.pointsService.adjustPoints(
-      userId,
-      `REDEEM_${type}`,
-      { redemptionType: type, ...metadata },
-      -cost,
-    );
+    // The debit and the redemption row MUST land together. Charging first and
+    // creating the row afterwards — as this did — means a failure in between
+    // takes the user's points and leaves no redemption to fulfil or cancel:
+    // the balance is gone and nothing records what it bought.
+    //
+    // Concurrency is handled inside adjustPoints, by the balance precondition
+    // living in the debit's own WHERE. Sharing `tx` is what makes the debit and
+    // this row atomic; it is NOT what makes two concurrent redemptions safe.
+    // (An earlier version of this comment claimed it was. Under READ COMMITTED
+    // both transactions read the same pre-spend balance and both passed.)
+    const { result, redemption } = await this.prisma.$transaction(
+      async (tx) => {
+        // Charge via the central PointsService so PointHistory captures the
+        // spend alongside earnings, and the admin enabled-toggle is honored.
+        const charged = await this.pointsService.adjustPoints(
+          userId,
+          `REDEEM_${type}`,
+          { redemptionType: type, ...metadata },
+          -cost,
+          tx,
+        );
 
-    if (!result.success) {
-      throw new BadRequestException('Failed to charge points');
-    }
+        if (!charged.success) {
+          throw new BadRequestException(
+            charged.message ?? 'Failed to charge points',
+          );
+        }
 
-    const redemption = await this.prisma.pointsRedemption.create({
-      data: {
-        userId,
-        type,
-        pointsSpent: cost,
-        status: RedemptionStatus.PENDING,
-        metadata: (metadata ?? null) as
-          Prisma.InputJsonValue | typeof Prisma.JsonNull,
+        const row = await tx.pointsRedemption.create({
+          data: {
+            userId,
+            type,
+            pointsSpent: cost,
+            status: RedemptionStatus.PENDING,
+            metadata: (metadata ?? null) as
+              Prisma.InputJsonValue | typeof Prisma.JsonNull,
+          },
+        });
+
+        return { result: charged, redemption: row };
       },
-    });
+    );
 
     this.logger.log(
       `User ${userId} redeemed ${cost} points for ${type} (redemption=${redemption.id})`,
@@ -97,12 +132,59 @@ export class PointsRedemptionService {
   }
 
   /**
-   * Mark a redemption as fulfilled (called by the owning module after benefit delivery).
+   * Mark a redemption as fulfilled, once an operator has delivered the benefit.
+   * Reached from `PATCH /admin/points/redemptions/:id/fulfil` — there is no
+   * "owning module" that does this automatically; see the class doc.
    */
+  /**
+   * Record what came of a consultation a redemption bought.
+   *
+   * Only valid on a FULFILLED redemption — the booking has to have gone out
+   * before there is a session to have an outcome. Written under
+   * `metadata.outcome`; see RecordConsultationOutcomeDto for why this is a Json
+   * field rather than columns, and what would have to be true to change that.
+   *
+   * Idempotent by overwrite rather than append-only: a counselor correcting
+   * "did not convert" to "converted, ¥8000" two weeks later is the expected
+   * case, not an anomaly, and the audit trail for that lives in AuditLog.
+   */
+  async recordConsultationOutcome(
+    redemptionId: string,
+    outcome: Record<string, unknown>,
+  ): Promise<void> {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); recording another user's consultation result is the job
+    const redemption = await this.prisma.pointsRedemption.findUnique({
+      where: { id: redemptionId },
+    });
+    if (!redemption) {
+      throw new NotFoundException('Redemption not found');
+    }
+    if (redemption.status !== RedemptionStatus.FULFILLED) {
+      throw new BadRequestException(
+        `Redemption is ${redemption.status}; an outcome only exists once it has been fulfilled`,
+      );
+    }
+
+    await this.prisma.pointsRedemption.update({
+      where: { id: redemptionId },
+      data: {
+        metadata: {
+          ...(redemption.metadata as Record<string, unknown> | null),
+          outcome: { ...outcome, recordedAt: new Date().toISOString() },
+        },
+      },
+    });
+
+    this.logger.log(
+      `Consultation outcome recorded for redemption ${redemptionId}`,
+    );
+  }
+
   async markFulfilled(
     redemptionId: string,
     fulfillmentMetadata?: Record<string, unknown>,
   ): Promise<void> {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); closing out another user's redemption is the job
     const redemption = await this.prisma.pointsRedemption.findUnique({
       where: { id: redemptionId },
     });
@@ -114,8 +196,12 @@ export class PointsRedemptionService {
         `Redemption is ${redemption.status}, cannot mark fulfilled`,
       );
     }
-    await this.prisma.pointsRedemption.update({
-      where: { id: redemptionId },
+    // Conditional update rather than update-by-id: the PENDING check above is
+    // a separate read, so two operators clicking "fulfilled" at once would
+    // both pass it. Narrowing the WHERE to PENDING makes the database settle
+    // it, and a count of 0 means someone else already did.
+    const claimed = await this.prisma.pointsRedemption.updateMany({
+      where: { id: redemptionId, status: RedemptionStatus.PENDING },
       data: {
         status: RedemptionStatus.FULFILLED,
         fulfilledAt: new Date(),
@@ -129,6 +215,11 @@ export class PointsRedemptionService {
             Prisma.JsonNull),
       },
     });
+    if (claimed.count === 0) {
+      throw new BadRequestException(
+        'Redemption is no longer pending, cannot mark fulfilled',
+      );
+    }
   }
 
   /**
@@ -146,21 +237,35 @@ export class PointsRedemptionService {
         `Redemption is ${redemption.status}, cannot cancel`,
       );
     }
-    await this.prisma.pointsRedemption.update({
-      where: { id: redemptionId },
-      data: {
-        status: RedemptionStatus.CANCELLED,
-        cancelledAt: new Date(),
-        cancelReason: reason.slice(0, 200),
-      },
+    // Status change and refund in one transaction. Cancelling first and
+    // refunding after would, on a failure in between, leave the redemption
+    // CANCELLED with the points still spent — the user loses them with no
+    // pending row left to retry against. The status guard above is re-checked
+    // inside the transaction so two concurrent cancels cannot both refund.
+    await this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.pointsRedemption.updateMany({
+        where: { id: redemptionId, status: RedemptionStatus.PENDING },
+        data: {
+          status: RedemptionStatus.CANCELLED,
+          cancelledAt: new Date(),
+          cancelReason: reason.slice(0, 200),
+        },
+      });
+      if (claimed.count === 0) {
+        throw new BadRequestException(
+          'Redemption is no longer pending, cannot cancel',
+        );
+      }
+
+      // Refund: positive adjust (override the value rather than going through enum)
+      await this.pointsService.adjustPoints(
+        redemption.userId,
+        `REFUND_${redemption.type}`,
+        { redemptionId, reason },
+        redemption.pointsSpent,
+        tx,
+      );
     });
-    // Refund: positive adjust (override the value rather than going through enum)
-    await this.pointsService.adjustPoints(
-      redemption.userId,
-      `REFUND_${redemption.type}`,
-      { redemptionId, reason },
-      redemption.pointsSpent,
-    );
   }
 
   /**
@@ -175,9 +280,61 @@ export class PointsRedemptionService {
   }
 
   /**
+   * Admin queue: redemptions awaiting human fulfilment, oldest first.
+   *
+   * Every RedemptionType is delivered by a person, so this is the work list.
+   * Oldest-first because the thing that matters operationally is the one a
+   * user has been waiting longest for.
+   */
+  async listPending(limit = 50) {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); closing out another user's redemption is the job
+    return this.prisma.pointsRedemption.findMany({
+      where: { status: RedemptionStatus.PENDING },
+      orderBy: { createdAt: 'asc' },
+      take: Math.min(200, Math.max(1, limit)),
+      include: {
+        // Shared shape plus email: fulfilling a CONSULT_15MIN means sending the
+        // user a booking link, so the operator needs a way to reach them. This
+        // route is ADMIN + SYSTEM_SETTINGS gated.
+        user: { select: { ...USER_SUMMARY_SELECT, email: true } },
+      },
+    });
+  }
+
+  /**
+   * Fulfilled consultations, newest first — the outcome queue.
+   *
+   * listPending() covers "a booking still has to go out". This covers the step
+   * after it, which had no route at all: once fulfilled, a redemption vanished
+   * from every operator surface, so there was no way to find the sessions whose
+   * result still needed recording.
+   *
+   * Returns recorded and unrecorded together rather than filtering on
+   * `metadata.outcome` being absent. Filtering a missing Json key is awkward in
+   * Prisma and would hide the ones already done, which is exactly what an
+   * operator wants to see to know the queue is being worked. The caller splits
+   * them; at this volume the whole list fits in one page.
+   */
+  async listFulfilledConsultations(limit = 50) {
+    // governance: admin-scope — the operator fulfilment queue — reached only from points-admin.controller (@Roles(Role.ADMIN) + @RequirePermission(SYSTEM_SETTINGS)); reading another user's redemption is the job
+    return this.prisma.pointsRedemption.findMany({
+      where: {
+        status: RedemptionStatus.FULFILLED,
+        type: RedemptionType.CONSULT_15MIN,
+      },
+      orderBy: { fulfilledAt: 'desc' },
+      take: Math.min(200, Math.max(1, limit)),
+      include: {
+        user: { select: { ...USER_SUMMARY_SELECT, email: true } },
+      },
+    });
+  }
+
+  /**
    * Get the public catalog of available redemptions (with current costs).
    */
-  getCatalog() {
+  async getCatalog() {
+    if (!(await this.pointsConfig.isEnabled())) return [];
     return Object.entries(REDEMPTION_COSTS).map(([type, cost]) => ({
       type: type as RedemptionType,
       cost,

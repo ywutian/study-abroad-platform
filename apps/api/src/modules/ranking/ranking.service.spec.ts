@@ -119,6 +119,7 @@ describe('RankingService', () => {
               findMany: jest.fn(),
               findUnique: jest.fn(),
               delete: jest.fn(),
+              deleteMany: jest.fn(),
             },
           },
         },
@@ -554,7 +555,10 @@ describe('RankingService', () => {
 
       const result = await service.getPublicRankings();
 
-      expect(result).toEqual(mockPublicRankings);
+      // `userId` is deliberately absent (see the strip tests below); this used
+      // to assert the whole row, which pinned the leak, not the behaviour.
+      const { userId: _ownerId, ...withoutOwner } = mockPublicRankings[0];
+      expect(result).toEqual([withoutOwner]);
       expect(prisma.customRanking.findMany).toHaveBeenCalledWith({
         where: { isPublic: true },
         orderBy: { createdAt: 'desc' },
@@ -582,16 +586,54 @@ describe('RankingService', () => {
 
   describe('findById', () => {
     it('should return the ranking when found', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...mockCustomRanking,
+        isPublic: true,
+      });
 
       const result = await service.findById(mockRankingId);
 
-      expect(result).toEqual(mockCustomRanking);
+      // No viewer passed, so this is an anonymous read: same strip as above.
+      const { userId: _ownerId, ...withoutOwner } = mockCustomRanking;
+      expect(result).toEqual({ ...withoutOwner, isPublic: true });
       expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
         where: { id: mockRankingId },
       });
+    });
+
+    // GET /rankings/:id is @Public(). This had no visibility check at all,
+    // and CustomRanking.isPublic defaults to FALSE — so every ranking anyone
+    // had ever saved was readable by an anonymous caller holding an id.
+
+    it('hides a private ranking from an anonymous caller', async () => {
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...mockCustomRanking,
+        isPublic: false,
+      });
+
+      await expect(service.findById(mockRankingId)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('hides a private ranking from a different signed-in user', async () => {
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...mockCustomRanking,
+        isPublic: false,
+      });
+
+      await expect(
+        service.findById(mockRankingId, 'some-other-user'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('still returns a private ranking to its owner', async () => {
+      const own = { ...mockCustomRanking, isPublic: false };
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(own);
+
+      await expect(
+        service.findById(mockRankingId, mockUserId),
+      ).resolves.toEqual(own);
     });
 
     it('should throw NotFoundException when ranking is not found', async () => {
@@ -611,48 +653,86 @@ describe('RankingService', () => {
   // ============================================
 
   describe('deleteRanking', () => {
-    it('should delete a ranking owned by the user', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
-      (prisma.customRanking.delete as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
+    // Ownership is the WHERE now, so these assert the predicate rather than a
+    // findById round trip. The old shape compared `ranking.userId !== userId`
+    // against a row findById had already stripped for non-owners — correct by
+    // accident, and untested on the one branch where it mattered.
+    it("deletes the caller's own ranking", async () => {
+      (prisma.customRanking.deleteMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
 
       await service.deleteRanking(mockRankingId, mockUserId);
 
-      expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
-        where: { id: mockRankingId },
-      });
-      expect(prisma.customRanking.delete).toHaveBeenCalledWith({
-        where: { id: mockRankingId },
+      expect(prisma.customRanking.deleteMany).toHaveBeenCalledWith({
+        where: { id: mockRankingId, userId: mockUserId },
       });
     });
 
-    it('should throw NotFoundException when userId does not match ranking owner', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(
-        mockCustomRanking,
-      );
+    it('will not delete a PUBLIC ranking belonging to someone else', async () => {
+      // The gap: the previous test for this used a PRIVATE fixture, which 404s
+      // at findById's visibility check before ownership is ever considered. A
+      // public ranking reaches the ownership check, which is the branch that
+      // changed.
+      (prisma.customRanking.deleteMany as jest.Mock).mockResolvedValue({
+        count: 0,
+      });
 
       await expect(
         service.deleteRanking(mockRankingId, 'other-user-id'),
       ).rejects.toThrow(NotFoundException);
 
-      expect(prisma.customRanking.findUnique).toHaveBeenCalledWith({
-        where: { id: mockRankingId },
+      expect(prisma.customRanking.deleteMany).toHaveBeenCalledWith({
+        where: { id: mockRankingId, userId: 'other-user-id' },
       });
-      // delete should NOT have been called
-      expect(prisma.customRanking.delete).not.toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException when ranking does not exist', async () => {
-      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue(null);
+    it('throws when the ranking does not exist', async () => {
+      (prisma.customRanking.deleteMany as jest.Mock).mockResolvedValue({
+        count: 0,
+      });
 
       await expect(
         service.deleteRanking('nonexistent', mockUserId),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
 
-      expect(prisma.customRanking.delete).not.toHaveBeenCalled();
+  describe('published rankings do not carry the owner id', () => {
+    // CustomRanking.userId is what GET /forum/posts publishes as author.id
+    // beside profile.realName — both unauthenticated — so a public ranking
+    // linked back to a named person. 52ebf249 fixed who may read these rows.
+    const row = {
+      id: mockRankingId,
+      userId: 'owner-secret',
+      name: 'My weights',
+      isPublic: true,
+      weights: {},
+    };
+
+    it('strips it from the public list', async () => {
+      (prisma.customRanking.findMany as jest.Mock).mockResolvedValue([
+        { ...row },
+      ]);
+
+      const res = await service.getPublicRankings();
+
+      expect(res[0]).not.toHaveProperty('userId');
+      expect(JSON.stringify(res)).not.toContain('owner-secret');
+      expect(res[0].name).toBe('My weights');
+    });
+
+    it('strips it for a non-owner reading by id, and keeps it for the owner', async () => {
+      (prisma.customRanking.findUnique as jest.Mock).mockResolvedValue({
+        ...row,
+      });
+
+      const stranger = await service.findById(mockRankingId, 'someone-else');
+      expect(stranger).not.toHaveProperty('userId');
+      expect(JSON.stringify(stranger)).not.toContain('owner-secret');
+
+      const owner = await service.findById(mockRankingId, 'owner-secret');
+      expect(owner.userId).toBe('owner-secret');
     });
   });
 });

@@ -118,11 +118,52 @@ async function bootstrap() {
     ],
   });
 
+  // Payment webhook: keep the exact bytes that were signed.
+  //
+  // An HMAC must be checked against the body as it arrived. Re-serialising the
+  // parsed object — `JSON.stringify(req.body)`, which is what this did — is a
+  // different byte string whenever the sender's key order, spacing, unicode
+  // escaping or number formatting differs from V8's, so the comparison is
+  // testing something the sender never signed. The controller already declared
+  // `req.rawBody`; nothing had ever populated it.
+  //
+  // Mounted before the global parser and scoped to the one route, so no other
+  // request pays to keep its raw buffer alive.
+  app.use(
+    // NOTE: `subscriptions`, plural — matches @Controller('subscriptions').
+    // A path typo here fails open: the global parser handles the route, rawBody
+    // stays undefined, and the guard in handlePaymentWebhook rejects every
+    // delivery. The e2e below pins the path so that cannot happen silently.
+    '/api/v1/subscriptions/webhook',
+    express.json({
+      limit: '1mb',
+      verify: (req: express.Request & { rawBody?: Buffer }, _res, buf) => {
+        req.rawBody = Buffer.from(buf);
+      },
+    }),
+  );
+
   // Request body size limits — 普通 JSON 1MB，文件上传通过 multer 单独配置
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+  // Uploaded files, served from the API's OWN origin — the origin that holds
+  // the refresh-token cookie. This mount sits above helmet in the middleware
+  // chain, so these responses never carried its headers; a stored file that
+  // the browser decided to treat as HTML would run as same-origin script.
+  // Extensions can no longer be attacker-chosen (StorageService derives them
+  // from the validated mime), and these two headers make the sniffing path
+  // dead as well rather than relying on that alone.
   app.use(
     '/uploads',
+    (
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+      next();
+    },
     express.static(process.env.STORAGE_LOCAL_PATH || './uploads'),
   );
 

@@ -78,6 +78,7 @@ export class HallVerifiedDashboardService {
 
     const targetSchoolIds = await this.resolveSchoolIds(schoolIds);
 
+    // governance: aggregate-only — per-school/per-year admitted+total counts, no identifying fields. Small-sample floor: years below MIN_YEAR_TOTAL = 3 submitted cases are dropped, and a school with no surviving year is omitted entirely. Filters isVerified + approved review + L2/L3 + China nationality, but NOT `visibility` — that a PRIVATE verified case still counts toward an aggregate is the documented design in hall.constants.ts, unchanged here; what changed is that the aggregate can no longer be thin enough to name one person
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         ...this.baseWhere(),
@@ -126,7 +127,20 @@ export class HallVerifiedDashboardService {
         if (!entry) return null;
         const yearly = Array.from(entry.years.entries())
           .map(([year, v]) => ({ year, admitted: v.admitted, total: v.total }))
+          // Suppress thin cells. This is a @Public() endpoint publishing, per
+          // school and per year, exactly how many China-mainland applicants
+          // were verified and how many got in — so a `{ admitted: 1, total: 1 }`
+          // cell names one identifiable person's outcome to anyone who loads
+          // the page. The class already had the concept and the constant:
+          // MIN_YEAR_TOTAL exists for the difficulty signal with precisely
+          // this rationale ("a 1/1 = 100% year is noise, not signal"), and
+          // reliability() grades small samples — but grading only LABELS the
+          // cell, it still ships the exact numbers. Same floor, applied to the
+          // data rather than to its caption.
+          .filter((y) => y.total >= HallVerifiedDashboardService.MIN_YEAR_TOTAL)
           .sort((a, b) => a.year - b.year);
+        // Every year suppressed → no card, rather than an empty one.
+        if (yearly.length === 0) return null;
         const sampleSize = yearly.reduce((s, y) => s + y.admitted, 0);
         return {
           schoolId,
@@ -150,6 +164,14 @@ export class HallVerifiedDashboardService {
    * are dropped from the rate series — a 1/1 = 100% year is noise, not signal.
    */
   private static readonly MIN_YEAR_TOTAL = 3;
+
+  /**
+   * Minimum verified admits before a school's ED/RD split may be published.
+   * Was an inline `5` gating only the `edTilt` label; named and applied to the
+   * counts too, so the figure the label is derived from is not published when
+   * the label itself is judged unreliable.
+   */
+  private static readonly ED_RD_MIN_SAMPLE = 5;
 
   /**
    * Year-over-year admission difficulty signal per school.
@@ -222,6 +244,7 @@ export class HallVerifiedDashboardService {
   ): Promise<EdRdComparisonResponse> {
     const targetSchoolIds = await this.resolveSchoolIds(schoolIds);
 
+    // governance: aggregate-only — per-school ED vs RD admit counts. Small-sample floor: schools below ED_RD_MIN_SAMPLE = 5 verified admits are withheld entirely — previously only the derived `edTilt` label was gated while the counts it came from shipped at any size. Same visibility note as getChinaAdmitTrend
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         ...this.baseWhere(),
@@ -278,10 +301,20 @@ export class HallVerifiedDashboardService {
         const entry = grouped.get(schoolId);
         if (!entry) return null;
         const sampleSize = entry.ed + entry.rd;
+        // Same suppression as the trend, and for the same reason: edTilt was
+        // already withheld below 5 admits, but edAdmitted / rdAdmitted /
+        // sampleSize shipped raw at any size — so a school with one verified
+        // ED admit published that fact on a @Public() route. Gating the label
+        // while emitting the counts it was derived from protects nothing.
+        if (sampleSize < HallVerifiedDashboardService.ED_RD_MIN_SAMPLE)
+          return null;
         const edSharePct =
           sampleSize > 0 ? Math.round((entry.ed / sampleSize) * 100) : null;
         let edTilt: EdRdComparisonEntry['edTilt'] = 'insufficient';
-        if (sampleSize >= 5 && edSharePct !== null) {
+        if (
+          sampleSize >= HallVerifiedDashboardService.ED_RD_MIN_SAMPLE &&
+          edSharePct !== null
+        ) {
           if (edSharePct >= 65) edTilt = 'ed_favored';
           else if (edSharePct <= 35) edTilt = 'rd_favored';
           else edTilt = 'balanced';
@@ -306,6 +339,7 @@ export class HallVerifiedDashboardService {
   /** Empty `schoolIds` → top-30 schools by US News rank. */
   private async resolveSchoolIds(schoolIds: string[]): Promise<string[]> {
     if (schoolIds.length > 0) return schoolIds;
+    // governance: system-scope — School lookup to expand an empty filter to the top-30 by US News rank
     const top = await this.prisma.school.findMany({
       where: { usNewsRank: { not: null, lte: 30 } },
       select: { id: true },

@@ -43,7 +43,7 @@ export function SettingItemRow({ item, disabled }: { item: SettingItem; disabled
   const content = (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
+        'flex min-w-0 flex-wrap items-center gap-3 rounded-xl p-3 transition-all duration-200 sm:flex-nowrap',
         disabled && 'cursor-not-allowed',
         !disabled &&
           (item.type === 'link' || item.type === 'action') &&
@@ -71,6 +71,7 @@ export function SettingItemRow({ item, disabled }: { item: SettingItem; disabled
       {item.type === 'toggle' &&
         (mounted ? (
           <Switch
+            aria-label={item.label}
             checked={item.value as boolean}
             onCheckedChange={item.onToggle}
             disabled={disabled}
@@ -83,7 +84,10 @@ export function SettingItemRow({ item, disabled }: { item: SettingItem; disabled
         ))}
       {item.type === 'select' && (
         <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>
-          <SelectTrigger aria-label={item.label} className="h-9 w-[12rem] min-w-[10rem] shrink-0">
+          <SelectTrigger
+            aria-label={item.label}
+            className="mt-2 h-9 w-full min-w-0 basis-full sm:mt-0 sm:w-36 sm:basis-auto lg:w-32 xl:w-40"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="max-h-[420px]">

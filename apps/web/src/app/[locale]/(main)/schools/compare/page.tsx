@@ -144,7 +144,7 @@ export default function SchoolComparePage() {
               )}
               <button
                 onClick={() => handleRemoveSchool(id)}
-                className="shrink-0 rounded-full p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground max-sm:size-10"
                 aria-label={t('removeSchool')}
               >
                 <X className="h-3.5 w-3.5" />

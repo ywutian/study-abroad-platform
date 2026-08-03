@@ -94,6 +94,14 @@ export interface RedemptionResult {
   status: RedemptionStatus;
 }
 
+export interface RedemptionHistoryItem {
+  id: string;
+  type: RedemptionType;
+  pointsSpent: number;
+  status: RedemptionStatus;
+  createdAt: string;
+}
+
 /*
  * 2026-05 Hall Plan C (C2b): `ReviewDimensionAggregate` and
  * `AggregatedReviewPayload` were removed. Numeric review scoring was retired

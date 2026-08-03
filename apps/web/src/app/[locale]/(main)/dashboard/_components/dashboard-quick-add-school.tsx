@@ -1,6 +1,6 @@
 'use client';
 
-import { schoolRoutes } from '@study-abroad/shared';
+import { schoolListRoutes, schoolRoutes } from '@study-abroad/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Plus, Search, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -110,7 +110,8 @@ export function DashboardQuickAddSchool() {
   type SchoolListSnapshot = Array<{ schoolId: string }>;
 
   const addSchool = useMutation({
-    mutationFn: (schoolId: string) => apiClient.post('/school-lists', { schoolId, tier: 'TARGET' }),
+    mutationFn: (schoolId: string) =>
+      apiClient.post(schoolListRoutes.list(), { schoolId, tier: 'TARGET' }),
     onMutate: async (schoolId: string) => {
       // Cancel any in-flight refetch so it doesn't clobber our optimistic write.
       await queryClient.cancelQueries({ queryKey: SCHOOL_LIST_KEY });

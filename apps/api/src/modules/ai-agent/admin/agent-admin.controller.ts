@@ -685,6 +685,8 @@ export class AgentAdminController {
     if (resolved !== undefined && resolved !== '')
       where.resolved = resolved === 'true';
 
+    // governance: admin-scope — class-level @Roles(ADMIN) + @RequirePermission(AI_CONFIG),
+    // no method-level override in this file (getAllAndOverride would replace, not merge).
     const [data, total] = await Promise.all([
       this.prisma.agentSecurityEvent.findMany({
         where,
@@ -707,6 +709,7 @@ export class AgentAdminController {
     @Param('id') id: string,
     @Body() body: ResolveSecurityEventDto,
   ) {
+    // governance: admin-scope — same class-level gate as getSecurityEvents
     return this.prisma.agentSecurityEvent.update({
       where: { id },
       data: {
@@ -782,6 +785,7 @@ export class AgentAdminController {
       recentMessages,
       compactionCount,
       compactionAvg,
+      // governance: admin-scope — same class-level gate; platform-wide counts only, no per-user row leaves this method
     ] = await Promise.all([
       this.prisma.memory.count(),
       this.prisma.agentConversation.count(),

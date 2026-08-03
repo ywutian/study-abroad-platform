@@ -156,6 +156,7 @@ export class TeamRecruitmentService {
   ) {}
 
   async getMatchPools() {
+    // governance: system-scope — MatchPool / CompetitionEdition are platform-run competition config — no User or Profile relation
     const pools = await this.prisma.matchPool.findMany({
       where: { isActive: true },
       orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
@@ -180,6 +181,7 @@ export class TeamRecruitmentService {
    * only, ordered by event date (undated editions last).
    */
   async getCompetitionEditions(season?: string) {
+    // governance: system-scope — MatchPool / CompetitionEdition are platform-run competition config — no User or Profile relation
     const editions = await this.prisma.competitionEdition.findMany({
       where: {
         status: 'ACTIVE',
@@ -195,6 +197,7 @@ export class TeamRecruitmentService {
   }
 
   async getMatchPoolById(poolId: string) {
+    // governance: system-scope — MatchPool / CompetitionEdition are platform-run competition config — no User or Profile relation
     const pool = await this.prisma.matchPool.findUnique({
       where: { id: poolId },
       include: {
@@ -273,6 +276,7 @@ export class TeamRecruitmentService {
       };
     }
 
+    // governance: system-scope — RecruitmentContext is the shared board a competition track recruits on; createdById records who opened it, it is not an access boundary. 1589 resolves the OFFICIAL context for a track
     const contexts = await this.prisma.recruitmentContext.findMany({
       where,
       include: RECRUITMENT_CONTEXT_INCLUDE,
@@ -944,6 +948,7 @@ export class TeamRecruitmentService {
       };
     }
 
+    // governance: public-feed — the swipe deck — TeamRecruitmentCard rows exist to be discovered by other applicants; the query filters on published/active card status
     const cards = await this.prisma.teamRecruitmentCard.findMany({
       where,
       include: RECRUITMENT_CARD_INCLUDE,
@@ -1238,7 +1243,7 @@ export class TeamRecruitmentService {
             participants: {
               include: {
                 user: {
-                  select: TEAM_USER_SELECT,
+                  select: { ...TEAM_USER_SELECT, email: true }, // authed, member-scoped — see TEAM_USER_SELECT
                 },
               },
             },
@@ -1538,6 +1543,7 @@ export class TeamRecruitmentService {
   }
 
   private async getCardOrThrow(cardId: string) {
+    // governance: parent-scoped — private fetch-or-throw; every caller immediately runs ensureTeamRole(card.teamId, userId, …) or ensureTeamMember(card.teamId, userId)
     const card = await this.prisma.teamRecruitmentCard.findUnique({
       where: { id: cardId },
       include: RECRUITMENT_CARD_INCLUDE,
@@ -1549,6 +1555,7 @@ export class TeamRecruitmentService {
   }
 
   private async getRecruitmentContextOrThrow(contextId: string) {
+    // governance: system-scope — RecruitmentContext is the shared board a competition track recruits on; createdById records who opened it, it is not an access boundary. 1589 resolves the OFFICIAL context for a track
     const context = await this.prisma.recruitmentContext.findUnique({
       where: { id: contextId },
       include: RECRUITMENT_CONTEXT_INCLUDE,
@@ -1586,6 +1593,7 @@ export class TeamRecruitmentService {
   private async resolveOfficialRecruitmentContextId(
     competitionTrackId: string,
   ) {
+    // governance: system-scope — RecruitmentContext is the shared board a competition track recruits on; createdById records who opened it, it is not an access boundary. 1589 resolves the OFFICIAL context for a track
     const context = await this.prisma.recruitmentContext.findUnique({
       where: { competitionTrackId },
       select: { id: true },
@@ -1841,7 +1849,15 @@ export class TeamRecruitmentService {
           : getVisibleDisplaySettings(displayProfile, highlightOptions);
 
         return {
-          userId: member.userId,
+          // Only for viewers who already have full access to this card (their
+          // own card, or one they matched with — the invite flow reads it off
+          // match.otherCard). The guest deck at /teams/recruitments/deck/preview
+          // is @Public() and deliberately degrades displayName to "Member N"
+          // and withholds school/grade without consent — shipping the user id
+          // beside that handed back the join key to GET /forum/posts, which
+          // publishes author.id next to profile.realName. Same defect as
+          // afb38270 and feaa8cce.
+          ...(fullAccess ? { userId: member.userId } : {}),
           role: member.role,
           displayName,
           avatarUrl: member.user.profile?.avatarUrl,

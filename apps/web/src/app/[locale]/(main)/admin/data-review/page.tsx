@@ -90,13 +90,25 @@ export default function AdminDataReviewPage() {
       <ReviewStatsCards />
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="queue">{t('tabs.queue')}</TabsTrigger>
-          <TabsTrigger value="cases">{t('tabs.cases')}</TabsTrigger>
-          <TabsTrigger value="history">{t('tabs.history')}</TabsTrigger>
-          <TabsTrigger value="import">{t('tabs.import')}</TabsTrigger>
-          <TabsTrigger value="batch">{t('tabs.batch')}</TabsTrigger>
-          <TabsTrigger value="pipeline">{t('tabs.pipeline')}</TabsTrigger>
+        <TabsList className="mb-4 grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:w-fit lg:flex-wrap">
+          <TabsTrigger value="queue" className="min-w-0 px-2 sm:px-3">
+            {t('tabs.queue')}
+          </TabsTrigger>
+          <TabsTrigger value="cases" className="min-w-0 px-2 sm:px-3">
+            {t('tabs.cases')}
+          </TabsTrigger>
+          <TabsTrigger value="history" className="min-w-0 px-2 sm:px-3">
+            {t('tabs.history')}
+          </TabsTrigger>
+          <TabsTrigger value="import" className="min-w-0 px-2 sm:px-3">
+            {t('tabs.import')}
+          </TabsTrigger>
+          <TabsTrigger value="batch" className="min-w-0 px-2 sm:px-3">
+            {t('tabs.batch')}
+          </TabsTrigger>
+          <TabsTrigger value="pipeline" className="min-w-0 px-2 sm:px-3">
+            {t('tabs.pipeline')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="queue">

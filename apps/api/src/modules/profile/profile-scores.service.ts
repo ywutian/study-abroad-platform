@@ -99,6 +99,7 @@ export class ProfileScoresService {
     data: CreateTestScoreDto,
     testDate: Date | null,
   ): Promise<TestScore | null> {
+    // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
     const candidates = await this.prisma.testScore.findMany({
       where: {
         profileId,
@@ -1033,6 +1034,7 @@ export class ProfileScoresService {
    * If neither exists, does not overwrite manually entered GPA.
    */
   private async recalculateGpa(profileId: string): Promise<void> {
+    // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
     const profile = await this.prisma.profile.findUnique({
       where: { id: profileId },
       select: {
@@ -1070,6 +1072,7 @@ export class ProfileScoresService {
         (s, e) => s + Number(e.gpa) * GRADE_WEIGHTS[e.grade],
         0,
       );
+      // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
       await this.prisma.profile.update({
         where: { id: profileId },
         data: { gpa: Math.round((weightedSum / totalWeight) * 100) / 100 },
@@ -1089,6 +1092,7 @@ export class ProfileScoresService {
         totalWeight += w;
         weightedSum += gpa * w;
       }
+      // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
       await this.prisma.profile.update({
         where: { id: profileId },
         data: { gpa: Math.round((weightedSum / totalWeight) * 100) / 100 },

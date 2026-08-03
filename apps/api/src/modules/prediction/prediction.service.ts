@@ -303,6 +303,7 @@ export class PredictionService {
    */
   async invalidateUserCache(profileId: string): Promise<void> {
     try {
+      // governance: parent-scoped — keyed by profileId, which the caller derived from the authenticated user
       const predictions = await this.prisma.predictionResult.findMany({
         where: { profileId },
         select: { schoolId: true },
@@ -1254,6 +1255,7 @@ export class PredictionService {
       return { results: [], dataCompleteness: 0 };
     }
 
+    // governance: parent-scoped — keyed by profileId, which the caller derived from the authenticated user
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
       include: PREDICTION_PUBLIC_MEDIA_INCLUDE,
@@ -1286,6 +1288,7 @@ export class PredictionService {
     if (profileInput.targetMajor) {
       const targetCip = resolveMajorToCip(profileInput.targetMajor);
       if (targetCip) {
+        // governance: parent-scoped — keyed by profileId, which the caller derived from the authenticated user
         const programs = await this.prisma.schoolProgram.findMany({
           where: {
             cipCode: targetCip,

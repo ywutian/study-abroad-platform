@@ -81,6 +81,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
         const cached = await this.redis.get(cacheKey);
         if (cached) {
           this.logger.debug(`recommend_schools cache hit for ${userId}`);
+          // @cache-parse-allowed - recommendation payload, no Date fields
           return JSON.parse(cached);
         }
       }

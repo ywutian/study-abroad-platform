@@ -105,11 +105,14 @@ describe('ForumPage', () => {
     jest.clearAllMocks();
   });
 
-  it('renders without crashing', () => {
+  it('renders without crashing', async () => {
     (apiClient.get as jest.Mock).mockResolvedValue({ posts: [], total: 0, hasMore: false });
 
     const { toJSON } = renderWithProviders(<ForumPage />);
     expect(toJSON()).toBeTruthy();
+    await waitFor(() => {
+      expect(apiClient.get).toHaveBeenCalled();
+    });
   });
 
   it('shows loading state while fetching posts', () => {
@@ -208,14 +211,16 @@ describe('ForumPage', () => {
     });
   });
 
-  it('calls apiClient.get for categories, stats, and posts on mount', () => {
+  it('calls apiClient.get for categories, stats, and posts on mount', async () => {
     (apiClient.get as jest.Mock).mockResolvedValue({ posts: [], total: 0, hasMore: false });
 
     renderWithProviders(<ForumPage />);
 
-    expect(apiClient.get).toHaveBeenCalledWith(
-      expect.stringContaining('/forums'),
-      expect.anything()
-    );
+    await waitFor(() => {
+      expect(apiClient.get).toHaveBeenCalledWith(
+        expect.stringContaining('/forums'),
+        expect.anything()
+      );
+    });
   });
 });

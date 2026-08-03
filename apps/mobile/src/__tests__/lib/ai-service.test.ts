@@ -68,6 +68,7 @@ describe('aiService.chat', () => {
 
     expect(apiClient.get).toHaveBeenCalledWith(profileRoutes.aiAnalysis(), {
       timeout: AI_REQUEST_TIMEOUT_MS,
+      retries: 0,
     });
   });
 });

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, View, Text, StyleSheet } from 'react-native';
 import { Stack, useSegments, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,7 +18,10 @@ import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 import { useChatSocket } from '@/hooks/useChatSocket';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
-import { useNotifications, type Notification as AppNotification } from '@/hooks/useNotifications';
+import {
+  useNotificationRuntime,
+  type Notification as AppNotification,
+} from '@/hooks/useNotifications';
 import { useNotificationStore } from '@/stores/notification';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
 import { Loading } from '@/components/ui/Loading';
@@ -26,8 +29,10 @@ import { Button } from '@/components/ui/Button';
 import { NetworkProvider, ErrorBoundary } from '@/components/providers';
 import { useColors, colors as themeColors, withOpacity } from '@/utils/theme';
 import { createAsyncStoragePersister, MAX_CACHE_AGE_MS } from '@/lib/query-persister';
+import { registerQuerySessionReset } from '@/lib/query-session';
 import { prefetchReferenceData, attachCacheMetrics } from '@/lib/query';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
+import { shouldActivateBiometricLock } from '@/lib/security/biometric-lock';
 
 // 初始化 Sentry (在 App 外部，仅执行一次)
 initSentry();
@@ -65,6 +70,11 @@ const queryClient = new QueryClient({
 const persister = createAsyncStoragePersister();
 const persistOptions = { persister, maxAge: MAX_CACHE_AGE_MS };
 
+registerQuerySessionReset(async () => {
+  queryClient.clear();
+  await persister.removeClient();
+});
+
 // Observe cache hit-rates for the app's lifetime (O(1) per event; logs in dev).
 attachCacheMetrics(queryClient);
 
@@ -99,7 +109,7 @@ function SessionExpiredHandler() {
 function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { incrementUnread } = useNotificationStore();
-  const { scheduleLocalNotification } = useNotifications();
+  const { scheduleLocalNotification } = useNotificationRuntime();
 
   // Initialize WebSocket — only runs when auth token is available
   useChatSocket(
@@ -135,13 +145,11 @@ const DETAIL_SCREENS = [
   'hall/index',
   'swipe/index',
   'uncommon-app',
-  'subscription',
   'security',
   'resume',
+  'resume/[id]',
   'vault',
   'teams',
-  'points',
-  'peer-review',
   'referral',
   'verification',
   'notifications',
@@ -237,8 +245,11 @@ function RootLayoutNav() {
  */
 function BiometricLockScreen({ onUnlock }: { onUnlock: () => void }) {
   const colors = useColors();
+  const authenticating = useRef(false);
 
-  const handleAuthenticate = async () => {
+  const handleAuthenticate = useCallback(async () => {
+    if (authenticating.current || AppState.currentState !== 'active') return;
+    authenticating.current = true;
     try {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: i18n.t('security.biometric.promptMessage'),
@@ -251,13 +262,20 @@ function BiometricLockScreen({ onUnlock }: { onUnlock: () => void }) {
       }
     } catch {
       // Authentication failed, user can retry
+    } finally {
+      authenticating.current = false;
     }
-  };
+  }, [onUnlock]);
 
-  // Auto-prompt on mount
+  // Auto-prompt only while foregrounded. The lock overlay may mount during
+  // app-switcher snapshotting, where iOS cannot present Face ID yet.
   useEffect(() => {
-    handleAuthenticate();
-  }, []);
+    if (AppState.currentState === 'active') void handleAuthenticate();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void handleAuthenticate();
+    });
+    return () => subscription.remove();
+  }, [handleAuthenticate]);
 
   return (
     <View style={[styles.biometricContainer, { backgroundColor: colors.background }]}>
@@ -329,6 +347,17 @@ export default function RootLayout() {
 
     prepare();
   }, [loadAuth, loadTheme]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      void AsyncStorage.getItem(BIOMETRIC_ENABLED_KEY).then((enabled) => {
+        if (shouldActivateBiometricLock(state, useAuthStore.getState().isAuthenticated, enabled)) {
+          setBiometricLocked(true);
+        }
+      });
+    });
+    return () => subscription.remove();
+  }, []);
 
   if (!isReady) {
     return (

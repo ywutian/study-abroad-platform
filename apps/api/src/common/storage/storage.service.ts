@@ -118,7 +118,7 @@ export class StorageService implements OnModuleInit {
     userId: string,
     file: StorageFile,
   ): Promise<UploadResult> {
-    const fileExt = path.extname(file.originalname);
+    const fileExt = this.extFromMime(file.mimetype);
     const fileHash = crypto.randomBytes(16).toString('hex');
     const key = `verification/${userId}/${fileHash}${fileExt}`;
 
@@ -144,7 +144,7 @@ export class StorageService implements OnModuleInit {
     userId: string,
     file: StorageFile,
   ): Promise<UploadResult> {
-    const fileExt = path.extname(file.originalname);
+    const fileExt = this.extFromMime(file.mimetype);
     const fileHash = crypto.randomBytes(16).toString('hex');
     const key = `outcome-evidence/${userId}/${fileHash}${fileExt}`;
 
@@ -169,8 +169,7 @@ export class StorageService implements OnModuleInit {
     userId: string,
     file: StorageFile,
   ): Promise<UploadResult> {
-    const fileExt =
-      path.extname(file.originalname) || this.extFromMime(file.mimetype);
+    const fileExt = this.extFromMime(file.mimetype);
     const fileHash = crypto.randomBytes(16).toString('hex');
     const key = `forum/${userId}/${fileHash}${fileExt}`;
 
@@ -196,8 +195,7 @@ export class StorageService implements OnModuleInit {
     type: SchoolMediaKind,
     file: StorageFile & { hash?: string },
   ): Promise<UploadResult> {
-    const fileExt =
-      path.extname(file.originalname) || this.extFromMime(file.mimetype);
+    const fileExt = this.extFromMime(file.mimetype);
     const fileHash = file.hash || crypto.randomBytes(16).toString('hex');
     const key = `schools/${schoolId}/${type.toLowerCase()}/${fileHash}${fileExt}`;
 
@@ -215,6 +213,24 @@ export class StorageService implements OnModuleInit {
     }
   }
 
+  /**
+   * The stored extension is derived from the VALIDATED mime type, never from
+   * the uploaded filename.
+   *
+   * Every upload path already allowlists `file.mimetype` (forum images,
+   * outcome evidence, chat attachments) — but the key used to be built from
+   * `path.extname(file.originalname)`, which the client also controls and
+   * which wins over this map. Sending `Content-Type: image/png` with
+   * `filename="x.html"` passed every allowlist and stored `<hash>.html`.
+   * With STORAGE_TYPE defaulting to 'local' — and the production Cloud Run
+   * deploy not setting it — that file is then served by express.static from
+   * the API's own origin as text/html.
+   *
+   * Unknown types fall back to `.bin` rather than throwing: it keeps any
+   * upload path not enumerated here working, and octet-stream downloads
+   * instead of rendering. What must never happen is an attacker-chosen
+   * extension, and this map is the only thing that decides one now.
+   */
   private extFromMime(mimetype: string): string {
     switch (mimetype) {
       case 'image/jpeg':
@@ -225,8 +241,20 @@ export class StorageService implements OnModuleInit {
         return '.webp';
       case 'image/gif':
         return '.gif';
+      case 'application/pdf':
+        return '.pdf';
+      case 'application/msword':
+        return '.doc';
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        return '.docx';
+      case 'audio/mpeg':
+        return '.mp3';
+      case 'audio/wav':
+        return '.wav';
+      case 'audio/ogg':
+        return '.ogg';
       default:
-        return '';
+        return '.bin';
     }
   }
 

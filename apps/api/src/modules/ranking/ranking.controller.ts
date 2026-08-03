@@ -55,8 +55,14 @@ export class RankingController {
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Get ranking by ID' })
-  async getRanking(@Param('id') id: string) {
-    return this.rankingService.findById(id);
+  async getRanking(
+    @Param('id') id: string,
+    // @Public() route, so this is undefined for anonymous callers — the
+    // service treats that as "can only see public rankings". An owner reading
+    // their own private ranking still works when a token is present.
+    @CurrentUser() user?: CurrentUserPayload,
+  ) {
+    return this.rankingService.findById(id, user?.id);
   }
 
   @Delete(':id')

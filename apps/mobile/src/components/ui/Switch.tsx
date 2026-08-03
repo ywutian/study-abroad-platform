@@ -8,6 +8,7 @@ interface SwitchProps {
   label?: string;
   description?: string;
   disabled?: boolean;
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -17,22 +18,28 @@ export function Switch({
   label,
   description,
   disabled = false,
+  accessibilityLabel,
   style,
 }: SwitchProps) {
   const colors = useColors();
 
   return (
     <View style={[styles.container, disabled && styles.disabled, style]}>
-      <View style={styles.textContainer}>
-        {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
-        {description && (
-          <Text style={[styles.description, { color: colors.foregroundMuted }]}>{description}</Text>
-        )}
-      </View>
+      {(label || description) && (
+        <View style={styles.textContainer}>
+          {label && <Text style={[styles.label, { color: colors.foreground }]}>{label}</Text>}
+          {description && (
+            <Text style={[styles.description, { color: colors.foregroundMuted }]}>
+              {description}
+            </Text>
+          )}
+        </View>
+      )}
       <RNSwitch
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
+        accessibilityLabel={accessibilityLabel ?? label}
         trackColor={{
           false: colors.muted,
           true: colors.primary + '80',

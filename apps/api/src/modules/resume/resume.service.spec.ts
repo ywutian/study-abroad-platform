@@ -902,4 +902,100 @@ describe('ResumeService', () => {
       );
     });
   });
+
+  describe('profile import — cached profile', () => {
+    // ProfileCrudService.findByUserId caches the profile through
+    // JSON.stringify, so within REDIS_TTL.PROFILE (5 min) every DateTime on it
+    // comes back as an ISO string. The import path used to call
+    // `.toISOString()` on those directly, which threw for every import after
+    // the one that warmed the cache. `as any` on the profile is what hid it.
+    const live = {
+      id: 'p1',
+      activities: [
+        {
+          id: 'a1',
+          name: 'Robotics',
+          role: 'Lead',
+          organization: null,
+          category: 'CLUB',
+          description: null,
+          startDate: new Date('2024-01-15'),
+          endDate: new Date('2024-06-20'),
+        },
+      ],
+      education: [
+        {
+          id: 'e1',
+          schoolName: 'X High',
+          startDate: new Date('2022-09-01'),
+          endDate: new Date('2026-06-01'),
+        },
+      ],
+      // testScores has its own date field name — the first version of this
+      // test only carried activities, which is why testDate kept the bug
+      // after the rest of the import was fixed.
+      testScores: [
+        {
+          id: 't1',
+          type: 'SAT',
+          score: 1500,
+          subScores: null,
+          testDate: new Date('2025-03-10'),
+        },
+      ],
+      awards: [],
+    };
+    // byte-for-byte what RedisService.getJSON hands back on a hit
+    const cached = JSON.parse(JSON.stringify(live));
+
+    beforeEach(() => {
+      mockPrisma.resume.findUnique.mockResolvedValue({
+        id: 'r1',
+        userId: 'u1',
+        type: 'COLLEGE_APPLICATION',
+        // every section the profile import writes into — a resume carrying
+        // only ACTIVITIES silently skips the education/testScores branches,
+        // which is how testDate kept its bug through the first fix
+        sections: ['ACTIVITIES', 'EDUCATION', 'TEST_SCORES'].map(
+          (type, order) => ({
+            id: `s${order + 1}`,
+            type,
+            title: type,
+            order,
+            content: {},
+            isVisible: true,
+          }),
+        ),
+      });
+      mockAuth.verifyOwnership.mockImplementation((r: unknown) => r);
+    });
+
+    it('produces identical output whether the profile came from cache or DB', async () => {
+      mockProfileService.findByUserId.mockResolvedValue(live);
+      const fromDb = await service.previewProfileImport('u1', 'r1');
+
+      mockProfileService.findByUserId.mockResolvedValue(cached);
+      const fromCache = await service.previewProfileImport('u1', 'r1');
+
+      expect(fromCache).toEqual(fromDb);
+
+      // by section type, not index — the import pushes education before
+      // activities, so an index here silently asserts the wrong section
+      const itemsOf = (type: string) =>
+        (
+          fromCache.sections.find((s) => s.sectionType === type)
+            ?.proposedContent as { items: Record<string, string>[] }
+        ).items;
+
+      expect(itemsOf('ACTIVITIES')[0]).toMatchObject({
+        startDate: '2024-01',
+        endDate: '2024-06',
+      });
+      expect(itemsOf('EDUCATION')[0]).toMatchObject({
+        startDate: '2022-09',
+        endDate: '2026-06',
+      });
+      expect(itemsOf('TEST_SCORES')[0]).toMatchObject({ testDate: '2025-03' });
+    });
+  });
 });

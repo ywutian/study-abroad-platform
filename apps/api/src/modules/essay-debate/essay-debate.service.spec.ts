@@ -33,6 +33,11 @@ describe('EssayDebateService', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
+    // A new session's target ids are validated before it is created — see
+    // assertDebatableTargets. Default to "found" so the existing turn tests
+    // exercise the happy path; the guard's own tests override these.
+    admissionCase: { findFirst: jest.fn().mockResolvedValue({ id: 'case-1' }) },
+    essay: { findFirst: jest.fn().mockResolvedValue({ id: 'essay-1' }) },
   };
 
   const mockPoints = {
@@ -667,6 +672,78 @@ describe('EssayDebateService', () => {
       // the essay (which has "it can disappear..."). After PR6's
       // normalisation + fuzzy fallback, it must be stripped.
       expect(result.aiTurn.evidence?.length).toBe(0);
+    });
+  });
+  describe('debate target authorisation', () => {
+    // The two ids below come off the request body and decide which essay the
+    // debate is about — the context loader reads whatever they point at and
+    // feeds its text to the model. Neither was checked before creating a
+    // session, so `admissionCaseId` reached PRIVATE cases and `essayId`
+    // reached other users' drafts.
+
+    beforeEach(() => {
+      happyBudget();
+      newSessionStub();
+      // jest.clearAllMocks() keeps implementations, so a `null` set by one
+      // test would leak into the next — reset both to "found" per test.
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({ id: 'case-1' });
+      mockPrisma.essay.findFirst.mockResolvedValue({ id: 'essay-1' });
+    });
+
+    it('refuses an admission case the gallery does not publish', async () => {
+      // findFirst applies CASE_PUBLIC_WHERE, so a private case matches nothing
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.createOrContinueTurn('user-1', {
+          admissionCaseId: 'private-case',
+          userText: 'let me read this',
+        }),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockPrisma.essayDebateSession.create).not.toHaveBeenCalled();
+      expect(mockLLM.chatSimple).not.toHaveBeenCalled();
+    });
+
+    it('refuses an essay draft belonging to someone else', async () => {
+      mockPrisma.essay.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.createOrContinueTurn('user-1', {
+          essayId: 'someone-elses-draft',
+          userText: 'let me read this',
+        }),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockPrisma.essayDebateSession.create).not.toHaveBeenCalled();
+    });
+
+    it('scopes the essay lookup through the profile owner, not the id alone', async () => {
+      await service.createOrContinueTurn('user-1', {
+        essayId: 'essay-1',
+        userText: 'my own draft',
+      });
+
+      expect(mockPrisma.essay.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'essay-1', profile: { userId: 'user-1' } },
+        }),
+      );
+    });
+
+    it('refunds the turn when a target is rejected', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.createOrContinueTurn('user-1', {
+          admissionCaseId: 'private-case',
+          userText: 'x',
+        }),
+      ).rejects.toThrow(NotFoundException);
+
+      // same treatment as the other caller-fault paths — a bad id must not
+      // cost one of the 30 daily turns
+      expect(mockBudget.decrementUserTurn).toHaveBeenCalledWith('user-1');
     });
   });
 });

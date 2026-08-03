@@ -234,6 +234,20 @@ function renderFieldsList(): void {
     return;
   }
 
+  // The only user-derived value in this template. `field.profilePath` and
+  // getFieldLabel() come from the static field map, and msg() from the
+  // extension's own locale bundle — this is the one string the user typed.
+  // Self-XSS rather than cross-user (it is the extension owner's own profile,
+  // in their own browser), but a template literal going straight into
+  // innerHTML is the textbook sink and escaping it costs one call.
+  const esc = (v: string) =>
+    v
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
   container.innerHTML = availableFields
     .map((field) => {
       const value = cachedProfile ? getNestedValue(cachedProfile, field.profilePath) : undefined;
@@ -243,7 +257,7 @@ function renderFieldsList(): void {
         <label class="studyabroad-field-item ${hasValue ? '' : 'disabled'}">
           <input type="checkbox" data-path="${field.profilePath}" ${hasValue ? 'checked' : 'disabled'}>
           <span class="studyabroad-field-name">${getFieldLabel(field.profilePath)}</span>
-          <span class="studyabroad-field-value">${hasValue ? truncate(String(value), 20) : msg('noData')}</span>
+          <span class="studyabroad-field-value">${hasValue ? esc(truncate(String(value), 20)) : msg('noData')}</span>
         </label>
       `;
     })

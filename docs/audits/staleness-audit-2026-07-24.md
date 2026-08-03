@@ -579,6 +579,11 @@ SAT/ACT** 时，band 比较的结果**封顶到 1.0**，并在 evidence 里说�
 外键无需迁移：`ensureCounselorPolicyVersion()` 以该常量为 key upsert，首次持久化自动建行。
 gold set 里没有 ACT 考生（testScores 只有 SAT），所以 gold 基线不动。
 
+> **2026-08-02 更新**：v1.10（substitute-cap）和 v1.11（本节的 ACT 换算表）分别落在
+> 两条分支上，合并后的引擎第一次同时带上两者，因此版本号改为
+> `counselor-cold-start-v1.12-substitute-cap-act-concordance`。沿用任何一个父版本号
+> 都会让 served trace 谎报引擎身份 —— 两者的点估计并不相同。
+
 ---
 
 ## 来源

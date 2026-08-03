@@ -106,9 +106,6 @@ describe('ProfileScreen', () => {
       if (url.includes('/verification/status')) {
         return Promise.resolve({ emailVerified: true, identityVerified: false });
       }
-      if (url.includes('/points/balance')) {
-        return Promise.resolve({ balance: 12, level: 'free' });
-      }
       if (url.includes('/profiles/me')) {
         return Promise.resolve({
           visibility: 'PRIVATE',
@@ -136,9 +133,6 @@ describe('ProfileScreen', () => {
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {
       if (url.includes('/verification/status')) {
         return Promise.resolve({ emailVerified: true, identityVerified: false });
-      }
-      if (url.includes('/points/balance')) {
-        return Promise.resolve({ balance: 12, level: 'free' });
       }
       if (url.includes('/profiles/me')) {
         return Promise.resolve({

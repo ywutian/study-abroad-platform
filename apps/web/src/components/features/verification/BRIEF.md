@@ -8,8 +8,7 @@ User identity verification UI: status display, badge, document upload, and verif
 
 - `VerificationBadge.tsx` — Inline badge showing verification status (verified/pending/rejected/none)
 - `VerificationStatusCard.tsx` — Card showing verification progress, status, and upload trigger
-- `VerificationUploadDialog.tsx` — Drag-and-drop document upload dialog with progress bar
-- `verification-dialog.tsx` — Full verification flow dialog with radio-group document type selection
+- `VerificationUploadDialog.tsx` — Full verification flow with owned-case selection, proof type, drag-and-drop upload, validation, and submission progress
 
 ## Patterns
 

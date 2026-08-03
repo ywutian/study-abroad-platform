@@ -54,70 +54,13 @@ import {
   formatPercentValue,
   predictionRoutes,
   profileRoutes,
-  resolveContextualBaseline,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { CaseComparisonPanel } from '@/components/prediction/CaseComparisonPanel';
-
-interface PredictionResultItem {
-  schoolId: string;
-  schoolName: string;
-  probability: number | null;
-  confidence: 'low' | 'medium' | 'high';
-  tier: 'reach' | 'match' | 'safety' | 'unavailable';
-  factors: Array<{ name: string; impact: string; detail: string }>;
-  suggestions: string[];
-  schoolMeta?: {
-    acceptanceRate?: number | null;
-    intlAcceptanceRate?: number | null;
-    needBlindInternational?: boolean | null;
-  };
-  roundContext?: string | null;
-  contextualBaseline?: ReturnType<typeof resolveContextualBaseline>;
-  confidenceReason?: string;
-  sourceSummary?: Array<{ label: string; detail?: string }>;
-  uncertaintyReasons?: string[];
-  updatedAt?: string;
-}
-
-export function mapDashboardToPredictions(
-  dashboard: PredictionDashboardData | undefined,
-  isInternational: boolean
-): PredictionResultItem[] {
-  if (!dashboard?.predictions) return [];
-  return dashboard.predictions.map((p) => ({
-    schoolId: p.schoolId,
-    schoolName: p.school?.name || p.schoolId,
-    probability: p.probability,
-    confidence: p.confidence || 'medium',
-    tier: p.tier,
-    factors: [],
-    suggestions: [],
-    schoolMeta: p.school
-      ? {
-          acceptanceRate: p.school.acceptanceRate,
-          intlAcceptanceRate: p.school.intlAcceptanceRate,
-          needBlindInternational: p.school.needBlindInternational ?? null,
-        }
-      : undefined,
-    roundContext: p.roundContext,
-    contextualBaseline:
-      p.probability == null
-        ? null
-        : resolveContextualBaseline({
-            schoolMeta: p.school,
-            isInternational,
-            roundContext: p.roundContext,
-            probability: p.probability,
-          }),
-    confidenceReason: p.confidenceReason,
-    sourceSummary: p.sourceSummary,
-    uncertaintyReasons: p.uncertaintyReasons,
-    updatedAt: p.updatedAt,
-  }));
-}
+import { mapDashboardToPredictions } from './prediction-mapper';
+export { mapDashboardToPredictions } from './prediction-mapper';
 
 type AdmissionResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN';
 
@@ -715,12 +658,22 @@ export default function PredictionScreen() {
                     <View style={styles.factors}>
                       {prediction.factors.slice(0, 4).map((factor, i) => (
                         <View key={i} style={styles.factorRow}>
-                          <Text
-                            style={[styles.factorLabel, { color: colors.foregroundMuted }]}
-                            numberOfLines={1}
-                          >
-                            {factor.name}
-                          </Text>
+                          <View style={styles.factorCopy}>
+                            <Text
+                              style={[styles.factorLabel, { color: colors.foreground }]}
+                              numberOfLines={1}
+                            >
+                              {factor.name}
+                            </Text>
+                            {!!factor.detail && (
+                              <Text
+                                style={[styles.factorDetail, { color: colors.foregroundMuted }]}
+                                numberOfLines={2}
+                              >
+                                {factor.detail}
+                              </Text>
+                            )}
+                          </View>
                           <Text
                             style={[
                               styles.factorValue,
@@ -744,6 +697,64 @@ export default function PredictionScreen() {
                       ))}
                     </View>
                   )}
+
+                  {prediction.publicExplanation ? (
+                    <View
+                      style={[
+                        styles.explanationBox,
+                        { backgroundColor: withOpacity(colors.info, 0.08) },
+                      ]}
+                    >
+                      <Text style={[styles.explanationTitle, { color: colors.foreground }]}>
+                        {prediction.publicExplanation.headline}
+                      </Text>
+                      {prediction.publicExplanation.reasons.map((reason) => (
+                        <Text
+                          key={reason}
+                          style={[styles.explanationText, { color: colors.foregroundMuted }]}
+                        >
+                          • {reason}
+                        </Text>
+                      ))}
+                      {!!prediction.publicExplanation.nextAction && (
+                        <Text style={[styles.explanationText, { color: colors.primary }]}>
+                          → {prediction.publicExplanation.nextAction}
+                        </Text>
+                      )}
+                      <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+                        {prediction.publicExplanation.dataSupportLabel}
+                      </Text>
+                      {prediction.publicExplanation.caveats.map((caveat) => (
+                        <Text
+                          key={caveat}
+                          style={[styles.explanationText, { color: colors.warning }]}
+                        >
+                          ⚠ {caveat}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+
+                  {prediction.suggestions.length > 0 && (
+                    <View style={styles.suggestions}>
+                      {prediction.suggestions.map((suggestion) => (
+                        <Text
+                          key={suggestion}
+                          style={[styles.explanationText, { color: colors.foreground }]}
+                        >
+                          • {suggestion}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+
+                  {!prediction.publicExplanation &&
+                    prediction.factors.length === 0 &&
+                    prediction.suggestions.length === 0 && (
+                      <Text style={[styles.explanationText, { color: colors.foregroundMuted }]}>
+                        {t('prediction.detailsUnavailable')}
+                      </Text>
+                    )}
 
                   {/* Similar real cases — the panel renders its own header and
                       hides the whole section when there isn't a sufficient sample. */}
@@ -911,7 +922,11 @@ export default function PredictionScreen() {
             <Text style={[styles.resultOptionText, { color: colors.foreground }]}>
               {t('prediction.finalResult')}
             </Text>
-            <Switch value={reportIsFinal} onValueChange={setReportIsFinal} />
+            <Switch
+              value={reportIsFinal}
+              onValueChange={setReportIsFinal}
+              accessibilityLabel={t('prediction.finalResult')}
+            />
           </View>
           <TextInput
             value={reportNotes}
@@ -1176,13 +1191,28 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
+  explanationBox: {
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  explanationTitle: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+  },
+  suggestions: {
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
   factorRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
   },
+  factorCopy: { flex: 1 },
+  factorDetail: { fontSize: fontSize.xs, marginTop: 2 },
   factorLabel: {
-    flex: 1,
     fontSize: fontSize.xs,
   },
   factorValue: {

@@ -15,7 +15,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.studyabroad.mobile",
       "buildNumber": "5",
-      "associatedDomains": ["applinks:studyabroad.app"]
+      "associatedDomains": ["applinks:www.lumniedu.com"],
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,7 +34,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "studyabroad.app",
+              "host": "www.lumniedu.com",
               "pathPrefix": "/"
             }
           ],

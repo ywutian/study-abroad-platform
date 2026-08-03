@@ -247,6 +247,11 @@ export class ForumPostService {
             },
           },
         },
+        // Same _count as the list query. `comments` below is filtered to
+        // parentId: null for rendering, so its length is top-level only — the
+        // list reports every comment including replies, and reading the array
+        // length here made the number drop when you opened the post.
+        _count: { select: { comments: true } },
         teamApplications:
           userId === null
             ? false
@@ -314,7 +319,7 @@ export class ForumPostService {
       teamStatus: post.teamStatus || undefined,
       viewCount: post.viewCount + 1,
       likeCount: post.likeCount,
-      commentCount: postData.comments.length,
+      commentCount: postData._count.comments,
       isPinned: post.isPinned,
       isLocked: post.isLocked,
       isLiked: userId ? postData.likes?.length > 0 : false,

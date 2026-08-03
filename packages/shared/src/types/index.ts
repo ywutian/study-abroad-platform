@@ -27,3 +27,5 @@ export * from './timeline';
 // Hall refactor Phase 1 — new shared types
 export * from './hall';
 export * from './points';
+export * from './verification';
+export * from './vault';

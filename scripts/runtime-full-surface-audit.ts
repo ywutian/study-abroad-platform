@@ -1711,9 +1711,6 @@ async function executeJourneySurface(surface: JourneyOverlaySurfaceDefinition) {
 }
 
 function capabilityRouteSupport(surfaceId: string) {
-  if (surfaceId === 'CAPABILITY:PAYMENT_SUBSCRIPTION_ENTRY') {
-    return ['WEB_ROUTE:/:locale/settings/subscription'];
-  }
   if (surfaceId === 'CAPABILITY:RESUME_IMPORT_EXPORT') {
     return ['WEB_ROUTE:/:locale/resume', 'WEB_ROUTE:/:locale/resume/:id'];
   }

@@ -217,6 +217,7 @@ export class ArchitectureValidatorService implements OnModuleInit {
     try {
       // Check if any memories exist with embeddings
       // embedding is Unsupported("vector") — Prisma doesn't generate where filters for it
+      // governance: aggregate-only — one global COUNT at startup; Memory is user-owned, but only the tri-state flag is exposed, on /health/detailed (@Roles(ADMIN))
       const [{ count }] = await this.prisma.$queryRaw<[{ count: bigint }]>`
         SELECT COUNT(*) as count FROM "Memory" WHERE embedding IS NOT NULL
       `;

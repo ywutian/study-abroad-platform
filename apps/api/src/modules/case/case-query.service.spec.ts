@@ -130,4 +130,73 @@ describe('CaseQueryService', () => {
       expect(result.pendingEssays).toBe(10);
     });
   });
+
+  describe("identity is not served with other people's cases", () => {
+    // AdmissionCase.userId is the same value the public forum feed publishes as
+    // author.id next to profile.realName, so returning it here let anyone join
+    // an ANONYMOUS case to a real name over two unauthenticated endpoints.
+    const row = {
+      id: 'case-1',
+      userId: 'owner-1',
+      verifiedBy: 'admin-9',
+      result: 'ADMITTED',
+      visibility: 'ANONYMOUS',
+      reviewStatus: 'APPROVED',
+      school: { id: 's1', name: 'X' },
+    };
+
+    it('omits userId from the public list', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([row]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+
+      const res = await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        null,
+        null,
+      );
+
+      expect(res.items[0]).not.toHaveProperty('userId');
+      expect(res.items[0]).not.toHaveProperty('verifiedBy');
+      expect(res.items[0].result).toBe('ADMITTED'); // display fields survive
+    });
+
+    it('keeps userId for the owner', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([row]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+
+      const res = await service.findAll(
+        { page: 1, pageSize: 20 },
+        {},
+        'owner-1',
+        null,
+      );
+
+      expect(res.items[0]).toHaveProperty('userId', 'owner-1');
+    });
+  });
+
+  describe('unhonoured share consents', () => {
+    // Counts cases written before ba725e79, when verifying an opted-in outcome
+    // filed the case at @default(PRIVATE) and no surface ever served it. The
+    // `source: null` half is what dates them: outcome_self_report was added in
+    // the same commit, so nothing new can match. The number can only go down —
+    // if it climbs, a new creation path is forgetting to set visibility.
+    it('counts PRIVATE cases with no source, separately from the other stats', async () => {
+      const count = mockPrisma.admissionCase.count;
+      count.mockResolvedValue(0);
+      count.mockResolvedValueOnce(100); // total
+      count.mockResolvedValueOnce(40); // withEssay
+      count.mockResolvedValueOnce(25); // verified
+      count.mockResolvedValueOnce(7); // pendingEssays
+      count.mockResolvedValueOnce(13); // unhonoured share consents
+
+      const stats = await service.getAdminStats();
+
+      expect(stats.unhonouredShareConsents).toBe(13);
+      expect(count).toHaveBeenCalledWith({
+        where: { visibility: 'PRIVATE', source: null },
+      });
+    });
+  });
 });

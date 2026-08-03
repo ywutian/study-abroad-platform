@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import type { MaybeSerialized } from '../../common/redis/redis-json.types';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { Profile, Prisma, Visibility, Role } from '@prisma/client';
@@ -20,6 +21,33 @@ import {
  * Handles core profile CRUD operations: find, create, update, upsert,
  * visibility checks, and anonymization.
  */
+/**
+ * The include used by findByUserId. Named so the payload type below is derived
+ * from the query rather than restated next to it.
+ */
+const PROFILE_INCLUDE = {
+  testScores: { orderBy: { createdAt: 'desc' } },
+  activities: {
+    orderBy: { order: 'asc' },
+    include: { activityTemplate: true },
+  },
+  awards: { orderBy: { order: 'asc' }, include: { competition: true } },
+  education: { include: { highSchool: true } },
+  essays: true,
+  semesterGpas: { orderBy: { order: 'asc' } },
+} as const satisfies Prisma.ProfileInclude;
+
+export type ProfileWithRelations = Prisma.ProfileGetPayload<{
+  include: typeof PROFILE_INCLUDE;
+}>;
+
+/**
+ * What findByUserId actually hands back. The old `Profile` was wrong twice: it
+ * dropped all six relations, and it promised Dates that a cache hit does not
+ * have. Callers reading a DateTime off this must go through `new Date(...)`.
+ */
+export type CachedProfile = MaybeSerialized<ProfileWithRelations>;
+
 @Injectable()
 export class ProfileCrudService {
   private readonly logger = new Logger(ProfileCrudService.name);
@@ -39,24 +67,14 @@ export class ProfileCrudService {
    * @param userId - The user identifier
    * @returns The full profile with relations, or null if not found
    */
-  async findByUserId(userId: string): Promise<Profile | null> {
+  async findByUserId(userId: string): Promise<CachedProfile | null> {
     const cacheKey = `profile:${userId}`;
-    const cached = await this.redis.getJSON<Profile>(cacheKey);
+    const cached = await this.redis.getJSON<ProfileWithRelations>(cacheKey);
     if (cached) return cached;
 
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
-      include: {
-        testScores: { orderBy: { createdAt: 'desc' } },
-        activities: {
-          orderBy: { order: 'asc' },
-          include: { activityTemplate: true },
-        },
-        awards: { orderBy: { order: 'asc' }, include: { competition: true } },
-        education: { include: { highSchool: true } },
-        essays: true,
-        semesterGpas: { orderBy: { order: 'asc' } },
-      },
+      include: PROFILE_INCLUDE,
     });
 
     if (profile) {
@@ -99,7 +117,6 @@ export class ProfileCrudService {
         },
         awards: { orderBy: { order: 'asc' }, include: { competition: true } },
         semesterGpas: { orderBy: { order: 'asc' } },
-        user: { select: { id: true } },
       },
     });
 
@@ -136,6 +153,26 @@ export class ProfileCrudService {
   /**
    * Strip personally identifiable information from a profile for anonymous viewing.
    *
+   * The user was told "他人可见但隐藏身份". Masking realName is not enough to keep
+   * that promise, because the spread carried everything else through:
+   *
+   *  - `userId` is the join key. GET /forum/posts publishes it as author.id
+   *    beside profile.realName, so one lookup undoes the whole masking — the
+   *    same defect fixed in feaa8cce / afb38270 / 21d666d1.
+   *  - `user` carries that same id one level down; the include is gone now, but
+   *    the strip stays — this must hold for whatever it is handed.
+   *  - `avatarUrl` is a photograph of the person.
+   *  - `bio` is free text they wrote about themselves; it routinely contains a
+   *    name or a school.
+   *  - `birthday` is a date of birth.
+   *
+   * `nickname` stays: a pseudonymous handle is what an anonymous profile is for.
+   * Academic fields stay — the point of the surface is comparing profiles.
+   *
+   * Deny-list, not an allow-list, for the same reason as stripCaseIdentity:
+   * Profile has ~40 columns and enumerating them here would be the more
+   * dangerous change.
+   *
    * Replaces realName with null, school name with "Private School", and buckets GPA
    * into ranges (3.9+, 3.7+, 3.5+, 3.3+, 3.0+, 2.5+).
    *
@@ -153,11 +190,23 @@ export class ProfileCrudService {
     activities?: unknown[];
     awards?: unknown[];
   } {
+    const {
+      userId: _userId,
+      user: _user,
+      avatarUrl: _avatarUrl,
+      bio: _bio,
+      birthday: _birthday,
+      ...rest
+    } = profile as typeof profile & { user?: unknown };
     return {
-      ...profile,
+      ...rest,
       realName: null,
       currentSchool: this.anonymizeSchool(profile.currentSchool),
       gpa: profile.gpa ? this.anonymizeGpa(Number(profile.gpa)) : null,
+    } as Profile & {
+      testScores?: unknown[];
+      activities?: unknown[];
+      awards?: unknown[];
     };
   }
 

@@ -51,6 +51,7 @@ interface ControlAudit {
   tag: string;
   role: string;
   type: string;
+  className: string;
   name: string;
   href: string;
   parentHref: string;
@@ -411,6 +412,18 @@ async function auditVisibleControls(
       return '';
     }
 
+    function associatedLabel(element: Element) {
+      const wrappingLabel = element.closest('label')?.textContent ?? '';
+      if (wrappingLabel.trim()) return wrappingLabel;
+
+      const id = element.getAttribute('id');
+      if (!id) return '';
+      const explicitLabel = Array.from(document.querySelectorAll('label[for]')).find(
+        (label) => label.getAttribute('for') === id
+      );
+      return explicitLabel?.textContent ?? '';
+    }
+
     function ancestorText(element: Element) {
       const parts: string[] = [];
       let parent = element.parentElement;
@@ -471,13 +484,18 @@ async function auditVisibleControls(
       const computed = window.getComputedStyle(htmlElement);
       const input = element as HTMLInputElement;
       const anchor = element as HTMLAnchorElement;
+      const isFormControl = /^(INPUT|TEXTAREA|SELECT)$/.test(element.tagName);
+      const formControlLabel = isFormControl ? nearbyLabel(element) : '';
+      const formControlValue = isFormControl ? input.value : '';
+      const explicitControlLabel = associatedLabel(element);
       const name =
         element.getAttribute('aria-label') ||
         labelFromId(element.getAttribute('aria-labelledby')) ||
+        explicitControlLabel ||
         element.getAttribute('title') ||
         input.placeholder ||
-        input.value ||
-        nearbyLabel(element) ||
+        formControlValue ||
+        formControlLabel ||
         htmlElement.innerText ||
         htmlElement.textContent ||
         anchor.href ||
@@ -499,6 +517,7 @@ async function auditVisibleControls(
         tag: element.tagName.toLowerCase(),
         role: element.getAttribute('role') ?? '',
         type: input.type ?? '',
+        className: element.getAttribute('class') ?? '',
         name: name.replace(/\s+/g, ' ').trim(),
         href: anchor.href ?? '',
         parentHref: htmlElement.closest('a[href]')?.getAttribute('href') ?? '',
@@ -553,7 +572,9 @@ async function auditVisibleControls(
       isTextualAction(control) &&
       !(control.width <= 64 && control.height <= 64)
     ) {
-      issues.push(`Clipped control text: "${control.name}" (${control.width}x${control.height})`);
+      issues.push(
+        `Clipped control text: "${control.name}" ${control.tag}${control.role ? ` role=${control.role}` : ''} (${control.width}x${control.height}) class="${control.className.slice(0, 120)}"`
+      );
     }
 
     if (requiresTouchTarget(control) && violatesTouchTarget(control, minSize, viewport)) {
@@ -843,12 +864,18 @@ async function verifyLanguageSwitch(page: Page, route: FullUiSurfaceRoute, local
     .first();
   if (!(await trigger.isVisible().catch(() => false))) return;
 
+  // The generic control audit can leave a product modal open (for example the
+  // Hall onboarding dialog). Close transient UI before testing the global
+  // language control so an expected modal overlay does not intercept the click.
+  await closeTransientSurfaces(page);
+
   const before = new URL(page.url());
   const beforeBusinessPath = stripLocale(before.pathname);
   const targetLocale: FullUiLocale = locale === 'en' ? 'zh' : 'en';
   await trigger.click({ timeout: 2000 });
   const targetMenuItem = page
     .getByRole('menuitem', { name: targetLocale === 'zh' ? /中文|简体|Chinese/i : /English|英语/i })
+    .filter({ visible: true })
     .first();
   if (!(await targetMenuItem.isVisible({ timeout: 2000 }).catch(() => false))) {
     await closeTransientSurfaces(page);
@@ -860,7 +887,13 @@ async function verifyLanguageSwitch(page: Page, route: FullUiSurfaceRoute, local
     .waitForURL(targetUrlPattern, { timeout: 15000 })
     .then(() => page.url())
     .catch(() => null);
-  await targetMenuItem.click({ timeout: 2000 });
+  // Radix positions this portal relative to a sticky header. After the generic
+  // control audit has scrolled a long dashboard, Chromium can report the menu
+  // item as visible while its animated box is briefly outside the viewport.
+  // Exercise the menu's supported keyboard path instead of forcing a pointer
+  // click through an unstable layout.
+  await targetMenuItem.focus({ timeout: 2000 });
+  await targetMenuItem.press('Enter', { timeout: 2000 });
   const switchedUrl = await switchedUrlPromise;
   if (!switchedUrl) return;
   const after = new URL(switchedUrl);
@@ -905,7 +938,13 @@ test.describe('Full UI surface registry', () => {
 const routesToTest = FULL_UI_SURFACE_ROUTES.filter((route) => {
   if (ROUTE_FILTERS.length === 0) return true;
   const searchable = `${route.pattern} ${route.name}`.toLowerCase();
-  return ROUTE_FILTERS.some((filter) => searchable.includes(filter));
+  return ROUTE_FILTERS.some((filter) => {
+    if (!filter.startsWith('=')) return searchable.includes(filter);
+    const exact = filter.slice(1);
+    return [route.pattern, route.path, route.name].some(
+      (candidate) => candidate.toLowerCase() === exact
+    );
+  });
 });
 
 test.describe('Full UI surface crawler', () => {

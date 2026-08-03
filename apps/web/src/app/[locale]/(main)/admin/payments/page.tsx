@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useFormatter, useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
+import { Archive, CheckCircle2, CreditCard, Receipt, RotateCcw, XCircle } from 'lucide-react';
+import { adminRoutes } from '@study-abroad/shared';
+import { PageHeader } from '@/components/layout';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -22,33 +26,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { PageHeader } from '@/components/layout';
-import { CardSkeleton, ListSkeleton } from '@/components/ui/loading-state';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PaginationControls } from '../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { adminRoutes } from '@study-abroad/shared';
-import { toast } from 'sonner';
-import {
-  CreditCard,
-  DollarSign,
-  TrendingUp,
-  Receipt,
-  Users,
-  Loader2,
-  RotateCcw,
-  ArrowUpDown,
-} from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { PaginationControls } from '../_components/pagination-controls';
 
 interface Payment {
   id: string;
@@ -61,26 +40,18 @@ interface Payment {
 }
 
 interface PaymentStats {
-  totalRevenue: number;
-  monthlyRevenue: number;
   totalPayments: number;
   byStatus: Record<string, number>;
-  byPlan: Array<{ plan: string; count: number; revenue: number }>;
 }
+
+const PAGE_SIZE = 20;
 
 export default function AdminPaymentsPage() {
   const t = useTranslations('admin');
   const fmt = useFormatter();
-  const queryClient = useQueryClient();
-
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [planFilter, setPlanFilter] = useState('ALL');
-  const [refundTarget, setRefundTarget] = useState<string | null>(null);
-  const [refundReason, setRefundReason] = useState('');
-  const [adjustTarget, setAdjustTarget] = useState<{ userId: string; email: string } | null>(null);
-  const [newPlan, setNewPlan] = useState('PRO');
-  const pageSize = 20;
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminPaymentStats'],
@@ -90,7 +61,10 @@ export default function AdminPaymentsPage() {
   const { data: paymentsData, isLoading: paymentsLoading } = useQuery({
     queryKey: ['adminPayments', statusFilter, planFilter, page],
     queryFn: () => {
-      const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
+      const params: Record<string, string> = {
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      };
       if (statusFilter !== 'ALL') params.status = statusFilter;
       if (planFilter !== 'ALL') params.plan = planFilter;
       return apiClient.get<{ data: Payment[]; total: number; totalPages: number }>(
@@ -100,29 +74,7 @@ export default function AdminPaymentsPage() {
     },
   });
 
-  const refundMutation = useMutation({
-    mutationFn: ({ paymentId, reason }: { paymentId: string; reason: string }) =>
-      apiClient.post(adminRoutes.paymentRefund(paymentId), { reason }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
-      queryClient.invalidateQueries({ queryKey: ['adminPaymentStats'] });
-      setRefundTarget(null);
-      setRefundReason('');
-      toast.success(t('payments.refunded'));
-    },
-  });
-
-  const adjustMutation = useMutation({
-    mutationFn: ({ userId, plan }: { userId: string; plan: string }) =>
-      apiClient.put(adminRoutes.paymentUserSubscription(userId), { plan }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminPayments'] });
-      setAdjustTarget(null);
-      toast.success(t('payments.adjusted'));
-    },
-  });
-
-  const getStatusBadge = (status: string) => {
+  const statusBadge = (status: string) => {
     switch (status.toUpperCase()) {
       case 'SUCCESS':
         return <Badge variant="success">{t('payments.statusCompleted')}</Badge>;
@@ -137,6 +89,33 @@ export default function AdminPaymentsPage() {
     }
   };
 
+  const statCards = [
+    {
+      label: t('payments.totalPayments'),
+      value: stats?.totalPayments ?? 0,
+      icon: Receipt,
+      color: 'text-violet-500',
+    },
+    {
+      label: t('payments.successfulPayments'),
+      value: stats?.byStatus?.SUCCESS ?? 0,
+      icon: CheckCircle2,
+      color: 'text-emerald-500',
+    },
+    {
+      label: t('payments.failedPayments'),
+      value: stats?.byStatus?.FAILED ?? 0,
+      icon: XCircle,
+      color: 'text-red-500',
+    },
+    {
+      label: t('payments.refundedPayments'),
+      value: stats?.byStatus?.REFUNDED ?? 0,
+      icon: RotateCcw,
+      color: 'text-slate-500',
+    },
+  ];
+
   return (
     <>
       <PageHeader
@@ -147,68 +126,43 @@ export default function AdminPaymentsPage() {
       />
 
       <div className="mt-6 space-y-6">
-        {/* Stats */}
+        <Card className="border-amber-300 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-950/20">
+          <CardHeader className="flex flex-row items-start gap-3 space-y-0">
+            <Archive className="mt-0.5 h-5 w-5 text-amber-700 dark:text-amber-400" />
+            <div className="space-y-1">
+              <CardTitle className="text-base">{t('payments.readOnlyTitle')}</CardTitle>
+              <p className="text-sm text-muted-foreground">{t('payments.readOnlyDescription')}</p>
+            </div>
+          </CardHeader>
+        </Card>
+
         {statsLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <CardSkeleton key={i} />
+            {[...Array(4)].map((_, index) => (
+              <CardSkeleton key={index} />
             ))}
           </div>
-        ) : stats ? (
+        ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{t('payments.totalRevenue')}</CardTitle>
-                <DollarSign className="h-4 w-4 text-emerald-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-emerald-600">
-                  ${Number(stats.totalRevenue ?? 0).toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {t('payments.monthlyRevenue')}
-                </CardTitle>
-                <TrendingUp className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  ${Number(stats.monthlyRevenue ?? 0).toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{t('payments.totalPayments')}</CardTitle>
-                <Receipt className="h-4 w-4 text-violet-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalPayments}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {t('payments.activeSubscriptions')}
-                </CardTitle>
-                <Users className="h-4 w-4 text-amber-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.byStatus?.SUCCESS ?? 0}</div>
-              </CardContent>
-            </Card>
+            {statCards.map(({ label, value, icon: Icon, color }) => (
+              <Card key={label}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                  <Icon className={`h-4 w-4 ${color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{value}</div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        ) : null}
+        )}
 
-        {/* Filters */}
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <Select
             value={statusFilter}
-            onValueChange={(v) => {
-              setStatusFilter(v);
+            onValueChange={(value) => {
+              setStatusFilter(value);
               setPage(1);
             }}
           >
@@ -225,8 +179,8 @@ export default function AdminPaymentsPage() {
           </Select>
           <Select
             value={planFilter}
-            onValueChange={(v) => {
-              setPlanFilter(v);
+            onValueChange={(value) => {
+              setPlanFilter(value);
               setPage(1);
             }}
           >
@@ -241,10 +195,9 @@ export default function AdminPaymentsPage() {
           </Select>
         </div>
 
-        {/* Payments Table */}
         {paymentsLoading ? (
           <ListSkeleton count={5} />
-        ) : paymentsData?.data && paymentsData.data.length > 0 ? (
+        ) : paymentsData?.data?.length ? (
           <>
             <Card>
               <ScrollArea className="h-[500px]">
@@ -256,7 +209,6 @@ export default function AdminPaymentsPage() {
                       <TableHead>{t('payments.amount')}</TableHead>
                       <TableHead>{t('payments.status')}</TableHead>
                       <TableHead>{t('payments.date')}</TableHead>
-                      <TableHead className="w-[140px]">{t('payments.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -269,39 +221,14 @@ export default function AdminPaymentsPage() {
                           <Badge variant="outline">{payment.plan}</Badge>
                         </TableCell>
                         <TableCell className="font-medium">
-                          ${Number(payment.amount ?? 0).toFixed(2)}
+                          {fmt.number(Number(payment.amount ?? 0), {
+                            style: 'currency',
+                            currency: payment.currency || 'CNY',
+                          })}
                         </TableCell>
-                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                        <TableCell>{statusBadge(payment.status)}</TableCell>
                         <TableCell className="text-muted-foreground">
                           {fmt.dateTime(new Date(payment.createdAt), 'medium')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => setRefundTarget(payment.id)}
-                              disabled={payment.status !== 'SUCCESS'}
-                              aria-label={t('payments.refund')}
-                            >
-                              <RotateCcw className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() =>
-                                setAdjustTarget({
-                                  userId: payment.user.id,
-                                  email: payment.user.email,
-                                })
-                              }
-                              aria-label={t('payments.adjustSub')}
-                            >
-                              <ArrowUpDown className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -313,7 +240,7 @@ export default function AdminPaymentsPage() {
               page={page}
               totalPages={paymentsData.totalPages ?? 1}
               total={paymentsData.total ?? 0}
-              pageSize={pageSize}
+              pageSize={PAGE_SIZE}
               onPageChange={setPage}
             />
           </>
@@ -325,98 +252,6 @@ export default function AdminPaymentsPage() {
           />
         )}
       </div>
-
-      {/* Refund Dialog */}
-      <Dialog
-        open={!!refundTarget}
-        onOpenChange={(open) => {
-          if (!open) {
-            setRefundTarget(null);
-            setRefundReason('');
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('payments.refundConfirm')}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">{t('payments.refundDesc')}</p>
-          <div className="space-y-2">
-            <Label>{t('payments.refundReason')}</Label>
-            <Textarea
-              value={refundReason}
-              onChange={(e) => setRefundReason(e.target.value)}
-              placeholder={t('payments.refundReasonPlaceholder')}
-              rows={3}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setRefundTarget(null);
-                setRefundReason('');
-              }}
-            >
-              {t('dialogs.cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() =>
-                refundTarget &&
-                refundMutation.mutate({ paymentId: refundTarget, reason: refundReason })
-              }
-              disabled={!refundReason.trim() || refundMutation.isPending}
-            >
-              {refundMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('payments.refund')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Adjust Subscription Dialog */}
-      <Dialog open={!!adjustTarget} onOpenChange={() => setAdjustTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('payments.adjustSub')}</DialogTitle>
-            <DialogDescription>
-              {t('payments.adjustSubDesc')} — {adjustTarget?.email}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>{t('payments.newPlan')}</Label>
-              <Select value={newPlan} onValueChange={setNewPlan}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="FREE">Free</SelectItem>
-                  <SelectItem value="PRO">Pro</SelectItem>
-                  <SelectItem value="PREMIUM">Premium</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAdjustTarget(null)}>
-              {t('dialogs.cancel')}
-            </Button>
-            <Button
-              onClick={() => {
-                if (adjustTarget) {
-                  adjustMutation.mutate({ userId: adjustTarget.userId, plan: newPlan });
-                }
-              }}
-              disabled={adjustMutation.isPending}
-            >
-              {adjustMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('settings.save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

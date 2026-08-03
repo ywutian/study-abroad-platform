@@ -8,6 +8,7 @@ import {
 import {
   PredictionOutcomeLabel,
   PredictionOutcomeLabelStatus,
+  Visibility,
 } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { PointsService, PointAction } from '../../points/incentive.service';
@@ -328,6 +329,7 @@ export class OutcomeService {
     adminUserId: string,
     dto: VerifyOutcomeDto,
   ): Promise<OutcomeView> {
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const record = await this.prisma.predictionOutcomeLabelRecord.findUnique({
       where: { id: outcomeId },
       include: { predictionResult: true },
@@ -346,6 +348,7 @@ export class OutcomeService {
       );
     }
 
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const updated = await this.prisma.predictionOutcomeLabelRecord.update({
       where: { id: outcomeId },
       data: {
@@ -359,6 +362,7 @@ export class OutcomeService {
       include: { predictionResult: true },
     });
 
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const school = await this.prisma.school.findUnique({
       where: { id: updated.predictionResult.schoolId },
       select: { name: true },
@@ -416,6 +420,7 @@ export class OutcomeService {
    * Admin queue — outcomes pending verification.
    */
   async listPendingVerification(): Promise<OutcomeView[]> {
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const records = await this.prisma.predictionOutcomeLabelRecord.findMany({
       where: { status: 'SELF_REPORTED' },
       include: { predictionResult: true },
@@ -425,6 +430,7 @@ export class OutcomeService {
     const schoolIds = [
       ...new Set(records.map((r) => r.predictionResult.schoolId)),
     ];
+    // governance: admin-scope — outcome review behind @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
       select: { id: true, name: true },
@@ -579,8 +585,30 @@ export class OutcomeService {
         awards: awardsJson.length ? awardsJson : undefined,
         highSchoolId,
         nationality: profile.nationality,
-        // Mark this case as auto-generated from verified outcome
-        // (downstream consumers can filter or weight differently)
+
+        // Mark this case as auto-generated from a verified outcome, so
+        // downstream consumers can filter or weight it differently. Until now
+        // that was a comment with nothing under it: the row was
+        // indistinguishable from a student-submitted case, and the only thing
+        // separating them was `visibility` landing on its schema default.
+        //
+        // It reaches the human review queue like any other case
+        // (reviewStatus defaults to PENDING_REVIEW, and the queue selects
+        // `source`), so the reviewer now sees where it came from.
+        source: 'outcome_self_report',
+
+        // This block only runs behind hasShareOptIn(), i.e. the student ticked
+        // "把这条 outcome 匿名分享给学弟学妹 — 你的录取结果会被脱敏后加入案例库".
+        // Leaving `visibility` to its schema default made that promise false:
+        // @default(PRIVATE) is served by no public surface, admin approval sets
+        // reviewStatus only and never touches visibility, and the student is
+        // not told the case exists, so nobody would ever edit it. The case was
+        // created and then invisible to everyone — forever.
+        //
+        // ANONYMOUS is what the consent text says and what the ordinary submit
+        // form uses. reviewStatus stays at its PENDING_REVIEW default, so a
+        // human still vets it before anything requiring approval will serve it.
+        visibility: Visibility.ANONYMOUS,
       },
     });
 

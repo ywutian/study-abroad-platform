@@ -1,0 +1,23 @@
+{
+  "_comment": "One-way ceiling on TypeScript escape hatches per package. check-any-ratchet.ts fails when a count RISES. Lowering is free — after removing `any`s run `pnpm lint:any-ratchet --update` to lock the win. Raising requires editing this file in the same PR, which is the point: it turns silent type erosion into a reviewable diff. See the header of check-any-ratchet.ts for why this is a ratchet and not an ESLint rule.",
+  "apps/api": {
+    "explicitAny": 835,
+    "tsSuppress": 0
+  },
+  "apps/web": {
+    "explicitAny": 106,
+    "tsSuppress": 0
+  },
+  "apps/mobile": {
+    "explicitAny": 0,
+    "tsSuppress": 1
+  },
+  "packages/shared": {
+    "explicitAny": 2,
+    "tsSuppress": 0
+  },
+  "packages/browser-extension": {
+    "explicitAny": 11,
+    "tsSuppress": 0
+  }
+}

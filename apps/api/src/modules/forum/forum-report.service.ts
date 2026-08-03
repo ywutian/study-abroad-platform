@@ -28,6 +28,7 @@ export class ForumReportService {
     detail?: string,
   ) {
     // 验证帖子存在
+    // governance: parent-scoped — reads the reported post/comment to validate it exists and to reject self-reports; ForumPost/ForumComment carry no visibility flag — forum content is public and always attributed
     const post = await this.prisma.forumPost.findUnique({
       where: { id: postId },
       select: { id: true, title: true, content: true, authorId: true },
@@ -43,6 +44,7 @@ export class ForumReportService {
     }
 
     // 检查是否已举报过
+    // governance: parent-scoped — scoped by reporterId — the caller's own identity
     const existingReport = await this.prisma.report.findFirst({
       where: {
         reporterId,
@@ -56,6 +58,7 @@ export class ForumReportService {
       throw new BadRequestException(ERR.BAD_REQUEST.alreadyReportedPost());
     }
 
+    // governance: parent-scoped — scoped by reporterId — the caller's own identity
     return this.prisma.report.create({
       data: {
         reporterId,
@@ -91,6 +94,7 @@ export class ForumReportService {
     detail?: string,
   ) {
     // 验证评论存在
+    // governance: parent-scoped — reads the reported post/comment to validate it exists and to reject self-reports; ForumPost/ForumComment carry no visibility flag — forum content is public and always attributed
     const comment = await this.prisma.forumComment.findUnique({
       where: { id: commentId },
       select: { id: true, content: true, authorId: true, postId: true },
@@ -106,6 +110,7 @@ export class ForumReportService {
     }
 
     // 检查是否已举报过
+    // governance: parent-scoped — scoped by reporterId — the caller's own identity
     const existingReport = await this.prisma.report.findFirst({
       where: {
         reporterId,
@@ -119,6 +124,7 @@ export class ForumReportService {
       throw new BadRequestException(ERR.BAD_REQUEST.alreadyReportedComment());
     }
 
+    // governance: parent-scoped — scoped by reporterId — the caller's own identity
     return this.prisma.report.create({
       data: {
         reporterId,

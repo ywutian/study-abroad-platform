@@ -173,6 +173,7 @@ export class McpApiKeyService {
 
   /** Revoke a key (soft delete). */
   async revokeKey(keyId: string): Promise<void> {
+    // governance: admin-scope — only caller is mcp-api-key.controller (@Controller("admin/mcp-keys") + @Roles(Role.ADMIN)); revoking any tenant key is the point
     await this.prisma.mcpApiKey.update({
       where: { id: keyId },
       data: { isRevoked: true },

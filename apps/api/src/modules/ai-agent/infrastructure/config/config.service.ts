@@ -145,6 +145,7 @@ export class AgentConfigService implements OnModuleInit {
 
     try {
       // 加载活跃的 Agent 配置
+      // governance: system-scope — AgentConfigVersion is platform agent/tool config; no User relation, createdBy is an audit string never used as a filter
       const agentConfigs = await this.prisma.agentConfigVersion.findMany({
         where: { configType: 'agent', isActive: true },
       });
@@ -165,6 +166,7 @@ export class AgentConfigService implements OnModuleInit {
       }
 
       // 加载活跃的工具配置
+      // governance: system-scope — AgentConfigVersion is platform agent/tool config; no User relation, createdBy is an audit string never used as a filter
       const toolConfigs = await this.prisma.agentConfigVersion.findMany({
         where: { configType: 'tool', isActive: true },
       });
@@ -183,6 +185,7 @@ export class AgentConfigService implements OnModuleInit {
       }
 
       // 加载系统配置
+      // governance: system-scope — AgentConfigVersion is platform agent/tool config; no User relation, createdBy is an audit string never used as a filter
       const systemConfig = await this.prisma.agentConfigVersion.findFirst({
         where: { configType: 'system', configKey: 'main', isActive: true },
       });
@@ -292,6 +295,7 @@ export class AgentConfigService implements OnModuleInit {
       );
     }
 
+    // governance: system-scope — AgentConfigVersion is platform agent/tool config; no User relation, createdBy is an audit string never used as a filter
     const targetConfig = await this.prisma.agentConfigVersion.findFirst({
       where: { configType: 'agent', configKey: agentType, version: toVersion },
     });
@@ -328,6 +332,7 @@ export class AgentConfigService implements OnModuleInit {
       return [];
     }
 
+    // governance: system-scope — AgentConfigVersion is platform agent/tool config; no User relation, createdBy is an audit string never used as a filter
     const versions = await this.prisma.agentConfigVersion.findMany({
       where: { configType, configKey },
       orderBy: { version: 'desc' },
@@ -355,6 +360,7 @@ export class AgentConfigService implements OnModuleInit {
       return null;
     }
 
+    // governance: system-scope — AgentConfigVersion is platform agent/tool config; no User relation, createdBy is an audit string never used as a filter
     const config = await this.prisma.agentConfigVersion.findFirst({
       where: { configType, configKey, version },
     });

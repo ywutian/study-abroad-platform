@@ -75,6 +75,7 @@ export class CdsBandsIngestionService {
 
   async getCoverage() {
     const [schools, grouped] = await Promise.all([
+      // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
       this.prisma.school.findMany({
         where: { country: 'US' },
         select: {
@@ -132,6 +133,7 @@ export class CdsBandsIngestionService {
 
   async listRows(query: ListCdsBandRowsDto) {
     const limit = Math.min(Math.max(query.limit ?? 200, 1), 1000);
+    // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
     const rows = await this.prisma.schoolCdsAdmitBand.findMany({
       where: {
         ...(query.schoolId ? { schoolId: query.schoolId } : {}),
@@ -206,6 +208,7 @@ export class CdsBandsIngestionService {
     if (dto.sourceUrl !== undefined)
       data.sourceUrl = dto.sourceUrl?.trim() || null;
 
+    // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
     const row = await this.prisma.schoolCdsAdmitBand.update({
       where: { id },
       data,
@@ -258,6 +261,7 @@ export class CdsBandsIngestionService {
       result.valid += 1;
       if (dryRun) continue;
 
+      // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
       const existing = await this.prisma.schoolCdsAdmitBand.findUnique({
         where: {
           schoolId_gpaBand_testType_testBand_cycleYear: {
@@ -272,6 +276,7 @@ export class CdsBandsIngestionService {
       });
 
       if (existing) {
+        // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
         await this.prisma.schoolCdsAdmitBand.update({
           where: { id: existing.id },
           data: {
@@ -283,6 +288,7 @@ export class CdsBandsIngestionService {
         });
         result.updated += 1;
       } else {
+        // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
         await this.prisma.schoolCdsAdmitBand.create({ data: parsed });
         result.created += 1;
       }
@@ -347,6 +353,7 @@ export class CdsBandsIngestionService {
 
   private async resolveSchoolId(raw: CdsBandInputRow): Promise<string> {
     if (raw.schoolId) {
+      // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
       const school = await this.prisma.school.findUnique({
         where: { id: raw.schoolId },
         select: { id: true },
@@ -362,6 +369,7 @@ export class CdsBandsIngestionService {
       throw new BadRequestException('missing_school_identifier');
     }
 
+    // governance: system-scope — SchoolCdsAdmitBand / School — published Common Data Set figures
     const school = await this.prisma.school.findUnique({
       where: { nameNorm: schoolNameNorm },
       select: { id: true },

@@ -197,6 +197,24 @@ describe('ProfileCrudService', () => {
       expect(result!.realName).toBeNull();
       expect(result!.currentSchool).toBe('Private School');
     });
+
+    it('does not query the user relation', async () => {
+      // The anonymize strip only runs on the ANONYMOUS branch, so an included
+      // `user: { select: { id: true } }` still reached owner, ADMIN, PUBLIC and
+      // VERIFIED_ONLY callers untouched — and on ANONYMOUS it rode out through
+      // the spread, because the destructure removed only the `userId` scalar.
+      // Nothing ever read it. Pin that it is not requested.
+      mockPrisma.profile.findUnique.mockResolvedValue(baseProfile);
+
+      await service.findByIdWithVisibilityCheck(
+        'profile-1',
+        'other-user',
+        'USER',
+      );
+
+      const { include } = mockPrisma.profile.findUnique.mock.calls[0][0];
+      expect(include).not.toHaveProperty('user');
+    });
   });
 
   // ============================================
@@ -370,6 +388,44 @@ describe('ProfileCrudService', () => {
 
       expect(result.realName).toBeNull();
       expect(result.currentSchool).toBe('Private School');
+    });
+
+    it('removes the join key and the other identifying fields', () => {
+      // The fixture above carries only realName/currentSchool/gpa, so it could
+      // never show that the spread kept everything else. "他人可见但隐藏身份"
+      // is not kept by masking the name while shipping the user id, a photo,
+      // and a self-written bio.
+      //
+      // `user` is here because a fixture without it is how the first version of
+      // this test passed while production leaked: the query included
+      // `user: { select: { id: true } }`, the destructure removed only the
+      // `userId` scalar, and `user.id` rode out through the spread. A fixture
+      // that carries only scalars cannot see a relation survive.
+      const profile = {
+        id: 'profile-1',
+        userId: 'user-secret',
+        user: { id: 'user-secret' },
+        realName: 'John Doe',
+        nickname: 'jd',
+        avatarUrl: 'https://cdn/avatar.png',
+        bio: 'Hi, I am John from MIT',
+        birthday: new Date('2007-04-01'),
+        currentSchool: 'MIT',
+        gpa: new Prisma.Decimal(3.95),
+        targetMajor: 'CS',
+      } as any;
+
+      const result = service.anonymizeProfile(profile);
+
+      expect(result).not.toHaveProperty('userId');
+      expect(result).not.toHaveProperty('user');
+      expect(result).not.toHaveProperty('avatarUrl');
+      expect(result).not.toHaveProperty('bio');
+      expect(result).not.toHaveProperty('birthday');
+      expect(JSON.stringify(result)).not.toContain('user-secret');
+      // the pseudonym and the academic fields are the point of the surface
+      expect(result.nickname).toBe('jd');
+      expect(result.targetMajor).toBe('CS');
     });
 
     it('should bucket GPA into ranges', () => {

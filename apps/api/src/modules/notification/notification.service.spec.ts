@@ -204,6 +204,7 @@ describe('NotificationService', () => {
 
   describe('registerPushToken', () => {
     it('should store the push token in Redis and refresh TTL', async () => {
+      (redis.get as jest.Mock).mockResolvedValueOnce(null);
       await service.registerPushToken(
         'user-1',
         'ExponentPushToken[test-token]',
@@ -217,6 +218,43 @@ describe('NotificationService', () => {
       expect(redis.expire).toHaveBeenCalledWith(
         'notification_push_tokens:user-1',
         60 * 60 * 24 * 90,
+      );
+      expect(redis.set).toHaveBeenCalledWith(
+        expect.stringMatching(/^notification_push_token_owner:/),
+        'user-1',
+        60 * 60 * 24 * 90,
+      );
+    });
+
+    it('removes a token from its previous account before reassignment', async () => {
+      (redis.get as jest.Mock).mockResolvedValueOnce('old-user');
+
+      await service.registerPushToken(
+        'new-user',
+        'ExponentPushToken[shared-token]',
+        'ios',
+      );
+
+      expect(redis.srem).toHaveBeenCalledWith(
+        'notification_push_tokens:old-user',
+        'ExponentPushToken[shared-token]',
+      );
+    });
+
+    it('unregisters a token and clears its ownership record', async () => {
+      (redis.get as jest.Mock).mockResolvedValueOnce('user-1');
+
+      await service.unregisterPushToken(
+        'user-1',
+        'ExponentPushToken[test-token]',
+      );
+
+      expect(redis.srem).toHaveBeenCalledWith(
+        'notification_push_tokens:user-1',
+        'ExponentPushToken[test-token]',
+      );
+      expect(redis.del).toHaveBeenCalledWith(
+        expect.stringMatching(/^notification_push_token_owner:/),
       );
     });
   });
@@ -458,7 +496,30 @@ describe('NotificationService', () => {
   });
 
   describe('remote push dispatch', () => {
+    it('should not send a remote push without explicit user opt-in', async () => {
+      (
+        (prisma as any).userNotificationPreference.findUnique as jest.Mock
+      ).mockResolvedValue({ readinessRemotePush: false });
+      (redis.smembers as jest.Mock).mockResolvedValue([
+        'ExponentPushToken[test-token]',
+      ]);
+      const fetchMock = jest.spyOn(global, 'fetch');
+
+      await service.createNotification(
+        'user-1',
+        NotificationType.SYSTEM_BROADCAST,
+        {
+          customContent: 'Do not push me',
+        },
+      );
+
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it('should send a remote Expo push when the user has registered tokens', async () => {
+      (
+        (prisma as any).userNotificationPreference.findUnique as jest.Mock
+      ).mockResolvedValue({ readinessRemotePush: true });
       (redis.smembers as jest.Mock).mockResolvedValue([
         'ExponentPushToken[test-token]',
       ]);
@@ -484,6 +545,9 @@ describe('NotificationService', () => {
     });
 
     it('should remove stale Expo tokens when Expo reports DeviceNotRegistered', async () => {
+      (
+        (prisma as any).userNotificationPreference.findUnique as jest.Mock
+      ).mockResolvedValue({ readinessRemotePush: true });
       (redis.smembers as jest.Mock).mockResolvedValue([
         'ExponentPushToken[stale-token]',
       ]);

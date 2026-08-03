@@ -105,6 +105,11 @@ export const REDIS_TTL = {
   DEADLINE_REFRESH_CRON_LOCK: 10 * MINUTE,
   /** School official-coverage SLO monitor cron single-flight lock. */
   SCHOOL_COVERAGE_MONITOR_CRON_LOCK: 10 * MINUTE,
+  /**
+   * Account-purge cron single-flight lock. Hard deletion is irreversible and
+   * not idempotent across replicas, so this one genuinely needs the lock.
+   */
+  ACCOUNT_PURGE_CRON_LOCK: 30 * MINUTE,
   /** Per-IP sustained window for the signup email-existence check (enumeration guard). */
   EMAIL_CHECK_RATE_WINDOW: 10 * MINUTE,
 

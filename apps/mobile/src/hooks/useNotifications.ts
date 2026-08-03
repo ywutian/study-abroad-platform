@@ -10,6 +10,12 @@ import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification';
+import {
+  clearRegisteredPushToken,
+  getRegisteredPushToken,
+  saveRegisteredPushToken,
+} from '@/lib/storage/push-token';
+import { normalizeVisibleNotifications } from '@/lib/notifications/normalize';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,6 +35,9 @@ export type NotificationType =
   | 'LEVEL_UP'
   | 'DEADLINE_REMINDER'
   | 'PROFILE_INCOMPLETE'
+  | 'CASE_REVIEW_APPROVED'
+  | 'CASE_REVIEW_REJECTED'
+  | 'NEW_ESSAY_PROMPTS'
   | 'SYSTEM_BROADCAST';
 
 export interface Notification {
@@ -47,6 +56,17 @@ export interface Notification {
 
 interface UnreadCountResponse {
   count: number;
+}
+
+export interface NotificationPreferences {
+  source: 'default' | 'user';
+  readiness: {
+    inAppSurface: boolean;
+    redisNotificationFeed: boolean;
+    remotePush: boolean;
+    email: boolean;
+  };
+  updatedAt: string | null;
 }
 
 const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
@@ -153,7 +173,24 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
  */
 async function registerTokenWithBackend(token: string): Promise<void> {
   const platform: 'ios' | 'android' = Platform.OS === 'ios' ? 'ios' : 'android';
-  await apiClient.post(`${API_ROUTES.NOTIFICATIONS}/push-token`, { token, platform });
+  await apiClient.post(notificationRoutes.pushToken(), { token, platform });
+  await saveRegisteredPushToken(token);
+}
+
+async function unregisterStoredPushToken(): Promise<void> {
+  const token = await getRegisteredPushToken();
+  if (!token) return;
+
+  try {
+    // Claiming first makes the token exclusive to the current account, so a
+    // device that switched accounts can safely remove the previous ownership.
+    await registerTokenWithBackend(token);
+    await apiClient.delete(notificationRoutes.pushToken(), {
+      body: JSON.stringify({ token }),
+    });
+  } finally {
+    await clearRegisteredPushToken();
+  }
 }
 
 /**
@@ -177,7 +214,7 @@ async function registerTokenWithRetry(token: string, maxRetries = 3): Promise<vo
 /**
  * Navigate the user to the appropriate screen based on notification type.
  */
-function navigateToNotification(notification: Notification): void {
+export function navigateToNotification(notification: Notification): void {
   const { type, relatedId } = notification;
 
   switch (type) {
@@ -193,11 +230,26 @@ function navigateToNotification(notification: Notification): void {
       break;
 
     case 'CASE_HELPFUL':
-      router.push('/(tabs)/cases' as Href);
+    case 'CASE_REVIEW_APPROVED':
+    case 'CASE_REVIEW_REJECTED':
+      router.push((relatedId ? deepLinkPaths.case(relatedId) : '/(tabs)/cases') as Href);
       break;
 
     case 'ESSAY_COMMENT':
-      router.push('/essay-gallery' as Href);
+      router.push((relatedId ? deepLinkPaths.essay(relatedId) : '/essay-gallery') as Href);
+      break;
+
+    case 'VERIFICATION_APPROVED':
+    case 'VERIFICATION_REJECTED':
+      router.push('/verification' as Href);
+      break;
+
+    case 'PROFILE_INCOMPLETE':
+      router.push(deepLinkPaths.profile() as Href);
+      break;
+
+    case 'NEW_ESSAY_PROMPTS':
+      if (relatedId) router.push(deepLinkPaths.school(relatedId) as Href);
       break;
 
     case 'POST_REPLY':
@@ -213,8 +265,7 @@ function navigateToNotification(notification: Notification): void {
       router.push(deepLinkPaths.timeline() as Href);
       break;
 
-    // For all other types (VERIFICATION_*, POINTS_EARNED, LEVEL_UP,
-    // PROFILE_INCOMPLETE, etc.) we simply open the app — no deep navigation.
+    // Retired legacy point/level events and broadcasts simply open the app.
     default:
       break;
   }
@@ -228,11 +279,38 @@ function navigateToNotification(notification: Notification): void {
 // Hook
 // ---------------------------------------------------------------------------
 
+export function useNotificationPreferences() {
+  const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const userId = useAuthStore((state) => state.user?.id ?? null);
+  const enabled = isAuthenticated && !!userId;
+
+  const query = useQuery<NotificationPreferences>({
+    queryKey: qk.notifications.preferences(userId),
+    queryFn: () => apiClient.get(notificationRoutes.preferences()),
+    enabled,
+    staleTime: 60_000,
+  });
+
+  const mutation = useMutation({
+    mutationFn: (input: { readinessRemotePush?: boolean; readinessEmail?: boolean }) =>
+      apiClient.post<NotificationPreferences>(notificationRoutes.preferences(), input),
+    onSuccess: (preferences) => {
+      queryClient.setQueryData(qk.notifications.preferences(userId), preferences);
+    },
+  });
+
+  return {
+    preferences: query.data,
+    isLoadingPreferences: query.isLoading,
+    preferencesError: query.error,
+    updatePreferences: mutation.mutateAsync,
+    isUpdatingPreferences: mutation.isPending,
+  };
+}
+
 export function useNotifications() {
   const queryClient = useQueryClient();
-  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-  const notificationListener = useRef<NotificationSubscription | null>(null);
-  const responseListener = useRef<NotificationSubscription | null>(null);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const userEmail = useAuthStore((state) => state.user?.email ?? null);
@@ -260,7 +338,7 @@ export function useNotifications() {
             count: result.length,
           });
         }
-        return result;
+        return normalizeVisibleNotifications(result);
       } catch (error) {
         if (__DEV__) {
           console.warn('useNotifications:list failed', {
@@ -374,75 +452,9 @@ export function useNotifications() {
   );
 
   // -------------------------------------------------------------------------
-  // Schedule a local notification (useful for WebSocket push while in foreground)
-  // -------------------------------------------------------------------------
-  const scheduleLocalNotification = useCallback(async (notification: Notification) => {
-    if (IS_EXPO_GO_ANDROID || !Notifications) {
-      console.warn('useNotifications: skipping local notification scheduling in Expo Go Android');
-      return;
-    }
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: notification.title,
-        body: notification.content,
-        data: { notification },
-      },
-      trigger: null, // show immediately
-    });
-  }, []);
-
-  // -------------------------------------------------------------------------
-  // Push token registration & listeners
-  // -------------------------------------------------------------------------
-  useEffect(() => {
-    if (IS_EXPO_GO_ANDROID || !Notifications || !notificationsEnabled) {
-      return;
-    }
-
-    // Register for push notifications
-    registerForPushNotificationsAsync()
-      .then((token) => {
-        if (token) {
-          setExpoPushToken(token);
-          registerTokenWithRetry(token);
-        }
-      })
-      .catch((error) => {
-        console.info('useNotifications: push notifications unavailable', error);
-      });
-
-    // Foreground notification received
-    notificationListener.current = Notifications.addNotificationReceivedListener((event) => {
-      // Refresh queries so UI stays up-to-date
-      queryClient.invalidateQueries({ queryKey: qk.notifications.list(userId) });
-      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount(userId) });
-    });
-
-    // User tapped on notification
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data as
-        { notification?: Notification } | undefined;
-
-      if (data?.notification) {
-        navigateToNotification(data.notification);
-      }
-    });
-
-    return () => {
-      if (notificationListener.current) {
-        notificationListener.current.remove();
-      }
-      if (responseListener.current) {
-        responseListener.current.remove();
-      }
-    };
-  }, [notificationsEnabled, queryClient, userId]);
-
-  // -------------------------------------------------------------------------
   // Public API
   // -------------------------------------------------------------------------
   return {
-    expoPushToken,
     notifications,
     unreadCount: unreadCountData?.count ?? 0,
     isLoadingNotifications,
@@ -450,8 +462,106 @@ export function useNotifications() {
     markAllAsRead,
     deleteNotification,
     refreshNotifications,
-    scheduleLocalNotification,
     notificationsError,
     unreadCountError,
   };
+}
+
+let lastHandledNotificationResponseId: string | null = null;
+
+/**
+ * Owns the single process-wide native notification registration/listener set.
+ * Mount this once at the app root; list screens should use useNotifications().
+ */
+export function useNotificationRuntime() {
+  const queryClient = useQueryClient();
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const notificationListener = useRef<NotificationSubscription | null>(null);
+  const responseListener = useRef<NotificationSubscription | null>(null);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const userId = useAuthStore((state) => state.user?.id ?? null);
+  const { preferences } = useNotificationPreferences();
+  const enabled = isAuthenticated && !!userId;
+  const remotePushEnabled = preferences?.readiness.remotePush === true;
+
+  const handleResponse = useCallback(
+    (response: import('expo-notifications').NotificationResponse) => {
+      const identifier = response.notification.request.identifier;
+      if (identifier === lastHandledNotificationResponseId) return;
+
+      const data = response.notification.request.content.data as
+        { notification?: Notification } | undefined;
+      if (!data?.notification) return;
+
+      lastHandledNotificationResponseId = identifier;
+      navigateToNotification(data.notification);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (IS_EXPO_GO_ANDROID || !Notifications || !enabled) return;
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(() => {
+      queryClient.invalidateQueries({ queryKey: qk.notifications.list(userId) });
+      queryClient.invalidateQueries({ queryKey: qk.notifications.unreadCount(userId) });
+    });
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener(handleResponse);
+
+    // The listener above does not replay the notification that launched a
+    // previously terminated app. Consume it explicitly once after auth loads.
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) {
+          handleResponse(response);
+          return Notifications.clearLastNotificationResponseAsync();
+        }
+      })
+      .catch((error) => console.info('useNotifications: cold-start response unavailable', error));
+
+    return () => {
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
+      notificationListener.current = null;
+      responseListener.current = null;
+    };
+  }, [enabled, handleResponse, queryClient, userId]);
+
+  useEffect(() => {
+    if (!enabled || preferences === undefined) return;
+
+    if (!remotePushEnabled) {
+      void unregisterStoredPushToken().catch((error) =>
+        console.info('useNotifications: push-token cleanup unavailable', error)
+      );
+      setExpoPushToken(null);
+      return;
+    }
+
+    void registerForPushNotificationsAsync()
+      .then(async (token) => {
+        if (!token) return;
+        await registerTokenWithRetry(token);
+        setExpoPushToken(token);
+      })
+      .catch((error) => console.info('useNotifications: push unavailable', error));
+  }, [enabled, preferences, remotePushEnabled]);
+
+  const scheduleLocalNotification = useCallback(
+    async (notification: Notification) => {
+      if (!remotePushEnabled || IS_EXPO_GO_ANDROID || !Notifications) return;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: notification.title,
+          body: notification.content,
+          data: { notification },
+        },
+        trigger: null,
+      });
+    },
+    [remotePushEnabled]
+  );
+
+  return { expoPushToken, remotePushEnabled, scheduleLocalNotification };
 }

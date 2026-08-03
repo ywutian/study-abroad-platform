@@ -272,6 +272,7 @@ export class SchoolController {
     ];
     const results = [];
     for (const source of sources) {
+      // governance: admin-scope — @Get("admin/sync-status") + @Roles(Role.ADMIN) — reads the data-sync audit trail
       const lastRun = await this.prisma.auditLog.findFirst({
         where: { action: 'DATA_SYNC', resource: source },
         orderBy: { createdAt: 'desc' },

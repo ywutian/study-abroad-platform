@@ -108,7 +108,7 @@ export function DragHandle({
       {...attributes}
       {...listeners}
       className={cn(
-        'p-1 rounded cursor-grab touch-none',
+        'inline-grid h-10 w-10 shrink-0 place-items-center rounded p-0 cursor-grab touch-none sm:h-8 sm:w-8',
         'text-muted-foreground hover:text-foreground hover:bg-muted',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isDragging && 'cursor-grabbing',

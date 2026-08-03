@@ -13,6 +13,7 @@ import {
   createPaginatedResponse,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
+import { stripListOwner } from './hall.constants';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { PointsService, PointAction } from '../points/incentive.service';
 
@@ -121,23 +122,30 @@ export class HallListService {
     }
 
     const [lists, total] = await Promise.all([
+      // governance: public-feed — filters `isPublic: true` — the list owner chose to publish
       this.prisma.userList.findMany({
         where,
         skip,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          // 2026-05 Hall Plan C (security): the list creator's email is
-          // PII and these are public-facing list endpoints — expose only
-          // the opaque id, never the email.
-          user: { select: { id: true } },
+          // The creator relation is gone, not narrowed: nothing displays a
+          // list's creator, and `{ select: { id: true } }` was handing over
+          // the forum join key. stripListOwner removes the `userId` scalar
+          // that `include` leaves behind.
           _count: { select: { votes: true } },
         },
       }),
+      // governance: public-feed — filters `isPublic: true` — the list owner chose to publish
       this.prisma.userList.count({ where }),
     ]);
 
-    return createPaginatedResponse(lists, total, page, pageSize);
+    return createPaginatedResponse(
+      lists.map(stripListOwner),
+      total,
+      page,
+      pageSize,
+    );
   }
 
   async getMyLists(userId: string): Promise<UserList[]> {
@@ -151,22 +159,28 @@ export class HallListService {
   }
 
   async getListById(listId: string): Promise<UserList> {
+    // governance: public-feed — filters `isPublic` since 52ebf249; before that this @Public() route returned private lists to anyone holding an id
     const list = await this.prisma.userList.findUnique({
       where: { id: listId },
       include: {
-        // 2026-05 Hall Plan C (security): the list creator's email is PII
-        // and this is a public-facing list endpoint — expose only the
-        // opaque id, never the email.
-        user: { select: { id: true } },
+        // See getPublicLists: the creator relation is gone and the `userId`
+        // scalar is stripped below.
         _count: { select: { votes: true } },
       },
     });
 
-    if (!list) {
+    // `isPublic` is the access control on this route, and it was missing.
+    // GET /halls/lists/:id is @Public() — unauthenticated — so without this
+    // check anyone holding an id could read a list its owner had marked
+    // private, while getPublicLists() right above filters on `isPublic: true`
+    // and voteList() right below rejects the same rows. Only this reader was
+    // skipped. 404 rather than 403: a private list should not confirm it
+    // exists. Owners read their own lists through getMyLists().
+    if (!list || !list.isPublic) {
       throw new NotFoundException('List not found');
     }
 
-    return list;
+    return stripListOwner(list);
   }
 
   async voteList(listId: string, userId: string, value: 1 | -1) {
@@ -205,6 +219,7 @@ export class HallListService {
   }
 
   async getListVoteCount(listId: string): Promise<number> {
+    // governance: aggregate-only — sums vote values for one list and returns a single integer — no rows, no identities. No small-sample floor and none needed: the figure is a score, not an outcome attributable to a person. Currently has no controller route at all
     const result = await this.prisma.userListVote.aggregate({
       where: { listId },
       _sum: { value: true },

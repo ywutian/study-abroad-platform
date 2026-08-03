@@ -15,15 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Constants from 'expo-constants';
 
-import {
-  AnimatedCard,
-  CardContent,
-  Switch,
-  Avatar,
-  Badge,
-  AnimatedButton,
-  Input,
-} from '@/components/ui';
+import { AnimatedCard, CardContent, Switch, Avatar, AnimatedButton, Input } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import {
   useColors,
@@ -39,6 +31,7 @@ import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 import { userRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { useNotificationPreferences } from '@/hooks/useNotifications';
 
 export const BIOMETRIC_ENABLED_KEY = 'biometric_auth_enabled';
 
@@ -66,8 +59,6 @@ export default function SettingsScreen() {
   const { colorScheme, setMode } = useThemeStore();
   const toast = useToast();
 
-  const [notifications, setNotifications] = useState(true);
-  const [emailDigest, setEmailDigest] = useState(true);
   const [biometrics, setBiometrics] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
 
@@ -75,6 +66,7 @@ export default function SettingsScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const { preferences, updatePreferences } = useNotificationPreferences();
 
   // Load biometric state on mount
   useEffect(() => {
@@ -206,13 +198,6 @@ export default function SettingsScreen() {
           type: 'navigate',
           onPress: () => router.push('/security' as Href),
         },
-        {
-          icon: 'card-outline',
-          label: t('settings.subscription'),
-          value: user?.role === 'VERIFIED' ? 'VIP' : t('settings.freeVersion'),
-          type: 'navigate',
-          onPress: () => router.push('/subscription' as Href),
-        },
       ],
     },
     {
@@ -255,20 +240,14 @@ export default function SettingsScreen() {
           icon: 'notifications-outline',
           label: t('settings.pushNotification'),
           type: 'toggle',
-          toggleValue: notifications,
-          onToggle: (value) => {
-            setNotifications(value);
-            Haptics.selectionAsync();
-          },
-        },
-        {
-          icon: 'mail-outline',
-          label: t('settings.emailDigest'),
-          type: 'toggle',
-          toggleValue: emailDigest,
-          onToggle: (value) => {
-            setEmailDigest(value);
-            Haptics.selectionAsync();
+          toggleValue: preferences?.readiness.remotePush ?? false,
+          onToggle: async (value) => {
+            try {
+              await updatePreferences({ readinessRemotePush: value });
+              Haptics.selectionAsync();
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+            }
           },
         },
       ],
@@ -297,13 +276,13 @@ export default function SettingsScreen() {
           icon: 'help-circle-outline',
           label: t('settings.faq'),
           type: 'navigate',
-          onPress: () => Linking.openURL('https://studyabroad.app/faq'),
+          onPress: () => Linking.openURL('https://www.lumniedu.com/help'),
         },
         {
           icon: 'chatbubble-outline',
           label: t('settings.feedback'),
           type: 'navigate',
-          onPress: () => Linking.openURL('mailto:feedback@studyabroad.app'),
+          onPress: () => Linking.openURL('mailto:contact@studyabroad.com'),
         },
       ],
     },
@@ -314,13 +293,13 @@ export default function SettingsScreen() {
           icon: 'help-circle-outline',
           label: t('settings.helpCenter'),
           type: 'navigate',
-          onPress: () => Linking.openURL('https://studyabroad.app/help'),
+          onPress: () => Linking.openURL('https://www.lumniedu.com/help'),
         },
         {
           icon: 'chatbubble-outline',
           label: t('settings.contactSupport'),
           type: 'navigate',
-          onPress: () => Linking.openURL('mailto:support@studyabroad.app'),
+          onPress: () => Linking.openURL('mailto:contact@studyabroad.com'),
         },
         {
           icon: 'star-outline',
@@ -343,13 +322,13 @@ export default function SettingsScreen() {
           icon: 'document-text-outline',
           label: t('settings.termsOfService'),
           type: 'navigate',
-          onPress: () => Linking.openURL('https://studyabroad.app/terms'),
+          onPress: () => Linking.openURL('https://www.lumniedu.com/terms'),
         },
         {
           icon: 'shield-outline',
           label: t('settings.privacyPolicy'),
           type: 'navigate',
-          onPress: () => Linking.openURL('https://studyabroad.app/privacy'),
+          onPress: () => Linking.openURL('https://www.lumniedu.com/privacy'),
         },
       ],
     },
@@ -403,12 +382,6 @@ export default function SettingsScreen() {
                     <Text style={[styles.profileEmail, { color: colors.foregroundMuted }]}>
                       {user.email}
                     </Text>
-                    {user.role === 'VERIFIED' && (
-                      <Badge variant="warning" style={styles.vipBadge}>
-                        <Ionicons name="diamond" size={12} color={colors.warning} />
-                        <Text style={[styles.vipText, { color: colors.warning }]}> VIP</Text>
-                      </Badge>
-                    )}
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.foregroundMuted} />
                 </CardContent>
@@ -516,7 +489,11 @@ function SettingRow({ item, colors }: { item: SettingItem; colors: Colors }) {
       <Text style={[styles.settingLabel, { color: textColor }]}>{item.label}</Text>
 
       {item.type === 'toggle' ? (
-        <Switch value={item.toggleValue || false} onValueChange={item.onToggle || (() => {})} />
+        <Switch
+          value={item.toggleValue || false}
+          onValueChange={item.onToggle || (() => {})}
+          accessibilityLabel={item.label}
+        />
       ) : item.type === 'info' ? (
         <Text
           style={[
@@ -580,14 +557,6 @@ const styles = StyleSheet.create({
   profileEmail: {
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
-  },
-  vipBadge: {
-    marginTop: spacing.sm,
-    alignSelf: 'flex-start',
-  },
-  vipText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
   },
   section: {
     padding: spacing.lg,

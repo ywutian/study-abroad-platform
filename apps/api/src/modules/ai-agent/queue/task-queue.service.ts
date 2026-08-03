@@ -8,6 +8,7 @@
  * 4. 任务持久化
  */
 
+import type { MaybeSerialized } from '../../../common/redis/redis-json.types';
 import {
   Injectable,
   Logger,
@@ -220,13 +221,17 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * 取消任务
+   *
+   * `userId` is required, not optional — this used to key on taskId alone. For a
+   * cross-user cancel add a separate admin method behind @Roles; do not relax it.
    */
-  async cancel(taskId: string): Promise<boolean> {
-    // 更新数据库状态
+  async cancel(taskId: string, userId: string): Promise<boolean> {
+    // governance: userId validated — the owner predicate is in the WHERE, so a
+    // task belonging to someone else matches no row and returns false.
     const result = await this.prisma.$executeRaw`
       UPDATE "AgentTask"
       SET status = ${TaskStatus.CANCELLED}, "updatedAt" = NOW()
-      WHERE id = ${taskId} AND status = ${TaskStatus.PENDING}
+      WHERE id = ${taskId} AND "userId" = ${userId} AND status = ${TaskStatus.PENDING}
     `;
 
     // 从 Redis 队列移除（zrange 在 Redis 不可用时返回 []，best-effort）
@@ -249,8 +254,11 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * 获取任务状态
+   *
+   * `userId` required, as cancel(). Was `SELECT *`, returning the owner's userId
+   * and full payload — neither of which the mapper below reads.
    */
-  async getStatus(taskId: string): Promise<Task | null> {
+  async getStatus(taskId: string, userId: string): Promise<Task | null> {
     const result = await this.prisma.$queryRaw<
       Array<{
         id: string;
@@ -268,7 +276,11 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
         createdAt: Date;
       }>
     >`
-      SELECT * FROM "AgentTask" WHERE id = ${taskId}
+      SELECT id, type, status, priority, payload, result, error,
+             attempts, "maxAttempts", "scheduledAt", "startedAt",
+             "completedAt", "createdAt"
+      FROM "AgentTask"
+      WHERE id = ${taskId} AND "userId" = ${userId}
     `;
 
     if (result.length === 0) return null;
@@ -301,6 +313,9 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
     failed: number;
     byType: Record<string, number>;
   }> {
+    // governance: aggregate-only — status/type histograms over AgentTask. The
+    // method returns counts only (no id, no payload, no userId), so there is no
+    // per-user cell to re-identify and no small-sample floor is needed.
     const [statusResult, typeResult] = await Promise.all([
       this.prisma.$queryRaw<Array<{ status: string; count: bigint }>>`
         SELECT status, COUNT(*) as count
@@ -468,7 +483,22 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
         (client) => client.zpopmin(this.QUEUE_KEY),
       );
       if (result && result.length > 0) {
-        return JSON.parse(result[0]);
+        // Task carries four Date fields and this came out of Redis, so they
+        // are ISO strings. executeTask reads none of them today — rehydrate
+        // anyway so the Redis path and the DB fallback below return the same
+        // runtime type rather than merely the same declared one.
+        const task = JSON.parse(result[0]) as MaybeSerialized<Task>;
+        return {
+          ...task,
+          scheduledAt: task.scheduledAt
+            ? new Date(task.scheduledAt)
+            : undefined,
+          startedAt: task.startedAt ? new Date(task.startedAt) : undefined,
+          completedAt: task.completedAt
+            ? new Date(task.completedAt)
+            : undefined,
+          createdAt: new Date(task.createdAt),
+        };
       }
     } catch (err) {
       this.logger.debug(
@@ -477,6 +507,10 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
     }
 
     // 降级：从数据库获取
+    //
+    // governance: batch-operation — worker dequeue: picking the globally next
+    // PENDING task is the contract. The projection omits userId and the Task
+    // interface has no userId field, so no owner identity reaches a handler.
     const result = await this.prisma.$queryRaw<
       Array<{
         id: string;
@@ -521,6 +555,9 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
     }
 
     // 更新状态为运行中
+    // governance: parent-scoped — keyed by the id of the task this worker itself
+    // just dequeued (Redis or getNextTask), never a caller-supplied id. Same for
+    // the completeTask / retryOrFail / failTask writes below.
     await this.prisma.$executeRaw`
       UPDATE "AgentTask"
       SET status = ${TaskStatus.RUNNING},
@@ -547,6 +584,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async completeTask(task: Task, result?: unknown): Promise<void> {
+    // governance: parent-scoped — keyed by the id of the task this worker itself dequeued, never a caller-supplied id
     await this.prisma.$executeRaw`
       UPDATE "AgentTask"
       SET status = ${TaskStatus.COMPLETED},
@@ -569,6 +607,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
         maxAttempts: task.maxAttempts - task.attempts,
       });
 
+      // governance: parent-scoped — keyed by the id of the task this worker itself dequeued, never a caller-supplied id
       await this.prisma.$executeRaw`
         UPDATE "AgentTask"
         SET status = ${TaskStatus.PENDING},
@@ -584,6 +623,7 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async failTask(task: Task, error: string): Promise<void> {
+    // governance: parent-scoped — keyed by the id of the task this worker itself dequeued, never a caller-supplied id
     await this.prisma.$executeRaw`
       UPDATE "AgentTask"
       SET status = ${TaskStatus.FAILED},

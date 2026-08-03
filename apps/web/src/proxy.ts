@@ -142,6 +142,6 @@ export const config = {
   // 307 to `/{locale}/theme.css` would 404 it — every non-featured palette
   // would render with undefined `--ds-*`.
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|sw\\.js|workbox-.*\\.js|manifest\\.json|robots\\.txt|sitemap.*\\.xml|.*\\.(?:css|svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api|_next/static|_next/image|\\.well-known|favicon.ico|sw\\.js|workbox-.*\\.js|manifest\\.json|robots\\.txt|sitemap.*\\.xml|.*\\.(?:css|svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

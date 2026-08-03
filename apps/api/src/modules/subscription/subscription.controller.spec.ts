@@ -152,8 +152,29 @@ describe('SubscriptionController', () => {
       expect(subscriptionService.handlePaymentWebhook).toHaveBeenCalledWith(
         mockReq.body,
         'sig_abc123',
+        // The raw bytes must be forwarded — the HMAC is computed over them.
+        // This argument is the whole fix: the controller had always declared
+        // `req.rawBody` and never passed it on, so the service fell back to
+        // re-serialising the parsed body and verified a string the sender
+        // never signed.
+        mockReq.rawBody,
       );
       expect(result).toEqual({ received: true });
+    });
+
+    it('forwards an absent rawBody as undefined so the service can fail closed', async () => {
+      const mockReq = {
+        body: { event: 'payment.success' },
+        // no rawBody — e.g. the parser mount in main.ts drifted off this route
+      } as any;
+
+      await controller.handleWebhook(mockReq, 'sig_abc123');
+
+      expect(subscriptionService.handlePaymentWebhook).toHaveBeenCalledWith(
+        mockReq.body,
+        'sig_abc123',
+        undefined,
+      );
     });
   });
 });

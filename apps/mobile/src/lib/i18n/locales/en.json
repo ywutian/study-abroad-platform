@@ -434,7 +434,7 @@
       "toeflRange": "TOEFL must be between 0-120",
       "ieltsRange": "IELTS must be between 0-9",
       "privacySetting": "Privacy Setting",
-      "submitSuccess": "Case submitted, you'll earn points once approved",
+      "submitSuccess": "Case submitted for review",
       "submitFailed": "Submission failed",
       "stepProgress": "Step {{step}} of {{total}}",
       "stepN": "Step {{n}}"
@@ -856,7 +856,7 @@
       "stats": {
         "total": "Verified",
         "admitted": "Admitted",
-        "avgGpa": "Avg GPA"
+        "ivy": "Ivy admits"
       },
       "empty": "No verified users yet",
       "points": "pts",
@@ -1006,6 +1006,7 @@
     "whyThisEstimate": "Why this estimate",
     "uncertaintyHint": "Watchout: {{reason}}",
     "lastUpdated": "Updated {{value}} ago",
+    "detailsUnavailable": "Detailed factors and guidance are not available for this result.",
     "confidenceDisclaimer": "\"Data support\" shows how complete your profile and public data are. It does not mean your chances are high or low.",
     "tierDisclaimer": "\"Reach / Match / Safety\" helps plan your school list. It is not an official school rating.",
     "analysisCard": {
@@ -1042,6 +1043,9 @@
     "loading": {
       "description": "Building the latest school-aware application analysis."
     },
+    "error": {
+      "description": "Application analysis could not be loaded. Check your connection and try again."
+    },
     "empty": {
       "title": "No analysis yet",
       "description": "Run the application analysis to unlock school-level strategy guidance."
@@ -1049,6 +1053,9 @@
     "emptyList": "No items yet",
     "overallScore": "Overall score",
     "focusSchools": "Focus schools",
+    "evidenceSummary": "Evidence and sources",
+    "confidenceSummary": "Confidence summary",
+    "freshnessSummary": "Data freshness",
     "predictionContext": {
       "staleHint": "{{count}} school(s) have a stale or missing prediction — re-run"
     },
@@ -1236,8 +1243,6 @@
     },
     "personalInfo": "Personal Info",
     "accountSecurity": "Account Security",
-    "subscription": "Subscription",
-    "freeVersion": "Free",
     "pushNotification": "Push Notifications",
     "biometrics": "Biometric Login",
     "biometricVerify": "Verify your identity",
@@ -1251,7 +1256,7 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "logoutConfirm": "Are you sure you want to logout?",
-    "deleteAccountConfirm": "This action is irreversible. Are you sure you want to delete your account? All data will be permanently deleted.",
+    "deleteAccountConfirm": "This cannot be undone. Delete your account? Sign-in is disabled and your identifying information is cleared.",
     "featureInDev": "Feature in Development",
     "thankYou": "Thank You",
     "thankYouReview": "Thank you for your review!",
@@ -1518,7 +1523,7 @@
         "startAnalysis": "Start Analysis",
         "analysisError": "Analysis failed",
         "loginRequired": "Login required for AI analysis",
-        "costHint": "This feature costs 20 credits"
+        "costHint": "Get a professional admissions officer perspective analysis"
       },
       "analysis": {
         "score": "Score",
@@ -1791,90 +1796,6 @@
       "subtitle": "Ask about schools, essays, timelines, and strategy."
     }
   },
-  "subscription": {
-    "title": "Subscription",
-    "currentPlan": "Current Plan",
-    "active": "Active",
-    "expired": "Expired",
-    "cancelled": "Cancelled",
-    "expiresOn": "Expires on {{date}}",
-    "upgradePrompt": "Upgrade for more features",
-    "period": {
-      "monthly": "Monthly",
-      "yearly": "Yearly",
-      "yearlyDiscount": "Save ~17%"
-    },
-    "plans": {
-      "free": {
-        "name": "Free",
-        "price": "Free"
-      },
-      "pro": {
-        "name": "Pro",
-        "badge": "Popular"
-      },
-      "premium": {
-        "name": "Premium",
-        "badge": "Best Value"
-      }
-    },
-    "features": {
-      "browseSchools": "Browse schools",
-      "publicCases": "View public cases",
-      "basicAi": "Basic AI (5/day)",
-      "unlimitedAi": "Unlimited AI",
-      "prediction": "Admission prediction",
-      "essayReview": "Essay evaluation",
-      "detailedCases": "Detailed cases",
-      "prioritySupport": "Priority support",
-      "dedicatedAdvisor": "Dedicated advisor",
-      "strategy": "Application strategy",
-      "deepEssay": "Deep essay editing",
-      "vipCommunity": "VIP community"
-    },
-    "subscribe": "Subscribe",
-    "currentLabel": "Current Plan",
-    "upgrade": "Upgrade",
-    "switchPlan": "Switch Plan",
-    "cancel": "Cancel Subscription",
-    "cancelConfirm": "Are you sure you want to cancel? You'll lose access to premium features.",
-    "billing": {
-      "title": "Billing History",
-      "empty": "No billing history",
-      "status": {
-        "SUCCESS": "Paid",
-        "PENDING": "Pending",
-        "FAILED": "Failed",
-        "REFUNDED": "Refunded"
-      }
-    },
-    "subscribeSuccess": "Subscription updated successfully!",
-    "subscribeFailed": "Subscription failed",
-    "cancelSuccess": "Subscription cancelled",
-    "cancelFailed": "Cancellation failed",
-    "loading": "Loading subscription...",
-    "popular": "Popular",
-    "bestValue": "Best Value",
-    "free": "Free",
-    "month": "mo",
-    "billedYearly": "Billed {{amount}}/year",
-    "currentPlanLabel": "Current Plan",
-    "freePlan": "Free",
-    "billingHistory": "Billing History",
-    "billingHistoryDesc": "View past transactions",
-    "loadingBilling": "Loading history...",
-    "noInvoices": "No invoices",
-    "cancelSubscription": "Cancel Subscription",
-    "heroTitle": "Subscription Plans",
-    "heroSubtitle": "Choose the plan that fits your needs",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "yearlyDiscount": "Save ~17%",
-    "cancelConfirmTitle": "Cancel Subscription?",
-    "cancelConfirmMessage": "You can keep using paid features until the current billing period ends. After that, your account returns to the free plan.",
-    "confirmCancel": "Cancel Subscription",
-    "keepPlan": "Keep Plan"
-  },
   "security": {
     "title": "Security",
     "changePassword": "Change Password",
@@ -1929,9 +1850,9 @@
     "activeSessions": "Active Sessions",
     "activeSessionsDescription": "Manage devices where you are currently signed in",
     "logoutAllDevices": "Log out all devices",
-    "deleteAccountWarning": "Deleting your account is permanent and cannot be undone.",
+    "deleteAccountWarning": "Deleting your account cannot be undone: sign-in is disabled, your identifying information is cleared, and cases you submitted become private.",
     "deleteMyAccount": "Delete my account",
-    "deleteAccountConfirmMessage": "This action cannot be undone. Your account and data will be permanently removed.",
+    "deleteAccountConfirmMessage": "This cannot be undone. You will no longer be able to sign in; your name, avatar and bio are cleared, messages you sent are redacted, and cases you submitted become private and are no longer shown.",
     "enterPassword": "Enter password",
     "passwordPlaceholder": "Password"
   },
@@ -1941,13 +1862,12 @@
     "cases": "Cases",
     "groupApply": "Application",
     "groupCommunity": "Community",
-    "groupAccount": "Account & Rewards",
+    "groupAccount": "Account",
     "essays": "Essays",
     "resume": "Resume",
     "vault": "Vault",
     "teams": "Teams",
     "points": "Points",
-    "peerReview": "Peer Review",
     "referral": "Referral",
     "verification": "Verification",
     "ranking": "Ranking",
@@ -1961,6 +1881,31 @@
   "resume": {
     "title": "Resume Builder",
     "description": "Create and manage your resumes",
+    "managerDescription": "Mobile resume management and preview",
+    "create": "Create resume",
+    "created": "Resume created",
+    "saved": "Resume saved",
+    "deleted": "Resume deleted",
+    "duplicated": "Resume duplicated",
+    "imported": "Profile data imported",
+    "duplicate": "Duplicate",
+    "sections": "sections",
+    "emptySection": "No content in this section yet",
+    "name": "Resume title",
+    "type": "Resume type",
+    "status": "Status",
+    "importProfile": "Import data from my profile",
+    "importConfirm": "Refresh this resume from your current profile?",
+    "webEditorNote": "Advanced content editing, AI optimization, and PDF export are available in the web workbench.",
+    "deleteTitle": "Delete resume?",
+    "deleteBody": "{{title}} will be permanently deleted.",
+    "loadError": "Unable to load resumes",
+    "types": {
+      "COLLEGE_APPLICATION": "College application",
+      "INTERNSHIP": "Internship",
+      "GRADUATE_CV": "Graduate CV",
+      "FULL_TIME_JOB": "Full-time job"
+    },
     "empty": {
       "title": "No Resumes Yet",
       "description": "Create your first resume to get started"
@@ -1969,6 +1914,32 @@
   "vault": {
     "title": "Secure Vault",
     "description": "Store your credentials and documents safely",
+    "total": "Total",
+    "credentials": "Credentials",
+    "documents": "Documents",
+    "add": "Add secure item",
+    "edit": "Edit secure item",
+    "saved": "Vault item saved",
+    "deleted": "Vault item deleted",
+    "search": "Search vault",
+    "all": "All types",
+    "allCategories": "All categories",
+    "type": "Type",
+    "itemTitle": "Title",
+    "category": "Category",
+    "content": "Encrypted content",
+    "generatePassword": "Generate secure password",
+    "deleteTitle": "Delete secure item?",
+    "deleteBody": "{{title}} will be permanently deleted.",
+    "loadError": "Unable to load your vault. No sample data was substituted.",
+    "types": {
+      "PASSWORD": "Password",
+      "CREDENTIAL": "Credential",
+      "DOCUMENT": "Document",
+      "NOTE": "Note",
+      "API_KEY": "API key",
+      "OTHER": "Other"
+    },
     "empty": {
       "title": "Vault is Empty",
       "description": "Add credentials, documents, or notes to your vault"
@@ -2081,22 +2052,27 @@
   "points": {
     "title": "Points & Badges",
     "description": "Track your achievements and rewards",
+    "balance": "Current balance",
+    "unit": "points",
+    "catalog": "Rewards",
+    "history": "Points history",
+    "rules": "Earn and spend rules",
+    "redemptions": "Redemption history",
+    "redeem": "Redeem",
+    "insufficient": "Insufficient",
+    "confirmTitle": "Confirm redemption",
+    "confirmBody": "Redeem {{name}} for {{cost}} points?",
+    "redeemSuccess": "Reward redeemed",
+    "redeemError": "Redemption failed",
+    "loadError": "Unable to load points",
     "empty": {
       "title": "Start Earning Points",
       "description": "Complete activities to earn points and unlock badges"
     }
   },
-  "peerReview": {
-    "title": "Peer Review",
-    "description": "Review essays and get feedback",
-    "empty": {
-      "title": "No Reviews Available",
-      "description": "Check back later for essays to review"
-    }
-  },
   "referral": {
     "title": "Referral",
-    "description": "Invite friends and earn rewards",
+    "description": "Invite friends to join Lumni",
     "yourCode": "Your Referral Code",
     "copy": "Copy Code",
     "copied": "Code copied to clipboard!"
@@ -2104,6 +2080,26 @@
   "verification": {
     "title": "Verification",
     "description": "Verify your identity and admission",
+    "currentStatus": "Verification status",
+    "approved": "Verified",
+    "notVerified": "Not verified",
+    "submitTitle": "Submit admission proof",
+    "case": "Admission case",
+    "selectCase": "Select a case",
+    "proofType": "Proof type",
+    "offerLetter": "Offer letter",
+    "enrollmentProof": "Enrollment proof",
+    "studentId": "Student ID",
+    "chooseFile": "Choose JPG, PNG, WebP, or PDF",
+    "fileHint": "Maximum original file size: 7 MiB",
+    "submit": "Submit for review",
+    "history": "Submission history",
+    "submitSuccess": "Verification submitted",
+    "missingFields": "Select a case and proof file",
+    "invalidFile": "Unsupported file type",
+    "fileTooLarge": "File exceeds 7 MiB",
+    "loadError": "Unable to load verification data",
+    "noCases": "Create an admission case before submitting verification.",
     "empty": {
       "title": "Not Verified Yet",
       "description": "Submit documents to verify your identity"

@@ -1,11 +1,31 @@
 import { Prisma } from '@prisma/client';
 
 /**
- * User fields for team member display — includes email and profile.
+ * User fields for team member display.
+ *
+ * No email. This select feeds two `@Public()` routes — `GET /teams` (creator)
+ * and `GET /teams/:id` (creator *and* every member) — and nothing downstream
+ * strips it: the repo has no `ClassSerializerInterceptor` and no `@Exclude`,
+ * and `TransformInterceptor` only wraps the payload in the envelope. So an
+ * unauthenticated caller could read every member's email address by asking for
+ * the team.
+ *
+ * That is strictly worse than the four de-anonymisation leaks this branch
+ * fixed: `userId` still had to be matched against the forum feed to yield a
+ * name, an email is the identity outright. `hall-list.service.ts` had already
+ * reached the opposite conclusion for the same shape ("the list creator's email
+ * is PII … never the email") — team simply never got the same treatment.
+ *
+ * A surface that genuinely needs an email should select it explicitly, next to
+ * the check that says why it may. One does: the matched-conversation preview in
+ * `team-recruitment.service` spreads this and adds `email`, on an authenticated
+ * route that returns only conversations the caller participates in. It is there
+ * because ChatContextPanel's display-name chain still falls back to the email's
+ * local part — the same fallback that renders a deleted account as
+ * `deleted_<userId>`. When that fallback goes, the extra field goes with it.
  */
 export const TEAM_USER_SELECT = {
   id: true,
-  email: true,
   profile: { select: { nickname: true, avatarUrl: true } },
 } as const satisfies Prisma.UserSelect;
 

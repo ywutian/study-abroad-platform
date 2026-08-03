@@ -2,9 +2,10 @@
  * Cross-layer integration checker.
  * Verifies end-to-end consistency across Prisma, Shared types, Backend, Frontend, and Mobile.
  *
- * 21 rules across 5 domains:
+ * 24 rules across 5 domains:
  *   A. Type consistency (enum-consistency, password-regex-sync, form-validation-sync)
- *   B. Route & API (route-helper-sync, hardcoded-api-routes, route-protection-audit, mobile-endpoint-consistency)
+ *   B. Route & API (route-helper-sync, hardcoded-api-routes, route-protection-audit,
+ *      mobile-endpoint-consistency, ios-release-config)
  *   C. AI system (ai-tool-registration, streaming-event-coverage, websocket-event-coverage)
  *   D. Backend & frontend integration (admin-guard-coverage, email-method-existence,
  *      module-dependency-check, stub-service-audit, cache-invalidation-audit, llm-json-import-check)
@@ -12,7 +13,7 @@
  *      governance-config-consistency, governance-user-data-isolation, governance-dead-provider)
  *
  * Usage:
- *   npx tsx scripts/check-integration.ts                         # All 16 rules
+ *   npx tsx scripts/check-integration.ts                         # All rules
  *   npx tsx scripts/check-integration.ts --only=enum-consistency # Specific rule(s)
  *   npx tsx scripts/check-integration.ts --domain=ai             # By domain
  *   npx tsx scripts/check-integration.ts --verbose               # Include INFO-level
@@ -35,6 +36,13 @@ const CONTROLLER_DIR = path.resolve(ROOT, 'apps/api/src/modules');
 const WEB_SRC = path.resolve(ROOT, 'apps/web/src');
 const MOBILE_SRC = path.resolve(ROOT, 'apps/mobile/src');
 const AI_AGENT_DIR = path.resolve(ROOT, 'apps/api/src/modules/ai-agent');
+const MOBILE_APP_CONFIG = path.resolve(ROOT, 'apps/mobile/app.json');
+const IOS_INFO_PLIST = path.resolve(ROOT, 'apps/mobile/ios/StudyAbroad/Info.plist');
+const IOS_ENTITLEMENTS = path.resolve(ROOT, 'apps/mobile/ios/StudyAbroad/StudyAbroad.entitlements');
+const IOS_XCODE_ENV = path.resolve(ROOT, 'apps/mobile/ios/.xcode.env');
+const IOS_PROJECT = path.resolve(ROOT, 'apps/mobile/ios/StudyAbroad.xcodeproj/project.pbxproj');
+const MOBILE_LOGIN_SCREEN = path.resolve(ROOT, 'apps/mobile/src/app/(auth)/login.tsx');
+const WEB_AASA = path.resolve(ROOT, 'apps/web/public/.well-known/apple-app-site-association');
 
 type Severity = 'error' | 'warning' | 'info';
 
@@ -54,6 +62,7 @@ type RuleName =
   | 'hardcoded-api-routes'
   | 'route-protection-audit'
   | 'mobile-endpoint-consistency'
+  | 'ios-release-config'
   | 'ai-tool-registration'
   | 'streaming-event-coverage'
   | 'websocket-event-coverage'
@@ -78,6 +87,7 @@ const DOMAINS: Record<string, RuleName[]> = {
     'hardcoded-api-routes',
     'route-protection-audit',
     'mobile-endpoint-consistency',
+    'ios-release-config',
   ],
   ai: ['ai-tool-registration', 'streaming-event-coverage', 'websocket-event-coverage'],
   backend: [
@@ -741,39 +751,82 @@ function checkMobileEndpointConsistency(): Issue[] {
 function checkAiToolRegistration(): Issue[] {
   const issues: Issue[] = [];
 
-  // 1. Extract tool names from tools.config.ts
+  const configProject = new Project({
+    skipAddingFilesFromTsConfig: true,
+    compilerOptions: { allowJs: false },
+  });
+
+  // 1. Extract canonical tool names from the ToolName enum. TOOLS references
+  // enum members, so looking only for literal `name: '...'` properties misses
+  // the entire registry.
   const toolsConfigFile = path.resolve(AI_AGENT_DIR, 'config/tools.config.ts');
-  const toolsContent = readFile(toolsConfigFile);
   const configToolNames = new Set<string>();
-  const toolNameRegex = /name:\s*['"]([^'"]+)['"]/g;
-  let m: RegExpExecArray | null;
-  while ((m = toolNameRegex.exec(toolsContent)) !== null) {
-    configToolNames.add(m[1]);
+  const toolsSource = configProject.addSourceFileAtPath(toolsConfigFile);
+  const toolNameEnum = toolsSource.getEnum('ToolName');
+  for (const member of toolNameEnum?.getMembers() ?? []) {
+    const value = member.getValue();
+    if (typeof value === 'string') configToolNames.add(value);
   }
 
-  // 2. Extract allowedTools from agents.config.ts
+  // 2. Extract each agent's `tools` array from AGENT_CONFIGS. Agent keys are
+  // computed enum properties (`[AgentType.SCHOOL]`), which the former regex
+  // did not recognize; it also searched for the obsolete name `allowedTools`.
   const agentsConfigFile = path.resolve(AI_AGENT_DIR, 'config/agents.config.ts');
-  const agentsContent = readFile(agentsConfigFile);
   const agentToolRefs = new Map<string, string[]>();
-  // Match agent blocks and their allowedTools
-  const agentBlockRegex = /(\w+):\s*\{[^}]*?allowedTools:\s*\[([^\]]*)\]/gs;
-  while ((m = agentBlockRegex.exec(agentsContent)) !== null) {
-    const agentName = m[1];
-    const tools = [...m[2].matchAll(/['"]([^'"]+)['"]/g)].map((t) => t[1]);
-    agentToolRefs.set(agentName, tools);
+  const agentsSource = configProject.addSourceFileAtPath(agentsConfigFile);
+  const agentConfigs = agentsSource.getVariableDeclaration('AGENT_CONFIGS')?.getInitializer();
+  if (agentConfigs && Node.isObjectLiteralExpression(agentConfigs)) {
+    for (const property of agentConfigs.getProperties()) {
+      if (!Node.isPropertyAssignment(property)) continue;
+      const config = property.getInitializer();
+      if (!config || !Node.isObjectLiteralExpression(config)) continue;
+      const toolsProperty = config.getProperty('tools');
+      if (!toolsProperty || !Node.isPropertyAssignment(toolsProperty)) continue;
+      const toolsArray = toolsProperty.getInitializer();
+      if (!toolsArray || !Node.isArrayLiteralExpression(toolsArray)) continue;
+      const tools = toolsArray
+        .getElements()
+        .filter(Node.isStringLiteral)
+        .map((element) => element.getLiteralValue());
+      agentToolRefs.set(property.getName(), tools);
+    }
   }
 
-  // 3. Extract handler names from tool service files
+  // 3. Extract handler names from the Map returned by getHandlers().
+  // Do not scan arbitrary `name: '...'` properties: Prisma projections and
+  // ordering clauses (for example `{ name: 'asc' }`) are not tool handlers.
   const toolsDir = path.resolve(AI_AGENT_DIR, 'tools');
   const handlerNames = new Set<string>();
   if (fs.existsSync(toolsDir)) {
     const toolFiles = getAllFiles(toolsDir).filter((f) => f.endsWith('.service.ts'));
+    const project = new Project({
+      skipAddingFilesFromTsConfig: true,
+      compilerOptions: { allowJs: false },
+    });
     for (const file of toolFiles) {
-      const content = readFile(file);
-      // Match name: 'tool_name' inside getHandlers
-      const handlerRegex = /name:\s*['"]([^'"]+)['"]/g;
-      while ((m = handlerRegex.exec(content)) !== null) {
-        handlerNames.add(m[1]);
+      const sourceFile = project.addSourceFileAtPath(file);
+      for (const method of sourceFile.getDescendantsOfKind(SyntaxKind.MethodDeclaration)) {
+        if (method.getName() !== 'getHandlers') continue;
+
+        for (const newExpression of method.getDescendantsOfKind(SyntaxKind.NewExpression)) {
+          if (newExpression.getExpression().getText() !== 'Map') continue;
+          const entries = newExpression.getArguments()[0];
+          if (!entries || !Node.isArrayLiteralExpression(entries)) continue;
+          for (const entry of entries.getElements()) {
+            if (!Node.isArrayLiteralExpression(entry)) continue;
+            const key = entry.getElements()[0];
+            if (key && Node.isStringLiteral(key)) handlerNames.add(key.getLiteralValue());
+          }
+        }
+
+        for (const call of method.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+          const expression = call.getExpression();
+          if (!Node.isPropertyAccessExpression(expression) || expression.getName() !== 'set') {
+            continue;
+          }
+          const key = call.getArguments()[0];
+          if (key && Node.isStringLiteral(key)) handlerNames.add(key.getLiteralValue());
+        }
       }
     }
   }
@@ -795,6 +848,7 @@ function checkAiToolRegistration(): Issue[] {
 
   // Check: config defines tool but no handler
   for (const tool of configToolNames) {
+    if (tool === 'delegate_to_agent') continue; // Special built-in tool
     if (!handlerNames.has(tool)) {
       issues.push({
         rule: 'ai-tool-registration',
@@ -1486,6 +1540,99 @@ function checkPredictionWriteMustDeclareAuthority(): Issue[] {
   return issues;
 }
 
+// ── Rule: ios-release-config ────────────────────────────────
+
+function checkIosReleaseConfig(): Issue[] {
+  const issues: Issue[] = [];
+  const expectedDomain = 'applinks:www.lumniedu.com';
+  const expectedAppId = '7XZ842N72B.com.studyabroad.mobile';
+  const requiredBackgroundModes = ['fetch', 'remote-notification'];
+
+  const report = (file: string, message: string) =>
+    issues.push({
+      rule: 'ios-release-config',
+      severity: 'error',
+      file: rel(file),
+      message,
+    });
+
+  try {
+    const appConfig = JSON.parse(readFile(MOBILE_APP_CONFIG)) as {
+      expo?: {
+        ios?: { associatedDomains?: string[]; infoPlist?: { UIBackgroundModes?: string[] } };
+      };
+    };
+    const ios = appConfig.expo?.ios;
+    if (!ios?.associatedDomains?.includes(expectedDomain)) {
+      report(MOBILE_APP_CONFIG, `Expo iOS config must declare ${expectedDomain}`);
+    }
+    for (const mode of requiredBackgroundModes) {
+      if (!ios?.infoPlist?.UIBackgroundModes?.includes(mode)) {
+        report(MOBILE_APP_CONFIG, `Expo iOS config must declare UIBackgroundModes=${mode}`);
+      }
+    }
+  } catch (error) {
+    report(MOBILE_APP_CONFIG, `Unable to parse Expo app config: ${String(error)}`);
+  }
+
+  const infoPlist = readFile(IOS_INFO_PLIST);
+  for (const mode of requiredBackgroundModes) {
+    if (!infoPlist.includes(`<string>${mode}</string>`)) {
+      report(IOS_INFO_PLIST, `Native Info.plist must declare UIBackgroundModes=${mode}`);
+    }
+  }
+
+  const entitlements = readFile(IOS_ENTITLEMENTS);
+  if (!entitlements.includes(`<string>${expectedDomain}</string>`)) {
+    report(
+      IOS_ENTITLEMENTS,
+      `Native associated-domains entitlement must declare ${expectedDomain}`
+    );
+  }
+
+  try {
+    const aasa = JSON.parse(readFile(WEB_AASA)) as {
+      applinks?: { details?: Array<{ appIDs?: string[] }> };
+    };
+    const appIds = aasa.applinks?.details?.flatMap((detail) => detail.appIDs ?? []) ?? [];
+    if (!appIds.includes(expectedAppId)) {
+      report(WEB_AASA, `AASA must authorize ${expectedAppId}`);
+    }
+  } catch (error) {
+    report(WEB_AASA, `Unable to parse AASA JSON: ${String(error)}`);
+  }
+
+  const xcodeEnv = readFile(IOS_XCODE_ENV);
+  if (!xcodeEnv.includes('SENTRY_DISABLE_AUTO_UPLOAD=${SENTRY_DISABLE_AUTO_UPLOAD:-true}')) {
+    report(
+      IOS_XCODE_ENV,
+      'Local Release builds must default SENTRY_DISABLE_AUTO_UPLOAD without overriding CI opt-in'
+    );
+  }
+
+  const project = readFile(IOS_PROJECT);
+  const sentryGuard = project.indexOf('if [[ \\"$SENTRY_DISABLE_AUTO_UPLOAD\\" = \\"true\\" ]]');
+  const sentryCliResolution = project.indexOf('sentry-xcode-debug-files.sh');
+  if (sentryGuard < 0 || sentryCliResolution < 0 || sentryGuard > sentryCliResolution) {
+    report(
+      IOS_PROJECT,
+      'Sentry debug-file phase must exit on SENTRY_DISABLE_AUTO_UPLOAD before resolving @sentry/cli'
+    );
+  }
+
+  const loginScreen = readFile(MOBILE_LOGIN_SCREEN);
+  for (const credential of ['Email', 'Password']) {
+    if (!loginScreen.includes(`const devAutoLogin${credential} = __DEV__`)) {
+      report(
+        MOBILE_LOGIN_SCREEN,
+        `Audit auto-login ${credential.toLowerCase()} must be behind a compile-time __DEV__ branch`
+      );
+    }
+  }
+
+  return issues;
+}
+
 // ── Output ──────────────────────────────────────────────────
 
 const COLORS = {
@@ -1615,6 +1762,7 @@ const RULE_MAP: Record<RuleName, () => Issue[]> = {
   'hardcoded-api-routes': checkHardcodedApiRoutes,
   'route-protection-audit': checkRouteProtection,
   'mobile-endpoint-consistency': checkMobileEndpointConsistency,
+  'ios-release-config': checkIosReleaseConfig,
   'ai-tool-registration': checkAiToolRegistration,
   'streaming-event-coverage': checkStreamingEventCoverage,
   'websocket-event-coverage': checkWebSocketEventCoverage,

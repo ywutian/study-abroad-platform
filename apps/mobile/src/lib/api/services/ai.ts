@@ -30,11 +30,10 @@ export const aiService = {
       },
       { timeout: AI_REQUEST_TIMEOUT_MS }
     ),
-  feedback: (messageId: string, rating: 'positive' | 'negative') =>
-    apiClient.post(`${API_ROUTES.AI_AGENT}/feedback`, { messageId, rating }),
   profileAnalysis: () =>
     apiClient.get<AIAnalysisResult>(profileRoutes.aiAnalysis(), {
       timeout: AI_REQUEST_TIMEOUT_MS,
+      retries: 0,
     }),
   profileAnalysisFeedback: (payload: SubmitApplicationAnalysisFeedbackInput) =>
     apiClient.post(profileRoutes.aiAnalysisFeedback(), payload, {

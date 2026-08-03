@@ -70,8 +70,6 @@ export interface GenerateRecommendationDto {
 // Constants
 // ============================================================
 
-export const POINT_COST = 25;
-
 export const REGION_OPTIONS = [
   'California',
   'New York',

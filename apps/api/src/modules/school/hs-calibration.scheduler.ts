@@ -38,6 +38,7 @@ export class HsCalibrationScheduler {
 
     try {
       // Find all high schools with sufficient case data
+      // governance: aggregate-only — nightly high-school calibration. Select is a single enum (`{ result: true }`) — no id, no userId, no free text — and the admit rate is derived from counts. Small-sample floor: `if (hs._count.cases < this.MIN_CASES) continue`, MIN_CASES = 10. Filters by highSchoolId only, NOT by `visibility`, so a PRIVATE case still counts toward its school's rate — the same open product question recorded for hall-verified-dashboard and prediction-historical
       const highSchools = await this.prisma.highSchool.findMany({
         where: {
           isActive: true,
@@ -60,6 +61,7 @@ export class HsCalibrationScheduler {
         reviewed++;
 
         // Calculate actual admission rate from cases
+        // governance: aggregate-only — nightly high-school calibration. Select is a single enum (`{ result: true }`) — no id, no userId, no free text — and the admit rate is derived from counts. Small-sample floor: `if (hs._count.cases < this.MIN_CASES) continue`, MIN_CASES = 10. Filters by highSchoolId only, NOT by `visibility`, so a PRIVATE case still counts toward its school's rate — the same open product question recorded for hall-verified-dashboard and prediction-historical
         const cases = await this.prisma.admissionCase.findMany({
           where: { highSchoolId: hs.id },
           select: { result: true },

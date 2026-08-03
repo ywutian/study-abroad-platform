@@ -21,6 +21,7 @@ export class AdminOperatorService {
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const invite = await this.prisma.operatorInvite.create({
       data: {
         token,
@@ -57,17 +58,31 @@ export class AdminOperatorService {
     if (invite.expiresAt < new Date())
       throw new BadRequestException('Invite expired');
 
-    // Mark invite as used and set user role
-    await this.prisma.$transaction([
-      this.prisma.operatorInvite.update({
-        where: { id: invite.id },
+    // Conditional claim, for the same reason as auth.registerWithInvite: the
+    // `invite.usedBy` check above runs outside the transaction, so two
+    // requests with one token both reach here and an unconditional update by
+    // id promotes two users to invite.role — OPERATOR by default. There is no
+    // unique constraint on usedBy to catch it underneath.
+    //
+    // NOTE: this method currently has no callers; registration consumes
+    // invites through auth.registerWithInvite, which was fixed the same way in
+    // 7616550f. It is corrected rather than deleted because a dead duplicate
+    // of a live privilege path is worth more as a correct one than as a
+    // landmine for whoever wires it up next — but if this flow is never
+    // finished, delete it instead.
+    await this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.operatorInvite.updateMany({
+        where: { id: invite.id, usedBy: null },
         data: { usedBy: userId, usedAt: new Date() },
-      }),
-      this.prisma.user.update({
+      });
+      if (claimed.count === 0) {
+        throw new BadRequestException('Invite already used');
+      }
+      await tx.user.update({
         where: { id: userId },
         data: { role: invite.role },
-      }),
-    ]);
+      });
+    });
 
     this.logger.log(
       `Invite ${token.slice(0, 8)}... consumed by user ${userId}`,
@@ -79,6 +94,7 @@ export class AdminOperatorService {
    * List all invites
    */
   async listInvites() {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const invites = await this.prisma.operatorInvite.findMany({
       orderBy: { createdAt: 'desc' },
       take: 50,

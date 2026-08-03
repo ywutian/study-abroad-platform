@@ -129,6 +129,7 @@ export class PredictionFeedbackService {
     }
 
     const [itemsPlusOne, total] = await Promise.all([
+      // governance: admin-scope — @Controller("admin/prediction-feedback") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.predictionFeedback.findMany({
         where,
         include: this.feedbackInclude(),
@@ -141,6 +142,7 @@ export class PredictionFeedbackService {
             }
           : {}),
       }),
+      // governance: admin-scope — @Controller("admin/prediction-feedback") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
       this.prisma.predictionFeedback.count({ where }),
     ]);
 
@@ -180,6 +182,7 @@ export class PredictionFeedbackService {
         { id: string; name: string; nameZh: string | null }
       >();
     }
+    // governance: admin-scope — @Controller("admin/prediction-feedback") + @Roles(Role.ADMIN, Role.SUPER_ADMIN)
     const schools = await this.prisma.school.findMany({
       where: { id: { in: uniqueIds } },
       select: { id: true, name: true, nameZh: true },

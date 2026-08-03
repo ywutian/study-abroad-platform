@@ -51,6 +51,7 @@ export function usePredictionLlmStream() {
 
       const doRequest = async (authToken: string | null) =>
         fetch(`${STREAM_API_URL}/api/v1${path}`, {
+          // @route-lint-ignore: generic prediction stream transport; callers provide canonical route helpers.
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

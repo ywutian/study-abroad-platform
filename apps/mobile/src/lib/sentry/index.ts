@@ -4,18 +4,30 @@
  * 初始化 Sentry SDK，配置错误采集和性能监控
  */
 
-import * as Sentry from '@sentry/react-native';
+import type { Breadcrumb, SeverityLevel } from '@sentry/react-native';
 import Constants from 'expo-constants';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+type SentryModule = typeof import('@sentry/react-native');
+
+// The SDK starts background cleanup timers as soon as the module is evaluated.
+// Do not even load it in local/test builds without a DSN; besides unnecessary
+// work, those timers keep Jest alive after every suite has passed.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const Sentry: SentryModule | undefined = SENTRY_DSN ? require('@sentry/react-native') : undefined;
 
 export function initSentry() {
   if (!SENTRY_DSN) {
-    console.warn('Sentry DSN not configured, skipping initialization');
+    // Missing local telemetry is expected and must not trigger React Native's
+    // warning overlay. A production build still surfaces the configuration
+    // error loudly so release validation can catch it.
+    if (!__DEV__) {
+      console.warn('Sentry DSN not configured, skipping initialization');
+    }
     return;
   }
 
-  Sentry.init({
+  Sentry?.init({
     dsn: SENTRY_DSN,
 
     // 环境配置
@@ -68,6 +80,7 @@ export function initSentry() {
  * 设置用户上下文
  */
 export function setUser(user: { id: string; email?: string; role?: string } | null) {
+  if (!Sentry) return;
   if (user) {
     Sentry.setUser({
       id: user.id,
@@ -83,21 +96,21 @@ export function setUser(user: { id: string; email?: string; role?: string } | nu
  * 添加自定义标签
  */
 export function setTag(key: string, value: string) {
-  Sentry.setTag(key, value);
+  Sentry?.setTag(key, value);
 }
 
 /**
  * 添加上下文信息
  */
-export function setContext(name: string, context: Record<string, any>) {
-  Sentry.setContext(name, context);
+export function setContext(name: string, context: Record<string, unknown>) {
+  Sentry?.setContext(name, context);
 }
 
 /**
  * 手动捕获异常
  */
-export function captureException(error: Error, context?: Record<string, any>) {
-  Sentry.captureException(error, {
+export function captureException(error: Error, context?: Record<string, unknown>) {
+  Sentry?.captureException(error, {
     extra: context,
   });
 }
@@ -105,20 +118,20 @@ export function captureException(error: Error, context?: Record<string, any>) {
 /**
  * 手动捕获消息
  */
-export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info') {
-  Sentry.captureMessage(message, level);
+export function captureMessage(message: string, level: SeverityLevel = 'info') {
+  Sentry?.captureMessage(message, level);
 }
 
 /**
  * 添加面包屑
  */
-export function addBreadcrumb(breadcrumb: Sentry.Breadcrumb) {
-  Sentry.addBreadcrumb(breadcrumb);
+export function addBreadcrumb(breadcrumb: Breadcrumb) {
+  Sentry?.addBreadcrumb(breadcrumb);
 }
 
 /**
  * 包装组件的错误边界
  */
-export const withErrorBoundary = Sentry.withErrorBoundary;
+export const withErrorBoundary = Sentry?.withErrorBoundary;
 
 export { Sentry };

@@ -108,9 +108,12 @@ export default function DataHealthPage() {
       />
 
       <Tabs value={focus} onValueChange={(v) => setFocus(v as FocusOption)}>
-        <TabsList>
+        <TabsList
+          aria-label={t('focusLabel')}
+          className="grid h-auto w-full grid-cols-1 gap-1 sm:grid-cols-2 lg:flex lg:w-fit lg:flex-wrap"
+        >
           {FOCUS_OPTIONS.map((f) => (
-            <TabsTrigger key={f} value={f}>
+            <TabsTrigger key={f} value={f} className="min-w-0 px-2 sm:px-3 lg:flex-none">
               {t(`focus.${f}`)}
             </TabsTrigger>
           ))}
@@ -248,6 +251,7 @@ export default function DataHealthPage() {
                         <Link href={`/admin/schools?edit=${row.schoolId}`}>
                           <Button variant="ghost" size="sm">
                             <Pencil className="h-4 w-4" />
+                            <span className="sr-only">{t('actions.edit')}</span>
                           </Button>
                         </Link>
                       </TableCell>

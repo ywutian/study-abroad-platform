@@ -6,15 +6,19 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { User, Prisma } from '@prisma/client';
+import { User, Prisma, TeamStatus } from '@prisma/client';
 import { safeDelete } from '../../common/utils/safe-delete';
+import { PeerReviewService } from '../peer-review/peer-review.service';
 import { randomBytes } from 'crypto';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private peerReviewService: PeerReviewService,
+  ) {}
 
   /**
    * Find a user by their unique ID, excluding soft-deleted users
@@ -22,6 +26,7 @@ export class UserService {
    * @returns The user if found, or null if not found or soft-deleted
    */
   async findById(id: string): Promise<User | null> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.findUnique({
       where: { id, deletedAt: null },
     });
@@ -33,6 +38,7 @@ export class UserService {
    * @returns The user if found, or null if no user matches the email or is soft-deleted
    */
   async findByEmail(email: string): Promise<User | null> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.findFirst({
       where: { email, deletedAt: null },
     });
@@ -58,6 +64,7 @@ export class UserService {
    * @returns The newly created user
    */
   async create(data: Prisma.UserCreateInput): Promise<User> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.create({ data });
   }
 
@@ -68,6 +75,7 @@ export class UserService {
    * @returns The updated user
    */
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
+    // governance: parent-scoped — generic building blocks; user.controller passes @CurrentUser().id, never a path param
     return this.prisma.user.update({
       where: { id },
       data,
@@ -115,6 +123,26 @@ export class UserService {
         }),
         ctx('admissionCase'),
       );
+      // The profile is where the identifiers actually live. softDelete
+      // anonymised User.email and Message.content and then stopped, so after
+      // "注销账号 — 永久删除您的账户和数据" the real name, photo, bio and date of
+      // birth stayed on the profile — and nothing filters `deletedAt` when
+      // serving it, so every forum post the account wrote kept rendering
+      // author.name and author.avatar (mapForumAuthor reads exactly these two).
+      // Same field set that anonymizeProfile strips for ANONYMOUS viewing.
+      await safeDelete(
+        tx.profile.updateMany({
+          where: { userId: id },
+          data: {
+            realName: null,
+            nickname: null,
+            avatarUrl: null,
+            bio: null,
+            birthday: null,
+          },
+        }),
+        ctx('profile'),
+      );
       await safeDelete(
         tx.follow.deleteMany({
           where: { OR: [{ followerId: id }, { followingId: id }] },
@@ -158,6 +186,7 @@ export class UserService {
       operation: 'hardDelete' as const,
     });
 
+    let ratingCounterparties: string[] = [];
     await this.prisma.$transaction(async (tx) => {
       await safeDelete(
         tx.refreshToken.deleteMany({ where: { userId: id } }),
@@ -192,8 +221,84 @@ export class UserService {
         ctx('profile'),
       );
 
+      // ForumPost.currentSize is denormalised and TeamMember cascades off
+      // User, so deleting an account silently removed someone from a team
+      // without recounting: a FULL team stayed FULL forever, showing a
+      // headcount that included the deleted member, and the freed slot never
+      // reopened. leaveTeam already does this recount — the cascade cannot.
+      // (Teams the user OWNED need no handling: ForumPost cascades off
+      // authorId, so those posts go with them.)
+      const memberships = await tx.teamMember.findMany({
+        where: { userId: id },
+        select: { postId: true },
+      });
+      if (memberships.length > 0) {
+        await safeDelete(
+          tx.teamMember.deleteMany({ where: { userId: id } }),
+          ctx('teamMember'),
+        );
+        for (const postId of new Set(memberships.map((m) => m.postId))) {
+          const memberCount = await tx.teamMember.count({ where: { postId } });
+          const post = await tx.forumPost.findUnique({
+            where: { id: postId },
+            select: { teamStatus: true, teamSize: true },
+          });
+          await tx.forumPost.update({
+            where: { id: postId },
+            data: {
+              currentSize: memberCount,
+              // Only undo a FULL that is no longer true. CLOSED is the owner
+              // deciding recruitment is over, and losing a member is not a
+              // reason to overrule that.
+              ...(post?.teamStatus === TeamStatus.FULL &&
+              (!post.teamSize || memberCount < post.teamSize)
+                ? { teamStatus: TeamStatus.RECRUITING }
+                : {}),
+            },
+          });
+        }
+      }
+
+      await this.recountForumDenormals(tx, id);
+
+      // PeerReview cascades off BOTH sides, and a user's stored rating
+      // (peerAvgRating/peerReviewCount, written whole by updateUserRating)
+      // mixes forward scores from reviews they received with reverse scores
+      // from reviews they gave. So deleting this account silently changes the
+      // input set of every counterparty — collect them now, while the rows
+      // still exist; recompute after commit, when the cascade has run and
+      // updateUserRating reads the post-delete truth.
+      const [given, received] = await Promise.all([
+        tx.peerReview.findMany({
+          where: { reviewerId: id },
+          select: { revieweeId: true },
+        }),
+        tx.peerReview.findMany({
+          where: { revieweeId: id },
+          select: { reviewerId: true },
+        }),
+      ]);
+      ratingCounterparties = [
+        ...new Set([
+          ...given.map((r) => r.revieweeId),
+          ...received.map((r) => r.reviewerId),
+        ]),
+      ].filter((uid) => uid !== id);
+
       await tx.user.delete({ where: { id } });
     });
+
+    // Post-commit, best-effort: the account is gone either way, and a missed
+    // recompute here only re-freezes an aggregate nothing currently reads.
+    for (const uid of ratingCounterparties) {
+      await this.peerReviewService
+        .updateUserRating(uid)
+        .catch((err) =>
+          this.logger.warn(
+            `Rating recompute failed for ${uid} after deleting ${id}: ${String(err)}`,
+          ),
+        );
+    }
 
     this.logger.warn(`User ${id} hard deleted`);
   }
@@ -205,6 +310,7 @@ export class UserService {
    * @returns An object containing the export date and the user's data (profile, cases, followers, following)
    */
   async exportUserData(id: string): Promise<Record<string, any>> {
+    // governance: parent-scoped — GDPR export — reached only from @Get("me/export"), which passes @CurrentUser().id
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -368,10 +474,102 @@ export class UserService {
     const normalizedCode = referralCode.trim().toUpperCase();
     if (!normalizedCode) return null;
 
+    // governance: parent-scoped — keyed by a referral code, a value its owner hands out deliberately; returns only the referrer id, nothing else about them
     const referrer = await this.prisma.user.findUnique({
       where: { referralCode: normalizedCode },
       select: { id: true },
     });
     return referrer?.id ?? null;
+  }
+
+  /**
+   * Repair the forum's denormalised counters before the account's rows vanish.
+   *
+   * ForumComment, ForumPost and ForumCommunityFollow all cascade off User, and
+   * ForumPost.commentCount / ForumCommunity.postCount / .followerCount are
+   * columns the application increments by hand. A database cascade runs no
+   * application code, so every one of those counters kept counting rows that no
+   * longer existed — permanently, and commentCount and postCount are both
+   * indexed and used for ORDER BY.
+   *
+   * Recounts rather than decrementing by the number of rows removed: deleting
+   * one of this user's comments also cascades away OTHER users' replies to it
+   * (ForumComment.parent is Cascade too), so the rows that disappear are not
+   * the rows we enumerated. Recounting is exact regardless of depth, and heals
+   * any drift already on the row.
+   *
+   * ponytail: one UPDATE per affected parent. Account deletion is rare and
+   * already a large transaction; if a user with thousands of comments ever
+   * makes this slow, group the updates by resulting count.
+   */
+  private async recountForumDenormals(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<void> {
+    // Posts this user commented on. Their OWN posts cascade away with them, so
+    // those counters go too — harmless to touch, not worth a second query.
+    const commentedPostIds = [
+      ...new Set(
+        (
+          await tx.forumComment.findMany({
+            where: { authorId: userId },
+            select: { postId: true },
+          })
+        ).map((c) => c.postId),
+      ),
+    ];
+    const communityIds = [
+      ...new Set(
+        [
+          ...(
+            await tx.forumPost.findMany({
+              where: { authorId: userId, communityId: { not: null } },
+              select: { communityId: true },
+            })
+          ).map((p) => p.communityId),
+          ...(
+            await tx.forumCommunityFollow.findMany({
+              where: { userId },
+              select: { communityId: true },
+            })
+          ).map((f) => f.communityId),
+        ].filter((c): c is string => c !== null),
+      ),
+    ];
+
+    await safeDelete(
+      tx.forumComment.deleteMany({ where: { authorId: userId } }),
+      { entity: 'forumComment', userId, operation: 'hardDelete' as const },
+    );
+    await safeDelete(
+      tx.forumCommunityFollow.deleteMany({ where: { userId } }),
+      {
+        entity: 'forumCommunityFollow',
+        userId,
+        operation: 'hardDelete' as const,
+      },
+    );
+    await safeDelete(tx.forumPost.deleteMany({ where: { authorId: userId } }), {
+      entity: 'forumPost',
+      userId,
+      operation: 'hardDelete' as const,
+    });
+
+    for (const postId of commentedPostIds) {
+      const commentCount = await tx.forumComment.count({ where: { postId } });
+      await tx.forumPost
+        .update({ where: { id: postId }, data: { commentCount } })
+        .catch(() => undefined); // the post itself may have just been deleted
+    }
+    for (const communityId of communityIds) {
+      const [postCount, followerCount] = await Promise.all([
+        tx.forumPost.count({ where: { communityId } }),
+        tx.forumCommunityFollow.count({ where: { communityId } }),
+      ]);
+      await tx.forumCommunity.update({
+        where: { id: communityId },
+        data: { postCount, followerCount },
+      });
+    }
   }
 }

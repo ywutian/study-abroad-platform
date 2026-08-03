@@ -211,6 +211,7 @@ export class AdminController {
   @RequirePermission(Permission.USER_VIEW)
   @ApiOperation({ summary: 'Get user details' })
   async getUser(@Param('id') id: string) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id },
       select: {
@@ -550,6 +551,7 @@ export class AdminController {
     if (body.audience === BroadcastAudience.ADMIN)
       roleFilter.role = { in: [Role.ADMIN, Role.SUPER_ADMIN] };
 
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     const users = await this.prisma.user.findMany({
       where: { ...roleFilter, isBanned: false },
       select: { id: true },
@@ -731,12 +733,14 @@ export class AdminController {
   async getActivityStats() {
     const [totalActivities, categoryDist, avgPerStudent, tierDist] =
       await Promise.all([
+        // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
         this.prisma.activity.count(),
         this.prisma.activity.groupBy({
           by: ['category'],
           _count: true,
           orderBy: { _count: { category: 'desc' } },
         }),
+        // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
         this.prisma.profile.findMany({
           select: { _count: { select: { activities: true } } },
         }),
@@ -792,12 +796,14 @@ export class AdminController {
     }
 
     const [items, total] = await Promise.all([
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.activityTemplate.findMany({
         where,
         orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }, { name: 'asc' }],
         skip: (page - 1) * limit,
         take: limit,
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.activityTemplate.count({ where }),
     ]);
 
@@ -808,6 +814,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Get single activity template' })
   @RequirePermission(Permission.DATA_HEALTH)
   async getActivityTemplate(@Param('id') id: string) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     return this.prisma.activityTemplate.findUniqueOrThrow({ where: { id } });
   }
 
@@ -815,6 +822,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Create activity template' })
   @RequirePermission(Permission.DATA_HEALTH)
   async createActivityTemplate(@Body() dto: CreateActivityTemplateDto) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     return this.prisma.activityTemplate.create({
       data: {
         name: dto.name,
@@ -834,6 +842,7 @@ export class AdminController {
     @Param('id') id: string,
     @Body() dto: UpdateActivityTemplateDto,
   ) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     return this.prisma.activityTemplate.update({
       where: { id },
       data: dto,
@@ -844,6 +853,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Soft-delete activity template' })
   @RequirePermission(Permission.DATA_HEALTH)
   async deleteActivityTemplate(@Param('id') id: string) {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     return this.prisma.activityTemplate.update({
       where: { id },
       data: { isActive: false },
@@ -859,11 +869,13 @@ export class AdminController {
   @RequirePermission(Permission.DATA_HEALTH)
   async listCompetitions(@Query('page') page = 1, @Query('limit') limit = 50) {
     const [items, total] = await Promise.all([
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.competition.findMany({
         orderBy: [{ tier: 'desc' }, { name: 'asc' }],
         skip: (Number(page) - 1) * Number(limit),
         take: Number(limit),
       }),
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.competition.count(),
     ]);
 

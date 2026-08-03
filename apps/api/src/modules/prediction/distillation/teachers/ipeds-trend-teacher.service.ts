@@ -42,6 +42,7 @@ export class IpedsTrendTeacherService implements TeacherSignalProvider {
   ): Promise<
     Omit<DistillationTeacherSignal, 'configuredWeight' | 'effectiveBlendWeight'>
   > {
+    // governance: system-scope — SchoolMetric — IPEDS trend data
     const metrics = await this.prisma.schoolMetric.findMany({
       where: {
         schoolId: input.schoolId,

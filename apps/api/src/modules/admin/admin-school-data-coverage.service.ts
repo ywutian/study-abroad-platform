@@ -488,12 +488,14 @@ export class AdminSchoolDataCoverageService {
       .map((row) => row.schoolNameNorm)
       .filter((nameNorm): nameNorm is string => Boolean(nameNorm));
     const [schoolsByIpeds, schoolsByName] = await Promise.all([
+      // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
       this.prisma.school.findMany({
         where: { ipedsId: { in: unitids } },
         select: { id: true, ipedsId: true },
       }),
       nameNorms.length
-        ? this.prisma.school.findMany({
+        ? // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
+          this.prisma.school.findMany({
             where: { nameNorm: { in: nameNorms } },
             select: { id: true, nameNorm: true },
           })
@@ -613,6 +615,7 @@ export class AdminSchoolDataCoverageService {
     includeAllCountries?: boolean;
     limit?: number;
   }): Promise<SchoolForCoverage[]> {
+    // governance: admin-scope — every controller in apps/api/src/modules/admin carries a class-level @Roles(OPERATOR | ADMIN | SUPER_ADMIN) with no @Public() and no method-level widening; AdminReviewService is additionally reached from case-admin.controller, which is @Roles(OPERATOR) + @RequirePermission(CASE_REVIEW). Operating across every user IS the admin surface
     return this.prisma.school.findMany({
       where: options?.includeAllCountries
         ? undefined

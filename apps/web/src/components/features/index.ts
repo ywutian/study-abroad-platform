@@ -42,7 +42,6 @@ export * from './essay-gallery';
 export * from './agent-chat';
 
 // Points components
-export * from './points';
 
 // Followers components
 export * from './followers';

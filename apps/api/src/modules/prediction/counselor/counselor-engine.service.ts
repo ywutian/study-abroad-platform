@@ -68,8 +68,13 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
+// v1.12 = v1.10's substitute-credential cap AND v1.11's ACT concordance table.
+// The two landed on separate branches and this merge is the first engine to
+// carry both, so it needs its own version: served traces and calibration rows
+// key off this string, and reusing either parent's name would claim to be an
+// engine that produces different point estimates than this one does.
 export const COUNSELOR_RULE_VERSION =
-  'counselor-cold-start-v1.11-act-concordance';
+  'counselor-cold-start-v1.12-substitute-cap-act-concordance';
 
 export interface CounselorFactor {
   name: string;
@@ -465,7 +470,8 @@ export class CounselorEngineService {
 
     const cipCode = resolveMajorToCip(profile.targetMajor);
     const cipProgram = cipCode
-      ? await this.prisma.schoolProgram.findFirst({
+      ? // governance: system-scope — SchoolProgram — published programme data
+        await this.prisma.schoolProgram.findFirst({
           where: {
             schoolId: school.id,
             cipCode,
@@ -479,6 +485,7 @@ export class CounselorEngineService {
     }
 
     // Fuzzy name match for unknown aliases or rows whose CIP code is missing.
+    // governance: system-scope — SchoolProgram — published programme data
     const program = await this.prisma.schoolProgram.findFirst({
       where: {
         schoolId: school.id,
@@ -507,6 +514,7 @@ export class CounselorEngineService {
     // constant.
     const bucketCip = resolveMajorToProgramBucket(profile.targetMajor);
     if (bucketCip && bucketCip !== cipCode) {
+      // governance: system-scope — SchoolProgram — published programme data
       const bucketProgram = await this.prisma.schoolProgram.findFirst({
         where: { schoolId: school.id, cipCode: bucketCip },
         select: { acceptanceRateEstimate: true },

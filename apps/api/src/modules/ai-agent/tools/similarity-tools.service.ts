@@ -10,7 +10,7 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { CASE_REVIEW_APPROVED_WHERE } from '../../../common/constants/prisma-selects';
+import { CASE_PUBLIC_VISIBILITY_WHERE } from '../../../common/constants/prisma-selects';
 import {
   parseCaseActivities,
   parseCaseAwards,
@@ -112,10 +112,11 @@ export class SimilarityToolsService implements IToolHandlerProvider {
       }
 
       // ── Query candidates with loose filters ──
+      // governance: public-feed — CASE_PUBLIC_VISIBILITY_WHERE. This used to add
+      // VERIFIED_ONLY, which this layer cannot honour (UserContext has no role).
       const where: any = {
         isVerified: true,
-        ...CASE_REVIEW_APPROVED_WHERE,
-        visibility: { in: ['ANONYMOUS', 'PUBLIC', 'VERIFIED_ONLY'] },
+        ...CASE_PUBLIC_VISIBILITY_WHERE,
       };
 
       if (schoolId) {
@@ -126,6 +127,7 @@ export class SimilarityToolsService implements IToolHandlerProvider {
         where.result = 'ADMITTED';
       }
 
+      // governance: public-feed — `where` spreads CASE_PUBLIC_VISIBILITY_WHERE (see above); the emitted shape carries no id and no userId
       const candidates = await this.prisma.admissionCase.findMany({
         where,
         take: take * 5, // Over-fetch for scoring/filtering

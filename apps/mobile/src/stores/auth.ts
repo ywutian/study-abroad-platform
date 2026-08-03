@@ -7,8 +7,10 @@ import {
   getAccessToken,
   getRefreshToken,
 } from '@/lib/storage/secure-store';
-import { authRoutes, userRoutes } from '@study-abroad/shared';
+import { authRoutes, notificationRoutes, userRoutes } from '@study-abroad/shared';
 import { apiClient, getApiLocale } from '@/lib/api/client';
+import { resetQuerySession } from '@/lib/query-session';
+import { clearRegisteredPushToken, getRegisteredPushToken } from '@/lib/storage/push-token';
 import type { User, AuthResponse, LoginDto, RegisterDto } from '@/types';
 
 interface AuthState {
@@ -41,6 +43,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       throw new Error('Login failed: no access token returned');
     }
 
+    // A previous account may have left in-memory cache behind after a crash.
+    await resetQuerySession();
     await saveTokens(response.accessToken, response.refreshToken);
     await saveUser(response.user);
 
@@ -65,6 +69,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     const refreshToken = await getRefreshToken();
 
+    const pushToken = await getRegisteredPushToken();
+    if (pushToken) {
+      try {
+        await apiClient.delete(notificationRoutes.pushToken(), {
+          body: JSON.stringify({ token: pushToken }),
+        });
+      } catch {
+        // Session cleanup must continue even when push-token cleanup is offline.
+      } finally {
+        await clearRegisteredPushToken();
+      }
+    }
+
     // Call logout API
     if (refreshToken) {
       try {
@@ -75,6 +92,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     await clearAuthData();
+    await resetQuerySession();
     set({ user: null, isAuthenticated: false, isLoading: false });
   },
 
@@ -104,6 +122,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           } else {
             // Token invalid
             await clearAuthData();
+            await resetQuerySession();
             set({ user: null, isAuthenticated: false, isLoading: false });
           }
         }
@@ -112,6 +131,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch {
       await clearAuthData();
+      await resetQuerySession();
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
@@ -124,5 +144,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 // Set up refresh failed callback — signal session expiry instead of
 // immediately logging out so the user can be notified first.
 apiClient.setOnRefreshFailed(() => {
+  void resetQuerySession();
   useAuthStore.setState({ sessionExpired: true, isAuthenticated: false, user: null });
 });

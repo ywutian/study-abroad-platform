@@ -52,6 +52,7 @@ export class SchoolListService {
    * Get available application rounds for a school from deadline data
    */
   async getAvailableRounds(schoolId: string): Promise<string[]> {
+    // governance: system-scope — SchoolDeadline is published school data, keyed by schoolId, with no User relation
     const deadlines = await this.prisma.schoolDeadline.findMany({
       where: { schoolId },
       select: { round: true },
@@ -674,6 +675,7 @@ export class SchoolListService {
         // This replaces the legacy modelVersion allowlist so that every
         // future authoritative model (Scorecard, v4, ML champion, etc.) is
         // automatically protected without touching this file.
+        // governance: parent-scoped — keyed by profileId_schoolId; profileId is derived from the authenticated user by the caller
         const existing = await this.prisma.predictionResult.findUnique({
           where: {
             profileId_schoolId: { profileId, schoolId: school.id },
@@ -683,6 +685,7 @@ export class SchoolListService {
 
         if (existing && existing.authority === 'AUTHORITATIVE') continue;
 
+        // governance: parent-scoped — keyed by profileId_schoolId; profileId is derived from the authenticated user by the caller
         await this.prisma.predictionResult.upsert({
           where: {
             profileId_schoolId: { profileId, schoolId: school.id },

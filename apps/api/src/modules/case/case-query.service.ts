@@ -22,6 +22,7 @@ import {
 import { PointsService } from '../points/incentive.service';
 import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
 import { CaseMemoryService } from './case-memory.service';
+import { stripCaseIdentity } from './case.constants';
 
 interface CaseFilters {
   schoolId?: string;
@@ -175,11 +176,17 @@ export class CaseQueryService {
       resultStats.map((r) => [r.result, r._count]),
     );
 
-    return createPaginatedResponse(cases, total, page, pageSize, {
-      admitted: statsMap['ADMITTED'] || 0,
-      rejected: statsMap['REJECTED'] || 0,
-      waitlisted: statsMap['WAITLISTED'] || 0,
-    });
+    return createPaginatedResponse(
+      cases.map((c) => stripCaseIdentity(c, requesterId)),
+      total,
+      page,
+      pageSize,
+      {
+        admitted: statsMap['ADMITTED'] || 0,
+        rejected: statsMap['REJECTED'] || 0,
+        waitlisted: statsMap['WAITLISTED'] || 0,
+      },
+    );
   }
 
   /**
@@ -218,6 +225,9 @@ export class CaseQueryService {
     if (isOwner || isAdmin) {
       return caseItem;
     }
+    // Everything below this line is served to someone who does not own the
+    // case; strip the identifying columns before any of those paths return it.
+    const publicCase = stripCaseIdentity(caseItem, requesterId);
 
     // Non-admin, non-owner: block unreviewed cases
     if (
@@ -261,7 +271,7 @@ export class CaseQueryService {
       );
     }
 
-    return caseItem;
+    return publicCase;
   }
 
   /**
@@ -402,26 +412,56 @@ export class CaseQueryService {
 
   /**
    * Retrieve aggregated admin statistics for admission cases
-   * @returns An object containing counts for total cases, cases with essays, verified cases, and pending essay reviews
+   * @returns Counts for total cases, cases with essays, verified cases, pending
+   *          essay reviews, and share consents that were collected but never
+   *          honoured
    */
   async getAdminStats() {
-    const [total, withEssay, verified, pendingEssays] = await Promise.all([
-      this.prisma.admissionCase.count(),
-      this.prisma.admissionCase.count({
-        where: { essayContent: { not: null } },
-      }),
-      this.prisma.admissionCase.count({
-        where: { isVerified: true },
-      }),
-      this.prisma.admissionCase.count({
-        where: {
-          essayContent: { not: null },
-          isVerified: false,
-          visibility: { not: Visibility.PRIVATE },
-        },
-      }),
-    ]);
+    const [total, withEssay, verified, pendingEssays, unhonouredShareConsents] =
+      await Promise.all([
+        // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
+        this.prisma.admissionCase.count(),
+        // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
+        this.prisma.admissionCase.count({
+          where: { essayContent: { not: null } },
+        }),
+        // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
+        this.prisma.admissionCase.count({
+          where: { isVerified: true },
+        }),
+        // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
+        this.prisma.admissionCase.count({
+          where: {
+            essayContent: { not: null },
+            isVerified: false,
+            visibility: { not: Visibility.PRIVATE },
+          },
+        }),
+        // governance: admin-scope — aggregate counts for the same OPERATOR + CASE_REVIEW admin surface; returns totals, never rows
+        //
+        // Share consents collected and never honoured. Verifying a self-reported
+        // outcome auto-creates a case, but only when the student ticked
+        // "把这条 outcome 匿名分享给学弟学妹 … 加入案例库". Until ba725e79 that
+        // create set no `visibility`, so the row landed on @default(PRIVATE),
+        // which no public surface serves and nothing ever promotes — the consent
+        // was taken and the case was invisible to everyone, permanently.
+        //
+        // `source: null` is what dates them: `outcome_self_report` was added in
+        // the same commit, so only rows written before it match. That makes this
+        // a count that can only go down — a backfill takes it to zero, and if it
+        // ever climbs again, a new creation path has been added that forgets to
+        // set visibility. Which is the alert worth having.
+        this.prisma.admissionCase.count({
+          where: { visibility: Visibility.PRIVATE, source: null },
+        }),
+      ]);
 
-    return { total, withEssay, verified, pendingEssays };
+    return {
+      total,
+      withEssay,
+      verified,
+      pendingEssays,
+      unhonouredShareConsents,
+    };
   }
 }

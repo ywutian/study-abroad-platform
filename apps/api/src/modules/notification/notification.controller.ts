@@ -17,7 +17,10 @@ import { NotificationService } from './notification.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
-import { RegisterPushTokenDto } from './dto/register-push-token.dto';
+import {
+  RegisterPushTokenDto,
+  UnregisterPushTokenDto,
+} from './dto/register-push-token.dto';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 
 @ApiTags('notifications')
@@ -62,6 +65,16 @@ export class NotificationController {
       body.token,
       body.platform,
     );
+    return { success: true };
+  }
+
+  @Delete('push-token')
+  @ApiOperation({ summary: 'Unregister the current installation push token' })
+  async unregisterPushToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: UnregisterPushTokenDto,
+  ) {
+    await this.notificationService.unregisterPushToken(user.id, body.token);
     return { success: true };
   }
 

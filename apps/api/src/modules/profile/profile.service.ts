@@ -32,6 +32,7 @@ import {
   UpdateSemesterGpaDto,
 } from './dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { CachedProfile } from './profile-crud.service';
 import { ProfileCrudService } from './profile-crud.service';
 import { ProfileScoresService } from './profile-scores.service';
 import { ProfileEducationService } from './profile-education.service';
@@ -71,7 +72,7 @@ export class ProfileService {
   // Profile CRUD (delegated to ProfileCrudService)
   // ============================================
 
-  async findByUserId(userId: string): Promise<Profile | null> {
+  async findByUserId(userId: string): Promise<CachedProfile | null> {
     return this.crudService.findByUserId(userId);
   }
 
@@ -545,6 +546,7 @@ export class ProfileService {
 
   async searchActivityTemplates(query: string, limit = 10) {
     if (!query || query.length < 1) {
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       return this.prisma.activityTemplate.findMany({
         where: { isActive: true },
         orderBy: [{ tier: 'asc' }, { sortOrder: 'asc' }],
@@ -552,6 +554,7 @@ export class ProfileService {
       });
     }
 
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     return this.prisma.activityTemplate.findMany({
       where: {
         isActive: true,

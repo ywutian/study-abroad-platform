@@ -318,7 +318,7 @@ export default function CounselorPatternsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs"
+                            className="text-xs"
                             onClick={() => router.push(`/cases/essays/${row.id}`)}
                           >
                             {t('viewDetail')}

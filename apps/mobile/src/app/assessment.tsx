@@ -14,7 +14,7 @@ import {
   UIManager,
   LayoutAnimation,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -31,7 +31,7 @@ import {
   Progress,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES, assessmentRoutes } from '@study-abroad/shared';
+import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import {
@@ -768,10 +768,42 @@ export default function AssessmentPage() {
   // ── Main Render ────────────────────────────────────────
   return (
     <>
-      <Stack.Screen options={{ title: t('assessment.title') }} />
+      {/*
+       * Keep this short, refreshable ScrollView out of UIKit's automatic
+       * navigation-bar scroll-edge observation. With a native header here,
+       * iOS can attach both the root stack and the still-mounted tab stack's
+       * RNSNavigationController to the same UIScrollView during a push.
+       */}
+      <Stack.Screen options={{ headerShown: false }} />
+      <View
+        style={[
+          S.navigationHeader,
+          {
+            paddingTop: insets.top,
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={S.navigationBack}
+          hitSlop={8}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.foreground} />
+        </TouchableOpacity>
+        <Text style={[S.navigationTitle, { color: colors.foreground }]}>
+          {t('assessment.title')}
+        </Text>
+        <View style={S.navigationBack} />
+      </View>
       <ScrollView
         style={[S.container, { backgroundColor: colors.background }]}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing['3xl'] }}
+        contentInsetAdjustmentBehavior="never"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
@@ -789,6 +821,26 @@ export default function AssessmentPage() {
 // ── Styles ───────────────────────────────────────────────
 const S = StyleSheet.create({
   container: { flex: 1 },
+  navigationHeader: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  navigationBack: {
+    width: 56,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navigationTitle: {
+    height: 44,
+    textAlignVertical: 'center',
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    lineHeight: 44,
+  },
   body: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
   // Selection
   title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, marginBottom: spacing.lg },

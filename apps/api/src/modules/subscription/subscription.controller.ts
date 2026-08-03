@@ -8,6 +8,7 @@ import {
   Headers,
   Req,
   BadRequestException,
+  ParseEnumPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,7 +17,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { SubscriptionService, SubscriptionPlan } from './subscription.service';
-import type { CreateSubscriptionDto } from './subscription.service';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Public } from '../../common/decorators/public.decorator';
@@ -34,7 +35,7 @@ export class SubscriptionController {
 
   @Get('plans')
   @Public()
-  @ApiOperation({ summary: 'Get all subscription plans' })
+  @ApiOperation({ summary: 'Get the always-open free plan' })
   @ApiResponse({ status: 200, description: 'Returns all available plans' })
   getPlans() {
     return this.subscriptionService.getPlans();
@@ -43,7 +44,10 @@ export class SubscriptionController {
   @Get('plans/:planId')
   @Public()
   @ApiOperation({ summary: 'Get plan details' })
-  getPlan(@Param('planId') planId: SubscriptionPlan) {
+  getPlan(
+    @Param('planId', new ParseEnumPipe(SubscriptionPlan))
+    planId: SubscriptionPlan,
+  ) {
     return this.subscriptionService.getPlan(planId);
   }
 
@@ -56,12 +60,16 @@ export class SubscriptionController {
 
   @Post('subscribe')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create or upgrade subscription' })
+  @ApiOperation({
+    summary: 'Retired paid-subscription endpoint',
+    deprecated: true,
+  })
   @ApiResponse({
     status: 200,
     description: 'Subscription created successfully',
   })
   @ApiResponse({ status: 400, description: 'Invalid request' })
+  @ApiResponse({ status: 503, description: 'Paid subscriptions are retired' })
   async subscribe(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateSubscriptionDto,
@@ -71,7 +79,7 @@ export class SubscriptionController {
 
   @Delete('cancel')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Cancel current subscription' })
+  @ApiOperation({ summary: 'Retired cancellation endpoint', deprecated: true })
   async cancelSubscription(@CurrentUser() user: CurrentUserPayload) {
     return this.subscriptionService.cancelSubscription(user.id);
   }
@@ -86,7 +94,7 @@ export class SubscriptionController {
   @Post('webhook')
   @Public()
   @ThrottleRelaxed()
-  @ApiOperation({ summary: 'Payment webhook endpoint' })
+  @ApiOperation({ summary: 'Retired legacy payment webhook', deprecated: true })
   async handleWebhook(
     @Req() req: express.Request & { rawBody?: Buffer },
     @Headers('x-signature') signature: string,
@@ -94,8 +102,13 @@ export class SubscriptionController {
     if (!signature) {
       throw new BadRequestException('Missing webhook signature');
     }
-    const payload = req.body;
-    await this.subscriptionService.handlePaymentWebhook(payload, signature);
+    // rawBody, not req.body: the HMAC covers the bytes the sender signed.
+    // main.ts mounts a body parser on this exact path to capture them.
+    await this.subscriptionService.handlePaymentWebhook(
+      req.body,
+      signature,
+      req.rawBody,
+    );
     return { received: true };
   }
 }

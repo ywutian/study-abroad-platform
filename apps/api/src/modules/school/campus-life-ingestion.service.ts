@@ -434,6 +434,7 @@ export class CampusLifeIngestionService {
         : {}),
     };
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     return this.prisma.school.findMany({
       where,
       select: {

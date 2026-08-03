@@ -34,7 +34,6 @@ import {
   UserPlus,
   GraduationCap,
   CreditCard,
-  Coins,
   Layers,
   SlidersHorizontal,
   FileCheck,
@@ -385,14 +384,6 @@ export function CommandPalette({ customCommands = [] }: CommandPaletteProps) {
               icon: <SlidersHorizontal className="w-4 h-4" />,
               action: () => router.push('/admin/calibrations'),
               keywords: t('keywords.adminCalibrations').split(','),
-              section: t('admin'),
-            },
-            {
-              id: 'admin-points',
-              title: t('adminPoints'),
-              icon: <Coins className="w-4 h-4" />,
-              action: () => router.push('/admin/points'),
-              keywords: t('keywords.adminPoints').split(','),
               section: t('admin'),
             },
             {

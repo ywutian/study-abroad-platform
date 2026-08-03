@@ -192,6 +192,7 @@ export class EssayScraperService {
     }
 
     // 查找所有 COMMON_APP 分组的学校
+    // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
     const commonAppSources = await this.prisma.schoolEssaySource.findMany({
       where: { scrapeGroup: 'COMMON_APP', isActive: true },
       include: { school: { select: { id: true, name: true } } },
@@ -225,6 +226,7 @@ export class EssayScraperService {
     year: number = this.getCurrentApplicationYear(),
   ): Promise<TestScrapeResult> {
     // 查找学校和 source 配置
+    // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
     const school = await this.prisma.school.findUnique({
       where: { nameNorm: normalizeSchoolName(schoolName) },
       include: {
@@ -322,8 +324,10 @@ export class EssayScraperService {
     if (essays.length === 0) return 0;
 
     const school = data.schoolId
-      ? await this.prisma.school.findUnique({ where: { id: data.schoolId } })
-      : await this.prisma.school.findUnique({
+      ? // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
+        await this.prisma.school.findUnique({ where: { id: data.schoolId } })
+      : // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
+        await this.prisma.school.findUnique({
           where: { nameNorm: normalizeSchoolName(data.school) },
         });
 
@@ -334,6 +338,7 @@ export class EssayScraperService {
       const essay = essays[i];
       try {
         // 去重检查
+        // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
         const existing = await this.prisma.essayPrompt.findFirst({
           where: {
             schoolId: school.id,
@@ -344,6 +349,7 @@ export class EssayScraperService {
 
         if (existing) continue;
 
+        // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
         await this.prisma.essayPrompt.create({
           data: {
             schoolId: school.id,
@@ -392,6 +398,7 @@ export class EssayScraperService {
     year: number,
     newPrompt: string,
   ): Promise<{ changeType: string; previousPromptId?: string }> {
+    // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
     const priorPrompts = await this.prisma.essayPrompt.findMany({
       where: {
         schoolId,
@@ -431,6 +438,7 @@ export class EssayScraperService {
   ): Promise<
     Array<ScrapedEssay & { changeType: string; previousPromptId?: string }>
   > {
+    // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
     const priorPrompts = await this.prisma.essayPrompt.findMany({
       where: {
         schoolId,
@@ -490,6 +498,7 @@ export class EssayScraperService {
     }>,
     scrapeResults: ScrapeResult[],
   ): Promise<number> {
+    // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
     const school = await this.prisma.school.findUnique({
       where: { nameNorm: normalizeSchoolName(schoolName) },
     });
@@ -521,6 +530,7 @@ export class EssayScraperService {
         }
 
         // 去重检查
+        // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
         const existing = await this.prisma.essayPrompt.findFirst({
           where: {
             schoolId: school.id,
@@ -536,6 +546,7 @@ export class EssayScraperService {
           continue;
         }
 
+        // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
         await this.prisma.essayPrompt.create({
           data: {
             schoolId: school.id,
@@ -582,6 +593,7 @@ export class EssayScraperService {
    * 从 DB 获取所有配置了采集源的学校
    */
   async getConfiguredSchools(): Promise<string[]> {
+    // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
     const schools = await this.prisma.schoolEssaySource.findMany({
       where: { isActive: true },
       select: { school: { select: { name: true } } },
@@ -653,6 +665,7 @@ export class EssayScraperService {
     newPromptCount: number,
   ): Promise<void> {
     try {
+      // governance: system-scope — School / EssayPrompt / SchoolEssaySource — published application questions and their provenance, no User relation
       const school = await this.prisma.school.findUnique({
         where: { nameNorm: normalizeSchoolName(schoolName) },
         select: { id: true, name: true },

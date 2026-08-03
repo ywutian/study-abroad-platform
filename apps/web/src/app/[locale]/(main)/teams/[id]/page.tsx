@@ -40,7 +40,8 @@ interface TeamDetail {
     joinedAt: string;
     user: {
       id: string;
-      email: string;
+      // No email: GET /teams/:id is @Public() and stopped sending one. This is
+      // hand-written, so nothing would have caught it still claiming the field.
       profile?: { nickname?: string | null; avatarUrl?: string | null } | null;
     };
   }>;
@@ -256,7 +257,10 @@ export default function TeamDetailPage() {
                     key={m.id}
                     className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                   >
-                    <span className="font-medium">{m.user.profile?.nickname || m.user.email}</span>
+                    {/* Falls back to a neutral label, never an identifier. This
+                        read the member's email until the API stopped sending
+                        it — see TEAM_USER_SELECT. */}
+                    <span className="font-medium">{m.user.profile?.nickname || t('member')}</span>
                     <Badge variant={m.role === 'OWNER' ? 'default' : 'secondary'}>{m.role}</Badge>
                   </li>
                 ))}

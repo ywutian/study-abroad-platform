@@ -650,6 +650,7 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
 
     return entries.map((v) => {
       try {
+        // @cache-parse-allowed - Record<string, any>[]; the type claims nothing
         return JSON.parse(v);
       } catch {
         return { raw: v };

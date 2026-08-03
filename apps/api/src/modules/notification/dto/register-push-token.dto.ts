@@ -19,3 +19,13 @@ export class RegisterPushTokenDto {
   @IsIn(['ios', 'android'])
   platform!: 'ios' | 'android';
 }
+
+export class UnregisterPushTokenDto {
+  @ApiProperty({
+    description: 'Expo push token for the current installation',
+    example: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]',
+  })
+  @IsString()
+  @MaxLength(255)
+  token!: string;
+}

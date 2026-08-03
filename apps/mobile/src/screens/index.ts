@@ -12,10 +12,9 @@ export { default as EssayEditorScreen } from './essays/EssayEditorScreen';
 
 // Feature module screens (P2)
 export { default as ResumeScreen } from './resume/ResumeScreen';
+export { default as ResumeDetailScreen } from './resume/ResumeDetailScreen';
 export { default as VaultScreen } from './vault/VaultScreen';
 export { default as TeamsScreen } from './teams/TeamsScreen';
-export { default as PointsScreen } from './points/PointsScreen';
-export { default as PeerReviewScreen } from './peer-review/PeerReviewScreen';
 export { default as ReferralScreen } from './referral/ReferralScreen';
 export { default as VerificationScreen } from './verification/VerificationScreen';
 

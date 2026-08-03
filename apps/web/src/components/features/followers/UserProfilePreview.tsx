@@ -2,18 +2,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { apiClient } from '@/lib/api';
 import { qk } from '@/lib/query';
 import { ApiError } from '@/lib/api/api-error';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { chatRoutes, profileRoutes } from '@study-abroad/shared';
+import { chatRoutes, type SocialUser } from '@study-abroad/shared';
 import {
   UserPlus,
   UserMinus,
@@ -21,8 +20,6 @@ import {
   BadgeCheck,
   GraduationCap,
   Target,
-  BookOpen,
-  BarChart,
   Users,
   Heart,
   FileText,
@@ -33,66 +30,20 @@ import {
 import { useRouter } from '@/lib/i18n/navigation';
 
 interface UserProfilePreviewProps {
-  userId: string | null;
+  user: (SocialUser & { isFollowing?: boolean; isFollowedBy?: boolean }) | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface UserProfile {
-  id: string;
-  email: string;
-  role: string;
-  profile?: {
-    nickname?: string;
-    avatarUrl?: string;
-    targetMajor?: string;
-    grade?: string;
-    gpa?: number;
-    gpaScale?: number;
-    visibility?: string;
-    _count?: {
-      testScores: number;
-      activities: number;
-      awards: number;
-      targetSchools: number;
-    };
-  };
-  _count?: {
-    followers: number;
-    following: number;
-    admissionCases: number;
-  };
-  isFollowing?: boolean;
-  isFollowedBy?: boolean;
-}
-
-export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePreviewProps) {
+export function UserProfilePreview({ user, open, onOpenChange }: UserProfilePreviewProps) {
   const t = useTranslations();
   const router = useRouter();
   const queryClient = useQueryClient();
-
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['user-preview', userId],
-    queryFn: async () => {
-      const [userData, following, followers] = await Promise.all([
-        apiClient.get<UserProfile>(profileRoutes.byId(userId!)),
-        apiClient.get<any[]>(chatRoutes.following()),
-        apiClient.get<any[]>(chatRoutes.followers()),
-      ]);
-
-      return {
-        ...userData,
-        isFollowing: following?.some((f: any) => f.following?.id === userId),
-        isFollowedBy: followers?.some((f: any) => f.follower?.id === userId),
-      };
-    },
-    enabled: !!userId && open,
-  });
+  const userId = user?.id ?? null;
 
   const followMutation = useMutation({
     mutationFn: () => apiClient.post(chatRoutes.follow(userId!)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: qk.social.following() });
       queryClient.invalidateQueries({ queryKey: qk.social.followers() });
       queryClient.invalidateQueries({ queryKey: qk.social.recommended() });
@@ -103,7 +54,6 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
   const unfollowMutation = useMutation({
     mutationFn: () => apiClient.delete(chatRoutes.follow(userId!)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-preview', userId] });
       queryClient.invalidateQueries({ queryKey: qk.social.following() });
       queryClient.invalidateQueries({ queryKey: qk.social.followers() });
       toast.success(t('followers.toast.unfollowSuccess'));
@@ -112,24 +62,6 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
 
   const isMutualFollow = user?.isFollowing && user?.isFollowedBy;
   const displayName = user?.profile?.nickname || user?.email?.split('@')[0] || '';
-
-  const calculateCompleteness = () => {
-    if (!user?.profile) return 0;
-    const counts = user.profile._count || {
-      testScores: 0,
-      activities: 0,
-      awards: 0,
-      targetSchools: 0,
-    };
-    let score = 0;
-    if (user.profile.targetMajor) score += 20;
-    if (user.profile.gpa) score += 20;
-    if (counts.testScores > 0) score += 20;
-    if (counts.activities > 0) score += 20;
-    if (counts.awards > 0) score += 10;
-    if (counts.targetSchools > 0) score += 10;
-    return score;
-  };
 
   const handleStartChat = async () => {
     try {
@@ -145,16 +77,10 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     }
   };
 
-  const completeness = calculateCompleteness();
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : user ? (
+        {user ? (
           <>
             <DialogHeader className="sr-only">
               <DialogTitle>{t('followers.userProfile')}</DialogTitle>
@@ -170,7 +96,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                   <Avatar className="h-20 w-20 ring-4 ring-background shadow-lg">
                     <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-2xl font-bold text-white">
-                      {(user.profile?.nickname?.[0] || user.email[0]).toUpperCase()}
+                      {(user.profile?.nickname?.[0] || user.email?.[0] || '?').toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   {user.role === 'VERIFIED' && (
@@ -206,19 +132,19 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
               <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted/50 p-3">
                 {[
                   {
-                    value: user._count?.followers || 0,
+                    value: user.stats.followers,
                     label: t('followers.followers'),
                     icon: Users,
                     accent: 'text-primary',
                   },
                   {
-                    value: user._count?.following || 0,
+                    value: user.stats.following,
                     label: t('followers.following'),
                     icon: Heart,
                     accent: 'text-pink-600 dark:text-pink-400',
                   },
                   {
-                    value: user._count?.admissionCases || 0,
+                    value: user.stats.cases,
                     label: t('followers.cases'),
                     icon: FileText,
                     accent: 'text-amber-600 dark:text-amber-400',
@@ -232,16 +158,8 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
               </div>
 
               {/* Profile details */}
-              {user.profile && user.profile.visibility !== 'PRIVATE' && (
+              {user.profile && (
                 <div className="space-y-3 rounded-xl bg-muted/30 border border-border p-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t('followers.profileCompleteness')}
-                    </span>
-                    <span className="font-medium text-foreground">{completeness}%</span>
-                  </div>
-                  <Progress value={completeness} className="h-1.5" />
-
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     {user.profile.targetMajor && (
                       <div className="flex items-center gap-2 text-sm text-foreground">
@@ -255,23 +173,10 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                         <span>{user.profile.grade}</span>
                       </div>
                     )}
-                    {user.profile.gpa && (
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <BarChart className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span>
-                          GPA {user.profile.gpa}/{user.profile.gpaScale || 4.0}
-                        </span>
-                      </div>
-                    )}
-                    {user.profile._count && user.profile._count.activities > 0 && (
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span>
-                          {t('followers.activities', { count: user.profile._count.activities })}
-                        </span>
-                      </div>
-                    )}
                   </div>
+                  {user.profile.bio && (
+                    <p className="text-sm text-muted-foreground">{user.profile.bio}</p>
+                  )}
                 </div>
               )}
 

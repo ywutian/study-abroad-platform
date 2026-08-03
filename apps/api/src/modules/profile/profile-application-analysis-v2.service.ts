@@ -419,6 +419,7 @@ export class ProfileApplicationAnalysisV2Service {
     };
 
     const [items, total] = await Promise.all([
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisReplayRun.findMany({
         where,
         include: { caseResults: true },
@@ -426,6 +427,7 @@ export class ProfileApplicationAnalysisV2Service {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       this.prisma.applicationAnalysisReplayRun.count({ where }),
     ]);
 
@@ -443,6 +445,7 @@ export class ProfileApplicationAnalysisV2Service {
     actorId: string,
     options: { debug?: boolean } = {},
   ) {
+    // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
     const sourceRun = await this.prisma.applicationAnalysisRun.findUnique({
       where: { id: runId },
     });
@@ -451,6 +454,7 @@ export class ProfileApplicationAnalysisV2Service {
     }
 
     const snapshot = sourceRun.inputSnapshot as unknown as AnalysisSnapshot;
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     const replayRun = await this.prisma.applicationAnalysisReplayRun.create({
       data: {
         analysisVersion: sourceRun.analysisVersion,
@@ -468,6 +472,7 @@ export class ProfileApplicationAnalysisV2Service {
       const metrics = this.evaluateReplayResponse(response);
       const failures = buildReplayFailures(metrics);
 
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisReplayCaseResult.create({
         data: {
           replayRunId: replayRun.id,
@@ -488,6 +493,7 @@ export class ProfileApplicationAnalysisV2Service {
         failedCases: failures.length > 0 ? 1 : 0,
       };
 
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisReplayRun.update({
         where: { id: replayRun.id },
         data: {
@@ -499,6 +505,7 @@ export class ProfileApplicationAnalysisV2Service {
         },
       });
 
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       return this.prisma.applicationAnalysisReplayRun.findUnique({
         where: { id: replayRun.id },
         include: { caseResults: true },
@@ -508,6 +515,7 @@ export class ProfileApplicationAnalysisV2Service {
         error instanceof Error ? error.message : 'Replay execution failed',
       ];
 
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       await this.prisma.applicationAnalysisReplayRun.update({
         where: { id: replayRun.id },
         data: {
@@ -1344,6 +1352,7 @@ export class ProfileApplicationAnalysisV2Service {
   ): Promise<LoadedPrediction[]> {
     if (schoolIds.length === 0) return [];
 
+    // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
     return this.prisma.predictionResult.findMany({
       where: {
         profileId,
@@ -1627,6 +1636,7 @@ export class ProfileApplicationAnalysisV2Service {
         latencyMs: input.latencyMs ?? null,
       };
     }
+    // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
     return this.prisma.applicationAnalysisStepRun.create({
       data: {
         runId: input.runId,
@@ -1660,6 +1670,7 @@ export class ProfileApplicationAnalysisV2Service {
     if (!runId) {
       return;
     }
+    // governance: parent-scoped — private helper; profileId/runId is derived from the authenticated user by the caller
     await this.prisma.applicationAnalysisRun.update({
       where: { id: runId },
       data: {

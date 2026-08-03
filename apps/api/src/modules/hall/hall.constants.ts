@@ -21,3 +21,30 @@ export const VERIFIED_CASE_WHERE = {
   isVerified: true,
   ...CASE_REVIEW_APPROVED_WHERE,
 } as const satisfies Prisma.AdmissionCaseWhereInput;
+
+/**
+ * A published list served to anyone must not carry its creator's user id.
+ *
+ * `GET /halls/lists` and `GET /halls/lists/:id` are both `@Public()` and query
+ * with `include`, which in Prisma does NOT restrict scalars — so `userId`
+ * shipped on every row. Beside it sat a deliberate `user: { select: { id } }`
+ * whose comment called that id "opaque" while stripping the creator's email as
+ * PII. Half of that is right: the email is PII. But the id is not opaque — it
+ * is the value `GET /forum/posts` publishes as `author.id` next to
+ * `profile.realName`, which is the whole defect this branch documented in
+ * `.claude/rules/backend.md`. Removing the name and keeping the join key is
+ * what hall, team and profile each did in turn.
+ *
+ * Nothing displays a list's creator: no web or mobile surface reads it, and the
+ * relation was only ever selected to be "safe". So both go.
+ */
+export function stripListOwner<T extends { userId: string }>(list: T): T {
+  const {
+    userId: _userId,
+    user: _user,
+    ...rest
+  } = list as T & {
+    user?: unknown;
+  };
+  return rest as T;
+}

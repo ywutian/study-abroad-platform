@@ -201,6 +201,7 @@ export class DeadlineRefreshScheduler {
     const startedAt = Date.now();
     this.logger.log('📅 Running tentative-deadline refresh sweep...');
 
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     const tentative = await this.prisma.schoolDeadline.findMany({
       where: {
         source: { contains: TENTATIVE_SOURCE_MARKER },
@@ -252,6 +253,7 @@ export class DeadlineRefreshScheduler {
             // Same value → safe to auto-confirm. We update only the
             // `source` column so downstream provenance reflects the new
             // trust level.
+            // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
             await this.prisma.schoolDeadline.update({
               where: { id: row.id },
               data: {
@@ -344,6 +346,7 @@ export class DeadlineRefreshScheduler {
     extraction: DeadlineExtraction,
   ): Promise<void> {
     // Mark the row source so the admin data-health dashboard surfaces it.
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     await this.prisma.schoolDeadline.update({
       where: { id: deadlineId },
       data: {
@@ -356,6 +359,7 @@ export class DeadlineRefreshScheduler {
     });
 
     // Audit log entry — visible to admin dashboards via standard channels.
+    // governance: system-scope — School / SchoolMetric / HighSchool / SchoolMediaAsset / SchoolDeadline and the scraper tables are published institution data with no User relation. The auditLog writes in the schedulers record a system action — action/resource/metadata, no user actor
     await this.prisma.auditLog.create({
       data: {
         action: 'DEADLINE_NEEDS_REVIEW',

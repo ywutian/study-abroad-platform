@@ -136,8 +136,18 @@ describe('RankingController', () => {
 
     const result = await controller.getRanking('rank-1');
 
-    expect(rankingService.findById).toHaveBeenCalledWith('rank-1');
+    // Anonymous caller on this @Public() route — no viewer to scope by.
+    expect(rankingService.findById).toHaveBeenCalledWith('rank-1', undefined);
     expect(result).toEqual(expected);
+  });
+
+  it('GET /:id forwards the signed-in viewer so an owner can read their own private ranking', async () => {
+    const expected = { id: 'rank-1', name: 'Test', isPublic: false };
+    (rankingService.findById as jest.Mock).mockResolvedValue(expected);
+
+    await controller.getRanking('rank-1', { id: 'user-1' } as never);
+
+    expect(rankingService.findById).toHaveBeenCalledWith('rank-1', 'user-1');
   });
 
   it('DELETE /:id should call deleteRanking and return success message', async () => {

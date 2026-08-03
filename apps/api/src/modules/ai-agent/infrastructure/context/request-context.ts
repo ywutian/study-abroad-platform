@@ -168,7 +168,10 @@ export class UserContextMiddleware implements NestMiddleware {
     if (user) {
       requestContext.set('userId', user.sub || user.userId);
       requestContext.set('userRole', user.role);
-      requestContext.set('isVip', user.role === 'VIP' || user.role === 'ADMIN');
+      requestContext.set(
+        'isVip',
+        user.role === 'ADMIN' || user.role === 'SUPER_ADMIN',
+      );
     }
     next();
   }

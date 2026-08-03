@@ -103,9 +103,16 @@ export class HallVerifiedService {
     const users: VerifiedUserDto[] = cases.map((c, index) => ({
       rank: offset + index + 1,
       caseId: c.id,
-      userId: c.userId,
       // 2026-05 Hall Plan C (security B4): masked label, never realName.
-      userName: `用户${c.userId.slice(-4)}`,
+      //
+      // 2026-08: and never the user id either, in any form. This leaderboard is
+      // built from `visibility in (ANONYMOUS, VERIFIED_ONLY)` cases, while
+      // GET /forum/posts publishes author.id next to profile.realName — both
+      // unauthenticated. Shipping `userId` handed over the join key outright,
+      // and deriving the label from it was barely better: a 4-char suffix of a
+      // cuid narrows a few-thousand-user forum to a single author. Each row
+      // here IS a case (the lists key off caseId), so label the case.
+      userName: `用户${c.id.slice(-4)}`,
       gpaRange: c.gpaRange || undefined,
       satRange: c.satRange || undefined,
       actRange: c.actRange || undefined,
@@ -132,15 +139,18 @@ export class HallVerifiedService {
   private async getVerifiedStats() {
     const [totalVerified, totalAdmitted, topSchoolsCount, ivyCount] =
       await Promise.all([
+        // governance: public-feed — every count spreads PUBLIC_CASE_WHERE, which is VERIFIED_CASE_WHERE plus `visibility in (ANONYMOUS, VERIFIED_ONLY)` — unlike the dashboard, this surface does filter on the publication flag
         this.prisma.admissionCase.count({
           where: { ...this.PUBLIC_CASE_WHERE },
         }),
+        // governance: public-feed — every count spreads PUBLIC_CASE_WHERE, which is VERIFIED_CASE_WHERE plus `visibility in (ANONYMOUS, VERIFIED_ONLY)` — unlike the dashboard, this surface does filter on the publication flag
         this.prisma.admissionCase.count({
           where: {
             ...this.PUBLIC_CASE_WHERE,
             result: AdmissionResult.ADMITTED,
           },
         }),
+        // governance: public-feed — every count spreads PUBLIC_CASE_WHERE, which is VERIFIED_CASE_WHERE plus `visibility in (ANONYMOUS, VERIFIED_ONLY)` — unlike the dashboard, this surface does filter on the publication flag
         this.prisma.admissionCase.count({
           where: {
             ...this.PUBLIC_CASE_WHERE,
@@ -148,6 +158,7 @@ export class HallVerifiedService {
             school: { usNewsRank: { lte: 20 } },
           },
         }),
+        // governance: public-feed — every count spreads PUBLIC_CASE_WHERE, which is VERIFIED_CASE_WHERE plus `visibility in (ANONYMOUS, VERIFIED_ONLY)` — unlike the dashboard, this surface does filter on the publication flag
         this.prisma.admissionCase.count({
           where: {
             ...this.PUBLIC_CASE_WHERE,
@@ -166,6 +177,7 @@ export class HallVerifiedService {
   }
 
   async getAvailableYears(): Promise<number[]> {
+    // governance: public-feed — same PUBLIC_CASE_WHERE spread as getVerifiedStats
     const cases = await this.prisma.admissionCase.findMany({
       // Use PUBLIC_CASE_WHERE (not the bare VERIFIED_CASE_WHERE) so the
       // visibility narrowing applies — a PRIVATE-only year must never

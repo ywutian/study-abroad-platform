@@ -151,10 +151,14 @@ export default function AdminCalibrationsPage() {
       />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
-        <TabsList>
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:w-fit lg:flex-wrap">
           {TAB_CONFIG.map(({ value, icon: Icon, labelKey }) => (
-            <TabsTrigger key={value} value={value} className="gap-1.5">
-              <Icon className="h-4 w-4" />
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="min-w-0 gap-1.5 px-2 sm:px-3 lg:flex-none"
+            >
+              <Icon className="h-4 w-4 shrink-0" />
               {t(labelKey)}
             </TabsTrigger>
           ))}

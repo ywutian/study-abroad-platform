@@ -657,6 +657,7 @@ export class WebSearchService {
       try {
         const raw = await this.redis.get(key);
         if (raw) {
+          // @cache-parse-allowed - SearchResponse has no Date fields
           return JSON.parse(raw);
         }
       } catch (err) {

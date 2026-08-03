@@ -7,6 +7,7 @@
  * cache-health 监控面板（消除 #274 那类隐形配额泄漏的盲区）。
  */
 
+import type { MaybeSerialized } from '../../../common/redis/redis-json.types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../../common/redis/redis.service';
@@ -94,7 +95,14 @@ export class RedisCacheService {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.lrange(key, 0, -1),
       );
-      return raw.map((r) => JSON.parse(r));
+      // Rehydrate rather than widen the signature: callers merge this list
+      // with the database path, and the two must hand back the same runtime
+      // type. Nothing currently calls a Date method on `createdAt`, so this is
+      // closing the shape, not fixing a crash.
+      return raw.map((r) => {
+        const msg = JSON.parse(r) as MaybeSerialized<MessageRecord>;
+        return { ...msg, createdAt: new Date(msg.createdAt) };
+      });
     } catch (err) {
       this.logger.debug(`Redis getConversationMessages failed: ${String(err)}`);
     }
@@ -136,14 +144,18 @@ export class RedisCacheService {
    */
   async getConversationMeta(
     conversationId: string,
-  ): Promise<Partial<ConversationRecord> | null> {
+  ): Promise<Partial<MaybeSerialized<ConversationRecord>> | null> {
     const key = `conv:meta:${conversationId}`;
 
     try {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.get(key),
       );
-      return raw ? JSON.parse(raw) : null;
+      // Reads its own key rather than going through getJSON, so state the
+      // round-trip here too: the Dates on ConversationRecord came back strings.
+      return raw
+        ? (JSON.parse(raw) as Partial<MaybeSerialized<ConversationRecord>>)
+        : null;
     } catch (err) {
       this.logger.debug(`Redis getConversationMeta failed: ${String(err)}`);
     }
@@ -200,6 +212,7 @@ export class RedisCacheService {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.get(key),
       );
+      // @cache-parse-allowed - Record<string, any>; the type claims nothing
       return raw ? JSON.parse(raw) : null;
     } catch (err) {
       this.logger.debug(`Redis getUserContext failed: ${String(err)}`);

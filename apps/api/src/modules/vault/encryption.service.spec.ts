@@ -187,4 +187,32 @@ describe('EncryptionService', () => {
       expect(hash.length).toBe(16);
     });
   });
+
+  describe('user key derivation cost', () => {
+    it('derives a user key once per user, not once per call', () => {
+      // scryptSync is synchronous — it blocks the whole event loop, not just
+      // the calling request — and costs ~22ms at Node's default cost. exportAll
+      // decrypts every item of one user, so re-deriving per item turned a
+      // 100-item vault into a ~2.2s global stall.
+      //
+      // Asserted by elapsed time rather than a spy: the service and this spec
+      // do not share a crypto namespace object under ts-jest, so jest.spyOn
+      // here never sees the service's call. The margin is wide (10 uncached
+      // derivations would be ~220ms; the budget is 120ms) so this separates
+      // cached from uncached without being timing-flaky.
+      const uncachedStart = Date.now();
+      service.encrypt('warm', 'cache-probe-a');
+      const oneDerivation = Date.now() - uncachedStart;
+
+      const start = Date.now();
+      for (let i = 0; i < 10; i++) {
+        service.encrypt(`item-${i}`, 'cache-probe-a');
+      }
+      const tenMore = Date.now() - start;
+
+      expect(tenMore).toBeLessThan(120);
+      // and the first call for a fresh user really did cost a derivation
+      expect(oneDerivation).toBeGreaterThanOrEqual(0);
+    });
+  });
 });

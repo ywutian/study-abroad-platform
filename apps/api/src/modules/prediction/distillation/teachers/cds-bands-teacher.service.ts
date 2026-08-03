@@ -68,6 +68,7 @@ export class CdsBandsTeacherService implements TeacherSignalProvider {
     candidates.push({ testType: 'GPA_ONLY', testBand: 'ANY' });
 
     for (const candidate of candidates) {
+      // governance: system-scope — SchoolCdsAdmitBand — published Common Data Set figures
       const row = await this.prisma.schoolCdsAdmitBand.findFirst({
         where: {
           schoolId: input.schoolId,

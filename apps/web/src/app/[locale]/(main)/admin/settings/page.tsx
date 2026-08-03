@@ -20,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiClient } from '@/lib/api';
 
 interface SystemSetting {
@@ -32,26 +31,8 @@ interface SystemSetting {
 interface SettingField {
   key: string;
   labelKey: string;
-  labelGroup: 'subscriptionSettings' | 'aiQuotaSettings';
+  labelGroup: 'aiQuotaSettings';
 }
-
-const SUBSCRIPTION_SETTINGS: SettingField[] = [
-  {
-    key: 'subscription_pro_price',
-    labelKey: 'SUBSCRIPTION_PRO_PRICE',
-    labelGroup: 'subscriptionSettings',
-  },
-  {
-    key: 'subscription_premium_price',
-    labelKey: 'SUBSCRIPTION_PREMIUM_PRICE',
-    labelGroup: 'subscriptionSettings',
-  },
-  {
-    key: 'subscription_yearly_discount',
-    labelKey: 'SUBSCRIPTION_YEARLY_DISCOUNT',
-    labelGroup: 'subscriptionSettings',
-  },
-];
 
 const AI_QUOTA_SETTINGS: SettingField[] = [
   {
@@ -75,11 +56,6 @@ export default function AdminSettingsPage() {
   const t = useTranslations('admin');
   const queryClient = useQueryClient();
   const [editedValues, setEditedValues] = useState<Record<string, string>>({});
-
-  const { data: subscriptionSettings, isLoading: subLoading } = useQuery({
-    queryKey: ['adminSettings', 'subscription'],
-    queryFn: () => apiClient.get<SystemSetting[]>(settingsRoutes.byCategory('subscription')),
-  });
 
   const { data: aiSettings, isLoading: aiLoading } = useQuery({
     queryKey: ['adminSettings', 'ai_quota'],
@@ -208,40 +184,16 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        <Tabs defaultValue="subscription">
-          <TabsList>
-            <TabsTrigger value="subscription">{t('settings.subscription')}</TabsTrigger>
-            <TabsTrigger value="ai_quota">{t('settings.aiQuota')}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="subscription">
-            {subLoading ? (
-              <CardSkeleton />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('settings.subscription')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {renderSettingsTable(SUBSCRIPTION_SETTINGS, subscriptionSettings)}
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="ai_quota">
-            {aiLoading ? (
-              <CardSkeleton />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('settings.aiQuota')}</CardTitle>
-                </CardHeader>
-                <CardContent>{renderSettingsTable(AI_QUOTA_SETTINGS, aiSettings)}</CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+        {aiLoading ? (
+          <CardSkeleton />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('settings.aiQuota')}</CardTitle>
+            </CardHeader>
+            <CardContent>{renderSettingsTable(AI_QUOTA_SETTINGS, aiSettings)}</CardContent>
+          </Card>
+        )}
       </div>
     </>
   );

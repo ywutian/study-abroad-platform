@@ -2,7 +2,7 @@
  * AI Recommendation Page
  *
  * AI-powered school recommendation with:
- * - Preflight check (profile completeness, points balance)
+ * - Preflight check (profile completeness)
  * - Preference form (regions, majors, budget, school count)
  * - Animated generation progress
  * - Results display with tier badges, probability bars, and analysis

@@ -147,6 +147,7 @@ export class ProfileEducationService {
             ]
           : [];
 
+      // governance: system-scope — model has no userId/profileId column — platform config/experiment data, not user records
       const match = await this.prisma.highSchool.findFirst({
         where: {
           OR: [

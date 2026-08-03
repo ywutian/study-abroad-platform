@@ -299,11 +299,23 @@ describe('HallService', () => {
 
   describe('getListById', () => {
     it('should return list by id', async () => {
-      const list = { id: 'list-1', title: 'Test List' };
+      const list = { id: 'list-1', title: 'Test List', isPublic: true };
       mockPrisma.userList.findUnique.mockResolvedValue(list);
 
       const result = await service.getListById('list-1');
       expect(result).toEqual(list);
+    });
+
+    it('hides a private list through the facade too', async () => {
+      mockPrisma.userList.findUnique.mockResolvedValue({
+        id: 'list-1',
+        title: 'Private',
+        isPublic: false,
+      });
+
+      await expect(service.getListById('list-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException if list not found', async () => {

@@ -69,8 +69,19 @@ export class UserController {
     await this.userService.softDelete(user.id);
     return {
       success: true,
-      message:
-        'Account deleted successfully. Your data will be permanently removed within 30 days.',
+      // This used to promise "Your data will be permanently removed within 30
+      // days." Nothing ever did that: `hardDelete` has no caller anywhere in
+      // the repo outside its own definition, and the only deletedAt-aware job
+      // is token-cleanup, which deletes refresh tokens. The sentence was a
+      // commitment about deleting personal data that the system did not keep.
+      //
+      // What softDelete actually does: disables login, anonymises the email,
+      // clears the profile identifiers (realName / nickname / avatar / bio /
+      // birthday), redacts sent messages, sets the user's cases to PRIVATE and
+      // deletes follows and blocks. The rows stay.
+      //
+      // Do not re-add a retention promise here without the job that honours it.
+      message: 'Account deleted successfully.',
     };
   }
 
