@@ -366,8 +366,8 @@ describe('UserService', () => {
 
   describe('softDelete — profile anonymisation', () => {
     it('clears the identifiers the profile actually holds', async () => {
-      // The endpoint is labelled 注销账号 / 永久删除您的账户和数据 and answers
-      // "permanently removed within 30 days". Nothing filters deletedAt when
+      // The endpoint is labelled 注销账号 / 永久删除您的账户和数据. Nothing
+      // filters deletedAt when
       // serving profiles or forum posts, and mapForumAuthor reads realName and
       // avatarUrl — so leaving these meant the account stayed named on every
       // post it had written.

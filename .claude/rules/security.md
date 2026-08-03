@@ -56,6 +56,25 @@ the copy changes or the design does, and neither is a change to make silently.
   whole event loop for ~22ms; `exportAll` decrypts every item of one user, so
   deriving per item made a 100-item vault a ~2.2s process-wide stall.
 
+## Account deletion
+
+`DELETE /users/me` is a **soft delete**. It disables login, anonymises the
+email, clears the profile identifiers (realName / nickname / avatarUrl / bio /
+birthday), redacts sent messages, sets the user's admission cases to PRIVATE,
+and deletes follows and blocks. **The rows stay.**
+
+There is no purge. `hardDelete` has no caller anywhere outside its own
+definition, and the only `deletedAt`-aware job is token-cleanup, which deletes
+refresh tokens. The endpoint used to answer "Your data will be permanently
+removed within 30 days" — a retention commitment with nothing behind it, now
+removed.
+
+Do not re-add a retention promise, in the API response or in UI copy, without
+the job that honours it. Three user-facing strings still claim more than the
+system does — `settings.items.deleteAccountDesc`, `settings.dialogs.deleteDesc`
+and `security.dangerZoneDesc` in `apps/web/src/messages/{zh,en}.json` all say
+数据将被永久删除. Either they change or a purge job ships.
+
 ## Dependency CVEs
 
 - CI hard-fails on **high** via `pnpm audit --audit-level=high`; `pnpm lint:audit-gate` (in `lint:all`) keeps that gate from being softened (no `|| true` / `continue-on-error` / relaxed level).
