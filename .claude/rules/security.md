@@ -71,20 +71,42 @@ email, clears the profile identifiers (realName / nickname / avatarUrl / bio /
 birthday), redacts sent messages, sets the user's admission cases to PRIVATE,
 and deletes follows and blocks. **The rows stay.**
 
-There is no purge. `hardDelete` has no caller anywhere outside its own
-definition, and the only `deletedAt`-aware job is token-cleanup, which deletes
-refresh tokens. The endpoint used to answer "Your data will be permanently
-removed within 30 days" — a retention commitment with nothing behind it, now
-removed.
+### The purge
 
-Do not re-add a retention promise, in the API response or in UI copy, without
-the job that honours it. The three strings that used to claim
-数据将被永久删除 — `settings.items.deleteAccountDesc`,
-`settings.dialogs.deleteDesc` and `security.dangerZoneDesc` — now describe what
-the user actually experiences: sign-in disabled, identifiers cleared, messages
-redacted, cases turned private. They deliberately do NOT state that rows are
-retained; that belongs in the privacy policy, not a confirm dialog. What they
-must never do again is claim a deletion the system does not perform.
+`AccountPurgeService` (`modules/user/account-purge.service.ts`) is the job that
+makes the deletion real. Daily at 04:00, single-flight via `runWithCronLock`
+(hard deletion is irreversible and NOT idempotent across replicas — this is one
+of the jobs that genuinely needs the lock), it calls `UserService.hardDelete`
+for every account whose grace window has closed.
+
+- **`ACCOUNT_PURGE_ENABLED` defaults to `false`.** Not a placeholder: the first
+  enabled run purges the entire existing backlog of soft-deleted accounts at
+  once, irreversibly. While disabled the job still runs and logs what it _would_
+  remove, so the blast radius is a log line rather than a guess.
+- **`ACCOUNT_PURGE_GRACE_DAYS` defaults to 30** — what the old copy promised.
+- **Capped at 200 accounts per run**; the remainder is picked up the next day.
+- **Accounts holding `Payment` rows are skipped and logged, never purged.**
+  `Payment` cascades off `User`, so purging the account destroys the financial
+  record with it, and retention obligations outrank erasure ones. Payments are
+  retired (production refuses to boot with `PAYMENTS_ENABLED != false`), so this
+  should only ever match historical rows — but if it starts matching, that is a
+  retention policy decision, not a bug to code around.
+- A single failing account is logged and skipped, not allowed to strand the batch.
+
+**Copy may only promise what the flag currently does.** The three strings that
+used to claim 数据将被永久删除 — `settings.items.deleteAccountDesc`,
+`settings.dialogs.deleteDesc`, `security.dangerZoneDesc` (plus the mobile
+`settings.deleteAccountConfirm`, `security.deleteAccountWarning`,
+`security.deleteAccountConfirmMessage`) — describe what the user actually
+experiences today: sign-in disabled, identifiers cleared, messages redacted,
+cases turned private. **Restore a retention period in that copy only when
+`ACCOUNT_PURGE_ENABLED=true` in production**, and state the same number as
+`ACCOUNT_PURGE_GRACE_DAYS`. A promise ahead of the flag is the exact defect this
+service was built to close.
+
+`AuditLog` deliberately survives a purge: `AuditLog.userId` is a bare column
+with no relation, so it does not cascade. That is correct — an audit trail that
+disappears with its subject is not an audit trail.
 
 ## Dependency CVEs
 

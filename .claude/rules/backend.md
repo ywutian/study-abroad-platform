@@ -76,6 +76,76 @@ Rules for a response that leaves an unauthenticated route:
 - Assert it in the spec: `expect(row).not.toHaveProperty('userId')` plus
   `expect(JSON.stringify(row)).not.toContain(theId)` — the second is what
   catches a pseudonym built out of the id.
+- **Strip the relation, not just the scalar.** `anonymizeProfile` deleted the
+  `userId` column and shipped `user: { id }` anyway, because the query's
+  `include` carried the relation and the destructure only named the scalar. The
+  spec passed because its fixture had no `user` key. A fixture made of scalars
+  cannot show a relation surviving — give it the relation.
+
+### Review status is not access control
+
+`CASE_REVIEW_APPROVED_WHERE` says a human approved the data. It says nothing
+about who may read it, and `AdmissionCase.visibility` defaults to `PRIVATE`.
+Filtering on review alone therefore serves PRIVATE and VERIFIED_ONLY rows to
+anyone holding an id — which is what `explain_case_result` and
+`compare_case_with_profile` did, while `GET /cases/:id` answers 403 for both.
+The ids were free: the `@Public()` hall leaderboard publishes `caseId` for
+VERIFIED_ONLY cases. Use `CASE_PUBLIC_VISIBILITY_WHERE` on any surface that
+serves a case without knowing the caller's role.
+
+**`VERIFIED_ONLY` needs a role, so a surface without one cannot serve it.** It
+means "visible to `Role.VERIFIED`", enforced that way in `case-query.service`.
+`UserContext` carries no role, so the ai-agent tool layer cannot honour it —
+`find_similar_applicants` was serving those cases' GPA, scores, activities and
+awards to any authenticated caller. Hall may include VERIFIED_ONLY only because
+it publishes aggregates, never the row. Three visibility sets across four
+modules is how the next one drifts; prefer the shared constant.
+
+### Aggregates over people need a cohort floor
+
+An admit rate over a thin slice is a statement about identifiable people: at a
+school+nationality pair with one case, "100% admitted" publishes where that
+applicant got in. Counts are far weaker than outcomes — how many applied leaks
+much less than how they did — so suppress the outcome breakdown and the rate,
+not the count.
+
+**Floor is 5** (`CaseToolsService.MIN_REPORTABLE_COHORT`), matching prediction.
+Hall uses 3 and 5 (`MIN_YEAR_TOTAL`, `ED_RD_MIN_SAMPLE`), school uses 10
+(`MIN_CASES`). Common practice ranges 3–30; 5 is the usual floor for aggregate
+reporting over people.
+
+Two things that are easy to get wrong:
+
+- **Every slice needs its own check.** Flooring only the combined figure lets a
+  thin sub-cohort ride out inside a healthy total.
+- **The prose must honour it too.** These aggregates are fed to an LLM as a
+  summary string; withholding the fields and then restating the rate in the
+  summary leaks exactly what was suppressed. Assert that in the spec.
+
+Secondary suppression (blanking a second cell so the first can't be recovered by
+subtraction) is not needed while the slices are not complements — revisit if a
+surface ever reports a total alongside all its parts.
+
+### A precondition read before the write is not a check
+
+Read balance → compare → `update` is two statements, so under READ COMMITTED
+(the default; this repo sets no isolation level) two callers read the same
+pre-spend value, both pass, and both write. `increment` being atomic does not
+help — it makes the _write_ safe, not the _decision_. Sharing a `$transaction`
+does not help either; that buys atomicity with the neighbouring write, nothing
+more. Put the precondition in the WHERE and throw on `count === 0`:
+
+```typescript
+const claimed = await db.user.updateMany({
+  where: { id: userId, points: { gte: cost } }, // the check IS the write
+  data: { points: { decrement: cost } },
+});
+if (claimed.count === 0) throw new BadRequestException('积分不足');
+```
+
+Assert the WHERE in the spec, not just the outcome — a test that only checks
+"insufficient balance is rejected" still passes once the guard moves back into
+a preceding read.
 
 ## Health Endpoints
 
