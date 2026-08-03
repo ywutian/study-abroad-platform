@@ -199,9 +199,17 @@ jobs:
       #     manifest, so the check errored for everyone but the one machine
       #     that had them untracked on disk. They travel with the repo now
       #     (see .gitignore), which is what makes this runnable here.
-      - name: Cross-layer guards (routes / journeys / icons / drift)
+      #   closure — the UI route inventory: every registered pattern has a page
+      #     file, every page file is registered, for web and mobile both. It
+      #     existed and passed locally but nothing ever ran it: package.json
+      #     only invoked it as `--self-test`, which exercises the checker's own
+      #     fixtures, not the repo. `/admin/points-redemptions` sat unregistered
+      #     on main until #529 — the check that would have caught it was already
+      #     written. A gate nobody calls is not a gate.
+      - name: Cross-layer guards (routes / closure / journeys / icons / drift)
         run: |
           pnpm lint:routes
+          pnpm lint:closure
           pnpm lint:journeys
           pnpm quality:icons
           pnpm lint:drift
