@@ -361,6 +361,9 @@ describe('ForumService', () => {
         ...mockPost,
         likes: [],
         comments: [],
+        // the detail query selects _count.comments — see the reply-counting
+        // test in forum-post.service.spec.ts
+        _count: { comments: 0 },
         teamMembers: [],
         teamApplications: [],
       };

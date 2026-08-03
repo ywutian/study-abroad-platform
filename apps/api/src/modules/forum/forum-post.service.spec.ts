@@ -245,6 +245,36 @@ describe('ForumPostService', () => {
       );
     });
 
+    it('counts replies in commentCount, like the list does', async () => {
+      // The detail query filters `comments` to parentId: null so the thread
+      // renders top-level first, but the list reports _count.comments — every
+      // row including replies. Reading the array length here made the number
+      // drop the moment you opened a post that had any replies.
+      const detailPost = {
+        ...mockPost,
+        _count: { comments: 4 }, // 1 top-level + 3 replies
+        comments: [
+          {
+            id: 'c1',
+            author: { id: 'u1' },
+            content: 'top level',
+            parentId: null,
+            likeCount: 0,
+            replies: [],
+            createdAt: new Date(),
+          },
+        ],
+        teamMembers: [],
+        teamApplications: [],
+      };
+      (prisma.forumPost.findUnique as jest.Mock).mockResolvedValue(detailPost);
+
+      const result = await service.getPostById('post-1', 'user-1');
+
+      expect(result.commentCount).toBe(4);
+      expect(result.comments).toHaveLength(1);
+    });
+
     it('should throw NotFoundException when post does not exist', async () => {
       (prisma.forumPost.findUnique as jest.Mock).mockResolvedValue(null);
 
