@@ -185,6 +185,13 @@ export const MOBILE_UI_SURFACE_ROUTES: MobileUiSurfaceRoute[] = [
   },
   { name: 'Resume', pattern: '/resume', path: '/resume', role: 'user', state: 'navigable' },
   {
+    name: 'Resume detail',
+    pattern: '/resume/:id',
+    path: '/resume/e2e-resume',
+    role: 'user',
+    state: 'contextual',
+  },
+  {
     name: 'School detail',
     pattern: '/school/:id',
     path: '/school/e2e-school',
