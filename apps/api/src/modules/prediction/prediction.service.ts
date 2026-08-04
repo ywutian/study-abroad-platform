@@ -1325,9 +1325,6 @@ export class PredictionService {
           dataCompleteness,
           overrideApplicationRound, // applicationRound — admin diagnostic flow can inject a round
           policyVersionId,
-          false, // v5MlPrimary — keep preview on the deterministic served path
-          false, // v5Shadow
-          false, // useDistillationBlend
           includeShadowDistillation, // compliantDistillationShadow
           false, // compliantDistillationLive — never live-blend on preview
           counselorMode,
@@ -1675,11 +1672,6 @@ export class PredictionService {
     // Pre-compute feature flags once per prediction request. `profileId` is a
     // Profile.id, not a User.id, so use the already-loaded profile.userId for
     // deterministic rollout hashing.
-    // ML primary path deleted 2026-05-07; flags retained as always-false
-    // locals so downstream signatures (predictForSchool params) are unchanged.
-    const v5MlPrimary = false;
-    const v5Shadow = false;
-    const useDistillationBlend = false;
     let compliantDistillationShadow = false;
     let compliantDistillationLive = false;
     let counselorModeEnabled = false;
@@ -1782,9 +1774,6 @@ export class PredictionService {
             dataCompleteness,
             roundMap.get(school.id) ?? defaultApplicationRound,
             policyVersionId,
-            v5MlPrimary,
-            v5Shadow,
-            useDistillationBlend,
             compliantDistillationShadow,
             compliantDistillationLive,
             counselorModeEnabled,
@@ -1893,9 +1882,6 @@ export class PredictionService {
     dataCompleteness?: number,
     applicationRound?: string,
     policyVersionId?: string,
-    v5MlPrimary = false,
-    v5Shadow = false,
-    useDistillationBlend = false,
     compliantDistillationShadow = false,
     compliantDistillationLive = false,
     counselorModeEnabled = false,
