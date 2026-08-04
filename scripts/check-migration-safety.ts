@@ -97,14 +97,39 @@ function findMigrationFiles(newOnly: boolean): string[] {
 
   if (newOnly) {
     try {
-      const output = execSync('git diff --name-only HEAD', {
-        encoding: 'utf-8',
-        cwd: path.resolve(__dirname, '..'),
-      });
-      return output
-        .split('\n')
+      const repoRoot = path.resolve(__dirname, '..');
+      const run = (cmd: string) => execSync(cmd, { encoding: 'utf-8', cwd: repoRoot }).split('\n');
+
+      // Three sources, because "new" has three states and the old single
+      // `git diff --name-only HEAD` covered only the middle one:
+      //
+      //   1. committed on this branch  — what .husky/pre-push actually gates on
+      //      (`git diff origin/main...HEAD`), and by the time the hook runs, the
+      //      state every migration is in. The old command returns nothing for
+      //      these, so the pre-push check printed "No migration files to check"
+      //      and exited 0 every single time it was triggered. It could not fire.
+      //   2. modified but uncommitted — the only case that used to work.
+      //   3. untracked — a brand-new migration before `git add`, i.e. the state
+      //      it is in for most of the time anyone would run this by hand.
+      //
+      // CI runs this without --new-only (full scan), which is why nothing ever
+      // shipped through the hole; the gate was late, not absent.
+      const committedOnBranch = (() => {
+        try {
+          return run('git diff --name-only origin/main...HEAD');
+        } catch {
+          return run('git diff --name-only HEAD~1');
+        }
+      })();
+      const uncommitted = run('git diff --name-only HEAD');
+      const untracked = run('git ls-files --others --exclude-standard');
+
+      const candidates = [...new Set([...committedOnBranch, ...uncommitted, ...untracked])]
         .filter((f) => f.startsWith('apps/api/prisma/migrations/') && f.endsWith('.sql'))
-        .map((f) => path.resolve(__dirname, '..', f));
+        .map((f) => path.resolve(repoRoot, f));
+
+      // A migration deleted on this branch still shows up in the diff.
+      return candidates.filter((f) => fs.existsSync(f));
     } catch {
       // Fallback to checking all
       console.log('⚠️  Could not detect new migrations via git, checking all.');

@@ -1,0 +1,37 @@
+-- Second layer under the sufficiency check in `IncentiveService.adjustPoints`.
+--
+-- That check is already correct: the precondition lives in the WHERE
+-- (`points: { gte: -pointValue }`) so the read and the write are one
+-- statement, and `count === 0` means nothing was spent. Before that fix it
+-- was read → compare → increment, which under READ COMMITTED (the default;
+-- this repo sets no isolation level) let two concurrent debits both pass
+-- against the same pre-spend balance. The service comment says outright that
+-- `User.points` has "no CHECK constraint" and went negative. This is that
+-- constraint.
+--
+-- It is defence in depth, not the primary guard. What it buys is that the
+-- invariant survives the next writer: today `adjustPoints` is the only code
+-- that writes `User.points`, and nothing stops a second one being added
+-- without the WHERE.
+--
+-- NOT VALID on purpose. It applies to every future INSERT and UPDATE — which
+-- is the entire threat model, since the risk is a *new* concurrent debit —
+-- but skips the scan of existing rows, so it takes no ACCESS EXCLUSIVE lock
+-- for the length of a table scan and, more importantly, a balance that is
+-- already negative cannot fail this migration and block a deploy. Prod could
+-- not be read from the session that wrote this, so a validating constraint
+-- would have been an unverified deploy risk taken on behalf of a guard whose
+-- whole purpose is to not break anything.
+--
+-- To validate existing rows once someone has looked (safe: SHARE UPDATE
+-- EXCLUSIVE, writes continue, and it reports the first violating row rather
+-- than silently passing):
+--
+--   SELECT id, points FROM "User" WHERE points < 0;           -- look first
+--   ALTER TABLE "User" VALIDATE CONSTRAINT "User_points_non_negative";
+--
+-- Deliberately not run here: inside Prisma's migration transaction a failed
+-- VALIDATE rolls back the ADD CONSTRAINT with it, so the guard would be lost
+-- in exactly the case that proves it was needed.
+ALTER TABLE "User"
+  ADD CONSTRAINT "User_points_non_negative" CHECK ("points" >= 0) NOT VALID;
