@@ -108,7 +108,6 @@ export class DashboardService {
       profile,
       followStats,
       casesCount,
-      predictionsCount,
       timelines,
       pointHistory,
       schoolListCount,
@@ -175,22 +174,6 @@ export class DashboardService {
       safe(
         this.prisma.admissionCase.count({ where: { userId } }),
         'cases-count',
-        0,
-      ),
-
-      // 预测数 — 2026-05 Phase 1 Bug 3: count ALL predictions for this
-      // user's profile here. The orphan-filtering (only counting predictions
-      // whose schoolId is still in the user's SchoolListItem) happens
-      // post-query via `validPredictionsCount` below, since PredictionResult
-      // has no relation to SchoolListItem in the Prisma schema (only the
-      // schoolId scalar exists). This resolves the "105 predictions + 0
-      // schools" production contradiction without a DB write or schema
-      // change. See docs/architecture/dashboard-invariants.md.
-      safe(
-        this.prisma.predictionResult.count({
-          where: { profile: { userId } },
-        }),
-        'predictions-count',
         0,
       ),
 
@@ -653,14 +636,18 @@ export class DashboardService {
       }
     }
 
-    // 2026-05 Phase 1 Bug 3: Compute "valid" predictionsCount — only
-    // predictions whose schoolId is still in the user's SchoolListItem.
-    // Resolves the "105 predictions + 0 schools" production contradiction
-    // by filtering orphan records from the user-facing count without
-    // writing to the DB. PredictionResult.schoolId has no Prisma relation
-    // to SchoolListItem, so we use a 2-step query: (1) above we got the
-    // raw count of all predictions; (2) here we count predictions whose
-    // schoolId is in the user's current school list.
+    // 2026-05 Phase 1 Bug 3: the user-facing prediction count includes only
+    // predictions whose schoolId is still in the user's SchoolListItem, which
+    // is what resolved the "105 predictions + 0 schools" production
+    // contradiction. PredictionResult.schoolId has no Prisma relation to
+    // SchoolListItem, so this cannot be a join and has to run after the school
+    // list is known.
+    //
+    // This used to be described as a 2-step query, with an unfiltered
+    // `predictionResult.count()` in the parallel batch above feeding step 1.
+    // It never fed anything — the filtered count below is self-contained, and
+    // the raw one was destructured and dropped, costing every dashboard load a
+    // round-trip whose result nothing read.
     const userSchoolIds = schoolListWithDeadlines.map((item) => item.schoolId);
     const validPredictionsCount =
       userSchoolIds.length === 0

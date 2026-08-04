@@ -201,16 +201,6 @@ export default function ForumPostDetailPage() {
     onError: (err) => toast.error(err.message),
   });
 
-  const applyMutation = useMutation<void, Error, void>({
-    mutationFn: () => apiClient.post(forumRoutes.postApply(id!)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: qk.forum.detail(id) });
-      toast.success(t('forum.applied'));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
   const reportMutation = useMutation<void, Error, void>({
     mutationFn: () => apiClient.post(forumRoutes.postReport(id!)),
     onSuccess: () => {
@@ -955,9 +945,6 @@ const styles = StyleSheet.create({
   requirementsText: {
     fontSize: fontSize.sm,
     lineHeight: fontSize.sm * 1.6,
-  },
-  applyButton: {
-    marginTop: spacing.sm,
   },
 
   // Comments
