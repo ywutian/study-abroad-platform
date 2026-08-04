@@ -40,6 +40,7 @@ import {
   buildRecommendationSystemPrompt,
   buildRecommendationUserPrompt,
 } from './recommendation.prompts';
+import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
 
 /**
@@ -180,17 +181,30 @@ export class RecommendationService {
     const schoolCount = dto.schoolCount || 15;
     const systemPrompt = buildRecommendationSystemPrompt(locale, schoolCount);
 
-    // Extract nationality context for international student awareness.
+    // Nationality context for international-student awareness.
     //
-    // `isInternational` is NOT a Profile column and never was — reading it
-    // through an untyped cast made it `undefined` on every call, so the flag
-    // has never reached the prompt and the guard below has only ever tested
-    // `nationality`. Written out as it actually behaves. The derived value
-    // exists (`detectInternationalStatus` in shared/scoring, which the
-    // prediction transformer already uses); wiring it in changes what the LLM
-    // is told and is a product call, not a typing one.
+    // `isInternational` is not a Profile column and never was; it was read
+    // through an untyped cast, came back `undefined` on every call, and the
+    // prompt builder's branch on it therefore never fired. What that branch
+    // adds is the instruction to weigh "each school's friendliness toward
+    // {nationality} students, international student percentage, and historical
+    // admission patterns for this nationality" — so the recommendation prompt
+    // has never once asked for that, on a platform whose applicants are
+    // overwhelmingly international.
+    //
+    // Derived the same way the prediction path derives it, from the same five
+    // Profile columns, so the two features agree about who is international.
     const nationalityContext = profile.nationality
-      ? { nationality: profile.nationality, isInternational: undefined }
+      ? {
+          nationality: profile.nationality,
+          isInternational: detectInternationalStatus({
+            nationality: profile.nationality,
+            countryOfResidence: profile.countryOfResidence,
+            citizenship: profile.citizenship,
+            educationSystem: profile.educationSystem,
+            currentSchoolType: profile.currentSchoolType,
+          }).isInternational,
+        }
       : undefined;
 
     let userPrompt = buildRecommendationUserPrompt(

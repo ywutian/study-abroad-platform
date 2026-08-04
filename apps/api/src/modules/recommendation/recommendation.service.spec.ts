@@ -390,6 +390,56 @@ describe('RecommendationService', () => {
       });
     });
 
+    /**
+     * `isInternational` reached the prompt builder as `undefined` on every call
+     * — it was read off `Profile`, which has no such column, through a cast.
+     * The branch it gates is the instruction to weigh a school's friendliness
+     * toward this nationality, its international-student share and its history
+     * with that nationality, so that instruction had never been sent on a
+     * platform whose applicants are overwhelmingly international.
+     */
+    describe('international applicant context', () => {
+      const promptText = () =>
+        JSON.stringify(
+          (llmService.chatSimpleGuarded as jest.Mock).mock.calls[0][0],
+        );
+
+      it('asks the model to weigh nationality fit for an international applicant', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue({
+          ...mockProfile,
+          nationality: 'CN',
+        });
+
+        await service.generateRecommendation('user-1', dto);
+
+        expect(promptText()).toContain('CN');
+        expect(promptText()).toMatch(/友好度|friendliness/);
+      });
+
+      it('sends neither for a domestic applicant', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue({
+          ...mockProfile,
+          nationality: 'US',
+          countryOfResidence: 'US',
+          citizenship: 'US',
+        });
+
+        await service.generateRecommendation('user-1', dto);
+
+        // Nationality still goes out; the international-fit instruction does
+        // not. Asserted so "always international" cannot pass either.
+        expect(promptText()).not.toMatch(/友好度|friendliness/);
+      });
+
+      it('omits the whole block when nationality is unknown', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
+
+        await service.generateRecommendation('user-1', dto);
+
+        expect(promptText()).not.toMatch(/友好度|friendliness/);
+      });
+    });
+
     it('should refund and throw on non-JSON AI response', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
       (llmService.chatSimpleGuarded as jest.Mock).mockResolvedValue(
