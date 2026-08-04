@@ -489,11 +489,15 @@ export class HallRankingService {
         { role: 'user', content: userPrompt },
       ]);
 
-      const parsed = extractJsonFromLlm<{
-        analysis: string;
-        strengths: string[];
-        improvements: string[];
-      }>(response);
+      // Optional-shaped on purpose: the guard below already treats every field
+      // as maybe-missing, so declaring them required was the type claiming
+      // more than the code believed. `T` is asserted here, never checked.
+      const parsed =
+        extractJsonFromLlm<{
+          analysis?: string;
+          strengths?: string[];
+          improvements?: string[];
+        }>(response) ?? {};
 
       if (parsed.analysis && Array.isArray(parsed.strengths)) {
         // Hall refactor Phase 1: log/charge RANKING_ANALYZED via PointsService.

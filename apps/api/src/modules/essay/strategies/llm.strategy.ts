@@ -206,7 +206,8 @@ Only include actual essay prompts, not instructions, tips, or general admissions
         },
       );
 
-      const parsed = extractJsonFromLlm<{ essays?: ScrapedEssay[] }>(content);
+      const parsed =
+        extractJsonFromLlm<{ essays?: ScrapedEssay[] }>(content) ?? {};
       return (parsed.essays || []).filter(
         (e: ScrapedEssay) => e.prompt && e.prompt.length > 20,
       );
