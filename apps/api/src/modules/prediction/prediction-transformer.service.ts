@@ -165,16 +165,16 @@ export class PredictionTransformerService {
   private buildGpaTrend(
     profile: ProfileWithRelations,
   ): ProfileInput['gpaTrend'] {
-    const semesterValues = ((profile as any).semesterGpas ?? [])
-      .map((sg: any, index: number) => ({
+    const semesterValues = (profile.semesterGpas ?? [])
+      .map((sg, index) => ({
         label: sg.semester ?? `Semester ${index + 1}`,
         value: this.toFiniteNumber(sg.gpa),
         scale: this.toFiniteNumber(sg.gpaScale),
         order: typeof sg.order === 'number' ? sg.order : index,
         year: typeof sg.year === 'number' ? sg.year : undefined,
       }))
-      .filter((entry: any) => entry.value != null)
-      .sort((a: any, b: any) => {
+      .filter((entry) => entry.value != null)
+      .sort((a, b) => {
         if (a.order !== b.order) return a.order - b.order;
         return (a.year ?? 0) - (b.year ?? 0);
       }) as Array<{
@@ -191,7 +191,7 @@ export class PredictionTransformerService {
       const scale =
         last.scale ??
         first.scale ??
-        this.toFiniteNumber((profile as any).gpaScale) ??
+        this.toFiniteNumber(profile.gpaScale) ??
         4.0;
       const delta = ((last.value - first.value) / scale) * 4.0;
       const direction =
@@ -204,10 +204,10 @@ export class PredictionTransformerService {
     }
 
     const gradeValues = [
-      { label: 'G9', value: this.toFiniteNumber((profile as any).gpa9) },
-      { label: 'G10', value: this.toFiniteNumber((profile as any).gpa10) },
-      { label: 'G11', value: this.toFiniteNumber((profile as any).gpa11) },
-      { label: 'G12', value: this.toFiniteNumber((profile as any).gpa12) },
+      { label: 'G9', value: this.toFiniteNumber(profile.gpa9) },
+      { label: 'G10', value: this.toFiniteNumber(profile.gpa10) },
+      { label: 'G11', value: this.toFiniteNumber(profile.gpa11) },
+      { label: 'G12', value: this.toFiniteNumber(profile.gpa12) },
     ].filter((entry) => entry.value != null) as Array<{
       label: string;
       value: number;
@@ -219,7 +219,7 @@ export class PredictionTransformerService {
 
     const first = gradeValues[0];
     const last = gradeValues[gradeValues.length - 1];
-    const scale = this.toFiniteNumber((profile as any).gpaScale) ?? 4.0;
+    const scale = this.toFiniteNumber(profile.gpaScale) ?? 4.0;
     const delta = ((last.value - first.value) / scale) * 4.0;
     const direction =
       delta >= 0.12 ? 'rising' : delta <= -0.12 ? 'falling' : 'flat';
@@ -231,15 +231,15 @@ export class PredictionTransformerService {
   }
 
   private resolveRuntimeGpa(profile: ProfileWithRelations): number | undefined {
-    const direct = this.toFiniteNumber((profile as any).gpa);
+    const direct = this.toFiniteNumber(profile.gpa);
     if (direct != null) return direct;
 
-    const semesterValues = ((profile as any).semesterGpas ?? [])
-      .map((sg: any) => ({
+    const semesterValues = (profile.semesterGpas ?? [])
+      .map((sg) => ({
         gpa: this.toFiniteNumber(sg.gpa),
         credits: this.toFiniteNumber(sg.credits),
       }))
-      .filter((entry: any) => entry.gpa != null) as Array<{
+      .filter((entry) => entry.gpa != null) as Array<{
       gpa: number;
       credits?: number;
     }>;
@@ -270,10 +270,10 @@ export class PredictionTransformerService {
       g12: 0.25,
     };
     const gradeValues = [
-      { key: 'g9', value: this.toFiniteNumber((profile as any).gpa9) },
-      { key: 'g10', value: this.toFiniteNumber((profile as any).gpa10) },
-      { key: 'g11', value: this.toFiniteNumber((profile as any).gpa11) },
-      { key: 'g12', value: this.toFiniteNumber((profile as any).gpa12) },
+      { key: 'g9', value: this.toFiniteNumber(profile.gpa9) },
+      { key: 'g10', value: this.toFiniteNumber(profile.gpa10) },
+      { key: 'g11', value: this.toFiniteNumber(profile.gpa11) },
+      { key: 'g12', value: this.toFiniteNumber(profile.gpa12) },
     ].filter((entry) => entry.value != null) as Array<{
       key: string;
       value: number;
@@ -304,9 +304,9 @@ export class PredictionTransformerService {
   ): ProfileInput {
     // Extract the most recent high school education entry.
     // Sort by createdAt desc to pick the latest when multiple exist.
-    const hsEducations = ((profile as any).education || [])
-      .filter((e: any) => e.schoolType === 'HIGH_SCHOOL')
-      .sort((a: any, b: any) => {
+    const hsEducations = (profile.education || [])
+      .filter((e) => e.schoolType === 'HIGH_SCHOOL')
+      .sort((a, b) => {
         const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return db - da;
@@ -316,13 +316,13 @@ export class PredictionTransformerService {
     // Quality gate: D-grade schools (hsImpactEnabled=false) are excluded from predictions
     const hs = hsRaw?.hsImpactEnabled === false ? undefined : hsRaw;
     const highSchoolName =
-      hsEducation?.schoolName ?? (profile as any).currentSchool ?? undefined;
+      hsEducation?.schoolName ?? profile.currentSchool ?? undefined;
 
     const intlContext = detectInternationalStatus({
-      nationality: (profile as any).nationality,
-      countryOfResidence: (profile as any).countryOfResidence,
-      citizenship: (profile as any).citizenship,
-      educationSystem: (profile as any).educationSystem,
+      nationality: profile.nationality,
+      countryOfResidence: profile.countryOfResidence,
+      citizenship: profile.citizenship,
+      educationSystem: profile.educationSystem,
       currentSchoolType: profile.currentSchoolType,
     });
 
@@ -330,12 +330,12 @@ export class PredictionTransformerService {
       gpa: this.resolveRuntimeGpa(profile),
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
       gpaByGrade: {
-        g9: this.toFiniteNumber((profile as any).gpa9),
-        g10: this.toFiniteNumber((profile as any).gpa10),
-        g11: this.toFiniteNumber((profile as any).gpa11),
-        g12: this.toFiniteNumber((profile as any).gpa12),
+        g9: this.toFiniteNumber(profile.gpa9),
+        g10: this.toFiniteNumber(profile.gpa10),
+        g11: this.toFiniteNumber(profile.gpa11),
+        g12: this.toFiniteNumber(profile.gpa12),
       },
-      semesterGpas: ((profile as any).semesterGpas ?? []).map((sg: any) => ({
+      semesterGpas: (profile.semesterGpas ?? []).map((sg) => ({
         semester: sg.semester,
         year: sg.year,
         gpa: Number(sg.gpa),
@@ -344,14 +344,19 @@ export class PredictionTransformerService {
         order: sg.order,
       })),
       gpaTrend: this.buildGpaTrend(profile),
-      gpaSystem: hsEducation?.gpaSystem,
+      // `?? undefined` like every sibling line: the column is nullable and
+      // `ProfileInput.gpaSystem` is `string | undefined`. The mismatch was
+      // invisible while `education` was read through an untyped cast. No consumer
+      // misbehaves today — they all test truthiness — but the type said one
+      // thing and the value was another.
+      gpaSystem: hsEducation?.gpaSystem ?? undefined,
       grade: profile.grade ?? undefined,
       currentSchoolType: profile.currentSchoolType ?? undefined,
       targetMajor: profile.targetMajor ?? profile.intendedMajor ?? undefined,
       isInternational: intlContext.isInternational,
-      nationality: (profile as any).nationality ?? undefined,
-      educationSystem: (profile as any).educationSystem ?? undefined,
-      needsFinancialAid: (profile as any).needsFinancialAid ?? undefined,
+      nationality: profile.nationality ?? undefined,
+      educationSystem: profile.educationSystem ?? undefined,
+      needsFinancialAid: profile.needsFinancialAid ?? undefined,
       highSchoolId: hs?.id ?? undefined,
       highSchoolName,
       highSchoolTier: hs?.tier ?? undefined,
@@ -404,21 +409,18 @@ export class PredictionTransformerService {
       })),
       englishProficiency: getBestEnglishProficiency(profile.testScores || []),
       assessment: assessmentData,
-      isLegacy: (profile as any).legacy?.length > 0,
-      legacySchools:
-        (profile as any).legacy?.length > 0
-          ? (profile as any).legacy
-          : undefined,
-      isFirstGen: (profile as any).firstGeneration ?? false,
-      recruitedAthlete: (profile as any).recruitedAthlete ?? false,
+      isLegacy: profile.legacy?.length > 0,
+      legacySchools: profile.legacy?.length > 0 ? profile.legacy : undefined,
+      isFirstGen: profile.firstGeneration ?? false,
+      recruitedAthlete: profile.recruitedAthlete ?? false,
       // closure-v2: explicit US state of residence (independent of HS location).
       // geoMultiplier prefers this over highSchoolLocation; without this line
       // the geoMultiplier branch that reads it is unreachable dead code.
-      stateOfResidence: (profile as any).stateOfResidence ?? undefined,
-      urmStatus: (profile as any).urmStatus ?? null,
+      stateOfResidence: profile.stateOfResidence ?? undefined,
+      urmStatus: profile.urmStatus ?? null,
       // PR-14: explicit "applying test-optional" flag triggers 0.85× modifier
       // at <20% admit schools per Common App data.
-      applyingTestOptional: (profile as any).applyingTestOptional ?? false,
+      applyingTestOptional: profile.applyingTestOptional ?? false,
     };
   }
 
@@ -455,7 +457,7 @@ export class PredictionTransformerService {
     // break the application-analysis golden render fixtures (E2E
     // application-analysis-render expects 'BLIND' for Berkeley etc.).
     const rawTestingPolicy = school.testingPolicy ?? undefined;
-    const rawTestOptional = (school as any).testOptional ?? undefined;
+    const rawTestOptional = school.testOptional ?? undefined;
     const testingPolicy =
       rawTestingPolicy ??
       resolveSchoolTestingPolicyValue({
@@ -467,23 +469,23 @@ export class PredictionTransformerService {
       id: school.id,
       name: school.name,
       nameZh: school.nameZh ?? undefined,
-      country: (school as any).country ?? undefined,
-      state: (school as any).state ?? undefined,
-      isPrivate: (school as any).isPrivate ?? undefined,
+      country: school.country ?? undefined,
+      state: school.state ?? undefined,
+      isPrivate: school.isPrivate ?? undefined,
       acceptanceRate: captureField(
         'acceptanceRate',
         school.acceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       intlAcceptanceRate: captureField(
         'intlAcceptanceRate',
-        (school as any).intlAcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.intlAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       oosAcceptanceRate: captureField(
         'oosAcceptanceRate',
-        (school as any).oosAcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.oosAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       // Dead-wire fix (#349 follow-up): the counselor geoMultiplier in-state branch
       // reads SchoolInput.inStateAcceptanceRate, but it was only mapped into
@@ -491,22 +493,22 @@ export class PredictionTransformerService {
       // and every in-state prediction fell back to the flagship-ratio proxy.
       inStateAcceptanceRate: captureField(
         'inStateAcceptanceRate',
-        (school as any).inStateAcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.inStateAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       transferAcceptanceRate: captureField(
         'transferAcceptanceRate',
-        (school as any).transferAcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.transferAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       intlStudentPct: captureField(
         'intlStudentPct',
-        (school as any).intlStudentPct,
-        (value) => Number(value) as any,
+        school.intlStudentPct,
+        (value) => Number(value),
       ),
       needBlindInternational: captureField(
         'needBlindInternational',
-        (school as any).needBlindInternational,
+        school.needBlindInternational,
       ),
       satAvg: captureField('satAvg', school.satAvg),
       sat25: captureField('sat25', school.sat25),
@@ -518,26 +520,23 @@ export class PredictionTransformerService {
       graduationRate: captureField(
         'graduationRate',
         school.graduationRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       retentionRate: captureField(
         'retentionRate',
-        (school as any).retentionRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.retentionRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       studentFacultyRatio: captureField(
         'studentFacultyRatio',
-        (school as any).studentFacultyRatio,
+        school.studentFacultyRatio,
       ),
       percentNeedMet: captureField(
         'percentNeedMet',
-        (school as any).percentNeedMet,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.percentNeedMet,
+        (value) => clampPercentRate(toNumber(value)),
       ),
-      averageNetPrice: captureField(
-        'averageNetPrice',
-        (school as any).averageNetPrice,
-      ),
+      averageNetPrice: captureField('averageNetPrice', school.averageNetPrice),
       testingPolicy,
       testOptional: toLegacyTestOptionalFlag({
         testingPolicy,
@@ -545,7 +544,7 @@ export class PredictionTransformerService {
       }),
       hasEarlyDecision: captureField(
         'hasEarlyDecision',
-        (school as any).hasEarlyDecision,
+        school.hasEarlyDecision,
       ),
       hasEarlyDecision2: captureField(
         'hasEarlyDecision2',
@@ -554,30 +553,28 @@ export class PredictionTransformerService {
       hasEarlyAction: captureField('hasEarlyAction', school.hasEarlyAction),
       hasRestrictiveEa: captureField(
         'hasRestrictiveEa',
-        (school as any).hasRestrictiveEa,
+        school.hasRestrictiveEa,
       ),
       edAcceptanceRate: captureField(
         'edAcceptanceRate',
-        (school as any).edAcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.edAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       ed2AcceptanceRate: captureField(
         'ed2AcceptanceRate',
-        (school as any).ed2AcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.ed2AcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       eaAcceptanceRate: captureField(
         'eaAcceptanceRate',
-        (school as any).eaAcceptanceRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+        school.eaAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)),
       ),
       // closure-v2: CDS C2 yield — feeds roundMultiplier's yield-informed ED
       // estimate. Without this line the SchoolInput.yieldRate field and the
       // engine branch that reads it are unreachable dead code.
-      yieldRate: captureField(
-        'yieldRate',
-        (school as any).yieldRate,
-        (value) => clampPercentRate(toNumber(value)) as any,
+      yieldRate: captureField('yieldRate', school.yieldRate, (value) =>
+        clampPercentRate(toNumber(value)),
       ),
       // institutionType is a structural classification (ART_DESIGN /
       // MUSIC_CONSERVATORY / etc.) used by CounselorEngine.isAuditionOrPortfolioSchool
@@ -586,11 +583,8 @@ export class PredictionTransformerService {
       // (b) most schools lack explicit metadata.provenance.institutionType
       // entries. Pass the raw value through. Caught by
       // verify-prediction-launch's tier4 fixture when this was wrong.
-      institutionType: (school as any).institutionType ?? undefined,
-      gpaDistribution: captureField(
-        'gpaDistribution',
-        (school as any).gpaDistribution,
-      ),
+      institutionType: school.institutionType ?? undefined,
+      gpaDistribution: captureField('gpaDistribution', school.gpaDistribution),
       fieldTrustWeights,
       averagePredictionWeight:
         Object.keys(fieldTrustWeights).length > 0
@@ -641,7 +635,14 @@ export class PredictionTransformerService {
         category: a.category || '',
         role: a.role || '',
         totalHours: (a.hoursPerWeek ?? 0) * (a.weeksPerYear ?? 0),
-        tier: (a as any).activityTemplate?.tier ?? undefined,
+        // `a` is a `ProfileInput` activity, not a Prisma row: `profileToInput`
+        // above already flattens `activityTemplate.tier` into `tier`. Reading
+        // `activityTemplate` here through an untyped cast therefore always produced
+        // `undefined`, and the cast is the only reason that typechecked.
+        // Inert today — the served counselor path builds its own
+        // activityDetails (counselor-modifiers.ts, `tier: activity.tier`) and
+        // this object's consumers read `activityCount`, never `tier`.
+        tier: a.tier,
       })),
       awardCount: profile.awards.length,
       nationalAwardCount: profile.awards.filter((a) => a.level === 'NATIONAL')
@@ -802,8 +803,11 @@ export class PredictionTransformerService {
         const score =
           parsed && typeof parsed.overallScore === 'number'
             ? parsed.overallScore
-            : typeof (latestReview.scores as any)?.overallScore === 'number'
-              ? (latestReview.scores as any).overallScore
+            : // `scores` is a Json column, so it needs a narrowing rather than
+              // a field access. `toRecord` is this file's own helper for
+              // exactly that and returns `{}` for null/array/scalar.
+              typeof toRecord(latestReview.scores).overallScore === 'number'
+              ? (toRecord(latestReview.scores).overallScore as number)
               : undefined;
         if (typeof score === 'number' && Number.isFinite(score)) {
           profileInput.essayQualityScore =

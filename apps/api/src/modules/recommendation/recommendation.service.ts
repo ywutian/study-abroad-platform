@@ -173,15 +173,18 @@ export class RecommendationService {
     const schoolCount = dto.schoolCount || 15;
     const systemPrompt = buildRecommendationSystemPrompt(locale, schoolCount);
 
-    // Extract nationality context for international student awareness
-    const nationalityContext =
-      (profile as any).nationality || (profile as any).isInternational
-        ? {
-            nationality: (profile as any).nationality as string | undefined,
-            isInternational: (profile as any).isInternational as
-              boolean | undefined,
-          }
-        : undefined;
+    // Extract nationality context for international student awareness.
+    //
+    // `isInternational` is NOT a Profile column and never was — reading it
+    // through an untyped cast made it `undefined` on every call, so the flag
+    // has never reached the prompt and the guard below has only ever tested
+    // `nationality`. Written out as it actually behaves. The derived value
+    // exists (`detectInternationalStatus` in shared/scoring, which the
+    // prediction transformer already uses); wiring it in changes what the LLM
+    // is told and is a product call, not a typing one.
+    const nationalityContext = profile.nationality
+      ? { nationality: profile.nationality, isInternational: undefined }
+      : undefined;
 
     let userPrompt = buildRecommendationUserPrompt(
       profile,
@@ -198,8 +201,19 @@ export class RecommendationService {
     > = {};
     if (this.historicalService) {
       const historicalLines: string[] = [];
-      const targetSchools = (profile as any).targetSchools as
-        string[] | undefined;
+      // DEAD SINCE INTRODUCTION, and the cast is why nobody noticed: `Profile`
+      // has no `targetSchools` column or relation — target schools live on
+      // `SchoolListItem` (User.schoolListItems). Reading it through an untyped
+      // cast produced `undefined` on every call, so this block has never run,
+      // `comparisonCache` has never been written, and the `caseComparison`
+      // attach at the bottom of buildRecommendations has never fired. The whole
+      // "evidence-based recommendation from historical cases" path is inert.
+      //
+      // Left inert rather than wired to SchoolListItem: doing that changes what
+      // the LLM is told and adds a school lookup plus a getCaseComparison call
+      // per target school, which is a product decision. Typed as `undefined` so
+      // the deadness is visible instead of hidden behind the cast.
+      let targetSchools: string[] | undefined;
       if (targetSchools?.length) {
         for (const schoolName of targetSchools.slice(0, 5)) {
           try {
