@@ -1,13 +1,15 @@
 {
   "_comment": "One-way ceiling on oversized source files, per package. The number is Σ max(0, lines − 500) — the total lines past the limit, NOT a file count, so splitting a large file always lowers it and never trips the gate. check-file-size-ratchet.ts fails when a package's number RISES. After splitting something, run `pnpm lint:file-size --update` to lock the win; --update never raises a floor. Raising a number requires editing this file in the same PR.",
   "_apps_api_src_note": "44022 → 44026 (+4) for the null-handling that extractJsonFromLlm's honest contract forces on its callers. The util used to fabricate `{ [fallbackKey]: response } as T` on total parse failure; removing that makes the return `T | null`, and eight files now say `?? {}` or widen a type to optional. All four lines land in files already past 500. Splitting a service so a `?? {}` fits is the ratchet driving the design; the file actually worth splitting here is application-analysis-workflow.service.ts at 3856 lines, and doing that takes this number back down.",
-  "apps/api/src": 44026,
+  "_apps_api_src_note_2026_08_04": "44026 → 44054 (+28). Comments, not code: the four security notes this branch adds (admin-review's PUBLIC default, case-tools' straggler cast, swipe's oracle + role rule, the admin dialog's retired option) all land in files already past 500 lines. Splitting a service so an explanation fits is the ratchet driving the design — and these explanations are the deliverable: each one records a defect that was invisible precisely because nobody had written it down. swipe.service.ts is the one that grew most (568 lines) and is the nearest thing here worth splitting.",
+  "apps/api/src": 44054,
   "apps/api/scripts": 41392,
   "_apps_api_prisma_note": "11953 → 12105 (+152) for the 2026-08-04 batch in seed-testing-policy-2026-07-25.ts (the file lands at 656 lines; 128 of the 152 are the rows and header as written, the other 24 are prettier re-wrapping the long evidence strings on commit — set this number AFTER lint-staged has run, not before, or the commit fails its own gate): ten verified REQUIRED rows for schools at or above 20% admit (the Florida State University System, UGA + Georgia State, UT Austin, UT Knoxville, Auburn), plus the header section recording which candidates were rejected and why. Earlier, 11948 → 11953 (+5) for the Penn row on the same file. A split was measured rather than assumed: moving the table into a sibling .data.ts leaves it at ~565 lines, because the provenance essay has to travel with the data it explains, so the overage drops from 132 to 65 and still does not clear the limit. Splitting by collection batch would clear it and is the wrong shape — 'which file is UF in?' is the drift this table exists to close. This file's length is proportional to how much of the world has been verified, which is the deliverable. The oversized file here is seed-all-features.ts (3458 lines); that is the one worth splitting, and doing so takes this number back down.",
   "apps/api/prisma": 12105,
-  "apps/web/src": 16319,
+  "apps/web/src": 16321,
   "apps/mobile/src": 8658,
   "packages/shared": 6704,
   "packages/browser-extension": 0,
-  "scripts": 10799
+  "scripts": 10799,
+  "_apps_web_src_note_2026_08_04": "16319 → 16321 (+2) for the comment marking PUBLIC as retired in create-case-dialog.tsx (549 lines). Two lines behind a file split would be the ratchet driving the design."
 }
