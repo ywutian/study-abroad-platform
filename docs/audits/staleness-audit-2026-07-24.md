@@ -135,8 +135,13 @@ Duke 5.7% / Vanderbilt 5.9% / JHU 6.4% / Pomona 6.8% …
    `hasStandardizedScore` 只认 SAT/ACT，会告诉 IB / A-Level / 高考考生「你没交成绩所以估计变弱」
    —— 而引擎其实正在读他们的分数。改为复用 §4 建立的 `hasBandComparableScore`。
 
-   **待复查**：Penn（8 月 Common App 开放后）、Juilliard（2026-09 后）、
-   Harvey Mudd / Grinnell（官网公布 fall 2027 政策后）。
+   **待复查**：~~Penn（8 月 Common App 开放后）~~ → **已复查 2026-08-03，升为 REQUIRED**：
+   官网 testing 页现在标题就是 "2026-2027 Admissions Cycle"，并列出该季自己的截止日期
+   （ED: SAT 11-07 / ACT 10-17，RD: SAT 12-05 / ACT 12-12），当初缺的正是这个 scoping。
+   当时降级是对的 —— 页面没滚版，不是政策没延续。Penn 的豁免是 hardship 口径
+   （缺考点 / 经济困难 / 自然灾害 / 内乱），既不是 Miami 那种按生源地豁免，
+   也不是 Dartmouth 那种 AP/IB 替代，所以对本平台用户是实打实要交分。
+   剩余：Juilliard（2026-09 后）、Harvey Mudd / Grinnell（官网公布 fall 2027 政策后）。
 
 **验收**：无分数 + `UNKNOWN` 高选择性学校，输出不得高于同条件 `OPTIONAL` 学校。
 

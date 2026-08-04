@@ -34,10 +34,12 @@
  *   - Dartmouth College — conditional on schooling: US high school students
  *     must submit SAT/ACT, applicants abroad may substitute three APs, IB,
  *     A-Level or a national exam.
- *   - University of Pennsylvania — both Penn-owned pages still scope the
- *     requirement to "the 2025-26 application cycle". Page not yet rolled, or
- *     policy not yet extended; the evidence cannot say which. Recheck in
- *     August once the Common App opens.
+ *   - University of Pennsylvania — RESOLVED 2026-08-03, now REQUIRED below.
+ *     The downgrade was correct at the time and the recheck was the right call:
+ *     the page had not rolled yet, it had not changed policy. It is now headed
+ *     "2026-2027 Admissions Cycle" and carries that cycle's own test dates, so
+ *     the scoping that was missing is there. Penn's waiver is hardship-scoped,
+ *     which is why it reads as REQUIRED and Miami/Dartmouth do not.
  *
  * Five were held back during collection:
  *   - Curtis Institute of Music, The Juilliard School — admission is by
@@ -419,6 +421,13 @@ export const TESTING_POLICIES: PolicyRow[] = [
     policy: 'REQUIRED',
     sourceUrl: 'https://admission.stanford.edu/apply/first-year/testing.html',
     note: '"ACT or SAT scores are required" (cycle: standing (page updated 2026-07-22))',
+  },
+  {
+    nameNorm: 'university of pennsylvania',
+    policy: 'REQUIRED',
+    sourceUrl:
+      'https://admissions.upenn.edu/how-to-apply/preparing-your-application/testing',
+    note: '"Penn applicants are required to submit scores for the SAT or ACT." Page is now headed "2026-2027 Admissions Cycle" and lists that cycle\'s own deadlines (ED: SAT 2026-11-07 / ACT 2026-10-17; RD: SAT 2026-12-05 / ACT 2026-12-12), which is what was missing at collection time. The waiver is hardship-scoped ("lack of test center availability, financial hardship, natural disaster or civil unrest") — not an origin-based exemption like Miami\'s and not an AP/IB substitute like Dartmouth\'s, so it does not make the policy conditional for our users (cycle: 2026-27, rechecked 2026-08-03)',
   },
   {
     nameNorm: 'yale university',
