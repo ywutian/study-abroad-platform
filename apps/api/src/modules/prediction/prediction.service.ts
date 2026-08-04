@@ -1871,8 +1871,8 @@ export class PredictionService {
    */
   private async predictForSchool(
     profileId: string,
-    profileInput: any,
-    profileMetrics: any,
+    profileInput: ProfileInput,
+    profileMetrics: ProfileMetrics,
     school: any,
     memoryContext: any,
     locale: string,
