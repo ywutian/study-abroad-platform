@@ -97,6 +97,7 @@ export class CaseController {
       user.id,
       { schoolId: query.schoolId, limit: query.limit },
       user.locale || 'zh',
+      user.role,
     );
   }
 

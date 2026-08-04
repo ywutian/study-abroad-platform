@@ -121,9 +121,10 @@ describe('CaseToolsService', () => {
         await service.explainCaseResult('case-1', 'en');
       });
 
-      expect(visibilityOf()).toEqual(
-        expect.arrayContaining(['ANONYMOUS', 'PUBLIC', 'VERIFIED_ONLY']),
-      );
+      // PUBLIC retired for cases 2026-08-04 — assert the exact set, not a
+      // superset: `arrayContaining` would have passed just as happily if a
+      // retired or unintended value were added back alongside these two.
+      expect(visibilityOf()).toEqual(['ANONYMOUS', 'VERIFIED_ONLY']);
     });
 
     it('excludes it for a plain USER', async () => {

@@ -1,0 +1,33 @@
+-- Retire `Visibility.PUBLIC` for AdmissionCase by folding existing rows into
+-- ANONYMOUS.
+--
+-- The two case-serving routes disagreed about PUBLIC. `findById` served it to
+-- anyone — it rejects only PRIVATE and unverified VERIFIED_ONLY, so PUBLIC fell
+-- through — while `findAll` never listed it: its role branches name ANONYMOUS,
+-- VERIFIED_ONLY and own-rows and stop. A case marked PUBLIC was therefore
+-- harder to find than one marked ANONYMOUS, which inverts what the words mean,
+-- and every surface downstream inherited one half of the contradiction: shown
+-- in the essay gallery and the agent tools, hidden in hall and swipe.
+--
+-- Folding into ANONYMOUS rather than the other way round, because ANONYMOUS is
+-- what both routes already agree on and what every case-creation path in the
+-- product actually writes.
+--
+-- This is not a privacy change. `stripCaseIdentity` does not branch on
+-- visibility — PUBLIC and ANONYMOUS were served with identical
+-- de-identification — so the row's contents are unchanged. What changes is that
+-- a row previously missing from `GET /cases` now appears there, which is the
+-- listing its author asked for when they marked it public.
+--
+-- The enum value is NOT dropped. `Profile.visibility` uses the same `Visibility`
+-- enum and PUBLIC is live there (the mobile profile screen offers it). This is a
+-- per-model retirement; dropping the value would break an unrelated model.
+--
+-- Expected to affect 0 rows: every creation path in the product writes
+-- ANONYMOUS, and a dev database seeded from the same code holds 32 ANONYMOUS
+-- and 6 PRIVATE with no PUBLIC. The admin data-review dialog offered PUBLIC and
+-- `AdminReviewService` defaulted to it when an import carried no visibility, so
+-- the value was reachable — this statement exists for whatever took that path.
+UPDATE "AdmissionCase"
+SET "visibility" = 'ANONYMOUS'
+WHERE "visibility" = 'PUBLIC';

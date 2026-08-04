@@ -159,11 +159,23 @@ export class HallVerifiedDashboardService {
   }
 
   /**
-   * Minimum cases SUBMITTED for a year for that year's admit RATE to be
-   * trustworthy enough to enter the difficulty comparison. Years below this
-   * are dropped from the rate series — a 1/1 = 100% year is noise, not signal.
+   * Minimum cases SUBMITTED for a year before that year's admit RATE may be
+   * published. Years below this are dropped from the rate series.
+   *
+   * Raised 3 → 5 on 2026-08-04. The old value answered the wrong question: it
+   * was set for reliability — a 1/1 = 100% year is noise, not signal — and then
+   * left standing as the only guard on an `@Public()` route. Reliability and
+   * re-identification are different thresholds, and this surface needs the
+   * stricter of the two: the series is filtered to verified China-nationality
+   * applicants at one school in one year, so at n=3 with 3 admits it publishes
+   * where three identifiable people got in, to anyone, unauthenticated.
+   *
+   * 5 is the number `.claude/rules/backend.md` names as the floor for
+   * aggregate reporting over people and the value CaseToolsService and
+   * prediction already use. Below-floor years drop out; a school with no
+   * surviving year is omitted entirely, as before.
    */
-  private static readonly MIN_YEAR_TOTAL = 3;
+  private static readonly MIN_YEAR_TOTAL = 5;
 
   /**
    * Minimum verified admits before a school's ED/RD split may be published.

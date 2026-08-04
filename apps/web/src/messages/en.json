@@ -3378,7 +3378,6 @@
     "visibilityLabel": "Visibility",
     "visibility": {
       "anonymous": "Anonymous",
-      "public": "Public",
       "verifiedOnly": "Verified Only"
     },
     "validation": {
@@ -10106,7 +10105,6 @@
         },
         "visibility": {
           "ANONYMOUS": "Anonymous",
-          "PUBLIC": "Public",
           "VERIFIED_ONLY": "Verified Only"
         },
         "essayType": {

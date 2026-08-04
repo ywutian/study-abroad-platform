@@ -119,16 +119,20 @@ describe('CaseController', () => {
   });
 
   describe('findSimilar', () => {
-    it('delegates to CaseSimilarityService with user id, query and locale', async () => {
+    it('delegates to CaseSimilarityService with user id, query, locale and role', async () => {
       const result = await controller.findSimilar(mockUser, {
         schoolId: 'school-1',
         limit: 8,
       });
 
+      // The role is load-bearing, not decoration: the service picks its
+      // visibility set from it, so dropping it here silently narrows a VERIFIED
+      // user's results back to the public set.
       expect(caseSimilarityService.findSimilar).toHaveBeenCalledWith(
         'user-1',
         { schoolId: 'school-1', limit: 8 },
         'zh',
+        mockUser.role,
       );
       expect(result).toEqual({ status: 'INSUFFICIENT_DATA', count: 0 });
     });

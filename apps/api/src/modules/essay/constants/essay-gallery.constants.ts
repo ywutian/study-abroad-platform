@@ -1,12 +1,21 @@
-import { Prisma, DataReviewStatus } from '@prisma/client';
-import { SCHOOL_NAME_RANK_SELECT } from '../../../common/constants/prisma-selects';
+import { Prisma } from '@prisma/client';
+import {
+  CASE_PUBLIC_VISIBILITY_WHERE,
+  SCHOOL_NAME_RANK_SELECT,
+} from '../../../common/constants/prisma-selects';
 
+/**
+ * The gallery's slice of the shared public-case filter: same visibility and
+ * review rules as everywhere else, plus "has an essay to show".
+ *
+ * It used to restate all three clauses, with the visibility half written as
+ * string literals behind `as any` — so neither the enum nor the compiler could
+ * tell it apart from a typo, and a change to the shared set would not reach it.
+ * Only the `essayContent` predicate is this surface's own; the rest is spread.
+ */
 export const CASE_PUBLIC_WHERE = {
-  visibility: { in: ['PUBLIC', 'ANONYMOUS'] as any },
+  ...CASE_PUBLIC_VISIBILITY_WHERE,
   essayContent: { not: null },
-  reviewStatus: {
-    in: [DataReviewStatus.AUTO_APPROVED, DataReviewStatus.APPROVED],
-  },
 };
 
 export const GALLERY_LIST_SELECT = {

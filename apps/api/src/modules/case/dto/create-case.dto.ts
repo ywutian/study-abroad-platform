@@ -3,6 +3,7 @@ import {
   IsInt,
   IsNumber,
   IsEnum,
+  IsIn,
   IsOptional,
   IsArray,
   ArrayMaxSize,
@@ -30,6 +31,7 @@ import {
   MAX_CASE_AWARDS,
   MAX_CASE_METADATA_TAGS,
 } from '@study-abroad/shared';
+import { CASE_VISIBILITY_ALLOWED } from '../../../common/constants/prisma-selects';
 
 // ============ Nested Validation Classes ============
 
@@ -394,10 +396,17 @@ export class CreateCaseDto {
   @MaxLength(10000)
   narrative?: string;
 
-  @ApiPropertyOptional({ enum: Visibility, default: Visibility.PRIVATE })
+  // `@IsIn(CASE_VISIBILITY_ALLOWED)`, not `@IsEnum(Visibility)`: PUBLIC is
+  // retired for cases and the enum still carries it for `Profile.visibility`.
+  // Validating against the whole enum would keep the retired value acceptable
+  // over the wire no matter what the UI offers.
+  @ApiPropertyOptional({
+    enum: CASE_VISIBILITY_ALLOWED,
+    default: Visibility.PRIVATE,
+  })
   @IsOptional()
-  @IsEnum(Visibility)
-  visibility?: Visibility;
+  @IsIn(CASE_VISIBILITY_ALLOWED as readonly string[])
+  visibility?: (typeof CASE_VISIBILITY_ALLOWED)[number];
 
   // ============ Essay Fields ============
   @ApiPropertyOptional({ enum: EssayType, description: 'Essay type' })

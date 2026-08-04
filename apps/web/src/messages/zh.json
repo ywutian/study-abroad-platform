@@ -3351,7 +3351,6 @@
     "visibilityLabel": "可见性",
     "visibility": {
       "anonymous": "匿名",
-      "public": "公开",
       "verifiedOnly": "仅认证用户可见"
     },
     "validation": {
@@ -10079,7 +10078,6 @@
         },
         "visibility": {
           "ANONYMOUS": "匿名",
-          "PUBLIC": "公开",
           "VERIFIED_ONLY": "仅认证用户可见"
         },
         "essayType": {
