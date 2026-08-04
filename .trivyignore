@@ -62,3 +62,71 @@ CVE-2026-27904
 # Remove from here and from ignoreGhsas together.
 # ===================================================================
 CVE-2026-14257
+
+# ===================================================================
+# brace-expansion CVE-2026-69152 (HIGH, = GHSA-rgw5-rvv9-x895) — the follow-up
+# that bypasses the CVE-2026-14257 mitigation above. Fixed in 1.1.18 / 2.1.4 /
+# 3.0.6 / 5.0.9, and our lockfile carries all of those: pnpm.overrides was
+# raised to exactly these in #535, and osv-scanner reports 0 unignored
+# high/critical against pnpm-lock.yaml.
+#
+# The copy Trivy finds is not ours. It is npm's own bundled dependency at
+# usr/local/lib/node_modules/npm/node_modules/brace-expansion/package.json,
+# version 5.0.7 — the case the note above says to check for first. No override
+# reaches inside npm, and unlike the tar/sigstore findings that this file used
+# to carry, upgrading npm does not clear it either. Verified by unpacking the
+# published tarballs rather than assuming:
+#
+#     npm@11.19.0 (latest 11.x, what the Dockerfile installs) → 5.0.7
+#     npm@12.0.2  (latest, needs a newer Node than this base) → 5.0.7
+#
+# So there is no npm release to move to yet. The vulnerability is a DoS via
+# unbounded brace expansion, reachable only by expanding an attacker-chosen
+# pattern; npm in the runtime image never installs anything (see the comment
+# on the `npm install -g npm@11` line in apps/api/Dockerfile — it is kept only
+# because migrate.sh shells out to `npx prisma migrate deploy`), so no
+# attacker-controlled pattern reaches it.
+#
+# Not added to pnpm.auditConfig.ignoreGhsas, unlike CVE-2026-14257 above: that
+# one is in the lockfile so both gates report it. This one is not, so the
+# lockfile gate is already clean and an entry there would be dead config.
+#
+# REMOVE when npm ships a bundled brace-expansion >= 5.0.9. Re-check with:
+#     npm pack npm@11 && tar -xzOf npm-*.tgz \
+#       package/node_modules/brace-expansion/package.json | grep version
+# ===================================================================
+CVE-2026-69152
+
+# ===================================================================
+# ip-address CVE-2026-69192 (HIGH, = GHSA-mwp4-54f8-5fhr) — Address4 decodes
+# leading-zero octets as decimal while resolvers decode them as octal, so a
+# host like 0177.0.0.1 can pass an allowlist and then resolve somewhere else.
+# Fixed in 10.3.1.
+#
+# Same shape as the entry above, and the same non-fix: our lockfile is on
+# 10.4.0 (pnpm.overrides pins `ip-address@<10.3.1` → `>=10.3.1 <11`, added in
+# #535). The 10.2.0 Trivy sees is npm's bundled copy at
+# usr/local/lib/node_modules/npm/node_modules/ip-address/package.json, reached
+# through its socks-proxy-agent, and no override goes inside npm.
+#
+# Not reachable here regardless: it is an SSRF/allowlist-bypass primitive, and
+# it would have to be npm parsing an attacker-supplied proxy host. npm in the
+# runtime image never installs anything and no proxy is configured.
+#
+# Added in the same pass as CVE-2026-69152 but NOT reported by the same CI run
+# — the 02:24 build on b9ec4891 saw only the brace-expansion one. This landed
+# in Trivy's database within the hour. If Docker Build is red on a base-image
+# CVE, rescan locally before assuming the CI list is complete:
+#
+#     docker build -t repro - <<'EOF'
+#     FROM node:20-alpine
+#     RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
+#     RUN npm install -g npm@11
+#     EOF
+#     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+#       -v "$PWD/.trivyignore:/w/.trivyignore:ro" -w /w \
+#       aquasec/trivy:latest image --severity CRITICAL,HIGH --scanners vuln repro
+#
+# REMOVE when npm ships a bundled ip-address >= 10.3.1.
+# ===================================================================
+CVE-2026-69192
