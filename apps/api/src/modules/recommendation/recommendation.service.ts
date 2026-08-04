@@ -42,6 +42,13 @@ import {
 } from './recommendation.prompts';
 import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
 
+/**
+ * How many of the user's target schools get historical case context injected
+ * into the recommendation prompt. Each one costs a `getCaseComparison` call,
+ * cached per school+nationality, so this bounds both prompt size and latency.
+ */
+const HISTORICAL_CONTEXT_SCHOOL_LIMIT = 5;
+
 const SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE = {
   isActive: true,
   status: 'VERIFIED',
@@ -201,28 +208,31 @@ export class RecommendationService {
     > = {};
     if (this.historicalService) {
       const historicalLines: string[] = [];
-      // DEAD SINCE INTRODUCTION, and the cast is why nobody noticed: `Profile`
-      // has no `targetSchools` column or relation — target schools live on
-      // `SchoolListItem` (User.schoolListItems). Reading it through an untyped
-      // cast produced `undefined` on every call, so this block has never run,
-      // `comparisonCache` has never been written, and the `caseComparison`
-      // attach at the bottom of buildRecommendations has never fired. The whole
-      // "evidence-based recommendation from historical cases" path is inert.
+      // The user's target schools. This block was written against
+      // `profile.targetSchools`, a field `Profile` has never had — so it read
+      // `undefined` on every call, never ran, and the whole
+      // "evidence-based recommendation from historical cases" path was inert
+      // from the day it was written. Everything downstream of it was built and
+      // waiting: CaseComparisonSummary.tsx, the `recommendation.caseComparison`
+      // strings in both locales, `CaseComparison` in packages/shared, the DTO
+      // field, and the conditional render in ResultsView — a component that had
+      // never rendered because its data never arrived.
       //
-      // Left inert rather than wired to SchoolListItem: doing that changes what
-      // the LLM is told and adds a school lookup plus a getCaseComparison call
-      // per target school, which is a product decision. Typed as `undefined` so
-      // the deadness is visible instead of hidden behind the cast.
-      let targetSchools: string[] | undefined;
-      if (targetSchools?.length) {
-        for (const schoolName of targetSchools.slice(0, 5)) {
+      // Target schools live on SchoolListItem. Reading them there is also
+      // cheaper than the shape this was written for: the original had a name
+      // string and did a `contains` lookup per school to resolve an id, which
+      // could also match the wrong school; the relation hands over the id.
+      const targetSchools = await this.prisma.schoolListItem.findMany({
+        where: { userId },
+        select: { school: { select: { id: true, name: true } } },
+        orderBy: { createdAt: 'asc' },
+        // Same cap the original `.slice(0, 5)` intended. Each school costs one
+        // getCaseComparison, which is Redis-cached per school+nationality.
+        take: HISTORICAL_CONTEXT_SCHOOL_LIMIT,
+      });
+      if (targetSchools.length) {
+        for (const { school } of targetSchools) {
           try {
-            const school = await this.prisma.school.findFirst({
-              where: { name: { contains: schoolName, mode: 'insensitive' } },
-              select: { id: true, name: true, acceptanceRate: true },
-            });
-            if (!school) continue;
-
             // Use structured case comparison (admitted vs rejected)
             const comparison = await this.historicalService.getCaseComparison(
               school.id,
@@ -420,7 +430,7 @@ export class RecommendationService {
       // Attach case comparison data to matched schools
       for (const rec of recommendations) {
         if (rec.schoolId && comparisonCache[rec.schoolId]) {
-          (rec as any).caseComparison = comparisonCache[rec.schoolId];
+          rec.caseComparison = comparisonCache[rec.schoolId];
         }
       }
 
@@ -721,8 +731,8 @@ export class RecommendationService {
 
     for (const rec of recommendations) {
       if (rec.schoolId) {
-        (rec as any).essayPromptCount = countMap.get(rec.schoolId) || 0;
-        (rec as any).hasWhySchool = whySchoolSet.has(rec.schoolId);
+        rec.essayPromptCount = countMap.get(rec.schoolId) || 0;
+        rec.hasWhySchool = whySchoolSet.has(rec.schoolId);
       }
     }
   }
