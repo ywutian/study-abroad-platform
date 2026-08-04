@@ -1448,6 +1448,22 @@ jobs:
             echo "✓ Same DB name on both sides."
           fi
 
+      # ACCOUNT_PURGE_* are stated in --set-env-vars below rather than left to
+      # the zod defaults in env.validation.ts. Both values EQUAL those defaults,
+      # so this changes no behaviour — it makes the current behaviour reviewable.
+      #
+      # ENABLED=false is a lock. AccountPurgeService is the one job in the system
+      # that destroys data with no undo, and its first enabled run purges the
+      # entire soft-deleted backlog at once. Whether it runs should not be able
+      # to change because someone edited a schema default.
+      #
+      # GRACE_DAYS=30 is a promise. The account-deletion copy has to name this
+      # same number, and .claude/rules/security.md forbids restoring that copy
+      # until ENABLED is true in production. A promise whose number lives only in
+      # a default is one edit away from being false.
+      #
+      # Note `--set-env-vars` REPLACES the whole set: anything dropped from this
+      # line reverts to unset on the next deploy.
       - name: Deploy canary (no traffic)
         if: success()
         run: |
@@ -1465,7 +1481,7 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni" \
+            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=false|ACCOUNT_PURGE_GRACE_DAYS=30" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
             --timeout=300 \
             --no-traffic \

@@ -79,11 +79,32 @@ makes the deletion real. Daily at 04:00, single-flight via `runWithCronLock`
 of the jobs that genuinely needs the lock), it calls `UserService.hardDelete`
 for every account whose grace window has closed.
 
-- **`ACCOUNT_PURGE_ENABLED` defaults to `false`.** Not a placeholder: the first
-  enabled run purges the entire existing backlog of soft-deleted accounts at
-  once, irreversibly. While disabled the job still runs and logs what it _would_
-  remove, so the blast radius is a log line rather than a guess.
-- **`ACCOUNT_PURGE_GRACE_DAYS` defaults to 30** — what the old copy promised.
+Both flags are now **stated explicitly** in the production deploy
+(`.github/workflows/ci.yml`, the `--set-env-vars` line of "Deploy canary"),
+not left to their defaults. Same values, so nothing changed — but whether the
+one irreversible job runs, and the number a user-facing promise has to match,
+should be readable in the deploy config rather than inferred from a schema.
+Note that `--set-env-vars` replaces the whole set: dropping them from that line
+silently returns both to their defaults.
+
+- **`ACCOUNT_PURGE_ENABLED` is `false`** (also the default). Not a placeholder:
+  the first enabled run purges the entire existing backlog of soft-deleted
+  accounts at once, irreversibly. While disabled the job still runs and logs
+  what it _would_ remove, so the blast radius is a log line rather than a guess:
+
+  ```
+  gcloud logging read 'resource.type=cloud_run_revision AND
+    resource.labels.service_name=study-abroad-api AND
+    textPayload=~"Account purge DRY RUN"' \
+    --project=study-abroad-prod-2025 --limit=7
+  ```
+
+  **Read that before enabling.** One `hardDelete` cascades 55 relations off
+  `User` — profile, vault items, cases, resumes, forum posts, messages, points,
+  team memberships — and there is no undo.
+
+- **`ACCOUNT_PURGE_GRACE_DAYS` is 30** (also the default) — what the old copy
+  promised.
 - **Capped at 200 accounts per run**; the remainder is picked up the next day.
 - **Accounts holding `Payment` rows are skipped and logged, never purged.**
   `Payment` cascades off `User`, so purging the account destroys the financial
