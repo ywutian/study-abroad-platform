@@ -574,11 +574,16 @@ export class EssayGalleryService {
           maxTokens: 1200,
         },
       );
-      const parsed = extractJsonFromLlm<{
-        answer?: unknown;
-        evidence?: unknown;
-        followUps?: unknown;
-      }>(raw);
+      // `?? {}` preserves what this did before: on an unparseable response the
+      // util used to hand back `{ result: <prose> }`, so every optional field
+      // below read `undefined` and the normalisers degraded to empty. Same
+      // outcome, without the util asserting a shape it never checked.
+      const parsed =
+        extractJsonFromLlm<{
+          answer?: unknown;
+          evidence?: unknown;
+          followUps?: unknown;
+        }>(raw) ?? {};
       const evidence = this.verifyEvidence(
         this.normalizeEvidence(parsed.evidence, {
           fallbackQuote: dto.selectedText || essay.essayContent || '',
@@ -760,15 +765,16 @@ export class EssayGalleryService {
           maxTokens: 1600,
         },
       );
-      const parsed = extractJsonFromLlm<{
-        referenceSignals?: unknown;
-        gapAnalysis?: unknown;
-        overlapWarnings?: unknown;
-        overlapRisk?: unknown;
-        overlapRiskReason?: unknown;
-        revisionActions?: unknown;
-        evidence?: unknown;
-      }>(raw);
+      const parsed =
+        extractJsonFromLlm<{
+          referenceSignals?: unknown;
+          gapAnalysis?: unknown;
+          overlapWarnings?: unknown;
+          overlapRisk?: unknown;
+          overlapRiskReason?: unknown;
+          revisionActions?: unknown;
+          evidence?: unknown;
+        }>(raw) ?? {};
 
       const overlapRiskReason = this.clip(
         typeof parsed.overlapRiskReason === 'string'

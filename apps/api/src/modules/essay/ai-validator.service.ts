@@ -59,7 +59,11 @@ export class AiValidatorService {
         },
       );
 
-      const result = extractJsonFromLlm<ValidationResult>(content);
+      // Partial<>: every read below already defaults (`?? true`, `?? 0.7`),
+      // so the required-field type was claiming more than this code relies
+      // on. The util asserts T, it never checks it.
+      const result =
+        extractJsonFromLlm<Partial<ValidationResult>>(content) ?? {};
       return {
         isValid: result.isValid ?? true,
         confidence: result.confidence ?? 0.7,
@@ -100,7 +104,8 @@ export class AiValidatorService {
         },
       );
 
-      const result = extractJsonFromLlm<{ translations?: string[] }>(content);
+      const result =
+        extractJsonFromLlm<{ translations?: string[] }>(content) ?? {};
       return result.translations || prompts.map(() => '');
     } catch (error: unknown) {
       this.logger.error(

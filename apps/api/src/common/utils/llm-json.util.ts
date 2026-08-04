@@ -65,14 +65,25 @@ function extractBalanced(
  * 2. Markdown code block extraction (```json ... ```)
  * 3. Brace-balanced object extraction (handles nested JSON correctly)
  * 4. Brace-balanced array extraction
- * 5. Fallback: wraps entire response in { [fallbackKey]: response }
+ * 5. Give up: `null`, or `{ [fallbackKey]: response }` if a key was named.
  *
- * Logs a warning when falling back to help diagnose extraction issues.
+ * **Returns `T | null`, and `T` is an assertion, not a check.** Nothing here
+ * validates shape — `JSON.parse` yields `any`, so whatever the model emitted
+ * silently satisfies the type argument. `<{ answer?: unknown }>` is honest
+ * about that; `<ValidationResult>` is a promise this function cannot keep. Use
+ * an all-optional shape and normalise the fields, or validate after parsing.
+ *
+ * This used to return `{ [fallbackKey]: response } as T` unconditionally when
+ * extraction failed — fabricating an object of the wrong shape and typing it
+ * as the caller's `T`. A caller reading `parsed.dimensions.map(…)` then got a
+ * `TypeError` from inside its own mapper, several frames from the actual
+ * cause: the model returned prose. The fallback is now opt-in, so a caller
+ * that wants it says so, and everyone else gets a `null` they must handle.
  */
 export function extractJsonFromLlm<T = any>(
   response: string,
-  fallbackKey = 'result',
-): T {
+  fallbackKey?: string,
+): T | null {
   // 1. Try direct parse first
   try {
     return JSON.parse(response);
@@ -115,8 +126,8 @@ export function extractJsonFromLlm<T = any>(
 
   // 5. Return fallback with warning
   logger.warn(
-    `JSON extraction failed, using fallback key "${fallbackKey}". ` +
-      `Response preview: ${response.slice(0, 200)}`,
+    `JSON extraction failed. Response preview: ${response.slice(0, 200)}`,
   );
-  return { [fallbackKey]: response } as T;
+  if (fallbackKey) return { [fallbackKey]: response } as T;
+  return null;
 }

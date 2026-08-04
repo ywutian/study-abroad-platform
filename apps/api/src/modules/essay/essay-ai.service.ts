@@ -911,9 +911,10 @@ export class EssayAiService {
         { temperature: 0.8, maxTokens: 2000 },
       );
 
-      const parsed = extractJsonFromLlm<{
-        versions: Array<{ text: string; style: string }>;
-      }>(result);
+      const parsed =
+        extractJsonFromLlm<{
+          versions?: Array<{ text: string; style: string }>;
+        }>(result) ?? {};
       return {
         versions: Array.isArray(parsed.versions)
           ? parsed.versions
@@ -950,10 +951,11 @@ export class EssayAiService {
         { temperature: 0.7, maxTokens: 1500 },
       );
 
-      const parsed = extractJsonFromLlm<{
-        continuation: string;
-        suggestions: string[];
-      }>(result);
+      const parsed =
+        extractJsonFromLlm<{
+          continuation?: string;
+          suggestions?: string[];
+        }>(result) ?? {};
       return {
         continuation: parsed.continuation || result,
         suggestions: Array.isArray(parsed.suggestions)
@@ -989,9 +991,10 @@ export class EssayAiService {
         { temperature: 0.8, maxTokens: 1500 },
       );
 
-      const parsed = extractJsonFromLlm<{
-        openings: Array<{ text: string; style: string }>;
-      }>(result);
+      const parsed =
+        extractJsonFromLlm<{
+          openings?: Array<{ text: string; style: string }>;
+        }>(result) ?? {};
       return {
         openings: Array.isArray(parsed.openings)
           ? parsed.openings
@@ -1108,10 +1111,15 @@ export class EssayAiService {
         { temperature: 0.4, maxTokens: 3000 },
       );
 
-      const parsed = extractJsonFromLlm<{
-        polished: string;
-        changes: Array<{ original: string; revised: string; reason: string }>;
-      }>(result);
+      const parsed =
+        extractJsonFromLlm<{
+          polished?: string;
+          changes?: Array<{
+            original: string;
+            revised: string;
+            reason: string;
+          }>;
+        }>(result) ?? {};
       return {
         polished: parsed.polished || result,
         changes: Array.isArray(parsed.changes) ? parsed.changes : [],

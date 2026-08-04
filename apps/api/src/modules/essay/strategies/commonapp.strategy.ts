@@ -93,7 +93,8 @@ The Common App typically has 7 essay prompt options. Extract all of them.`,
         },
       );
 
-      const parsed = extractJsonFromLlm<{ essays?: ScrapedEssay[] }>(content);
+      const parsed =
+        extractJsonFromLlm<{ essays?: ScrapedEssay[] }>(content) ?? {};
       const essays = (parsed.essays || []).filter(
         (e: ScrapedEssay) => e.prompt && e.prompt.length > 20,
       );

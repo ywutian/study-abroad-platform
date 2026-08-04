@@ -236,7 +236,7 @@ export class EssayDebateService {
       concedes?: unknown;
     };
     try {
-      parsed = extractJsonFromLlm(rawLlm);
+      parsed = extractJsonFromLlm(rawLlm) ?? {};
     } catch (err) {
       this.logger.warn(
         `extractJsonFromLlm failed; raw len=${rawLlm.length}; first 120 chars=${rawLlm.slice(0, 120)}`,

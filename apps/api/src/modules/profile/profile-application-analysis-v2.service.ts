@@ -816,9 +816,9 @@ export class ProfileApplicationAnalysisV2Service {
             timeoutMs: SCHOOL_ANALYST_TIMEOUT_MS,
           },
         );
-        const parsed = extractJsonFromLlm<Record<string, unknown>>(
-          llmResponse.content,
-        );
+        const parsed =
+          extractJsonFromLlm<Record<string, unknown>>(llmResponse.content) ??
+          {};
         const normalized = normalizeSchoolAnalysis(deterministic, parsed);
         const mergedSchool = {
           ...deterministic,
@@ -1012,9 +1012,9 @@ export class ProfileApplicationAnalysisV2Service {
             timeoutMs: PORTFOLIO_SYNTHESIZER_TIMEOUT_MS,
           },
         );
-        const parsed = extractJsonFromLlm<Record<string, unknown>>(
-          llmResponse.content,
-        );
+        const parsed =
+          extractJsonFromLlm<Record<string, unknown>>(llmResponse.content) ??
+          {};
         normalizedPortfolio = normalizePortfolioSynthesis(
           fallbackPortfolio,
           fallbackActionPlan,
