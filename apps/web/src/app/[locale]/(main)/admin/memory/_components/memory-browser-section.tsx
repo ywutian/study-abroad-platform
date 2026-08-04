@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +65,8 @@ export function MemoryBrowserSection() {
   const memPageSize = 20;
 
   const { data: memData } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['memoryBrowse', memFilters, memPage],
     queryFn: () =>
       apiClient.get<{ data: MemoryItem[]; total: number }>(adminAiAgentRoutes.memoryBrowse(), {

@@ -1,7 +1,7 @@
 'use client';
 
 import { schoolListRoutes, schoolRoutes } from '@study-abroad/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Plus, Search, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
@@ -76,6 +76,8 @@ export function DashboardQuickAddSchool() {
   }, [open]);
 
   const { data: results, isFetching } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['quick-add-school', debouncedSearch],
     queryFn: () =>
       apiClient.get<SchoolListResponse>(schoolRoutes.list(), {

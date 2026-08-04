@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -144,6 +144,8 @@ export default function AdminSchoolsPage() {
   const [communitySchool, setCommunitySchool] = useState<School | null>(null);
 
   const { data: schoolsData, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminSchools', schoolSearch, page],
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {

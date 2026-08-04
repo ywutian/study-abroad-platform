@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,6 +50,8 @@ export function ChatContentTab({ pageSize, onDeleteRequest }: ChatContentTabProp
   const [msgPage, setMsgPage] = useState(1);
 
   const { data: convosData, isLoading: convosLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminChatConvos', chatSearch, chatPage],
     queryFn: () => {
       const params: Record<string, string> = { page: String(chatPage), pageSize: String(pageSize) };

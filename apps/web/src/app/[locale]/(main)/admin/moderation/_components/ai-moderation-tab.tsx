@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,8 @@ export function AiModerationTab() {
   const [reviewReason, setReviewReason] = useState('');
 
   const { data, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['securityEvents', page, severityFilter, resolvedFilter],
     queryFn: () =>
       apiClient.get<{ data: SecurityEvent[]; total: number; page: number; pageSize: number }>(

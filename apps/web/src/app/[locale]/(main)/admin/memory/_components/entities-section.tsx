@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,8 @@ export function EntitiesSection() {
   const entityPageSize = 20;
 
   const { data: entityData } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['memoryEntities', entityFilters, entityPage],
     queryFn: () =>
       apiClient.get<{ data: EntityItem[]; total: number }>(adminAiAgentRoutes.memoryEntities(), {

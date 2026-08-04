@@ -148,7 +148,7 @@ function main(): void {
         tsSuppress: Math.min(current[t].tsSuppress, baseline[t]?.tsSuppress ?? Infinity),
       };
     }
-    write(next, baseline._comment);
+    write(next, baseline);
     return;
   }
 
@@ -168,11 +168,17 @@ function main(): void {
   }
 }
 
-function write(counts: Baseline, comment?: string): void {
+function write(counts: Baseline, prev?: Record<string, unknown>): void {
+  // Carry over every `_`-prefixed key, not just `_comment` — per-target notes
+  // record WHY a number moved, and dropping them on --update deletes the
+  // rationale for every previous raise. Same fix check-coverage-ratchet.ts
+  // already carries; check-file-size-ratchet.ts had the identical hole.
+  const notes = Object.fromEntries(Object.entries(prev ?? {}).filter(([k]) => k.startsWith('_')));
   const out = {
     _comment:
-      comment ??
+      (notes._comment as string | undefined) ??
       'One-way ceiling on TypeScript escape hatches per package. check-any-ratchet.ts fails when a count RISES. Lowering is free — after removing `any`s run `pnpm lint:any-ratchet --update` to lock the win. Raising requires editing this file in the same PR, which is the point: it turns silent type erosion into a reviewable diff. See the header of check-any-ratchet.ts for why this is a ratchet and not an ESLint rule.',
+    ...notes,
     ...counts,
   };
   fs.writeFileSync(BASELINE_FILE, JSON.stringify(out, null, 2) + '\n');

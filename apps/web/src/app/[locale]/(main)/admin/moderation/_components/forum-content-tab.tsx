@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,8 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: postsData, isLoading: postsLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminForumPosts', forumSearch, forumPage],
     queryFn: () => {
       const params: Record<string, string> = {

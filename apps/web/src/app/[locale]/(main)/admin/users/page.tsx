@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '@/components/layout';
 import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -35,6 +35,8 @@ export default function AdminUsersPage() {
   const [bulkBanOpen, setBulkBanOpen] = useState(false);
 
   const { data: usersData, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminUsers', userSearch, userRoleFilter, page],
     queryFn: () => {
       const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };

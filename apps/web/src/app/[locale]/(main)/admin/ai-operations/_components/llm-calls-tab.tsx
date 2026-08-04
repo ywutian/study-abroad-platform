@@ -2,7 +2,7 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,8 @@ export function LlmCallsTab() {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['llmCalls', page, agentType, model, userId],
     queryFn: () => {
       const params: Record<string, string> = { page: String(page), pageSize: '20' };

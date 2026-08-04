@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Activity, Clock3, Filter, RefreshCcw, SearchCheck } from 'lucide-react';
@@ -116,6 +116,8 @@ export function WorkflowTab() {
   const { data: policiesResponse, isLoading: policiesLoading } = useQuery<
     PaginatedResponse<PredictionWorkflowPolicy>
   >({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['predictionWorkflowPolicies', 'workflow-tab'],
     queryFn: () =>
       apiClient.get(adminRoutes.predictionWorkflowPolicies(), {

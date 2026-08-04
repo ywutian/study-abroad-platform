@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -93,6 +93,8 @@ export function ReportsTab() {
         : undefined;
 
   const { data: reportsData, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminReports', reportFilter, assignmentFilter, page],
     queryFn: () =>
       apiClient.get<{ data: Report[]; total: number; totalPages: number }>(adminRoutes.reports(), {
