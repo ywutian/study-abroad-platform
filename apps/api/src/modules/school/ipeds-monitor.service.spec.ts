@@ -18,6 +18,7 @@ describe('IpedsMonitorService', () => {
 
   const mockRedis = {
     setNXStrict: jest.fn(),
+    tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
     get: jest.fn(),
     set: jest.fn(),
   };
@@ -62,6 +63,7 @@ describe('IpedsMonitorService', () => {
     beforeEach(() => {
       store = {};
       mockRedis.setNXStrict.mockResolvedValue(true);
+      mockRedis.tryAcquireLock.mockResolvedValue({ acquired: true });
       mockRedis.get.mockImplementation((k: string) =>
         Promise.resolve(store[k] ?? null),
       );
@@ -76,6 +78,10 @@ describe('IpedsMonitorService', () => {
 
     it('skips the whole check when the single-flight lock is held', async () => {
       mockRedis.setNXStrict.mockResolvedValue(false);
+      mockRedis.tryAcquireLock.mockResolvedValue({
+        acquired: false,
+        reason: 'held',
+      });
 
       await service.checkForUpdates();
 

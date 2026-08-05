@@ -11,6 +11,7 @@ describe('AccountPurgeService', () => {
   const findMany = jest.fn();
   const hardDelete = jest.fn();
   const setNXStrict = jest.fn();
+  const tryAcquireLock = jest.fn();
   let env: Record<string, string | number>;
 
   const account = (id: string, payments = 0) => ({
@@ -30,7 +31,7 @@ describe('AccountPurgeService', () => {
         AccountPurgeService,
         { provide: PrismaService, useValue: { user: { findMany } } },
         { provide: UserService, useValue: { hardDelete } },
-        { provide: RedisService, useValue: { setNXStrict } },
+        { provide: RedisService, useValue: { setNXStrict, tryAcquireLock } },
         {
           provide: ConfigService,
           useValue: { get: (k: string) => env[k] },
@@ -104,6 +105,7 @@ describe('AccountPurgeService', () => {
 
   it('skips the run when another replica holds the lock', async () => {
     setNXStrict.mockResolvedValue(false);
+    tryAcquireLock.mockResolvedValue({ acquired: false, reason: 'held' });
     findMany.mockResolvedValue([account('u-1')]);
 
     await service.scheduledPurge();
@@ -124,7 +126,7 @@ describe('AccountPurgeService', () => {
         AccountPurgeService,
         { provide: PrismaService, useValue: { user: { findMany } } },
         { provide: UserService, useValue: { hardDelete } },
-        { provide: RedisService, useValue: { setNXStrict } },
+        { provide: RedisService, useValue: { setNXStrict, tryAcquireLock } },
         { provide: ConfigService, useValue: { get: (k: string) => env[k] } },
       ],
     }).compile();

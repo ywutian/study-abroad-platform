@@ -20,6 +20,7 @@ const mockNotification = {
 const mockRedis = {
   setNX: jest.fn(),
   setNXStrict: jest.fn(),
+  tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
   del: jest.fn(),
 };
 
@@ -30,6 +31,7 @@ describe('OutcomeReminderService', () => {
     jest.clearAllMocks();
     mockRedis.setNX.mockResolvedValue(true);
     mockRedis.setNXStrict.mockResolvedValue(true);
+    mockRedis.tryAcquireLock.mockResolvedValue({ acquired: true });
     mockRedis.del.mockResolvedValue(undefined);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -170,6 +172,10 @@ describe('OutcomeReminderService', () => {
 
   it('skips the whole cron when the single-flight lock is held (multi-instance)', async () => {
     mockRedis.setNXStrict.mockResolvedValue(false);
+    mockRedis.tryAcquireLock.mockResolvedValue({
+      acquired: false,
+      reason: 'held',
+    });
 
     await service.sendDecisionDayReminders();
 

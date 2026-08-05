@@ -16,10 +16,21 @@ const fallbackLogger = new Logger('runWithCronLock');
  * before the next scheduled tick (pick a TTL longer than one run, shorter than
  * the cron interval; see the `*_CRON_LOCK` entries in redis-ttl.constants).
  *
- * `setNXStrict` returns false when the lock is held OR Redis is unavailable;
- * both correctly SKIP the run (fail-closed — for a scheduled job a missed tick
- * is far cheaper than N duplicate side effects). When `redis` is undefined
- * (single-instance / dev / tests without Redis) the job runs unguarded.
+ * Both "the lock is held" and "Redis is unavailable" SKIP the run (fail-closed —
+ * for a scheduled job a missed tick is far cheaper than N duplicate side
+ * effects), but they are logged DIFFERENTLY, and that distinction is the whole
+ * reason `tryAcquireLock` exists. A held lock means another replica is running
+ * the job right now: normal, expected, LOG level. Redis being unavailable means
+ * the job did not run anywhere: that is an outage symptom and gets WARN.
+ *
+ * This used to be one message — "held by another instance or Redis unavailable"
+ * — and prod carried a month of it while Redis's circuit breaker opened 60-85
+ * times a day. Every one of those lines read like healthy contention.
+ * `AccountPurgeService` had never once completed a run and the logs said
+ * nothing that looked wrong. Do not merge these two branches again.
+ *
+ * When `redis` is undefined (single-instance / dev / tests without Redis) the
+ * job runs unguarded.
  *
  * Idempotent jobs (delete-where-expired, pure-overwrite recompute) don't need
  * this — running them N× is harmless. Use it only when duplication is harmful.
@@ -47,11 +58,21 @@ export async function runWithCronLock(
   logger?: Logger,
 ): Promise<boolean> {
   if (redis) {
-    const acquired = await redis.setNXStrict(lockKey, '1', ttlSeconds);
-    if (!acquired) {
-      logger?.log(
-        `Cron skipped: single-flight lock "${lockKey}" held by another instance or Redis unavailable.`,
-      );
+    const lock = await redis.tryAcquireLock(lockKey, '1', ttlSeconds);
+    if (!lock.acquired) {
+      if (lock.reason === 'held') {
+        logger?.log(
+          `Cron skipped: single-flight lock "${lockKey}" is held by another replica, which is running the job.`,
+        );
+      } else {
+        // The job ran NOWHERE this tick. Loud on purpose: a Redis outage
+        // silently disables every cron that uses this helper, and the only
+        // signal is this line.
+        (logger ?? fallbackLogger).warn(
+          `Cron NOT RUN: could not reach Redis to take single-flight lock "${lockKey}". ` +
+            `No replica executed this job on this tick — this is a Redis availability problem, not contention.`,
+        );
+      }
       return false;
     }
   }

@@ -249,6 +249,17 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       lazyConnect: true,
       commandTimeout: commandTimeoutMs,
       connectTimeout: commandTimeoutMs,
+      // ioredis defaults this to 0 — TCP keepalive OFF. Nothing else here
+      // holds an idle connection open either: the only two `ping()` calls are
+      // the one-shot probe on connect and `healthCheck()`, which fires when an
+      // external prober asks and is cached on top of that. So between requests
+      // the socket has nothing keeping it alive, and whatever drops it (NAT
+      // table, load balancer, server-side idle policy) does so silently — the
+      // next command discovers it by timing out.
+      //
+      // Probes cost one packet per interval per connection. Set to 0 to
+      // restore the driver default.
+      keepAlive: this.getNumberConfig('REDIS_KEEPALIVE_MS', 30_000),
       enableOfflineQueue: this.getBooleanConfig(
         'REDIS_ENABLE_OFFLINE_QUEUE',
         false,
@@ -941,10 +952,47 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     value: string,
     ttlSeconds: number,
   ): Promise<boolean> {
-    return this.safeRecord('atomic', key, false, async () => {
-      const result = await this.client!.set(key, value, 'EX', ttlSeconds, 'NX');
-      return result === 'OK';
-    });
+    return (await this.tryAcquireLock(key, value, ttlSeconds)).acquired;
+  }
+
+  /**
+   * `setNXStrict` with the reason attached.
+   *
+   * `setNXStrict` returns `false` for two situations that are not remotely the
+   * same: Redis said NO because another holder has the key, and Redis said
+   * nothing at all because the command timed out. Callers that log "skipped"
+   * on a bare `false` therefore report an outage as normal contention — which
+   * is exactly what happened to the cron locks: prod logs a month of
+   * "held by another instance or Redis unavailable" with no way to tell which,
+   * while `AccountPurgeService` had in fact never completed a single run.
+   *
+   * The distinction has to be made here because `safeRecord` swallows the error
+   * and substitutes the fallback; by the time the caller sees `false` the
+   * reason is gone.
+   */
+  async tryAcquireLock(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<
+    { acquired: true } | { acquired: false; reason: 'held' | 'unavailable' }
+  > {
+    if (!this.client || !this.connected) {
+      return { acquired: false, reason: 'unavailable' };
+    }
+    try {
+      const result = await this.record('atomic', key, () =>
+        this.client!.set(key, value, 'EX', ttlSeconds, 'NX'),
+      );
+      // A real reply of anything but OK is the lock being held. Only that is
+      // contention; everything else lands in the catch.
+      return result === 'OK'
+        ? { acquired: true }
+        : { acquired: false, reason: 'held' };
+    } catch (error) {
+      await this.handleOperationError('atomic', key, error);
+      return { acquired: false, reason: 'unavailable' };
+    }
   }
 
   // 原子计数（用于配额/预算/计费等）

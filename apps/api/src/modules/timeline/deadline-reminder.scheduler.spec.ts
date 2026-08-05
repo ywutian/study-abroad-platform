@@ -13,7 +13,12 @@ describe('DeadlineReminderScheduler', () => {
     personalEvent: { findMany: jest.fn() },
     applicationTimeline: { findMany: jest.fn() },
   };
-  const redis = { setNX: jest.fn(), setNXStrict: jest.fn(), del: jest.fn() };
+  const redis = {
+    setNX: jest.fn(),
+    setNXStrict: jest.fn(),
+    tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
+    del: jest.fn(),
+  };
   const notifications = { createNotification: jest.fn() };
 
   // Fixed "now" so the 1/3/7-day windows are deterministic.
@@ -36,6 +41,7 @@ describe('DeadlineReminderScheduler', () => {
     prisma.applicationTimeline.findMany.mockResolvedValue([]);
     redis.setNX.mockResolvedValue(true);
     redis.setNXStrict.mockResolvedValue(true);
+    redis.tryAcquireLock.mockResolvedValue({ acquired: true });
     redis.del.mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
@@ -191,6 +197,7 @@ describe('DeadlineReminderScheduler', () => {
 
   it('skips the whole scan when the cron lock is held (multi-instance single-flight)', async () => {
     redis.setNXStrict.mockResolvedValue(false);
+    redis.tryAcquireLock.mockResolvedValue({ acquired: false, reason: 'held' });
     prisma.applicationTimeline.findMany.mockResolvedValue([
       {
         id: 't1',
