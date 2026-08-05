@@ -87,7 +87,7 @@ export function TemplateFormDialog({
         }
       }}
     >
-      <DialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {editingId ? 'Edit Activity Template' : 'Create Activity Template'}

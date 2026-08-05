@@ -166,7 +166,7 @@ export function EssayFormDialog({
 
   return (
     <Dialog open={isFormOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{selectedEssay ? t('essays.edit') : t('essays.create')}</DialogTitle>
           <DialogDescription>

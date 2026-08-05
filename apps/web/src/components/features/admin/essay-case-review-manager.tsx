@@ -430,7 +430,7 @@ export function EssayCaseReviewManager() {
 
       {/* 详情弹窗 */}
       <Dialog open={!!detailCase} onOpenChange={() => setDetailCase(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />

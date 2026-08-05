@@ -196,7 +196,7 @@ export function VaultCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg bg-card border-border text-foreground">
+      <DialogContent className="sm:max-w-lg bg-card border-border text-foreground">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />

@@ -2332,7 +2332,7 @@ function BulletOptimizeDialog({
 
   return (
     <Dialog open={Boolean(state)} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[85vh] sm:max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('workbench.dialogs.bulletOptimizeTitle')}</DialogTitle>
         </DialogHeader>
@@ -2390,7 +2390,7 @@ function ContentSuggestionDialog({
 
   return (
     <Dialog open={Boolean(state)} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[85vh] sm:max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('workbench.dialogs.contentSuggestionTitle')}</DialogTitle>
         </DialogHeader>
@@ -2466,7 +2466,7 @@ function UploadImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[85vh] sm:max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('workbench.dialogs.uploadImportTitle')}</DialogTitle>
         </DialogHeader>

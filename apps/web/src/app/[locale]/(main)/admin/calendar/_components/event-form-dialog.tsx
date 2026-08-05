@@ -88,7 +88,7 @@ export function EventFormDialog({
         }
       }}
     >
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editingId ? t('events.edit') : t('events.create')}</DialogTitle>
           <DialogDescription>{t('events.formDesc')}</DialogDescription>

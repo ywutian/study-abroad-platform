@@ -261,7 +261,7 @@ export function InvitesTab() {
 
       {/* ── Add Member Dialog ── */}
       <Dialog open={dialogOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t('team.invites.createTitle')}</DialogTitle>
           </DialogHeader>

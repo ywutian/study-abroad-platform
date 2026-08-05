@@ -49,7 +49,7 @@ export function VaultViewDialog({ item, onClose, onEdit, onDelete }: VaultViewDi
 
   return (
     <Dialog open={!!item} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-lg bg-card border-border text-foreground">
+      <DialogContent className="sm:max-w-lg bg-card border-border text-foreground">
         {item && (
           <>
             <DialogHeader>

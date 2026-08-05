@@ -27,7 +27,7 @@ export function ActivitiesCommonAppPreview({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('caPreview.title')}</DialogTitle>
           <p className="text-sm text-muted-foreground">{t('caPreview.desc')}</p>
@@ -81,7 +81,7 @@ export function ActivitiesCommonAppPreview({
                           {isOverLimit && (
                             <div className="flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3 text-destructive" />
-                              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                              <Badge variant="destructive" className="text-2xs px-1.5 py-0">
                                 {t('caPreview.charWarning')}
                               </Badge>
                             </div>
