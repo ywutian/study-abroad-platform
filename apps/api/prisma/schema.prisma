@@ -629,6 +629,11 @@ model User {
   communityRecruitmentContexts RecruitmentContext[] @relation("CommunityRecruitmentContextCreator")
 
   // Swipe game
+  // Carries a `User_points_non_negative` CHECK (>= 0) that Prisma cannot
+  // express, so it is invisible here and lives only in
+  // migrations/20260804230000_user_points_non_negative. Writes go through
+  // IncentiveService.adjustPoints, whose WHERE is the primary guard; the
+  // constraint is what keeps the invariant if a second writer appears.
   points       Int            @default(0)
   swipeStats   SwipeStats?
   pointHistory PointHistory[]
