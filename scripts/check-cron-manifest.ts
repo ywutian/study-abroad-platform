@@ -229,13 +229,58 @@ function render(jobs: ManifestJob[]): string {
   )}\n`;
 }
 
+/**
+ * A `@Cron` on a class that no module registers is a schedule that cannot run.
+ *
+ * `IpedsMonitorService` shipped in #74 and was hardened twice (#452 lock +
+ * durable fingerprint, #458 heartbeat) while sitting in **zero** providers
+ * arrays. Its weekly "IPEDS published new data" admin email had never once been
+ * scheduled, in any environment. Nothing caught it: the manifest is generated
+ * from decorators (so the job was listed), its spec instantiates the class
+ * directly (so tests passed), and under CRON_DRIVER=timer a missing provider
+ * just means no timer — silently. The deploy-time registry assert finally
+ * caught it, by failing a production deploy.
+ *
+ * ponytail: a substring match over `*.module.ts` with the `import` lines
+ * stripped — not a full providers-array parse. Stripping imports is not
+ * cosmetic: the first version of this check matched them, so deleting a class
+ * from `providers` while leaving its import still passed. Its own gate-proof
+ * caught that. What remains uncovered is a class named in `exports` but not
+ * `providers`, which Nest rejects at boot anyway.
+ */
+function findOrphanedCronClasses(jobs: ManifestJob[]): string[] {
+  const moduleSources = walk(path.join(ROOT, 'apps/api/src'))
+    .filter((f) => f.endsWith('.module.ts'))
+    .map((f) => fs.readFileSync(f, 'utf8').replace(/^\s*import\s[\s\S]*?from\s+'[^']+';$/gm, ''));
+
+  const registered = (className: string) =>
+    moduleSources.some((src) => new RegExp(`\\b${className}\\b`).test(src));
+
+  return [...new Set(jobs.map((j) => j.className))].filter((c) => !registered(c));
+}
+
 function main(): void {
   const update = process.argv.includes('--update');
-  const expected = render(extractJobs());
+  const jobs = extractJobs();
+
+  const orphaned = findOrphanedCronClasses(jobs);
+  if (orphaned.length > 0) {
+    console.error(
+      `❌ @Cron class(es) not registered in any module — their schedules can never run:\n` +
+        orphaned.map((c) => `     ${c}`).join('\n') +
+        `\n\n   The manifest lists their jobs (it reads decorators), and Cloud Scheduler\n` +
+        `   will POST to them, but Nest never instantiates the class so the dispatcher\n` +
+        `   answers 404 and the deploy's registry assert fails.\n` +
+        `   Fix: add the class to its module's \`providers\`.\n`
+    );
+    process.exit(1);
+  }
+
+  const expected = render(jobs);
 
   if (update) {
     fs.writeFileSync(MANIFEST_PATH, expected);
-    console.log(`✅ Wrote ${path.relative(ROOT, MANIFEST_PATH)} (${extractJobs().length} jobs)`);
+    console.log(`✅ Wrote ${path.relative(ROOT, MANIFEST_PATH)} (${jobs.length} jobs)`);
     return;
   }
 
@@ -248,7 +293,7 @@ function main(): void {
     );
     process.exit(1);
   }
-  console.log(`✅ cron manifest in sync (${extractJobs().length} jobs)`);
+  console.log(`✅ cron manifest in sync (${jobs.length} jobs)`);
 }
 
 main();

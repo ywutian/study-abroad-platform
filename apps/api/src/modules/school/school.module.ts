@@ -10,6 +10,7 @@ import { SchoolScraperScheduler } from './school-scraper.scheduler';
 import { DataSyncScheduler } from './data-sync.scheduler';
 import { DeadlineRefreshScheduler } from './deadline-refresh.scheduler';
 import { SchoolProvenanceScheduler } from './school-provenance.scheduler';
+import { IpedsMonitorService } from './ipeds-monitor.service';
 import { SchoolWriteService } from './school-write.service';
 import { HighSchoolService } from './high-school.service';
 import { HighSchoolController } from './high-school.controller';
@@ -40,6 +41,15 @@ import { SchoolListModule } from '../school-list/school-list.module';
     DataSyncScheduler,
     DeadlineRefreshScheduler,
     SchoolProvenanceScheduler,
+    // Registered 2026-08-05. This service existed since #74 and was hardened
+    // twice (#452 lock + durable fingerprint, #458 heartbeat) without ever
+    // being in a providers list — so its weekly "IPEDS published new data"
+    // admin email had never once been scheduled, in any environment. The spec
+    // instantiated it directly, which is why every test stayed green. Found by
+    // the deploy-time cron assert on its FIRST run (manifest lists the @Cron,
+    // live registry showed no provider); the cron-registry e2e now catches the
+    // next orphan at test time instead.
+    IpedsMonitorService,
     HighSchoolService,
     HsCalibrationScheduler,
     HighSchoolEventListener,

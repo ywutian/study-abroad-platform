@@ -21,9 +21,17 @@ export const CRON_SECRET_HEADER = 'x-cron-secret';
  * SHA-256 digests so `timingSafeEqual` gets equal-length buffers without
  * leaking the secret's length.
  *
- * Upgrade path if this ever needs to be stronger: Cloud Scheduler OIDC tokens
- * verified with google-auth-library. Not done now — it adds a dependency and a
- * JWKS fetch for an endpoint whose callers we fully control.
+ * Upgrade path, and the measured condition that triggers it: Cloud Scheduler
+ * OIDC tokens verified with google-auth-library. Not done now — it adds a
+ * dependency and a JWKS fetch for an endpoint whose callers we fully control.
+ *
+ * The trigger is not "someday". `gcloud scheduler jobs describe` prints this
+ * header in plaintext (measured 2026-08-05), so anyone holding
+ * `cloudscheduler.jobs.get` can read the production secret. That set is
+ * currently one owner plus two service accounts, all of which can already read
+ * the secret directly — zero extra exposure. **Grant read access on the GCP
+ * project to anyone else and this becomes a real leak; migrate then.**
+ * See docs/DEPLOY_CONFIG.md → Scheduled jobs.
  */
 @Injectable()
 export class CronSecretGuard implements CanActivate {
