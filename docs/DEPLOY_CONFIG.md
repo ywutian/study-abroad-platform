@@ -68,6 +68,23 @@ a run). Instead, schedules arrive **as requests**:
   `curl -X POST -H "x-cron-secret: …" <url>/api/v1/internal/cron/<name>/run`,
   or run it in dev where `CRON_DRIVER=timer` fires timers in-process.
 - Manual prod run: `gcloud scheduler jobs run api-cron-<name> --location=<region>`.
+- **Alerting**: Cloud Monitoring policy _"Scheduled job did not run
+  (study-abroad-api)"_ (created 2026-08-05) fires on a `Cron NOT RUN` log line
+  or a 5xx from `/internal/cron/`, and emails the project's notification
+  channel, rate-limited to one per hour.
+
+  This replaced `pingCronHeartbeat`, deleted the same day. That helper was
+  wired into four crons and pinged `<HEALTHCHECK_PING_BASE_URL>/<slug>` on
+  success — but the variable was never configured in any environment, so the
+  dead-man's-switch was a no-op, **and a unit test pinned the no-op as correct
+  behaviour**. It also could not have caught anything Cloud Scheduler doesn't
+  already record: Scheduler stores every attempt and its response, so the gap
+  was never _detection_, it was that nobody was being told.
+
+  A metric-based policy on `cloudscheduler.googleapis.com/job/attempt_count`
+  would be the more direct expression, but that metric has no descriptor in
+  this project until the jobs have actually produced attempts, and the API
+  rejects a policy referencing it. Revisit once metrics exist.
 
 One-time GCP setup (already-applied steps are idempotent):
 

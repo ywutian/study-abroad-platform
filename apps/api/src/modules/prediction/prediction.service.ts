@@ -2921,6 +2921,40 @@ export class PredictionService {
       }
     }
 
+    // Named programs get their OWN suggestions, for every tier.
+    //
+    // MAJOR_CATEGORY_PROGRAMS holds 46 entries, already filtered to the
+    // student's major category and already deduped against activities they
+    // list. Until now a reach school never saw `competitionNames` at all, and
+    // `summerNames` only survived as a trailing clause inside the early-round
+    // tip — so the whole catalogue could contribute at most a comma-joined
+    // fragment inside someone else's bullet, and a reach school produced
+    // exactly two suggestions total.
+    //
+    // The feedback was explicit that the advice does NOT need to be novel
+    // ("YYGS/SSHI are already proven, plenty of agencies suggest them") — just
+    // that there should be more of this kind. So this surfaces what already
+    // exists rather than inventing a new class of advice.
+    const mentionsProgram = (names: string) =>
+      names &&
+      suggestions.some((s) => s.includes(names.split(isZh ? '、' : ', ')[0]));
+
+    if (summerNames && !mentionsProgram(summerNames)) {
+      suggestions.push(
+        isZh
+          ? `暑期可申请与${profile.targetMajor ?? '目标专业'}方向匹配的学术项目，如 ${summerNames} —— 招生官看的是投入的深度，不是数量`
+          : `Target a summer program matched to ${profile.targetMajor ?? 'your intended major'} — e.g. ${summerNames}. Admissions reads depth of commitment, not count`,
+      );
+    }
+
+    if (competitionNames && !mentionsProgram(competitionNames)) {
+      suggestions.push(
+        isZh
+          ? `竞赛是可验证的实力证明，${competitionNames} 与你的专业方向对口；一项拿到成绩胜过三项参与过`
+          : `Competitions are verifiable evidence: ${competitionNames} line up with your intended major. One result beats three participations`,
+      );
+    }
+
     // Low confidence → name the SPECIFIC profile gaps as ONE actionable nudge.
     // The "why the data support level is low" explanation already lives in
     // confidenceSummary (buildConfidenceSummary); repeating a vague "data is
