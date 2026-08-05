@@ -85,12 +85,23 @@ for SA in <deploy-sa> <cloud-run-runtime-sa>; do
 done
 ```
 
-**Before the first deploy, check one thing this design assumes**: whether
-`gcloud scheduler jobs describe api-cron-<name>` prints the `x-cron-secret`
-header value. If it does, every principal with `cloudscheduler.jobs.get`
-(project Viewer) can read the production cron secret, and the follow-up in
-`cron-secret.guard.ts` — Cloud Scheduler OIDC tokens instead of a shared
-secret — stops being optional. Worth confirming because
+**Measured 2026-08-05: `gcloud scheduler jobs describe` prints the
+`x-cron-secret` header value in plaintext.** (Probed with a throwaway job and a
+dummy header, then deleted.) So the secret's real audience is _every principal
+with `cloudscheduler.jobs.get`_, not just the deploy SA.
+
+Today that is nobody extra — `study-abroad-prod-2025` has exactly one human
+(`user:yunzhi@yungrace.com`, owner) plus the deploy and runtime service
+accounts, and all three can already read the secret directly through
+`roles/secretmanager.secretAccessor`. So the exposure is currently zero-width,
+and the shared secret stands.
+
+**It stops being acceptable the moment anyone else gets read access to this
+project** — a Viewer, an auditor, a contractor, a CI integration. At that point
+migrate to the Cloud Scheduler OIDC token flow documented in
+`cron-secret.guard.ts` (scheduler job gets `--oidc-service-account-email`, the
+guard verifies the token instead of comparing a string). Granting the first
+extra principal is the trigger; do not wait for an incident.
 `account-purge-service-scheduled-purge` sits behind this auth.
 
 Rotating the secret: add a new `cron-secret` version, redeploy (the service
