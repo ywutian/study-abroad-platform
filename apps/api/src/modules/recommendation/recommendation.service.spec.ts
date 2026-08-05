@@ -348,7 +348,7 @@ describe('RecommendationService', () => {
 
       it("reads target schools from the user's school list", async () => {
         withTargetSchool();
-        await service.generateRecommendation('user-1', {} as never);
+        await service.generateRecommendation('user-1', {});
 
         expect(prisma.schoolListItem.findMany).toHaveBeenCalledWith(
           expect.objectContaining({ where: { userId: 'user-1' } }),
@@ -361,10 +361,7 @@ describe('RecommendationService', () => {
 
       it('attaches the comparison to the matching recommendation', async () => {
         withTargetSchool();
-        const result = await service.generateRecommendation(
-          'user-1',
-          {} as never,
-        );
+        const result = await service.generateRecommendation('user-1', {});
 
         const mit = result.recommendations.find(
           (r) => r.schoolId === 'school-1',
@@ -384,7 +381,7 @@ describe('RecommendationService', () => {
         (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
         (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([]);
 
-        await service.generateRecommendation('user-1', {} as never);
+        await service.generateRecommendation('user-1', {});
 
         expect(historical.getCaseComparison).not.toHaveBeenCalled();
       });
