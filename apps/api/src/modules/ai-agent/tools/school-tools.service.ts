@@ -188,12 +188,12 @@ export class SchoolToolsService implements IToolHandlerProvider {
     });
     const testingPolicy = resolveSchoolTestingPolicyValue({
       testingPolicy: fullSchool.testingPolicy,
-      testOptional: (fullSchool as any).testOptional,
+      testOptional: fullSchool.testOptional,
     });
     const ranking = getCatalogRanking(
       {
         name: fullSchool.name,
-        institutionType: (fullSchool as any).institutionType,
+        institutionType: fullSchool.institutionType,
         usNewsRank: fullSchool.usNewsRank,
         rankings: fullSchool.rankings,
       },
@@ -227,20 +227,18 @@ export class SchoolToolsService implements IToolHandlerProvider {
       testOptional:
         toLegacyTestOptionalFlag({
           testingPolicy,
-          testOptional: (fullSchool as any).testOptional,
+          testOptional: fullSchool.testOptional,
         }) ?? null,
-      campusCover: this.buildCampusCoverSummary(
-        (fullSchool as any).mediaAssets ?? [],
-      ),
+      campusCover: this.buildCampusCoverSummary(fullSchool.mediaAssets ?? []),
       programRates: this.buildProgramRatesSummary(
-        (fullSchool as any).programs ?? [],
+        fullSchool.programs ?? [],
         fullSchool,
       ),
-      acceptsCommonApp: (fullSchool as any).acceptsCommonApp ?? null,
-      hasEarlyDecision: (fullSchool as any).hasEarlyDecision ?? null,
+      acceptsCommonApp: fullSchool.acceptsCommonApp ?? null,
+      hasEarlyDecision: fullSchool.hasEarlyDecision ?? null,
       salary6YrPostGrad:
-        (fullSchool as any).salary6YrPostGrad != null
-          ? `$${(fullSchool as any).salary6YrPostGrad.toLocaleString()}`
+        fullSchool.salary6YrPostGrad != null
+          ? `$${fullSchool.salary6YrPostGrad.toLocaleString()}`
           : 'N/A',
       deadlines: this.annotateSourcedDeadlines(sourcedDeadlines),
       deadlineSourcePolicy:
@@ -313,12 +311,12 @@ export class SchoolToolsService implements IToolHandlerProvider {
       comparison: schools.map((s) => {
         const testingPolicy = resolveSchoolTestingPolicyValue({
           testingPolicy: s.testingPolicy,
-          testOptional: (s as any).testOptional,
+          testOptional: s.testOptional,
         });
         const ranking = getCatalogRanking(
           {
             name: s.name,
-            institutionType: (s as any).institutionType,
+            institutionType: s.institutionType,
             usNewsRank: s.usNewsRank,
             rankings: s.rankings,
           },
@@ -338,7 +336,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
           testOptional:
             toLegacyTestOptionalFlag({
               testingPolicy,
-              testOptional: (s as any).testOptional,
+              testOptional: s.testOptional,
             }) ?? null,
           retentionRate: this.formatSourcedPercentFact(s, 'retentionRate'),
         };

@@ -6,10 +6,12 @@ import { PointsService } from '../points/incentive.service';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { BadRequestException } from '@nestjs/common';
 import { RedisService } from '../../common/redis/redis.service';
+import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
 
 describe('RecommendationService', () => {
   let service: RecommendationService;
   let prisma: PrismaService;
+  let historical: PredictionHistoricalService;
   let llmService: LLMService;
   let pointsSvc: PointsService;
 
@@ -113,6 +115,24 @@ describe('RecommendationService', () => {
             assessmentResult: {
               findMany: jest.fn().mockResolvedValue([]),
             },
+            // The user's target schools, which drive the historical
+            // case-comparison context. Empty by default so the existing tests
+            // exercise the path without asserting on it.
+            schoolListItem: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+          },
+        },
+        // Previously absent, which is why nothing noticed that this whole
+        // branch was unreachable: `historicalService` is @Optional(), so with
+        // no provider the block never ran and no test could reach the bug
+        // inside it.
+        {
+          provide: PredictionHistoricalService,
+          useValue: {
+            getCaseComparison: jest.fn().mockResolvedValue(null),
+            getNationalityStats: jest.fn().mockResolvedValue(null),
+            getSchoolDistribution: jest.fn().mockResolvedValue(null),
           },
         },
         {
@@ -150,6 +170,9 @@ describe('RecommendationService', () => {
     prisma = module.get<PrismaService>(PrismaService);
     llmService = module.get<LLMService>(LLMService);
     pointsSvc = module.get<PointsService>(PointsService);
+    historical = module.get<PredictionHistoricalService>(
+      PredictionHistoricalService,
+    );
   });
 
   afterEach(() => {
@@ -292,6 +315,126 @@ describe('RecommendationService', () => {
           distinct: ['schoolId'],
         }),
       );
+    });
+
+    /**
+     * The evidence-based recommendation path.
+     *
+     * This block was written against `profile.targetSchools`, which `Profile`
+     * has never had, so it read `undefined` and never ran — while
+     * CaseComparisonSummary.tsx, the i18n strings, the shared type and the DTO
+     * field all sat waiting for data that could not arrive. Target schools come
+     * from SchoolListItem. These two tests are what stops it going quiet again:
+     * the first proves the context reaches the prompt, the second proves the
+     * structured data reaches the response the frontend renders.
+     */
+    describe('historical case comparison', () => {
+      const comparison = {
+        schoolId: 'school-1',
+        totalCases: 12,
+        admitted: { count: 7, gpaMedian: 3.9, satMedian: 1540 },
+        rejected: { count: 5, gpaMedian: 3.6, satMedian: 1450 },
+      };
+
+      const withTargetSchool = () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
+        (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+          { school: { id: 'school-1', name: 'MIT' } },
+        ]);
+        (historical.getCaseComparison as jest.Mock).mockResolvedValue(
+          comparison,
+        );
+      };
+
+      it("reads target schools from the user's school list", async () => {
+        withTargetSchool();
+        await service.generateRecommendation('user-1', {});
+
+        expect(prisma.schoolListItem.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({ where: { userId: 'user-1' } }),
+        );
+        expect(historical.getCaseComparison).toHaveBeenCalledWith(
+          'school-1',
+          undefined,
+        );
+      });
+
+      it('attaches the comparison to the matching recommendation', async () => {
+        withTargetSchool();
+        const result = await service.generateRecommendation('user-1', {});
+
+        const mit = result.recommendations.find(
+          (r) => r.schoolId === 'school-1',
+        );
+        expect(mit?.caseComparison).toEqual(comparison);
+
+        // The other recommendation has no target-list entry, so no comparison —
+        // asserted so a change that attaches the same object to everything
+        // cannot pass.
+        const other = result.recommendations.find(
+          (r) => r.schoolId !== 'school-1',
+        );
+        expect(other?.caseComparison).toBeUndefined();
+      });
+
+      it('stays quiet when the user has no target schools', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
+        (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([]);
+
+        await service.generateRecommendation('user-1', {});
+
+        expect(historical.getCaseComparison).not.toHaveBeenCalled();
+      });
+    });
+
+    /**
+     * `isInternational` reached the prompt builder as `undefined` on every call
+     * — it was read off `Profile`, which has no such column, through a cast.
+     * The branch it gates is the instruction to weigh a school's friendliness
+     * toward this nationality, its international-student share and its history
+     * with that nationality, so that instruction had never been sent on a
+     * platform whose applicants are overwhelmingly international.
+     */
+    describe('international applicant context', () => {
+      const promptText = () =>
+        JSON.stringify(
+          (llmService.chatSimpleGuarded as jest.Mock).mock.calls[0][0],
+        );
+
+      it('asks the model to weigh nationality fit for an international applicant', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue({
+          ...mockProfile,
+          nationality: 'CN',
+        });
+
+        await service.generateRecommendation('user-1', dto);
+
+        expect(promptText()).toContain('CN');
+        expect(promptText()).toMatch(/友好度|friendliness/);
+      });
+
+      it('sends neither for a domestic applicant', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue({
+          ...mockProfile,
+          nationality: 'US',
+          countryOfResidence: 'US',
+          citizenship: 'US',
+        });
+
+        await service.generateRecommendation('user-1', dto);
+
+        // Nationality still goes out; the international-fit instruction does
+        // not. Asserted so "always international" cannot pass either.
+        expect(promptText()).not.toMatch(/友好度|friendliness/);
+      });
+
+      it('omits the whole block when nationality is unknown', async () => {
+        (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
+
+        await service.generateRecommendation('user-1', dto);
+
+        expect(promptText()).not.toMatch(/友好度|friendliness/);
+      });
     });
 
     it('should refund and throw on non-JSON AI response', async () => {
