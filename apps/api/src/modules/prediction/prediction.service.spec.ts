@@ -377,6 +377,56 @@ describe('PredictionService counselor primary', () => {
         'en',
       ) as string[];
 
+    /**
+     * The feedback was "the estimate is good but Improve chances needs to be
+     * bigger and carry more of these". A reach school produced exactly TWO
+     * suggestions — the essay tip and the early-round tip — while
+     * MAJOR_CATEGORY_PROGRAMS held 46 major-matched entries that could only
+     * ever appear as a comma-joined fragment inside someone else's bullet.
+     * `competitionNames` was never referenced on the reach path at all.
+     */
+    it('gives a reach school named programs as suggestions of their own', () => {
+      const out = callSuggest(
+        'reach',
+        'high',
+        baseProfile({ targetMajor: 'Computer Science' }),
+        { hasEarlyDecision: true },
+      );
+
+      // Was 2 before: essay + early round.
+      expect(out.length).toBeGreaterThan(2);
+      // Both catalogue halves must surface, not just summer-inside-early-round.
+      expect(out.some((s) => /summer program/i.test(s))).toBe(true);
+      expect(out.some((s) => /competition/i.test(s))).toBe(true);
+    });
+
+    it('does not re-suggest a program the student already lists', () => {
+      const withRsi = baseProfile({
+        targetMajor: 'Computer Science',
+        activities: [{ name: 'RSI' }],
+      });
+      const out = callSuggest('reach', 'high', withRsi, {
+        hasEarlyDecision: true,
+      });
+
+      // Dedup is by activity name against the catalogue; RSI must not come back
+      // as advice to go do RSI.
+      const summerLine = out.find((s) => /summer program/i.test(s)) ?? '';
+      expect(summerLine).not.toMatch(/\bRSI\b/);
+    });
+
+    it('still caps at 5 so the panel cannot be flooded', () => {
+      const thin = baseProfile({
+        targetMajor: 'Computer Science',
+        testScores: [],
+        activities: [],
+        awards: [],
+      });
+      expect(
+        callSuggest('reach', 'low', thin, { hasEarlyDecision: true }).length,
+      ).toBeLessThanOrEqual(5);
+    });
+
     // ---- fix ②: early-round advice must match what the school actually offers ----
     it('recommends non-binding Early Action — never ED — for an EA-only school (MIT)', () => {
       const tip = earlyTip(

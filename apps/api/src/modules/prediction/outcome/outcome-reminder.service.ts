@@ -4,7 +4,6 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../../common/redis/cron-lock.util';
-import { pingCronHeartbeat } from '../../../common/monitoring/cron-heartbeat.util';
 import {
   NotificationService,
   NotificationType,
@@ -64,7 +63,6 @@ export class OutcomeReminderService {
       },
       this.logger,
     );
-    if (ran) await pingCronHeartbeat('outcome-reminder', this.logger);
   }
 
   /**

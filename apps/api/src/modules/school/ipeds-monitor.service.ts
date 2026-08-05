@@ -5,7 +5,6 @@ import { SettingsService, SETTING_KEYS } from '../settings/settings.module';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../common/redis/cron-lock.util';
-import { pingCronHeartbeat } from '../../common/monitoring/cron-heartbeat.util';
 
 const IPEDS_MONITOR_LOCK_KEY = 'ipeds-monitor:cron-lock';
 const IPEDS_FINGERPRINT_KEY = 'ipeds-monitor:last-fingerprint';
@@ -69,7 +68,6 @@ export class IpedsMonitorService {
       },
       this.logger,
     );
-    if (ran) await pingCronHeartbeat('ipeds-monitor', this.logger);
   }
 
   private async detectNewData(html: string): Promise<boolean> {
