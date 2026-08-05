@@ -1353,4 +1353,54 @@ describe('EssayGalleryService', () => {
       expect(safeRefund).toHaveBeenCalled();
     });
   });
+
+  /**
+   * The gallery is the SECOND unauthenticated surface that emits
+   * `AdmissionCase.tags`, and it was leaking the importer's `source:` dedup key
+   * in production (measured 10/10 rows, 2026-08-05) exactly like the case list.
+   *
+   * This test exists because removing the filter from BOTH gallery mappers left
+   * all 28 tests in this file green — the case-side filter was pinned and this
+   * one was not. Components tested apart do not prove they are wired.
+   */
+  describe('internal tag stripping (public surface)', () => {
+    const REAL_TAG =
+      'source:https://www.shemmassianconsulting.com/blog/college-essay-examples#essay14#anon';
+
+    it('never emits the importer dedup key', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([
+        {
+          id: 'c1',
+          schoolId: 's1',
+          year: 2024,
+          result: 'ADMITTED',
+          essayType: 'COMMON_APP',
+          promptNumber: 1,
+          essayPrompt: 'p',
+          essayContent: 'x'.repeat(50),
+          school: { id: 's1', name: 'Brown', usNewsRank: 9 },
+          tags: [REAL_TAG, 'brown', 'shemmassian'],
+          isVerified: true,
+          sourceArchive: null,
+          sourceUrl: null,
+          sourceAuthor: null,
+          createdAt: new Date('2024-01-01'),
+        },
+      ]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+      mockPrisma.admissionCase.groupBy.mockResolvedValue([]);
+
+      const result = await service.getGalleryEssays({ page: 1, pageSize: 10 });
+
+      // Only the raw `source:` KEY must go. The URL itself is expected in
+      // `sourceUrl` — the gallery deliberately backfills provenance from the
+      // tag to render the "查看原文 →" link, and that is a designed public
+      // field, not a leak. (My first version of this test asserted the URL was
+      // absent anywhere and failed on exactly that, which is the distinction
+      // worth writing down.)
+      expect(JSON.stringify(result)).not.toContain('source:');
+      expect(result.items[0].tags).toEqual(['brown', 'shemmassian']);
+      expect(result.items[0].sourceUrl).toContain('shemmassianconsulting.com');
+    });
+  });
 });

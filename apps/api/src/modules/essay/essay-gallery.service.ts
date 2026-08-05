@@ -40,6 +40,9 @@ import {
   GALLERY_DETAIL_SELECT,
 } from './constants/essay-gallery.constants';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
+// Same AdmissionCase.tags array the case list strips; the gallery is the other
+// unauthenticated surface that emits it. See stripInternalTags for why.
+import { stripInternalTags } from '../case/case.constants';
 
 /**
  * Shape of `AdmissionCase.aiAnalysisCache[locale]`. Stored as a `Json?` column
@@ -190,7 +193,7 @@ export class EssayGalleryService {
         preview: c.essayContent ? c.essayContent.slice(0, 200) + '...' : null,
         wordCount: c.essayContent ? c.essayContent.split(/\s+/).length : 0,
         school: c.school,
-        tags: c.tags,
+        tags: stripInternalTags({ tags: c.tags }).tags,
         isVerified: c.isVerified,
         sourceArchive: provenance.archive,
         sourceUrl: provenance.url,
@@ -259,7 +262,7 @@ export class EssayGalleryService {
         preview: c.essayContent ? c.essayContent.slice(0, 200) + '...' : null,
         wordCount: c.essayContent ? c.essayContent.split(/\s+/).length : 0,
         school: c.school,
-        tags: c.tags,
+        tags: stripInternalTags({ tags: c.tags }).tags,
         isVerified: c.isVerified,
         sourceArchive: provenance.archive,
         sourceUrl: provenance.url,
