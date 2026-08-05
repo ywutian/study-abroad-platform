@@ -225,7 +225,16 @@ if (errors === 0 && warnings === 0) {
 
 if (errors > 0) {
   console.log('\n❌ Migration safety check failed. Fix errors before deploying.');
-  process.exit(1);
+  // `process.exitCode`, NOT `process.exit()`. When stdout is a PIPE — which it
+  // is under CI, `| tee`, `| grep`, or the gate-proof harness — Node's writes
+  // are asynchronous, and `process.exit()` terminates without draining them.
+  // This script prints ~167KB of warnings before this line, so the exit call
+  // was dropping the tail: measured 2026-08-05, CI captured 110,226 of 167,412
+  // bytes and lost the ❌ line naming the error. It passed locally because a
+  // `>` redirect to a FILE is synchronous — the identical command truncates
+  // through a pipe and not through a file, which is why this was intermittent.
+  // Setting exitCode lets Node exit naturally after flushing.
+  process.exitCode = 1;
 }
 
 if (warnings > 0) {
