@@ -2324,7 +2324,7 @@
     "calculationList": "测算列表",
     "selectorProgress": "已选 {count} 所",
     "clearAll": "清空",
-    "importSchoolList": "导入选校单（{count}）",
+    "importSchoolList": "添加全部选校单（{count}）",
     "comingSoon": "学校选择器即将上线",
     "comingSoonDesc": "目前请点击下方按钮查看演示预测",
     "tabPredict": "预测",
@@ -2462,7 +2462,8 @@
       "moreResults": "另有 {count} 条模拟结果",
       "resultsTitle": "模拟结果",
       "noResults": "暂无结果——请检查你的档案或所选学校。",
-      "selectSchoolsHint": "先在左侧列表选择至少一所学校即可模拟。"
+      "selectSchoolsHint": "先在左侧列表选择至少一所学校即可模拟。",
+      "profileBlockedHint": "完善档案基础信息后即可运行模拟。"
     },
     "emptyHint": "选择学校并开始测算，查看您的个人录取概率",
     "runPrediction": "开始测算",

@@ -10,10 +10,11 @@
   "apps/api/src": 44145,
   "apps/api/scripts": 41392,
   "apps/api/prisma": 12105,
-  "apps/web/src": 16082,
+  "apps/web/src": 16136,
   "apps/mobile/src": 8645,
   "packages/shared": 6702,
   "packages/browser-extension": 0,
   "scripts": 10799,
-  "_apps_api_src_note_case_tags": "44142 → 44145 (+3). essay-gallery.service.ts gains the stripInternalTags import and its two-line reason. The importer's dedup key `source:<url>#<author>` was reaching readers from BOTH unauthenticated surfaces — measured 2026-08-05, 20/20 rows on GET /cases and 10/10 on GET /essay-ai/gallery — rendering as a 551px URL badge inside a 386px card. It cannot be deleted from the data (it is the re-import idempotency key), so it is stripped at the serve boundary."
+  "_apps_api_src_note_case_tags": "44142 → 44145 (+3). essay-gallery.service.ts gains the stripInternalTags import and its two-line reason. The importer's dedup key `source:<url>#<author>` was reaching readers from BOTH unauthenticated surfaces — measured 2026-08-05, 20/20 rows on GET /cases and 10/10 on GET /essay-ai/gallery — rendering as a 551px URL badge inside a 386px card. It cannot be deleted from the data (it is the re-import idempotency key), so it is stripped at the serve boundary.",
+  "_apps_web_src_note_whatif_prefill": "16082 → 16136 (+54). prediction/page.tsx: the estimate list no longer pre-fills on every visit (users were deleting the whole school list row by row), plus the ?autorun=1 carve-out that keeps the dashboard and onboarding entry points working — that coupling breaks SILENTLY, so it is written down rather than left to be rediscovered. Also replaces a stale COL1 comment that claimed the column can never overflow; it was written when COL1 held one card and now holds two."
 }

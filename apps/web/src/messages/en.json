@@ -2351,7 +2351,7 @@
     "calculationList": "Estimate List",
     "selectorProgress": "{count} selected",
     "clearAll": "Clear",
-    "importSchoolList": "Import my list ({count})",
+    "importSchoolList": "Add all from my list ({count})",
     "comingSoon": "School selector coming soon",
     "comingSoonDesc": "For now, click the button below to see a demo prediction",
     "tabPredict": "Predict",
@@ -2489,7 +2489,8 @@
       "moreResults": "+{count} more preview results",
       "resultsTitle": "Preview result",
       "noResults": "No results — check your profile or the selected schools.",
-      "selectSchoolsHint": "Pick at least one school in the list on the left to preview."
+      "selectSchoolsHint": "Pick at least one school in the list on the left to preview.",
+      "profileBlockedHint": "Complete your profile basics before running a simulation."
     },
     "emptyHint": "Select schools and start an estimate to see your personal admission chance",
     "runPrediction": "Start Estimate",

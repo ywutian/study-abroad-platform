@@ -67,6 +67,26 @@ export function PredictionWhatIfPanel({
   const schoolIds = useMemo(() => selectedSchools.map((school) => school.id), [selectedSchools]);
   const canRun = schoolIds.length > 0 && !disabled && !previewMutation.isPending;
 
+  // Why the button is dead, in the panel itself.
+  //
+  // `disabled:pointer-events-none` (button.tsx:8) means a disabled Preview
+  // swallows the click with no cursor change, no toast, nothing — which is
+  // exactly the reported "我按这个是没有反应的". The empty-selection case had a
+  // hint; the `disabled` case had NOTHING, because the profile blockers render
+  // in COL2 while this panel sits in COL1.
+  //
+  // (The `toast.error(t('whatIf.selectSchools'))` guard at the top of
+  // `runPreview` is unreachable for the same reason — the button is already
+  // disabled in precisely that case. Left in place as a defence for
+  // programmatic callers; the hint below is what a user actually sees.)
+  const disabledReason = previewMutation.isPending
+    ? null
+    : schoolIds.length === 0
+      ? t('whatIf.selectSchoolsHint')
+      : disabled
+        ? t('whatIf.profileBlockedHint')
+        : null;
+
   // The result renders below a tall form, so pull it into view after a run —
   // otherwise it looks like nothing happened.
   useEffect(() => {
@@ -229,8 +249,10 @@ export function PredictionWhatIfPanel({
 
       <p className="mt-2 text-xs text-muted-foreground">{t('whatIf.notSaved')}</p>
 
-      {schoolIds.length === 0 ? (
-        <p className="mt-2 text-2xs text-muted-foreground">{t('whatIf.selectSchoolsHint')}</p>
+      {disabledReason ? (
+        <p role="status" className="mt-2 text-2xs text-muted-foreground">
+          {disabledReason}
+        </p>
       ) : null}
 
       {hasRun ? (
