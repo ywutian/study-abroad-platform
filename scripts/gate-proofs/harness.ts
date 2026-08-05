@@ -39,13 +39,28 @@ export function runGate(script: string, args: string[] = []): GateRun {
       cwd: ROOT,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      // Default is 1MB, and exceeding it KILLS the child and truncates the
+      // capture — which reads as "gate fired but never mentioned the seeded
+      // violation" when the mention was simply past the cut. A full
+      // migration-safety scan is ~170KB today; 64MB means a capture problem
+      // can no longer impersonate a gate problem.
+      maxBuffer: 64 * 1024 * 1024,
     });
     return { status: 0, stdout };
   } catch (err) {
-    const e = err as { status?: number; stdout?: string; stderr?: string };
+    const e = err as {
+      status?: number | null;
+      signal?: string | null;
+      stdout?: string | Buffer;
+      stderr?: string | Buffer;
+    };
+    const text = (v?: string | Buffer) => (Buffer.isBuffer(v) ? v.toString('utf8') : (v ?? ''));
+    // A signal kill (e.g. maxBuffer exceeded → SIGTERM) has status null. Say
+    // so in the output instead of letting it pass as a plain non-zero exit.
+    const signalNote = e.signal ? `\n[runGate: child killed by ${e.signal}]` : '';
     return {
       status: e.status ?? 1,
-      stdout: `${e.stdout ?? ''}${e.stderr ?? ''}`,
+      stdout: `${text(e.stdout)}${text(e.stderr)}${signalNote}`,
     };
   }
 }
@@ -137,9 +152,17 @@ export function expectFired(run: GateRun, mustMention?: string): void {
     );
   }
   if (mustMention && !run.stdout.includes(mustMention)) {
+    // Show the TAIL as well as the head. The first version of this message
+    // sliced the head only, and the one time it fired in CI the interesting
+    // bytes were the last ~300 of a 167KB capture — the diagnostic hid exactly
+    // the evidence needed to tell a truncated capture from a wrong gate.
+    const head = run.stdout.slice(0, 600);
+    const tail = run.stdout.length > 1200 ? run.stdout.slice(-600) : '';
     throw new Error(
       `Gate fired but never mentioned "${mustMention}" — it may be failing for an unrelated ` +
-        `reason, which would make this proof green for the wrong cause.\n--- output ---\n${run.stdout.slice(0, 800)}`
+        `reason, which would make this proof green for the wrong cause.\n` +
+        `--- captured ${run.stdout.length} bytes; head ---\n${head}` +
+        (tail ? `\n--- tail ---\n${tail}` : '')
     );
   }
 }
