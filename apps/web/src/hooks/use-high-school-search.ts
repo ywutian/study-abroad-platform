@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { highSchoolRoutes } from '@study-abroad/shared';
-import { apiClient, STALE_TIME } from '@/lib/api';
+import { apiClient } from '@/lib/api';
+import { cachePolicy } from '@/lib/query';
 
 export interface HighSchoolSearchItem {
   id: string;
@@ -31,6 +32,9 @@ export function useHighSchoolSearch(query: string, enabled = true) {
         params: { search: debouncedQuery, pageSize: '15' },
       }),
     enabled: enabled && debouncedQuery.length >= 1,
-    staleTime: STALE_TIME.DYNAMIC,
+    // See use-school-search: the key changes per debounced keystroke, so
+    // without this the dropdown blanks between every letter.
+    placeholderData: keepPreviousData,
+    ...cachePolicy.reference,
   });
 }

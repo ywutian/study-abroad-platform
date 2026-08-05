@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -114,6 +114,8 @@ export function EssayPromptManager() {
 
   // 获取文书列表
   const { data: essaysData, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['essayPrompts', statusFilter, typeFilter, debouncedSearch],
     queryFn: () =>
       apiClient.get<{ data: EssayPrompt[]; total: number }>(adminRoutes.essayPrompts(), {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
@@ -91,6 +91,8 @@ export function OutcomesTab() {
   const [isFinal, setIsFinal] = useState(false);
 
   const { data, isLoading } = useQuery<PaginatedResponse<PredictionWorkflowOutcome>>({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['predictionWorkflowOutcomes', page, statusFilter, resultFilter, eligibleOnly],
     queryFn: () =>
       apiClient.get(adminRoutes.predictionWorkflowOutcomes(), {

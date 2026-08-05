@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -70,6 +70,8 @@ export function DeadlinesTab() {
 
   const [schoolQuery, setSchoolQuery] = useState('');
   const { data: schoolOptions } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['schoolSearch', schoolQuery],
     queryFn: () =>
       apiClient.get<{ items: SchoolOption[] }>(schoolRoutes.list(), {

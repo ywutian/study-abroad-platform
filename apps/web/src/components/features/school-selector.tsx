@@ -1,7 +1,7 @@
 'use client';
 
 import { schoolRoutes } from '@study-abroad/shared';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Globe, GraduationCap, Loader2, Search, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -66,6 +66,8 @@ export function SchoolSelector({
 
   // Fetch schools
   const { data: schoolsResponse, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: qk.schools.list({ search }),
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {

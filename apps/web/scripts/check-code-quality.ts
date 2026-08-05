@@ -775,7 +775,35 @@ function checkDynamicStaleTimeOnList(filePath: string, lines: string[]): Issue[]
   return issues;
 }
 
-/** (c) A paginated/searchable query in a file that never sets keepPreviousData. */
+/**
+ * The user-controlled list state that, when it lands in a query key, makes the
+ * key churn while the user is still looking at the results. That churn is the
+ * entire defect: a new key means a new cache entry, which means `data` is
+ * `undefined` and the list drops to its skeleton.
+ */
+const LIST_KEY_CHURN_PATTERN = /\b\w*(page|search|query|filter|keyword|debounced?|sort|tab)\w*\b/i;
+
+/**
+ * (c) A paginated/searchable query in a file that never sets keepPreviousData.
+ *
+ * The signal is the QUERY KEY, not the request params — and getting that
+ * backwards is what left this rule with 42 standing findings, about half of
+ * them wrong. It used to flag any `useQuery` with `pageSize` within fifteen
+ * lines, which is neither necessary nor sufficient:
+ *
+ *   - `pageSize: '6'` next to `queryKey: ['case', caseId]` is a fixed cap on a
+ *     detail query, not a pager. Adding keepPreviousData there is actively
+ *     wrong: the key changes when you open a DIFFERENT case, so the user would
+ *     be shown the previous case's data while the new one loads.
+ *   - the fifteen-line window also reached into the NEXT query in the file, so
+ *     a detail query was flagged for its neighbour's params.
+ *   - `useInfiniteQuery` was flagged unconditionally, but its pagination moves
+ *     `pageParam` and leaves the key alone — there is no blank to prevent. It
+ *     only churns when a filter is in the key, which is the same test as below.
+ *
+ * A rule that is wrong half the time gets read as noise, and 42 unactioned
+ * warnings is what that looks like.
+ */
 function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (isExempt(filePath, CACHE_POLICY_EXEMPT_FILES)) return issues;
@@ -786,18 +814,43 @@ function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Iss
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
-    const isInfinite = /useInfiniteQuery\s*[<(]/.test(line);
-    const isOffsetList =
-      /useQuery\s*[<(]/.test(line) &&
-      lines.slice(i, i + 15).some((l) => /pageSize|page:\s|['"]page['"]/.test(l));
-    if (isInfinite || isOffsetList) {
+    if (!/use(Infinite)?Query\s*[<(]/.test(line)) continue;
+
+    // The key is the first property of the options object; six lines covers a
+    // multi-line key without reaching the next query's.
+    const keyLine = lines.slice(i, i + 6).findIndex((l) => /queryKey:/.test(l));
+    if (keyLine < 0) continue;
+    // Stop at `queryFn`, and drop the two property names themselves. Both
+    // matter: `queryFn` contains "query", so a slice that runs past the key
+    // matches the churn pattern on the accessor's own name and the rule
+    // reports every query in the app. (It did, on the first attempt at this.)
+    const keyStart = i + keyLine;
+    const keyEnd = lines
+      .slice(keyStart, keyStart + 5)
+      .findIndex((l, n) => n > 0 && /queryFn:/.test(l));
+    const key = lines
+      .slice(keyStart, keyStart + (keyEnd > 0 ? keyEnd : 1))
+      .join(' ')
+      .replace(/query(Key|Fn):/g, '')
+      .replace(/\bqk\b/g, '');
+    const churns = LIST_KEY_CHURN_PATTERN.test(key);
+
+    const isList = lines
+      .slice(i, i + 15)
+      .some((l) => /pageSize|page:\s|['"]page['"]|useInfiniteQuery/.test(l));
+
+    if (churns && isList) {
       issues.push({
         file: relativePath(filePath),
         line: i + 1,
         rule: 'list-query-needs-keep-previous',
         message:
           'Paginated/searchable query without keepPreviousData — the list blanks to a skeleton on every page/filter change. Add `placeholderData: keepPreviousData` (or use the shared list hook). Suppress with // @cache-policy-ignore-next-line.',
-        severity: 'warning',
+        // Promoted from warning once the worklist hit 0, the same way
+        // `no-missing-min-w-in-grid-container` was. A rule carrying 42 standing
+        // findings is read as noise; a rule at 0 is a gate. The suppression
+        // comment is there for the case where stale rows are genuinely wrong.
+        severity: 'error',
       });
       return issues; // one finding per file is enough to flag it
     }

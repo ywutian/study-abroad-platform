@@ -159,7 +159,7 @@ function main(): void {
     for (const t of TARGETS) {
       next[t] = Math.min(current[t].overage, baseline[t] ?? Infinity);
     }
-    write(next, baseline._comment);
+    write(next, baseline);
     return;
   }
 
@@ -181,11 +181,18 @@ function main(): void {
   }
 }
 
-function write(counts: Baseline, comment?: string): void {
+function write(counts: Baseline, prev?: Record<string, unknown>): void {
+  // Carry over every `_`-prefixed key, not just `_comment` — the per-target
+  // notes record WHY a number moved, which is the only thing that makes a
+  // raised baseline reviewable. This used to keep `_comment` and drop the
+  // rest, so a single `--update` silently deleted the rationale for every
+  // previous raise. Same fix check-coverage-ratchet.ts already carries.
+  const notes = Object.fromEntries(Object.entries(prev ?? {}).filter(([k]) => k.startsWith('_')));
   const out = {
     _comment:
-      comment ??
+      (notes._comment as string | undefined) ??
       `One-way ceiling on oversized source files, per package. The number is Σ max(0, lines − ${LIMIT}) — the total lines past the limit, NOT a file count, so splitting a large file always lowers it and never trips the gate. check-file-size-ratchet.ts fails when a package's number RISES. After splitting something, run \`pnpm lint:file-size --update\` to lock the win; --update never raises a floor. Raising a number requires editing this file in the same PR.`,
+    ...notes,
     ...counts,
   };
   fs.writeFileSync(BASELINE_FILE, JSON.stringify(out, null, 2) + '\n');

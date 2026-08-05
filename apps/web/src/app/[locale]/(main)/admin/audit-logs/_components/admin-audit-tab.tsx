@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,6 +62,8 @@ export function AdminAuditTab() {
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminAuditLogs', actionFilter, resourceFilter, page],
     queryFn: () => {
       const params: Record<string, string> = { page: String(page), pageSize: String(PAGE_SIZE) };

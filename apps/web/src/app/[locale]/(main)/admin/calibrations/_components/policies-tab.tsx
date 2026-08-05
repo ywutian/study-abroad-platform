@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { BadgeCheck, BarChart3, GitBranch, RotateCcw, Compass } from 'lucide-react';
@@ -36,6 +36,8 @@ export function PoliciesTab() {
   const [selectedPolicyId, setSelectedPolicyId] = useState('');
 
   const { data, isLoading } = useQuery<PaginatedResponse<PredictionWorkflowPolicy>>({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['predictionWorkflowPolicies', 'policies-tab'],
     queryFn: () =>
       apiClient.get(adminRoutes.predictionWorkflowPolicies(), {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { adminRoutes } from '@study-abroad/shared';
 import { Card } from '@/components/ui/card';
@@ -78,6 +78,8 @@ export function ActivityTab() {
   const operatorList = Array.isArray(operators) ? operators : [];
 
   const { data: logsData, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminTeamActivity', memberFilter, actionFilter, page],
     queryFn: () => {
       const params: Record<string, string> = {

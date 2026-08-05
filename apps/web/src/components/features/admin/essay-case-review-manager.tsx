@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -93,6 +93,8 @@ export function EssayCaseReviewManager() {
 
   // 获取待审核列表
   const { data: pendingData, isLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['pendingEssays', search, page],
     queryFn: () =>
       apiClient.get<{ data: CaseEssay[]; total: number; totalPages?: number }>(

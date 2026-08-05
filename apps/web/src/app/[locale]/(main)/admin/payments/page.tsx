@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Archive, CheckCircle2, CreditCard, Receipt, RotateCcw, XCircle } from 'lucide-react';
 import { adminRoutes } from '@study-abroad/shared';
 import { PageHeader } from '@/components/layout';
@@ -59,6 +59,8 @@ export default function AdminPaymentsPage() {
   });
 
   const { data: paymentsData, isLoading: paymentsLoading } = useQuery({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminPayments', statusFilter, planFilter, page],
     queryFn: () => {
       const params: Record<string, string> = {

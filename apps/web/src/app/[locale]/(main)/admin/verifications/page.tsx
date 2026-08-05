@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -124,6 +124,8 @@ export default function AdminVerificationsPage() {
 
   // List
   const { data: listData, isLoading } = useQuery<PaginatedResponse>({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['adminVerifications', statusFilter, page],
     queryFn: () =>
       apiClient.get<PaginatedResponse>(verificationRoutes.pending(), {

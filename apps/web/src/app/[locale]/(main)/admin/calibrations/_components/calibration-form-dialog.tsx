@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Loader2, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
@@ -91,6 +91,8 @@ export function CalibrationFormDialog({
   }, [open, editingCalibration, prefillSchoolId, prefillSchoolName, prefillMultiplier]);
 
   const { data: schoolOptions = [] } = useQuery<SchoolOption[]>({
+    // Keeps the rows on screen while the next page/filter loads.
+    placeholderData: keepPreviousData,
     queryKey: ['schoolSearch', schoolQuery],
     queryFn: async () => {
       const r = (await apiClient.get(schoolRoutes.list(), {
