@@ -94,6 +94,17 @@ export class AccountPurgeService {
     });
 
     if (candidates.length === 0) {
+      // Say so. A successful run that prints nothing is indistinguishable from
+      // a run that never happened — which is precisely how this job spent its
+      // first two days: `runWithCronLock` skipped it inside a Redis circuit
+      // window, and the only trace was a "lock held or unavailable" line that
+      // conflated an outage with normal contention (#553). Triggering it by
+      // hand afterwards produced a 201 and total silence, and the silence had
+      // to be read out of the source to learn it meant zero.
+      this.logger.log(
+        `Account purge ${dryRun ? 'DRY RUN ' : ''}found nothing to do: no account is ` +
+          `past its ${this.graceDays}-day grace window (cutoff ${cutoff.toISOString()}).`,
+      );
       return { eligible: 0, purged: 0, retained: 0, failed: 0, dryRun };
     }
 
