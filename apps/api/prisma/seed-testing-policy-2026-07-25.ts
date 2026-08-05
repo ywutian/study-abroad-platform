@@ -9,8 +9,43 @@
  * default with REQUIRED and OPTIONAL both completely unused — College
  * Scorecard does not publish the field and nothing else backfilled it. The
  * engine therefore gave a no-score applicant the same treatment at Harvard as
- * at an open-admission school. This file covers the 59 schools under a 20%
- * admit rate, where the error costs the most.
+ * at an open-admission school. The first batch covered the 59 schools under a
+ * 20% admit rate, where the error costs the most.
+ *
+ * SECOND BATCH — 2026-08-04, the ≥20% sweep
+ * -----------------------------------------
+ * The first batch left a hole it named in its own code comment: below 20%
+ * admit, UNKNOWN takes the test-optional correction (0.85x), but at or above
+ * 20% it returns 1.0. A school there that actually requires scores reads
+ * neutral when the REQUIRED branch would return 0.1 — an order of magnitude,
+ * and UF was named as the live instance.
+ *
+ * Prod (2026-08-04, `GET /api/v1/schools`) had 185 schools still UNKNOWN, 176
+ * of them at or above 20%. They were NOT swept one by one. Test-optional is
+ * still the overwhelming default in that band, and the exceptions are
+ * published by state systems rather than by campus — so the unit of research
+ * was the system, plus a targeted pass over schools named in reinstatement
+ * reporting. Ten of the 176 came back REQUIRED, all verified on the school's
+ * own page, all listed at the bottom of TESTING_POLICIES.
+ *
+ * Deliberately left UNKNOWN, with the reason, so the next sweep does not
+ * re-open them:
+ *   - Purdue — two official pages contradict each other. The first-year
+ *     criteria page lists "SAT, ACT or CLT scores (if provided)" among factors
+ *     evaluated, while the counselor-facing page says Purdue is "test
+ *     expected". Neither is a policy statement the other confirms.
+ *   - Louisiana State University (<3.5 weighted GPA) and University of Alabama
+ *     (<3.0 GPA) — required only below a GPA cutoff. Same shape as Dartmouth
+ *     above: conditional on something `testingPolicy` cannot express, and the
+ *     majority of applicants fall on the not-required side.
+ *   - Texas A&M — verified test-optional in search results from its own
+ *     domain, but every candidate URL 404'd on fetch, so there is no quoted
+ *     page behind it. At 57.3% admit OPTIONAL and UNKNOWN both return 1.0, so
+ *     the only thing left unfixed is an "unrecorded policy" caveat.
+ *
+ * The remaining ~166 are unswept, not verified-optional. UNKNOWN at or above
+ * 20% still returns 1.0, so a REQUIRED school outside the systems checked here
+ * is still mispriced. That is the standing gap; it shrinks per system checked.
  *
  * COLLECTION
  * ----------
@@ -75,6 +110,16 @@
  * accepted-test data — which tests satisfy which school — and that is a
  * separate, larger change to the served numbers.
  *
+ * VERIFYING THIS IN PROD: allow a day.
+ * The prediction cache key is `prediction:{profileId}:{schoolId}:{policyVersion}
+ * :{mode}` — no school data in it — so changing a school's testingPolicy does
+ * not invalidate anything, and `invalidateSchoolCaches` structurally cannot
+ * reach these keys (the prefix is the profile, not the school). Already-cached
+ * predictions keep serving the old multiplier until REDIS_TTL.PREDICTION_RESULT
+ * expires, which is 24h. This is true of every school-data change, Scorecard
+ * syncs included; it is called out here only so a same-day spot-check that
+ * still reads 1.0 is not mistaken for the seed having failed.
+ *
  * Run standalone (also applied to prod via migrate.sh run_seed):
  *   npx tsx apps/api/prisma/seed-testing-policy-2026-07-25.ts
  */
@@ -98,7 +143,17 @@ type PolicyRow = {
   policy: keyof typeof TestingPolicy;
   sourceUrl: string;
   note: string;
+  /**
+   * Which collection produced this row. Defaults to the original 2026-07-25
+   * batch. Batches differ in scope — 07-25 covered only schools under 20%
+   * admit — so stamping every row with the first batch's id would put a false
+   * provenance on rows that batch never looked at.
+   */
+  verifiedBy?: string;
 };
+
+/** The ≥20% admit-rate sweep; see "SECOND BATCH" in the file header. */
+const BATCH_2026_08_04 = 'testing-policy-ge20-sweep-2026-08-04';
 
 export const TESTING_POLICIES: PolicyRow[] = [
   {
@@ -435,6 +490,89 @@ export const TESTING_POLICIES: PolicyRow[] = [
     sourceUrl: 'https://admissions.yale.edu/standardized-testing',
     note: 'Yale announced 2026-05-27 that it drops test-flexible: "Beginning with the next admissions cycle, applicants will be required to submit scores from the ACT or SAT" — AP/IB no longer substitute (cycle: 2026-27 (tightened from test-flexible, announced 2026-05-27))',
   },
+
+  // ---------------------------------------------------------------------
+  // SECOND BATCH — 2026-08-04, the ≥20% admit-rate sweep.
+  //
+  // Kept as a dated block rather than merged into the alphabetical run
+  // above: the two batches have different scopes and different verifiers,
+  // and a `verifiedBy` that cannot be read off the file is not provenance.
+  // ---------------------------------------------------------------------
+  {
+    nameNorm: 'auburn university',
+    policy: 'REQUIRED',
+    sourceUrl:
+      'https://www.auburn.edu/admissions/prospective-students/freshmen/index.php',
+    note: '"Auburn University requires that a student must have ACT or SAT scores on file to have a complete application." Stated under the Summer/Fall 2027 freshman process; the Fall 2026 test-optional pathway (a limited number of applicants at 3.6+ GPA) does not extend to this cycle (cycle: Summer/Fall 2027)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'florida international university',
+    policy: 'REQUIRED',
+    sourceUrl: 'https://admissions.fiu.edu/admission-standards/',
+    note: '"SAT, ACT and/or CLT scores are required for first time in college applicants." (cycle: current; Florida Board of Governors reg. 6.002 governs the whole State University System)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'florida state university',
+    policy: 'REQUIRED',
+    sourceUrl: 'https://admissions.fsu.edu/first-year/apply',
+    note: '"Official ACT, CLT, or SAT test scores are required of all freshman/sophomore-level applicants." The one exemption is BOG reg. 6.005 — an A.A. from a Florida public college earned at or before high-school graduation — which no applicant schooled outside the US can hold, so unlike Miami\'s it is not origin-scoped against our users (cycle: current; Florida BOG reg. 6.002)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'georgia state university',
+    policy: 'REQUIRED',
+    sourceUrl: 'https://admissions.gsu.edu/test-optional-m/',
+    note: '"If you\'re applying to Georgia State\'s Atlanta Campus for Fall 2026 or later, you are required to submit official SAT or ACT scores as part of your application for admission." The GPA-3.4 test-optional route stops after Summer 2026. Scoped to the Atlanta Campus; Perimeter College is a separate associate-degree admission this platform does not model (cycle: Fall 2026+)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'university of central florida',
+    policy: 'REQUIRED',
+    sourceUrl:
+      'https://www.ucf.edu/admissions/undergraduate/question/does-ucf-require-standardized-tests-2/',
+    note: '"All freshmen must submit an official SAT [code: 5233], ACT [code: 0735] or CLT score" (cycle: current; Florida BOG reg. 6.002)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'university of florida',
+    policy: 'REQUIRED',
+    sourceUrl: 'https://admissions.ufl.edu/apply/freshman/requirements',
+    note: '"All applicants must submit test scores from the SAT, ACT and/or CLT." This is the school the 2026-07-24 audit named as the one the selectivity floor could not reach: at 24.2% admit it sat above the 20% line and read 1.0x (cycle: current; Florida BOG reg. 6.002)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'university of georgia',
+    policy: 'REQUIRED',
+    sourceUrl:
+      'https://admissions.uga.edu/apply/first-year-applicants/first-year-faqs/',
+    note: '"No, UGA is not test-optional. There is no flexibility on this policy per the University System of Georgia guidelines." (cycle: current; USG restored the requirement at seven institutions from Fall 2026)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'university of south florida',
+    policy: 'REQUIRED',
+    sourceUrl:
+      'https://www.usf.edu/admissions/freshmen/admission-information/academic-requirements.aspx',
+    note: '"USF requires freshman applicants to submit official results for at least one college entrance exam (SAT, ACT or CLT)." (cycle: current; Florida BOG reg. 6.002)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'university of tennessee',
+    policy: 'REQUIRED',
+    sourceUrl:
+      'https://admissions.utk.edu/undergraduate-application/test-score-policy/',
+    note: '"All first-year undergraduate students are required to self-report their ACT or SAT scores as part of their application for admission by January 20, 2027." System-wide, per the same page: "The University of Tennessee System has decided that all campuses, including UT Knoxville, will now require standardized tests (ACT/SAT)" (cycle: 2026-27, self-report deadline 2027-01-20)',
+    verifiedBy: BATCH_2026_08_04,
+  },
+  {
+    nameNorm: 'university of texas at austin',
+    policy: 'REQUIRED',
+    sourceUrl: 'https://admissions.utexas.edu/apply/freshman/',
+    note: '"Send at least one official SAT or ACT score directly from the testing agency." Listed as a completion requirement on the first-year apply page; the requirement was reinstated for Fall 2025 and has stood since (cycle: current)',
+    verifiedBy: BATCH_2026_08_04,
+  },
 ];
 
 export async function applyTestingPolicies(
@@ -442,13 +580,21 @@ export async function applyTestingPolicies(
 ): Promise<number> {
   const fetchedAt = new Date().toISOString();
   let n = 0;
+  const unmatched: string[] = [];
 
   for (const row of TESTING_POLICIES) {
     const school = await prisma.school.findFirst({
       where: { nameNorm: row.nameNorm },
       select: { id: true, metadata: true },
     });
-    if (!school) continue;
+    // A row that matches nothing is a no-op, and used to be a silent one: the
+    // count came back lower and nothing said which school was missing. A
+    // renamed school therefore reverts to UNKNOWN — and for the REQUIRED rows
+    // UNKNOWN is a 10x swing — without a line anywhere saying so.
+    if (!school) {
+      unmatched.push(row.nameNorm);
+      continue;
+    }
 
     // Write provenance alongside the value. Without it the merger takes the
     // "no provenance recorded — allow override" path and every one of these
@@ -476,7 +622,7 @@ export async function applyTestingPolicies(
               fetchedAt,
               sourceUrl: row.sourceUrl,
               cycleYear: CYCLE_YEAR,
-              verifiedBy: 'testing-policy-agents-2026-07-25',
+              verifiedBy: row.verifiedBy ?? 'testing-policy-agents-2026-07-25',
               notes: row.note,
             },
           },
@@ -484,6 +630,12 @@ export async function applyTestingPolicies(
       },
     });
     n += 1;
+  }
+
+  if (unmatched.length > 0) {
+    console.warn(
+      `⚠️  Testing policy: ${unmatched.length} row(s) matched no school and were skipped — ${unmatched.join(', ')}`,
+    );
   }
   return n;
 }

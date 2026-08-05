@@ -69,4 +69,33 @@ describe('testing-policy seed table', () => {
   it('stamps a provenance source that the merger protects', () => {
     expect(TESTING_POLICY_SOURCE).toBe('OFFICIAL_ADMISSIONS_PAGE');
   });
+
+  /**
+   * The provenance token above claims OFFICIAL_ADMISSIONS_PAGE. This is the
+   * only thing that checks the claim.
+   *
+   * Both collections turned up third-party sources that were simply wrong:
+   * 2026-07-25 rejected reinstatement claims for Bowdoin, Northwestern,
+   * Williams, Middlebury and Boston College after reading the official pages,
+   * and 2026-08-04 found aggregators calling Texas A&M test-required and
+   * Purdue test-required when neither school's own page says so. A row citing
+   * an aggregator passes every other test in this file.
+   *
+   * `.edu` plus a named allowlist, rather than a denylist of known
+   * aggregators: a denylist is missing the next one by construction, and this
+   * direction fails closed — a new non-.edu source has to be justified in a
+   * reviewable diff instead of slipping in.
+   */
+  const SCHOOL_OPERATED_NON_EDU = new Set([
+    'mitadmissions.org', // MIT admissions' own site
+    'blog.emoryadmission.com', // Emory admission office's own blog
+  ]);
+
+  it('cites the school itself, never a third-party aggregator', () => {
+    const foreign = TESTING_POLICIES.filter((r) => {
+      const host = new URL(r.sourceUrl).hostname;
+      return !host.endsWith('.edu') && !SCHOOL_OPERATED_NON_EDU.has(host);
+    });
+    expect(foreign.map((r) => `${r.nameNorm}: ${r.sourceUrl}`)).toEqual([]);
+  });
 });
