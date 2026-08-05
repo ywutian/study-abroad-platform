@@ -58,6 +58,34 @@ describe('AccountPurgeService', () => {
     expect(daysAgo).toBeLessThan(30.1);
   });
 
+  it('says so when there is nothing to purge', async () => {
+    // A successful run that prints nothing cannot be told apart from a run that
+    // never happened. Triggering this job in production returned 201 in 76ms
+    // and logged NOTHING; the answer ("zero accounts are past their window")
+    // had to be read out of the source. That is the same absence-reads-as-
+    // success shape the Redis work this week was about, in the job that
+    // started it.
+    env.ACCOUNT_PURGE_ENABLED = 'false'; // default in this describe is 'true'
+    findMany.mockResolvedValue([]);
+    const logSpy = jest.spyOn(service['logger'], 'log');
+
+    const result = await service.purgeExpired();
+
+    expect(result).toEqual({
+      eligible: 0,
+      purged: 0,
+      retained: 0,
+      failed: 0,
+      dryRun: true,
+    });
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('nothing to do'),
+    );
+    // The grace window is in the line, so the number a user-facing promise has
+    // to match is readable straight off the log.
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('30-day'));
+  });
+
   it('refuses to purge an account holding payment records', async () => {
     findMany.mockResolvedValue([account('u-1'), account('u-pay', 3)]);
 
