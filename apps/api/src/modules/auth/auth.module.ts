@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
+import { SCHEDULE_MODULE_ROOT } from '../../common/cron/schedule-driver';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
@@ -19,7 +19,7 @@ import { AuditLogModule } from '../../common/services/audit-log.module';
   imports: [
     UserModule,
     AuditLogModule,
-    ScheduleModule.forRoot(),
+    SCHEDULE_MODULE_ROOT,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

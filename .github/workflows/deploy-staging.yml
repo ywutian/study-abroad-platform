@@ -93,7 +93,7 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="NODE_ENV=staging,FRONTEND_URL=https://staging.study-abroad-platform-web.vercel.app,CORS_ORIGINS=https://staging.study-abroad-platform-web.vercel.app,OPENAI_MODEL=deepseek-v4-pro,OPENAI_BASE_URL=https://xh.v1api.cc/v1" \
+            --set-env-vars="NODE_ENV=staging,FRONTEND_URL=https://staging.study-abroad-platform-web.vercel.app,CORS_ORIGINS=https://staging.study-abroad-platform-web.vercel.app,OPENAI_MODEL=deepseek-v4-pro,OPENAI_BASE_URL=https://xh.v1api.cc/v1,CRON_DRIVER=http" \
             --set-secrets="DATABASE_URL=database-url-proxy-staging:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url-staging:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
             --timeout=300 \
             --quiet

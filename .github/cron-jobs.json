@@ -1,0 +1,210 @@
+{
+  "_comment": "GENERATED — do not edit. Mirrors every @Cron in apps/api/src; scripts/ci/sync-cloud-scheduler.mjs provisions one Cloud Scheduler job per entry on deploy. Regenerate: pnpm lint:cron-manifest --update",
+  "jobs": [
+    {
+      "name": "account-purge-service-scheduled-purge",
+      "schedule": "0 4 * * *",
+      "className": "AccountPurgeService",
+      "methodName": "scheduledPurge",
+      "sourceFile": "apps/api/src/modules/user/account-purge.service.ts"
+    },
+    {
+      "name": "application-analysis-experiment-scheduler-run-hourly-rollout-monitor",
+      "schedule": "17 * * * *",
+      "className": "ApplicationAnalysisExperimentScheduler",
+      "methodName": "runHourlyRolloutMonitor",
+      "sourceFile": "apps/api/src/modules/profile/application-analysis-experiment.scheduler.ts"
+    },
+    {
+      "name": "application-analysis-experiment-scheduler-run-nightly-shadow-refresh",
+      "schedule": "15 4 * * *",
+      "className": "ApplicationAnalysisExperimentScheduler",
+      "methodName": "runNightlyShadowRefresh",
+      "sourceFile": "apps/api/src/modules/profile/application-analysis-experiment.scheduler.ts"
+    },
+    {
+      "name": "data-sync-scheduler-check-ipeds-updates",
+      "schedule": "0 4 1 3,6,9,12 *",
+      "className": "DataSyncScheduler",
+      "methodName": "checkIpedsUpdates",
+      "sourceFile": "apps/api/src/modules/school/data-sync.scheduler.ts"
+    },
+    {
+      "name": "data-sync-scheduler-scrape-appily",
+      "schedule": "0 6 1 1,4,7,10 *",
+      "className": "DataSyncScheduler",
+      "methodName": "scrapeAppily",
+      "sourceFile": "apps/api/src/modules/school/data-sync.scheduler.ts"
+    },
+    {
+      "name": "data-sync-scheduler-scrape-big-future",
+      "schedule": "0 5 1 1,4,7,10 *",
+      "className": "DataSyncScheduler",
+      "methodName": "scrapeBigFuture",
+      "sourceFile": "apps/api/src/modules/school/data-sync.scheduler.ts"
+    },
+    {
+      "name": "data-sync-scheduler-sync-college-scorecard",
+      "schedule": "0 3 1 * *",
+      "className": "DataSyncScheduler",
+      "methodName": "syncCollegeScorecard",
+      "sourceFile": "apps/api/src/modules/school/data-sync.scheduler.ts"
+    },
+    {
+      "name": "data-sync-scheduler-sync-urban-institute",
+      "schedule": "0 4 1 1,4,7,10 *",
+      "className": "DataSyncScheduler",
+      "methodName": "syncUrbanInstitute",
+      "sourceFile": "apps/api/src/modules/school/data-sync.scheduler.ts"
+    },
+    {
+      "name": "data-sync-scheduler-update-rankings",
+      "schedule": "0 5 15 9 *",
+      "className": "DataSyncScheduler",
+      "methodName": "updateRankings",
+      "sourceFile": "apps/api/src/modules/school/data-sync.scheduler.ts"
+    },
+    {
+      "name": "deadline-refresh-scheduler-refresh-tentative-deadlines",
+      "schedule": "0 2 * * 0",
+      "className": "DeadlineRefreshScheduler",
+      "methodName": "refreshTentativeDeadlines",
+      "sourceFile": "apps/api/src/modules/school/deadline-refresh.scheduler.ts"
+    },
+    {
+      "name": "deadline-reminder-scheduler-check-deadlines",
+      "schedule": "0 8 * * *",
+      "timeZone": "Asia/Shanghai",
+      "className": "DeadlineReminderScheduler",
+      "methodName": "checkDeadlines",
+      "sourceFile": "apps/api/src/modules/timeline/deadline-reminder.scheduler.ts"
+    },
+    {
+      "name": "distillation-stats-rollup-service-recompute-recent-thirty-days",
+      "schedule": "17 2 * * *",
+      "className": "DistillationStatsRollupService",
+      "methodName": "recomputeRecentThirtyDays",
+      "sourceFile": "apps/api/src/modules/prediction/distillation/distillation-stats-rollup.service.ts"
+    },
+    {
+      "name": "distillation-stats-rollup-service-recompute-recent-three-days",
+      "schedule": "13 * * * *",
+      "className": "DistillationStatsRollupService",
+      "methodName": "recomputeRecentThreeDays",
+      "sourceFile": "apps/api/src/modules/prediction/distillation/distillation-stats-rollup.service.ts"
+    },
+    {
+      "name": "essay-scraper-scheduler-annual-pre-season-scrape",
+      "schedule": "0 3 1 8 *",
+      "className": "EssayScraperScheduler",
+      "methodName": "annualPreSeasonScrape",
+      "sourceFile": "apps/api/src/modules/essay/essay-scraper.scheduler.ts"
+    },
+    {
+      "name": "essay-scraper-scheduler-post-rd-deadline-verify",
+      "schedule": "0 3 15 1 *",
+      "className": "EssayScraperScheduler",
+      "methodName": "postRdDeadlineVerify",
+      "sourceFile": "apps/api/src/modules/essay/essay-scraper.scheduler.ts"
+    },
+    {
+      "name": "hs-calibration-scheduler-calibrate-from-outcomes",
+      "schedule": "0 4 * * 0",
+      "className": "HsCalibrationScheduler",
+      "methodName": "calibrateFromOutcomes",
+      "sourceFile": "apps/api/src/modules/school/hs-calibration.scheduler.ts"
+    },
+    {
+      "name": "ipeds-monitor-service-check-for-updates",
+      "schedule": "0 9 * * 1",
+      "className": "IpedsMonitorService",
+      "methodName": "checkForUpdates",
+      "sourceFile": "apps/api/src/modules/school/ipeds-monitor.service.ts"
+    },
+    {
+      "name": "memory-compaction-service-scheduled-compaction",
+      "schedule": "0 04 * * *",
+      "className": "MemoryCompactionService",
+      "methodName": "scheduledCompaction",
+      "sourceFile": "apps/api/src/modules/ai-agent/memory/memory-compaction.service.ts"
+    },
+    {
+      "name": "memory-decay-service-run-daily-decay",
+      "schedule": "0 03 * * *",
+      "className": "MemoryDecayService",
+      "methodName": "runDailyDecay",
+      "sourceFile": "apps/api/src/modules/ai-agent/memory/memory-decay.service.ts"
+    },
+    {
+      "name": "memory-manager-service-cleanup",
+      "schedule": "0 * * * *",
+      "className": "MemoryManagerService",
+      "methodName": "cleanup",
+      "sourceFile": "apps/api/src/modules/ai-agent/memory/memory-manager.service.ts"
+    },
+    {
+      "name": "outcome-decision-day-reminder",
+      "schedule": "0 08 * * *",
+      "timeZone": "UTC",
+      "className": "OutcomeReminderService",
+      "methodName": "sendDecisionDayReminders",
+      "sourceFile": "apps/api/src/modules/prediction/outcome/outcome-reminder.service.ts"
+    },
+    {
+      "name": "prediction-policy-shadow-service-refresh-all-shadow-policies",
+      "schedule": "30 3 * * *",
+      "className": "PredictionPolicyShadowService",
+      "methodName": "refreshAllShadowPolicies",
+      "sourceFile": "apps/api/src/modules/prediction/prediction-policy-shadow.service.ts"
+    },
+    {
+      "name": "school-provenance-scheduler-monitor-official-coverage",
+      "schedule": "0 7 * * *",
+      "className": "SchoolProvenanceScheduler",
+      "methodName": "monitorOfficialCoverage",
+      "sourceFile": "apps/api/src/modules/school/school-provenance.scheduler.ts"
+    },
+    {
+      "name": "school-provenance-scheduler-refresh-stale-official-fields",
+      "schedule": "0 8 * * 1",
+      "className": "SchoolProvenanceScheduler",
+      "methodName": "refreshStaleOfficialFields",
+      "sourceFile": "apps/api/src/modules/school/school-provenance.scheduler.ts"
+    },
+    {
+      "name": "school-scraper-scheduler-annual-update-before-application-season",
+      "schedule": "0 3 1 8 *",
+      "className": "SchoolScraperScheduler",
+      "methodName": "annualUpdateBeforeApplicationSeason",
+      "sourceFile": "apps/api/src/modules/school/school-scraper.scheduler.ts"
+    },
+    {
+      "name": "school-scraper-scheduler-quarterly-update",
+      "schedule": "0 4 1 1,4,7,10 *",
+      "className": "SchoolScraperScheduler",
+      "methodName": "quarterlyUpdate",
+      "sourceFile": "apps/api/src/modules/school/school-scraper.scheduler.ts"
+    },
+    {
+      "name": "school-scraper-scheduler-update-after-early-deadlines",
+      "schedule": "0 3 15 11 *",
+      "className": "SchoolScraperScheduler",
+      "methodName": "updateAfterEarlyDeadlines",
+      "sourceFile": "apps/api/src/modules/school/school-scraper.scheduler.ts"
+    },
+    {
+      "name": "token-cleanup-scheduler-cleanup-expired-tokens",
+      "schedule": "0 03 * * *",
+      "className": "TokenCleanupScheduler",
+      "methodName": "cleanupExpiredTokens",
+      "sourceFile": "apps/api/src/modules/auth/token-cleanup.scheduler.ts"
+    },
+    {
+      "name": "token-cleanup-scheduler-cleanup-orphaned-tokens",
+      "schedule": "0 0 * * 0",
+      "className": "TokenCleanupScheduler",
+      "methodName": "cleanupOrphanedTokens",
+      "sourceFile": "apps/api/src/modules/auth/token-cleanup.scheduler.ts"
+    }
+  ]
+}

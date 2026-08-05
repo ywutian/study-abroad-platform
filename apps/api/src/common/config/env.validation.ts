@@ -77,7 +77,22 @@ const envSchema = z.object({
   REDIS_ENABLE_OFFLINE_QUEUE: z.enum(['true', 'false']).default('false'),
 
   // --- Scheduler governance ---
+  // Kill switch: gates @Cron registration itself (schedule-driver.ts) AND the
+  // HTTP dispatcher, so 'false' really does stop every scheduled job.
   SCHEDULERS_ENABLED: z.enum(['true', 'false']).default('true'),
+  // 'timer' (default): @Cron fires in-process — right for dev/tests/docker.
+  // 'http' (production): NO in-process timers; Cloud Scheduler drives
+  // POST /internal/cron/:name/run. @Cron timers on a CPU-throttled
+  // min-instances=0 Cloud Run service starve and trip Redis's circuit breaker
+  // (#553) — CPU is only guaranteed during a request, so schedules must
+  // arrive AS requests. See common/cron/schedule-driver.ts.
+  CRON_DRIVER: z.enum(['timer', 'http']).default('timer'),
+  // Shared secret for /internal/cron (x-cron-secret header). Fail-closed:
+  // absent → the endpoint answers 401 to everything.
+  CRON_SECRET: z
+    .string()
+    .min(32, 'CRON_SECRET must be at least 32 characters')
+    .optional(),
   // OPT-IN (default off): the application-analysis experiment/governance
   // automation evaluates analyses against admission OUTCOMES we do not yet
   // collect. Running it on absent data only yields empty no-op promotions and
@@ -269,6 +284,18 @@ export function validateEnv(
       throw new Error(
         'FATAL: paid subscriptions are retired. Production requires ' +
           'PAYMENTS_ENABLED=false and PAYMENT_PROVIDER=none.',
+      );
+    }
+
+    // The whole point of CRON_DRIVER=http is that jobs still RUN — via Cloud
+    // Scheduler. Without a secret the dispatcher is fail-closed 401, which in
+    // production means every scheduled job is silently off (staging does this
+    // deliberately; prod must not).
+    if (result.data.CRON_DRIVER === 'http' && !result.data.CRON_SECRET) {
+      throw new Error(
+        'FATAL: CRON_SECRET must be set when CRON_DRIVER=http in production ' +
+          '(otherwise every scheduled job is silently disabled). ' +
+          'Generate with: openssl rand -hex 32',
       );
     }
 
