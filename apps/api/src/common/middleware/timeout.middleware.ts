@@ -57,7 +57,13 @@ export class TimeoutMiddleware implements NestMiddleware {
     // CPU, so a 408 here would strand the job mid-flight AND make Cloud
     // Scheduler retry a job that is still running. No app-level timer; Cloud
     // Run's own `--timeout` is the ceiling. See common/cron/schedule-driver.ts.
-    if (url.includes('/internal/cron/')) {
+    //
+    // Matched on the PATHNAME, anchored — `url.includes()` here would also
+    // match the query string, letting any caller disable their request's 408
+    // with `?x=/internal/cron/` (this is the one exemption that removes the
+    // timer entirely, unlike the AI segments which merely raise it to 120s).
+    const pathname = url.split(/[?#]/, 1)[0];
+    if (pathname.startsWith('/api/v1/internal/cron/')) {
       next();
       return;
     }

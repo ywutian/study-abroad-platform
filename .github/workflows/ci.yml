@@ -187,6 +187,13 @@ jobs:
           pnpm lint:audit-gate
           pnpm lint:deploy-drift
           pnpm lint:seed-parity
+          # .github/cron-jobs.json vs the @Cron decorators. Under
+          # CRON_DRIVER=http a job missing from that manifest gets no Cloud
+          # Scheduler entry and therefore never runs in prod — while running
+          # fine in dev. Listed explicitly rather than relying on
+          # lint:gate-proofs happening to invoke it via its proof's clean-tree
+          # precondition.
+          pnpm lint:cron-manifest
 
       # Cross-layer guards that lint:all runs but the pre-push hook is the only
       # other enforcer of — wired into CI so a `git push --no-verify` (or a
@@ -1609,6 +1616,20 @@ jobs:
           echo "::add-mask::$CRON_SECRET"
           CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
             node scripts/ci/assert-cron-manifest.mjs
+
+      # Deleting stale schedules happens ONLY after the assert passes. Rollback
+      # reverts traffic, never scheduler topology — pruning earlier would leave
+      # a failed deploy's rolled-back revision missing schedules it still needs.
+      - name: Prune stale Cloud Scheduler jobs
+        if: success()
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          URL="${{ steps.smoke.outputs.url }}"
+          CRON_SECRET=$(gcloud secrets versions access latest --secret=cron-secret)
+          echo "::add-mask::$CRON_SECRET"
+          GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" GCP_REGION="$REGION" \
+            CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
+            node scripts/ci/sync-cloud-scheduler.mjs --prune-only
 
       - name: Probe prod essay gallery count
         if: always()

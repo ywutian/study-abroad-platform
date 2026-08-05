@@ -51,4 +51,36 @@ describe('RateLimiterService', () => {
     expect(status).toHaveProperty('remaining');
     expect(status).toHaveProperty('limit');
   });
+
+  /**
+   * This GC used to be a `@Cron`, which meant `SchedulerRegistry` — and, under
+   * the http cron driver, `.github/cron-jobs.json` plus the post-deploy assert
+   * — would have noticed it disappearing. As a plain interval it has no such
+   * witness, so these two tests are the whole guardrail: delete the timer and
+   * the in-memory fallback windows grow unbounded, silently.
+   */
+  describe('in-memory window GC', () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    it('sweeps expired windows on its own interval, with no @Cron involved', async () => {
+      const cleanup = jest.spyOn(service, 'cleanup');
+      service.onModuleInit();
+
+      jest.advanceTimersByTime(60_000);
+
+      expect(cleanup).toHaveBeenCalledTimes(1);
+      service.onModuleDestroy();
+    });
+
+    it('stops sweeping after onModuleDestroy', () => {
+      const cleanup = jest.spyOn(service, 'cleanup');
+      service.onModuleInit();
+      service.onModuleDestroy();
+
+      jest.advanceTimersByTime(5 * 60_000);
+
+      expect(cleanup).not.toHaveBeenCalled();
+    });
+  });
 });

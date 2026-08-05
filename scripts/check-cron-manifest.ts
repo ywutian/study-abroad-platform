@@ -43,6 +43,9 @@ interface ManifestJob {
   sourceFile: string;
 }
 
+/** Must stay identical to InternalCronController's JOB_NAME_PATTERN. */
+const JOB_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{0,199}$/;
+
 /** Must stay identical to CronRegistryService.deriveJobName. */
 function deriveJobName(className: string, methodName: string): string {
   return `${className}-${methodName}`.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -98,7 +101,7 @@ function extractJobs(): ManifestJob[] {
 
   for (const file of walk(API_SRC).sort()) {
     const text = fs.readFileSync(file, 'utf8');
-    if (!text.includes('@Cron(')) continue;
+    if (!/@(Cron|Interval|Timeout)\(/.test(text)) continue;
     const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
 
     const visit = (node: ts.Node): void => {
@@ -106,7 +109,26 @@ function extractJobs(): ManifestJob[] {
         for (const decorator of ts.getDecorators(node) ?? []) {
           const expr = decorator.expression;
           if (!ts.isCallExpression(expr)) continue;
-          if (!ts.isIdentifier(expr.expression) || expr.expression.text !== 'Cron') continue;
+          if (!ts.isIdentifier(expr.expression)) continue;
+
+          // @Interval / @Timeout have no Cloud Scheduler mirror. Under
+          // CRON_DRIVER=http the driver gate only turns off `cronJobs`, so
+          // these would keep firing on a CPU-throttled instance — the very
+          // thing this architecture removes — while being invisible to the
+          // manifest, the deploy assert and the scheduler console. If you need
+          // recurring replica-LOCAL work, use a plain unref'd setInterval and
+          // say so (see RateLimiterService.onModuleInit).
+          if (['Interval', 'Timeout'].includes(expr.expression.text)) {
+            fail(
+              file,
+              expr,
+              sourceFile,
+              `@${expr.expression.text} is not supported: it keeps an in-process timer on a CPU-throttled ` +
+                `service and never reaches Cloud Scheduler. Use @Cron (scheduled work) or an unref'd ` +
+                `setInterval (replica-local work).`
+            );
+          }
+          if (expr.expression.text !== 'Cron') continue;
 
           const classDecl = node.parent;
           if (!ts.isClassDeclaration(classDecl) || !classDecl.name) {
@@ -160,6 +182,20 @@ function extractJobs(): ManifestJob[] {
           }
 
           const jobName = name ?? deriveJobName(className, methodName);
+          // Same pattern the dispatcher enforces (InternalCronController's
+          // JOB_NAME_PATTERN). Without this, an explicit `{ name: 'My_Job' }`
+          // would be provisioned as a scheduler job, MATCH the live registry
+          // (so the deploy assert passes — it compares names, not their
+          // shape), and then 400 on every firing: runs in dev, never in prod,
+          // silently. Also stops a leading `-` reaching gcloud as a flag.
+          if (!JOB_NAME_PATTERN.test(jobName)) {
+            fail(
+              file,
+              expr,
+              sourceFile,
+              `Cron job name "${jobName}" must match ${JOB_NAME_PATTERN} — the dispatcher rejects anything else`
+            );
+          }
           if (jobs.has(jobName)) {
             fail(file, expr, sourceFile, `Duplicate cron job name "${jobName}"`);
           }

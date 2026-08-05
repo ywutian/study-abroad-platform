@@ -106,6 +106,16 @@ describe('TimeoutMiddleware', () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 
+  it('does NOT exempt a request that merely mentions /internal/cron/ in its query string', () => {
+    const { req, res, next } = createMocks('/api/v1/schools?x=/internal/cron/');
+    middleware.use(req, res, next);
+
+    jest.advanceTimersByTime(30_000);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(408);
+  });
+
   // -----------------------------------------------------------------------
   // AI endpoint timeout (120s)
   // -----------------------------------------------------------------------

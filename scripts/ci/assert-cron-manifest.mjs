@@ -27,6 +27,21 @@ if (!TARGET_URL || !SECRET) {
 
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, '.github', 'cron-jobs.json'), 'utf8'));
 
+// The guard is the ONLY thing between the internet and 29 jobs, one of which
+// is irreversible hard deletion — and detaching it (`@UseGuards` deleted) left
+// every unit test green during review. So prove refusal against the real
+// deployed service before trusting anything else it says.
+const unauthenticated = await fetch(`${TARGET_URL}/api/v1/internal/cron`, {
+  signal: AbortSignal.timeout(15_000),
+});
+if (unauthenticated.status !== 401) {
+  console.error(
+    `❌ GET /internal/cron WITHOUT a secret answered ${unauthenticated.status}, expected 401. ` +
+      `The cron dispatcher is exposed — it can trigger any scheduled job, including account purge.`
+  );
+  process.exit(1);
+}
+
 const response = await fetch(`${TARGET_URL}/api/v1/internal/cron`, {
   headers: { 'x-cron-secret': SECRET },
   signal: AbortSignal.timeout(15_000),
@@ -40,7 +55,27 @@ if (!response.ok) {
   process.exit(1);
 }
 const body = await response.json();
-const live = new Map((body?.data?.jobs ?? []).map((job) => [job.name, job]));
+const payload = body?.data ?? {};
+const live = new Map((payload.jobs ?? []).map((job) => [job.name, job]));
+
+// The driver itself. `--set-env-vars` REPLACES the whole set, so CRON_DRIVER
+// can fall out of the deploy line silently — and every other check here would
+// still pass while prod ran BOTH starved in-process timers and Cloud
+// Scheduler, i.e. #553 restored with no red anywhere.
+if (payload.driver !== 'http') {
+  console.error(
+    `❌ Live service reports cron driver "${payload.driver}", expected "http". ` +
+      `CRON_DRIVER is missing from the deploy's --set-env-vars, so in-process @Cron timers ` +
+      `are running on a CPU-throttled service — the exact failure this driver removes.`
+  );
+  process.exit(1);
+}
+if (payload.inProcessTimers !== 0) {
+  console.error(
+    `❌ Live service has ${payload.inProcessTimers} in-process cron timer(s) registered; expected 0 under the http driver.`
+  );
+  process.exit(1);
+}
 
 const problems = [];
 for (const job of manifest.jobs) {
@@ -72,4 +107,6 @@ if (problems.length > 0) {
   console.error('   Regenerate with: pnpm lint:cron-manifest --update');
   process.exit(1);
 }
-console.log(`✅ Live cron registry matches manifest (${manifest.jobs.length} jobs)`);
+console.log(
+  `✅ Live cron registry matches manifest (${manifest.jobs.length} jobs), driver=http, 0 in-process timers, dispatcher refuses unauthenticated callers`
+);

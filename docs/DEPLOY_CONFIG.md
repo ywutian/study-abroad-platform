@@ -49,9 +49,15 @@ a run). Instead, schedules arrive **as requests**:
 /api/v1/internal/cron/<name>/run`, header `x-cron-secret`), prunes stale
   `api-cron-*` jobs. Console edits don't survive the next deploy — the
   manifest is the source of truth.
-- `scripts/ci/assert-cron-manifest.mjs` — after traffic promotion, asserts the
-  live registry (`GET /internal/cron`) matches the manifest exactly and that
-  the secret round-trips; mismatch fails the deploy next to the rollback step.
+- `scripts/ci/assert-cron-manifest.mjs` — after traffic promotion, asserts four
+  things and fails the deploy next to the rollback step if any is off: the
+  dispatcher **refuses an unauthenticated caller** (401), the secret
+  round-trips, the live registry matches the manifest exactly, and the service
+  reports `driver=http` with **zero in-process timers** (the last one is what
+  catches `CRON_DRIVER` silently dropping out of `--set-env-vars`, which would
+  otherwise restore #553 with every check still green). Stale schedules are
+  pruned in a **separate step after** this assert — rollback reverts traffic,
+  not scheduler topology.
 - The POST answers only after the job finishes (that's what holds the CPU), so
   the service deploys with `--timeout=1800` and scheduler jobs use
   `--attempt-deadline=1740s`. A job that outgrows ~29 minutes needs Cloud Run
@@ -71,7 +77,21 @@ printf '%s' "$(openssl rand -hex 32)" | gcloud secrets create cron-secret --data
 # deploy SA = the service account GitHub Actions deploys with
 gcloud projects add-iam-policy-binding <project> \
   --member="serviceAccount:<deploy-sa>" --role="roles/cloudscheduler.admin"
+# Both SAs need to read the secret: the deploy SA reads it in the sync/assert
+# steps, the Cloud Run runtime SA has it mounted as CRON_SECRET.
+for SA in <deploy-sa> <cloud-run-runtime-sa>; do
+  gcloud secrets add-iam-policy-binding cron-secret --project=<project> \
+    --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor"
+done
 ```
+
+**Before the first deploy, check one thing this design assumes**: whether
+`gcloud scheduler jobs describe api-cron-<name>` prints the `x-cron-secret`
+header value. If it does, every principal with `cloudscheduler.jobs.get`
+(project Viewer) can read the production cron secret, and the follow-up in
+`cron-secret.guard.ts` — Cloud Scheduler OIDC tokens instead of a shared
+secret — stops being optional. Worth confirming because
+`account-purge-service-scheduled-purge` sits behind this auth.
 
 Rotating the secret: add a new `cron-secret` version, redeploy (the service
 mounts `:latest`, and the sync step rewrites every scheduler job's header).

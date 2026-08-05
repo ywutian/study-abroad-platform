@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { Public } from '../decorators/public.decorator';
 import { CronRegistryService } from './cron-registry.service';
@@ -42,11 +43,23 @@ export class InternalCronController {
   constructor(
     private readonly registry: CronRegistryService,
     private readonly config: ConfigService,
+    private readonly scheduler: SchedulerRegistry,
   ) {}
 
+  /**
+   * `driver` + `inProcessTimers` exist so the post-deploy assert can prove
+   * production is ACTUALLY in http mode. Without them, dropping CRON_DRIVER
+   * from the deploy's `--set-env-vars` (which replaces the whole set) would
+   * leave every job running on BOTH a starved in-process timer and Cloud
+   * Scheduler, while the manifest assert stayed green — #553 back, no red.
+   */
   @Get()
   list() {
-    return { jobs: this.registry.list() };
+    return {
+      driver: this.config.get<string>('CRON_DRIVER') ?? 'timer',
+      inProcessTimers: this.scheduler.getCronJobs().size,
+      jobs: this.registry.list(),
+    };
   }
 
   @Post(':name/run')
@@ -61,6 +74,12 @@ export class InternalCronController {
     }
     const startedAt = Date.now();
     await this.registry.run(name);
-    return { name, ran: true, durationMs: Date.now() - startedAt };
+    // `dispatched`, not `ran`: for a job wrapped in runWithCronLock this says
+    // the handler was invoked and returned — the lock may have declined to do
+    // the work because another attempt holds it. That case is deliberate and
+    // must not be retried. The case that MUST be retried (Redis unreachable →
+    // the job ran nowhere) throws out of the lock in http mode, so it never
+    // reaches here. See cron-lock.util.ts.
+    return { name, dispatched: true, durationMs: Date.now() - startedAt };
   }
 }

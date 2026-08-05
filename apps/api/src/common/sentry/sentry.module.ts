@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Sentry from '@sentry/node';
+import { CRON_SECRET_HEADER } from '../cron/cron-secret.guard';
 
 @Global()
 @Module({})
@@ -91,6 +92,11 @@ export class SentryModule implements OnModuleInit, OnModuleDestroy {
           if (event.request?.headers) {
             delete event.request.headers['authorization'];
             delete event.request.headers['cookie'];
+            // A failing cron run 5xxes BY DESIGN (Cloud Scheduler retries on
+            // it), and Sentry's default requestData integration copies the
+            // whole header map — without this line every failed run would ship
+            // the production cron secret to Sentry.
+            delete event.request.headers[CRON_SECRET_HEADER];
           }
 
           return event;

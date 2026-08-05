@@ -7,10 +7,15 @@
  * registers — Cloud Scheduler firing an HTTP request is what makes a schedule
  * run, with CPU guaranteed for the request and single-flight by construction.
  *
- * Idempotent: creates missing jobs, updates existing ones, deletes any
- * `api-cron-*` job no longer in the manifest. Never touches jobs outside the
- * `api-cron-` prefix. Runs on every prod deploy (ci.yml), so manual edits in
- * the console are overwritten — the manifest is the single source of truth.
+ * Idempotent: creates missing jobs and updates existing ones. Never touches
+ * jobs outside the `api-cron-` prefix. Runs on every prod deploy (ci.yml), so
+ * manual edits in the console are overwritten — the manifest is the single
+ * source of truth.
+ *
+ * Deleting stale jobs is a SEPARATE pass (`--prune-only`), run after the
+ * post-deploy assert passes. Rollback only reverts traffic, not scheduler
+ * topology: pruning before the assert means a failed deploy leaves jobs
+ * deleted for a revision that still needs them, silently.
  *
  * Env: GCP_PROJECT_ID, GCP_REGION, CRON_TARGET_URL, CRON_SECRET.
  *
@@ -78,11 +83,13 @@ const existingIds = new Set(
   existing.map((job) => job.name.split('/').pop()).filter((id) => id.startsWith(PREFIX))
 );
 
+const pruneOnly = process.argv.includes('--prune-only');
+
 let created = 0;
 let updated = 0;
 let deleted = 0;
 
-for (const job of manifest.jobs) {
+for (const job of pruneOnly ? [] : manifest.jobs) {
   const id = `${PREFIX}${job.name}`;
   const isUpdate = existingIds.has(id);
   const args = [
@@ -117,7 +124,7 @@ for (const job of manifest.jobs) {
 }
 
 const desiredIds = new Set(manifest.jobs.map((job) => `${PREFIX}${job.name}`));
-for (const id of existingIds) {
+for (const id of pruneOnly ? existingIds : []) {
   if (desiredIds.has(id)) continue;
   try {
     gcloud([
@@ -138,5 +145,7 @@ for (const id of existingIds) {
 }
 
 console.log(
-  `✅ Cloud Scheduler in sync: ${manifest.jobs.length} jobs (${created} created, ${updated} updated, ${deleted} pruned)`
+  pruneOnly
+    ? `✅ Cloud Scheduler pruned: ${deleted} stale api-cron-* job(s) removed`
+    : `✅ Cloud Scheduler upserted: ${manifest.jobs.length} jobs (${created} created, ${updated} updated)`
 );

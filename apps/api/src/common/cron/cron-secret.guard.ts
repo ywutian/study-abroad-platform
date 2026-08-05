@@ -31,8 +31,10 @@ export class CronSecretGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const secret = this.config.get<string>('CRON_SECRET');
+    // Bare 401, same as a wrong secret: an unauthenticated prober should not
+    // be able to tell "no secret configured here" from "wrong secret".
     if (!secret) {
-      throw new UnauthorizedException('Cron endpoint is not configured');
+      throw new UnauthorizedException();
     }
     const request = context.switchToHttp().getRequest<Request>();
     const provided = request.headers[CRON_SECRET_HEADER];

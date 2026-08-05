@@ -61,7 +61,14 @@ export class CronRegistryService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    for (const wrapper of this.discovery.getProviders()) {
+    // Controllers too — @nestjs/schedule's own explorer scans both, so a @Cron
+    // on a controller method would otherwise fire in dev (timer mode) and 404
+    // forever in prod, which is the exact silent-divergence this driver exists
+    // to remove.
+    for (const wrapper of [
+      ...this.discovery.getControllers(),
+      ...this.discovery.getProviders(),
+    ]) {
       const instance: unknown = wrapper.instance;
       if (!instance || typeof instance !== 'object') continue;
       const prototype: unknown = Object.getPrototypeOf(instance);

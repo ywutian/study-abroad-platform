@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { ProfileHelpersService } from './profile-helpers.service';
@@ -30,7 +29,6 @@ import { PredictionModule } from '../prediction/prediction.module';
     PointsModule,
     PredictionModule,
     FeatureFlagModule,
-    ScheduleModule,
   ],
   controllers: [ProfileController],
   providers: [

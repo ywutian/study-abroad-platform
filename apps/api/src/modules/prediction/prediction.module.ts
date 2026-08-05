@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { PredictionService } from './prediction.service';
 import { PredictionController } from './prediction.controller';
 import { AdminPredictionFeedbackController } from './admin-prediction-feedback.controller';
@@ -50,7 +49,6 @@ import { forwardRef } from '@nestjs/common';
     RedisModule,
     AiAgentMemoryModule,
     SchoolModule,
-    ScheduleModule,
     PointsModule,
     // forwardRef paired with DistillationModule's reciprocal forwardRef —
     // distillation depends on PredictionService for the admin dry-run

@@ -82,6 +82,19 @@ export async function runWithCronLock(
           `Cron NOT RUN: could not reach Redis to take single-flight lock "${lockKey}". ` +
             `No replica executed this job on this tick — this is a Redis availability problem, not contention.`,
         );
+        // Under the http driver the caller is ONE Cloud Scheduler request, and
+        // returning normally would have it record a success for a job that ran
+        // nowhere — the same "nothing happened looks like fine" this whole
+        // driver exists to kill. Throwing turns it into a 5xx, which Scheduler
+        // retries after its backoff. In timer mode we must NOT throw: @Cron
+        // handlers are fire-and-forget, so a rejection escapes as an
+        // unhandledRejection (see the note below on why this file catches).
+        if (process.env.CRON_DRIVER === 'http') {
+          throw new Error(
+            `Cron "${lockKey}" did not run: Redis was unreachable, so the single-flight ` +
+              `lock could not be taken. Failing loudly so Cloud Scheduler retries.`,
+          );
+        }
       }
       return false;
     }
