@@ -178,11 +178,12 @@ jobs:
       - name: Governance check (blocking)
         run: pnpm lint:integration --domain=governance
 
-      - name: Root guardrails (coverage / any / file-size ratchets, audit gate, deploy drift, seed parity)
+      - name: Root guardrails (coverage / any / file-size / gate-proof ratchets, audit gate, deploy drift, seed parity)
         run: |
           pnpm lint:coverage-ratchet
           pnpm lint:any-ratchet
           pnpm lint:file-size
+          pnpm lint:gate-proofs
           pnpm lint:audit-gate
           pnpm lint:deploy-drift
           pnpm lint:seed-parity
