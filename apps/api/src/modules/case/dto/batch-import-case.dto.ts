@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsOptional,
   IsEnum,
+  IsIn,
   IsArray,
   ValidateNested,
   Min,
@@ -15,6 +16,7 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Visibility } from '@prisma/client';
+import { CASE_VISIBILITY_ALLOWED } from '../../../common/constants/prisma-selects';
 
 export class BatchImportCaseItemDto {
   @ApiProperty({
@@ -209,13 +211,16 @@ export class BatchImportCaseDto {
   items: BatchImportCaseItemDto[];
 
   @ApiPropertyOptional({
-    enum: Visibility,
+    enum: CASE_VISIBILITY_ALLOWED,
     description: '默认Visibility',
     default: 'ANONYMOUS',
   })
   @IsOptional()
-  @IsEnum(Visibility)
-  visibility?: Visibility;
+  // See create-case.dto.ts: PUBLIC is retired for cases, and the enum keeps it
+  // for `Profile.visibility`, so validating against the enum would still let it
+  // through here.
+  @IsIn(CASE_VISIBILITY_ALLOWED as readonly string[])
+  visibility?: (typeof CASE_VISIBILITY_ALLOWED)[number];
 
   @ApiPropertyOptional({
     description: 'Whether to auto-mark as verified',

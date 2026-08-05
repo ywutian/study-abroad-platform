@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
+import { caseVisibilityWhereForRole } from '../../common/constants/prisma-selects';
 import { parseCaseActivities } from '../../common/constants/data-formats';
 import {
   MIN_SIMILAR_CASES,
@@ -36,6 +36,7 @@ export class CaseSimilarityService {
     userId: string,
     query: { schoolId?: string; limit?: number },
     locale: string = 'zh',
+    requesterRole?: string | null,
   ): Promise<SimilarCasesResponseDto> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
@@ -57,11 +58,13 @@ export class CaseSimilarityService {
     const gpa = profile.gpa != null ? Number(profile.gpa) : null;
     const gpaScale = Number(profile.gpaScale) || 4.0;
 
-    // Base filter: only public, approved cases.
-    const where: Prisma.AdmissionCaseWhereInput = {
-      visibility: { in: ['ANONYMOUS', 'PUBLIC'] },
-      reviewStatus: CASE_REVIEW_APPROVED_WHERE.reviewStatus,
-    };
+    // Base filter: the same visibility set the REST routes grant this caller.
+    // This used to hand-write `{ in: ['ANONYMOUS', 'PUBLIC'] }` — a copy of the
+    // shared constant that happened to still match it. Its twin in the agent
+    // layer (`find_similar_applicants`) already reads the role; the two surfaces
+    // answer the same question and had drifted to different answers.
+    const where: Prisma.AdmissionCaseWhereInput =
+      caseVisibilityWhereForRole(requesterRole);
 
     // GPA band match (string `gpaRange` like "3.7-3.9" — crude contains match,
     // intentionally NOT widened beyond ±0.3).

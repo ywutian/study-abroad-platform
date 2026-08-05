@@ -34,7 +34,9 @@ import { BackgroundSection } from './create-case/BackgroundSection';
 const YEARS = Array.from({ length: 11 }, (_, i) => 2020 + i);
 const RESULTS = ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as const;
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
-const VISIBILITIES = ['ANONYMOUS', 'PUBLIC', 'VERIFIED_ONLY'] as const;
+// PUBLIC retired for cases 2026-08-04 — see CASE_VISIBILITY_ALLOWED in
+// apps/api/src/common/constants/prisma-selects.ts. The API now rejects it.
+const VISIBILITIES = ['ANONYMOUS', 'VERIFIED_ONLY'] as const;
 
 interface Props {
   open: boolean;

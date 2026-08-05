@@ -876,7 +876,11 @@ export class AdminReviewService {
         essayPrompt: data.essays?.[0]?.prompt,
         essayContent: data.essays?.[0]?.content,
         promptNumber: data.essays?.[0]?.promptNumber,
-        visibility: (data.visibility as Visibility) ?? Visibility.PUBLIC,
+        // Was `?? Visibility.PUBLIC`, which made this the one path that
+        // actually produced PUBLIC cases: an import carrying no visibility got
+        // a value the list route then refused to show. PUBLIC is retired for
+        // cases; ANONYMOUS is what every other creation path writes.
+        visibility: (data.visibility as Visibility) ?? Visibility.ANONYMOUS,
         qualityScore: opts.qualityScore,
         reviewStatus: opts.reviewStatus,
         source: data.source,

@@ -278,7 +278,11 @@ const CASE_RESULT_VALUES = ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as
 
 const CASE_ROUND_VALUES = ['ED', 'ED2', 'EA', 'REA', 'RD', 'UC', ''] as const;
 
-const CASE_VISIBILITY_VALUES = ['PUBLIC', 'ANONYMOUS', 'VERIFIED_ONLY'] as const;
+// PUBLIC is retired for cases (2026-08-04). It is still a live value of the
+// Prisma `Visibility` enum because `Profile.visibility` uses the same enum —
+// this list is the case-side subset, mirrored by CASE_VISIBILITY_ALLOWED in
+// apps/api/src/common/constants/prisma-selects.ts.
+const CASE_VISIBILITY_VALUES = ['ANONYMOUS', 'VERIFIED_ONLY'] as const;
 
 export function createSubmitCaseSchema(t: (key: string) => string) {
   return z.object({

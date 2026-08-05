@@ -293,7 +293,7 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
     @Query() query: SwipeBatchQueryDto,
   ): Promise<SwipeBatchResultDto> {
-    return this.swipeService.getNextCases(user.id, query.count ?? 5);
+    return this.swipeService.getNextCases(user.id, query.count ?? 5, user.role);
   }
 
   @Post('swipe/predict')
@@ -304,7 +304,7 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: SwipeActionDto,
   ): Promise<SwipeResultDto> {
-    return this.swipeService.submitSwipe(user.id, dto);
+    return this.swipeService.submitSwipe(user.id, dto, user.role);
   }
 
   @Get('swipe/stats')
@@ -325,7 +325,7 @@ export class HallController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get a community challenge case' })
   async getChallengeCase(@CurrentUser() user: CurrentUserPayload) {
-    return this.swipeService.getChallengeCase(user.id);
+    return this.swipeService.getChallengeCase(user.id, user.role);
   }
 
   @Post('swipe/challenge')
@@ -335,6 +335,6 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: ChallengeGuessesDto,
   ) {
-    return this.swipeService.submitChallenge(user.id, body.guesses);
+    return this.swipeService.submitChallenge(user.id, body.guesses, user.role);
   }
 }

@@ -20,26 +20,58 @@ export const CASE_REVIEW_APPROVED_WHERE = {
 };
 
 /**
+ * The `Visibility` values an AdmissionCase is allowed to carry.
+ *
+ * `PUBLIC` is retired for cases as of 2026-08-04 and is deliberately absent.
+ * The enum keeps the value because `Profile.visibility` uses the same enum and
+ * PUBLIC is live there — this is a per-model retirement, not an enum change.
+ *
+ * Why it was retired: the two case-serving routes disagreed about it.
+ * `findById` served PUBLIC to anyone (it rejects only PRIVATE and unverified
+ * VERIFIED_ONLY, so PUBLIC fell through), while `findAll` never listed it at
+ * all — its role branches name ANONYMOUS, VERIFIED_ONLY and own-rows and stop.
+ * A case marked PUBLIC was therefore strictly HARDER to find than one marked
+ * ANONYMOUS, which inverts what the two words mean, and the surfaces built on
+ * either route inherited opposite halves of the contradiction — visible in the
+ * essay gallery and the agent tools, invisible in hall and swipe.
+ *
+ * Nothing was lost by dropping it. `stripCaseIdentity` does not branch on
+ * visibility, so PUBLIC and ANONYMOUS were served with identical
+ * de-identification; PUBLIC was a second name for ANONYMOUS that half the
+ * codebase did not answer to. Existing rows were migrated to ANONYMOUS in
+ * 20260804234500_retire_case_public_visibility.
+ */
+export const CASE_VISIBILITY_ALLOWED = [
+  Visibility.PRIVATE,
+  Visibility.ANONYMOUS,
+  Visibility.VERIFIED_ONLY,
+] as const;
+
+/**
  * Serving a case to a caller whose role is unknown. Review status is not access
  * control and `visibility` defaults to PRIVATE, so review-only filters served
  * PRIVATE and VERIFIED_ONLY rows to anyone with an id. VERIFIED_ONLY is excluded
  * on purpose: it needs a role. Do not widen — see `.claude/rules/backend.md`.
  */
 export const CASE_PUBLIC_VISIBILITY_WHERE = {
-  visibility: { in: [Visibility.ANONYMOUS, Visibility.PUBLIC] },
+  visibility: { in: [Visibility.ANONYMOUS] },
   ...CASE_REVIEW_APPROVED_WHERE,
 };
 
 /**
  * The same clause for a caller whose role IS known.
  *
- * Mirrors `case-query.service.findOne` exactly, and deliberately grants nothing
- * beyond it: VERIFIED_ONLY means "visible to Role.VERIFIED", and ADMIN /
- * SUPER_ADMIN reach the same rows through the owner-and-admin bypass above that
- * check. Any other role — USER, COUNSELOR, OPERATOR, or none — gets the public
- * set. A surface that can name the caller's role should grant what the REST
- * route grants for that role, no more and no less; anything wider is an
+ * Mirrors `case-query.service.findById` exactly, and deliberately grants
+ * nothing beyond it: VERIFIED_ONLY means "visible to Role.VERIFIED", and ADMIN
+ * / SUPER_ADMIN reach the same rows through the owner-and-admin bypass above
+ * that check. Any other role — USER, COUNSELOR, OPERATOR, or none — gets the
+ * public set. A surface that can name the caller's role should grant what the
+ * REST route grants for that role, no more and no less; anything wider is an
  * escalation, anything narrower is a feature the user paid for and cannot use.
+ *
+ * With PUBLIC retired this is now also exactly what `findAll` grants, so the
+ * two routes agree for the first time and every derived surface can share one
+ * definition instead of picking a side.
  *
  * `undefined` is the unauthenticated answer AND the "no request context here"
  * answer, and both must land on the public set. Fail closed: the cost of being
@@ -52,11 +84,7 @@ export function caseVisibilityWhereForRole(role?: string | null) {
   return mayReadVerifiedOnly
     ? {
         visibility: {
-          in: [
-            Visibility.ANONYMOUS,
-            Visibility.PUBLIC,
-            Visibility.VERIFIED_ONLY,
-          ],
+          in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY],
         },
         ...CASE_REVIEW_APPROVED_WHERE,
       }

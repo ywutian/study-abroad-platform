@@ -164,14 +164,40 @@ describe('SwipeService', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             swipes: { none: { userId: 'user-1' } },
-            visibility: {
-              in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY],
-            },
             userId: { not: 'user-1' },
           }),
         }),
       );
     });
+
+    /**
+     * The deck used to hand VERIFIED_ONLY cards to anyone signed in, which is
+     * what `GET /cases/:id` refuses a plain USER. Asserting BOTH branches, not
+     * just the narrow one: a change that drops the role and always returns the
+     * public set would pass a one-sided test while quietly removing what
+     * verification buys.
+     */
+    it.each([
+      [undefined, [Visibility.ANONYMOUS]],
+      ['USER', [Visibility.ANONYMOUS]],
+      ['VERIFIED', [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY]],
+      ['ADMIN', [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY]],
+    ])(
+      'deals %s the visibility set the REST route grants',
+      async (role, expected) => {
+        mockPrisma.admissionCase.findMany.mockResolvedValue([]);
+        mockPrisma.admissionCase.count.mockResolvedValue(0);
+        mockPrisma.caseSwipe.count.mockResolvedValue(0);
+
+        await service.getNextCases('user-1', 5, role);
+
+        expect(mockPrisma.admissionCase.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({ visibility: { in: expected } }),
+          }),
+        );
+      },
+    );
 
     it('should return empty cases with hasMore=false when no cases available', async () => {
       mockPrisma.admissionCase.findMany.mockResolvedValue([]);

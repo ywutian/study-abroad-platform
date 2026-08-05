@@ -579,9 +579,12 @@ ${
       }
 
       const take = Math.min(args.limit ?? 10, 20);
+      // #533 converted this file's other three case reads to
+      // `caseVisibilityWhereForRole` and missed this one, which kept a
+      // hand-written copy of the public set. Same file, same question, two
+      // rules — which is how the next divergence starts.
       const where: any = {
-        visibility: { in: ['ANONYMOUS', 'PUBLIC'] },
-        reviewStatus: CASE_REVIEW_APPROVED_WHERE.reviewStatus,
+        ...caseVisibilityWhereForRole(getCurrentUserRole()),
       };
 
       // Match by GPA range if available

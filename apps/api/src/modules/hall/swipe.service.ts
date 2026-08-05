@@ -9,7 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { fireAndForget } from '../../common/utils/async.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { Prisma, Visibility, MemoryType } from '@prisma/client';
-import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
+import { caseVisibilityWhereForRole } from '../../common/constants/prisma-selects';
 import { ERR } from '../../common/constants/error-messages';
 import {
   SwipeActionDto,
@@ -22,6 +22,28 @@ import {
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 // Prisma include 类型定义 — 含学校 + 用户档案 (活动、奖项、成绩)
+/**
+ * Which cases the swipe game may deal — and, just as importantly, may grade.
+ *
+ * `submitSwipe` used to filter on `CASE_REVIEW_APPROVED_WHERE` alone. Review
+ * status says a human checked the data; it says nothing about who may read it,
+ * and `AdmissionCase.visibility` defaults to PRIVATE. Since the response
+ * reports whether your guess was right, and the outcome has three values, that
+ * turned any approved case id into a two-request oracle for its result —
+ * PRIVATE rows included. Dealing and grading now read the same predicate, so a
+ * card that cannot be dealt cannot be graded either.
+ *
+ * It also reads the caller's role rather than granting VERIFIED_ONLY to
+ * everyone. `VERIFIED_ONLY` means "visible to Role.VERIFIED" — that is how
+ * `case-query.service` enforces it and what #533 established for the agent
+ * tools — so a deck that hands those cards to any signed-in user grants what
+ * `GET /cases/:id` refuses them.
+ *
+ * Narrowing it costs nothing today: there are zero VERIFIED_ONLY cases, so no
+ * deck shrinks. It is the cheapest moment this will ever be fixed, and doing it
+ * before the data exists is the difference between a one-line change and a
+ * visible regression for every non-verified player.
+ */
 const SWIPE_CASE_INCLUDE = {
   school: true,
   user: {
@@ -84,12 +106,12 @@ export class SwipeService {
   async getNextCases(
     userId: string,
     count: number = 5,
+    requesterRole?: string | null,
   ): Promise<SwipeBatchResultDto> {
     // 利用 CaseSwipe 关联做 NOT EXISTS 子查询，O(log N) 复杂度
     const cases = await this.prisma.admissionCase.findMany({
       where: {
-        visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
-        ...CASE_REVIEW_APPROVED_WHERE,
+        ...caseVisibilityWhereForRole(requesterRole),
         userId: { not: userId }, // 不显示自己的案例
         swipes: { none: { userId } }, // 未被该用户滑动过
         // 2026-05 Hall Plan C (C3): exclude `deferred` cases from the
@@ -110,8 +132,7 @@ export class SwipeService {
     const [totalAvailable, totalSwiped] = await Promise.all([
       this.prisma.admissionCase.count({
         where: {
-          visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
-          ...CASE_REVIEW_APPROVED_WHERE,
+          ...caseVisibilityWhereForRole(requesterRole),
           userId: { not: userId },
         },
       }),
@@ -141,10 +162,13 @@ export class SwipeService {
   async submitSwipe(
     userId: string,
     dto: SwipeActionDto,
+    requesterRole?: string | null,
   ): Promise<SwipeResultDto> {
-    // 检查案例是否存在且已审核通过
+    // 检查案例是否存在、已审核通过，且是这个游戏本来就会发出的牌。
+    // See the note above SWIPE_CASE_INCLUDE: filtering on review status alone made
+    // `isCorrect` in this response an oracle for any approved case's outcome.
     const admissionCase = await this.prisma.admissionCase.findFirst({
-      where: { id: dto.caseId, ...CASE_REVIEW_APPROVED_WHERE },
+      where: { id: dto.caseId, ...caseVisibilityWhereForRole(requesterRole) },
     });
 
     if (!admissionCase) {
@@ -403,12 +427,11 @@ export class SwipeService {
    * Get a challenge: an applicant who applied to multiple schools.
    * Groups AdmissionCases by userId to find applicants with 3+ cases.
    */
-  async getChallengeCase(userId: string) {
+  async getChallengeCase(userId: string, requesterRole?: string | null) {
     const applicantsWithMultiple = await this.prisma.admissionCase.groupBy({
       by: ['userId'],
       where: {
-        visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
-        ...CASE_REVIEW_APPROVED_WHERE,
+        ...caseVisibilityWhereForRole(requesterRole),
         userId: { not: userId },
       },
       _count: { id: true },
@@ -425,8 +448,7 @@ export class SwipeService {
     const cases = await this.prisma.admissionCase.findMany({
       where: {
         userId: randomApplicant.userId,
-        visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
-        ...CASE_REVIEW_APPROVED_WHERE,
+        ...caseVisibilityWhereForRole(requesterRole),
         // 2026-05 Hall Plan C (C3): no `deferred` cases in the challenge
         // deck — deferred is not a guessable admit/reject/waitlist outcome.
         result: { in: ['ADMITTED', 'REJECTED', 'WAITLISTED'] },
@@ -468,10 +490,22 @@ export class SwipeService {
   /**
    * Submit challenge guesses and reveal results.
    */
-  async submitChallenge(userId: string, guesses: Record<string, string>) {
+  async submitChallenge(
+    userId: string,
+    guesses: Record<string, string>,
+    requesterRole?: string | null,
+  ) {
     const caseIds = Object.keys(guesses);
+    // The ids come straight off the request body and this response returns
+    // `actual` — the outcome itself — for every one of them. Filtering on
+    // review status alone therefore did not leak a bit per request the way
+    // submitSwipe did; it handed over the result outright, in bulk, for any
+    // approved case including PRIVATE ones. Same predicate as the deck.
     const cases = await this.prisma.admissionCase.findMany({
-      where: { id: { in: caseIds }, ...CASE_REVIEW_APPROVED_WHERE },
+      where: {
+        id: { in: caseIds },
+        ...caseVisibilityWhereForRole(requesterRole),
+      },
       select: {
         id: true,
         result: true,

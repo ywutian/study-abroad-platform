@@ -27,9 +27,11 @@ const ESSAY_TYPES = [
   { value: 'OTHER', label: 'Other' },
 ];
 
+// PUBLIC removed 2026-08-04: it was rejected by `GET /cases` and accepted by
+// `GET /cases/:id`, so choosing it made a case harder to find than ANONYMOUS.
+// Retired for cases; the enum keeps the value for Profile.visibility.
 const VISIBILITY_OPTIONS = [
   { value: 'ANONYMOUS', labelKey: 'anonymous' },
-  { value: 'PUBLIC', labelKey: 'public' },
   { value: 'VERIFIED_ONLY', labelKey: 'verifiedOnly' },
 ];
 

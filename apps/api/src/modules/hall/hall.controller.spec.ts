@@ -264,25 +264,36 @@ describe('HallController', () => {
   // Swipe Game
   // ============================================
 
-  it('GET /swipe/batch should call swipeService.getNextCases with user.id and count', async () => {
+  // The role is load-bearing, not decoration: the service picks the deck's
+  // visibility set from it, so dropping it here silently hands VERIFIED_ONLY
+  // cards back to every signed-in user.
+  it('GET /swipe/batch should call swipeService.getNextCases with user.id, count and role', async () => {
     const query = { count: 10 } as any;
     const expected = { cases: [], remaining: 0 };
     (swipeService.getNextCases as jest.Mock).mockResolvedValue(expected);
 
     const result = await controller.getNextCases(mockUser, query);
 
-    expect(swipeService.getNextCases).toHaveBeenCalledWith('user-1', 10);
+    expect(swipeService.getNextCases).toHaveBeenCalledWith(
+      'user-1',
+      10,
+      mockUser.role,
+    );
     expect(result).toEqual(expected);
   });
 
-  it('POST /swipe/predict should call swipeService.submitSwipe with user.id and dto', async () => {
+  it('POST /swipe/predict should call swipeService.submitSwipe with user.id, dto and role', async () => {
     const dto = { caseId: 'case-1', prediction: 'ADMIT' } as any;
     const expected = { correct: true, actualResult: 'ADMIT' };
     (swipeService.submitSwipe as jest.Mock).mockResolvedValue(expected);
 
     const result = await controller.submitSwipe(mockUser, dto);
 
-    expect(swipeService.submitSwipe).toHaveBeenCalledWith('user-1', dto);
+    expect(swipeService.submitSwipe).toHaveBeenCalledWith(
+      'user-1',
+      dto,
+      mockUser.role,
+    );
     expect(result).toEqual(expected);
   });
 
