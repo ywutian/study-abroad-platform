@@ -11,5 +11,6 @@
   "packages/shared": 6704,
   "packages/browser-extension": 0,
   "scripts": 10799,
-  "_apps_web_src_note_2026_08_04": "16319 → 16321 (+2) for the comment marking PUBLIC as retired in create-case-dialog.tsx (549 lines). Two lines behind a file split would be the ratchet driving the design."
+  "_apps_web_src_note_2026_08_04": "16319 → 16321 (+2) for the comment marking PUBLIC as retired in create-case-dialog.tsx (549 lines). Two lines behind a file split would be the ratchet driving the design.",
+  "_apps_api_src_note_2026_08_04_any": "44026 → 44053 (+27). Comments and the restored feature, not new complexity: prediction-transformer LOST 4 lines net while dropping 80 `any`, and school-tools lost 2. The growth is recommendation.service.ts (+38 net) — the case-comparison path being wired to SchoolListItem and the notes recording that it, and the international flag, had never run. All in files already past 500. The ratchet counts lines, so a 3-line explanation of a dead feature costs the same as 3 lines of new branching; that is a known limit of the metric, not a reason to leave the explanation out."
 }
