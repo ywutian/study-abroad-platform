@@ -82,7 +82,7 @@ jobs:
               --region="${REGION}" \
               --no-traffic \
               --tag="${TAG}" \
-              --set-env-vars="NODE_ENV=staging" \
+              --set-env-vars="NODE_ENV=staging,CRON_DRIVER=http" \
               --vpc-connector=projects/${PROJECT}/locations/${REGION}/connectors/study-abroad-connector \
               --quiet
           else
@@ -91,7 +91,7 @@ jobs:
               --image="${IMAGE}" \
               --region="${REGION}" \
               --tag="${TAG}" \
-              --set-env-vars="NODE_ENV=staging" \
+              --set-env-vars="NODE_ENV=staging,CRON_DRIVER=http" \
               --vpc-connector=projects/${PROJECT}/locations/${REGION}/connectors/study-abroad-connector \
               --allow-unauthenticated \
               --quiet

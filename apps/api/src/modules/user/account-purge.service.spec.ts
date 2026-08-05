@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { DiscoveryModule } from '@nestjs/core';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { AccountPurgeService } from './account-purge.service';
 import { UserService } from './user.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { CronRegistryService } from '../../common/cron/cron-registry.service';
 
 describe('AccountPurgeService', () => {
   let service: AccountPurgeService;
@@ -116,13 +119,19 @@ describe('AccountPurgeService', () => {
     expect(hardDelete).not.toHaveBeenCalled();
   });
 
-  it('is actually registered with the scheduler', async () => {
+  it('is actually dispatchable on the path production uses', async () => {
     // The defect this whole service exists to close was a deletion promise
     // with no job behind it. A @Cron that is never discovered would recreate
     // it exactly — silently, and only in production. Assert the wiring.
+    //
+    // Production no longer runs in-process timers (CRON_DRIVER=http): what
+    // makes this job run is CronRegistryService discovering it and Cloud
+    // Scheduler POSTing its name. So assert THAT, not SchedulerRegistry —
+    // a timer-registration test would now pass while prod never fires.
     const module = await Test.createTestingModule({
-      imports: [ScheduleModule.forRoot()],
+      imports: [DiscoveryModule],
       providers: [
+        CronRegistryService,
         AccountPurgeService,
         { provide: PrismaService, useValue: { user: { findMany } } },
         { provide: UserService, useValue: { hardDelete } },
@@ -130,12 +139,25 @@ describe('AccountPurgeService', () => {
         { provide: ConfigService, useValue: { get: (k: string) => env[k] } },
       ],
     }).compile();
-    const app = module.createNestApplication();
-    await app.init();
+    await module.init();
 
-    const jobs = app.get(SchedulerRegistry).getCronJobs();
-    expect(jobs.size).toBeGreaterThan(0);
+    const names = module
+      .get(CronRegistryService)
+      .list()
+      .map((job) => job.name);
+    expect(names).toContain('account-purge-service-scheduled-purge');
 
-    await app.close();
+    // …and that name is what the deploy provisions a Cloud Scheduler job for.
+    const manifest = JSON.parse(
+      readFileSync(
+        join(__dirname, '../../../../../.github/cron-jobs.json'),
+        'utf8',
+      ),
+    ) as { jobs: Array<{ name: string }> };
+    expect(manifest.jobs.map((job) => job.name)).toContain(
+      'account-purge-service-scheduled-purge',
+    );
+
+    await module.close();
   });
 });

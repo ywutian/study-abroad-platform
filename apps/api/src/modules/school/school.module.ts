@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { SchoolService } from './school.service';
 import { SchoolController } from './school.controller';
 import { SchoolDataService } from './school-data.service';
@@ -27,7 +26,7 @@ import { AuditLogModule } from '../../common/services/audit-log.module';
 import { SchoolListModule } from '../school-list/school-list.module';
 
 @Module({
-  imports: [PrismaModule, AuditLogModule, ScheduleModule, SchoolListModule],
+  imports: [PrismaModule, AuditLogModule, SchoolListModule],
   controllers: [SchoolController, HighSchoolController],
   providers: [
     SchoolService,

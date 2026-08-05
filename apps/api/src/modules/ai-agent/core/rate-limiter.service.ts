@@ -5,8 +5,12 @@
  * Redis 不可用时自动降级为内存限流
  */
 
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { RedisService } from '../../../common/redis/redis.service';
 import {
   RateLimitConfig,
@@ -27,7 +31,7 @@ export interface RateLimitResult {
 }
 
 @Injectable()
-export class RateLimiterService {
+export class RateLimiterService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RateLimiterService.name);
 
   // 内存降级存储 (Redis 不可用时使用)
@@ -36,7 +40,26 @@ export class RateLimiterService {
   // 自定义限流配置
   private customLimits: Map<string, RateLimitConfig> = new Map();
 
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+
   constructor(private readonly redis: RedisService) {}
+
+  onModuleInit(): void {
+    // Replica-local GC of the in-memory fallback windows — deliberately a plain
+    // interval, NOT @Cron: it must keep running on THIS instance even under
+    // CRON_DRIVER=http (where no @Cron registers), it touches no shared state,
+    // and a late sweep on a CPU-throttled container is harmless. unref() so a
+    // shutting-down process doesn't wait on it.
+    this.cleanupTimer = setInterval(() => this.cleanup(), 60_000);
+    this.cleanupTimer.unref?.();
+  }
+
+  onModuleDestroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+  }
 
   /**
    * 检查并消费配额
@@ -288,9 +311,8 @@ export class RateLimiterService {
   }
 
   /**
-   * 清理过期内存窗口（每分钟自动执行）
+   * 清理过期内存窗口（每分钟自动执行，见 onModuleInit 的本地 interval）
    */
-  @Cron('*/1 * * * *')
   cleanup(): void {
     const now = Date.now();
     let cleaned = 0;

@@ -56,6 +56,7 @@ import { AuthorizationModule } from './common/services/authorization.module';
 import { AuditLogModule } from './common/services/audit-log.module';
 import { FeatureFlagModule } from './common/feature-flags';
 import { FeatureFlagGuard } from './common/feature-flags';
+import { CronModule } from './common/cron/cron.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { FeatureFlagGuard } from './common/feature-flags';
     RedisModule,
     SentryModule,
     StorageModule,
+    CronModule,
     HealthModule,
     AuthModule,
     UserModule,

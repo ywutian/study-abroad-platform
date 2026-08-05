@@ -187,6 +187,13 @@ jobs:
           pnpm lint:audit-gate
           pnpm lint:deploy-drift
           pnpm lint:seed-parity
+          # .github/cron-jobs.json vs the @Cron decorators. Under
+          # CRON_DRIVER=http a job missing from that manifest gets no Cloud
+          # Scheduler entry and therefore never runs in prod — while running
+          # fine in dev. Listed explicitly rather than relying on
+          # lint:gate-proofs happening to invoke it via its proof's clean-tree
+          # precondition.
+          pnpm lint:cron-manifest
 
       # Cross-layer guards that lint:all runs but the pre-push hook is the only
       # other enforcer of — wired into CI so a `git push --no-verify` (or a
@@ -1474,7 +1481,20 @@ jobs:
       #
       # 3000 is a trade, not a fix: a Redis read on the request path can now
       # stall 3s before falling back to its miss path. The actual fix is not
-      # running @Cron on a CPU-throttled service — see cron-lock.util.ts.
+      # running @Cron on a CPU-throttled service — which is CRON_DRIVER=http:
+      # no in-process timers register in prod; Cloud Scheduler drives
+      # POST /internal/cron/:name/run (one scheduler job per @Cron, synced from
+      # .github/cron-jobs.json in the "Sync Cloud Scheduler" step below). CPU is
+      # guaranteed during a request and one firing is single-flight by
+      # construction. CRON_SECRET is the fail-closed auth for that endpoint —
+      # if the secret is missing the deploy fails at the assert step, because
+      # a 401 there means every scheduled job is silently off.
+      #
+      # --timeout=1800 (was 300): a scheduler-driven job holds its request open
+      # for the whole run (ending the response surrenders the CPU), so the
+      # request ceiling must cover the slowest job. Scheduler attempt-deadline
+      # is 1740s, under this. Side effect: WebSocket connections may now live
+      # 30min instead of 5 before Cloud Run recycles them (clients reconnect).
       #
       # Note `--set-env-vars` REPLACES the whole set: anything dropped from this
       # line reverts to unset on the next deploy.
@@ -1495,9 +1515,9 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=false|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000" \
-            --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
-            --timeout=300 \
+            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=false|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
+            --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest" \
+            --timeout=1800 \
             --no-traffic \
             --tag=canary \
             --quiet
@@ -1568,6 +1588,48 @@ jobs:
           done
           echo "::error::Health check failed after 5 attempts"
           exit 1
+
+      # Provision one Cloud Scheduler job per @Cron (manifest-driven; see
+      # scripts/check-cron-manifest.ts). Runs AFTER traffic promotion so the
+      # asserted registry is the code actually serving. Failure here fails the
+      # deploy and triggers the rollback step.
+      - name: Sync Cloud Scheduler cron jobs
+        if: success()
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          URL="${{ steps.smoke.outputs.url }}"
+          CRON_SECRET=$(gcloud secrets versions access latest --secret=cron-secret)
+          echo "::add-mask::$CRON_SECRET"
+          GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" GCP_REGION="$REGION" \
+            CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
+            node scripts/ci/sync-cloud-scheduler.mjs
+
+      # Closes the loop between the AST-derived manifest and the runtime
+      # registry: any drift (or a broken CRON_SECRET mount) fails the deploy
+      # here, one step away from rollback — instead of surfacing as scheduled
+      # jobs silently never running (#553's failure shape).
+      - name: Assert live cron registry matches manifest
+        if: success()
+        run: |
+          URL="${{ steps.smoke.outputs.url }}"
+          CRON_SECRET=$(gcloud secrets versions access latest --secret=cron-secret)
+          echo "::add-mask::$CRON_SECRET"
+          CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
+            node scripts/ci/assert-cron-manifest.mjs
+
+      # Deleting stale schedules happens ONLY after the assert passes. Rollback
+      # reverts traffic, never scheduler topology — pruning earlier would leave
+      # a failed deploy's rolled-back revision missing schedules it still needs.
+      - name: Prune stale Cloud Scheduler jobs
+        if: success()
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          URL="${{ steps.smoke.outputs.url }}"
+          CRON_SECRET=$(gcloud secrets versions access latest --secret=cron-secret)
+          echo "::add-mask::$CRON_SECRET"
+          GCP_PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}" GCP_REGION="$REGION" \
+            CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
+            node scripts/ci/sync-cloud-scheduler.mjs --prune-only
 
       - name: Probe prod essay gallery count
         if: always()

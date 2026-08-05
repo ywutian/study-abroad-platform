@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
+import { SCHEDULE_MODULE_ROOT } from '../../../common/cron/schedule-driver';
 import { NotificationModule } from '../../notification/notification.module';
 import { PointsModule } from '../../points/points.module';
 import { AdminOutcomeController } from './admin-outcome.controller';
@@ -17,7 +17,7 @@ import { OutcomeService } from './outcome.service';
  * 注意: PrismaService 来自全局 PrismaModule，无需此处显式导入。
  */
 @Module({
-  imports: [ScheduleModule.forRoot(), PointsModule, NotificationModule],
+  imports: [SCHEDULE_MODULE_ROOT, PointsModule, NotificationModule],
   controllers: [OutcomeController, AdminOutcomeController],
   providers: [OutcomeService, OutcomeReminderService],
   exports: [OutcomeService, OutcomeReminderService],

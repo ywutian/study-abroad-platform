@@ -107,6 +107,50 @@ describe('runWithCronLock', () => {
     });
   });
 
+  /**
+   * Under the http driver the only caller is one Cloud Scheduler request, so a
+   * quiet `false` would be recorded as a successful run of a job that ran
+   * nowhere — the failure shape this driver exists to remove. Contention is
+   * different: another attempt IS doing the work, and retrying it would be
+   * wrong.
+   */
+  describe('under CRON_DRIVER=http', () => {
+    const saved = process.env.CRON_DRIVER;
+    beforeEach(() => {
+      process.env.CRON_DRIVER = 'http';
+    });
+    afterEach(() => {
+      if (saved === undefined) delete process.env.CRON_DRIVER;
+      else process.env.CRON_DRIVER = saved;
+    });
+
+    it('throws when Redis is unreachable, so Cloud Scheduler records a failure and retries', async () => {
+      const redis = makeRedisLock({ acquired: false, reason: 'unavailable' });
+      const job = jest.fn().mockResolvedValue(undefined);
+
+      await expect(runWithCronLock(redis, 'k', 600, job)).rejects.toThrow(
+        /did not run: Redis was unreachable/,
+      );
+      expect(job).not.toHaveBeenCalled();
+    });
+
+    it('stays quiet when the lock is merely held — that attempt is being run, retrying it would duplicate work', async () => {
+      const redis = makeRedisLock({ acquired: false, reason: 'held' });
+      const job = jest.fn().mockResolvedValue(undefined);
+
+      await expect(runWithCronLock(redis, 'k', 600, job)).resolves.toBe(false);
+      expect(job).not.toHaveBeenCalled();
+    });
+  });
+
+  it('does NOT throw on an unreachable Redis in timer mode — @Cron is fire-and-forget, a rejection would be an unhandledRejection', async () => {
+    const redis = makeRedisLock({ acquired: false, reason: 'unavailable' });
+
+    await expect(runWithCronLock(redis, 'k', 600, jest.fn())).resolves.toBe(
+      false,
+    );
+  });
+
   it('runs unguarded when redis is undefined (single-instance / dev)', async () => {
     const job = jest.fn().mockResolvedValue(undefined);
 

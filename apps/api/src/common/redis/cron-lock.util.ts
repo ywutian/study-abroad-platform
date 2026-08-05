@@ -5,13 +5,23 @@ import { RedisService } from './redis.service';
 const fallbackLogger = new Logger('runWithCronLock');
 
 /**
- * Single-flight guard for `@Cron` jobs in a multi-instance (Cloud Run, N-replica)
- * deployment.
+ * Single-flight guard for `@Cron` jobs.
  *
- * Every replica fires the same cron at the same time, so any side-effecting job
- * (sends a notification/email, calls an external API, scrapes, emits an event,
- * does a non-idempotent write) must run on exactly ONE replica or it fans out
- * N×. This acquires a Redis lock via `setNXStrict`; the TTL is the single-flight
+ * WHO FIRES THE JOB depends on `CRON_DRIVER` (common/cron/schedule-driver.ts):
+ *
+ * - `timer` (dev/tests/docker): every replica's in-process timer fires the same
+ *   cron at the same time, so any side-effecting job (notification, email,
+ *   external API call, scrape, non-idempotent write) must run on exactly ONE
+ *   replica or it fans out N×. That N-replica dedupe is this lock's original
+ *   job.
+ * - `http` (production, since #553's follow-up): no in-process timers exist —
+ *   Cloud Scheduler POSTs `/internal/cron/:name/run`, which is single-flight by
+ *   construction. Here the lock's remaining job is narrower but real: dedupe a
+ *   scheduler RETRY racing an attempt that is still running, and a manual
+ *   `gcloud scheduler jobs run` racing either. (#553 recorded "don't run @Cron
+ *   on a CPU-throttled service" as the real fix; the http driver is that fix.)
+ *
+ * This acquires a Redis lock via `setNXStrict`; the TTL is the single-flight
  * window — there is deliberately NO explicit release, so the lock simply expires
  * before the next scheduled tick (pick a TTL longer than one run, shorter than
  * the cron interval; see the `*_CRON_LOCK` entries in redis-ttl.constants).
@@ -72,6 +82,19 @@ export async function runWithCronLock(
           `Cron NOT RUN: could not reach Redis to take single-flight lock "${lockKey}". ` +
             `No replica executed this job on this tick — this is a Redis availability problem, not contention.`,
         );
+        // Under the http driver the caller is ONE Cloud Scheduler request, and
+        // returning normally would have it record a success for a job that ran
+        // nowhere — the same "nothing happened looks like fine" this whole
+        // driver exists to kill. Throwing turns it into a 5xx, which Scheduler
+        // retries after its backoff. In timer mode we must NOT throw: @Cron
+        // handlers are fire-and-forget, so a rejection escapes as an
+        // unhandledRejection (see the note below on why this file catches).
+        if (process.env.CRON_DRIVER === 'http') {
+          throw new Error(
+            `Cron "${lockKey}" did not run: Redis was unreachable, so the single-flight ` +
+              `lock could not be taken. Failing loudly so Cloud Scheduler retries.`,
+          );
+        }
       }
       return false;
     }

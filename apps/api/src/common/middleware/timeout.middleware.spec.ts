@@ -91,6 +91,32 @@ describe('TimeoutMiddleware', () => {
   });
 
   // -----------------------------------------------------------------------
+  // Cloud Scheduler-driven cron runs are exempt (no 408 timer at all)
+  // -----------------------------------------------------------------------
+  it('should never 408 a /internal/cron run — the request IS the job (CPU stops when the response ends)', () => {
+    const { req, res, next } = createMocks(
+      '/api/v1/internal/cron/account-purge-service-handle-cron/run',
+      'POST',
+    );
+    middleware.use(req, res, next);
+
+    jest.advanceTimersByTime(30 * 60_000);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('does NOT exempt a request that merely mentions /internal/cron/ in its query string', () => {
+    const { req, res, next } = createMocks('/api/v1/schools?x=/internal/cron/');
+    middleware.use(req, res, next);
+
+    jest.advanceTimersByTime(30_000);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(408);
+  });
+
+  // -----------------------------------------------------------------------
   // AI endpoint timeout (120s)
   // -----------------------------------------------------------------------
   it('should use AI timeout (120s) for /ai-agent/ endpoints', () => {
