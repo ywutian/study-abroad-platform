@@ -36,6 +36,10 @@ echo "🛡️  Checking root guardrails..."
 pnpm lint:coverage-ratchet || exit 1
 pnpm lint:any-ratchet || exit 1
 pnpm lint:file-size || exit 1
+# Runs each gate against a seeded violation and asserts it goes red — the loop
+# that separates "passes because it is correct" from "passes because it is not
+# looking". ~1.5s per proof; gate-proof-baseline.json keeps that cost visible.
+pnpm lint:gate-proofs || exit 1
 pnpm lint:audit-gate || exit 1
 pnpm lint:dep-pins || exit 1
 pnpm lint:deploy-drift || exit 1

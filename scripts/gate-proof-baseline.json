@@ -1,0 +1,4 @@
+{
+  "_comment": "One-way ceiling on gates that have never been proven to fail. `check-gate-proofs.ts` runs every `scripts/gate-proofs/<gate>.proof.ts` and fails when this number RISES. Writing a proof lowers it; run `pnpm lint:gate-proofs --update` to lock the win. Raising it requires editing this file in the same PR — which is the point.",
+  "unproven": 16
+}
