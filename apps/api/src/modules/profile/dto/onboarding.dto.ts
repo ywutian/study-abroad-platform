@@ -25,6 +25,7 @@ import {
 import {
   APPLICATION_ROUND_VALUES,
   normalizeApplicationRound,
+  GPA_SCALES_MUTABLE,
 } from '@study-abroad/shared';
 
 const GRADES = [
@@ -164,7 +165,7 @@ export class OnboardingProfileDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
-  @IsIn([4.0, 5.0, 6, 45, 100])
+  @IsIn(GPA_SCALES_MUTABLE)
   gpaScale?: number;
 }
 

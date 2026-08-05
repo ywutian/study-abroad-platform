@@ -72,12 +72,24 @@ interface SchoolListItemApi {
 // first visible row.
 const TIER_RANK: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
 
-// The whole page scrolls with the ONE native browser scrollbar. COL1 (the short
-// selector) is the only sticky side panel — it rides along. It is structurally
-// shorter than the viewport (its school list is a bounded card), so its fallback
-// overflow basically never triggers. COL2 (list) and COL3 (detail) are plain
+// The whole page scrolls with the ONE native browser scrollbar. COL1 is the only
+// sticky side panel — it rides along. COL2 (list) and COL3 (detail) are plain
 // document flow: the taller one defines the page height and the browser scrollbar
 // scrolls it — so the tall detail is NEVER trapped in an internal box scrollbar.
+//
+// NOTE: this comment used to claim COL1 "is structurally shorter than the viewport
+// … so its fallback overflow basically never triggers". That was written when
+// COL1 held only the selector card. It now ALSO holds PredictionWhatIfPanel
+// stacked underneath, and from the class lists the pair is ~1040px against a
+// max-height of ~790px on a 1440×900 laptop — i.e. the fallback overflow
+// probably DOES trigger, putting the What-if results below an inner fold.
+// (`PredictionWhatIfPanel` scrollIntoView's its results after a run, which is
+// why this is a discoverability problem rather than a broken feature.)
+//
+// NOT MEASURED — derived from class names, in a real browser with a real
+// profile it may differ. Do not restructure these columns on the strength of
+// this paragraph; measure COL1's scrollHeight vs clientHeight first. Recorded
+// here because a stale comment asserting the opposite is worse than no comment.
 // (Scrollbar utility classes are unprefixed — inert without overflow — since
 // they're custom, not Tailwind responsive variants.)
 const STICKY_SELECTOR =
@@ -126,11 +138,27 @@ export default function PredictionPage() {
         })),
     [schoolListData]
   );
+  // Pre-fill ONLY for `?autorun=1`. A plain visit starts empty.
+  //
+  // This used to fill the estimate list with the whole school list on every
+  // mount, so the first thing a user did here was delete rows one at a time —
+  // and the common intent is the opposite one, checking a school they have NOT
+  // saved yet to decide whether to save it. `Import my list (N)` and `Clear`
+  // already exist in SchoolSelectorCard (added by #480, which left this effect
+  // in place, so the button read as a *re*-import of an already-full box).
+  //
+  // The autorun carve-out is not optional: the autorun effect below gates on
+  // `hasPreFilled`, and `dashboard-setup-progress.tsx:56` +
+  // `onboarding/quick-experience.tsx:239` both navigate here with `autorun=1`
+  // expecting a prediction to start by itself. Dropping the effect outright
+  // makes both silently do nothing — no error, no toast, just a page that sits
+  // there. `prediction-autorun.test.tsx` pins both directions.
+  const wantsAutoRun = searchParams.get('autorun') === '1';
   useEffect(() => {
-    if (hasPreFilled || schoolListItems.length === 0) return;
+    if (!wantsAutoRun || hasPreFilled || schoolListItems.length === 0) return;
     setSelectedSchools(schoolListItems);
     setHasPreFilled(true);
-  }, [schoolListItems, hasPreFilled]);
+  }, [schoolListItems, hasPreFilled, wantsAutoRun]);
 
   // Prediction results
   const [results, setResults] = useState<PredictionResult[]>([]);

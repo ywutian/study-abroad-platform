@@ -1,5 +1,7 @@
 'use client';
 
+import { GPA_SCALES } from '@study-abroad/shared';
+
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +31,25 @@ import {
 import type { Control, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import type { ProfileFormValues } from '@/lib/validations/profile';
 import type { SemesterGpa } from './types';
+
+/**
+ * Derived from the shared GPA_SCALES so an option the API rejects cannot appear
+ * here. Labels stay local (they are i18n keys, not data); the constant fixes
+ * WHICH scales exist, which is the part that drifted.
+ */
+const GPA_SCALE_LABEL_KEYS: Record<number, string> = {
+  4: 'profile.gpaScales.scale4',
+  5: 'profile.gpaScales.scale5',
+  6: 'profile.gpaScales.scale6',
+  45: 'profile.gpaScales.scale45',
+  100: 'profile.gpaScales.scale100',
+};
+
+const GPA_SCALE_OPTIONS = GPA_SCALES.map((scale) => ({
+  // 4 and 5 were historically stored as "4.0"/"5.0" strings by this form.
+  value: scale === 4 || scale === 5 ? scale.toFixed(1) : String(scale),
+  labelKey: GPA_SCALE_LABEL_KEYS[scale],
+}));
 
 const GRADE_WEIGHTS = {
   gpa9: 0.15,
@@ -290,11 +311,16 @@ export function GpaTab({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="4.0">{t('profile.gpaScales.scale4')}</SelectItem>
-                  <SelectItem value="5.0">{t('profile.gpaScales.scale5')}</SelectItem>
-                  <SelectItem value="100">{t('profile.gpaScales.scale100')}</SelectItem>
-                  <SelectItem value="45">{t('profile.gpaScales.scale45')}</SelectItem>
-                  <SelectItem value="6">{t('profile.gpaScales.scale6')}</SelectItem>
+                  {/* Values come from GPA_SCALES so this list cannot drift from
+                      what the API accepts — a 100/45/6 option the backend
+                      rejects is how the What-if simulator 400'd on every press
+                      for those students. Order and labels stay local: the
+                      constant fixes the SET, not the presentation. */}
+                  {GPA_SCALE_OPTIONS.map(({ value, labelKey }) => (
+                    <SelectItem key={value} value={value}>
+                      {t(labelKey)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

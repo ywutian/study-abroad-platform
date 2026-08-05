@@ -15,7 +15,11 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { MAX_SCHOOLS_PER_BATCH } from '@study-abroad/shared';
+import {
+  MAX_SCHOOLS_PER_BATCH,
+  GPA_MAX,
+  GPA_SCALES_MUTABLE,
+} from '@study-abroad/shared';
 
 export class PredictionRequestDto {
   @ApiProperty({
@@ -44,28 +48,32 @@ export class PredictionRequestDto {
 }
 
 export class PredictionPreviewScenarioDto {
+  // These two fed `profileInput.gpa` / `.gpaScale` (prediction.service.ts:1159)
+  // while capped at 5, but a profile may declare a 6.0, IB-45 or 100-point
+  // scale — the What-if panel prefills from the profile and posts whatever is
+  // there, so those students got a 400 on EVERY press and saw only a generic
+  // "could not run the preview". Bounds now come from the same constant the
+  // profile validates against.
   @ApiProperty({
-    description: 'Simulated GPA value',
+    description: 'Simulated GPA value (bounded by the declared scale)',
     required: false,
     minimum: 0,
-    maximum: 5,
+    maximum: GPA_MAX,
   })
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Max(5)
+  @Max(GPA_MAX)
   gpa?: number;
 
   @ApiProperty({
     description: 'Simulated GPA scale',
     required: false,
-    minimum: 1,
-    maximum: 5,
+    enum: GPA_SCALES_MUTABLE,
   })
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  @Max(5)
+  @IsIn(GPA_SCALES_MUTABLE)
   gpaScale?: number;
 
   @ApiProperty({
