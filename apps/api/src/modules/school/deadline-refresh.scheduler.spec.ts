@@ -21,10 +21,14 @@ describe('DeadlineRefreshScheduler', () => {
     auditLog: { create: jest.Mock };
   };
   let originalFetch: typeof global.fetch;
-  const redis = { setNXStrict: jest.fn() };
+  const redis = {
+    setNXStrict: jest.fn(),
+    tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
+  };
 
   beforeEach(async () => {
     redis.setNXStrict.mockResolvedValue(true);
+    redis.tryAcquireLock.mockResolvedValue({ acquired: true });
     prisma = {
       schoolDeadline: {
         findMany: jest.fn(),
@@ -248,6 +252,7 @@ describe('DeadlineRefreshScheduler', () => {
   // ───────────────────────────────────────────────────────────────────
   it('skips the sweep entirely when the single-flight lock is held', async () => {
     redis.setNXStrict.mockResolvedValue(false);
+    redis.tryAcquireLock.mockResolvedValue({ acquired: false, reason: 'held' });
     const fetchSpy = jest.fn();
     global.fetch = fetchSpy;
 

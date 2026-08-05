@@ -44,7 +44,15 @@ const envSchema = z.object({
   REDIS_HOST: z.string().optional(),
   REDIS_PORT: z.coerce.number().int().optional(),
   REDIS_PASSWORD: z.string().optional(),
+  // Client-side deadline, so it also covers time the container spent without
+  // CPU. Production runs on Cloud Run with `--cpu-throttling` and
+  // `min-instances=0`, where an idle instance's event loop is starved until a
+  // request or timer wakes it — 1000ms there tripped the circuit breaker 60-85
+  // times a day for a month. The default stays 1000 (right for a local Redis);
+  // production sets it explicitly in the deploy.
   REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().default(1000),
+  /** TCP keepalive probe delay. 0 restores ioredis's default (probes off). */
+  REDIS_KEEPALIVE_MS: z.coerce.number().int().nonnegative().default(30000),
   REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: z.coerce
     .number()
     .int()

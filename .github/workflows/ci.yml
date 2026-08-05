@@ -1462,6 +1462,19 @@ jobs:
       # until ENABLED is true in production. A promise whose number lives only in
       # a default is one edit away from being false.
       #
+      # REDIS_COMMAND_TIMEOUT_MS=3000 raises the 1000ms default. That deadline is
+      # CLIENT-SIDE, so it also counts time this container spent without CPU —
+      # and with `--cpu-throttling` and `min-instances=0` below, an idle
+      # instance's event loop is starved until a request or a @Cron timer wakes
+      # it. 1000ms did not cover the wake-up: prod tripped Redis's circuit
+      # breaker 60-85 times a day for a month, and every locked @Cron inside
+      # those 30s windows silently skipped. AccountPurgeService had never once
+      # completed a run.
+      #
+      # 3000 is a trade, not a fix: a Redis read on the request path can now
+      # stall 3s before falling back to its miss path. The actual fix is not
+      # running @Cron on a CPU-throttled service — see cron-lock.util.ts.
+      #
       # Note `--set-env-vars` REPLACES the whole set: anything dropped from this
       # line reverts to unset on the next deploy.
       - name: Deploy canary (no traffic)
@@ -1481,7 +1494,7 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=false|ACCOUNT_PURGE_GRACE_DAYS=30" \
+            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=false|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
             --timeout=300 \
             --no-traffic \

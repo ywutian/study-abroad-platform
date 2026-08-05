@@ -26,7 +26,10 @@ describe('EssayScraperScheduler', () => {
     },
   };
 
-  const mockRedis = { setNXStrict: jest.fn() };
+  const mockRedis = {
+    setNXStrict: jest.fn(),
+    tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
+  };
 
   // Let the fire-and-forget executePipeline microtasks settle so its mocked
   // deps don't resolve after the test finishes.
@@ -35,6 +38,7 @@ describe('EssayScraperScheduler', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     mockRedis.setNXStrict.mockResolvedValue(true);
+    mockRedis.tryAcquireLock.mockResolvedValue({ acquired: true });
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
         EssayScraperScheduler,
@@ -48,6 +52,10 @@ describe('EssayScraperScheduler', () => {
 
   it('skips the scrape entirely when the single-flight lock is held (multi-instance)', async () => {
     mockRedis.setNXStrict.mockResolvedValue(false);
+    mockRedis.tryAcquireLock.mockResolvedValue({
+      acquired: false,
+      reason: 'held',
+    });
 
     await scheduler.annualPreSeasonScrape();
 
@@ -59,6 +67,7 @@ describe('EssayScraperScheduler', () => {
 
   it('runs the pipeline when the lock is acquired', async () => {
     mockRedis.setNXStrict.mockResolvedValue(true);
+    mockRedis.tryAcquireLock.mockResolvedValue({ acquired: true });
 
     await scheduler.annualPreSeasonScrape();
     await flush();
@@ -72,11 +81,15 @@ describe('EssayScraperScheduler', () => {
 
   it('uses the same lock key for both scheduled crons', async () => {
     mockRedis.setNXStrict.mockResolvedValue(false);
+    mockRedis.tryAcquireLock.mockResolvedValue({
+      acquired: false,
+      reason: 'held',
+    });
 
     await scheduler.annualPreSeasonScrape();
     await scheduler.postRdDeadlineVerify();
 
-    const keys = mockRedis.setNXStrict.mock.calls.map((c) => c[0]);
+    const keys = mockRedis.tryAcquireLock.mock.calls.map((c) => c[0]);
     expect(new Set(keys)).toEqual(new Set(['essay-scraper:cron-lock']));
   });
 });

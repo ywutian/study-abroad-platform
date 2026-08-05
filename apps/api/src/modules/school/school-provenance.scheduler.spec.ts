@@ -16,7 +16,10 @@ import { UrbanInstituteDataService } from './urban-institute-data.service';
  */
 describe('SchoolProvenanceScheduler', () => {
   let scheduler: SchoolProvenanceScheduler;
-  const redis = { setNXStrict: jest.fn() };
+  const redis = {
+    setNXStrict: jest.fn(),
+    tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
+  };
   const schoolService = { getDataQualityReport: jest.fn() };
   const schoolDataService = { syncSchoolsFromScorecard: jest.fn() };
   const urbanInstituteService = { syncAll: jest.fn() };
@@ -38,6 +41,7 @@ describe('SchoolProvenanceScheduler', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     redis.setNXStrict.mockResolvedValue(true);
+    redis.tryAcquireLock.mockResolvedValue({ acquired: true });
     schoolService.getDataQualityReport.mockResolvedValue(staleReport);
     schoolDataService.syncSchoolsFromScorecard.mockResolvedValue({
       synced: 1,
@@ -61,6 +65,10 @@ describe('SchoolProvenanceScheduler', () => {
   describe('single-flight', () => {
     it('skips the stale refresh when another replica holds the lock', async () => {
       redis.setNXStrict.mockResolvedValue(false);
+      redis.tryAcquireLock.mockResolvedValue({
+        acquired: false,
+        reason: 'held',
+      });
 
       await scheduler.refreshStaleOfficialFields();
 
@@ -71,6 +79,10 @@ describe('SchoolProvenanceScheduler', () => {
 
     it('skips the coverage monitor when another replica holds the lock', async () => {
       redis.setNXStrict.mockResolvedValue(false);
+      redis.tryAcquireLock.mockResolvedValue({
+        acquired: false,
+        reason: 'held',
+      });
 
       await scheduler.monitorOfficialCoverage();
 
