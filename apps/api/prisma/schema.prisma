@@ -4017,7 +4017,14 @@ model SchoolDeadline {
 // ============================================
 
 model GlobalEvent {
-  id       String              @id @default(cuid())
+  id String @id @default(cuid())
+
+  /// Stable business key for idempotent seeding (e.g. "sat-2026-11-07").
+  /// Nullable because rows created by hand through the admin UI have no seed
+  /// identity — only seeded rows carry one. Mirrors Competition.abbreviation,
+  /// which is how prisma/seeds/upsert-competition-data.ts stays idempotent.
+  slug String? @unique
+
   title    String
   titleZh  String?
   category GlobalEventCategory
