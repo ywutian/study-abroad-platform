@@ -187,6 +187,13 @@ jobs:
           pnpm lint:audit-gate
           pnpm lint:deploy-drift
           pnpm lint:seed-parity
+          # Dated reference data (exam calendar, competition schedule) that has
+          # stopped covering the planning horizon. migrate.sh converges the DB to
+          # the repo on every deploy, so an expired calendar loads perfectly and
+          # reports success — nothing else can tell you it went stale. Listed
+          # explicitly for the same reason as lint:cron-manifest below: this job
+          # does not run lint:all.
+          pnpm lint:seed-freshness
           # .github/cron-jobs.json vs the @Cron decorators. Under
           # CRON_DRIVER=http a job missing from that manifest gets no Cloud
           # Scheduler entry and therefore never runs in prod — while running
