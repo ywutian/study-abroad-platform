@@ -1,3 +1,4 @@
+import { resolveApplicationYear } from '@study-abroad/shared';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
@@ -58,10 +59,15 @@ describe('Outcome reporting closure (e2e)', () => {
     await prisma.schoolListItem.create({
       data: { userId, schoolId: school.id, round: 'RD' },
     });
+    // Deadline and prediction must name the SAME season. This line used to
+    // read `new Date().getFullYear()` — the calendar year, not the
+    // application season — and passed only because neither side carried a
+    // season at all.
+    const season = resolveApplicationYear();
     await prisma.schoolDeadline.create({
       data: {
         schoolId: school.id,
-        year: new Date().getFullYear(),
+        year: season,
         round: 'RD',
         applicationDeadline: new Date(Date.now() - 60 * 86400000),
         decisionDate: new Date(Date.now() - 86400000),
@@ -79,6 +85,7 @@ describe('Outcome reporting closure (e2e)', () => {
         source: 'prediction',
         authority: 'AUTHORITATIVE',
         applicationRound: 'RD',
+        applicationYear: season,
       },
     });
     predictionResultId = prediction.id;

@@ -1,3 +1,4 @@
+import { resolveApplicationYear } from '@study-abroad/shared';
 import {
   Injectable,
   Logger,
@@ -267,9 +268,7 @@ export class SchoolListService {
       }>
     >();
     if (items.length > 0) {
-      const currentYear = new Date().getFullYear();
-      const applicationYear =
-        new Date().getMonth() >= 7 ? currentYear + 1 : currentYear;
+      const applicationYear = resolveApplicationYear();
       const deadlines = await this.prisma.schoolDeadline.findMany({
         where: {
           schoolId: { in: items.map((i) => i.schoolId) },

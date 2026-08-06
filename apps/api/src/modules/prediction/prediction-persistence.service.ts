@@ -1,3 +1,4 @@
+import { resolveApplicationYear } from '@study-abroad/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -168,6 +169,23 @@ export class PredictionPersistenceService {
       );
 
       // governance: parent-scoped — persists the result just computed for the profile the caller resolved
+      // The season this snapshot BELONGS to, stamped at write time.
+      //
+      // Derived once here rather than at read time: a prediction made in
+      // October 2026 is about Fall 2027 forever, and re-deriving it on read
+      // would silently relabel every historical row each August.
+      //
+      // Why it matters: the dashboard's "waiting for your outcome" banner asks
+      // whether a school's decision has been RELEASED, and SchoolDeadline keeps
+      // one row per school per season. Without a season on the prediction, any
+      // past decisionDate matches — so a school whose 2024 round has closed
+      // marks a 2027 applicant as "go report your result".
+      //
+      // Rows written before this existed keep applicationYear = null, which
+      // reads as "season unknown". That is the honest value for them, and the
+      // banner must treat it as "cannot conclude released", not as a match.
+      const applicationSeason = resolveApplicationYear();
+
       const persistedResult = await this.prisma.predictionResult.upsert({
         where: {
           profileId_schoolId: { profileId, schoolId },
@@ -187,6 +205,7 @@ export class PredictionPersistenceService {
           servedTrace: result.servedTrace as any,
           cohortKey: result.cohortKey,
           applicationRound: result.applicationRound,
+          applicationYear: applicationSeason,
           sourceSummary: result.sourceSummary as any,
           uncertaintyReasons: result.uncertaintyReasons as any,
           confidenceReason: result.confidenceReason,
@@ -211,6 +230,7 @@ export class PredictionPersistenceService {
           servedTrace: result.servedTrace as any,
           cohortKey: result.cohortKey,
           applicationRound: result.applicationRound,
+          applicationYear: applicationSeason,
           sourceSummary: result.sourceSummary as any,
           uncertaintyReasons: result.uncertaintyReasons as any,
           confidenceReason: result.confidenceReason,
@@ -238,6 +258,7 @@ export class PredictionPersistenceService {
           servedTrace: result.servedTrace as any,
           cohortKey: result.cohortKey,
           applicationRound: result.applicationRound,
+          applicationYear: applicationSeason,
           sourceSummary: result.sourceSummary as any,
           uncertaintyReasons: result.uncertaintyReasons as any,
           confidenceReason: result.confidenceReason,

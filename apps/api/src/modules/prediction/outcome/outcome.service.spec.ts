@@ -339,8 +339,10 @@ describe('OutcomeService', () => {
         { schoolId: 's2' },
       ]);
       mockPrisma.schoolDeadline.findMany.mockResolvedValue([
-        { schoolId: 's1' },
-        { schoolId: 's2' },
+        // year matters: the service pairs schoolId+season now, so bare
+        // schoolIds would silently match nothing.
+        { schoolId: 's1', year: 2027 },
+        { schoolId: 's2', year: 2027 },
       ]);
       mockPrisma.predictionResult.findMany.mockResolvedValue([
         {
@@ -349,6 +351,7 @@ describe('OutcomeService', () => {
           probability: 0.3,
           tier: 'reach',
           applicationRound: 'EA',
+          applicationYear: 2027,
           createdAt: new Date(),
         },
         {
@@ -357,6 +360,7 @@ describe('OutcomeService', () => {
           probability: 0.6,
           tier: 'match',
           applicationRound: 'RD',
+          applicationYear: 2027,
           createdAt: new Date(),
         },
       ]);
@@ -389,17 +393,89 @@ describe('OutcomeService', () => {
       expect(mockPrisma.predictionResult.findMany).not.toHaveBeenCalled();
     });
 
+    it('ignores a decision released in a DIFFERENT season (the historical-row bug)', async () => {
+      // THE BUG: SchoolDeadline accumulates one row per school per season, and
+      // the released check was a bare `decisionDate <= now`. So a school whose
+      // 2024 round closed marked a 2027 applicant as "go report your result"
+      // for an application they never submitted.
+      mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
+      mockPrisma.schoolListItem.findMany.mockResolvedValue([
+        { schoolId: 's1' },
+      ]);
+      mockPrisma.predictionResult.findMany.mockResolvedValue([
+        {
+          id: 'p1',
+          schoolId: 's1',
+          probability: 0.3,
+          tier: 'reach',
+          applicationRound: 'RD',
+          applicationYear: 2027,
+          createdAt: new Date(),
+        },
+      ]);
+      // Only the 2024 cycle has released. Same school, wrong season.
+      mockPrisma.schoolDeadline.findMany.mockResolvedValue([
+        { schoolId: 's1', year: 2024 },
+      ]);
+
+      const result = await service.listPendingDecisions('user1');
+
+      expect(result).toEqual([]);
+    });
+
+    it('does not offer a prediction whose season is unknown (legacy null row)', async () => {
+      // Rows written before prediction-persistence stamped applicationYear.
+      // null means "season unknown", which cannot support "this decision is
+      // out" — so they are withheld rather than matched against any season.
+      mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
+      mockPrisma.schoolListItem.findMany.mockResolvedValue([
+        { schoolId: 's1' },
+      ]);
+      mockPrisma.predictionResult.findMany.mockResolvedValue([
+        {
+          id: 'legacy',
+          schoolId: 's1',
+          probability: 0.3,
+          tier: 'reach',
+          applicationRound: 'RD',
+          applicationYear: null,
+          createdAt: new Date(),
+        },
+      ]);
+
+      const result = await service.listPendingDecisions('user1');
+
+      expect(result).toEqual([]);
+      // Withheld BEFORE querying deadlines — there is no season to query for.
+      expect(mockPrisma.schoolDeadline.findMany).not.toHaveBeenCalled();
+    });
+
     it('returns empty when no saved school has reached its decision day (pre-applicant)', async () => {
       mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
       mockPrisma.schoolListItem.findMany.mockResolvedValue([
         { schoolId: 's1' },
       ]);
+      // The user HAS predicted; no deadline for that season has released yet.
+      mockPrisma.predictionResult.findMany.mockResolvedValue([
+        {
+          id: 'p1',
+          schoolId: 's1',
+          probability: 0.2,
+          tier: 'reach',
+          applicationRound: 'RD',
+          applicationYear: 2027,
+          createdAt: new Date(),
+        },
+      ]);
       mockPrisma.schoolDeadline.findMany.mockResolvedValue([]);
 
       const result = await service.listPendingDecisions('user1');
 
+      // Asserts the RESULT, not the call order. Predictions are fetched before
+      // deadlines now so each row's own season can be matched; the old
+      // `predictionResult.findMany not.toHaveBeenCalled()` was pinning that
+      // ordering, not the behaviour anyone cares about.
       expect(result).toEqual([]);
-      expect(mockPrisma.predictionResult.findMany).not.toHaveBeenCalled();
     });
   });
 

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { normalizeApplicationRound } from '@study-abroad/shared';
+import {
+  normalizeApplicationRound,
+  resolveApplicationYear,
+} from '@study-abroad/shared';
 import type {
   ProfileReadinessAction,
   ProfileReadinessGpaSource,
@@ -158,7 +161,7 @@ export class ProfileReadinessService {
         ? this.prisma.schoolDeadline.findMany({
             where: {
               schoolId: { in: schoolIds },
-              year: this.resolveApplicationYear(now),
+              year: resolveApplicationYear(now),
             },
             select: {
               schoolId: true,
@@ -302,10 +305,6 @@ export class ProfileReadinessService {
         applicationAnalysisUpdatedAt: latestAnalysis?.updatedAt.toISOString(),
       },
     };
-  }
-
-  private resolveApplicationYear(now: Date): number {
-    return now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
   }
 
   private buildProfileCompleteness(profile: ReadinessProfile | null) {

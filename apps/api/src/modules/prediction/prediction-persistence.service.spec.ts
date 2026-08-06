@@ -1,3 +1,4 @@
+import { resolveApplicationYear } from '@study-abroad/shared';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -93,6 +94,10 @@ describe('PredictionPersistenceService', () => {
           factors: mockResult.factors,
           tier: 'reach',
           confidence: 'medium',
+          applicationRound: undefined,
+          // Derived, never hardcoded: a literal year would go red every
+          // August when the season rolls over.
+          applicationYear: resolveApplicationYear(),
           engineScores: mockResult.engineScores,
           suggestions: mockResult.suggestions,
           comparison: mockResult.comparison,
@@ -110,6 +115,10 @@ describe('PredictionPersistenceService', () => {
           factors: mockResult.factors,
           tier: 'reach',
           confidence: 'medium',
+          applicationRound: undefined,
+          // Derived, never hardcoded: a literal year would go red every
+          // August when the season rolls over.
+          applicationYear: resolveApplicationYear(),
           engineScores: mockResult.engineScores,
           suggestions: mockResult.suggestions,
           comparison: mockResult.comparison,
@@ -133,6 +142,10 @@ describe('PredictionPersistenceService', () => {
           probabilityHigh: 0.55,
           tier: 'reach',
           confidence: 'medium',
+          applicationRound: undefined,
+          // Derived, never hardcoded: a literal year would go red every
+          // August when the season rolls over.
+          applicationYear: resolveApplicationYear(),
           source: 'prediction',
           modelVersion: 'v3-enterprise',
           policyVersionId: undefined,
