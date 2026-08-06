@@ -10,12 +10,13 @@
   "apps/api/src": 44179,
   "apps/api/scripts": 41392,
   "apps/api/prisma": 12105,
-  "apps/web/src": 16136,
+  "apps/web/src": 16147,
   "apps/mobile/src": 8645,
   "packages/shared": 6702,
   "packages/browser-extension": 0,
   "scripts": 10799,
   "_apps_api_src_note_case_tags": "44142 → 44145 (+3). essay-gallery.service.ts gains the stripInternalTags import and its two-line reason. The importer's dedup key `source:<url>#<author>` was reaching readers from BOTH unauthenticated surfaces — measured 2026-08-05, 20/20 rows on GET /cases and 10/10 on GET /essay-ai/gallery — rendering as a 551px URL badge inside a 386px card. It cannot be deleted from the data (it is the re-import idempotency key), so it is stripped at the serve boundary.",
   "_apps_web_src_note_whatif_prefill": "16082 → 16136 (+54). prediction/page.tsx: the estimate list no longer pre-fills on every visit (users were deleting the whole school list row by row), plus the ?autorun=1 carve-out that keeps the dashboard and onboarding entry points working — that coupling breaks SILENTLY, so it is written down rather than left to be rediscovered. Also replaces a stale COL1 comment that claimed the column can never overflow; it was written when COL1 held one card and now holds two.",
-  "_apps_api_src_note_suggestions_depth": "44145 → 44179 (+34). prediction.service.ts gains two suggestion branches so the 46-entry MAJOR_CATEGORY_PROGRAMS catalogue can surface as advice of its own. A reach school produced exactly two suggestions (essay + early round) while `competitionNames` was never referenced on that path and `summerNames` survived only as a trailing clause inside someone else's bullet. Net POSITIVE despite also deleting cron-heartbeat.util.ts here — that file was under 500 lines so it contributed nothing to this overage, while these lines land in a file already past it."
+  "_apps_api_src_note_suggestions_depth": "44145 → 44179 (+34). prediction.service.ts gains two suggestion branches so the 46-entry MAJOR_CATEGORY_PROGRAMS catalogue can surface as advice of its own. A reach school produced exactly two suggestions (essay + early round) while `competitionNames` was never referenced on that path and `summerNames` survived only as a trailing clause inside someone else's bullet. Net POSITIVE despite also deleting cron-heartbeat.util.ts here — that file was under 500 lines so it contributed nothing to this overage, while these lines land in a file already past it.",
+  "_apps_web_src_note_tour_anchors": "16136 → 16147 (+11). header.tsx (already past 500) gains the data-tour anchors the welcome tour points at, plus the comment explaining why Cases/AI anchor on the menu OPENER rather than on items inside a closed dropdown. Five of that tour's steps had been targeting selectors nothing rendered — driver.js highlights empty space instead of erroring, so every new user got a broken tour and nothing said so."
 }

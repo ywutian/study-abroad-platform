@@ -307,11 +307,22 @@ export const TOURS = {
 // Tour step builder functions — accept `t` from useTranslations('tour')
 type TourT = (key: string) => string;
 
+/**
+ * All five of these steps pointed at selectors nothing rendered — driver.js
+ * highlights empty space rather than erroring, so every new user got a broken
+ * welcome tour and nothing said so. Found by `tour-anchors.test.ts`, which
+ * exists because the same class of silent breakage keeps recurring.
+ *
+ * Retargeted at elements that exist: the main-nav links now carry
+ * `nav-<route>` derived from their href, the "More" menu opener carries
+ * `nav-more` (Cases and AI live inside it, and a tour cannot highlight an item
+ * in a closed dropdown), and the avatar button carries `user-menu`.
+ */
 export function getWelcomeTourSteps(t: TourT): TourStep[] {
   return [
     {
       id: 'nav-home',
-      element: '[data-tour="nav-home"]',
+      element: '[data-tour="nav-dashboard"]',
       popover: {
         title: t('welcome.title'),
         description: t('welcome.description'),
@@ -331,7 +342,7 @@ export function getWelcomeTourSteps(t: TourT): TourStep[] {
     },
     {
       id: 'nav-cases',
-      element: '[data-tour="nav-cases"]',
+      element: '[data-tour="nav-more"]',
       popover: {
         title: t('welcome.cases'),
         description: t('welcome.casesDesc'),
@@ -341,7 +352,7 @@ export function getWelcomeTourSteps(t: TourT): TourStep[] {
     },
     {
       id: 'nav-ai',
-      element: '[data-tour="nav-ai"]',
+      element: '[data-tour="nav-more"]',
       popover: {
         title: t('welcome.ai'),
         description: t('welcome.aiDesc'),
