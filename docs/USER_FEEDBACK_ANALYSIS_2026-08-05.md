@@ -1,6 +1,7 @@
 # User Feedback Triage — 2026-08-05
 
-> Filed per `docs/templates/feedback-triage.md`. **No code written yet.**
+> Filed per `docs/templates/feedback-triage.md`. **All work is done and merged
+> (#557, #558, #560, #562); see [Resolution status](#resolution-status-verified-2026-08-05-end-of-day).**
 >
 > **⚠️ REVISED after investigation (same day). The screenshots are stale.**
 > Nine of the seventeen items were already fixed on `main` between 2026-07-01 and
@@ -11,7 +12,8 @@
 > corrected version, and the correction is kept visible rather than silently
 > overwritten.
 >
-> **What survives is listed in [Actually still broken](#actually-still-broken).**
+> **What survived, and how each item was verified, is in
+> [Resolution status](#resolution-status-verified-2026-08-05-end-of-day).**
 > Root Cause is filled in only where it was traced to code AND, where possible,
 > confirmed against production.
 
@@ -29,9 +31,30 @@
 
 ---
 
-## Actually still broken
+## Resolution status (verified 2026-08-05, end of day)
 
-Everything below was traced to specific code. Nothing here is a guess.
+Everything below was traced to specific code. Nothing here is a guess — and the
+`Verified by` column says which KIND of evidence, because "the tests pass" and
+"production stopped doing it" are not the same claim.
+
+| ID                                           | What                                                      | Status                        | Verified by                                                                                                                                                                                                                                                                     |
+| -------------------------------------------- | --------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **C1′**                                      | `source:` provenance tags shipped to readers              | ✅ FIXED (#557)               | **Production, measured**: `GET /cases` 20/20 → **0/20**, `GET /essay-ai/gallery` 10/10 → **0/10**. Sample tags now `['brown','shemmassian']`; `sourceUrl` still present, so the "查看原文" signal is intact                                                                     |
+| **P4a**                                      | 100-point / IB-45 / 6.0 GPA scales 400'd on every Preview | ✅ FIXED (#558)               | Source on main: `@IsIn(GPA_SCALES_MUTABLE)`, `@Max(5)` gone. 14 cases pass through the real `plainToInstance` + `validateSync` path. **Not** re-verified in production (needs a logged-in profile on a non-4.0 scale)                                                           |
+| **P3**                                       | Estimate list pre-filled itself on every visit            | ✅ FIXED (#558)               | Source on main: prefill gated on `!wantsAutoRun`; `?autorun=1` coupling pinned by a contract test falsified three ways. **Not** re-verified in production                                                                                                                       |
+| **P4b**                                      | Disabled Preview swallowed the click with no feedback     | ✅ FIXED (#558)               | Source on main: `disabledReason` + `profileBlockedHint`, one test asserts the INVARIANT (anything that disables must also give a reason). **Not** re-verified in production                                                                                                     |
+| **P2**                                       | Only 2 "Improve chances" suggestions on a reach school    | ✅ FIXED (#560)               | Source on main: two new branches surface the 46-entry catalogue; reach 2 → 4. Falsified by removing them. **Not** re-verified in production                                                                                                                                     |
+| **P4c**                                      | Results may render below COL1's inner scroll fold         | ⏸️ **DELIBERATELY NOT FIXED** | The ~1040px vs ~790px figure is DERIVED FROM CLASS NAMES, not measured. #480's mistake was fixing a misdiagnosed cause; the layout is untouched and `scrollIntoView` still handles post-run visibility. Only the stale comment claiming COL1 "can never overflow" was corrected |
+| **D5, D6-trending, TL1, T1, D2, D3, D4, F2** | Product/UX direction                                      | ⏸️ Needs a decision           | See [Needs a decision before coding](#needs-a-decision-before-coding). Not defects                                                                                                                                                                                              |
+| `pending-decisions` season bug               | Any past `decisionDate` marks a school "released"         | ⏸️ **DELIBERATELY NOT FIXED** | See the secondary-defects table: the correct join column `PredictionResult.applicationYear` is never written by the serve path, so joining on it would blank the banner rather than fix it (#562)                                                                               |
+
+⚠️ **The honest boundary**: only C1′ was re-measured against production. The
+other four were verified as source-on-main plus a falsified test, and their
+deploys succeeded — but P3/P4a/P4b/P2 need a logged-in profile with data to
+exercise end to end, which was not done. Treat them as "landed and tested", not
+as "observed working in production".
+
+### Original finding detail
 
 | ID                                           | What                                                                                 | Root cause                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Evidence                                                                                                                                                     |
 | -------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
