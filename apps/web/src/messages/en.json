@@ -11511,8 +11511,8 @@
       "quickAskDesc": "Ask Lumni anything — admission chances, essay ideas, school suggestions. The answer opens in a side panel.",
       "commandCenter": "Application Command Center",
       "commandCenterDesc": "Today's most important action sits on the left. The 5 readiness items below score profile, schools, essays, timeline, and prediction.",
-      "priorityQueue": "Priority Queue",
-      "priorityQueueDesc": "Your top blocking items in priority order — click any row to act on it.",
+      "priorityQueue": "To-do",
+      "priorityQueueDesc": "Your next actions, most urgent first — click any row to act on it.",
       "hub": "Workspace Hub",
       "hubDesc": "Every tool the platform offers, grouped by Research / Social / Tools. Use this if you're hunting for a feature.",
       "restart": "Restart tour"
