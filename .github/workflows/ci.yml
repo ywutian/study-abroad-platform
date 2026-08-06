@@ -194,6 +194,12 @@ jobs:
           # explicitly for the same reason as lint:cron-manifest below: this job
           # does not run lint:all.
           pnpm lint:seed-freshness
+          # User-facing deletion copy vs ACCOUNT_PURGE_ENABLED / _GRACE_DAYS.
+          # A retention period in the UI is a claim about a background job;
+          # promising one while the job is off, or promising a different number
+          # than it uses, breaks nothing and shows up nowhere. Listed explicitly
+          # — this job does not run lint:all.
+          pnpm lint:deletion-promise
           # .github/cron-jobs.json vs the @Cron decorators. Under
           # CRON_DRIVER=http a job missing from that manifest gets no Cloud
           # Scheduler entry and therefore never runs in prod — while running
@@ -1522,7 +1528,7 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=false|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
+            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest" \
             --timeout=1800 \
             --no-traffic \
