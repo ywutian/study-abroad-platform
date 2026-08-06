@@ -40,14 +40,51 @@ function checkCiStep(errors: string[]) {
     );
     return;
   }
-  const auditLine = lines[auditIdx];
-  if (/\|\|\s*true|\|\|\s*:|;\s*true\b/.test(auditLine)) {
-    errors.push(`CI audit line is softened (|| true / ; true): ${auditLine.trim()}`);
+  // Read the WHOLE step, not the invocation line and a ±6-line guess.
+  //
+  // The line-only check passed two neutered configurations, both found by
+  // probing it on 2026-08-06:
+  //
+  //   - name: Dependency audit          - name: Dependency audit
+  //     if: false                         run: |
+  //     run: pnpm exec tsx …                set +e
+  //                                         pnpm exec tsx …
+  //                                         exit 0
+  //
+  // The first never runs; the second always exits 0. Neither carries `|| true`
+  // on the invocation line or `continue-on-error` within six lines of it, so
+  // both read as a hard gate. "Silently softened" is the exact phrase in this
+  // file's own docstring — it just could not see these two shapes.
+  const isStepStart = (l: string) => /^\s*-\s+\S/.test(l);
+  let start = auditIdx;
+  while (start > 0 && !isStepStart(lines[start])) start--;
+  let end = start + 1;
+  while (end < lines.length && !isStepStart(lines[end])) end++;
+  const stepBlock = lines.slice(start, end).join('\n');
+
+  if (/\|\|\s*true|\|\|\s*:|;\s*true\b/.test(stepBlock)) {
+    errors.push(`CI audit step is softened (|| true / ; true):\n${stepBlock.trim()}`);
   }
-  const from = Math.max(0, auditIdx - 6);
-  const stepBlock = lines.slice(from, auditIdx + 2).join('\n');
   if (/continue-on-error:\s*true/.test(stepBlock)) {
     errors.push('CI audit step has `continue-on-error: true` — the gate would never block.');
+  }
+  if (/^\s*set\s+\+e\b/m.test(stepBlock)) {
+    errors.push(
+      'CI audit step disables shell error propagation (`set +e`) — a failure would not fail the step.'
+    );
+  }
+  if (/^\s*exit\s+0\s*$/m.test(stepBlock)) {
+    errors.push('CI audit step ends with an unconditional `exit 0` — the step always succeeds.');
+  }
+  // A security gate has no legitimate reason to be conditional. Anything that
+  // decides at runtime whether it runs is a way to turn it off without
+  // deleting it — `if: false` is only the most obvious spelling.
+  const ifLine = lines.slice(start, end).find((l) => /^\s*if:\s/.test(l));
+  if (ifLine) {
+    errors.push(
+      `CI audit step is conditional (\`${ifLine.trim()}\`) — this gate must run on every CI invocation. ` +
+        `Remove the condition, or say here why an unconditional CVE gate is wrong.`
+    );
   }
 }
 
