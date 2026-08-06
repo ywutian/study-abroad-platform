@@ -113,6 +113,13 @@ run_seed "audit-corrections" ./prisma/seed-audit-corrections-2026-05-31.js
 run_seed "instate-rates" ./prisma/seed-instate-rate-2026-05-31.js
 run_seed "testing-policy" ./prisma/seed-testing-policy-2026-07-25.js
 
+# 18. Standardized-test calendar — GlobalEvent rows (SAT / ACT / AP dates
+#     read off the official College Board / ACT pages). GlobalEvent had no
+#     seed at all before this, which is why /timeline rendered an empty page
+#     and the dashboard's event stream had nothing to subscribe to.
+#     Idempotent upsert on the `slug` unique key.
+run_seed "global-events" ./prisma/seeds/upsert-global-events.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------
