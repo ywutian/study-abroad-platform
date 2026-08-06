@@ -338,13 +338,6 @@ export default function DashboardPage() {
               the next action is, and its suggestions are profile-aware.
               AIErrorBoundary so an AI failure can't crash the dashboard.
             */}
-            <div data-tour="dashboard-quick-ask">
-              <AIErrorBoundary feature="agent-chat">
-                <DashboardQuickAsk
-                  personalizedSuggestions={stableDashboard?.quickAskSuggestions ?? null}
-                />
-              </AIErrorBoundary>
-            </div>
 
             {/*
               Trending discussions (feedback 5f). The hottest community
@@ -404,6 +397,29 @@ export default function DashboardPage() {
               into each page. Renders null when there are no readiness items.
             */}
             <DashboardSetupProgress workbench={workbench} />
+
+            {/*
+              Quick Ask sits in the sidebar, not the main column (feedback D2:
+              「我不想要 ai 答问变成首页进来的一个重点」). It used to span the full
+              main column — ~1240px at this page's max width — which reads as a
+              primary surface rather than an aid.
+
+              No new size variant was needed: the form is already
+              `flex-col sm:flex-row`, so inside the ~320px aside it falls back to
+              the stacked layout on its own.
+
+              Worth knowing if this moves again: submitting does not answer inline,
+              it calls `openFloatingAgentChat()` — the docked panel at bottom-right.
+              This box was always a launcher for a surface already on the side,
+              which is why demoting it costs no capability.
+            */}
+            <div data-tour="dashboard-quick-ask">
+              <AIErrorBoundary feature="agent-chat">
+                <DashboardQuickAsk
+                  personalizedSuggestions={stableDashboard?.quickAskSuggestions ?? null}
+                />
+              </AIErrorBoundary>
+            </div>
             <DashboardStats dashboard={stableDashboard} defaultOpen={!isEmptyOnboarding} />
             <div data-tour="dashboard-hub">
               <DashboardWorkspaceHub />

@@ -119,6 +119,10 @@ function MoreMegaMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          // Cases and AI live inside this menu; a tour cannot highlight an
+          // item in a closed dropdown, so the welcome tour points at the
+          // opener instead of at something the user cannot see yet.
+          data-tour="nav-more"
           variant="ghost"
           size="sm"
           className={cn(
@@ -318,6 +322,7 @@ function HeaderActions() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
+            data-tour="user-menu"
             variant="ghost"
             size="sm"
             className="gap-1.5 px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -666,6 +671,12 @@ export function Header() {
                 <SafeLink
                   key={item.href}
                   href={item.href}
+                  // Anchors the first-run welcome tour. Derived from href rather
+                  // than written per item so a new nav entry cannot silently miss
+                  // one. `tour-anchors.test.ts` fails when a tour step points at a
+                  // name nothing renders — which is how five of these steps spent
+                  // their life highlighting empty space.
+                  data-tour={`nav-${item.href.replace(/^\//, '')}`}
                   className={cn(
                     'group relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors',
                     active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
