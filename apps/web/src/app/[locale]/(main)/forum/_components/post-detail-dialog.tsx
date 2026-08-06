@@ -143,7 +143,7 @@ export function PostDetailDialog({
   return (
     <>
       <Dialog open={!!post} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
           <DialogTitle className="sr-only">{showPostDetail?.title || t('postDetail')}</DialogTitle>
           {showPostDetail && (
             <>

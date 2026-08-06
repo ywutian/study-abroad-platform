@@ -484,7 +484,7 @@ export function EssayPromptManager() {
 
       {/* 详情弹窗 */}
       <Dialog open={!!detailPrompt} onOpenChange={() => setDetailPrompt(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />

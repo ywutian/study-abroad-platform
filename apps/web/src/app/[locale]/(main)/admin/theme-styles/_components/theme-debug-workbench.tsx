@@ -394,7 +394,7 @@ export default function ThemeDebugWorkbench() {
       </div>
 
       <Dialog open={Boolean(previewItem)} onOpenChange={(open) => !open && setPreviewItem(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>
               {previewItem ? getLabels(previewItem, labelLocale).palette : ''}

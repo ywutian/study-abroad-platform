@@ -100,7 +100,7 @@ export function DeadlineFormDialog({
         }
       }}
     >
-      <DialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{editingId ? t('deadlines.edit') : t('deadlines.create')}</DialogTitle>
           <DialogDescription>{t('deadlines.formDesc')}</DialogDescription>

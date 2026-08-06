@@ -698,7 +698,7 @@ export function SchoolSelectionTab({
 
         {/* Round legend — explains ED / ED2 / EA / REA / SCEA / RD / ROLLING */}
         <Dialog open={roundLegendOpen} onOpenChange={setRoundLegendOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>{t('profile.schoolSelection.roundGlossaryTitle')}</DialogTitle>
             </DialogHeader>

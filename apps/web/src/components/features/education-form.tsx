@@ -264,7 +264,7 @@ export function EducationForm({ open, onOpenChange, education, onSuccess }: Educ
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEditing ? t('form.editEducation') : t('form.addEducation')}</DialogTitle>
           <DialogDescription>

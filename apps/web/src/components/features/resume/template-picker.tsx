@@ -108,7 +108,7 @@ export function TemplatePicker({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{t('chooseTemplate')}</DialogTitle>
         </DialogHeader>

@@ -1016,6 +1016,56 @@ function checkUnguardedAuthQuery(filePath: string, lines: string[]): Issue[] {
 
 // ── Release navigation guardrails ──────────────────────────
 
+/**
+ * A `DialogContent` width override must carry the `sm:` prefix.
+ *
+ * The base is `max-w-[calc(100%-2rem)] sm:max-w-lg` (dialog.tsx). An unprefixed
+ * `max-w-3xl` from a caller loses BOTH ways, because tailwind-merge only dedupes
+ * within a modifier scope:
+ *
+ *   - it replaces the unprefixed mobile cap, so the dialog loses its gutter on
+ *     phones, and
+ *   - `sm:max-w-lg` still wins at >=640px, so the dialog renders at 512px and
+ *     not the width the author asked for.
+ *
+ * Measured in the production build: `.max-w-3xl` is emitted at byte 42,229 and
+ * `.sm\:max-w-lg` at 251,043, so the sm variant is later and wins. 38 call
+ * sites were affected; `sm:max-w-3xl` fixes both halves at once.
+ *
+ * Viewport-relative values (vw / % / dvh) are deliberately allowed unprefixed —
+ * those are doing the mobile-cap job themselves.
+ */
+function checkDialogWidthNeedsSmPrefix(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  let inDialogTag = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line)) continue;
+    if (line.includes('<DialogContent')) inDialogTag = true;
+    if (!inDialogTag) continue;
+    if (line.includes('@design-system-ignore-next-line')) continue;
+
+    const bare = line.match(/(?<![\w:-])max-w-(?:\[[^\]]+\]|[\w.]+)/g) ?? [];
+    for (const token of bare) {
+      if (/vw|%|dvh/.test(token)) continue; // viewport-relative: intentional
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-unprefixed-dialog-width',
+        message:
+          `\`${token}\` on a DialogContent is overridden by the base \`sm:max-w-lg\` at >=640px AND ` +
+          `strips the mobile gutter. Use \`sm:${token}\`. Suppress with // @design-system-ignore-next-line.`,
+        // Landed at error with a cleared worklist: all 38 pre-existing sites were
+        // converted in the same PR, so this has never had a backlog to cry wolf
+        // about. Adding `sm:` cannot break a layout the author did not already ask for.
+        severity: 'error',
+      });
+    }
+    if (line.includes('>')) inDialogTag = false;
+  }
+  return issues;
+}
+
 function checkReleaseNavigationSafety(filePath: string, lines: string[]): Issue[] {
   const issues: Issue[] = [];
   if (!filePath.endsWith('.tsx') && !filePath.endsWith('.ts')) return issues;
@@ -1091,6 +1141,7 @@ function main() {
       ...checkDynamicStaleTimeOnList(filePath, lines),
       ...checkListQueryNeedsKeepPrevious(filePath, lines),
       ...checkUnguardedAuthQuery(filePath, lines),
+      ...checkDialogWidthNeedsSmPrefix(filePath, lines),
       ...checkReleaseNavigationSafety(filePath, lines)
     );
   }

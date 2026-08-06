@@ -105,7 +105,7 @@ export function ActivitiesEditorDialog({
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('activitiesEditor')}</DialogTitle>
         </DialogHeader>
@@ -242,7 +242,7 @@ export function AwardsEditorDialog({
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('awardsEditor')}</DialogTitle>
         </DialogHeader>

@@ -149,7 +149,7 @@ export function CreatePostDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-hidden">
+      <DialogContent className="max-h-[90vh] sm:max-w-2xl overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t('createNewPost')}</DialogTitle>
         </DialogHeader>

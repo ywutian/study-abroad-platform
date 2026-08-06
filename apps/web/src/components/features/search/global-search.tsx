@@ -223,7 +223,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[600px] p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
         {/* 搜索输入 */}
         <div className="flex items-center gap-2 px-4 border-b">
           <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
