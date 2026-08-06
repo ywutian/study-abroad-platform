@@ -49,6 +49,7 @@ RUN cd apps/api && npx tsc \
     prisma/seeds/seed-school-programs.ts \
     prisma/seeds/backfill-school-ranking-lists.ts \
     prisma/seeds/backfill-has-ea-ed2.ts \
+    prisma/seeds/upsert-global-events.ts \
     prisma/seeds/closure-agents/seed-closure-targets.ts \
     prisma/seeds/closure-agents/collect-school-rankings.ts \
     prisma/seeds/essay-harvest/import-essays.ts \
