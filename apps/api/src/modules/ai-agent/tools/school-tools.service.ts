@@ -1,3 +1,4 @@
+import { resolveApplicationYear } from '@study-abroad/shared';
 /**
  * School Tools Service
  *
@@ -439,7 +440,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
   }
 
   private getCurrentApplicationYear(now = new Date()) {
-    return now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
+    return resolveApplicationYear(now);
   }
 
   private extractSourceUrl(notes?: string | null): string | null {

@@ -279,21 +279,22 @@ export class OutcomeService {
     const listSchoolIds = listItems.map((i) => i.schoolId);
     if (listSchoolIds.length === 0) return [];
 
-    // Only schools whose decision day has actually arrived — you cannot report an
-    // outcome that has not been released yet. Mirrors the outcome-reminder cron's
-    // decisionDate gate, so a pre-applicant never sees "report your result".
+    // A decision is "released" for a PREDICTION, not for a school.
+    //
+    // SchoolDeadline keeps one row per school per season
+    // (@@unique([schoolId, year, round])) and accumulates them, so a bare
+    // `decisionDate <= now` matched any historical round: a school whose 2024
+    // cycle closed marked a 2027 applicant as "go report your result" for an
+    // application they never made. The comment here used to claim this mirrored
+    // the outcome-reminder cron — it did not. That job uses a [-7, +7] day
+    // WINDOW, current-season by construction; this used every season ever.
+    //
+    // Predictions come first now, so each one's own season can be matched.
     const now = new Date();
-    const released = await this.prisma.schoolDeadline.findMany({
-      where: { schoolId: { in: listSchoolIds }, decisionDate: { lte: now } },
-      select: { schoolId: true },
-    });
-    const releasedSchoolIds = [...new Set(released.map((d) => d.schoolId))];
-    if (releasedSchoolIds.length === 0) return [];
-
     const predictions = await this.prisma.predictionResult.findMany({
       where: {
         profileId: profile.id,
-        schoolId: { in: releasedSchoolIds },
+        schoolId: { in: listSchoolIds },
         outcomeLabelRecords: { none: { reportedBy: userId } },
         // Exclude throwaway quick-match PREVIEW rows; keep AUTHORITATIVE + legacy null.
         OR: [{ authority: null }, { authority: 'AUTHORITATIVE' }],
@@ -301,15 +302,59 @@ export class OutcomeService {
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
+    if (predictions.length === 0) return [];
 
-    const schoolIds = [...new Set(predictions.map((p) => p.schoolId))];
+    // Only rows that know their season can be matched to a season's deadline.
+    // `applicationYear` is null on everything written before
+    // prediction-persistence began stamping it, and null means "season
+    // unknown" — which cannot support the claim "this decision is out". Those
+    // rows are not offered; they age out as users re-run predictions.
+    const seasons = [
+      ...new Set(
+        predictions
+          .map((p) => p.applicationYear)
+          .filter((y): y is number => typeof y === 'number'),
+      ),
+    ];
+    if (seasons.length === 0) return [];
+
+    // governance: system-scope — SchoolDeadline is the global admissions
+    // calendar (no User relation). Already narrowed to `listSchoolIds`, i.e.
+    // this user's own saved list, fetched by userId at the top of this method.
+    const released = await this.prisma.schoolDeadline.findMany({
+      where: {
+        schoolId: { in: listSchoolIds },
+        year: { in: seasons },
+        decisionDate: { lte: now },
+      },
+      select: { schoolId: true, year: true },
+    });
+    const releasedBySeason = new Set(
+      released.map((d) => `${d.schoolId}:${d.year}`),
+    );
+    if (releasedBySeason.size === 0) return [];
+
+    // The pairing itself. Without this the season query above would only have
+    // changed which rows were FETCHED, leaving every prediction returned —
+    // including ones whose own season has not released.
+    const reportable = predictions.filter(
+      (p) =>
+        typeof p.applicationYear === 'number' &&
+        releasedBySeason.has(`${p.schoolId}:${p.applicationYear}`),
+    );
+    if (reportable.length === 0) return [];
+
+    const schoolIds = [...new Set(reportable.map((p) => p.schoolId))];
+    // governance: system-scope — School name lookup; published institution data
+    // with no User relation, and the ids come from `reportable`, which is
+    // already scoped to this user's own predictions.
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
       select: { id: true, name: true },
     });
     const schoolMap = new Map(schools.map((s) => [s.id, s.name]));
 
-    return predictions.map((p) => ({
+    return reportable.map((p) => ({
       predictionResultId: p.id,
       schoolId: p.schoolId,
       schoolName: schoolMap.get(p.schoolId) ?? '(unknown school)',

@@ -280,6 +280,7 @@ export * from './query-cache';
 // 共享枚举
 export * from './enums';
 export * from './gpa';
+export * from './application-year';
 
 // 真实案例 CSV 导入
 export * from './real-cases-ingest';
