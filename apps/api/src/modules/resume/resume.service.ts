@@ -1233,6 +1233,11 @@ export class ResumeService {
     return ResumeSectionType.CUSTOM;
   }
 
+  // governance: parent-scoped — both callers reach this through
+  // `findById(userId, resumeId)`, which ends in `verifyOwnership`, and every id
+  // in `updates` comes from that already-owned resume. Unflagged until
+  // 2026-08-06 only because the rule's window straddled into the next method
+  // and borrowed its `userId` — see check-integration.proof.ts.
   private async applySectionContentUpdates(
     resumeId: string,
     updates: Array<{ id: string; content: Prisma.InputJsonValue }>,

@@ -208,43 +208,93 @@ const PRISMA_PATTERN = new RegExp(`this\\.prisma\\.\\w+\\.(${PRISMA_METHODS.join
  * teaches people to annotate their way past it. Scope the search to the
  * enclosing method instead, and count the three helpers as scoping evidence.
  */
+/** Every annotation that can excuse a query. Listed once — the two call sites
+ *  drifted apart before (`userId validated` was only honoured on raw queries). */
+const ANNOTATIONS = [
+  '// governance: batch-operation',
+  '// governance: system-scope',
+  '// governance: parent-scoped',
+  '// governance: admin-scope',
+  '// governance: public-feed',
+  '// governance: aggregate-only',
+];
+
 const OWNERSHIP_HELPERS = ['verifyOwnership', 'verifyProfileOwnership', 'verifyNestedOwnership'];
 
+const METHOD_SIG = /^ {2}(?:public |private |protected )?(?:async )?[a-zA-Z_]\w*\s*\(/;
+
 /**
- * Body of the class method containing `lineIndex`, found by brace matching
- * from the nearest preceding method signature. Falls back to a wide window
- * when no enclosing method is found (top-level code, odd formatting).
+ * Body of the class method containing `lineIndex`: from the nearest preceding
+ * method signature to just before the next sibling member (or the class's
+ * closing brace).
+ *
+ * This used to brace-match forward from the signature, and that is unsound for
+ * a reason no amount of string-stripping fixes: a return type that spans lines
+ * and contains an object shape —
+ *
+ *   async listPendingDecisions(userId: string): Promise<
+ *     { … }[]                       // ← these braces are real code, not a string
+ *   > {
+ *
+ * — balances to zero before the BODY brace is ever seen. `outcome.service.ts`
+ * was judged to end at line 267, inside its own signature, while the query it
+ * was protecting sat at 351. The query then fell into the ±20-line fallback,
+ * which could not see the `userId` parameter back on line 258, and a correctly
+ * scoped method was reported as a multi-tenant leak.
+ *
+ * That is the expensive kind of wrong. A security rule that cries wolf does not
+ * merely waste a reading — it trains people to annotate their way past it, and
+ * then the real finding gets annotated too.
+ *
+ * Sibling members are unambiguous at this indent (method bodies live at 4+
+ * spaces, so `^ {2}` cannot match inside one) and no lexer is needed.
  */
-function enclosingMethod(lines: string[], lineIndex: number): string {
-  const SIG = /^ {2}(?:public |private |protected )?(?:async )?[a-zA-Z_]\w*\s*\(/;
+function enclosingMethod(
+  lines: string[],
+  lineIndex: number
+): {
+  code: string;
+  withComments: string;
+} {
+  const win = lines.slice(Math.max(0, lineIndex - 20), lineIndex + 20).join('\n');
+  const fallback = () => ({ code: win, withComments: win });
+
   let start = -1;
   for (let i = lineIndex; i >= 0; i--) {
-    if (SIG.test(lines[i])) {
+    if (METHOD_SIG.test(lines[i])) {
       start = i;
       break;
     }
   }
-  if (start === -1) {
-    return lines.slice(Math.max(0, lineIndex - 20), lineIndex + 20).join('\n');
-  }
-  let depth = 0;
-  let started = false;
-  let end = start;
-  for (let i = start; i < lines.length; i++) {
-    for (const ch of lines[i]) {
-      if (ch === '{') {
-        depth++;
-        started = true;
-      } else if (ch === '}') depth--;
+  if (start === -1) return fallback();
+
+  let end = lines.length - 1;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (METHOD_SIG.test(lines[i]) || /^\}/.test(lines[i])) {
+      end = i - 1;
+      break;
     }
-    end = i;
-    if (started && depth === 0) break;
   }
-  // If the query is somehow past the matched method, fall back to a window.
-  if (lineIndex > end) {
-    return lines.slice(Math.max(0, lineIndex - 20), lineIndex + 20).join('\n');
-  }
-  return lines.slice(start, end + 1).join('\n');
+  // Belt and braces: the window must contain the line it is being asked about.
+  if (lineIndex > end) return fallback();
+
+  // The comment block directly above the signature counts for ANNOTATIONS but
+  // not for scoping evidence, and the split matters in both directions:
+  //
+  //  - A governance annotation documents the METHOD's contract, so the header
+  //    is where someone naturally writes it. Reading it as absent and flagging
+  //    the method anyway is worse than having no annotation at all — the
+  //    author believes the case is handled and moves on.
+  //  - `userId` is a claim about what the CODE does. A JSDoc `@param userId`
+  //    above an unscoped query would otherwise satisfy the rule by describing
+  //    a parameter the query never uses.
+  let head = start;
+  while (head > 0 && /^\s*(\/\/|\*|\/\*)/.test(lines[head - 1])) head--;
+
+  return {
+    code: lines.slice(start, end + 1).join('\n'),
+    withComments: lines.slice(head, end + 1).join('\n'),
+  };
 }
 
 function getAllTsFiles(dir: string): string[] {
@@ -324,16 +374,11 @@ export function run(): GovernanceIssue[] {
         if (PRISMA_PATTERN.test(line)) {
           // Scope to the enclosing method, not a fixed line window — see the
           // note on OWNERSHIP_HELPERS for why ±10 lines gave false leaks.
-          const contextWindow = enclosingMethod(lines, i);
+          const { code, withComments } = enclosingMethod(lines, i);
           if (
-            !contextWindow.includes('userId') &&
-            !OWNERSHIP_HELPERS.some((h) => contextWindow.includes(h)) &&
-            !contextWindow.includes('// governance: batch-operation') &&
-            !contextWindow.includes('// governance: system-scope') &&
-            !contextWindow.includes('// governance: parent-scoped') &&
-            !contextWindow.includes('// governance: admin-scope') &&
-            !contextWindow.includes('// governance: public-feed') &&
-            !contextWindow.includes('// governance: aggregate-only')
+            !code.includes('userId') &&
+            !OWNERSHIP_HELPERS.some((h) => code.includes(h)) &&
+            !ANNOTATIONS.some((a) => withComments.includes(a))
           ) {
             issues.push({
               rule: 'user-data-isolation',
@@ -353,16 +398,11 @@ export function run(): GovernanceIssue[] {
         // `"senderId" != ${userId}` seven lines below the `$queryRaw`, and was
         // reported as unscoped.
         if (line.includes('$queryRaw') || line.includes('$executeRaw')) {
-          const contextWindow = enclosingMethod(lines, i);
+          const { code, withComments } = enclosingMethod(lines, i);
           if (
-            !contextWindow.includes('userId') &&
-            !contextWindow.includes('// governance: userId validated') &&
-            !contextWindow.includes('// governance: batch-operation') &&
-            !contextWindow.includes('// governance: system-scope') &&
-            !contextWindow.includes('// governance: parent-scoped') &&
-            !contextWindow.includes('// governance: admin-scope') &&
-            !contextWindow.includes('// governance: public-feed') &&
-            !contextWindow.includes('// governance: aggregate-only')
+            !code.includes('userId') &&
+            !withComments.includes('// governance: userId validated') &&
+            !ANNOTATIONS.some((a) => withComments.includes(a))
           ) {
             issues.push({
               rule: 'user-data-isolation',
