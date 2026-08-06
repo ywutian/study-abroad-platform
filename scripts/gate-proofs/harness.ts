@@ -145,7 +145,33 @@ export async function withPatchedFile<T>(
   return withSeededViolation(relPath, seeded, body);
 }
 
+/**
+ * How many times `expectFired` has run since the last reset.
+ *
+ * `check-gate-proofs.ts` counts a proof as PROVEN if `prove()` returns without
+ * throwing — so until 2026-08-06 this was a passing proof:
+ *
+ *   export async function prove(): Promise<void> {}
+ *
+ * It lowered the unproven count, claimed coverage for a gate nobody had tested,
+ * and the runner printed a green tick. Its own docstring says a false proof is
+ * worse than no proof; it just had no way to tell one.
+ *
+ * A proof made only of `expectClean` is the same emptiness spelled longer — it
+ * shows the gate is green on a green tree, which is not evidence of anything.
+ * Demonstrating the gate can go RED is the whole job, so at least one
+ * `expectFired` is the floor.
+ */
+let firedCount = 0;
+export function resetAssertionCounter(): void {
+  firedCount = 0;
+}
+export function firedAssertions(): number {
+  return firedCount;
+}
+
 export function expectFired(run: GateRun, mustMention?: string): void {
+  firedCount++;
   if (run.status === 0) {
     throw new Error(
       `Gate did NOT fire on a seeded violation (exit 0).\n--- output ---\n${run.stdout.slice(0, 800)}`
