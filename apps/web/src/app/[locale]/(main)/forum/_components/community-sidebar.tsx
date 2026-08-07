@@ -143,7 +143,7 @@ function CommunityRow({
           {community.name.charAt(0).toUpperCase()}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-medium">r/{community.name}</span>
+          <span className="block truncate text-sm font-medium">{community.name}</span>
           <span className="block text-xs text-muted-foreground">
             {postCountLabel}
             {community.isOfficial && (

@@ -152,7 +152,7 @@ export function PostDetailDialog({
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
                   {showPostDetail.community && (
                     <Badge variant="secondary" className="text-xs">
-                      r/{showPostDetail.community.name}
+                      {showPostDetail.community.name}
                     </Badge>
                   )}
                   {showPostDetail.isPinned && (

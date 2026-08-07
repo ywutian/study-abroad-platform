@@ -143,9 +143,26 @@ export default function ForumPage() {
   }, [fetchPosts]);
 
   const currentTitle = useMemo(() => {
-    if (selectedCommunity) return `r/${selectedCommunity.name}`;
+    if (selectedCommunity) return selectedCommunity.name;
     return t(`feedLabel.${activeFeed}`);
   }, [activeFeed, selectedCommunity, t]);
+
+  // Prefer official communities as empty-state starters; fall back to whatever
+  // is loaded so a cold env with only shells still offers a concrete topic.
+  const starterCommunities = useMemo(() => {
+    const official = communities.filter((community) => community.isOfficial);
+    const pool = official.length > 0 ? official : communities;
+    return pool.slice(0, 6);
+  }, [communities]);
+
+  const openCreatePost = (community?: Community) => {
+    if (!user) {
+      toast.error(t('loginToPost'));
+      return;
+    }
+    if (community) setSelectedCommunity(community);
+    setShowCreateDialog(true);
+  };
 
   const handleSelectFeed = (feed: ForumFeed) => {
     setActiveFeed(feed);
@@ -208,6 +225,10 @@ export default function ForumPage() {
   };
 
   const handleCreateCommunity = () => {
+    if (!user) {
+      toast.error(t('loginToPost'));
+      return;
+    }
     setSelectedCommunity(null);
     setShowCreateDialog(true);
   };
@@ -258,7 +279,7 @@ export default function ForumPage() {
                 </div>
                 <h1 className="truncate text-2xl font-semibold tracking-normal">{currentTitle}</h1>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  {selectedCommunity?.description || t('redditForumDescription')}
+                  {selectedCommunity?.description || t('forumDescription')}
                 </p>
               </div>
               <div className="hidden shrink-0 text-right text-sm text-muted-foreground sm:block">
@@ -280,13 +301,15 @@ export default function ForumPage() {
             onSearch={() => fetchPosts(1, false)}
             selectedCommunity={selectedCommunity}
             activeFeed={activeFeed}
+            starterCommunities={starterCommunities}
             onClearCommunity={() => setSelectedCommunity(null)}
             onClearSearch={() => setSearchQuery('')}
             onLoadMore={handleLoadMore}
             onViewPost={setSelectedPost}
             onLike={handleLike}
             onReport={setReportTarget}
-            onCreatePost={() => setShowCreateDialog(true)}
+            onCreatePost={() => openCreatePost()}
+            onCreateInCommunity={(community) => openCreatePost(community)}
             onOpenCommunities={() => setMobileCommunitiesOpen(true)}
           />
         </div>
@@ -296,7 +319,7 @@ export default function ForumPage() {
             <ForumRightRail
               communities={communities}
               selectedCommunity={selectedCommunity}
-              onCreatePost={() => setShowCreateDialog(true)}
+              onCreatePost={() => openCreatePost()}
               onCreateCommunity={handleCreateCommunity}
               onSelectCommunity={handleSelectCommunity}
               onToggleFollow={handleToggleFollow}
