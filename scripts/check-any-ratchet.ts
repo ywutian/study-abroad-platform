@@ -62,9 +62,27 @@ const EXCLUDED = (line: string) => EXCLUDED_DIR.test(line) || EXCLUDED_FILE.test
 interface Counts {
   /** `: any`, `as any`, `<any>` — the explicit escapes from `strict`. */
   explicitAny: number;
-  /** `@ts-ignore` / `@ts-expect-error` — suppressions of a real type error. */
+  /**
+   * `@ts-ignore` / `@ts-expect-error` / `@ts-nocheck` — suppressions of a real
+   * type error.
+   *
+   * `@ts-nocheck` was missing until 2026-08-06, and it is the worst of the
+   * three: one line at the top of a file removes type checking from the WHOLE
+   * file, while this ratchet counted zero for it. Seeding one into a live
+   * service left the gate green. Production code carries none today, so the
+   * category costs nothing to close and would have cost a whole file to leave
+   * open.
+   */
   tsSuppress: number;
+  /**
+   * `as unknown as X` — the double cast that erases a type without naming
+   * `any`, so neither pattern above sees it. 88 in production code when this
+   * was added; the ratchet only prevents growth, it does not condemn them.
+   */
+  doubleCast: number;
 }
+
+const METRICS = ['explicitAny', 'tsSuppress', 'doubleCast'] as const;
 
 type Baseline = Record<string, Counts>;
 
@@ -93,7 +111,8 @@ function grepCount(dir: string, pattern: string): number {
 function count(dir: string): Counts {
   return {
     explicitAny: grepCount(dir, '(:\\s*any\\b|\\bas any\\b|<any>)'),
-    tsSuppress: grepCount(dir, '@ts-(ignore|expect-error)'),
+    tsSuppress: grepCount(dir, '@ts-(ignore|expect-error|nocheck)'),
+    doubleCast: grepCount(dir, 'as unknown as'),
   };
 }
 
@@ -124,8 +143,20 @@ function main(): void {
       errors.push(`\`${t}\` has no baseline entry — run --update to add it.`);
       continue;
     }
-    for (const metric of ['explicitAny', 'tsSuppress'] as const) {
+    for (const metric of METRICS) {
       const now = current[t][metric];
+      if (typeof base[metric] !== 'number') {
+        // A metric with no baseline key compares against `undefined`, and
+        // `n > undefined` is false — so adding a category silently enforced
+        // NOTHING until someone remembered to run --update. `doubleCast` was
+        // added and seeded three violations without a murmur. Adding a metric
+        // is not the same act as enabling it; say so instead of passing.
+        errors.push(
+          `\`${t}\` has no baseline for \`${metric}\`, so that metric is not being ` +
+            `enforced at all. Run --update to seed it.`
+        );
+        continue;
+      }
       if (now > base[metric]) {
         errors.push(
           `\`${t}\` ${metric}: ${base[metric]} → ${now} (+${now - base[metric]}).\n` +
@@ -143,10 +174,10 @@ function main(): void {
     // for the drift it exists to stop.
     const next: Baseline = {};
     for (const t of TARGETS) {
-      next[t] = {
-        explicitAny: Math.min(current[t].explicitAny, baseline[t]?.explicitAny ?? Infinity),
-        tsSuppress: Math.min(current[t].tsSuppress, baseline[t]?.tsSuppress ?? Infinity),
-      };
+      const prev = baseline[t];
+      next[t] = Object.fromEntries(
+        METRICS.map((m) => [m, Math.min(current[t][m], prev?.[m] ?? Infinity)])
+      ) as Counts;
     }
     write(next, baseline);
     return;
