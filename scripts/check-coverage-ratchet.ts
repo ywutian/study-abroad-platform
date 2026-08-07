@@ -56,10 +56,76 @@ function readThresholds(file: string): Thresholds | null {
   return out;
 }
 
+/**
+ * A threshold CI never evaluates is not a floor.
+ *
+ * This ratchet guarded four apps' numbers. CI ran three of them: `packages/shared`
+ * had 21 test files, the repo's HIGHEST floor (90/80/95/90), and no step in the
+ * Unit Tests job at all — found 2026-08-06. The number was protected from being
+ * lowered and never once checked.
+ *
+ * Two ways a floor stops being enforced, both silent, both now errors here:
+ *
+ *   - no CI step runs that app's tests at all (shared's case);
+ *   - a step runs them WITHOUT `--coverage`, which is the only thing that makes
+ *     vitest/jest evaluate the threshold block. web lost this once already —
+ *     ci.yml still carries the comment saying `--coverage` is "REQUIRED, not a
+ *     nicety". A comment is not a guard.
+ *
+ * `--passWithNoTests` is rejected for the same reason: a run that finds zero
+ * tests exits 0 and no threshold is ever computed. It is legitimate in
+ * verify-gate.ts (affected-only, local), which is why only CI is inspected.
+ */
+function checkCiEnforcesThresholds(errors: string[]): void {
+  const ciPath = path.join(ROOT, '.github/workflows/ci.yml');
+  if (!fs.existsSync(ciPath)) {
+    errors.push('.github/workflows/ci.yml not found — cannot confirm any floor is enforced');
+    return;
+  }
+  const ci = fs.readFileSync(ciPath, 'utf8');
+  const runLines = ci.split('\n').filter((l) => /^\s*run:/.test(l) && /\b(jest|vitest)\b/.test(l));
+
+  const FILTERS: Record<string, RegExp> = {
+    api: /--filter\s+api\b/,
+    web: /--filter\s+web\b/,
+    mobile: /--filter\s+study-abroad-mobile\b/,
+    shared: /--filter\s+@study-abroad\/shared\b/,
+  };
+
+  for (const [app, filter] of Object.entries(FILTERS)) {
+    // e2e runs use a separate jest config and compute no coverage; a unit step
+    // is one that asks for coverage, so match on that rather than excluding
+    // configs by name.
+    const steps = runLines.filter((l) => filter.test(l) && !/jest-e2e/.test(l));
+    if (steps.length === 0) {
+      errors.push(
+        `${app}: no CI step runs its tests, so its coverage floor in ` +
+          `coverage-thresholds.baseline.json is guarded but never evaluated. ` +
+          `Add a step to the Unit Tests job.`
+      );
+      continue;
+    }
+    if (!steps.some((l) => l.includes('--coverage'))) {
+      errors.push(
+        `${app}: its CI test step does not pass --coverage, and the threshold block ` +
+          `is only evaluated on a coverage run — the floor is inert.`
+      );
+    }
+    const soft = steps.find((l) => l.includes('--passWithNoTests'));
+    if (soft) {
+      errors.push(
+        `${app}: CI test step passes --passWithNoTests, so a run that finds zero tests ` +
+          `exits 0 and no threshold is ever computed: ${soft.trim()}`
+      );
+    }
+  }
+}
+
 function main() {
   const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8')) as Record<string, Thresholds>;
   const errors: string[] = [];
   const updated: Record<string, Thresholds> = {};
+  checkCiEnforcesThresholds(errors);
 
   for (const { app, file } of TARGETS) {
     const current = readThresholds(file);
