@@ -1,5 +1,5 @@
 {
   "_comment": "One-way ceiling on gates that have never been proven to fail. `check-gate-proofs.ts` runs every `scripts/gate-proofs/<gate>.proof.ts` and fails when this number RISES. Writing a proof lowers it; run `pnpm lint:gate-proofs --update` to lock the win. Raising it requires editing this file in the same PR — which is the point.",
   "_note_three_way_merge": "15 → 13, locked 2026-08-06 AFTER #571/#573/#574 landed. Each of the three set this to 15 independently, so git saw no conflict — same line, same value — and merged all three cleanly while the real count fell to 13. The ratchet only reddens when actual EXCEEDS baseline, so two proofs' worth of slack sat there passing. A ratchet whose number is a MEASUREMENT of the tree cannot be resolved by taking either side of a conflict, and the absence of a conflict is not evidence it was right. Re-measure on the merged tree.",
-  "unproven": 10
+  "unproven": 9
 }
