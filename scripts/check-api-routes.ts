@@ -63,6 +63,49 @@ function normalizeBackendRoute(value: string): string {
   return normalizeRoute(value.replace(/(^|\/):[A-Za-z0-9_]+/g, '$1:param'));
 }
 
+/**
+ * Route decorators these regexes cannot read.
+ *
+ * Both patterns require a string literal. `@Post(SUBSCRIBE_PATH)` matches
+ * neither, so the route silently leaves the backend inventory — and this gate
+ * then blames the CLIENT for it:
+ *
+ *   ❌ apps/web/…/timeline/page.tsx:388 — POST /timelines/personal-events/subscribe
+ *      does not match any backend controller method.
+ *   ❌ apps/mobile/src/app/timeline.tsx:247 — …
+ *
+ * Two files, two line numbers, pointing at working code. The backend route is
+ * fine; the reader is sent to delete a correct call. Measured 2026-08-06 by
+ * seeding exactly that.
+ *
+ * Note this only surfaces where no `:param` route can absorb the path — a
+ * decorator under a controller that also has `@Get(':id')` disappears without a
+ * murmur instead. Silent or misdirected, neither is the truth, so an unreadable
+ * decorator is now its own error.
+ *
+ * All 64 controllers and 733 method decorators are literals today.
+ */
+export function unreadableDecorators(content: string, label: string): string[] {
+  const problems: string[] = [];
+  if (/@Controller\(/.test(content) && !/@Controller\(\s*['"][^'"]*['"]\s*\)/.test(content)) {
+    problems.push(
+      `${label} — @Controller() is not a string literal, so EVERY route in this file is absent ` +
+        `from the backend inventory. Client calls to them will be reported as unmatched.`
+    );
+  }
+  const all = content.match(/@(?:Get|Post|Put|Patch|Delete)\(/g)?.length ?? 0;
+  const literal =
+    content.match(/@(?:Get|Post|Put|Patch|Delete)\(\s*(?:['"][^'"]*['"])?\s*\)/g)?.length ?? 0;
+  if (all > literal) {
+    problems.push(
+      `${label} — ${all - literal} route decorator(s) are not string literals, so those routes ` +
+        `are absent from the backend inventory. A client call to one is reported against the ` +
+        `CLIENT file, which is not where the problem is.`
+    );
+  }
+  return problems;
+}
+
 /** Parse decorators without assuming one method per path. */
 export function extractControllerRoutes(content: string): Set<string> {
   const routes = new Set<string>();
@@ -80,8 +123,20 @@ export function extractControllerRoutes(content: string): Set<string> {
 
 function buildBackendRoutes(): Set<string> {
   const routes = new Set<string>();
+  const unreadable: string[] = [];
   for (const file of walk(API_ROOT, (item) => item.endsWith('.controller.ts'))) {
-    for (const route of extractControllerRoutes(fs.readFileSync(file, 'utf8'))) routes.add(route);
+    const content = fs.readFileSync(file, 'utf8');
+    unreadable.push(...unreadableDecorators(content, path.relative(ROOT, file)));
+    for (const route of extractControllerRoutes(content)) routes.add(route);
+  }
+  if (unreadable.length > 0) {
+    console.error('\n❌ Route decorators this check cannot read:\n');
+    for (const u of unreadable) console.error('   ' + u);
+    console.error(
+      '\n   The backend inventory is short by those routes, so the mismatch this gate\n' +
+        '   reports next would name the wrong file. Use a string literal.\n'
+    );
+    process.exit(1);
   }
   return routes;
 }
