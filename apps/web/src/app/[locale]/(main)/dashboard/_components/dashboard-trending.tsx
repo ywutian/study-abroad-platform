@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Heart, MessageCircle, TrendingUp } from 'lucide-react';
+import { ArrowRight, BookOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { forumRoutes } from '@study-abroad/shared';
 
@@ -12,22 +12,34 @@ import { Link } from '@/lib/i18n/navigation';
 interface TrendingPost {
   id: string;
   title: string;
-  likeCount?: number;
-  commentCount?: number;
 }
 
 /**
- * Dashboard "Trending" — the hottest community discussions, ranked by
- * engagement (forum `sortBy=popular` → likeCount desc, pinned first).
+ * Dashboard reading list — a few forum posts worth starting with.
  *
- * This deliberately overrides the earlier "belonging, not trending" default
- * (feedback 5f: the user explicitly asked for a trending board — "what's
- * hot / active discussions / good new posts to read"). To keep the anxious-
- * applicant concern in check we frame it around DISCUSSION activity (replies
- * + likes on active threads) rather than results/offers, and cap it at 5.
+ * This deliberately does NOT claim to be "trending". It used to: the copy read
+ * 热门讨论 / "What the community is discussing right now", ordered by
+ * `sortBy=popular` (likeCount desc). Measured 2026-08-06, that claim was false
+ * in two independent ways at once:
+ *
+ *  - 48 of the forum's 49 posts were created on one day six months ago, so
+ *    nothing here is what anyone is discussing *right now*;
+ *  - every like and view count came from `prisma/seed-forum-posts.ts`, where
+ *    they are literally `Math.floor(Math.random() * …)`. The five posts this
+ *    module pinned to the dashboard were the five largest random numbers.
+ *
+ * So the counts are gone from the row — a number beside a title asserts that
+ * many people liked it — and the heading no longer says anything about heat or
+ * recency. What is left is a claim the data supports: these are worth reading.
+ * `sortBy=popular` is retained as a stable arbitrary pick, not as a ranking.
+ *
+ * Restore a real trending module once the forum has organic activity, and rank
+ * on REPLIES rather than likes — replies are the one signal the seed did not
+ * inflate. Separate seeded engagement from organic first, or the ranking
+ * inherits the same fiction.
  *
  * Post detail is modal-based on the forum page, so every row links to /forum
- * rather than a per-post URL (same as the old community surface).
+ * rather than a per-post URL.
  */
 export function DashboardTrending() {
   const t = useTranslations('dashboard.trending');
@@ -51,7 +63,7 @@ export function DashboardTrending() {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h3 className="flex items-center gap-2 text-sm font-semibold">
-            <TrendingUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <BookOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
             {t('title')}
           </h3>
           <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
@@ -84,28 +96,6 @@ export function DashboardTrending() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="line-clamp-1">{post.title}</span>
-                {((post.commentCount ?? 0) > 0 || (post.likeCount ?? 0) > 0) && (
-                  <span className="mt-0.5 flex items-center gap-3 text-2xs text-muted-foreground">
-                    {(post.commentCount ?? 0) > 0 && (
-                      <span
-                        className="inline-flex items-center gap-1"
-                        aria-label={t('repliesLabel', { count: post.commentCount ?? 0 })}
-                      >
-                        <MessageCircle className="h-3 w-3" />
-                        {post.commentCount}
-                      </span>
-                    )}
-                    {(post.likeCount ?? 0) > 0 && (
-                      <span
-                        className="inline-flex items-center gap-1"
-                        aria-label={t('likesLabel', { count: post.likeCount ?? 0 })}
-                      >
-                        <Heart className="h-3 w-3" />
-                        {post.likeCount}
-                      </span>
-                    )}
-                  </span>
-                )}
               </span>
             </Link>
           ))

@@ -323,12 +323,10 @@
       }
     },
     "trending": {
-      "title": "热门讨论",
-      "subtitle": "社区此刻正在热议的",
+      "title": "精选阅读",
+      "subtitle": "申请路上值得先看的几篇",
       "open": "去论坛",
-      "empty": "还没有讨论 — 去论坛开个话题",
-      "repliesLabel": "{count} 条回复",
-      "likesLabel": "{count} 个赞"
+      "empty": "还没有讨论 — 去论坛开个话题"
     },
     "workbench": {
       "label": "申请作战台",
