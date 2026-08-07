@@ -367,6 +367,14 @@ jobs:
         # were flaky here); keep the two in sync or CI and local diverge.
         run: pnpm --filter study-abroad-mobile exec jest --runInBand --coverage --forceExit
 
+      - name: Run Shared tests
+        if: needs.detect-changes.outputs.shared == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        # packages/shared had 21 test files and the repo's highest coverage floor
+        # (90/80/95/90) and NO step here at all — the ratchet guarded a number CI
+        # never evaluated. Added 2026-08-06; measured 92.43/82.30/96.64/93.81, so
+        # it lands green with headroom.
+        run: pnpm --filter @study-abroad/shared exec vitest run --coverage
+
   # ── E2E Tests ─────────────────────────────────────────────
   e2e:
     name: E2E Tests
