@@ -323,12 +323,10 @@
       }
     },
     "trending": {
-      "title": "Trending",
-      "subtitle": "What the community is discussing right now",
+      "title": "Worth reading",
+      "subtitle": "A few posts to start with",
       "open": "Open forum",
-      "empty": "No discussions yet — open the forum to start one",
-      "repliesLabel": "{count, plural, one {# reply} other {# replies}}",
-      "likesLabel": "{count, plural, one {# like} other {# likes}}"
+      "empty": "No discussions yet — open the forum to start one"
     },
     "workbench": {
       "label": "Application workbench",
