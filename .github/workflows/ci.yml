@@ -200,6 +200,11 @@ jobs:
           # than it uses, breaks nothing and shows up nowhere. Listed explicitly
           # — this job does not run lint:all.
           pnpm lint:deletion-promise
+          # Contested dependency majors (the intentional zod 3-app / 4-knip split).
+          # Lived in pre-push only, so `git push --no-verify` skipped it entirely
+          # and nothing downstream would have noticed the pins converging.
+          # Listed explicitly — this job does not run lint:all.
+          pnpm lint:dep-pins
           # .github/cron-jobs.json vs the @Cron decorators. Under
           # CRON_DRIVER=http a job missing from that manifest gets no Cloud
           # Scheduler entry and therefore never runs in prod — while running
@@ -229,6 +234,11 @@ jobs:
       #     written. A gate nobody calls is not a gate.
       - name: Cross-layer guards (routes / closure / journeys / icons / drift)
         run: |
+          # The route gate's OWN fixtures — valid calls, wrong methods, wrong
+          # suffixes, dynamic params. It had zero callers: not lint:all, not CI,
+          # not husky. An unproven gate is the failure mode lint:gate-proofs
+          # exists to prevent, and this one was sitting outside it.
+          pnpm lint:routes:test
           pnpm lint:routes
           pnpm lint:closure
           pnpm lint:journeys
