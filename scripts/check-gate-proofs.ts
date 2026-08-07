@@ -48,6 +48,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import { resetAssertionCounter, firedAssertions } from './gate-proofs/harness';
 
 const ROOT = path.resolve(__dirname, '..');
 const GATE_DIR = path.join(ROOT, 'scripts');
@@ -55,7 +56,23 @@ const PROOF_DIR = path.join(GATE_DIR, 'gate-proofs');
 const BASELINE_FILE = path.join(GATE_DIR, 'gate-proof-baseline.json');
 const UPDATE = process.argv.includes('--update');
 
-/** This file is the watcher, not one of the watched. */
+/**
+ * This file is the watcher, not one of the watched.
+ *
+ * ⚠️ Which means it has no proof, and cannot easily have one: `runGate` spawns
+ * `npx tsx scripts/check-gate-proofs.ts`, so a self-proof would re-enter the
+ * whole suite and recurse. The gap is real — on 2026-08-06 this runner counted
+ * `export async function prove() {}` as PROVEN, and nothing but reading it
+ * would have said so. The expectFired floor below closes that specific hole;
+ * removing the floor would be silent again.
+ *
+ * If you touch the PROVEN/BROKEN decision, seed a vacuous proof by hand and
+ * confirm it reddens before you believe the green tick:
+ *
+ *   printf 'export async function prove(){}' > scripts/gate-proofs/check-cron-manifest.proof.ts
+ *   pnpm lint:gate-proofs   # must fail
+ *   git checkout -- scripts/gate-proofs/check-cron-manifest.proof.ts
+ */
 const SELF = 'check-gate-proofs.ts';
 
 function gateScripts(): string[] {
@@ -90,7 +107,20 @@ async function main(): Promise<void> {
         broken.push(`${name}: proof file exports no \`prove()\``);
         continue;
       }
+      resetAssertionCounter();
       await mod.prove();
+      if (firedAssertions() === 0) {
+        // A proof that never made the gate go red has demonstrated nothing.
+        // `export async function prove() {}` used to count as PROVEN and lower
+        // the unproven count — coverage claimed for a gate nobody had tested,
+        // with a green tick printed over it.
+        broken.push(
+          `${name}: prove() completed without a single expectFired() — it never made ` +
+            `the gate go red, so it demonstrates nothing. Seed a violation and assert ` +
+            `the gate catches it; expectClean alone only says a green tree is green.`
+        );
+        continue;
+      }
       proven.push(name);
     } catch (error) {
       broken.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
