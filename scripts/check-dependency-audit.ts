@@ -28,6 +28,8 @@ import * as path from 'path';
 const ROOT = path.resolve(__dirname, '..');
 const LOCKFILE = path.join(ROOT, 'pnpm-lock.yaml');
 const FAIL_SEVERITIES = new Set(['HIGH', 'CRITICAL']);
+/** Severity the report did not state. Fails closed — see the note at its use. */
+const UNREADABLE_SEVERITY = 'UNREADABLE';
 
 interface OsvVuln {
   id: string;
@@ -91,13 +93,20 @@ function main() {
   for (const r of result.results ?? []) {
     for (const pkg of r.packages ?? []) {
       for (const v of pkg.vulnerabilities ?? []) {
-        const severity = v.database_specific?.severity ?? 'UNKNOWN';
+        // `?? 'UNKNOWN'` was a fail-OPEN default: a finding whose severity this
+        // script could not read got counted, printed in the breakdown, and then
+        // passed — at any real severity. All 63 of today's findings carry
+        // database_specific.severity, so the branch is dormant; it wakes when OSV
+        // changes shape or adds a source that reports severity elsewhere, which is
+        // precisely the moment a security gate must not be guessing permissively.
+        // A gate that cannot classify a finding has not cleared it.
+        const severity = v.database_specific?.severity ?? UNREADABLE_SEVERITY;
         bySeverity[severity] = (bySeverity[severity] ?? 0) + 1;
 
         const ids = [v.id, ...(v.aliases ?? [])];
         if (ids.some((id) => ignored.has(id))) continue;
 
-        if (FAIL_SEVERITIES.has(severity)) {
+        if (FAIL_SEVERITIES.has(severity) || severity === UNREADABLE_SEVERITY) {
           failing.push({
             pkg: pkg.package.name,
             version: pkg.package.version,
