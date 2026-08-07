@@ -36,6 +36,7 @@ interface PostListProps {
   onSearch: () => void;
   selectedCommunity: Community | null;
   activeFeed: 'popular' | 'home' | 'latest';
+  starterCommunities: Community[];
   onClearCommunity: () => void;
   onClearSearch: () => void;
   onLoadMore: () => void;
@@ -43,6 +44,7 @@ interface PostListProps {
   onLike: (postId: string, e?: React.MouseEvent) => void;
   onReport: (target: { type: 'POST' | 'COMMENT'; id: string }) => void;
   onCreatePost: () => void;
+  onCreateInCommunity: (community: Community) => void;
   onOpenCommunities: () => void;
 }
 
@@ -59,6 +61,7 @@ export function PostList({
   onSearch,
   selectedCommunity,
   activeFeed,
+  starterCommunities,
   onClearCommunity,
   onClearSearch,
   onLoadMore,
@@ -66,11 +69,13 @@ export function PostList({
   onLike,
   onReport,
   onCreatePost,
+  onCreateInCommunity,
   onOpenCommunities,
 }: PostListProps) {
   const t = useTranslations('forum');
   const format = useFormatter();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const isFiltered = Boolean(selectedCommunity || searchQuery.trim());
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -166,15 +171,29 @@ export function PostList({
               </Button>
             ))}
             <Badge variant="secondary" className="ml-auto gap-1">
-              {selectedCommunity ? `r/${selectedCommunity.name}` : t(`feedLabel.${activeFeed}`)}
+              {selectedCommunity ? selectedCommunity.name : t(`feedLabel.${activeFeed}`)}
               {selectedCommunity && (
-                <X className="h-3 w-3 cursor-pointer" onClick={onClearCommunity} />
+                <button
+                  type="button"
+                  onClick={onClearCommunity}
+                  aria-label={t('clearCommunityFilter')}
+                  className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               )}
             </Badge>
             {searchQuery && (
               <Badge variant="secondary" className="gap-1">
                 {t('searchLabel', { query: searchQuery })}
-                <X className="h-3 w-3 cursor-pointer" onClick={onClearSearch} />
+                <button
+                  type="button"
+                  onClick={onClearSearch}
+                  aria-label={t('clearSearchFilter')}
+                  className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </Badge>
             )}
           </div>
@@ -188,21 +207,61 @@ export function PostList({
             <p className="text-sm text-muted-foreground">{t('loading')}</p>
           </div>
         ) : posts.length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
-              <h3 className="mb-1 text-lg font-medium text-muted-foreground">{t('noPosts')}</h3>
-              <p className="mb-4 text-sm text-muted-foreground/70">{t('noPostsDesc')}</p>
-              <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
-                <Button onClick={onCreatePost}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('firstPost')}
-                </Button>
-                <Button variant="outline" className="lg:hidden" onClick={onOpenCommunities}>
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  {t('chooseCommunity')}
-                </Button>
-              </div>
+          <Card role="status">
+            <CardContent className="px-4 py-12 text-center sm:px-6 sm:py-16">
+              <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
+              {isFiltered ? (
+                <>
+                  <h3 className="mb-1 text-lg font-medium text-foreground">
+                    {t('noMatchingPosts')}
+                  </h3>
+                  <p className="mb-6 text-sm text-muted-foreground">{t('noMatchingPostsDesc')}</p>
+                  <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+                    {selectedCommunity && (
+                      <Button variant="outline" onClick={onClearCommunity}>
+                        {t('clearCommunityFilter')}
+                      </Button>
+                    )}
+                    {searchQuery.trim() && (
+                      <Button variant="outline" onClick={onClearSearch}>
+                        {t('clearSearchFilter')}
+                      </Button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="mb-1 text-lg font-medium text-foreground">{t('noPosts')}</h3>
+                  <p className="mb-6 text-sm text-muted-foreground">{t('emptyStartersDesc')}</p>
+                  {starterCommunities.length > 0 && (
+                    <div className="mb-6 flex flex-wrap justify-center gap-2">
+                      {starterCommunities.map((community) => (
+                        <button
+                          key={community.id}
+                          type="button"
+                          aria-haspopup="dialog"
+                          aria-label={t('postInCommunity', { name: community.name })}
+                          title={community.name}
+                          onClick={() => onCreateInCommunity(community)}
+                          className="inline-flex max-w-[12rem] items-center truncate rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {community.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+                    <Button onClick={onCreatePost}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t('firstPost')}
+                    </Button>
+                    <Button variant="outline" className="lg:hidden" onClick={onOpenCommunities}>
+                      <SlidersHorizontal className="mr-2 h-4 w-4" />
+                      {t('chooseCommunity')}
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -282,9 +341,11 @@ function PostCard({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">
-                  r/{post.community?.name || post.category?.name || t('uncategorized')}
+                  {post.community?.name || post.category?.name || t('uncategorized')}
                 </span>
+                <span aria-hidden="true">·</span>
                 <span>{t('postedBy', { name: post.author.name || t('anonymous') })}</span>
+                <span aria-hidden="true">·</span>
                 <span>{formatDate(post.createdAt)}</span>
               </div>
               <h3 className="mt-1 line-clamp-2 text-base font-semibold text-foreground">

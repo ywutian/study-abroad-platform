@@ -31,8 +31,8 @@ export function ForumRightRail({
     .sort((left, right) => right.postCount - left.postCount)
     .slice(0, 5);
 
-  const title = selectedCommunity ? `r/${selectedCommunity.name}` : t('forumAboutTitle');
-  const description = selectedCommunity?.description || t('redditForumDescription');
+  const title = selectedCommunity ? selectedCommunity.name : t('forumAboutTitle');
+  const description = selectedCommunity?.description || t('forumDescription');
 
   return (
     <aside className="space-y-4">
@@ -127,7 +127,7 @@ export function ForumRightRail({
                     {community.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">r/{community.name}</span>
+                    <span className="block truncate text-sm font-medium">{community.name}</span>
                     <span className="block text-xs text-muted-foreground">
                       {t('communityPostCount', { count: community.postCount })}
                     </span>

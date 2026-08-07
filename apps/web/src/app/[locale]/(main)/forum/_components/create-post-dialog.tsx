@@ -159,7 +159,7 @@ export function CreatePostDialog({
             <label className="text-sm font-medium">{t('communityLabel')}</label>
             {community && (
               <Badge variant="secondary" className="gap-1">
-                r/{community.name}
+                {community.name}
                 <button type="button" onClick={() => setCommunity(null)}>
                   <X className="h-3 w-3" />
                 </button>
@@ -184,7 +184,7 @@ export function CreatePostDialog({
                       className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
                       onClick={() => setCommunity(item)}
                     >
-                      <span>r/{item.name}</span>
+                      <span>{item.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {t('communityPostCount', { count: item.postCount })}
                       </span>
@@ -193,16 +193,18 @@ export function CreatePostDialog({
                   {canCreateCommunity && (
                     <button
                       type="button"
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-muted"
+                      className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-muted"
                       onClick={handleCreateCommunity}
                       disabled={creatingCommunity}
                     >
                       {creatingCommunity ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
                       ) : (
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-4 w-4 shrink-0" />
                       )}
-                      {t('createCommunityNamed', { name: communityQuery.trim() })}
+                      <span className="min-w-0 truncate">
+                        {t('createCommunityNamed', { name: communityQuery.trim() })}
+                      </span>
                     </button>
                   )}
                 </div>
