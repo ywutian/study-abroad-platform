@@ -38,6 +38,37 @@ function migrateSeedStems(): { stem: string; raw: string }[] {
   return out;
 }
 
+/**
+ * `run_seed` invocations the parser above could NOT read.
+ *
+ * Without this the parser's blind spots are silent, and the only drift guard is
+ * "zero seeds parsed" — which says nothing when 17 of 18 parse. Two shapes slip
+ * straight through, found by probing on 2026-08-06:
+ *
+ *   run_seed "global-events" ./prisma/seeds/upsert-global-events.ts   ← .ts, not .js
+ *   run_seed 'global-events' ./prisma/seeds/upsert-global-events.js   ← single quotes
+ *
+ * The first is the worse of the two, because it also fails at RUNTIME in a way
+ * designed not to be noticed: `COPY prisma ./prisma` puts the .ts in the image,
+ * so migrate.sh's `[ -f "$script" ]` passes, `node` chokes on TypeScript, and
+ * the `|| echo WARNING` fail-soft turns it into one line in a deploy log. A
+ * seed that never ran and a seed that ran fine look the same from outside.
+ *
+ * So an unreadable invocation is an error, not a skip. That is the whole point
+ * of this file: the failure it guards is already silent at runtime.
+ */
+function unparsableSeedLines(): string[] {
+  const lines = fs.readFileSync(MIGRATE_SH, 'utf8').split('\n');
+  return lines
+    .map((l) => l.trim())
+    .filter(
+      (l) =>
+        l.startsWith('run_seed') &&
+        !l.startsWith('run_seed()') &&
+        !/^run_seed\s+"[^"]*"\s+\.?\/?\S+\.js\b/.test(l)
+    );
+}
+
 /** Every `prisma/<x>.ts` argument across the Dockerfile's `npx tsc …` passes → "prisma/<x>". */
 function dockerfileCompiledStems(): Set<string> {
   const text = fs.readFileSync(DOCKERFILE, 'utf8');
@@ -61,6 +92,14 @@ function main() {
   if (seeds.length === 0) {
     console.error('❌ No `run_seed … .js` lines found in migrate.sh — parser drift?');
     process.exit(1);
+  }
+  for (const line of unparsableSeedLines()) {
+    errors.push(
+      `migrate.sh line is a run_seed invocation this check cannot read, so none of its ` +
+        `parity is verified: \`${line}\`. Expected \`run_seed "label" ./prisma/<x>.js\` — ` +
+        `a double-quoted label and a .js path. A .ts path also fails at deploy time as a ` +
+        `single WARNING line, which is exactly the silent skip this file exists to prevent.`
+    );
   }
   const compiled = dockerfileCompiledStems();
 
