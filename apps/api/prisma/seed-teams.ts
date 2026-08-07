@@ -1529,7 +1529,12 @@ async function seedOfficialCompetitionGraph(
   };
 }
 
-async function seedMatchPools(
+/**
+ * Pools + entries only — touches MatchPool / MatchPoolEntry and nothing else,
+ * which is why `prisma/seed-match-pools.ts` can run it against production
+ * while the rest of this file (mock users, teams, membership deletes) cannot.
+ */
+export async function seedMatchPools(
   client: PrismaClient,
   competitionLookup: Map<string, Competition>,
 ) {
@@ -2094,7 +2099,7 @@ function track(
   };
 }
 
-function buildCompetitionLookup(competitions: Competition[]) {
+export function buildCompetitionLookup(competitions: Competition[]) {
   const lookup = new Map<string, Competition>();
   for (const competition of competitions) {
     lookup.set(competition.abbreviation.toLowerCase(), competition);

@@ -185,12 +185,15 @@
       "jsonata": ">=2.2.0",
       "postcss": ">=8.5.18",
       "sharp": ">=0.35.0",
-      "@opentelemetry/propagator-jaeger": ">=2.9.0"
+      "@opentelemetry/propagator-jaeger": ">=2.9.0",
+      "nanoid@>=3.0.0 <3.3.17": ">=3.3.17 <4"
     },
     "auditConfig": {
       "ignoreGhsas": [
         "GHSA-fx2h-pf6j-xcff",
-        "GHSA-mh99-v99m-4gvg"
+        "GHSA-mh99-v99m-4gvg",
+        "GHSA-5p2g-fcmc-qvqq",
+        "GHSA-w3rx-r6r6-pgpr"
       ]
     }
   }

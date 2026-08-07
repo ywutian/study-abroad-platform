@@ -50,6 +50,7 @@ RUN cd apps/api && npx tsc \
     prisma/seeds/backfill-school-ranking-lists.ts \
     prisma/seeds/backfill-has-ea-ed2.ts \
     prisma/seeds/upsert-global-events.ts \
+    prisma/seeds/upsert-competition-data.ts \
     prisma/seeds/closure-agents/seed-closure-targets.ts \
     prisma/seeds/closure-agents/collect-school-rankings.ts \
     prisma/seeds/essay-harvest/import-essays.ts \
@@ -88,6 +89,8 @@ RUN cd apps/api && npx tsc \
     prisma/seed-audit-corrections-2026-05-31.ts \
     prisma/seed-instate-rate-2026-05-31.ts \
     prisma/seed-testing-policy-2026-07-25.ts \
+    prisma/seed-competitions.ts \
+    prisma/seed-match-pools.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma

@@ -120,6 +120,23 @@ run_seed "testing-policy" ./prisma/seed-testing-policy-2026-07-25.js
 #     Idempotent upsert on the `slug` unique key.
 run_seed "global-events" ./prisma/seeds/upsert-global-events.js
 
+# 19. Team / Tindermatch reference data. All three were dev-seed-only, so prod
+#     ran the whole recruitment surface off whatever partial Competition rows
+#     happened to be there: 3 competition editions, and the one match pool that
+#     existed served `entries: []`. Order matters — the last two resolve
+#     competitions by abbreviation and both no-op (loudly) without step 19a.
+#     19a: ~112 reference Competition rows (upsert on abbreviation).
+run_seed "competitions" ./prisma/seed-competitions.js
+#     19b: real, web-verified CompetitionEdition schedules + tracks. Every
+#          record carries a sourceUrl; the script rejects any that doesn't.
+#          Refreshed by the /competition-data-update skill, staleness-tracked
+#          by scripts/check-seed-data-freshness.ts.
+run_seed "competition-data" ./prisma/seeds/upsert-competition-data.js \
+  ./prisma/seeds/competition-schedules-2026-2027.json
+#     19c: the 9 public MatchPools + their ~62 official-competition entries.
+#          Prod-safe slice of seed-teams.ts — see that file's header.
+run_seed "match-pools" ./prisma/seed-match-pools.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------
