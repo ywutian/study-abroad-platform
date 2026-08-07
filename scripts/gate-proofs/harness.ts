@@ -167,11 +167,18 @@ export function expectFired(run: GateRun, mustMention?: string): void {
   }
 }
 
-export function expectClean(run: GateRun): void {
+/**
+ * `what` names the tree being asserted clean. It defaults to the baseline use,
+ * but expectClean is also correct INSIDE a patch — "this seed must NOT fire" is
+ * how a false-positive regression gets pinned. The fixed baseline wording cost
+ * three rounds of misdiagnosis on 2026-08-06: a red seed-2 assertion reported
+ * itself as a dirty baseline, and the baseline was measurably fine.
+ */
+export function expectClean(run: GateRun, what = 'an unmodified tree'): void {
   if (run.status !== 0) {
     throw new Error(
-      `Gate is red on an unmodified tree, so this proof cannot tell you anything ` +
-        `about the seeded violation. Fix the tree first.\n--- output ---\n${run.stdout.slice(0, 800)}`
+      `Gate is red on ${what}, so this proof cannot tell you anything ` +
+        `about the seeded violation.\n--- output ---\n${run.stdout.slice(0, 800)}`
     );
   }
 }
