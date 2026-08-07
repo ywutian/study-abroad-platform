@@ -130,3 +130,31 @@ CVE-2026-69152
 # REMOVE when npm ships a bundled ip-address >= 10.3.1.
 # ===================================================================
 CVE-2026-69192
+
+# ===================================================================
+# image-size CVE-2025-71329 (= GHSA-5p2g-fcmc-qvqq, JXL/HEIF) and
+# CVE-2025-71330 (= GHSA-w3rx-r6r6-pgpr, ICNS) — both HIGH, both infinite
+# loops in a format parser (DoS).
+#
+# Unlike the two entries above, this one IS in our lockfile (image-size@1.2.1),
+# so both gates report it and the exemption is recorded in BOTH places:
+# pnpm.auditConfig.ignoreGhsas + docs/SECURITY_DEPS.md carry the GHSA ids,
+# these two lines carry the CVE ids. Remove them together.
+#
+# There is nothing to pin to. Both advisories read `introduced: 0 …
+# last_affected: 2.0.2`, and 2.0.2 is what npm serves as `latest` (`legacy` is
+# our 1.2.1) — checked against the registry, not assumed. Every published
+# version is affected.
+#
+# Sole consumer is metro@0.83.3, the React Native bundler: it reads image
+# dimensions off the repo's own committed assets during a mobile build. It is
+# a devDependency of apps/mobile, ships in no deployed image (apps/api declares
+# no metro/expo dependency), and the attacker-supplied image this needs never
+# reaches that path.
+#
+# REMOVE when image-size publishes above 2.0.2 — then pin it, drop these two
+# lines and the two GHSAs from pnpm.auditConfig.ignoreGhsas, and confirm
+# `tsx scripts/check-dependency-audit.ts` stays green.
+# ===================================================================
+CVE-2025-71329
+CVE-2025-71330
