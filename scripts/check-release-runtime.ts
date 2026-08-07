@@ -50,6 +50,10 @@ function parseArgs(argv: string[]): CliArgs {
   for (let index = 0; index < argv.length; index += 1) {
     const current = argv[index];
     if (!current.startsWith('--')) continue;
+    // A bare `--` is the npm/pnpm argument separator, not a flag. It survives
+    // into argv (`pnpm lint:release-runtime -- --environment=local`) and would
+    // otherwise register as a flag named '' and trip the unknown-flag check.
+    if (current === '--') continue;
     const [rawKey, inlineValue] = current.slice(2).split(/=(.*)/s, 2);
     const key = rawKey;
     if (inlineValue !== undefined && inlineValue !== '') {
@@ -63,6 +67,23 @@ function parseArgs(argv: string[]): CliArgs {
     }
     values.set(key, next);
     index += 1;
+  }
+
+  // An unrecognised flag used to be collected and then ignored, which is not a
+  // harmless no-op on a gate whose behaviour is set by flags. `--max-age-hour=2`
+  // (one missing `s`) silently restored the 48h default: a 30-hour-old summary
+  // then passed as evidence, printing "✅ Release runtime gate passed." The gate
+  // that decides whether broken pages ship must not be weakened by a typo.
+  const known = new Set(['environment', 'summary', 'waivers', 'allow-filtered', 'max-age-hours']);
+  const unknown = [...values.keys()].filter((key) => !known.has(key));
+  if (unknown.length > 0) {
+    console.error(
+      `\n❌ Unrecognised flag(s): ${unknown.map((k) => `--${k}`).join(', ')}\n` +
+        `   Known flags: ${[...known].map((k) => `--${k}`).join(', ')}.\n` +
+        `   Ignoring one silently would leave its default in force — which is how a\n` +
+        `   stale summary passes as fresh evidence.\n`
+    );
+    process.exit(1);
   }
 
   return {
