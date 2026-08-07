@@ -116,6 +116,51 @@ function walkFiles(dir: string): string[] {
   });
 }
 
+/**
+ * Route decorators this file's regexes cannot read.
+ *
+ * Both patterns require a string literal. A decorator written any other way —
+ * `@Get(ROUTES.THING)`, a template literal, a constant — matches neither, and
+ * the route simply never enters the backend inventory. Nothing says so.
+ *
+ * That is worse than a missing check, because the closure comparison then runs
+ * against a SHORT inventory: a frontend call to that real, working endpoint is
+ * reported as hitting an endpoint the backend does not have, and the obvious
+ * response is to "fix" the frontend. A `@Controller` written that way loses
+ * every route in the file at once.
+ *
+ * All 64 controllers and all 733 method decorators are literals today
+ * (measured 2026-08-06), so this costs nothing now and closes the class.
+ */
+function unreadableRouteDecorators(): string[] {
+  const problems: string[] = [];
+  for (const file of walkFiles(API_ROOT).filter((item) => item.endsWith('.controller.ts'))) {
+    const content = fs.readFileSync(file, 'utf8');
+    const rel = path.relative(ROOT, file);
+
+    const anyController = /@Controller\(/.test(content);
+    const litController = /@Controller\(\s*['"][^'"]*['"]\s*\)/.test(content);
+    if (anyController && !litController) {
+      problems.push(
+        `${rel}: @Controller() is not a string literal, so EVERY route in this file is ` +
+          `absent from the backend inventory.`
+      );
+    }
+
+    const anyMethod = content.match(/@(?:Get|Post|Put|Patch|Delete)\(/g)?.length ?? 0;
+    const litMethod =
+      content.match(/@(?:Get|Post|Put|Patch|Delete)\(\s*(?:['"][^'"]*['"])?\s*\)/g)?.length ?? 0;
+    if (anyMethod > litMethod) {
+      problems.push(
+        `${rel}: ${anyMethod - litMethod} route decorator(s) are not string literals, so those ` +
+          `routes are absent from the backend inventory — a frontend call to one reads as a ` +
+          `call to a nonexistent endpoint.`
+      );
+    }
+  }
+  return problems;
+}
+
 function backendOperations() {
   const operations = new Set<string>();
   for (const file of walkFiles(API_ROOT).filter((item) => item.endsWith('.controller.ts'))) {
@@ -151,6 +196,13 @@ function operationMatchesBackend(operation: string, backend: Set<string>) {
     );
   });
 }
+
+const unreadable = unreadableRouteDecorators();
+assert.ok(
+  unreadable.length === 0,
+  `Route decorators this check cannot read (so the backend inventory is short):\n  ` +
+    unreadable.join('\n  ')
+);
 
 const backend = backendOperations();
 const fullSurfaceRegistry = buildFullSurfaceRegistry();
