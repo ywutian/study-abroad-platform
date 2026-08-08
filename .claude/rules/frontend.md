@@ -106,6 +106,29 @@ curl -s <url> | grep -c 'style="opacity:0'
 
 Verified the same way as everything else in this file: **read the server HTML, not the browser DOM.**
 
+### The other half: did React actually take over?
+
+Server HTML is only one side. The other side — did the page hydrate — cannot be
+read out of the HTML, and it cannot be trusted to an unreliable browser either:
+in 2026-08 an in-app browser rendered `/zh/forum` as "0 个社区" plus a permanent
+spinner while the API returned 20 rows, and that produced a written root cause
+and a filed task for a bug that did not exist. The same symptom appeared on an
+unrelated route, which is the tell: **a symptom that reproduces across unrelated
+pages is about the instrument, not the page.**
+
+`pnpm --filter web check:hydration` is the twin of `check:seo`. Its criterion is
+not "is there content in the DOM" — the SSR shell always has content, and an
+initial `loading=true` state renders exactly like a page that is still loading.
+It is **what only a client effect can cause**: the page issuing its own data
+request. Also asserts no `pageerror`, and that forum community rows render in
+the route's locale (the slug→message map fails silently — English names just
+come back). Network-dependent, so it stays out of `lint:all` / pre-push / CI;
+run it after a deploy.
+
+Positive and negative observations are not symmetric here. "The page rendered
+20 localized rows" cannot be faked by a flaky browser. "The page rendered
+nothing" can — on its own it settles nothing.
+
 ## Frontend AI Requests
 
 ```typescript
