@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient as api } from '@/lib/api';
 import type { Category, Community, ForumImageInput, Post } from './forum-types';
+import { useCommunityName } from './use-community-name';
 
 const MAX_IMAGES = 6;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -36,6 +37,7 @@ export function CreatePostDialog({
   onPostCreated,
 }: CreatePostDialogProps) {
   const t = useTranslations('forum');
+  const communityName = useCommunityName();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [communityQuery, setCommunityQuery] = useState('');
@@ -45,17 +47,30 @@ export function CreatePostDialog({
   const [submitting, setSubmitting] = useState(false);
   const [creatingCommunity, setCreatingCommunity] = useState(false);
 
+  // Search and the duplicate check both look at the DISPLAYED name as well as
+  // the canonical one. Matching only `name` would let a zh reader see 竞赛 in
+  // this list, type 竞赛, match nothing, and be offered "create 竞赛" — a second
+  // community for one that is already there.
   const matches = useMemo(() => {
     const query = communityQuery.trim().toLowerCase();
     if (!query) return communities.slice(0, 8);
     return communities
-      .filter((item) => item.name.toLowerCase().includes(query) || item.slug.includes(query))
+      .filter(
+        (item) =>
+          item.name.toLowerCase().includes(query) ||
+          communityName(item).toLowerCase().includes(query) ||
+          item.slug.includes(query)
+      )
       .slice(0, 8);
-  }, [communities, communityQuery]);
+  }, [communities, communityQuery, communityName]);
 
   const canCreateCommunity =
     communityQuery.trim().length > 0 &&
-    !communities.some((item) => item.name.toLowerCase() === communityQuery.trim().toLowerCase());
+    !communities.some(
+      (item) =>
+        item.name.toLowerCase() === communityQuery.trim().toLowerCase() ||
+        communityName(item).toLowerCase() === communityQuery.trim().toLowerCase()
+    );
 
   const reset = () => {
     setTitle('');
@@ -159,7 +174,7 @@ export function CreatePostDialog({
             <label className="text-sm font-medium">{t('communityLabel')}</label>
             {community && (
               <Badge variant="secondary" className="gap-1">
-                {community.name}
+                {communityName(community)}
                 <button type="button" onClick={() => setCommunity(null)}>
                   <X className="h-3 w-3" />
                 </button>
@@ -184,7 +199,7 @@ export function CreatePostDialog({
                       className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
                       onClick={() => setCommunity(item)}
                     >
-                      <span>{item.name}</span>
+                      <span>{communityName(item)}</span>
                       <span className="text-xs text-muted-foreground">
                         {t('communityPostCount', { count: item.postCount })}
                       </span>

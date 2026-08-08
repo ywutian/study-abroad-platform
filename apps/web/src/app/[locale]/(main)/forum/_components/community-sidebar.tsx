@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Community } from './forum-types';
+import { useCommunityName } from './use-community-name';
 
 interface CommunitySidebarProps {
   communities: Community[];
@@ -132,6 +133,9 @@ function CommunityRow({
   onSelect: () => void;
   onToggleFollow: () => void;
 }) {
+  const communityName = useCommunityName();
+  const displayName = communityName(community);
+
   return (
     <div
       className={`group flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors ${
@@ -140,10 +144,10 @@ function CommunityRow({
     >
       <button className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={onSelect}>
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-          {community.name.charAt(0).toUpperCase()}
+          {displayName.charAt(0).toUpperCase()}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-medium">{community.name}</span>
+          <span className="block truncate text-sm font-medium">{displayName}</span>
           <span className="block text-xs text-muted-foreground">
             {postCountLabel}
             {community.isOfficial && (

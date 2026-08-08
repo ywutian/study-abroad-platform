@@ -91,6 +91,7 @@ RUN cd apps/api && npx tsc \
     prisma/seed-testing-policy-2026-07-25.ts \
     prisma/seed-competitions.ts \
     prisma/seed-match-pools.ts \
+    prisma/seed-forum-communities.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma

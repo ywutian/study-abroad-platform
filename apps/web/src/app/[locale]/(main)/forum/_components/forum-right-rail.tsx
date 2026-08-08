@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Community } from './forum-types';
+import { useCommunityName } from './use-community-name';
 
 interface ForumRightRailProps {
   communities: Community[];
@@ -27,11 +28,12 @@ export function ForumRightRail({
   formatNumber,
 }: ForumRightRailProps) {
   const t = useTranslations('forum');
+  const communityName = useCommunityName();
   const popularCommunities = [...communities]
     .sort((left, right) => right.postCount - left.postCount)
     .slice(0, 5);
 
-  const title = selectedCommunity ? selectedCommunity.name : t('forumAboutTitle');
+  const title = selectedCommunity ? communityName(selectedCommunity) : t('forumAboutTitle');
   const description = selectedCommunity?.description || t('forumDescription');
 
   return (
@@ -124,10 +126,12 @@ export function ForumRightRail({
                     {index + 1}
                   </span>
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                    {community.name.charAt(0).toUpperCase()}
+                    {communityName(community).charAt(0).toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{community.name}</span>
+                    <span className="block truncate text-sm font-medium">
+                      {communityName(community)}
+                    </span>
                     <span className="block text-xs text-muted-foreground">
                       {t('communityPostCount', { count: community.postCount })}
                     </span>

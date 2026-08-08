@@ -81,6 +81,15 @@ export async function withSeededViolation<T>(
 ): Promise<T> {
   const abs = path.join(ROOT, relPath);
   const original = fs.existsSync(abs) ? fs.readFileSync(abs, 'utf8') : null;
+  // Whether we are about to create the containing directory, so cleanup can
+  // take it back out. Removing only the file left an empty directory behind,
+  // and for check-migration-safety.proof.ts that directory is
+  // `prisma/migrations/29990101000000_gate_proof_seeded/` — which makes every
+  // later `prisma migrate deploy` on that machine fail with P3015 ("could not
+  // find the migration file"). Untracked, so `git status` shows nothing and
+  // the tree looks clean.
+  const seededDir = path.dirname(abs);
+  const dirExisted = fs.existsSync(seededDir);
 
   let result: T | undefined;
   let bodyError: unknown;
@@ -99,6 +108,10 @@ export async function withSeededViolation<T>(
   try {
     if (original === null) {
       fs.rmSync(abs, { force: true });
+      // rmdir, not rm -r: it refuses on a non-empty directory, so a directory
+      // that turned out to hold something else is left alone rather than
+      // deleted by a cleanup path.
+      if (!dirExisted) fs.rmdirSync(seededDir);
     } else {
       fs.writeFileSync(abs, original);
       if (fs.readFileSync(abs, 'utf8') !== original) {
