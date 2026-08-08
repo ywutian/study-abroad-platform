@@ -23,6 +23,7 @@
     "lint:typography": "tsx scripts/check-typography.ts",
     "lint:quality": "tsx scripts/check-code-quality.ts",
     "check:seo": "tsx scripts/check-seo-html.ts",
+    "check:hydration": "tsx scripts/check-hydration.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage"
