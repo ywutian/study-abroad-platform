@@ -137,6 +137,17 @@ run_seed "competition-data" ./prisma/seeds/upsert-competition-data.js \
 #          Prod-safe slice of seed-teams.ts — see that file's header.
 run_seed "match-pools" ./prisma/seed-match-pools.js
 
+# 20. Forum communities — the 11 official ForumCommunity rows. Dev-seed-only
+#     until now, so production had exactly ONE community: `debate`, created by
+#     a user posting. That also starved F2's cold-start starter chips, which
+#     are dealt from this table. Upserts on `slug` (so the existing `debate`
+#     row is promoted to official rather than duplicated), backfills only posts
+#     whose communityId is NULL, and recomputes post/follower counts from the
+#     rows themselves. Display names are localised in the web client, not here
+#     — `name` stays canonical English because create-post writes it into
+#     `post.tags`. See apps/web/.../forum/_components/use-community-name.ts.
+run_seed "forum-communities" ./prisma/seed-forum-communities.js
+
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------

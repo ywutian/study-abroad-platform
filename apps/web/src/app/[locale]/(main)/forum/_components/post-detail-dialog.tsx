@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { apiClient as api } from '@/lib/api';
 import type { Post, PostDetailResponse, Comment, TeamApplication, ForumImage } from './forum-types';
+import { useCommunityName } from './use-community-name';
 import { getCategoryColorStyle, renderMarkdown } from './forum-types';
 
 interface PostDetailDialogProps {
@@ -42,6 +43,7 @@ export function PostDetailDialog({
   user,
 }: PostDetailDialogProps) {
   const t = useTranslations('forum');
+  const communityName = useCommunityName();
   const locale = useLocale();
   const format = useFormatter();
 
@@ -152,7 +154,7 @@ export function PostDetailDialog({
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
                   {showPostDetail.community && (
                     <Badge variant="secondary" className="text-xs">
-                      {showPostDetail.community.name}
+                      {communityName(showPostDetail.community)}
                     </Badge>
                   )}
                   {showPostDetail.isPinned && (

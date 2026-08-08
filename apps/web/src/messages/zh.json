@@ -7553,7 +7553,17 @@
     },
     "legacyTeamReadOnly": "论坛组队帖已切为 legacy 只读。请到 /teams 创建新的比赛组队卡。",
     "legacyTeamHistorical": "论坛组队帖已切为 legacy 只读，历史内容可看但不能再申请加入。请到 /teams 发起新的比赛组队匹配。",
-    "openTeams": "前往 /teams"
+    "openTeams": "前往 /teams",
+    "communityNames": {
+      "personal-statement": "个人陈述",
+      "personal-essay": "个人文书",
+      "debate": "辩论",
+      "mun": "模联",
+      "competition": "竞赛",
+      "school-news": "院校动态",
+      "campus-life": "校园生活",
+      "general": "综合"
+    }
   },
   "teams": {
     "title": "组队",

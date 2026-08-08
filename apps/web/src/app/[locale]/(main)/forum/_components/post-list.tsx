@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { Community, ForumImage, Post } from './forum-types';
+import { useCommunityName } from './use-community-name';
 import { stripMarkdown } from './forum-types';
 
 interface PostListProps {
@@ -73,6 +74,7 @@ export function PostList({
   onOpenCommunities,
 }: PostListProps) {
   const t = useTranslations('forum');
+  const communityName = useCommunityName();
   const format = useFormatter();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isFiltered = Boolean(selectedCommunity || searchQuery.trim());
@@ -171,7 +173,7 @@ export function PostList({
               </Button>
             ))}
             <Badge variant="secondary" className="ml-auto gap-1">
-              {selectedCommunity ? selectedCommunity.name : t(`feedLabel.${activeFeed}`)}
+              {selectedCommunity ? communityName(selectedCommunity) : t(`feedLabel.${activeFeed}`)}
               {selectedCommunity && (
                 <button
                   type="button"
@@ -240,12 +242,12 @@ export function PostList({
                           key={community.id}
                           type="button"
                           aria-haspopup="dialog"
-                          aria-label={t('postInCommunity', { name: community.name })}
-                          title={community.name}
+                          aria-label={t('postInCommunity', { name: communityName(community) })}
+                          title={communityName(community)}
                           onClick={() => onCreateInCommunity(community)}
                           className="inline-flex max-w-[12rem] items-center truncate rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {community.name}
+                          {communityName(community)}
                         </button>
                       ))}
                     </div>
@@ -328,6 +330,7 @@ function PostCard({
   onReport: (target: { type: 'POST' | 'COMMENT'; id: string }) => void;
 }) {
   const t = useTranslations('forum');
+  const communityName = useCommunityName();
 
   return (
     <Card className="overflow-hidden py-0 shadow-none transition-colors hover:border-primary/40">
@@ -341,7 +344,9 @@ function PostCard({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">
-                  {post.community?.name || post.category?.name || t('uncategorized')}
+                  {post.community
+                    ? communityName(post.community)
+                    : post.category?.name || t('uncategorized')}
                 </span>
                 <span aria-hidden="true">·</span>
                 <span>{t('postedBy', { name: post.author.name || t('anonymous') })}</span>

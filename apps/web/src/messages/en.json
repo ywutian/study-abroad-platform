@@ -7580,7 +7580,17 @@
     },
     "legacyTeamReadOnly": "Legacy forum team posts are now read-only. Create new competition recruitment cards in /teams.",
     "legacyTeamHistorical": "Legacy forum team posts are now read-only. Historical content stays visible, but new applications are disabled. Use /teams for live competition matching.",
-    "openTeams": "Open /teams"
+    "openTeams": "Open /teams",
+    "communityNames": {
+      "personal-statement": "Personal Statement",
+      "personal-essay": "Personal Essay",
+      "debate": "Debate",
+      "mun": "Model UN",
+      "competition": "Competition",
+      "school-news": "School News",
+      "campus-life": "Campus Life",
+      "general": "General"
+    }
   },
   "teams": {
     "title": "Teams",
