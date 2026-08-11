@@ -69,8 +69,12 @@ export const ERR = {
       '该学校此年度轮次的截止日期已存在',
     ),
     duplicateApplication: msg(
-      'An application for this school/round already exists',
-      '该学校的此轮次申请已存在',
+      'An application for this school/round/year already exists',
+      '该学校此申请年份的此轮次申请已存在',
+    ),
+    archivedTimelineReadOnly: msg(
+      'Archived timeline records are read-only',
+      '归档时间线记录为只读',
     ),
     essayDuplicate: msg(
       'Duplicate essay prompt, skipped',

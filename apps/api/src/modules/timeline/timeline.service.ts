@@ -71,7 +71,8 @@ export class TimelineService {
         (e) =>
           ((e.deadline && new Date(e.deadline) > now) ||
             (e.eventDate && new Date(e.eventDate) > now)) &&
-          e.status !== 'COMPLETED',
+          e.status !== 'COMPLETED' &&
+          e.status !== 'CANCELLED',
       )
       .slice(0, 5);
 

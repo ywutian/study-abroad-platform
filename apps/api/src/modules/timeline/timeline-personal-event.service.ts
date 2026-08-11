@@ -19,7 +19,10 @@ import {
   CreatePersonalTaskDto,
   PersonalTaskResponseDto,
 } from './dto';
-import { withEffectiveRecurringGlobalEvent } from './timeline-date.util';
+import {
+  isPersonalEventArchived,
+  withEffectiveRecurringGlobalEvent,
+} from './timeline-date.util';
 
 @Injectable()
 export class TimelinePersonalEventService {
@@ -204,6 +207,7 @@ export class TimelinePersonalEventService {
     if (!event) {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
+    this.assertPersonalEventMutable(event);
 
     const updated = await this.prisma.personalEvent.update({
       where: { id },
@@ -233,6 +237,7 @@ export class TimelinePersonalEventService {
     if (!event) {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
+    this.assertPersonalEventMutable(event);
 
     await this.prisma.personalEvent.delete({ where: { id } });
   }
@@ -250,6 +255,7 @@ export class TimelinePersonalEventService {
     if (!event) {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
+    this.assertPersonalEventMutable(event);
 
     const task = await this.prisma.$transaction(async (tx) => {
       const maxOrder = await tx.personalTask.findFirst({
@@ -284,6 +290,7 @@ export class TimelinePersonalEventService {
     if (!task || task.event.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertPersonalEventMutable(task.event);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       // Conditional flip guards against concurrent toggles both applying.
@@ -313,6 +320,7 @@ export class TimelinePersonalEventService {
     if (!task || task.event.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertPersonalEventMutable(task.event);
 
     await this.prisma.$transaction(async (tx) => {
       await tx.personalTask.delete({ where: { id: taskId } });
@@ -321,6 +329,16 @@ export class TimelinePersonalEventService {
   }
 
   // ============ Helpers ============
+
+  private assertPersonalEventMutable(event: {
+    status: string;
+    deadline?: Date | null;
+    eventDate?: Date | null;
+  }): void {
+    if (isPersonalEventArchived(event)) {
+      throw new ConflictException(ERR.CONFLICT.archivedTimelineReadOnly());
+    }
+  }
 
   // Accepts the active transaction client so the recompute reads the same
   // snapshot as the mutation (no lost-update race). The recomputed progress

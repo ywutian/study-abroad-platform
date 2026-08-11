@@ -1564,7 +1564,8 @@
     "tabs": {
       "schools": "Schools",
       "events": "Events",
-      "overview": "Overview"
+      "overview": "Overview",
+      "archive": "Archive"
     },
     "overview": {
       "totalSchools": "Total Schools",
@@ -1584,7 +1585,9 @@
       "ACCEPTED": "Accepted",
       "REJECTED": "Rejected",
       "WAITLISTED": "Waitlisted",
-      "WITHDRAWN": "Withdrawn"
+      "WITHDRAWN": "Withdrawn",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
     },
     "round": {
       "ED": "ED",
@@ -1618,6 +1621,13 @@
     "priority": "Priority",
     "notes": "Notes",
     "noDeadline": "No deadline",
+    "applicationYear": "Fall {{year}}",
+    "archive": {
+      "schoolTitle": "Archived School Applications",
+      "personalTitle": "Archived Personal Events",
+      "emptyTitle": "Archive is Empty",
+      "emptyDescription": "Completed, cancelled, and overdue records appear here as read-only history."
+    },
     "events": {
       "personal": "Personal Events",
       "global": "Global Events",

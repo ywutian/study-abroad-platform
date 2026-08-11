@@ -32,6 +32,7 @@ describe('TimelineService', () => {
     schoolId: mockSchoolId,
     schoolName: '哈佛大学',
     round: 'ED',
+    applicationYear: 2027,
     deadline: new Date('2026-11-01'),
     status: ApplicationStatus.NOT_STARTED,
     progress: 0,
@@ -270,7 +271,13 @@ describe('TimelineService', () => {
       // User already has an RD timeline for this school -> that round is skipped.
       (
         prismaService.applicationTimeline.findMany as jest.Mock
-      ).mockResolvedValue([{ schoolId: mockSchoolId, round: 'RD' }]);
+      ).mockResolvedValue([
+        {
+          schoolId: mockSchoolId,
+          round: 'RD',
+          applicationYear: schoolWithRd.deadlines[0].year,
+        },
+      ]);
 
       const result = await service.generateTimelines(mockUserId, {
         schoolIds: [mockSchoolId],

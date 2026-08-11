@@ -16,7 +16,6 @@ import { Stack, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -37,7 +36,11 @@ import {
   Select,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES, PERSONAL_EVENT_CATEGORIES } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  PERSONAL_EVENT_CATEGORIES,
+  resolveApplicationYear,
+} from '@study-abroad/shared';
 import type {
   TimelineResponse,
   TimelineStatus,
@@ -49,6 +52,12 @@ import type {
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
+import { InlineTaskList } from '@/components/features/timeline/InlineTaskList';
+import {
+  isArchivedPersonalEvent,
+  isArchivedTimeline,
+  TimelineArchive,
+} from '@/components/features/timeline/TimelineArchive';
 import {
   useColors,
   spacing,
@@ -109,7 +118,6 @@ const fmtDate = (d?: Date | string) => {
     year: 'numeric',
   });
 };
-
 // ── Main Component ─────────────────────────────────────────
 
 export default function TimelinePage() {
@@ -178,7 +186,7 @@ export default function TimelinePage() {
   } = useQuery<PersonalEventResponse[]>({
     queryKey: qk.timeline.personal(),
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/personal-events`),
-    enabled: activeTab === 'events',
+    enabled: activeTab === 'events' || activeTab === 'archive',
   });
   const yr = new Date().getFullYear();
   const { data: globalEvents, isLoading: geLoading } = useQuery<GlobalEventResponse[]>({
@@ -265,13 +273,39 @@ export default function TimelinePage() {
 
   const sorted = useMemo(() => {
     if (!timelines) return [];
-    return [...timelines].sort((a, b) => {
-      if (!a.deadline && !b.deadline) return 0;
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    });
+    return timelines
+      .filter((timeline) => !isArchivedTimeline(timeline))
+      .sort((a, b) => {
+        if (!a.deadline && !b.deadline) return 0;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      });
   }, [timelines]);
+
+  const archivedTimelines = useMemo(() => {
+    if (!timelines) return [];
+    return timelines
+      .filter(isArchivedTimeline)
+      .sort((a, b) => new Date(b.deadline ?? 0).getTime() - new Date(a.deadline ?? 0).getTime());
+  }, [timelines]);
+
+  const currentCycleTimelines = useMemo(() => {
+    const currentApplicationYear = resolveApplicationYear();
+    return (
+      timelines?.filter((timeline) => timeline.applicationYear >= currentApplicationYear) ?? []
+    );
+  }, [timelines]);
+
+  const activePersonalEvents = useMemo(
+    () => personalEvents?.filter((event) => !isArchivedPersonalEvent(event)) ?? [],
+    [personalEvents]
+  );
+
+  const archivedPersonalEvents = useMemo(
+    () => personalEvents?.filter(isArchivedPersonalEvent) ?? [],
+    [personalEvents]
+  );
 
   const sortedGlobal = useMemo(() => {
     if (!globalEvents) return [];
@@ -296,7 +330,7 @@ export default function TimelinePage() {
       [
         refetchTl(),
         activeTab === 'overview' ? refetchOv() : null,
-        activeTab === 'events' ? refetchPe() : null,
+        activeTab === 'events' || activeTab === 'archive' ? refetchPe() : null,
       ].filter(Boolean)
     );
     setRefreshing(false);
@@ -310,14 +344,13 @@ export default function TimelinePage() {
   // ── Render: Overview Header ──
 
   const renderHeader = () => {
-    const total = timelines?.length ?? 0;
-    const sub = timelines?.filter((x) => x.status === 'SUBMITTED').length ?? 0;
-    const prog = timelines?.filter((x) => x.status === 'IN_PROGRESS').length ?? 0;
-    const upcoming =
-      timelines?.filter((x) => {
-        const d = getDaysLeft(x.deadline);
-        return d !== null && d >= 0 && d <= 14;
-      }).length ?? 0;
+    const total = currentCycleTimelines.length;
+    const sub = currentCycleTimelines.filter((x) => x.status === 'SUBMITTED').length;
+    const prog = currentCycleTimelines.filter((x) => x.status === 'IN_PROGRESS').length;
+    const upcoming = sorted.filter((x) => {
+      const d = getDaysLeft(x.deadline);
+      return d !== null && d >= 0 && d <= 14;
+    }).length;
     return (
       <Animated.View entering={FadeInDown.duration(400).springify()}>
         <AnimatedCard style={s.headerCard}>
@@ -355,7 +388,7 @@ export default function TimelinePage() {
 
   // ── Render: Schools Tab ──
 
-  const renderSchoolCard = (item: TimelineResponse, idx: number) => {
+  const renderSchoolCard = (item: TimelineResponse, idx: number, readOnly = false) => {
     const open = expandedId === item.id;
     const days = getDaysLeft(item.deadline);
     const overdue = days !== null && days < 0;
@@ -375,6 +408,9 @@ export default function TimelinePage() {
                 <View style={s.badges}>
                   <Badge variant={ROUND_VARIANTS[item.round] ?? 'secondary'}>
                     {t(`timeline.round.${item.round}`, item.round)}
+                  </Badge>
+                  <Badge variant="outline">
+                    {t('timeline.applicationYear', { year: item.applicationYear })}
                   </Badge>
                   <Badge variant={STATUS_VARIANTS[item.status] ?? 'secondary'}>
                     {t(`timeline.status.${item.status}`, item.status)}
@@ -436,33 +472,35 @@ export default function TimelinePage() {
               <View style={[s.expanded, { borderTopColor: colors.border }]}>
                 <InlineTaskList
                   timelineId={item.id}
-                  colors={colors}
                   t={t}
+                  readOnly={readOnly}
                   onToggle={(id) => toggleTask.mutate(id)}
                   onAdd={() => {
                     setTaskModal({ visible: true, timelineId: item.id });
                     setNewTaskTitle('');
                   }}
                 />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    marginTop: spacing.sm,
-                  }}
-                >
-                  <AnimatedButton
-                    variant="ghost"
-                    size="sm"
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      setDeleteDialog({ visible: true, type: 'timeline', id: item.id });
+                {!readOnly && (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'flex-end',
+                      marginTop: spacing.sm,
                     }}
-                    leftIcon={<Ionicons name="trash-outline" size={16} color={colors.error} />}
                   >
-                    <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
-                  </AnimatedButton>
-                </View>
+                    <AnimatedButton
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        setDeleteDialog({ visible: true, type: 'timeline', id: item.id });
+                      }}
+                      leftIcon={<Ionicons name="trash-outline" size={16} color={colors.error} />}
+                    >
+                      <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
+                    </AnimatedButton>
+                  </View>
+                )}
               </View>
             )}
           </CardContent>
@@ -507,7 +545,7 @@ export default function TimelinePage() {
             {t('timeline.addEvent')}
           </AnimatedButton>
         </View>
-        {!personalEvents?.length ? (
+        {!activePersonalEvents.length ? (
           <EmptyState
             icon="calendar-outline"
             title={t('timeline.empty.noEvents')}
@@ -515,7 +553,7 @@ export default function TimelinePage() {
             style={{ paddingVertical: spacing.xl }}
           />
         ) : (
-          personalEvents.map((ev, i) => {
+          activePersonalEvents.map((ev, i) => {
             const open = expandedEventId === ev.id;
             const done = ev.tasks?.filter((t) => t.completed).length ?? 0;
             const total = ev.tasks?.length ?? 0;
@@ -921,6 +959,7 @@ export default function TimelinePage() {
               { key: 'schools', label: t('timeline.tabs.schools') },
               { key: 'events', label: t('timeline.tabs.events') },
               { key: 'overview', label: t('timeline.tabs.overview') },
+              { key: 'archive', label: t('timeline.tabs.archive') },
             ]}
             value={activeTab}
             onChange={(k) => {
@@ -933,6 +972,14 @@ export default function TimelinePage() {
           {activeTab === 'schools' && renderSchools()}
           {activeTab === 'events' && renderEvents()}
           {activeTab === 'overview' && renderOverview()}
+          {activeTab === 'archive' && (
+            <TimelineArchive
+              timelines={archivedTimelines}
+              personalEvents={archivedPersonalEvents}
+              loading={tlLoading || peLoading}
+              renderSchoolCard={renderSchoolCard}
+            />
+          )}
         </View>
       </ScrollView>
 
@@ -1020,86 +1067,6 @@ export default function TimelinePage() {
         loading={deleteTl.isPending || deleteEvt.isPending}
       />
     </>
-  );
-}
-
-// ── Inline Task List ───────────────────────────────────────
-
-function InlineTaskList({
-  timelineId,
-  colors,
-  t,
-  onToggle,
-  onAdd,
-}: {
-  timelineId: string;
-  colors: ReturnType<typeof useColors>;
-  t: TFunction;
-  onToggle: (id: string) => void;
-  onAdd: () => void;
-}) {
-  const { data: timeline, isLoading } = useQuery<{ tasks?: TaskResponse[] }>({
-    queryKey: qk.timeline.tasks(timelineId),
-    queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/${timelineId}`),
-    staleTime: 30_000,
-  });
-  const tasks = timeline?.tasks ?? [];
-  if (isLoading) return <Loading size="small" />;
-  return (
-    <View style={{ gap: spacing.xs }}>
-      {tasks?.length ? (
-        tasks.map((tk) => (
-          <View key={tk.id} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Checkbox checked={tk.completed} onPress={() => onToggle(tk.id)} />
-            <Ionicons
-              name={TASK_ICONS[tk.type] ?? 'ellipsis-horizontal'}
-              size={16}
-              color={tk.completed ? colors.foregroundMuted : colors.foreground}
-              style={{ marginLeft: spacing.xs }}
-            />
-            <View style={{ flex: 1, marginLeft: spacing.sm }}>
-              <Text
-                style={{
-                  fontSize: fontSize.sm,
-                  color: tk.completed ? colors.foregroundMuted : colors.foreground,
-                  textDecorationLine: tk.completed ? 'line-through' : 'none',
-                }}
-                numberOfLines={1}
-              >
-                {tk.title}
-              </Text>
-              {tk.dueDate && (
-                <Text
-                  style={{ fontSize: fontSize.xs, color: colors.foregroundMuted, marginTop: 2 }}
-                >
-                  {fmtDate(tk.dueDate)}
-                </Text>
-              )}
-            </View>
-          </View>
-        ))
-      ) : (
-        <Text
-          style={{
-            fontSize: fontSize.sm,
-            fontStyle: 'italic',
-            color: colors.foregroundMuted,
-            paddingVertical: spacing.sm,
-          }}
-        >
-          {t('timeline.noTasks')}
-        </Text>
-      )}
-      <AnimatedButton
-        variant="ghost"
-        size="sm"
-        onPress={onAdd}
-        leftIcon={<Ionicons name="add-circle-outline" size={16} color={colors.primary} />}
-        style={{ alignSelf: 'flex-start', marginTop: spacing.xs }}
-      >
-        {t('timeline.addTask')}
-      </AnimatedButton>
-    </View>
   );
 }
 

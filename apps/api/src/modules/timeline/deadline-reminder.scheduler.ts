@@ -18,7 +18,6 @@ import {
   NotificationService,
   NotificationType,
 } from '../notification/notification.service';
-import { rollAnnualDateForward } from './timeline-date.util';
 
 const DEADLINE_CRON_LOCK_KEY = 'deadline-reminder:cron-lock';
 
@@ -68,9 +67,8 @@ export class DeadlineReminderScheduler {
 
   private async processWindow(days: number): Promise<number> {
     const now = new Date();
-    // UTC day boundaries so the window matches the UTC-based rollAnnualDateForward
-    // applied below — otherwise the boundary shifts with the server's TZ (UTC on
-    // Cloud Run, local on a dev box) and edge-of-window deadlines mis-bucket.
+    // UTC day boundaries keep Cloud Run and local development aligned at the
+    // edges of each reminder window.
     const targetStart = new Date(now);
     targetStart.setUTCDate(targetStart.getUTCDate() + days);
     targetStart.setUTCHours(0, 0, 0, 0);
@@ -80,23 +78,23 @@ export class DeadlineReminderScheduler {
 
     // Both deadline kinds in this window: personal events + application (school)
     // deadlines. Application timelines only matter while still un-submitted.
-    const [events, activeTimelines] = await Promise.all([
+    const [events, queriedTimelines] = await Promise.all([
       this.prisma.personalEvent.findMany({
         where: {
-          deadline: { gte: targetStart, lte: targetEnd },
-          status: { not: 'COMPLETED' },
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          OR: [
+            { deadline: { gte: targetStart, lte: targetEnd } },
+            { eventDate: { gte: targetStart, lte: targetEnd } },
+          ],
         },
         select: { id: true, title: true, userId: true },
       }),
-      // Application deadlines recur annually and are rolled forward to their next
-      // occurrence at read time (#436) — the stored column may sit in the past.
-      // Fetch every active (un-submitted) timeline with a deadline and match the
-      // window against the *effective* (rolled) date, so a drifted timeline still
-      // reminds on the date the UI actually shows. (Personal events are one-time
-      // and are NOT rolled, so they keep the direct window filter above.)
+      // Application timelines are cycle-bound historical records. Query the
+      // stored date directly; rolling a past record would send a reminder for a
+      // deadline that was never sourced for the new cycle.
       this.prisma.applicationTimeline.findMany({
         where: {
-          deadline: { not: null },
+          deadline: { gte: targetStart, lte: targetEnd },
           status: {
             notIn: [
               'SUBMITTED',
@@ -117,11 +115,14 @@ export class DeadlineReminderScheduler {
       }),
     ]);
 
-    const timelines = activeTimelines.filter((tl) => {
-      if (!tl.deadline) return false;
-      const effective = rollAnnualDateForward(tl.deadline);
-      return effective >= targetStart && effective <= targetEnd;
-    });
+    // Keep the same boundary check in memory as a defence against connector or
+    // mock drift; importantly, this uses the stored date and never rolls years.
+    const timelines = queriedTimelines.filter(
+      (timeline) =>
+        timeline.deadline &&
+        timeline.deadline >= targetStart &&
+        timeline.deadline <= targetEnd,
+    );
 
     if (events.length === 0 && timelines.length === 0) return 0;
 

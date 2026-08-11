@@ -2122,7 +2122,7 @@ async function main() {
         caseData.visibility === 'VERIFIED_ONLY'
           ? VerificationLevel.L2
           : VerificationLevel.L1,
-      essayType: caseData.essayType as any,
+      essayType: caseData.essayType,
       essayPrompt: caseData.essayPrompt,
       essayContent: caseData.essayContent,
     } satisfies Prisma.AdmissionCaseUncheckedCreateInput;
@@ -2884,36 +2884,37 @@ async function main() {
       ],
     },
   ];
-
   let timelinesCreated = 0;
   for (const config of timelineConfigs) {
     if (config.userIdx >= createdUsers.length) continue;
     const user = createdUsers[config.userIdx];
     const school = schoolMap.get(config.schoolName);
     if (!school) continue;
-
-    const existing = await prisma.applicationTimeline.findFirst({
-      where: { userId: user.id, schoolId: school.id, round: config.round },
+    const deadline = await prisma.schoolDeadline.findFirst({
+      where: { schoolId: school.id, round: config.round },
     });
-
+    const existing = await prisma.applicationTimeline.findFirst({
+      where: {
+        userId: user.id,
+        schoolId: school.id,
+        round: config.round,
+        applicationYear: deadline?.year ?? 2026,
+      },
+    });
     if (!existing) {
-      const deadline = await prisma.schoolDeadline.findFirst({
-        where: { schoolId: school.id, round: config.round },
-      });
-
       const timeline = await prisma.applicationTimeline.create({
         data: {
           userId: user.id,
           schoolId: school.id,
           schoolName: school.name,
           round: config.round,
+          applicationYear: deadline?.year ?? 2026,
           deadline: deadline?.applicationDeadline || new Date('2025-11-01'),
           status: config.status as any,
           progress: config.progress,
           priority: config.progress > 50 ? 1 : 0,
         },
       });
-
       for (let i = 0; i < config.tasks.length; i++) {
         const task = config.tasks[i];
         await prisma.applicationTask.create({
@@ -2932,7 +2933,6 @@ async function main() {
     }
   }
   console.log(`  Application timelines created: ${timelinesCreated}\n`);
-
   // ------------------------------------------
   // 13. Personal Events
   // ------------------------------------------

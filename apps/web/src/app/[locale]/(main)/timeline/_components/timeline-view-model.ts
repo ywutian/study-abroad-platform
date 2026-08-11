@@ -1,4 +1,5 @@
 import type { PersonalEventResponse, TabType, TimelineResponse } from '@/types/timeline';
+import { resolveApplicationYear } from '@study-abroad/shared';
 
 export type TimelineItemKind = 'school' | 'personal';
 export type UrgencyBucket = 'today' | 'week' | 'month' | 'later' | 'undated';
@@ -41,6 +42,18 @@ const TERMINAL_ARCHIVE_STATUSES = new Set([
 ]);
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+export function getCurrentCycleSchoolIds(
+  timelines: TimelineResponse[],
+  now = new Date()
+): Set<string> {
+  const applicationYear = resolveApplicationYear(now);
+  return new Set(
+    timelines
+      .filter((timeline) => timeline.applicationYear >= applicationYear)
+      .map((timeline) => timeline.schoolId)
+  );
+}
+
 export function resolveTimelineTab(tab: string | null): TabType {
   if (tab === 'school' || tab === 'personal' || tab === 'archive') return tab;
   return 'todo';
@@ -57,6 +70,38 @@ export function daysUntilDate(dateStr?: string, now = new Date()): number | null
   if (Number.isNaN(target.getTime())) return null;
 
   return Math.ceil((startOfUtcDay(target).getTime() - startOfUtcDay(now).getTime()) / DAY_MS);
+}
+
+/** The last meaningful date after which a personal event is truly historical. */
+export function getPersonalLifecycleDate(event: {
+  deadline?: string;
+  eventDate?: string;
+}): string | undefined {
+  const candidates = [event.deadline, event.eventDate]
+    .filter((value): value is string => Boolean(value))
+    .map((value) => ({ value, time: new Date(value).getTime() }))
+    .filter((candidate) => !Number.isNaN(candidate.time))
+    .sort((a, b) => b.time - a.time);
+
+  return candidates[0]?.value;
+}
+
+/** The next date requiring action; after all dates pass, keep the final date. */
+export function getPersonalActionDate(
+  event: { deadline?: string; eventDate?: string },
+  now = new Date()
+): string | undefined {
+  const candidates = [event.deadline, event.eventDate]
+    .filter((value): value is string => Boolean(value))
+    .map((value) => ({ value, daysUntil: daysUntilDate(value, now) }))
+    .filter(
+      (candidate): candidate is { value: string; daysUntil: number } => candidate.daysUntil !== null
+    );
+  const upcoming = candidates
+    .filter((candidate) => candidate.daysUntil >= 0)
+    .sort((a, b) => a.daysUntil - b.daysUntil);
+
+  return upcoming[0]?.value ?? getPersonalLifecycleDate(event);
 }
 
 export function getArchivedDisplayStatus(status: string, daysUntil: number | null): string {
@@ -159,10 +204,12 @@ export function buildTimelineBoardModel(
   }
 
   for (const event of personalEvents) {
-    const date = event.deadline ?? event.eventDate;
+    const lifecycleDate = getPersonalLifecycleDate(event);
+    const date = getPersonalActionDate(event, now);
     const daysUntil = daysUntilDate(date, now);
     const isTerminal = PERSONAL_ARCHIVE_STATUSES.has(event.status);
-    const isOverdue = daysUntil !== null && daysUntil < 0;
+    const lifecycleDaysUntil = daysUntilDate(lifecycleDate, now);
+    const isOverdue = lifecycleDaysUntil !== null && lifecycleDaysUntil < 0;
 
     if (isTerminal || isOverdue) {
       archivedPersonalEvents.push(event);
@@ -219,7 +266,12 @@ export function buildTimelineBoardModel(
     )
   );
   archivedTimelines.sort(compareArchivedByDate);
-  archivedPersonalEvents.sort(compareArchivedByDate);
+  archivedPersonalEvents.sort((a, b) => {
+    const aDate = new Date(getPersonalLifecycleDate(a) ?? a.createdAt).getTime();
+    const bDate = new Date(getPersonalLifecycleDate(b) ?? b.createdAt).getTime();
+    if (aDate !== bDate) return bDate - aDate;
+    return b.priority - a.priority;
+  });
 
   const due7 = todoItems.filter(
     (item) => item.daysUntil !== null && item.daysUntil >= 0 && item.daysUntil <= 7

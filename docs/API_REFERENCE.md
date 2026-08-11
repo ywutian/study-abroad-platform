@@ -559,21 +559,21 @@ Reviews, rankings, lists, swipe, verified ranking — 35+ endpoints. Includes:
 
 ## 16. Other Modules
 
-| Module         | Path                   | Endpoints | Description                                |
-| -------------- | ---------------------- | --------- | ------------------------------------------ |
-| Assessment     | `/assessment`          | 4         | MBTI/Holland personality tests             |
-| Recommendation | `/recommendation`      | 5         | AI school recommendations (25 pts)         |
-| Timeline       | `/timeline`            | 21        | Application timeline management            |
-| Swipe          | `/hall/swipe`          | 4         | Case prediction game (via Hall controller) |
-| Notification   | `/notifications`       | 6         | Push notifications                         |
-| Subscription   | `/subscriptions`       | 7         | Subscription plans and billing             |
-| Vault          | `/vault`               | 10        | Encrypted credential storage               |
-| Verification   | `/verification`        | 6         | User identity verification                 |
-| Peer Review    | `/peer-review`         | 5         | Peer-to-peer profile reviews               |
-| Settings       | `/settings`            | 5         | System settings (ADMIN)                    |
-| Essay Prompts  | `/essay-prompts`       | 11        | Essay prompt database (2 public + 9 admin) |
-| Essay Scraper  | `/admin/essay-scraper` | 15        | Essay prompt scraping pipeline (ADMIN)     |
-| Case Admin     | `/admin/cases`         | 5         | Case batch import & review (ADMIN)         |
+| Module         | Path                   | Endpoints | Description                                                                                                          |
+| -------------- | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
+| Assessment     | `/assessment`          | 4         | MBTI/Holland personality tests                                                                                       |
+| Recommendation | `/recommendation`      | 5         | AI school recommendations (25 pts)                                                                                   |
+| Timeline       | `/timelines`           | 21        | Cycle-aware application timelines; responses include Fall-entry `applicationYear` and archived records are read-only |
+| Swipe          | `/hall/swipe`          | 4         | Case prediction game (via Hall controller)                                                                           |
+| Notification   | `/notifications`       | 6         | Push notifications                                                                                                   |
+| Subscription   | `/subscriptions`       | 7         | Subscription plans and billing                                                                                       |
+| Vault          | `/vault`               | 10        | Encrypted credential storage                                                                                         |
+| Verification   | `/verification`        | 6         | User identity verification                                                                                           |
+| Peer Review    | `/peer-review`         | 5         | Peer-to-peer profile reviews                                                                                         |
+| Settings       | `/settings`            | 5         | System settings (ADMIN)                                                                                              |
+| Essay Prompts  | `/essay-prompts`       | 11        | Essay prompt database (2 public + 9 admin)                                                                           |
+| Essay Scraper  | `/admin/essay-scraper` | 15        | Essay prompt scraping pipeline (ADMIN)                                                                               |
+| Case Admin     | `/admin/cases`         | 5         | Case batch import & review (ADMIN)                                                                                   |
 
 ## 17. Admin (`/admin`)
 

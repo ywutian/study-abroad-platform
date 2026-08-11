@@ -7217,7 +7217,7 @@
     },
     "archive": {
       "emptyTitle": "Archive is Empty",
-      "emptyDescription": "Completed, cancelled, or overdue unfinished items appear here instead of crowding the default view."
+      "emptyDescription": "Completed, cancelled, or overdue unfinished items appear here instead of crowding the default view; archived records are read-only."
     },
     "statuses": {
       "notStarted": "Not Started",
@@ -7294,7 +7294,8 @@
       "title": "School Timelines",
       "description": "Application progress sorted by registration deadline",
       "archiveTitle": "Archived School Applications",
-      "archiveDescription": "Finished, withdrawn, or overdue unfinished school applications",
+      "archiveDescription": "Read-only history of finished, withdrawn, or overdue applications by cycle",
+      "applicationYear": "Fall {year}",
       "deadline": "Registration Deadline",
       "tasks": "Tasks",
       "statusLabel": "Application status",

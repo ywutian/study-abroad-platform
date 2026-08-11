@@ -13,6 +13,7 @@ describe('TimelineApplicationService', () => {
     schoolId: 'school-1',
     schoolName: 'MIT',
     round: 'RD',
+    applicationYear: 2026,
     deadline: new Date(),
     status: 'NOT_STARTED',
     progress: 0,
@@ -132,7 +133,7 @@ describe('TimelineApplicationService', () => {
   });
 
   describe('generateTimelines', () => {
-    it('rolls expired structured school deadlines to the next application season', async () => {
+    it('does not fabricate a new-cycle deadline from an expired source', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
       mockPrisma.school.findMany.mockResolvedValue([
         {
@@ -157,29 +158,15 @@ describe('TimelineApplicationService', () => {
         },
       ]);
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
-      mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
-        Promise.resolve({
-          ...mockTimeline,
-          id: 'tl-rolled',
-          schoolId: data.schoolId,
-          schoolName: data.schoolName,
-          round: data.round,
-          deadline: data.deadline,
-          tasks: [],
-        }),
-      );
-
       const result = await service.generateTimelines('user-1', {
         schoolIds: ['school-1'],
       });
 
-      expect(result.created).toHaveLength(1);
-      expect(
-        mockPrisma.applicationTimeline.create.mock.calls[0][0].data.deadline,
-      ).toEqual(new Date('2027-01-01T00:00:00Z'));
-      expect(result.created[0].deadline).toEqual(
-        new Date('2027-01-01T00:00:00Z'),
-      );
+      expect(result.created).toEqual([]);
+      expect(mockPrisma.applicationTimeline.create).not.toHaveBeenCalled();
+      expect(result.failed).toEqual([
+        { schoolId: 'school-1', reason: 'DEADLINE_SOURCE_REQUIRED' },
+      ]);
     });
 
     it('creates school-specific essay tasks only from source-backed verified prompts', async () => {
@@ -194,14 +181,14 @@ describe('TimelineApplicationService', () => {
             {
               id: 'dl-rd',
               round: 'RD',
-              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              applicationDeadline: new Date('2027-01-01T00:00:00Z'),
               financialAidDeadline: null,
               essayPrompts: [
                 { prompt: 'Unsourced deadline prompt should not be used' },
               ],
               essayCount: 2,
               interviewRequired: false,
-              year: 2026,
+              year: 2027,
               source: 'WEB_RESEARCH_2026-05:official',
               notes: 'source: https://admission.princeton.edu/apply',
             },
@@ -223,6 +210,7 @@ describe('TimelineApplicationService', () => {
           schoolId: data.schoolId,
           schoolName: data.schoolName,
           round: data.round,
+          applicationYear: data.applicationYear,
           deadline: data.deadline,
           tasks: data.tasks.create,
         }),
@@ -271,14 +259,14 @@ describe('TimelineApplicationService', () => {
             {
               id: 'dl-rd',
               round: 'RD',
-              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              applicationDeadline: new Date('2027-01-01T00:00:00Z'),
               financialAidDeadline: null,
               essayPrompts: [
                 { prompt: 'Unsourced deadline prompt should not be used' },
               ],
               essayCount: 2,
               interviewRequired: false,
-              year: 2026,
+              year: 2027,
               source: 'WEB_RESEARCH_2026-05:official',
               notes: 'source: https://admission.princeton.edu/apply',
             },
@@ -294,6 +282,7 @@ describe('TimelineApplicationService', () => {
           schoolId: data.schoolId,
           schoolName: data.schoolName,
           round: data.round,
+          applicationYear: data.applicationYear,
           deadline: data.deadline,
           tasks: data.tasks.create,
         }),
@@ -336,12 +325,12 @@ describe('TimelineApplicationService', () => {
             {
               id: 'dl-manual',
               round: 'RD',
-              applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+              applicationDeadline: new Date('2027-01-01T00:00:00Z'),
               financialAidDeadline: null,
               essayPrompts: null,
               essayCount: null,
               interviewRequired: false,
-              year: 2026,
+              year: 2027,
               source: 'MANUAL',
               notes: 'source: https://admission.princeton.edu/apply',
             },
@@ -415,7 +404,9 @@ describe('TimelineApplicationService', () => {
           ],
         },
       ]);
-      mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([
+        { schoolId: 'school-1', round: 'ED', applicationYear: 2026 },
+      ]);
       mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
       mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
         Promise.resolve({
@@ -424,6 +415,7 @@ describe('TimelineApplicationService', () => {
           schoolId: data.schoolId,
           schoolName: data.schoolName,
           round: data.round,
+          applicationYear: data.applicationYear,
           deadline: data.deadline,
           tasks: [],
         }),
@@ -437,6 +429,7 @@ describe('TimelineApplicationService', () => {
       expect(result.created[0].deadline).toEqual(
         new Date('2026-11-01T00:00:00Z'),
       );
+      expect(result.created[0].applicationYear).toBe(2027);
     });
   });
 
@@ -528,6 +521,18 @@ describe('TimelineApplicationService', () => {
         service.deleteTimeline('user-1', 'nonexistent'),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('rejects deletion of an archived timeline', async () => {
+      mockPrisma.applicationTimeline.findFirst.mockResolvedValue({
+        ...mockTimeline,
+        deadline: new Date('2020-01-01T00:00:00.000Z'),
+      });
+
+      await expect(service.deleteTimeline('user-1', 'tl-1')).rejects.toThrow(
+        ConflictException,
+      );
+      expect(mockPrisma.applicationTimeline.delete).not.toHaveBeenCalled();
+    });
   });
 
   describe('mapTaskToResponse source state', () => {
@@ -585,14 +590,13 @@ describe('TimelineApplicationService', () => {
     });
   });
 
-  describe('effectiveDeadline (read-time roll-forward)', () => {
-    afterEach(() => jest.useRealTimers());
-
+  describe('cycle-bound deadline mapping', () => {
     const baseTimeline = (status: string, deadline: Date) => ({
       id: 't1',
       schoolId: 's1',
       schoolName: 'MIT',
       round: 'RD',
+      applicationYear: 2026,
       deadline,
       status,
       progress: 0,
@@ -602,32 +606,22 @@ describe('TimelineApplicationService', () => {
       createdAt: new Date('2025-09-01T00:00:00Z'),
     });
 
-    it('rolls a past deadline to its next annual occurrence for active timelines', () => {
-      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
+    it('keeps a past active deadline so the client can archive it', () => {
       const res = service.mapTimelineToResponse(
         baseTimeline('IN_PROGRESS', new Date('2026-01-01T00:00:00Z')),
       );
-      expect(res.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
+      expect(res.deadline).toEqual(new Date('2026-01-01T00:00:00Z'));
+      expect(res.applicationYear).toBe(2026);
     });
 
     it('leaves a future deadline untouched', () => {
-      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
       const res = service.mapTimelineToResponse(
         baseTimeline('NOT_STARTED', new Date('2026-11-01T00:00:00Z')),
       );
       expect(res.deadline).toEqual(new Date('2026-11-01T00:00:00Z'));
     });
 
-    it('rolls a past deadline for NOT_STARTED timelines too', () => {
-      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
-      const res = service.mapTimelineToResponse(
-        baseTimeline('NOT_STARTED', new Date('2026-01-01T00:00:00Z')),
-      );
-      expect(res.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
-    });
-
     it('returns undefined when the timeline has no deadline', () => {
-      jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
       const res = service.mapTimelineToResponse({
         ...baseTimeline('IN_PROGRESS', new Date('2026-01-01T00:00:00Z')),
         deadline: null,
@@ -638,7 +632,6 @@ describe('TimelineApplicationService', () => {
     it.each(['SUBMITTED', 'ACCEPTED', 'REJECTED', 'WAITLISTED', 'WITHDRAWN'])(
       'keeps the real past deadline for terminal status %s',
       (status) => {
-        jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
         const res = service.mapTimelineToResponse(
           baseTimeline(status, new Date('2026-01-01T00:00:00Z')),
         );
@@ -647,7 +640,7 @@ describe('TimelineApplicationService', () => {
     );
   });
 
-  describe('getOverview effective-deadline filter', () => {
+  describe('getOverview cycle-bound deadline filter', () => {
     afterEach(() => jest.useRealTimers());
 
     const row = (
@@ -660,6 +653,7 @@ describe('TimelineApplicationService', () => {
       schoolId: id,
       schoolName,
       round: 'RD',
+      applicationYear: 2026,
       deadline,
       status,
       progress: 0,
@@ -669,7 +663,7 @@ describe('TimelineApplicationService', () => {
       createdAt: new Date('2025-09-01T00:00:00Z'),
     });
 
-    it('surfaces a drifted active timeline (rolled) as upcoming and excludes submitted', async () => {
+    it('keeps historical active timelines out of upcoming and excludes submitted', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-06-20T12:00:00Z'));
       mockPrisma.applicationTimeline.findMany.mockResolvedValue([
         row(
@@ -690,21 +684,22 @@ describe('TimelineApplicationService', () => {
           'SUBMITTED',
           new Date('2026-01-02T00:00:00Z'),
         ),
+        row(
+          'future-accepted',
+          'Stanford',
+          'ACCEPTED',
+          new Date('2026-12-01T00:00:00Z'),
+        ),
       ]);
       mockPrisma.applicationTask.findMany.mockResolvedValue([]);
 
       const overview = await service.getOverview('u1');
       const ids = overview.upcomingDeadlines.map((t) => t.id);
 
-      // Stored deadline drifted into the past but rolls to its next occurrence →
-      // still upcoming. Submitted (terminal) is excluded.
-      expect(ids).toContain('past-active');
+      expect(ids).not.toContain('past-active');
       expect(ids).toContain('future-active');
       expect(ids).not.toContain('past-submitted');
-      const mit = overview.upcomingDeadlines.find(
-        (t) => t.id === 'past-active',
-      );
-      expect(mit?.deadline).toEqual(new Date('2027-01-01T00:00:00Z'));
+      expect(ids).not.toContain('future-accepted');
     });
   });
 
@@ -747,6 +742,25 @@ describe('TimelineApplicationService', () => {
       await expect(
         service.toggleTaskComplete('user-1', 'task-x'),
       ).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects task mutation when the owning timeline is archived', async () => {
+      mockPrisma.applicationTask.findFirst.mockResolvedValue({
+        id: 'task-archived',
+        timelineId: 'tl-archived',
+        completed: false,
+        timeline: {
+          id: 'tl-archived',
+          userId: 'user-1',
+          status: 'WITHDRAWN',
+          deadline: new Date('2027-01-01T00:00:00.000Z'),
+        },
+      });
+
+      await expect(
+        service.toggleTaskComplete('user-1', 'task-archived'),
+      ).rejects.toThrow(ConflictException);
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
   });

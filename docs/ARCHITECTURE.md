@@ -617,7 +617,7 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 
 #### Application Timeline (5 models)
 
-- **ApplicationTimeline** — User's school application tracking (status, progress 0-100)
+- **ApplicationTimeline** — Cycle-bound school application tracking (`applicationYear` is the Fall entry year; unique by user + school + round + year). Terminal or expired records remain immutable history instead of rolling into a later cycle.
 - **ApplicationTask** — Tasks within timeline (type, dueDate, essayPrompt, wordLimit)
 - **GlobalEvent** — System-wide events (SAT dates, competitions, summer programs)
 - **PersonalEvent** — User-subscribed events with tasks
@@ -1511,9 +1511,10 @@ Competition-tier-weighted award scoring requires linking `Award.competitionId` �
 ### 15.3 Query Key Conventions (Frontend)
 
 ```typescript
-['resource'][('resource', id)][('resource', search, filters)][('resource-detail', id)][ // List all // Get by ID // Search with filters // Detailed view
-  'resource-overview'
-]; // Summary/stats
+['resource'][('resource', id)][('resource', search, filters)][
+  ('resource-detail', id)
+] // List all // Get by ID // Search with filters // Detailed view
+['resource-overview']; // Summary/stats
 ```
 
 ### 15.4 API Response Format

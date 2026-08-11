@@ -64,6 +64,13 @@ export class CreateTimelineDto {
   @IsOptional()
   deadline?: string;
 
+  @ApiPropertyOptional({ description: 'Fall entry year' })
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  @IsOptional()
+  applicationYear?: number;
+
   @ApiPropertyOptional()
   @IsInt()
   @Min(0)
@@ -121,6 +128,9 @@ export class TimelineResponseDto {
 
   @ApiProperty({ enum: ApplicationRound })
   round: ApplicationRound;
+
+  @ApiProperty({ description: 'Fall entry year' })
+  applicationYear: number;
 
   @ApiProperty()
   deadline?: Date;

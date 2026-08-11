@@ -21,7 +21,7 @@ import type {
   AnalysisState,
   ApplicationAnalysisSchoolResult,
 } from '@study-abroad/shared';
-import { profileRoutes, timelineRoutes } from '@study-abroad/shared';
+import { profileRoutes, resolveApplicationYear, timelineRoutes } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { qk } from '@/lib/query';
 import { AI_TIMEOUTS, GC_TIME } from '@/lib/constants';
@@ -534,7 +534,6 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
     : null;
   const firstAction = school.assessment.nextActions[0];
   const canReportOutcome = Boolean(school.prediction?.predictionResultId);
-
   const addToTimelineMutation = useMutation({
     mutationFn: async () => {
       if (!firstAction) return null;
@@ -543,7 +542,8 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
       const existing = timelines.find(
         (timeline) =>
           timeline.schoolId === school.schoolId &&
-          normalizeTimelineRound(timeline.round) === desiredRound
+          normalizeTimelineRound(timeline.round) === desiredRound &&
+          timeline.applicationYear === resolveApplicationYear()
       );
       const timeline =
         existing ??

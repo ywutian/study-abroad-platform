@@ -64,6 +64,7 @@ export function TimelineTabs({
                 getRoundBadge={getRoundBadge}
                 getStatusBadge={getStatusBadge}
                 setDeleteTarget={setDeleteTarget}
+                readOnly={isArchive}
                 updateTimelineMutation={isArchive ? undefined : updateTimelineMutation}
                 addTaskMutation={isArchive ? undefined : addTaskMutation}
                 deleteTaskMutation={isArchive ? undefined : deleteTaskMutation}

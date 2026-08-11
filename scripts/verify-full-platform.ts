@@ -41,14 +41,32 @@ const dbPassword = process.env.DB_PASSWORD || 'postgres';
 const dbPort = process.env.DB_PORT || '5433';
 const redisPort = process.env.REDIS_PORT || '6379';
 const redisPassword = process.env.REDIS_PASSWORD || 'redis_dev_password';
-const testDatabaseName = process.env.TEST_DB_NAME || DEFAULT_TEST_DB;
+const configuredTestDatabaseName = process.env.TEST_DB_NAME || DEFAULT_TEST_DB;
+const testDatabaseUrl =
+  process.env.TEST_DATABASE_URL ||
+  `postgresql://${dbUser}:${dbPassword}@localhost:${dbPort}/${configuredTestDatabaseName}`;
+const parsedTestDatabaseUrl = new URL(testDatabaseUrl);
+const testDatabaseName = decodeURIComponent(parsedTestDatabaseUrl.pathname.slice(1));
+
+if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(testDatabaseName)) {
+  throw new Error(`Unsafe TEST_DB_NAME: ${testDatabaseName}`);
+}
+if (!/(^|_)test(_|$)/i.test(testDatabaseName)) {
+  throw new Error(`Refusing to reset database without an explicit test name: ${testDatabaseName}`);
+}
+if (testDatabaseName !== configuredTestDatabaseName) {
+  throw new Error(
+    `TEST_DATABASE_URL database (${testDatabaseName}) does not match TEST_DB_NAME (${configuredTestDatabaseName})`
+  );
+}
+if (!['localhost', '127.0.0.1'].includes(parsedTestDatabaseUrl.hostname)) {
+  throw new Error(`Full-platform E2E only resets the local Docker test database`);
+}
 
 const apiTestEnv: NodeJS.ProcessEnv = {
   ...baseEnv,
   NODE_ENV: 'test',
-  DATABASE_URL:
-    process.env.TEST_DATABASE_URL ||
-    `postgresql://${dbUser}:${dbPassword}@localhost:${dbPort}/${testDatabaseName}`,
+  DATABASE_URL: testDatabaseUrl,
   REDIS_URL: process.env.TEST_REDIS_URL || `redis://:${redisPassword}@localhost:${redisPort}`,
   JWT_SECRET: process.env.JWT_SECRET || 'test-jwt-secret-at-least-16-chars',
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-at-least-16-chars',
@@ -110,15 +128,20 @@ const lanes: Lane[] = [
         command: `until docker compose exec -T db pg_isready -U ${dbUser}; do sleep 2; done`,
       },
       {
-        label: 'create test database',
-        command: `docker compose exec -T db psql -U ${dbUser} -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = '${testDatabaseName}'" | grep -q 1 || docker compose exec -T db psql -U ${dbUser} -d postgres -c "CREATE DATABASE ${testDatabaseName}"`,
+        label: 'reset test database',
+        command: `docker compose exec -T db dropdb -U ${dbUser} --if-exists --force ${testDatabaseName} && docker compose exec -T db createdb -U ${dbUser} ${testDatabaseName}`,
       },
       {
         label: 'enable pgvector extension',
         command: `docker compose exec -T db psql -U ${dbUser} -d ${testDatabaseName} -c "CREATE EXTENSION IF NOT EXISTS vector"`,
       },
       {
-        label: 'api test schema push',
+        label: 'api test migrations deploy',
+        command: 'pnpm --filter api exec prisma migrate deploy',
+        env: apiTestEnv,
+      },
+      {
+        label: 'api test schema sync',
         command: 'pnpm --filter api exec prisma db push --accept-data-loss',
         env: apiTestEnv,
       },

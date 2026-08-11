@@ -7190,7 +7190,7 @@
     },
     "archive": {
       "emptyTitle": "归档为空",
-      "emptyDescription": "已完成、已取消或过期未完成的事项会出现在这里，不会压住默认待办。"
+      "emptyDescription": "已完成、已取消或过期未完成的事项会出现在这里，不会压住默认待办；归档记录为只读。"
     },
     "statuses": {
       "notStarted": "未开始",
@@ -7267,7 +7267,8 @@
       "title": "学校时间线",
       "description": "按报名截止日排序的申请进度",
       "archiveTitle": "归档学校申请",
-      "archiveDescription": "已结束、已撤回或过期未完成的学校申请",
+      "archiveDescription": "按申请季只读保留已结束、已撤回或过期未完成的学校申请",
+      "applicationYear": "{year} 入学",
       "deadline": "报名截止日",
       "tasks": "任务",
       "statusLabel": "申请状态",

@@ -43,6 +43,7 @@ function timeline(overrides: Partial<TimelineResponse> = {}): TimelineResponse {
     schoolId: overrides.schoolId ?? 'school-1',
     schoolName: overrides.schoolName ?? 'Example University',
     round: overrides.round ?? 'RD',
+    applicationYear: overrides.applicationYear ?? 2026,
     deadline: overrides.deadline,
     status: overrides.status ?? 'NOT_STARTED',
     progress: overrides.progress ?? 0,

@@ -102,6 +102,7 @@ export interface PersonalEventsSectionProps extends DateHelpers, BadgeHelpers {
   onEditEvent: (event: PersonalEventDisplayRow) => void;
   addPersonalTaskMutation: UseMutationResult<unknown, Error, AddPersonalTaskVars>;
   deletePersonalTaskMutation: UseMutationResult<unknown, Error, string>;
+  readOnly?: boolean;
 }
 
 export interface CreateEventDialogProps {
