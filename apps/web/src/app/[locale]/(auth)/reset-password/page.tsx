@@ -145,6 +145,10 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={
+                showPassword ? t('auth.register.hidePassword') : t('auth.register.showPassword')
+              }
+              aria-pressed={showPassword}
               className="absolute right-0 top-0 bottom-0 w-11 flex items-center justify-center text-auth-icon hover:text-auth transition-colors"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -173,6 +177,12 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              aria-label={
+                showConfirmPassword
+                  ? t('auth.register.hidePassword')
+                  : t('auth.register.showPassword')
+              }
+              aria-pressed={showConfirmPassword}
               className="absolute right-0 top-0 bottom-0 w-11 flex items-center justify-center text-auth-icon hover:text-auth transition-colors"
             >
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

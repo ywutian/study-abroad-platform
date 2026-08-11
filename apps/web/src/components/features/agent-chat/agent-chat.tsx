@@ -405,8 +405,8 @@ export function AgentChat({
                       {QUICK_ACTION_KEYS.map((action, idx) => (
                         <motion.div
                           key={idx}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.4 + idx * 0.1 }}
                           whileHover={{ scale: 1.05, y: -2 }}
                           whileTap={{ scale: 0.95 }}
@@ -415,7 +415,7 @@ export function AgentChat({
                             variant="outline"
                             size="sm"
                             onClick={() => sendMessage(t(`quickActions.${action.messageKey}`))}
-                            className="h-10 min-h-10 rounded-full px-4 text-xs transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary sm:h-8 sm:min-h-8"
+                            className="h-11 min-h-11 rounded-full px-4 text-xs transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
                           >
                             {t(`quickActions.${action.labelKey}`)}
                           </Button>
@@ -493,7 +493,7 @@ export function AgentChat({
                     variant="ghost"
                     size="sm"
                     onClick={() => sendMessage(t(`quickActions.${action.messageKey}`))}
-                    className="h-10 min-h-10 whitespace-nowrap rounded-full text-xs hover:bg-primary/5 sm:h-7 sm:min-h-7"
+                    className="h-11 min-h-11 whitespace-nowrap rounded-full text-xs hover:bg-primary/5"
                   >
                     {t(`quickActions.${action.labelKey}`)}
                   </Button>
