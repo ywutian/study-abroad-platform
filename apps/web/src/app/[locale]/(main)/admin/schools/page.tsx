@@ -246,7 +246,7 @@ export default function AdminSchoolsPage() {
 
       <div className="mt-6">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList>
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4 lg:flex lg:w-fit lg:flex-wrap">
             <TabsTrigger value="schools" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
               {t('sidebar.schools')}
