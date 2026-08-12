@@ -1,3 +1,5 @@
+import { POINTS_ECONOMY_AVAILABLE } from '@study-abroad/shared';
+
 export type FullUiLocale = 'en' | 'zh';
 export type FullUiRole = 'guest' | 'user' | 'admin';
 export type FullUiViewportName = 'desktop' | 'mobile' | 'wide';
@@ -13,6 +15,7 @@ export interface FullUiSurfaceRoute {
   viewports?: FullUiViewportName[];
   controlMode?: FullUiControlMode;
   notes?: string;
+  availability?: 'active' | 'disabled';
 }
 
 export const FULL_UI_LOCALES: FullUiLocale[] = ['en', 'zh'];
@@ -287,6 +290,10 @@ export const FULL_UI_SURFACE_ROUTES: FullUiSurfaceRoute[] = [
     pattern: '/admin/points-redemptions',
     path: '/admin/points-redemptions',
     role: 'admin',
+    availability: POINTS_ECONOMY_AVAILABLE ? 'active' : 'disabled',
+    viewports: ['desktop'],
+    notes:
+      'Product kill switch is off; direct access must render the noindex unavailable surface and navigation must stay hidden.',
   },
   {
     name: 'Admin prediction benchmark',

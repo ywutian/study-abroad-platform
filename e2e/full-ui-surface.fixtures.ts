@@ -1576,8 +1576,9 @@ function apiData(path: string, role: FullUiRole, method: string) {
     return { data: responseData([]) };
   }
 
-  // These operator queues are collection endpoints. Keep them ahead of the
-  // generic /admin fallback so array consumers exercise the real API shape.
+  // Dormant while POINTS_ECONOMY_AVAILABLE is false. Keeping the real array
+  // contract here makes the launch-gate flip testable without a second fixture
+  // change that could mask an API-shape regression.
   if (
     path === '/admin/points/redemptions/pending' ||
     path === '/admin/points/redemptions/consultations'

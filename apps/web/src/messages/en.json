@@ -11162,6 +11162,9 @@
     "pointsRedemptions": {
       "title": "Points redemption queue",
       "description": "Fulfilment to-do plus consultation outcomes — every row has already been charged",
+      "unavailableTitle": "Points system is not available",
+      "unavailableDescription": "The points economy is currently closed. No points are earned, deducted, or available for redemption.",
+      "backToAdmin": "Back to admin",
       "pendingTitle": "Awaiting fulfilment",
       "pendingEmpty": "Nothing awaiting fulfilment",
       "consultTitle": "Consultations awaiting an outcome",

@@ -928,6 +928,10 @@ test.describe('Full UI surface registry', () => {
       expect(route.path, `${route.pattern} needs a concrete fixture path`).toBeTruthy();
       expect(['guest', 'user', 'admin'], `${route.pattern} needs a role`).toContain(route.role);
       expect(
+        ['active', 'disabled'],
+        `${route.pattern} needs a valid availability state when specified`
+      ).toContain(route.availability ?? 'active');
+      expect(
         getRouteViewports(route).length,
         `${route.pattern} needs at least one viewport`
       ).toBeGreaterThan(0);
@@ -957,6 +961,7 @@ test.describe('Full UI surface crawler', () => {
           const consoleErrors: string[] = [];
           const pageErrors: string[] = [];
           const networkIssues: string[] = [];
+          const disabledFeatureRequests: string[] = [];
           const viewport = FULL_UI_VIEWPORTS[viewportName];
           const url = expectedUrl(locale, route);
 
@@ -1000,12 +1005,38 @@ test.describe('Full UI surface crawler', () => {
               networkIssues.push(`${request.method()} ${requestUrl}: ${errorText}`);
             }
           });
+          page.on('request', (request) => {
+            if (/\/api\/(?:v1\/)?admin\/points\//.test(request.url())) {
+              disabledFeatureRequests.push(request.url());
+            }
+          });
           page.on('response', (response) => {
             const responseUrl = response.url();
             if (responseUrl.includes('/api/') && response.status() >= 500) {
               networkIssues.push(`API ${response.status()} ${responseUrl}`);
             }
           });
+
+          if (route.availability === 'disabled') {
+            await gotoSurface(page, `/${locale}/admin`);
+            await expect(
+              page.locator('a[href$="/admin/points-redemptions"]'),
+              `${route.pattern} should be absent from admin navigation while disabled`
+            ).toHaveCount(0);
+
+            await gotoSurface(page, url);
+            await expect(page.getByTestId('points-economy-unavailable')).toBeVisible();
+            await expect(page.getByRole('link', { name: /admin|管理后台/i })).toBeVisible();
+            await expect(
+              page.locator('meta[name="robots"]'),
+              `${url} should be excluded from indexing while disabled`
+            ).toHaveAttribute('content', /noindex/i);
+            expect(
+              disabledFeatureRequests,
+              `${route.pattern} should not request points APIs while disabled`
+            ).toEqual([]);
+            return;
+          }
 
           const response = await gotoSurface(page, url);
           expect(response?.status() ?? 200, `${url} should not return HTTP error`).toBeLessThan(

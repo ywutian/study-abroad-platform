@@ -139,10 +139,17 @@ export const SUPPORTED_LOCALES = ['en', 'zh'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: SupportedLocale = 'zh';
 
-// 积分系统开关 — 已迁移至 SystemSetting (由管理员在运行时配置)
-// 旧常量保留为向后兼容的默认值，实际控制逻辑在 PointsConfigService
-/** @deprecated Use PointsConfigService.isEnabled() instead */
-export const POINTS_ENABLED = false;
+/**
+ * Build-time product availability gate for the points economy.
+ *
+ * Keep this false until the launch runbook has been completed. The API runtime
+ * setting can disable an available feature, but it must never override this
+ * product-level kill switch.
+ */
+export const POINTS_ECONOMY_AVAILABLE = false;
+
+/** @deprecated Use POINTS_ECONOMY_AVAILABLE or PointsConfigService.isEnabled(). */
+export const POINTS_ENABLED = POINTS_ECONOMY_AVAILABLE;
 
 // 分页默认值
 export const DEFAULT_PAGE_SIZE = 20;

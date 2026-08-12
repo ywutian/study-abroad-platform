@@ -11135,6 +11135,9 @@
     "pointsRedemptions": {
       "title": "积分兑换队列",
       "description": "履约待办 + 咨询结果记录 —— 每笔都已扣掉用户积分",
+      "unavailableTitle": "积分系统暂未开放",
+      "unavailableDescription": "当前不会获取、扣除或兑换积分。积分系统完成开放验收后再启用。",
+      "backToAdmin": "返回管理后台",
       "pendingTitle": "待履约",
       "pendingEmpty": "没有待履约的兑换",
       "consultTitle": "咨询结果待记录",

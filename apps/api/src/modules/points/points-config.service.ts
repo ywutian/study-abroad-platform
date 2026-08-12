@@ -1,4 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { POINTS_ECONOMY_AVAILABLE } from '@study-abroad/shared';
 import { SettingsService, SETTING_KEYS } from '../settings/settings.service';
 
 /**
@@ -267,15 +268,13 @@ export class PointsConfigService {
    * restored later, but never let an old `points_enabled=true` setting revive
    * charging/rewards while every client surface is hidden.
    */
-  private static readonly FEATURE_AVAILABLE = false;
-
   constructor(private readonly settingsService: SettingsService) {}
 
   /**
    * Check if the points system is enabled (runtime, from DB/Redis cache)
    */
   async isEnabled(): Promise<boolean> {
-    if (!PointsConfigService.FEATURE_AVAILABLE) return false;
+    if (!POINTS_ECONOMY_AVAILABLE) return false;
     return this.settingsService.getTyped(SETTING_KEYS.POINTS_ENABLED, false);
   }
 
@@ -336,7 +335,7 @@ export class PointsConfigService {
    * Toggle the points system on/off
    */
   async setEnabled(enabled: boolean): Promise<void> {
-    if (enabled && !PointsConfigService.FEATURE_AVAILABLE) {
+    if (enabled && !POINTS_ECONOMY_AVAILABLE) {
       throw new BadRequestException(
         'Points economy is disabled; product features run without points',
       );
