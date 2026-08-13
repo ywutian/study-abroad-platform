@@ -13,22 +13,22 @@
 | 请求人 / 决策人   | [REQUESTER] 仓库所有者                                                               |
 | 优先级 / 目标日期 | [REQUESTER] 立即执行；2026-08-12                                                     |
 | 来源文档          | `docs/USER_FEEDBACK_ANALYSIS_2026-08-05.normalized.md`；[REQUESTER] 2026-08-12“你来” |
-| 状态              | Implementing                                                                         |
+| 状态              | Closed                                                                               |
 
 <!-- section:executive-summary -->
 
 ## 2. 一页摘要 / Executive Summary
 
-- 问题：[CODE] 本地 `main` 已包含全部修复并通过门禁，但比 `origin/main` 超前 5 个提交；push 会自动执行生产迁移和 GCP 部署。5 月历史审计曾记录仓库缺失 `20260428120000_add_mbti_and_personality_tags`，因此必须用当前生产数据库证据重新对账，不能把过期阻塞直接带入发布。
-- 业务/用户结果：[REQUESTER] 安全推送已验证修复，并完成迁移、部署及生产健康验收。
-- 拟议方案：[DECISION] 通过短生命周期、私有且必须 IAM 鉴权的 Cloud Run 服务，对 `database-url` 与 `database-url-proxy` 两条生产连接执行只读迁移清单/校验和与 pending migration 前置条件对账；禁止猜写 SQL 或绕过 Prisma 历史；门禁通过后才推送并监控部署。
-- 成功衡量：[RUNTIME] 两条生产连接指向同一数据库且迁移清单一致；历史目标当前不存在、没有校验和冲突；唯一 pending migration 的生产前置条件通过；发布门禁退出 0、GitHub CI/迁移/部署成功、生产健康检查通过且积分仍关闭。
+- 问题：[CODE] 修复批次最初只在本地 `main`，且 5 月历史审计曾记录仓库缺失 `20260428120000_add_mbti_and_personality_tags`；若不以当前生产重新对账，直接发布可能错误恢复过期迁移或把代码通过误当成生产关闭。
+- 业务/用户结果：[RUNTIME] 修复批次已通过受保护分支 PR #594 合并至 `main`，生产迁移、canary、全流量部署、API/DB/Redis 健康和中英文公开路径均验收通过；积分系统仍关闭。
+- 实施方案：[DECISION] 使用短生命周期、私有且必须 IAM 鉴权的 Cloud Run 服务，对 `database-url` 与 `database-url-proxy` 两条生产连接执行只读迁移清单/校验和与 pending migration 前置条件对账；禁止猜写 SQL 或绕过 Prisma 历史；对账和全量门禁通过后由受保护 PR 合并并持续监控生产部署。
+- 成功衡量：[RUNTIME] 两条生产连接指向同一 `study_abroad/public` 且迁移清单一致；历史目标当前不存在、没有校验和冲突；pending migration 前置条件和生产执行通过；PR/main CI、迁移、canary、正式健康和公开路径成功且 `POINTS_ECONOMY_AVAILABLE=false`。
 
 <!-- section:current-state -->
 
 ## 3. 当前状态与证据 / Current State and Evidence
 
-[CODE] `main` 位于 `eac77a6b`，比 `origin/main` 超前 5 个提交；仅私人 `未命名文件夹/` 和本发布文档保持未跟踪。[CODE] `.github/workflows/ci.yml` 在 `main` push 后先运行 build/e2e/security，再构建镜像、执行 `apps/api/migrate.sh` 和 `prisma migrate deploy`，最后部署 Cloud Run。[RUNTIME] 只读取证 run `31674059594` 证明 `database-url:latest` 与 API 实际使用的 `database-url-proxy:latest` 均连接 `study_abroad/public`，各有 131 条原始迁移记录且清单完全一致；两边都没有历史目标 `20260428120000_add_mbti_and_personality_tags`。[RUNTIME] 与仓库按名称和 SHA-256 对账后无共同迁移校验和不一致，唯一 repo-only migration 是 `20260811120000_application_timeline_cycle_history`；run `31674204209` 证明生产尚无 `applicationYear`、旧唯一索引存在且按回填公式计算的重复组/多余行均为 0。
+[CODE] 修复批次通过 PR #594 squash 合并为 `58b1e59918af06fa566662aaebcb7b9e2275bae3`，远端 `main` 已包含归档问题修复和质量债务关闭；私人 `未命名文件夹/` 从未暂存或提交。[RUNTIME] 只读取证 run `31674059594` 证明 `database-url:latest` 与 API 实际使用的 `database-url-proxy:latest` 均连接 `study_abroad/public`，各有 131 条原始迁移记录且清单完全一致；两边都没有历史目标 `20260428120000_add_mbti_and_personality_tags`。[RUNTIME] 与仓库按名称和 SHA-256 对账后无共同迁移校验和不一致；run `31674204209` 证明当时唯一 pending migration `20260811120000_application_timeline_cycle_history` 的生产前置条件安全。[RUNTIME] main run `31677048632` 随后成功执行 migration `study-abroad-migrate-zztr7`，确认迁移与 API 都连接 `study_abroad`，并将 Cloud Run revision `study-abroad-api-00936-yex` 通过 canary 后提升到全流量。
 
 <!-- section:target-outcome -->
 
@@ -156,26 +156,36 @@
 
 ## 17. Codex 实施计划 / Codex Implementation Plan
 
-[CODE] 已从 Git 对象、远端 refs、本机归档、GitHub Actions artifacts 和 GCP 历史镜像搜索历史候选；随后通过短生命周期私有 Cloud Run 服务直接对账当前生产两条数据库连接，确认旧目标已不在当前迁移历史。下一步运行 pending migration 与全仓发布门禁，提交并 push `main`；随后持续读取 GitHub/GCP 状态直到部署成功或出现需要修复的确定失败。
+[CODE] 已从 Git 对象、远端 refs、本机归档、GitHub Actions artifacts 和 GCP 历史镜像搜索历史候选；通过短生命周期私有 Cloud Run 服务直接对账当前生产两条数据库连接，确认旧目标已不在当前迁移历史；完成 pending migration 预检、本地全量门禁、受保护 PR CI、生产迁移、canary、全流量提升和外部健康验收。所有临时 Cloud Run 取证服务均由工作流删除。
 
 <!-- section:implementation-summary -->
 
 ## 18. 实施结果 / Implementation Summary（Closure）
 
-N/A — 实施进行中，关闭时填写精确来源、提交和部署结果。
+- [CODE] 归档功能修复、积分关闭闸门、超大文件拆分、CardTitle 字号统一、移动端语义状态、API 重复结构和历史脚本类型债务已汇总在 PR #594；GitHub 以 squash commit `58b1e599` 合并到受保护的 `main`。
+- [CODE] PR #594 首轮 clean-checkout CI 暴露 shared `dist` 前置依赖后，提交 `afabde8f` 在根门禁前显式构建 shared；PR run `31676093927` 随后完整通过 Lint、Type Check、Unit、E2E、Web Runtime、Application Analysis、Prediction、Security 与 Build。
+- [RUNTIME] main run `31677048632` 全部成功：migration execution `study-abroad-migrate-zztr7` 完成；迁移/API 数据库名均为 `study_abroad`；revision `study-abroad-api-00936-yex` 的 canary 与 post-promote health 均为 HTTP 200、health/database/redis=`ok`；29 个 Cloud Scheduler job 与 manifest 一致；gallery total 为 190。
+- [CODE] CI 注解中暴露的失效 Markdown 链接、非阻断链接检查、Node 20/已停维护 Turbo cache Action、Semgrep SARIF 和隐藏 `.next` artifact 问题已在独立后续 PR #595 中修复并接受同一全量 CI 验证，不改变本次产品发布结果。
 
 <!-- section:verification -->
 
 ## 19. 验证证据 / Verification Evidence（Closure）
 
-N/A — 实施进行中，关闭时逐项填写 AC-001 至 AC-004 的 PASS/FAIL/BLOCKED。
+| AC     | 结论 | 证据                                                                                                                                                                                                                                             |
+| ------ | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-001 | PASS | runs `31674059594` / `31674204209`：两条生产连接同库同 schema、131 条迁移历史一致、共同迁移无 SHA-256 冲突；旧历史目标不存在；pending migration 回填为 0 重复组/0 多余行。                                                                       |
+| AC-002 | PASS | 本地 `lint:all`、全量 tests/build 与依赖审计通过；PR #594 run `31676093927` 全绿；squash commit `58b1e599` 已在 `origin/main`；main run `31677048632` 的 Build/E2E/Security/SBOM/Docker/Deploy 全绿。                                            |
+| AC-003 | PASS | production migration `study-abroad-migrate-zztr7`、revision `study-abroad-api-00936-yex` canary/post-promote health 通过；外部复测 `/health` uptime=153.85 秒（证明新实例）、DB latency 9ms、Redis latency 43ms，`/`、`/zh`、`/en` 均 HTTP 200。 |
+| AC-004 | PASS | `packages/shared/src/constants/index.ts` 仍为 `POINTS_ECONOMY_AVAILABLE=false`；API/Web/直达保护测试已通过；未来开放与回滚步骤记录在 `docs/runbooks/points-economy-launch.md`；私人 `未命名文件夹/` 未进入任何提交。                             |
+
+[CODE] Markdown Bug 对账结论：反馈来源 17/17 均为 done；`CODE_REVIEW.md` 的原 P0/P1/P2 均已修复或由明确产品退役决策覆盖；`技术文档/已知问题与解决方案.md` 七项均标记并复核为已解决；旧 5 月数据库 `OPEN` 已由 2026-08-12 当前生产证据明确取代。`A11/SJ-3` 的 Android FCM 真机 remote push 仍是非网站阻塞的外部条件能力，不是未修复网站 Bug。
 
 <!-- section:release-decision -->
 
 ## 20. 合并与发布结论 / Merge and Release Decision（Closure）
 
-- 实施结论：IN PROGRESS
-- 合并准备度：BLOCKED — 等待精确迁移证据。
-- 发布准备度：BLOCKED — 禁止在 AC-001 通过前 push `main`。
-- 未执行项：迁移恢复、发布门禁、push、生产部署与验收。
-- 下一责任人/动作：Codex 执行第 17 节计划。
+- 实施结论：CLOSED — AC-001 至 AC-004 全部 PASS。
+- 合并准备度：MERGED — PR #594 已按仓库允许的 squash 策略合并到受保护的 `main`。
+- 发布准备度：RELEASED — main run `31677048632` 完成生产迁移、canary、全流量提升和部署后探针，未触发回滚。
+- 未执行项：积分系统按产品决定保持关闭；Android Firebase/FCM 真机 remote push 是明确的 conditional capability，需移动发布 owner 提供私密项目配置后独立验收，不阻塞网站发布。
+- 下一责任人/动作：无当前网站修复动作；未来开放积分时严格执行 `docs/runbooks/points-economy-launch.md` 的双闸门、验收和回滚流程。

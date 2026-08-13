@@ -132,7 +132,7 @@ Codex 跑完后会自动回填：
 
 这意味着：
 
-- 没有 [google-services.json](../apps/mobile/android/app/google-services.json) 时，`A11 / SJ-3` 仍可写 `BLOCKED`
+- 没有本地私密配置 `apps/mobile/android/app/google-services.json` 时，`A11 / SJ-3` 仍可写 `BLOCKED`
 - 但如果 mobile 核心页面、跨端语义、通知列表/未读数/删除已通过，整轮 release gate 可以判 `CONDITIONAL`
 - 不再把这件事误写成“startup crash”或“app 整体不可用”
 

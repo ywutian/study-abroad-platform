@@ -40,7 +40,7 @@ The current implementation runs:
 
 The default scaffold lives in:
 
-- [default-manifest.ts](/Users/yitianwu/Documents/study-abroad-platform/apps/api/src/common/owned-site-assessment/default-manifest.ts)
+- [default-manifest.ts](../apps/api/src/common/owned-site-assessment/default-manifest.ts)
 
 It contains:
 
