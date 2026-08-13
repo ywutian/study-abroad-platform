@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { ChevronRight, Home } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function AdminBreadcrumb() {
   const t = useTranslations('admin');

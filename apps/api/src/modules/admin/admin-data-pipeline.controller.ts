@@ -1,15 +1,18 @@
-import { Controller, Get, Put, Body } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { Roles, RequirePermission, CurrentUser } from '../../common/decorators';
-import type { CurrentUserPayload } from '../../common/decorators';
-import { Permission } from '../../common/constants/permissions';
+import { Body, Controller, Get, Put } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { Permission } from '../../common/constants/permissions';
+import type { CurrentUserPayload } from '../../common/decorators';
+import { CurrentUser, RequirePermission, Roles } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
-import { AdminReviewService } from './admin-review.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { IsNumber, IsOptional, Min, Max } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { MaxLength } from 'class-validator';
+import { AdminReviewService } from './admin-review.service';
 
 class UpdateImportPolicyDto {
   @ApiProperty({ description: 'Auto-approve threshold (0-100)' })
@@ -48,7 +51,7 @@ export class AdminDataPipelineController {
   @ApiOperation({ summary: 'Get data pipeline statistics' })
   @ThrottleRelaxed()
   @RequirePermission(Permission.DATA_HEALTH)
-  async getPipelineStats(@CurrentUser() admin: CurrentUserPayload) {
+  async getPipelineStats(@CurrentUser() _admin: CurrentUserPayload) {
     const reviewStats = await this.reviewService.getReviewStats();
 
     const sourceCounts = await this.prisma.admissionCase.groupBy({

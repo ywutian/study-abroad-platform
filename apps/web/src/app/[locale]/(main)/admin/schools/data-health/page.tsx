@@ -141,7 +141,7 @@ export default function DataHealthPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
+                <CardTitle className="text-body-sm text-muted-foreground">
                   {t('totalSchoolsConsidered')}
                 </CardTitle>
               </CardHeader>
@@ -151,7 +151,9 @@ export default function DataHealthPage() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">{t('rowsReturned')}</CardTitle>
+                <CardTitle className="text-body-sm text-muted-foreground">
+                  {t('rowsReturned')}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-semibold">{data.rowsReturned}</div>
@@ -161,7 +163,7 @@ export default function DataHealthPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('totalsHeader')}</CardTitle>
+              <CardTitle className="text-body">{t('totalsHeader')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">

@@ -26,7 +26,7 @@
  * 不对外、不改库、不训练，只读 + 打印 + 写报告。
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import {
   resolveCanonicalPredictionOutcome,
   VERIFIED_OUTCOME_STATUSES,
@@ -282,17 +282,18 @@ async function main() {
   const samples: Sample[] = [];
 
   // --- Source A: PredictionResult with outcomes ---
-  const predWhere = args.includeSelfReported
+  const terminalResults = ['ADMITTED', 'REJECTED'] as const;
+  const predWhere: Prisma.PredictionResultWhereInput = args.includeSelfReported
     ? {
         outcomeLabelRecords: {
-          some: { result: { in: ['ADMITTED', 'REJECTED'] } },
+          some: { result: { in: [...terminalResults] } },
         },
       }
     : {
         outcomeLabelRecords: {
           some: {
             status: { in: VERIFIED_OUTCOME_STATUSES },
-            result: { in: ['ADMITTED', 'REJECTED'] },
+            result: { in: [...terminalResults] },
           },
         },
       };
@@ -370,7 +371,7 @@ async function main() {
       schoolName: predSchoolMap.get(r.schoolId),
       probability: Number(r.probability),
       actual: candidate.result === 'ADMITTED' ? 1 : 0,
-      source: VERIFIED_OUTCOME_STATUSES.includes(candidate.status as any)
+      source: VERIFIED_OUTCOME_STATUSES.includes(candidate.status)
         ? 'prediction_verified'
         : 'prediction_self_reported',
       modelVersion: r.modelVersion,
@@ -548,7 +549,7 @@ async function main() {
 
   console.log(`样本数 N          : ${global.n}`);
   console.log(
-    `admit / reject    : ${labels.reduce((a, b) => a + b, 0)} / ${labels.length - labels.reduce((a, b) => a + b, 0)}`,
+    `admit / reject    : ${labels.reduce<number>((a, b) => a + b, 0)} / ${labels.length - labels.reduce<number>((a, b) => a + b, 0)}`,
   );
   console.log(`预测均值          : ${fmt(global.meanPred)}`);
   console.log(`实际 admit 率     : ${fmt(global.meanActual)}`);
@@ -723,7 +724,7 @@ async function main() {
   };
 
   for (const s of samples) {
-    const es = s.engineScores as any;
+    const es = s.engineScores;
     if (!es || typeof es !== 'object') continue;
     for (const key of ['stats', 'ai', 'historical', 'ml'] as const) {
       const v = es[key];
@@ -879,7 +880,7 @@ async function main() {
         `worst cases 人工分析优先于数字结论`,
     );
   }
-  const admitRate = labels.reduce((a, b) => a + b, 0) / labels.length;
+  const admitRate = labels.reduce<number>((a, b) => a + b, 0) / labels.length;
   if (admitRate > 0.8 || admitRate < 0.2) {
     findings.push(
       `[DATA] 样本 admit 率 ${(admitRate * 100).toFixed(0)}% 严重不平衡 → ` +

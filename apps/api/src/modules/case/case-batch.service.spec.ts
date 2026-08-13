@@ -1,13 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CaseBatchService } from './case-batch.service';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AuditLogService } from '../../common/services/audit-log.service';
-import { RedisService } from '../../common/redis/redis.service';
 import { NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { RedisService } from '../../common/redis/redis.service';
+import { AuditLogService } from '../../common/services/audit-log.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CaseBatchService } from './case-batch.service';
 
 describe('CaseBatchService', () => {
   let service: CaseBatchService;
-  let prisma: PrismaService;
 
   const mockPrisma: any = {
     admissionCase: {
@@ -50,7 +49,6 @@ describe('CaseBatchService', () => {
     }).compile();
 
     service = module.get<CaseBatchService>(CaseBatchService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

@@ -1,5 +1,11 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
+  PredictionObservationSourceType,
+  PredictionObservationStatus,
+  PredictionOutcomeLabelStatus,
+  PredictionPolicyStatus,
+} from '@prisma/client';
+import {
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -13,14 +19,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
-import {
-  PredictionObservationSourceType,
-  PredictionObservationStatus,
-  PredictionPolicyStatus,
-  PredictionOutcomeLabelStatus,
-} from '@prisma/client';
 
 const OBSERVATION_SOURCE_TYPES = Object.values(PredictionObservationSourceType);
 const OBSERVATION_STATUSES = Object.values(PredictionObservationStatus);

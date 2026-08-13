@@ -6,6 +6,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
 import {
@@ -46,7 +47,7 @@ export class CaseToolsService implements IToolHandlerProvider {
       [
         'explain_case_result',
         (args, _userId, _ctx, locale) =>
-          this.explainCaseResult(args.caseId, locale),
+          this.explainCaseResult(args.caseId ?? '', locale),
       ],
       [
         'analyze_prediction_accuracy',
@@ -56,7 +57,7 @@ export class CaseToolsService implements IToolHandlerProvider {
       [
         'compare_case_with_profile',
         (args, userId, _ctx, locale) =>
-          this.compareCaseWithProfile(userId, args.caseId, locale),
+          this.compareCaseWithProfile(userId, args.caseId ?? '', locale),
       ],
       [
         'find_similar_cases',
@@ -583,7 +584,7 @@ ${
       // `caseVisibilityWhereForRole` and missed this one, which kept a
       // hand-written copy of the public set. Same file, same question, two
       // rules — which is how the next divergence starts.
-      const where: any = {
+      const where: Prisma.AdmissionCaseWhereInput = {
         ...caseVisibilityWhereForRole(getCurrentUserRole()),
       };
 
@@ -630,7 +631,9 @@ ${
 
       // Nationality-aware matching: prefer same-nationality cases, fallback to all
       // governance: public-feed — all three queries below spread the base `where` (visibility in (ANONYMOUS, PUBLIC) + approved reviewStatus), only adding filters
-      let cases: any[];
+      let cases: Prisma.AdmissionCaseGetPayload<{
+        include: { school: { select: { name: true; nameZh: true } } };
+      }>[];
       let nationalityMatched = false;
 
       if (profile.nationality) {
@@ -653,7 +656,7 @@ ${
         } else {
           // Not enough same-nationality cases — fill remaining slots with any cases
           const remaining = take - cases.length;
-          const sameIds = cases.map((c: any) => c.id);
+          const sameIds = cases.map((item) => item.id);
           // governance: public-feed — spreads the same base `where` (visibility in (ANONYMOUS, PUBLIC) + approved reviewStatus)
           const fallbackCases = await this.prisma.admissionCase.findMany({
             where: {

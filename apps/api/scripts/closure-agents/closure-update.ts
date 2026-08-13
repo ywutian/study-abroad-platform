@@ -28,7 +28,7 @@ const prisma = new PrismaClient();
 const asJson = process.argv.includes('--json');
 const reopenStale = process.argv.includes('--reopen-stale');
 const freshnessDays = Number(process.env.CLOSURE_FRESHNESS_DAYS) || 365;
-const here = path.dirname(new URL(import.meta.url).pathname);
+const here = __dirname;
 
 function run(label: string, scriptPath: string) {
   if (!asJson) console.log(`\n=== ${label} ===`);

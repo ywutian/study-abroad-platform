@@ -28,7 +28,7 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
     <AnimatedCard style={S.rankingCard}>
       <CardContent>
         <View style={S.rankingHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={S.flex}>
             <Text style={[S.rankingSchoolName, { color: c.foreground }]} numberOfLines={1}>
               {item.schoolName}
             </Text>
@@ -85,6 +85,7 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
 });
 
 const S = StyleSheet.create({
+  flex: { flex: 1 },
   rankingCard: {
     marginBottom: spacing.md,
   },

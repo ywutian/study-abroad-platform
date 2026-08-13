@@ -131,6 +131,7 @@ describe('TimelinePage', () => {
         schoolId: 's-1',
         schoolName: 'Harvard University',
         round: 'ED',
+        applicationYear: 2027,
         deadline: '2026-11-01T00:00:00Z',
         status: 'IN_PROGRESS',
         progress: 40,
@@ -145,6 +146,7 @@ describe('TimelinePage', () => {
         schoolId: 's-2',
         schoolName: 'Stanford University',
         round: 'RD',
+        applicationYear: 2027,
         deadline: '2027-01-01T00:00:00Z',
         status: 'NOT_STARTED',
         progress: 0,
@@ -172,6 +174,7 @@ describe('TimelinePage', () => {
       schoolId: 's-1',
       schoolName: 'Harvard University',
       round: 'ED',
+      applicationYear: 2027,
       deadline: '2026-11-01T00:00:00Z',
       status: 'IN_PROGRESS',
       progress: 40,
@@ -208,11 +211,47 @@ describe('TimelinePage', () => {
     expect(apiClient.get).not.toHaveBeenCalledWith('/timelines/tl-1/tasks');
   });
 
-  it('renders the segment tabs for schools, events, and overview', () => {
+  it('renders the segment tabs for schools, events, overview, and archive', () => {
     const { getByText } = renderWithProviders(<TimelinePage />);
 
     expect(getByText('Schools')).toBeTruthy();
     expect(getByText('Events')).toBeTruthy();
     expect(getByText('Overview')).toBeTruthy();
+    expect(getByText('Archive')).toBeTruthy();
+  });
+
+  it('keeps terminal application cycles out of Schools and shows them read-only in Archive', async () => {
+    const archivedTimeline = {
+      id: 'tl-archived',
+      schoolId: 's-archived',
+      schoolName: 'Archived University',
+      round: 'RD',
+      applicationYear: 2026,
+      deadline: '2026-01-01T00:00:00Z',
+      status: 'WITHDRAWN',
+      progress: 50,
+      priority: 0,
+      notes: null,
+      tasksTotal: 1,
+      tasksCompleted: 0,
+      createdAt: '2025-08-01T00:00:00Z',
+    };
+    (apiClient.get as jest.Mock).mockImplementation((url: string) => {
+      if (url === '/timelines') return Promise.resolve([archivedTimeline]);
+      if (url === '/timelines/personal-events') return Promise.resolve([]);
+      if (url === '/timelines/tl-archived') {
+        return Promise.resolve({ ...archivedTimeline, tasks: [] });
+      }
+      return Promise.resolve([]);
+    });
+
+    const { getByText, queryByText } = renderWithProviders(<TimelinePage />);
+    await waitFor(() => expect(getByText('No timelines yet')).toBeTruthy());
+    expect(queryByText('Archived University')).toBeNull();
+
+    fireEvent.press(getByText('Archive'));
+
+    await waitFor(() => expect(getByText('Archived University')).toBeTruthy());
+    expect(getByText('Fall 2026')).toBeTruthy();
   });
 });

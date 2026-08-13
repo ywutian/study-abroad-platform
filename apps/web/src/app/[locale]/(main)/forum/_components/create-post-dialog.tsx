@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { ImagePlus, Loader2, Plus, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -275,7 +276,14 @@ export function CreatePostDialog({
                     key={image.key}
                     className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
                   >
-                    <img src={image.url} alt="" className="h-full w-full object-cover" />
+                    <Image
+                      src={image.url}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 16vw, 33vw"
+                      unoptimized
+                      className="object-cover"
+                    />
                     <button
                       type="button"
                       className="absolute right-1 top-1 rounded-full bg-background/90 p-1 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"

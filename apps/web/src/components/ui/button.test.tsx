@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+/* eslint-disable @next/next/no-html-link-for-pages -- The test verifies Radix Slot behavior with a native anchor child. */
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { Button } from './button';

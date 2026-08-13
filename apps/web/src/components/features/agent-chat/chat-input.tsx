@@ -84,7 +84,7 @@ export function ChatInput({
         void handleSend();
       }
     },
-    [handleSend]
+    [disabled, handleSend, isLoading]
   );
 
   // 自动调整高度

@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { HighSchoolService } from './high-school.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '../../prisma/prisma.service';
+import { HighSchoolService } from './high-school.service';
 
 jest.mock('@study-abroad/shared/scoring', () => ({
   computeTierFromPartial: jest.fn().mockReturnValue(3),
@@ -220,7 +220,7 @@ describe('HighSchoolService', () => {
         submittedBy: ['user-1', 'user-2'],
       });
 
-      const result = await service.submitSuggestion(
+      await service.submitSuggestion(
         { name: 'Existing School', country: 'US' },
         'user-2',
       );
@@ -308,11 +308,7 @@ describe('HighSchoolService', () => {
         status: 'merged',
       });
 
-      const result = await service.approveSuggestion(
-        'sug-1',
-        'PUBLIC',
-        'hs-existing',
-      );
+      await service.approveSuggestion('sug-1', 'PUBLIC', 'hs-existing');
 
       expect(mockPrisma.highSchoolSuggestion.update).toHaveBeenCalledWith({
         where: { id: 'sug-1' },

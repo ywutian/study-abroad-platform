@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PredictionAiEngine } from './prediction-ai-engine.service';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { PredictionAiEngine } from './prediction-ai-engine.service';
 import { PredictionTransformerService } from './prediction-transformer.service';
 
 describe('PredictionAiEngine', () => {
   let service: PredictionAiEngine;
-  let llmService: LLMService;
-  let transformer: PredictionTransformerService;
 
   const mockLLMService = {
     chatSimpleGuarded: jest.fn(),
@@ -30,10 +28,6 @@ describe('PredictionAiEngine', () => {
     }).compile();
 
     service = module.get<PredictionAiEngine>(PredictionAiEngine);
-    llmService = module.get<LLMService>(LLMService);
-    transformer = module.get<PredictionTransformerService>(
-      PredictionTransformerService,
-    );
   });
 
   afterEach(() => {

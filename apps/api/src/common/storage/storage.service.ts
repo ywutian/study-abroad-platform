@@ -286,16 +286,18 @@ export class StorageService implements OnModuleInit {
     try {
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
 
-      const bucket = this.configService.get('AWS_S3_BUCKET');
-      const region = this.configService.get('AWS_REGION') || 'us-east-1';
-      const endpoint = this.configService.get('AWS_S3_ENDPOINT');
+      const bucket = this.configService.get<string>('AWS_S3_BUCKET');
+      const region =
+        this.configService.get<string>('AWS_REGION') || 'us-east-1';
+      const endpoint = this.configService.get<string>('AWS_S3_ENDPOINT');
 
       const client = new S3Client({
         region,
         credentials: {
-          accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID') || '',
+          accessKeyId:
+            this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
           secretAccessKey:
-            this.configService.get('AWS_SECRET_ACCESS_KEY') || '',
+            this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
         },
         ...(endpoint && { endpoint, forcePathStyle: true }),
       });
@@ -369,7 +371,14 @@ export class StorageService implements OnModuleInit {
             Body: data,
           },
           (err) => {
-            if (err) reject(err);
+            if (err)
+              reject(
+                err instanceof Error
+                  ? err
+                  : new Error(
+                      typeof err === 'string' ? err : 'Storage upload failed',
+                    ),
+              );
             else resolve();
           },
         );

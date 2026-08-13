@@ -56,6 +56,7 @@ export class SettingsController {
   @ApiOperation({ summary: 'Update setting (admin)' })
   @ApiResponse({ status: 200, description: 'Update successful' })
   async update(@Param('key') key: string, @Body() body: UpdateSettingValueDto) {
+    this.assertNotProtectedPointSetting(key);
     await this.settingsService.set(key, body.value, body.description);
     return { success: true };
   }
@@ -74,7 +75,19 @@ export class SettingsController {
       );
     }
 
+    for (const setting of settings) {
+      this.assertNotProtectedPointSetting(setting.key);
+    }
+
     await this.settingsService.setMany(settings);
     return { success: true };
+  }
+
+  private assertNotProtectedPointSetting(key: string): void {
+    if (this.settingsService.isProtectedPointSetting(key)) {
+      throw new BadRequestException(
+        'Points settings must be changed through /admin/points so product gates cannot be bypassed',
+      );
+    }
   }
 }

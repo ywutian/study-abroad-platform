@@ -9,6 +9,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../../../common/utils/school-name.util';
 import { getSchoolDisplayName } from '../../../../common/utils/locale.util';
+import type { Prisma } from '@prisma/client';
+import type { CatalogRanking } from '../../../school/school-ranking-catalog';
 import {
   compareSchoolsByCatalogRank,
   getCatalogRanking,
@@ -21,6 +23,26 @@ type SchoolSelect = {
   name: string;
   nameZh: string | null;
   [key: string]: any;
+};
+
+export type SchoolSearchResult = {
+  id: string;
+  name: string;
+  nameZh: string | null;
+  state: string | null;
+  institutionType: string | null;
+  usNewsRank: number | null;
+  acceptanceRate: unknown;
+  tuition: number | null;
+  aliases: string[];
+  rankings: Array<{
+    source: string;
+    list: string;
+    rank: number;
+    year: number;
+    sourceUrl: string | null;
+  }>;
+  displayRanking: CatalogRanking | null;
 };
 
 @Injectable()
@@ -110,7 +132,7 @@ export class SchoolLookupHelper {
     state?: string;
     rankingList?: string;
   }) {
-    const where: any = {};
+    const where: Prisma.SchoolWhereInput = {};
     const rankingList = normalizeRankingListSelection(args.rankingList);
 
     if (args.query) {
@@ -194,16 +216,7 @@ export class SchoolLookupHelper {
   /**
    * Sort schools by relevance to search term.
    */
-  sortByRelevance(
-    schools: Array<{
-      name: string;
-      nameZh: string | null;
-      usNewsRank: number | null;
-      aliases: string[];
-      [key: string]: any;
-    }>,
-    searchTerm: string,
-  ) {
+  sortByRelevance(schools: SchoolSearchResult[], searchTerm: string) {
     const lowerSearch = searchTerm.toLowerCase();
 
     return [...schools].sort((a, b) => {

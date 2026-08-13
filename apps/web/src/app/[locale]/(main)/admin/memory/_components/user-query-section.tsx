@@ -31,7 +31,7 @@ export function UserQuerySection() {
         <div className="flex items-center gap-3">
           <Users className="h-5 w-5" />
           <div>
-            <CardTitle className="text-base">{t('userQuery')}</CardTitle>
+            <CardTitle className="text-body">{t('userQuery')}</CardTitle>
             <CardDescription className="mt-1">{t('userStats')}</CardDescription>
           </div>
         </div>

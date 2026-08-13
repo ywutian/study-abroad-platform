@@ -262,15 +262,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
     flexShrink: 1,
   },
-  rankBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.md,
-  },
-  rankText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-  },
   metaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -53,6 +53,8 @@ export interface TimelineResponse {
   schoolId: string;
   schoolName: string;
   round: ApplicationRound;
+  /** Fall entry year. Distinguishes archived application cycles. */
+  applicationYear: number;
   deadline?: string;
   status: TimelineStatus;
   progress: number;

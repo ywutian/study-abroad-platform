@@ -9,27 +9,26 @@
  * - History tab with expandable past recommendations
  */
 
-import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  Platform,
-  UIManager,
-} from 'react-native';
-import { Stack } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Stack } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  UIManager,
+  View,
+} from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Segment } from '@/components/ui';
-import { useColors, withOpacity, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { fontSize, fontWeight, spacing, useColors } from '@/utils/theme';
 
 import { GenerateTab } from '@/screens/recommendation/GenerateTab';
 import { HistoryTab } from '@/screens/recommendation/HistoryTab';
@@ -99,12 +98,7 @@ export default function RecommendationPage() {
       >
         {/* Hero */}
         <Animated.View entering={FadeInDown.duration(500).springify()}>
-          <LinearGradient
-            colors={[colors.primary, withOpacity(colors.primary, 0.8)]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.hero}
-          >
+          <View style={[styles.hero, { backgroundColor: colors.primary }]}>
             <View style={styles.heroContent}>
               <View style={[styles.heroIcon, { backgroundColor: colors.onGradientOverlay }]}>
                 <Ionicons name="school" size={28} color={colors.onGradient} />
@@ -118,7 +112,7 @@ export default function RecommendationPage() {
                 </Text>
               </View>
             </View>
-          </LinearGradient>
+          </View>
         </Animated.View>
 
         {/* Tabs */}

@@ -45,6 +45,7 @@ import {
   DecayResult,
   EnhancedMemoryStats,
 } from './types';
+import type { ParsedToolResult } from './tool-result.types';
 
 /**
  * Core memory management service for the enterprise-grade AI Agent memory system.
@@ -974,7 +975,7 @@ export class MemoryManagerService {
     if (!conversation) return;
 
     try {
-      const data = JSON.parse(message.content);
+      const data = JSON.parse(message.content) as ParsedToolResult;
       if (!data || typeof data !== 'object') {
         this.logger.debug(
           'Tool result is not a JSON object, skipping memory extraction',
@@ -1023,7 +1024,7 @@ export class MemoryManagerService {
       if (Array.isArray(data) && data.length > 0 && data[0]?.schoolName) {
         const schoolNames = data
           .slice(0, 3)
-          .map((s: any) => s.schoolName)
+          .map((school) => school.schoolName)
           .filter(Boolean);
         if (schoolNames.length > 0) {
           memories.push({
@@ -1054,7 +1055,7 @@ export class MemoryManagerService {
         data[0]?.category &&
         data[0]?.tasks
       ) {
-        const categories = [...new Set(data.map((e: any) => e.category))];
+        const categories = [...new Set(data.map((event) => event.category))];
         memories.push({
           type: MemoryType.FACT,
           category: 'timeline',
@@ -1106,7 +1107,7 @@ export class MemoryManagerService {
         data.length > 0 &&
         data[0]?.prediction !== undefined
       ) {
-        const withPrediction = data.filter((i: any) => i.prediction);
+        const withPrediction = data.filter((item) => item.prediction);
         memories.push({
           type: MemoryType.FACT,
           category: 'school_prediction',
@@ -1126,7 +1127,7 @@ export class MemoryManagerService {
           ...new Set(
             data.cases
               .slice(0, 5)
-              .map((c: any) => c.schoolName || c.school?.name)
+              .map((item) => item.schoolName || item.school?.name)
               .filter(Boolean),
           ),
         ];
@@ -1152,7 +1153,7 @@ export class MemoryManagerService {
           ...new Set(
             data.similarCases
               .slice(0, 5)
-              .map((c: any) => c.schoolName || c.school?.name)
+              .map((item) => item.schoolName || item.school?.name)
               .filter(Boolean),
           ),
         ];

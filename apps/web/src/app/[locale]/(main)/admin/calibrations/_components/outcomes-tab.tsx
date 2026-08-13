@@ -160,7 +160,7 @@ export function OutcomesTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <ShieldCheck className="h-4 w-4" />
             {t('title')}
           </CardTitle>

@@ -12,6 +12,11 @@ import { toRecord } from './school-provenance.helpers';
 import { AppilyScrapeService } from './scrapers/appily.scraper';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
 
+/** Keeps upstream ingestion failures distinct from request-validation failures. */
+class CampusLifeIngestionError extends Error {
+  override readonly name = 'CampusLifeIngestionError';
+}
+
 const NICHE_CAMPUS_FIELDS = [
   'nicheOverallGrade',
   'nicheSafetyGrade',
@@ -210,7 +215,9 @@ async function tavilySearch(
   });
 
   if (!response.ok) {
-    throw new Error(`Tavily search failed with HTTP ${response.status}`);
+    throw new CampusLifeIngestionError(
+      `Tavily search failed with HTTP ${response.status}`,
+    );
   }
 
   const data = (await response.json()) as {

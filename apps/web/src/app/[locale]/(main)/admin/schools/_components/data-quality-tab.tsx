@@ -193,7 +193,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
           <div className="grid min-w-0 gap-4 lg:grid-cols-[1.2fr_1fr]">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">
+                <CardTitle className="text-body">
                   {t('dataQuality.top200OfficialCoverage')}
                 </CardTitle>
                 <CardDescription>{t('dataQuality.top200OfficialCoverageDesc')}</CardDescription>
@@ -234,7 +234,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">{t('dataQuality.tierDistribution')}</CardTitle>
+                <CardTitle className="text-body">{t('dataQuality.tierDistribution')}</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3 sm:grid-cols-2">
                 {Object.entries(qualityData.tierDistribution).map(([tier, stats]) => (
@@ -251,7 +251,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
           {/* Field Coverage */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('dataQuality.fieldCoverage')}</CardTitle>
+              <CardTitle className="text-body">{t('dataQuality.fieldCoverage')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -287,7 +287,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">
+              <CardTitle className="text-body">
                 {t('dataQuality.predictionEligibleCoverage')}
               </CardTitle>
               <CardDescription>{t('dataQuality.predictionEligibleCoverageDesc')}</CardDescription>
@@ -328,7 +328,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
           {/* Worst Schools Table */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('dataQuality.worstSchools')}</CardTitle>
+              <CardTitle className="text-body">{t('dataQuality.worstSchools')}</CardTitle>
               <CardDescription>{t('dataQuality.worstSchoolsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -413,7 +413,7 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('dataQuality.staleFields')}</CardTitle>
+              <CardTitle className="text-body">{t('dataQuality.staleFields')}</CardTitle>
               <CardDescription>{t('dataQuality.staleFieldsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>

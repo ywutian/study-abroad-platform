@@ -16,7 +16,7 @@ Public profile showcase: community rankings, user-curated school lists, verified
 - `hall-list.service.ts` — User-curated lists (create, vote, manage)
 - `hall-verified.service.ts` — Verified applicant rankings with analysis
 - `hall-verified-dashboard.service.ts` — China admit dashboard (trend/difficulty/ED-RD)
-- `hall-overview.service.ts` — BFF aggregation for the Points Center
+- `hall-overview.service.ts` — Legacy-compatible overview contract; returns a neutral points payload while the economy is dormant
 - `swipe.service.ts` — Case study loop: browse real cases, guess the outcome, debrief
 
 ## Data Model

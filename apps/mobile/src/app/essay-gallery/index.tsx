@@ -4,45 +4,45 @@
  * Browsable gallery of admission essays with search, filters, and AI analysis.
  * Thin orchestrator: list + filters + modal state.
  */
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
-import { Stack } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { Stack } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  AnimatedButton,
   AnimatedCounter,
   EmptyState,
   SearchBar,
   SkeletonCard,
-  AnimatedButton,
 } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
-import { essayAiRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { qk, cachePolicy } from '@/lib/query';
-import type { GalleryResponse, GalleryEssay } from '@/screens/essay-gallery/types';
-import {
-  useResultColors,
-  ESSAY_TYPES,
-  RESULTS,
-  YEARS,
-  PAGE_SIZE,
-} from '@/screens/essay-gallery/types';
-import { EssayCard } from '@/screens/essay-gallery/EssayCard';
+import { cachePolicy, qk } from '@/lib/query';
 import { DetailSheet } from '@/screens/essay-gallery/DetailSheet';
+import { EssayCard } from '@/screens/essay-gallery/EssayCard';
+import type { GalleryEssay, GalleryResponse } from '@/screens/essay-gallery/types';
+import {
+  ESSAY_TYPES,
+  PAGE_SIZE,
+  RESULTS,
+  useResultColors,
+  YEARS,
+} from '@/screens/essay-gallery/types';
+import { spacing, useColors } from '@/utils/theme';
+import { essayAiRoutes } from '@study-abroad/shared';
+import { S } from './index.styles';
 
 export default function EssayGalleryPage() {
   const { t } = useTranslation();
@@ -372,37 +372,23 @@ export default function EssayGalleryPage() {
     </View>
   );
 
-  const listHeader = useMemo(
-    () => (
-      <View>
-        {renderStatsHeader()}
-        <View style={S.filtersContainer}>
-          <SearchBar
-            value={search}
-            onChangeText={handleSearchChange}
-            placeholder={t('essayGallery.searchPlaceholder')}
-            style={S.searchBar}
-          />
-          {renderYearFilters()}
-          {renderTypeFilters()}
-          {renderResultFilters()}
-          {renderClearFilters()}
-        </View>
-        {renderResultsCount()}
+  const listHeader = (
+    <View>
+      {renderStatsHeader()}
+      <View style={S.filtersContainer}>
+        <SearchBar
+          value={search}
+          onChangeText={handleSearchChange}
+          placeholder={t('essayGallery.searchPlaceholder')}
+          style={S.searchBar}
+        />
+        {renderYearFilters()}
+        {renderTypeFilters()}
+        {renderResultFilters()}
+        {renderClearFilters()}
       </View>
-    ),
-    [
-      search,
-      selectedYear,
-      selectedType,
-      selectedResult,
-      gallery,
-      isFetching,
-      isLoading,
-      c,
-      t,
-      hasActiveFilters,
-    ]
+      {renderResultsCount()}
+    </View>
   );
 
   // -------------------------------------------------------------------------
@@ -453,112 +439,3 @@ export default function EssayGalleryPage() {
 // ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
-
-const S = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-  },
-
-  // Stats
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    marginBottom: spacing.md,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statValue: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    fontFamily: fontFamily.mono,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-  statDivider: {
-    width: 1,
-    height: 32,
-  },
-
-  // Filters
-  filtersContainer: {
-    marginBottom: spacing.sm,
-  },
-  searchBar: {
-    marginBottom: spacing.md,
-  },
-  filterScroll: {
-    marginBottom: spacing.sm,
-  },
-  filterScrollContent: {
-    paddingRight: spacing.lg,
-    gap: spacing.sm,
-  },
-  filterPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: borderRadius.full,
-  },
-  filterPillText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-  clearFiltersBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingVertical: spacing.xs,
-    gap: spacing.xs,
-  },
-  clearFiltersText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-
-  // Results count
-  resultsCountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  resultsCount: {
-    fontSize: fontSize.sm,
-  },
-
-  // Pagination
-  pagination: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.lg,
-    gap: spacing.lg,
-  },
-  pageText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    fontFamily: fontFamily.mono,
-  },
-
-  // Skeleton
-  skeletonContainer: {
-    padding: spacing.lg,
-  },
-  skeletonItem: {
-    marginBottom: spacing.md,
-  },
-
-  // Empty
-  emptyContainer: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
-});

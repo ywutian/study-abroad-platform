@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PointsConfigService, PointAction } from './points-config.service';
-import { SettingsService } from '../settings/settings.service';
 import { BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { POINTS_ECONOMY_AVAILABLE } from '@study-abroad/shared';
+import { SettingsService } from '../settings/settings.service';
+import { PointAction, PointsConfigService } from './points-config.service';
 
 describe('PointsConfigService', () => {
   let service: PointsConfigService;
-  let settingsService: SettingsService;
 
   const mockSettingsService = {
     getTyped: jest.fn(),
@@ -23,7 +23,6 @@ describe('PointsConfigService', () => {
     }).compile();
 
     service = module.get<PointsConfigService>(PointsConfigService);
-    settingsService = module.get<SettingsService>(SettingsService);
   });
 
   afterEach(() => {
@@ -35,13 +34,20 @@ describe('PointsConfigService', () => {
   });
 
   describe('isEnabled', () => {
-    it('should stay disabled in free-access mode even when persisted settings say enabled', async () => {
+    it('should apply the product gate before the persisted runtime setting', async () => {
       mockSettingsService.getTyped.mockResolvedValue(true);
 
       const result = await service.isEnabled();
 
-      expect(result).toBe(false);
-      expect(mockSettingsService.getTyped).not.toHaveBeenCalled();
+      expect(result).toBe(POINTS_ECONOMY_AVAILABLE);
+      if (POINTS_ECONOMY_AVAILABLE) {
+        expect(mockSettingsService.getTyped).toHaveBeenCalledWith(
+          'points_enabled',
+          false,
+        );
+      } else {
+        expect(mockSettingsService.getTyped).not.toHaveBeenCalled();
+      }
     });
 
     it('should return false when disabled', async () => {
@@ -54,11 +60,19 @@ describe('PointsConfigService', () => {
   });
 
   describe('setEnabled', () => {
-    it('should reject attempts to re-enable the points economy', async () => {
-      await expect(service.setEnabled(true)).rejects.toThrow(
-        'Points economy is disabled; product features run without points',
-      );
-      expect(mockSettingsService.set).not.toHaveBeenCalled();
+    it('should only persist enabled=true when the product gate is open', async () => {
+      if (POINTS_ECONOMY_AVAILABLE) {
+        await expect(service.setEnabled(true)).resolves.toBeUndefined();
+        expect(mockSettingsService.set).toHaveBeenCalledWith(
+          'points_enabled',
+          'true',
+        );
+      } else {
+        await expect(service.setEnabled(true)).rejects.toThrow(
+          'Points economy is disabled; product features run without points',
+        );
+        expect(mockSettingsService.set).not.toHaveBeenCalled();
+      }
     });
 
     it('should still persist an explicit disabled setting', async () => {

@@ -1,9 +1,9 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { RedisService } from '../../../common/redis/redis.service';
-import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../../common/redis/cron-lock.util';
+import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
+import { RedisService } from '../../../common/redis/redis.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import {
   NotificationService,
   NotificationType,
@@ -50,7 +50,7 @@ export class OutcomeReminderService {
     // Single-flight across replicas: every Cloud Run instance fires this cron at
     // 8AM, so without the lock each eligible user gets N duplicate reminders.
     // (See runWithCronLock for the TTL-as-window / fail-closed semantics.)
-    const ran = await runWithCronLock(
+    const _ran = await runWithCronLock(
       this.redis,
       OUTCOME_REMINDER_LOCK_KEY,
       REDIS_TTL.OUTCOME_REMINDER_CRON_LOCK,
@@ -215,7 +215,7 @@ export class OutcomeReminderService {
           await this.redis.del(dedupKey).catch(() => undefined);
         }
         this.logger.warn(
-          `Failed to send reminder for prediction ${pred.id}: ${err instanceof Error ? err.message : err}`,
+          `Failed to send reminder for prediction ${pred.id}: ${err instanceof Error ? err.message : 'unknown error'}`,
         );
         skipped += 1;
       }

@@ -12,7 +12,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { useColors, spacing, fontSize, fontWeight, borderRadius as br } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 
 // ==================== Progress (简单进度条) ====================
 
@@ -54,7 +54,7 @@ export function Progress({
     } else {
       progress.value = percentage;
     }
-  }, [percentage, animated]);
+  }, [animated, percentage, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: `${progress.value}%`,
@@ -179,7 +179,7 @@ export function CircularProgress({
       duration: 800,
       easing: Easing.out(Easing.cubic),
     });
-  }, [percentage]);
+  }, [percentage, progress]);
 
   const animatedProps = useAnimatedProps(
     () =>

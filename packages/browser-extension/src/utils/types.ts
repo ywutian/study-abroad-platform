@@ -76,6 +76,27 @@ export interface UserProfile {
   essays?: Essay[];
 }
 
+export function isUserProfile(value: unknown): value is UserProfile {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const profile = value as Partial<UserProfile>;
+  return (
+    typeof profile.firstName === 'string' &&
+    typeof profile.lastName === 'string' &&
+    typeof profile.email === 'string'
+  );
+}
+
+export function isLoginStatus(value: unknown): value is { isLoggedIn: boolean } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'isLoggedIn' in value &&
+    typeof value.isLoggedIn === 'boolean'
+  );
+}
+
 export interface Activity {
   name: string;
   type: string;
@@ -106,14 +127,21 @@ export interface Essay {
  * 消息类型
  */
 export interface Message {
-  type: 'GET_PROFILE' | 'FILL_FORM' | 'LOGIN_STATUS' | 'SYNC_PROFILE';
-  payload?: any;
+  type:
+    | 'GET_PROFILE'
+    | 'FILL_FORM'
+    | 'LOGIN_STATUS'
+    | 'SYNC_PROFILE'
+    | 'FILL_CURRENT_FIELD'
+    | 'FILL_ALL';
+  payload?: unknown;
 }
 
-export interface MessageResponse {
+export interface MessageResponse<T = unknown> {
   success: boolean;
-  data?: any;
+  data?: T;
   error?: string;
+  filled?: number;
 }
 
 /**
@@ -139,5 +167,5 @@ export interface FieldMapping {
   selector: string;
   profilePath: string;
   type: 'text' | 'select' | 'radio' | 'checkbox' | 'date';
-  transform?: (value: any) => any;
+  transform?: (value: unknown) => unknown;
 }

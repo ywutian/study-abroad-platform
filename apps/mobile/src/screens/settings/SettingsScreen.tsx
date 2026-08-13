@@ -2,36 +2,28 @@
  * 设置页面
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { router, type Href } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import * as StoreReview from 'expo-store-review';
-import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import Constants from 'expo-constants';
+import * as Haptics from 'expo-haptics';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { router, type Href } from 'expo-router';
+import * as StoreReview from 'expo-store-review';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AnimatedCard, CardContent, Switch, Avatar, AnimatedButton, Input } from '@/components/ui';
+import { AnimatedButton, AnimatedCard, Avatar, CardContent, Input, Switch } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-  type Colors,
-} from '@/utils/theme';
+import { useNotificationPreferences } from '@/hooks/useNotifications';
+import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
+import { fontFamily, spacing, useColors, withOpacity, type Colors } from '@/utils/theme';
 import { userRoutes } from '@study-abroad/shared';
-import { apiClient } from '@/lib/api/client';
-import { useNotificationPreferences } from '@/hooks/useNotifications';
+import { styles } from './SettingsScreen.styles';
 
 export const BIOMETRIC_ENABLED_KEY = 'biometric_auth_enabled';
 
@@ -533,125 +525,3 @@ function SettingRow({ item, colors }: { item: SettingItem; colors: Colors }) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  profileCard: {
-    margin: spacing.lg,
-    marginBottom: 0,
-  },
-  profileContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  profileName: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  profileEmail: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  section: {
-    padding: spacing.lg,
-    paddingBottom: 0,
-  },
-  sectionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-    marginLeft: spacing.sm,
-  },
-  sectionContent: {
-    padding: 0,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-  },
-  settingIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  settingLabel: {
-    flex: 1,
-    fontSize: fontSize.base,
-  },
-  settingValue: {
-    fontSize: fontSize.sm,
-    marginRight: spacing.xs,
-  },
-  settingRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 60,
-  },
-  // Delete account password dialog
-  passwordOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-    zIndex: 100,
-  },
-  passwordDialog: {
-    width: '100%',
-    maxWidth: 340,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  deleteIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-  },
-  deleteTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  deleteMessage: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 20,
-  },
-  passwordInput: {
-    width: '100%',
-    marginBottom: spacing.md,
-  },
-  deleteActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    width: '100%',
-  },
-  deleteActionButton: {
-    flex: 1,
-  },
-});

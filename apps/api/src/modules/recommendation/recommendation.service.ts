@@ -15,12 +15,11 @@ import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { MemoryManagerService } from '../ai-agent/memory';
-import { MemoryType, EntityType } from '@prisma/client';
+import { MemoryType, EntityType, Prisma } from '@prisma/client';
 import {
   SchoolRecommendationRequestDto,
   SchoolRecommendationResponseDto,
   RecommendedSchoolDto,
-  RecommendationAnalysisDto,
 } from './dto';
 import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
@@ -39,9 +38,18 @@ import {
 import {
   buildRecommendationSystemPrompt,
   buildRecommendationUserPrompt,
+  recommendationNumber,
+  type RecommendationPromptProfile,
 } from './recommendation.prompts';
 import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
+import {
+  isJsonRecord,
+  normalizeAnalysis,
+  normalizeRecommendation,
+  normalizeSummerPrograms,
+  readStoredAnalysis,
+} from './recommendation-response-normalizers';
 
 /**
  * How many of the user's target schools get historical case context injected
@@ -391,49 +399,28 @@ export class RecommendationService {
         },
       );
 
-      const parsed: any = extractJsonFromLlm(result);
-
-      // Validate AI response structure
-      if (!Array.isArray(parsed.recommendations)) {
+      const parsed: unknown = extractJsonFromLlm(result);
+      if (!isJsonRecord(parsed) || !Array.isArray(parsed.recommendations)) {
         throw new InternalServerErrorException(
           'Invalid AI response: missing recommendations',
         );
       }
-      parsed.recommendations = parsed.recommendations
-        .filter((r: any) => r.schoolName && typeof r.schoolName === 'string')
-        .map((r: any) => ({
-          ...r,
-          tier: ['reach', 'match', 'safety'].includes(r.tier)
-            ? r.tier
-            : 'match',
-          estimatedProbability: Math.min(
-            100,
-            Math.max(0, Number(r.estimatedProbability) || 50),
-          ),
-          fitScore: Math.min(100, Math.max(0, Number(r.fitScore) || 50)),
-          recommendedMajors: Array.isArray(r.recommendedMajors)
-            ? r.recommendedMajors
-                .slice(0, 3)
-                .map((m: unknown) =>
-                  typeof m === 'string' ? { name: m, reason: '' } : m,
-                )
-            : [],
-          reasons: Array.isArray(r.reasons) ? r.reasons : [],
-          concerns: Array.isArray(r.concerns) ? r.concerns : [],
-        }));
-
-      if (!parsed.analysis) {
-        parsed.analysis = {
-          strengths: [],
-          weaknesses: [],
-          improvementTips: [],
-        };
-      }
+      const normalizedRecommendations = parsed.recommendations.flatMap(
+        (recommendation) => {
+          const normalized = normalizeRecommendation(recommendation);
+          return normalized ? [normalized] : [];
+        },
+      );
+      const analysis = normalizeAnalysis(parsed.analysis);
+      const summerPrograms = normalizeSummerPrograms(parsed.summerPrograms);
+      const summary = typeof parsed.summary === 'string' ? parsed.summary : '';
 
       const tokenUsed = this.estimateTokens(userPrompt + result);
 
       // Fuzzy-match schools in the database
-      const recommendations = await this.matchSchoolIds(parsed.recommendations);
+      const recommendations = await this.matchSchoolIds(
+        normalizedRecommendations,
+      );
 
       // Anchor LLM probability estimates using statistical model to prevent large deviations
       await this.anchorProbabilities(profile, recommendations);
@@ -461,12 +448,13 @@ export class RecommendationService {
               campusPreferences: dto.campusPreferences,
               additional: dto.additionalPreferences,
             },
-            recommendations: recommendations as any,
+            recommendations:
+              recommendations as unknown as Prisma.InputJsonValue,
             analysis: {
-              ...parsed.analysis,
-              summerPrograms: parsed.summerPrograms || [],
+              ...analysis,
+              summerPrograms,
             },
-            summary: parsed.summary,
+            summary,
             tokenUsed,
           },
         },
@@ -475,9 +463,9 @@ export class RecommendationService {
       const response = {
         id: savedRecommendation.id,
         recommendations,
-        analysis: parsed.analysis,
-        summerPrograms: parsed.summerPrograms || [],
-        summary: parsed.summary,
+        analysis,
+        summerPrograms,
+        summary,
         tokenUsed,
         createdAt: savedRecommendation.createdAt,
       };
@@ -528,13 +516,12 @@ export class RecommendationService {
     });
 
     return recommendations.map((r) => {
-      const analysisData = r.analysis as any;
-      const { summerPrograms, ...analysis } = analysisData || {};
+      const { analysis, summerPrograms } = readStoredAnalysis(r.analysis);
       return {
         id: r.id,
         recommendations: r.recommendations as unknown as RecommendedSchoolDto[],
-        analysis: analysis,
-        summerPrograms: summerPrograms || [],
+        analysis,
+        summerPrograms,
         summary: r.summary || '',
         tokenUsed: r.tokenUsed,
         createdAt: r.createdAt,
@@ -564,14 +551,15 @@ export class RecommendationService {
       'Failed to record view to memory',
     );
 
-    const analysisData = recommendation.analysis as any;
-    const { summerPrograms, ...analysis } = analysisData || {};
+    const { analysis, summerPrograms } = readStoredAnalysis(
+      recommendation.analysis,
+    );
     return {
       id: recommendation.id,
       recommendations:
         recommendation.recommendations as unknown as RecommendedSchoolDto[],
-      analysis: analysis as unknown as RecommendationAnalysisDto,
-      summerPrograms: summerPrograms || [],
+      analysis,
+      summerPrograms,
       summary: recommendation.summary || '',
       tokenUsed: recommendation.tokenUsed,
       createdAt: recommendation.createdAt,
@@ -580,24 +568,27 @@ export class RecommendationService {
 
   // ============ Helper Methods ============
 
-  private createProfileSnapshot(profile: any): any {
+  private createProfileSnapshot(
+    profile: RecommendationPromptProfile,
+  ): Prisma.InputJsonObject {
     return {
-      gpa: profile.gpa,
-      gpaScale: profile.gpaScale,
-      targetMajor: profile.targetMajor,
-      testScores: profile.testScores?.map((s: any) => ({
-        type: s.type,
-        score: s.score,
-      })),
+      gpa: recommendationNumber(profile.gpa) ?? null,
+      gpaScale: recommendationNumber(profile.gpaScale) ?? null,
+      targetMajor: profile.targetMajor ?? null,
+      testScores:
+        profile.testScores?.map((s) => ({
+          type: s.type,
+          score: s.score,
+        })) ?? [],
       activitiesCount: profile.activities?.length || 0,
       awardsCount: profile.awards?.length || 0,
     };
   }
 
   private async matchSchoolIds(
-    recommendations: any[],
+    recommendations: RecommendedSchoolDto[],
   ): Promise<RecommendedSchoolDto[]> {
-    const schoolNames = recommendations.map((r: any) => r.schoolName);
+    const schoolNames = recommendations.map((r) => r.schoolName);
 
     // Three-tier matching: exact + alias + fuzzy
     // governance: system-scope — School / EssayPrompt lookups — published institution data used to score a recommendation, no User relation
@@ -623,7 +614,7 @@ export class RecommendationService {
       select: RECOMMENDATION_SCHOOL_SELECT,
     });
 
-    return recommendations.map((r: any) => {
+    return recommendations.map((r) => {
       const matched = this.findBestMatch(r.schoolName, schools);
       return {
         ...r,
@@ -639,7 +630,7 @@ export class RecommendationService {
    * estimate so that rates converge with the Prediction module's output.
    */
   private async anchorProbabilities(
-    profile: any,
+    profile: RecommendationPromptProfile,
     recommendations: RecommendedSchoolDto[],
   ): Promise<void> {
     const matchedIds = recommendations
@@ -669,7 +660,21 @@ export class RecommendationService {
     });
 
     const schoolMap = new Map(schools.map((s) => [s.id, s]));
-    const profileMetrics = extractProfileMetrics(profile);
+    const profileMetrics = extractProfileMetrics({
+      gpa: profile.gpa,
+      gpaScale: profile.gpaScale,
+      testScores: profile.testScores,
+      activities: profile.activities?.map((activity) => ({
+        category: activity.category,
+        role: activity.role ?? undefined,
+        hoursPerWeek: activity.hoursPerWeek,
+        weeksPerYear: activity.weeksPerYear,
+      })),
+      awards: profile.awards?.map((award) => ({
+        level: award.level,
+        competition: award.competition,
+      })),
+    });
     const MAX_DEVIATION = 0.15;
 
     for (const rec of recommendations) {
@@ -790,11 +795,6 @@ export class RecommendationService {
    * Preflight check: whether the user can generate a recommendation
    */
   async checkPreflight(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { points: true },
-    });
-
     const profile = await this.prisma.profile.findFirst({
       where: { userId },
       include: {
@@ -820,7 +820,7 @@ export class RecommendationService {
 
     return {
       canGenerate: canAfford && missingFields.length === 0,
-      points: user?.points || 0,
+      points: await this.pointsService.getVisibleUserPoints(userId),
       profileComplete: missingFields.length === 0,
       missingFields,
       profileSummary: profile

@@ -70,9 +70,9 @@ export class ProfileAnalysisService {
       }
 
       // Test scores
-      const testScores = (profile as any).testScores || [];
-      const satScore = testScores.find((t: any) => t.type === 'SAT');
-      const toeflScore = testScores.find((t: any) => t.type === 'TOEFL');
+      const testScores = profile.testScores ?? [];
+      const satScore = testScores.find((test) => test.type === 'SAT');
+      const toeflScore = testScores.find((test) => test.type === 'TOEFL');
 
       if (satScore && satScore.score >= 1400) {
         overallScore += 10;

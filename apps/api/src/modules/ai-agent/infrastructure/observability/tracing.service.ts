@@ -203,7 +203,7 @@ export class TracingService {
   /**
    * 导出为 Jaeger 格式 (简化版)
    */
-  exportJaegerFormat(traceId: string): any {
+  exportJaegerFormat(traceId: string): Record<string, unknown> {
     const spans = this.getTrace(traceId);
     return {
       traceID: traceId,

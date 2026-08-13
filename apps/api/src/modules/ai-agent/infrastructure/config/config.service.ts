@@ -114,7 +114,7 @@ export class AgentConfigService implements OnModuleInit {
   private configVersion = 0;
 
   // A/B 测试配置
-  private abTestGroups: Map<string, Map<string, any>> = new Map();
+  private abTestGroups: Map<string, Map<string, unknown>> = new Map();
 
   constructor(
     private nestConfig: NestConfigService,
@@ -490,7 +490,7 @@ export class AgentConfigService implements OnModuleInit {
 
   // ==================== A/B 测试 ====================
 
-  setAbTestConfig(testName: string, userId: string, config: any): void {
+  setAbTestConfig(testName: string, userId: string, config: unknown): void {
     if (!this.abTestGroups.has(testName)) {
       this.abTestGroups.set(testName, new Map());
     }
@@ -500,7 +500,8 @@ export class AgentConfigService implements OnModuleInit {
   getAbTestConfig<T>(testName: string, userId: string, defaultValue: T): T {
     const testGroup = this.abTestGroups.get(testName);
     if (!testGroup) return defaultValue;
-    return testGroup.get(userId) ?? defaultValue;
+    const value = testGroup.get(userId);
+    return value === undefined ? defaultValue : (value as T);
   }
 
   assignAbTestGroup(
@@ -735,20 +736,28 @@ export class AgentConfigService implements OnModuleInit {
     };
   }
 
-  private deepMerge(target: any, source: any): any {
-    const result = { ...target };
-    for (const key of Object.keys(source)) {
+  private deepMerge<T extends object>(target: T, source: Partial<T>): T {
+    const targetRecord = target as Record<string, unknown>;
+    const sourceRecord = source as Record<string, unknown>;
+    const result: Record<string, unknown> = { ...targetRecord };
+    for (const key of Object.keys(sourceRecord)) {
       if (
-        source[key] &&
-        typeof source[key] === 'object' &&
-        !Array.isArray(source[key])
+        sourceRecord[key] &&
+        typeof sourceRecord[key] === 'object' &&
+        !Array.isArray(sourceRecord[key])
       ) {
-        result[key] = this.deepMerge(target[key] || {}, source[key]);
+        const targetValue = targetRecord[key];
+        result[key] = this.deepMerge(
+          typeof targetValue === 'object' && targetValue !== null
+            ? (targetValue as Record<string, unknown>)
+            : {},
+          sourceRecord[key],
+        );
       } else {
-        result[key] = source[key];
+        result[key] = sourceRecord[key];
       }
     }
-    return result;
+    return result as T;
   }
 
   private simpleHash(str: string): number {

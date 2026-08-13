@@ -116,7 +116,7 @@ export async function resolveSchoolId(
 ): Promise<{ id: string; name: string } | null> {
   const normalizedName = normalizeSchoolName(name);
 
-  const school = await (prisma.school as any).findFirst({
+  const school = await prisma.school.findFirst({
     where: {
       OR: [
         { name: { equals: normalizedName, mode: 'insensitive' } },
@@ -440,7 +440,7 @@ export function normalizeHighSchoolType(value: string): HighSchoolType | null {
   const key = value.toLowerCase().trim();
   return (
     HS_TYPE_MAP[key] ||
-    (Object.values(HighSchoolType).includes(value as any)
+    ((Object.values(HighSchoolType) as string[]).includes(value)
       ? (value as HighSchoolType)
       : null)
   );
@@ -454,7 +454,7 @@ export function normalizeCurriculum(value: string): EducationSystem | null {
   const key = value.toLowerCase().trim();
   return (
     CURRICULUM_MAP[key] ||
-    (Object.values(EducationSystem).includes(value as any)
+    ((Object.values(EducationSystem) as string[]).includes(value)
       ? (value as EducationSystem)
       : null)
   );

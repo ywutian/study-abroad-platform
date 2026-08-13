@@ -16,6 +16,7 @@ import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
+import { toJsonInput } from '../resume/resume-content.helpers';
 import {
   CreateSchoolEssaySourceDto,
   UpdateSchoolEssaySourceDto,
@@ -242,7 +243,9 @@ export class EssayScraperController {
         slug: dto.slug,
         scrapeGroup: dto.scrapeGroup || 'GENERIC',
         priority: dto.priority || 0,
-        scrapeConfig: dto.scrapeConfig || undefined,
+        scrapeConfig: dto.scrapeConfig
+          ? toJsonInput(dto.scrapeConfig)
+          : undefined,
       },
       include: {
         school: { select: { id: true, name: true, nameZh: true } },

@@ -33,6 +33,7 @@
 | [RELEASE_GATE_ONE_PAGER.md](RELEASE_GATE_ONE_PAGER.md)                                           | 发版门禁一页版执行手册                      | ZH   |
 | [QA_RELEASE_GATE_SOP.md](QA_RELEASE_GATE_SOP.md)                                                 | AI-first 发版门禁 E2E SOP                   | ZH   |
 | [CODEX_E2E_RUNBOOK.md](CODEX_E2E_RUNBOOK.md)                                                     | Codex 执行发版门禁的固定 Runbook            | ZH   |
+| [积分系统开放 Runbook](runbooks/points-economy-launch.md)                                        | 积分系统双闸门开放、验证与回滚流程          | ZH   |
 | [JOURNEY_REGISTRY.md](JOURNEY_REGISTRY.md)                                                       | 发版门禁旅程注册表                          | ZH   |
 | [FULL_SURFACE_REGISTRY.md](FULL_SURFACE_REGISTRY.md)                                             | 全产品面审计注册表                          | ZH   |
 | [FULL_SURFACE_REUSE_PLAYBOOK.md](FULL_SURFACE_REUSE_PLAYBOOK.md)                                 | 全产品面审计复用手册                        | ZH   |
@@ -78,11 +79,12 @@
 
 ### arc42 S9: 运维与部署
 
-| 文档                                  | 说明                     |
-| ------------------------------------- | ------------------------ |
-| [DEPLOY.md](DEPLOY.md)                | 部署指南 (GCP Cloud Run) |
-| [RUNBOOK.md](RUNBOOK.md)              | 运维排障手册             |
-| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md) | 环境变量说明             |
+| 文档                                                      | 说明                               |
+| --------------------------------------------------------- | ---------------------------------- |
+| [DEPLOY.md](DEPLOY.md)                                    | 部署指南 (GCP Cloud Run)           |
+| [RUNBOOK.md](RUNBOOK.md)                                  | 运维排障手册                       |
+| [积分系统开放 Runbook](runbooks/points-economy-launch.md) | 积分系统双闸门开放、验证与回滚流程 |
+| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                     | 环境变量说明                       |
 
 ### arc42 S10-11: 质量与风险
 

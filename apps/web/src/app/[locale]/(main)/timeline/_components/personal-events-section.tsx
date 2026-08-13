@@ -28,10 +28,22 @@ export function PersonalEventItem({
   getCategoryIcon,
   getCategoryLabel,
   getCategoryColor,
+  readOnly = false,
 }: PersonalEventItemProps) {
   const t = useTranslations('timeline');
   const isExpanded = expandedPersonalEvent === ev.id;
-  const days = getDaysUntil(ev.deadline || ev.eventDate);
+  const deadlineDays = getDaysUntil(ev.deadline);
+  const eventDays = getDaysUntil(ev.eventDate);
+  const dateDistances = [deadlineDays, eventDays].filter(
+    (value): value is number => value !== null
+  );
+  const upcomingDistances = dateDistances.filter((value) => value >= 0);
+  const days =
+    upcomingDistances.length > 0
+      ? Math.min(...upcomingDistances)
+      : dateDistances.length > 0
+        ? Math.max(...dateDistances)
+        : null;
   const tasks = isExpanded && personalEventDetail?.tasks ? personalEventDetail.tasks : [];
 
   return (
@@ -49,7 +61,7 @@ export function PersonalEventItem({
           {getCategoryIcon(ev.category)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-semibold text-sm truncate">{ev.title}</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-md font-medium ${getCategoryColor(ev.category)}`}
@@ -58,13 +70,12 @@ export function PersonalEventItem({
             </span>
             {getStatusBadge(ev.status)}
           </div>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {(ev.deadline || ev.eventDate) && (
-              <span>
-                {ev.deadline
-                  ? `${t('personalEvents.deadline')}: ${formatDate(ev.deadline)}`
-                  : `${t('personalEvents.eventDate')}: ${formatDate(ev.eventDate)}`}
-              </span>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            {ev.deadline && (
+              <span>{`${t('personalEvents.deadline')}: ${formatDate(ev.deadline)}`}</span>
+            )}
+            {ev.eventDate && (
+              <span>{`${t('personalEvents.eventDate')}: ${formatDate(ev.eventDate)}`}</span>
             )}
             {days !== null && (
               <span
@@ -111,13 +122,24 @@ export function PersonalEventItem({
           isLoading={personalEventDetailLoading}
           toggleTaskMutation={togglePersonalTaskMutation}
           formatDate={formatDate}
-          onDelete={() => setDeleteTarget({ type: 'personalEvent', id: ev.id, name: ev.title })}
-          deleteLabel={t('personalEvents.delete')}
-          onEdit={() => onEditEvent(ev)}
-          editLabel={t('personalEvents.edit')}
-          onAddTask={(title) => addPersonalTaskMutation.mutate({ eventId: ev.id, title })}
+          onDelete={
+            readOnly
+              ? undefined
+              : () => setDeleteTarget({ type: 'personalEvent', id: ev.id, name: ev.title })
+          }
+          deleteLabel={readOnly ? undefined : t('personalEvents.delete')}
+          readOnly={readOnly}
+          onEdit={readOnly ? undefined : () => onEditEvent(ev)}
+          editLabel={readOnly ? undefined : t('personalEvents.edit')}
+          onAddTask={
+            readOnly
+              ? undefined
+              : (title) => addPersonalTaskMutation.mutate({ eventId: ev.id, title })
+          }
           addTaskPending={addPersonalTaskMutation.isPending}
-          onDeleteTask={(taskId) => deletePersonalTaskMutation.mutate(taskId)}
+          onDeleteTask={
+            readOnly ? undefined : (taskId) => deletePersonalTaskMutation.mutate(taskId)
+          }
         />
       )}
     </div>
@@ -143,6 +165,7 @@ export function PersonalEventsSection({
   getCategoryIcon,
   getCategoryLabel,
   getCategoryColor,
+  readOnly = false,
 }: PersonalEventsSectionProps) {
   const t = useTranslations('timeline');
 
@@ -151,7 +174,7 @@ export function PersonalEventsSection({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
+        <CardTitle className="text-body flex items-center gap-2">
           <Star className="h-4 w-4" />
           {t('personalEvents.title')}
         </CardTitle>
@@ -179,6 +202,7 @@ export function PersonalEventsSection({
             getCategoryIcon={getCategoryIcon}
             getCategoryLabel={getCategoryLabel}
             getCategoryColor={getCategoryColor}
+            readOnly={readOnly}
           />
         ))}
       </CardContent>

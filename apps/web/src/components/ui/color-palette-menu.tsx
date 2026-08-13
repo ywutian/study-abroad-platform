@@ -451,11 +451,10 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
         <Button
           type="button"
           variant="ghost"
-          size="sm"
-          className={cn('rounded-[var(--theme-radius-button)] px-3', className)}
+          size="icon"
+          className={cn('rounded-[var(--theme-radius-button)]', className)}
           aria-label={t('menuLabel')}
           suppressHydrationWarning
-          style={{ minHeight: 40, minWidth: 40 }}
         >
           <Palette className="h-3.5 w-3.5" />
         </Button>

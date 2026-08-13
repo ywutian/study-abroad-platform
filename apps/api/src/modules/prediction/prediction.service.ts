@@ -8,6 +8,8 @@ import {
   PreconditionFailedException,
 } from '@nestjs/common';
 import {
+  Prisma,
+  type SchoolProgram,
   SchoolMediaSourceType,
   SchoolMediaStatus,
   SchoolMediaType,
@@ -89,6 +91,7 @@ import type {
   SchoolPublicMediaAsset,
 } from '@study-abroad/shared';
 import { buildNormalizedSchoolProvenance } from '../school/school-provenance.helpers';
+import type { ProfileWithRelations } from './prediction.types';
 
 // ============================================
 // Constants
@@ -144,22 +147,32 @@ const PREDICTION_PUBLIC_MEDIA_INCLUDE = {
   },
 } as const;
 
+type PredictionSchoolRecord = Prisma.SchoolGetPayload<{
+  include: typeof PREDICTION_PUBLIC_MEDIA_INCLUDE;
+}>;
+type PredictionMediaAsset = PublicSchoolMediaAssetInput & {
+  type: SchoolMediaType;
+};
+type PredictionMemoryContext = Awaited<
+  ReturnType<PredictionMemoryService['getMemoryContext']>
+>;
+
 function toPredictionPublicMediaAsset(
   asset: PublicSchoolMediaAssetInput | null | undefined,
 ): SchoolPublicMediaAsset | null {
   return toPublicSchoolMediaAsset(asset);
 }
 
-function mapPredictionSchoolMedia(assets?: any[] | null): SchoolPublicMedia {
+function mapPredictionSchoolMedia(
+  assets?: PredictionMediaAsset[] | null,
+): SchoolPublicMedia {
   const list = assets ?? [];
   return {
     campusCover: toPredictionPublicMediaAsset(
-      list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER) as
-        PublicSchoolMediaAssetInput | undefined,
+      list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER),
     ),
     logo: toPredictionPublicMediaAsset(
-      list.find((asset) => asset.type === SchoolMediaType.LOGO) as
-        PublicSchoolMediaAssetInput | undefined,
+      list.find((asset) => asset.type === SchoolMediaType.LOGO),
     ),
   };
 }
@@ -240,7 +253,7 @@ export class PredictionService {
   // ==================== 缓存管理 (delegated to PredictionCacheService) ====================
 
   /** @deprecated Use PredictionCacheService.hashProfileData() directly */
-  private hashProfileData(profile: any): string {
+  private hashProfileData(profile: ProfileWithRelations): string {
     return this.cacheService.hashProfileData(profile);
   }
 
@@ -326,7 +339,7 @@ export class PredictionService {
 
   /** @deprecated Use PredictionHistoricalService.getHistoricalProbability() directly */
   private async getHistoricalProbability(
-    profileMetrics: any,
+    profileMetrics: ProfileMetrics,
     schoolId: string,
   ) {
     return this.historicalService.getHistoricalProbability(
@@ -346,7 +359,10 @@ export class PredictionService {
   private async recordPredictionToMemory(
     userId: string,
     results: PredictionResultDto[],
-    memoryContext: { previousPredictions: any[]; knownPreferences: string[] },
+    memoryContext: Pick<
+      PredictionMemoryContext,
+      'previousPredictions' | 'knownPreferences'
+    >,
   ): Promise<void> {
     return this.memoryService.recordPredictionToMemory(
       userId,
@@ -372,21 +388,20 @@ export class PredictionService {
 
   /** @deprecated Use PredictionTransformerService.profileToInput() directly */
   private profileToInput(
-    profile: any,
+    profile: ProfileWithRelations,
     assessmentData?: { mbtiType?: string; hollandCodes?: string[] },
   ): ProfileInput {
     return this.transformer.profileToInput(profile, assessmentData);
   }
 
   /** @deprecated Use PredictionTransformerService.schoolToInput() directly */
-  private schoolToInput(school: any): SchoolInput {
+  private schoolToInput(school: PredictionSchoolRecord): SchoolInput {
     return this.transformer.schoolToInput(school);
   }
 
-  private buildPredictionSchoolMeta(school: any) {
+  private buildPredictionSchoolMeta(school: PredictionSchoolRecord) {
     return {
       usNewsRank: school.usNewsRank ?? undefined,
-      rankings: school.rankings ?? undefined,
       media: mapPredictionSchoolMedia(school.mediaAssets),
       acceptanceRate: clampPercentRate(school.acceptanceRate),
       intlAcceptanceRate: clampPercentRate(school.intlAcceptanceRate),
@@ -406,7 +421,9 @@ export class PredictionService {
     };
   }
 
-  private buildSchoolDataQuality(school: any): SchoolPredictionDataQuality {
+  private buildSchoolDataQuality(
+    school: PredictionSchoolRecord,
+  ): SchoolPredictionDataQuality {
     const provenance = buildNormalizedSchoolProvenance(school);
     const officialFields: string[] = [];
     const heuristicFields: string[] = [];
@@ -471,12 +488,22 @@ export class PredictionService {
     return result.probability == null ? -1 : result.probability;
   }
 
-  private numericPredictionResults(
-    results: PredictionResultDto[],
-  ): Array<PredictionResultDto & { probability: number }> {
+  private numericPredictionResults(results: PredictionResultDto[]): Array<
+    PredictionResultDto & {
+      probability: number;
+      tier: 'reach' | 'match' | 'safety';
+    }
+  > {
     return results.filter(
-      (result): result is PredictionResultDto & { probability: number } =>
-        result.probability != null && Number.isFinite(result.probability),
+      (
+        result,
+      ): result is PredictionResultDto & {
+        probability: number;
+        tier: 'reach' | 'match' | 'safety';
+      } =>
+        result.probability != null &&
+        Number.isFinite(result.probability) &&
+        result.tier !== 'unavailable',
     );
   }
 
@@ -501,7 +528,7 @@ export class PredictionService {
   private async buildCounselorPrimaryResult(params: {
     profileId: string;
     profileInput: ProfileInput;
-    school: any;
+    school: PredictionSchoolRecord;
     schoolInput: SchoolInput;
     schoolMetrics: SchoolMetrics;
     locale: string;
@@ -538,8 +565,8 @@ export class PredictionService {
     );
     const schoolName =
       locale === 'zh'
-        ? school.nameZh || school.name
-        : school.name || school.nameZh;
+        ? school.nameZh || school.name || school.id
+        : school.name || school.nameZh || school.id;
 
     const builtTrace = this.policyService.buildTracePayload({
       policyVersionId: resolvedPolicyVersionId,
@@ -1111,12 +1138,10 @@ export class PredictionService {
     return {
       preview: true,
       scenario: normalizedScenario,
-      results: output.results.map((result) => {
-        const previewResult = { ...result } as any;
-        delete previewResult.id;
-        previewResult.authority = 'PREVIEW';
-        return previewResult;
-      }),
+      results: output.results.map(({ id: _id, ...result }) => ({
+        ...result,
+        authority: 'PREVIEW' as const,
+      })),
       dataCompleteness: output.dataCompleteness,
     };
   }
@@ -1271,7 +1296,7 @@ export class PredictionService {
     const plattParams = await this.getPlattCalibration();
 
     const emptyMemoryCtx = {
-      previousPredictions: [] as any[],
+      previousPredictions: [] as PredictionMemoryContext['previousPredictions'],
       knownPreferences: [] as string[],
       profileInsights: [] as string[],
       memoryAdjustments: new Map<string, number>(),
@@ -1284,7 +1309,7 @@ export class PredictionService {
     );
 
     // Prefetch program competitiveness for the target major
-    const programMap = new Map<string, any>();
+    const programMap = new Map<string, SchoolProgram>();
     if (profileInput.targetMajor) {
       const targetCip = resolveMajorToCip(profileInput.targetMajor);
       if (targetCip) {
@@ -1344,7 +1369,7 @@ export class PredictionService {
       } catch (err) {
         this.logger.warn(
           `previewPredict: school ${school.id} failed`,
-          err as any,
+          err instanceof Error ? (err.stack ?? err.message) : String(err),
         );
       }
     }
@@ -1352,7 +1377,7 @@ export class PredictionService {
     // Batch validation + monotonicity (same invariants as the live path)
     this.validateBatchResults(results);
     if (!counselorMode) {
-      enforceMonotonicity(this.numericPredictionResults(results) as any);
+      enforceMonotonicity(this.numericPredictionResults(results));
 
       // School-level calibration multipliers (Platt happens inside predictForSchool)
       const calibrationMap = await this.getSchoolCalibrations();
@@ -1744,7 +1769,7 @@ export class PredictionService {
     const targetCip = profileInput.targetMajor
       ? resolveMajorToCip(profileInput.targetMajor)
       : null;
-    const programMap = new Map<string, any>();
+    const programMap = new Map<string, SchoolProgram>();
     if (targetCip) {
       const allSchoolIds = schools.map((s) => s.id);
       const programs = await this.prisma.schoolProgram.findMany({
@@ -1807,7 +1832,7 @@ export class PredictionService {
       // 单调性约束: 保证 selectivity 更高的学校 probability 更低.
       // Counselor mode skips this legacy post-processing so its hard
       // [anchor × 0.3, anchor × 2.5] clamp cannot be mutated after compute().
-      enforceMonotonicity(this.numericPredictionResults(results) as any);
+      enforceMonotonicity(this.numericPredictionResults(results));
 
       // 学校级校准：从 DB 加载 SchoolCalibration 乘数（如 BU 过严时可设 >1）
       const calibrationMap = await this.getSchoolCalibrations();
@@ -1873,12 +1898,12 @@ export class PredictionService {
     profileId: string,
     profileInput: ProfileInput,
     profileMetrics: ProfileMetrics,
-    school: any,
-    memoryContext: any,
+    school: PredictionSchoolRecord,
+    memoryContext: PredictionMemoryContext,
     locale: string,
     plattParams?: { a: number; b: number } | null,
     profileHash?: string,
-    programData?: any,
+    programData?: SchoolProgram,
     dataCompleteness?: number,
     applicationRound?: string,
     policyVersionId?: string,
@@ -1962,9 +1987,9 @@ export class PredictionService {
         nationalityStats ?? undefined,
         dataCompleteness,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.logger.warn(
-        `AI prediction failed for school ${school.id}: ${err?.message}`,
+        `AI prediction failed for school ${school.id}: ${err instanceof Error ? err.message : String(err)}`,
       );
       aiResult = null;
     }
@@ -2255,8 +2280,8 @@ export class PredictionService {
       locale,
       schoolName:
         locale === 'zh'
-          ? school.nameZh || school.name
-          : school.name || school.nameZh,
+          ? school.nameZh || school.name || school.id
+          : school.name || school.nameZh || school.id,
       probability: fusedResult.probability,
       probabilityLow: fusedResult.probabilityLow,
       probabilityHigh: fusedResult.probabilityHigh,
@@ -2274,8 +2299,8 @@ export class PredictionService {
       schoolId: school.id,
       schoolName:
         locale === 'zh'
-          ? school.nameZh || school.name
-          : school.name || school.nameZh,
+          ? school.nameZh || school.name || school.id
+          : school.name || school.nameZh || school.id,
       probability: fusedResult.probability,
       probabilityLow: fusedResult.probabilityLow,
       probabilityHigh: fusedResult.probabilityHigh,
@@ -2327,7 +2352,7 @@ export class PredictionService {
           profileInput.targetMajor,
         );
         if (caseStats) {
-          (result as any).communityInsight = {
+          result.communityInsight = {
             majorAdmitRate: caseStats.admitRate,
             totalCases: caseStats.totalCases,
             major: profileInput.targetMajor,
@@ -2464,7 +2489,7 @@ export class PredictionService {
         // and Optional injection).
         this.logger.warn(
           `Counselor compute failed for profile=${profileId} school=${school.id}; falling back to fusion`,
-          err as any,
+          err instanceof Error ? (err.stack ?? err.message) : String(err),
         );
       }
     }
@@ -2539,7 +2564,7 @@ export class PredictionService {
       profileId: string;
       profileInput: ProfileInput;
       profileMetrics: ProfileMetrics;
-      school: any;
+      school: PredictionSchoolRecord;
       schoolInput: SchoolInput;
       ourProbPrePlatt: number;
       servedProbability: number;
@@ -2874,12 +2899,7 @@ export class PredictionService {
           ? /早申|提前|ED|EA/.test(s)
           : /\bED\b|\bEA\b|early decision|early action/i.test(s);
       if (!suggestions.some(mentionsEarly)) {
-        const earlyTip = this.buildEarlyRoundSuggestion(
-          school,
-          profile,
-          summerNames,
-          isZh,
-        );
+        const earlyTip = this.buildEarlyRoundSuggestion(school, profile, isZh);
         if (earlyTip) suggestions.push(earlyTip);
       }
     } else if (tier === 'match') {
@@ -3019,14 +3039,8 @@ export class PredictionService {
   private buildEarlyRoundSuggestion(
     school: SchoolInput,
     profile: ProfileInput,
-    summerNames: string,
     isZh: boolean,
   ): string | null {
-    const summerTail = summerNames
-      ? isZh
-        ? `，同时利用暑期参加 ${summerNames} 等学术项目增强竞争力`
-        : `, and strengthen your profile through summer programs like ${summerNames}`
-      : '';
     const bindingAidCaveat =
       profile.isInternational || profile.needsFinancialAid
         ? isZh
@@ -3036,8 +3050,8 @@ export class PredictionService {
 
     if (school.hasEarlyDecision === true) {
       return isZh
-        ? `作为冲刺校，可考虑用 ED（提前决定，绑定）申请以最大化录取机会${bindingAidCaveat}${summerTail}`
-        : `As a reach, consider Early Decision (binding) to maximize your admission odds${bindingAidCaveat}${summerTail}`;
+        ? `作为冲刺校，可考虑用 ED（提前决定，绑定）申请以最大化录取机会${bindingAidCaveat}`
+        : `As a reach, consider Early Decision (binding) to maximize your admission odds${bindingAidCaveat}`;
     }
 
     if (school.hasRestrictiveEa === true || school.hasEarlyAction === true) {
@@ -3049,8 +3063,8 @@ export class PredictionService {
           ? '提前行动（EA）'
           : 'Early Action';
       return isZh
-        ? `作为冲刺校，这所学校提供${eaLabel}（不绑定），可提前申请以展示兴趣、且不影响你比较其他录取${summerTail}`
-        : `As a reach, this school offers ${eaLabel} (non-binding) — applying early can signal interest without committing you${summerTail}`;
+        ? `作为冲刺校，这所学校提供${eaLabel}（不绑定），可提前申请以展示兴趣、且不影响你比较其他录取`
+        : `As a reach, this school offers ${eaLabel} (non-binding) — applying early can signal interest without committing you`;
     }
 
     if (school.hasEarlyDecision === false && school.hasEarlyAction === false) {
@@ -3058,8 +3072,8 @@ export class PredictionService {
     }
 
     return isZh
-      ? `作为冲刺校，若这所学校设有提前申请轮次（ED/EA），可考虑用它来提升录取机会${summerTail}`
-      : `As a reach, if this school offers an early round (ED/EA), consider using it to improve your odds${summerTail}`;
+      ? '作为冲刺校，若这所学校设有提前申请轮次（ED/EA），可考虑用它来提升录取机会'
+      : 'As a reach, if this school offers an early round (ED/EA), consider using it to improve your odds';
   }
 
   // ==================== Persistence & Reporting (delegated) ====================

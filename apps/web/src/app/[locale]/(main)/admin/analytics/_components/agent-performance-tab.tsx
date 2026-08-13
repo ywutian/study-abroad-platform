@@ -18,7 +18,15 @@ import { useTranslations } from 'next-intl';
 import { Cpu } from 'lucide-react';
 
 interface DailyMetrics {
-  daily: Array<any>;
+  daily: Array<{
+    date: string;
+    totalTokens: number;
+    promptTokens: number;
+    completionTokens: number;
+    cost: number;
+    requests: number;
+    uniqueUsers: number;
+  }>;
   byModel: Record<string, number>;
   byAgent: Record<string, { tokens: number; requests: number; cost: number }>;
 }
@@ -57,14 +65,14 @@ export function AgentPerformanceTab() {
             size="sm"
             onClick={() => setDays(d)}
           >
-            {t(`days${d}` as any)}
+            {t(`days${d}` as never)}
           </Button>
         ))}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <Cpu className="h-5 w-5" />
             {t('agentPerformance.title')}
           </CardTitle>

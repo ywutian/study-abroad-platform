@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, router } from 'expo-router';
-import { TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useColors } from '@/utils/theme';
@@ -33,7 +33,7 @@ export default function ProfileLayout() {
             accessibilityRole="button"
             accessibilityLabel={t('common.back')}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            style={{ paddingRight: 8 }}
+            style={styles.backButton}
           >
             <Ionicons name="chevron-back" size={26} color={colors.foreground} />
           </TouchableOpacity>
@@ -51,3 +51,5 @@ export default function ProfileLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({ backButton: { paddingRight: 8 } });

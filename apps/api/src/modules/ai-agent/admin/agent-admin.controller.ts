@@ -47,6 +47,16 @@ import {
   Max,
 } from 'class-validator';
 
+export interface DailyUsage {
+  date: string;
+  totalTokens: number;
+  promptTokens: number;
+  completionTokens: number;
+  cost: number;
+  requests: number;
+  uniqueUsers: number;
+}
+
 // ==================== DTOs ====================
 
 class ResolveConflictDto {
@@ -473,7 +483,7 @@ export class AgentAdminController {
     `;
 
     // Aggregate into daily summaries
-    const dailyMap = new Map<string, any>();
+    const dailyMap = new Map<string, DailyUsage>();
     const byModel = new Map<string, number>();
     const byAgent = new Map<
       string,
@@ -493,7 +503,7 @@ export class AgentAdminController {
           uniqueUsers: 0,
         });
       }
-      const d = dailyMap.get(date);
+      const d = dailyMap.get(date)!;
       d.totalTokens += Number(row.total_tokens);
       d.promptTokens += Number(row.prompt_tokens);
       d.completionTokens += Number(row.completion_tokens);

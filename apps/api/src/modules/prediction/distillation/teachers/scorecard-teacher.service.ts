@@ -39,10 +39,11 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
   readonly sourceType = 'OFFICIAL_FEDERAL' as const;
   readonly defaultWeight = DEFAULT_WEIGHT;
 
-  async evaluate(
+  evaluate(
     input: DistillationEvaluationInput,
-  ): Promise<
-    Omit<DistillationTeacherSignal, 'configuredWeight' | 'effectiveBlendWeight'>
+  ): Omit<
+    DistillationTeacherSignal,
+    'configuredWeight' | 'effectiveBlendWeight'
   > {
     const baseRate =
       input.school.acceptanceRate != null

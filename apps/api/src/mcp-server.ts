@@ -15,56 +15,54 @@
  *   DATABASE_URL   — PostgreSQL connection string
  */
 
-import { NestFactory } from '@nestjs/core';
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 import { z } from 'zod';
-import { AppModule } from './app.module';
-
-import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
-import { ToolExecutorService } from './modules/ai-agent/core/tool-executor.service';
 import { TOOLS } from './modules/ai-agent/config/tools.config';
+import { ToolExecutorService } from './modules/ai-agent/core/tool-executor.service';
+import { PrismaModule } from './prisma/prisma.module';
 
 // Import all tool domain services
 import {
-  ProfileToolsService,
-  SchoolToolsService,
-  EssayToolsService,
-  RecommendationToolsService,
-  PredictionToolsService,
-  CaseToolsService,
-  TimelineToolsService,
   AssessmentToolsService,
+  CaseToolsService,
+  EssayToolsService,
   ForumToolsService,
-  RankingToolsService,
-  SearchToolsService,
-  ResumeToolsService,
-  SimilarityToolsService,
-  SchoolLookupHelper,
+  PredictionToolsService,
   ProfileLoaderHelper,
+  ProfileToolsService,
+  RankingToolsService,
+  RecommendationToolsService,
+  ResumeToolsService,
+  SchoolLookupHelper,
+  SchoolToolsService,
+  SearchToolsService,
+  SimilarityToolsService,
+  TimelineToolsService,
 } from './modules/ai-agent/tools';
 import { McpApiKeyService } from './modules/auth/mcp-api-key.service';
 
 // Import domain modules needed by tool services
-import { PredictionModule } from './modules/prediction/prediction.module';
-import { AssessmentModule } from './modules/assessment/assessment.module';
-import { ForumModule } from './modules/forum/forum.module';
-import { HallModule } from './modules/hall/hall.module';
-import { ResumeModule } from './modules/resume/resume.module';
-import { EssayModule } from './modules/essay/essay.module';
-import { RecommendationModule } from './modules/recommendation/recommendation.module';
-import { LLMProvidersModule } from './modules/ai-agent/providers/provider.module';
-import { AgentSecurityModule } from './modules/ai-agent/security/security.module';
-import { SettingsModule } from './modules/settings/settings.module';
-import { ContentModerationService } from './modules/ai-agent/security/content-moderation.service';
 import {
   getMcpAuthErrorMessage,
   normalizeMcpArguments,
   serializeMcpToolContent,
 } from './mcp-server.helpers';
+import { LLMProvidersModule } from './modules/ai-agent/providers/provider.module';
+import { ContentModerationService } from './modules/ai-agent/security/content-moderation.service';
+import { AgentSecurityModule } from './modules/ai-agent/security/security.module';
+import { AssessmentModule } from './modules/assessment/assessment.module';
+import { EssayModule } from './modules/essay/essay.module';
+import { ForumModule } from './modules/forum/forum.module';
+import { HallModule } from './modules/hall/hall.module';
+import { PredictionModule } from './modules/prediction/prediction.module';
+import { RecommendationModule } from './modules/recommendation/recommendation.module';
+import { ResumeModule } from './modules/resume/resume.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 const MCP_TOOL_INPUT_SCHEMA = z.object({}).passthrough();
 
@@ -113,7 +111,7 @@ export async function main() {
   const locale = process.env.MCP_LOCALE || 'zh';
 
   // Bootstrap minimal NestJS app (no HTTP listener)
-  const app = await NestFactory.createApplicationContext(AppModule, {
+  const app = await NestFactory.createApplicationContext(McpAppModule, {
     logger: ['error', 'warn'],
   });
   const toolExecutor = app.get(ToolExecutorService);
@@ -199,9 +197,8 @@ export async function main() {
   await server.connect(transport);
 
   // Graceful shutdown
-  process.on('SIGTERM', async () => {
-    await app.close();
-    process.exit(0);
+  process.on('SIGTERM', () => {
+    void app.close().then(() => process.exit(0));
   });
 }
 

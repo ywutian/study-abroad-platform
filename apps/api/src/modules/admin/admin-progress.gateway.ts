@@ -70,8 +70,9 @@ export class AdminProgressGateway
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
+      const authToken: unknown = client.handshake.auth?.token;
       const token =
-        client.handshake.auth?.token ||
+        (typeof authToken === 'string' ? authToken : undefined) ??
         client.handshake.headers.authorization?.split(' ')[1];
 
       if (!token) {
@@ -79,7 +80,7 @@ export class AdminProgressGateway
         return;
       }
 
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<{ sub?: string }>(token, {
         secret: this.configService.get('JWT_SECRET'),
       });
 

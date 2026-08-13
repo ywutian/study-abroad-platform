@@ -5,59 +5,22 @@ import { createHash } from 'crypto';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
+import { PointsConfigService } from '../points/points-config.service';
 import {
   CHAT_MESSAGE_OFFLINE,
   NOTIFICATION_PUSH,
   type ChatMessageOfflinePayload,
   type NotificationPushPayload,
 } from '../../common/events/notification.events';
+import {
+  isPointsOnlyNotification,
+  sanitizeDormantPointCopy,
+} from './notification-visibility';
+import { NotificationType, type Notification } from './notification.types';
 
-export enum NotificationType {
-  // 社交类
-  NEW_FOLLOWER = 'NEW_FOLLOWER',
-  FOLLOW_ACCEPTED = 'FOLLOW_ACCEPTED',
-  NEW_MESSAGE = 'NEW_MESSAGE',
-
-  // 内容类
-  CASE_HELPFUL = 'CASE_HELPFUL',
-  ESSAY_COMMENT = 'ESSAY_COMMENT',
-  POST_REPLY = 'POST_REPLY',
-  POST_LIKE = 'POST_LIKE',
-
-  // 系统类
-  VERIFICATION_APPROVED = 'VERIFICATION_APPROVED',
-  VERIFICATION_REJECTED = 'VERIFICATION_REJECTED',
-  POINTS_EARNED = 'POINTS_EARNED',
-  LEVEL_UP = 'LEVEL_UP',
-
-  // 提醒类
-  DEADLINE_REMINDER = 'DEADLINE_REMINDER',
-  PROFILE_INCOMPLETE = 'PROFILE_INCOMPLETE',
-
-  // 审核类
-  CASE_REVIEW_APPROVED = 'CASE_REVIEW_APPROVED',
-  CASE_REVIEW_REJECTED = 'CASE_REVIEW_REJECTED',
-
-  // 文书题目
-  NEW_ESSAY_PROMPTS = 'NEW_ESSAY_PROMPTS',
-
-  // 管理员广播
-  SYSTEM_BROADCAST = 'SYSTEM_BROADCAST',
-}
-
-export interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  content: string;
-  userId: string;
-  actorId?: string; // 触发者ID
-  actorName?: string;
-  relatedId?: string; // 相关资源ID
-  relatedType?: string; // case, post, message等
-  read: boolean;
-  createdAt: string;
-}
+export { NotificationType } from './notification.types';
+export type { Notification } from './notification.types';
 
 interface NotificationPreferenceRecord {
   readinessInAppSurface: boolean;
@@ -192,6 +155,7 @@ export class NotificationService {
     private readonly redis: RedisService,
     private readonly eventEmitter: EventEmitter2,
     private readonly prisma: PrismaService,
+    private readonly pointsConfig: PointsConfigService,
   ) {}
 
   /**
@@ -239,9 +203,20 @@ export class NotificationService {
       createdAt: new Date().toISOString(),
     };
 
+    const pointsEnabled = await this.pointsConfig.isEnabled();
+    if (!pointsEnabled && isPointsOnlyNotification(notification)) {
+      this.logger.debug(
+        `Suppressed dormant points notification: ${type} for user ${userId}`,
+      );
+      return notification;
+    }
+    const visibleNotification = pointsEnabled
+      ? notification
+      : sanitizeDormantPointCopy(notification);
+
     // 存储到Redis
     const key = this.getNotificationKey(userId);
-    await this.redis.lpush(key, JSON.stringify(notification));
+    await this.redis.lpush(key, JSON.stringify(visibleNotification));
     await this.redis.ltrim(key, 0, this.MAX_NOTIFICATIONS - 1);
     await this.redis.expire(key, this.NOTIFICATION_TTL);
 
@@ -252,11 +227,11 @@ export class NotificationService {
     this.eventEmitter.emit(NOTIFICATION_PUSH, {
       userId,
       event: 'notification',
-      data: notification,
+      data: visibleNotification,
     } satisfies NotificationPushPayload);
 
     try {
-      await this.sendRemotePush(notification);
+      await this.sendRemotePush(visibleNotification);
     } catch (error) {
       this.logger.warn(
         `Remote push dispatch failed for user ${userId}: ${error instanceof Error ? error.message : String(error)}`,
@@ -265,7 +240,7 @@ export class NotificationService {
 
     this.logger.log(`Notification created: ${type} for user ${userId}`);
 
-    return notification;
+    return visibleNotification;
   }
 
   async registerPushToken(
@@ -407,18 +382,40 @@ export class NotificationService {
     offset = 0,
   ): Promise<Notification[]> {
     const key = this.getNotificationKey(userId);
-    const notifications = await this.redis.lrange(
-      key,
-      offset,
-      offset + limit - 1,
-    );
-    return notifications.map((n) => JSON.parse(n) as Notification);
+    const pointsEnabled = await this.pointsConfig.isEnabled();
+    if (pointsEnabled) {
+      const notifications = await this.redis.lrange(
+        key,
+        offset,
+        offset + limit - 1,
+      );
+      return notifications.map((n) => JSON.parse(n) as Notification);
+    }
+
+    // Fetch before slicing so hidden historical entries do not create short
+    // pages or make visible entries unreachable at later offsets.
+    const notifications = await this.redis.lrange(key, 0, -1);
+    return notifications
+      .map((item) => JSON.parse(item) as Notification)
+      .filter((item) => !isPointsOnlyNotification(item))
+      .map((item) => sanitizeDormantPointCopy(item))
+      .slice(offset, offset + limit);
   }
 
   /**
    * 获取未读通知数量
    */
   async getUnreadCount(userId: string): Promise<number> {
+    if (!(await this.pointsConfig.isEnabled())) {
+      const notifications = await this.redis.lrange(
+        this.getNotificationKey(userId),
+        0,
+        -1,
+      );
+      return notifications
+        .map((item) => JSON.parse(item) as Notification)
+        .filter((item) => !item.read && !isPointsOnlyNotification(item)).length;
+    }
     const count = await this.redis.get(this.getUnreadCountKey(userId));
     return parseInt(count || '0', 10);
   }
@@ -448,6 +445,7 @@ export class NotificationService {
   async markAllAsRead(userId: string): Promise<number> {
     const key = this.getNotificationKey(userId);
     const notifications = await this.redis.lrange(key, 0, -1);
+    const pointsEnabled = await this.pointsConfig.isEnabled();
     let count = 0;
 
     for (let i = 0; i < notifications.length; i++) {
@@ -455,7 +453,9 @@ export class NotificationService {
       if (!notification.read) {
         notification.read = true;
         await this.redis.lset(key, i, JSON.stringify(notification));
-        count++;
+        if (pointsEnabled || !isPointsOnlyNotification(notification)) {
+          count++;
+        }
       }
     }
 
@@ -554,9 +554,8 @@ export class NotificationService {
     return `${this.PUSH_TOKEN_OWNER_KEY_PREFIX}${tokenHash}`;
   }
 
-  private get preferenceModel() {
-    return (this.prisma as unknown as Record<string, any>)
-      .userNotificationPreference;
+  private get preferenceModel(): Prisma.UserNotificationPreferenceDelegate {
+    return this.prisma.userNotificationPreference;
   }
 
   private toPreferenceView(

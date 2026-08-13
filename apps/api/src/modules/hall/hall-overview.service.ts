@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { HallOverviewPayload } from '@study-abroad/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsService } from '../points/incentive.service';
+import { PointsConfigService } from '../points/points-config.service';
 
 // Re-export the shared contract so other backend consumers can import it from
 // this module without learning about the shared package. The single source of
@@ -31,6 +32,7 @@ export class HallOverviewService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pointsService: PointsService,
+    private readonly pointsConfig: PointsConfigService,
   ) {}
 
   async getOverview(userId: string): Promise<HallOverviewPayload> {
@@ -39,17 +41,12 @@ export class HallOverviewService {
 
     // Run independent reads in parallel — Postgres handles this fine and we
     // halve perceived latency on the client.
-    const [user, balance, recentActivity, todayPointSum] = await Promise.all([
+    const [user, pointsEnabled] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
         select: { id: true },
       }),
-      this.pointsService.getUserPoints(userId),
-      this.pointsService.getPointHistory(userId, 20),
-      this.prisma.pointHistory.aggregate({
-        where: { userId, createdAt: { gte: todayStart } },
-        _sum: { points: true },
-      }),
+      this.pointsConfig.isEnabled(),
     ]);
 
     if (!user) {
@@ -58,6 +55,16 @@ export class HallOverviewService {
       this.logger.warn(`HallOverview requested for missing user ${userId}`);
       return EMPTY_PAYLOAD;
     }
+    if (!pointsEnabled) return EMPTY_PAYLOAD;
+
+    const [balance, recentActivity, todayPointSum] = await Promise.all([
+      this.pointsService.getUserPoints(userId),
+      this.pointsService.getPointHistory(userId, 20),
+      this.prisma.pointHistory.aggregate({
+        where: { userId, createdAt: { gte: todayStart } },
+        _sum: { points: true },
+      }),
+    ]);
 
     return {
       points: {

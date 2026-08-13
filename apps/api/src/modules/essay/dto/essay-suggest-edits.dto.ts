@@ -14,6 +14,7 @@ export class EssaySuggestEditsRequestDto {
   @IsOptional()
   @IsString()
   @IsIn(['formal', 'vivid', 'concise'])
+  @MaxLength(20)
   style?: 'formal' | 'vivid' | 'concise';
 
   @ApiPropertyOptional({ description: 'Optional editing focus' })

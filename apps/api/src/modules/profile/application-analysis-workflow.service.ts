@@ -4,44 +4,38 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import {
+  ApplicationAnalysisEvaluationMode,
   ApplicationAnalysisExperimentCapability,
   ApplicationAnalysisExperimentEvaluationMode,
-  ApplicationAnalysisExperimentStatus,
-  ApplicationAnalysisEvaluationMode,
   ApplicationAnalysisFeedbackCategory,
   ApplicationAnalysisFeedbackSentiment,
-  ApplicationAnalysisExperimentIncidentSeverity,
-  ApplicationAnalysisExperimentIncidentStatus,
-  ApplicationAnalysisExperimentSweepMode,
-  ApplicationAnalysisExperimentSweepStatus,
   Prisma,
-  SchoolPolicyDimension,
 } from '@prisma/client';
-import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
+import { resolveCanonicalPredictionOutcome } from '@study-abroad/shared/scoring';
+import { randomUUID } from 'crypto';
 import { createPaginatedResponse } from '../../common/dto/pagination.dto';
+import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 import { RedisService } from '../../common/redis/redis.service';
 import {
   AuditAction,
   AuditLogService,
 } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { resolveCanonicalPredictionOutcome } from '@study-abroad/shared/scoring';
 import {
+  AcknowledgeApplicationAnalysisExperimentIncidentDto,
   ApplicationAnalysisEvaluationQueryDto,
+  ApplicationAnalysisEvidenceQueryDto,
   ApplicationAnalysisExperimentEvaluationQueryDto,
   ApplicationAnalysisExperimentFeedbackQueryDto,
   ApplicationAnalysisExperimentIncidentQueryDto,
   ApplicationAnalysisExperimentQueryDto,
   ApplicationAnalysisExperimentSweepQueryDto,
   ApplicationAnalysisFairnessReportQueryDto,
-  ApplicationAnalysisRecoursePreviewDto,
-  AcknowledgeApplicationAnalysisExperimentIncidentDto,
-  CreateApplicationAnalysisExperimentVersionDto,
-  ApplicationAnalysisUncertaintyPreviewDto,
-  ApplicationAnalysisEvidenceQueryDto,
   ApplicationAnalysisPolicyQueryDto,
+  ApplicationAnalysisRecoursePreviewDto,
+  ApplicationAnalysisUncertaintyPreviewDto,
+  CreateApplicationAnalysisExperimentVersionDto,
   CreateApplicationAnalysisPolicyVersionDto,
   CreateSchoolPolicyEvidenceDto,
   ReviewSchoolPolicyEvidenceDto,
@@ -50,10 +44,8 @@ import {
 import {
   APPLICATION_ANALYSIS_DEFAULT_THRESHOLDS,
   APPLICATION_ANALYSIS_EXPERIMENT_AUTOMATION,
-  APPLICATION_ANALYSIS_EXPERIMENTAL_FLAGS,
-  APPLICATION_ANALYSIS_EXPERIMENT_DEFAULT_THRESHOLDS,
-  APPLICATION_ANALYSIS_EXPERIMENT_LIVE_THRESHOLDS,
   APPLICATION_ANALYSIS_EXPERIMENT_ROLLOUT_STAGES,
+  APPLICATION_ANALYSIS_EXPERIMENTAL_FLAGS,
 } from './application-analysis-workflow.constants';
 import type {
   ExperimentCapability,
@@ -94,8 +86,6 @@ type FeedbackCategory =
   | 'LOW_ACTIONABILITY';
 type FeedbackSentiment = 'HELPFUL' | 'NOT_HELPFUL';
 
-type EvidenceStatus =
-  'DRAFT' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
 type GovernanceEvidenceMode = 'fixture' | 'real' | 'mixed' | 'none';
 
 /**
@@ -504,7 +494,7 @@ export class ApplicationAnalysisWorkflowService {
   private async acquireAutomationLock(
     mode: SweepMode,
     ttlSeconds: number,
-  ): Promise<(() => Promise<void>) | null> {
+  ): Promise<(() => void | Promise<void>) | null> {
     const key = getSweepLockKey(mode);
     if (this.redis.connected) {
       try {
@@ -534,7 +524,7 @@ export class ApplicationAnalysisWorkflowService {
       return null;
     }
     this.localAutomationLocks.add(key);
-    return async () => {
+    return () => {
       this.localAutomationLocks.delete(key);
     };
   }

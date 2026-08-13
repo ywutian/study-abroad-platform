@@ -1,19 +1,17 @@
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CaseService } from './case.service';
-import { CaseQueryService } from './case-query.service';
-import { CaseBatchService } from './case-batch.service';
-import { CaseMemoryService } from './case-memory.service';
+import { DataReviewStatus, Role, Visibility } from '@prisma/client';
+import { RedisService } from '../../common/redis/redis.service';
+import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { AuditLogService } from '../../common/services/audit-log.service';
-import { RedisService } from '../../common/redis/redis.service';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { DataReviewStatus, Role, Visibility } from '@prisma/client';
+import { CaseBatchService } from './case-batch.service';
+import { CaseMemoryService } from './case-memory.service';
+import { CaseQueryService } from './case-query.service';
+import { CaseService } from './case.service';
 
 describe('CaseService', () => {
   let service: CaseService;
-  let caseQueryService: CaseQueryService;
-  let caseBatchService: CaseBatchService;
   let prismaService: PrismaService;
 
   const mockCase = {
@@ -91,8 +89,6 @@ describe('CaseService', () => {
     }).compile();
 
     service = module.get<CaseService>(CaseService);
-    caseQueryService = module.get<CaseQueryService>(CaseQueryService);
-    caseBatchService = module.get<CaseBatchService>(CaseBatchService);
     prismaService = module.get<PrismaService>(PrismaService);
   });
 

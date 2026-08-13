@@ -35,7 +35,6 @@ export function trackEvent(name: string, props: EventProps = {}): void {
   if (sink === 'none') return;
 
   if (sink === 'console') {
-    // eslint-disable-next-line no-console
     console.debug('[analytics]', name, props);
     return;
   }

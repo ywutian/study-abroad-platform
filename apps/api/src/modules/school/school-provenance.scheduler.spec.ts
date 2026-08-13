@@ -21,8 +21,10 @@ describe('SchoolProvenanceScheduler', () => {
     tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
   };
   const schoolService = { getDataQualityReport: jest.fn() };
-  const schoolDataService = { syncSchoolsFromScorecard: jest.fn() };
-  const urbanInstituteService = { syncAll: jest.fn() };
+  const schoolDataService = {
+    syncSchoolsFromScorecardBySchoolIds: jest.fn(),
+  };
+  const urbanInstituteService = { syncSchoolsByIds: jest.fn() };
 
   const staleReport = {
     top200OfficialCoverage: {
@@ -43,11 +45,11 @@ describe('SchoolProvenanceScheduler', () => {
     redis.setNXStrict.mockResolvedValue(true);
     redis.tryAcquireLock.mockResolvedValue({ acquired: true });
     schoolService.getDataQualityReport.mockResolvedValue(staleReport);
-    schoolDataService.syncSchoolsFromScorecard.mockResolvedValue({
+    schoolDataService.syncSchoolsFromScorecardBySchoolIds.mockResolvedValue({
       synced: 1,
       errors: 0,
     });
-    urbanInstituteService.syncAll.mockResolvedValue({});
+    urbanInstituteService.syncSchoolsByIds.mockResolvedValue({});
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -73,8 +75,10 @@ describe('SchoolProvenanceScheduler', () => {
       await scheduler.refreshStaleOfficialFields();
 
       expect(schoolService.getDataQualityReport).not.toHaveBeenCalled();
-      expect(schoolDataService.syncSchoolsFromScorecard).not.toHaveBeenCalled();
-      expect(urbanInstituteService.syncAll).not.toHaveBeenCalled();
+      expect(
+        schoolDataService.syncSchoolsFromScorecardBySchoolIds,
+      ).not.toHaveBeenCalled();
+      expect(urbanInstituteService.syncSchoolsByIds).not.toHaveBeenCalled();
     });
 
     it('skips the coverage monitor when another replica holds the lock', async () => {
@@ -92,7 +96,12 @@ describe('SchoolProvenanceScheduler', () => {
     it('runs when it wins the lock', async () => {
       await scheduler.refreshStaleOfficialFields();
 
-      expect(schoolDataService.syncSchoolsFromScorecard).toHaveBeenCalled();
+      expect(
+        schoolDataService.syncSchoolsFromScorecardBySchoolIds,
+      ).toHaveBeenCalledWith(['sch-a']);
+      expect(urbanInstituteService.syncSchoolsByIds).toHaveBeenCalledWith([
+        'sch-b',
+      ]);
     });
   });
 
@@ -100,7 +109,7 @@ describe('SchoolProvenanceScheduler', () => {
     // Scorecard throws when the API key is unset — true in prod today. Before
     // this, that took down the whole job and the IPEDS half never ran.
     it('does not let a failing Scorecard sync stop the IPEDS sync', async () => {
-      schoolDataService.syncSchoolsFromScorecard.mockRejectedValue(
+      schoolDataService.syncSchoolsFromScorecardBySchoolIds.mockRejectedValue(
         new Error('COLLEGE_SCORECARD_API_KEY not configured'),
       );
 
@@ -108,11 +117,11 @@ describe('SchoolProvenanceScheduler', () => {
         scheduler.refreshStaleOfficialFields(),
       ).resolves.toBeUndefined();
 
-      expect(urbanInstituteService.syncAll).toHaveBeenCalled();
+      expect(urbanInstituteService.syncSchoolsByIds).toHaveBeenCalled();
     });
 
     it('does not throw when the IPEDS sync fails', async () => {
-      urbanInstituteService.syncAll.mockRejectedValue(
+      urbanInstituteService.syncSchoolsByIds.mockRejectedValue(
         new Error('upstream 500'),
       );
 
@@ -126,8 +135,10 @@ describe('SchoolProvenanceScheduler', () => {
     await scheduler.refreshStaleOfficialFields();
 
     // sch-c is SEED tier — it must not pull either source into the run.
-    expect(schoolDataService.syncSchoolsFromScorecard).toHaveBeenCalledTimes(1);
-    expect(urbanInstituteService.syncAll).toHaveBeenCalledTimes(1);
+    expect(
+      schoolDataService.syncSchoolsFromScorecardBySchoolIds,
+    ).toHaveBeenCalledTimes(1);
+    expect(urbanInstituteService.syncSchoolsByIds).toHaveBeenCalledTimes(1);
   });
 
   it('does nothing when no official field is stale', async () => {
@@ -138,7 +149,9 @@ describe('SchoolProvenanceScheduler', () => {
 
     await scheduler.refreshStaleOfficialFields();
 
-    expect(schoolDataService.syncSchoolsFromScorecard).not.toHaveBeenCalled();
-    expect(urbanInstituteService.syncAll).not.toHaveBeenCalled();
+    expect(
+      schoolDataService.syncSchoolsFromScorecardBySchoolIds,
+    ).not.toHaveBeenCalled();
+    expect(urbanInstituteService.syncSchoolsByIds).not.toHaveBeenCalled();
   });
 });

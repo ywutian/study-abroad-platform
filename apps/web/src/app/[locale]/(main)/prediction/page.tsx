@@ -72,30 +72,13 @@ interface SchoolListItemApi {
 // first visible row.
 const TIER_RANK: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
 
-// The whole page scrolls with the ONE native browser scrollbar. COL1 is the only
-// sticky side panel — it rides along. COL2 (list) and COL3 (detail) are plain
-// document flow: the taller one defines the page height and the browser scrollbar
-// scrolls it — so the tall detail is NEVER trapped in an internal box scrollbar.
-//
-// NOTE: this comment used to claim COL1 "is structurally shorter than the viewport
-// … so its fallback overflow basically never triggers". That was written when
-// COL1 held only the selector card. It now ALSO holds PredictionWhatIfPanel
-// stacked underneath, and from the class lists the pair is ~1040px against a
-// max-height of ~790px on a 1440×900 laptop — i.e. the fallback overflow
-// probably DOES trigger, putting the What-if results below an inner fold.
-// (`PredictionWhatIfPanel` scrollIntoView's its results after a run, which is
-// why this is a discoverability problem rather than a broken feature.)
-//
-// NOT MEASURED — derived from class names, in a real browser with a real
-// profile it may differ. Do not restructure these columns on the strength of
-// this paragraph; measure COL1's scrollHeight vs clientHeight first. Recorded
-// here because a stale comment asserting the opposite is worse than no comment.
-// (Scrollbar utility classes are unprefixed — inert without overflow — since
-// they're custom, not Tailwind responsive variants.)
-const STICKY_SELECTOR =
-  'scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent ' +
-  'lg:sticky lg:self-start lg:top-[var(--app-header-h,6.5rem)] ' +
-  'lg:max-h-[calc(100dvh-var(--app-header-h,6.5rem))] lg:overflow-y-auto';
+// Keep one vertical scroll owner: the browser. The old COL1 wrapper combined
+// `position: sticky`, a viewport `max-height`, and `overflow-y-auto` around
+// BOTH the selector and What-if form. On a normal laptop that created a second
+// vertical scrollbar and hid the preview result below its inner fold. The
+// selector remains sticky on desktop, while What-if stays in normal document
+// flow so submitting it can reveal results with the native page scrollbar.
+const STICKY_SELECTOR = 'lg:sticky lg:self-start lg:top-[var(--app-header-h,6.5rem)]';
 
 export default function PredictionPage() {
   const t = useTranslations();

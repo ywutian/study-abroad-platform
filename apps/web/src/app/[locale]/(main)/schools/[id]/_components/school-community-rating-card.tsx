@@ -98,7 +98,7 @@ export function SchoolCommunityRatingCard({ schoolId, summary }: SchoolCommunity
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{t('school.community.title')}</CardTitle>
+        <CardTitle className="">{t('school.community.title')}</CardTitle>
         <CardDescription>{t('school.community.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">

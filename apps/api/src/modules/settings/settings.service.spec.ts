@@ -48,6 +48,15 @@ describe('SettingsService', () => {
     expect(service).toBeDefined();
   });
 
+  it('identifies protected points keys, including enum-style aliases', () => {
+    expect(service.isProtectedPointSetting('points_enabled')).toBe(true);
+    expect(service.isProtectedPointSetting('POINTS_ENABLED')).toBe(true);
+    expect(service.isProtectedPointSetting('POINTS_ACTION_SUBMIT_CASE')).toBe(
+      true,
+    );
+    expect(service.isProtectedPointSetting('site_name')).toBe(false);
+  });
+
   // ====== get() ======
 
   describe('get', () => {

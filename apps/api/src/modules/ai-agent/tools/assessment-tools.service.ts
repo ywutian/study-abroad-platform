@@ -24,19 +24,25 @@ export class AssessmentToolsService implements IToolHandlerProvider {
       [
         'get_assessment_results',
         (args, userId, _ctx, locale) =>
-          this.getAssessmentResults(userId, args.type, locale),
+          this.getAssessmentResults(
+            userId,
+            args.type === 'mbti' || args.type === 'holland'
+              ? args.type
+              : undefined,
+            locale,
+          ),
       ],
       [
         'interpret_assessment',
         (args, userId, _ctx, locale) =>
-          this.interpretAssessment(userId, args.resultId, locale),
+          this.interpretAssessment(userId, args.resultId ?? '', locale),
       ],
       [
         'suggest_activities_from_assessment',
         (args, userId, _ctx, locale) =>
           this.suggestActivitiesFromAssessment(
             userId,
-            args.resultId,
+            args.resultId ?? '',
             args.targetMajor,
             locale,
           ),

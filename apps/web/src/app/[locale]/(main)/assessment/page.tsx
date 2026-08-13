@@ -883,7 +883,7 @@ function AssessmentSidePanel({
     <aside className="space-y-4">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <Target className="h-4 w-4 text-primary" />
             {t('sidePanel.title')}
           </CardTitle>

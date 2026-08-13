@@ -15,8 +15,10 @@ interface TimelineItemDetailProps {
   isLoading: boolean;
   toggleTaskMutation: UseMutationResult<unknown, Error, string>;
   formatDate: (dateStr?: string) => string;
-  onDelete: () => void;
-  deleteLabel: string;
+  onDelete?: () => void;
+  deleteLabel?: string;
+  /** Historical archive rows are view-only and must not mutate their tasks. */
+  readOnly?: boolean;
   /** Whether to show the task type badge (school timeline tasks have types) */
   showTaskType?: boolean;
   /** When provided, an "add task" input row is shown below the task list. */
@@ -36,6 +38,7 @@ export function TimelineItemDetail({
   formatDate,
   onDelete,
   deleteLabel,
+  readOnly = false,
   showTaskType = false,
   onAddTask,
   addTaskPending = false,
@@ -68,11 +71,14 @@ export function TimelineItemDetail({
               className="flex items-center gap-3 p-2 rounded-md hover:bg-background transition-colors"
             >
               <button
+                type="button"
+                disabled={readOnly}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (readOnly) return;
                   toggleTaskMutation.mutate(task.id);
                 }}
-                className={`flex-shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors ${
+                className={`flex-shrink-0 h-5 w-5 rounded border-2 flex items-center justify-center transition-colors disabled:cursor-default ${
                   task.completed
                     ? 'bg-primary border-primary text-primary-foreground'
                     : 'border-muted-foreground/30 hover:border-primary'
@@ -151,23 +157,27 @@ export function TimelineItemDetail({
         </form>
       )}
 
-      <div className="mt-4 pt-3 border-t flex justify-end gap-2">
-        {onEdit && (
-          <Button variant="ghost" size="sm" onClick={onEdit}>
-            <Pencil className="h-4 w-4 mr-1" />
-            {editLabel}
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          {deleteLabel}
-        </Button>
-      </div>
+      {(onEdit || onDelete) && (
+        <div className="mt-4 flex justify-end gap-2 border-t pt-3">
+          {onEdit && (
+            <Button variant="ghost" size="sm" onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-1" />
+              {editLabel}
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {deleteLabel}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -16,10 +16,7 @@ import {
 import { stripListOwner } from './hall.constants';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { PointsService, PointAction } from '../points/incentive.service';
-
-function toInputJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value));
-}
+import { toJsonInput } from '../resume/resume-content.helpers';
 
 interface CreateUserListDto {
   title: string;
@@ -46,7 +43,7 @@ export class HallListService {
         title: data.title,
         description: data.description,
         category: data.category,
-        items: toInputJson(data.items),
+        items: toJsonInput(data.items),
         isPublic: data.isPublic ?? true,
       },
     });
@@ -91,7 +88,7 @@ export class HallListService {
         title: data.title,
         description: data.description,
         category: data.category,
-        items: data.items === undefined ? undefined : toInputJson(data.items),
+        items: data.items === undefined ? undefined : toJsonInput(data.items),
         isPublic: data.isPublic,
       },
     });

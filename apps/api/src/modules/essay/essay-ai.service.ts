@@ -9,6 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { fireAndForget } from '../../common/utils/async.util';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
+
 import {
   buildReviewSystemPrompt,
   buildBrainstormSystemPrompt,
@@ -35,16 +36,26 @@ import {
   EssaySuggestEditsResponseDto,
   EssayBrainstormRequestDto,
   EssayBrainstormResponseDto,
+  EssayIdeaDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
-import type {
-  EssayDimension,
-  GalleryLearningHighlight,
-} from '@study-abroad/shared';
 import type { SchoolTestingPolicy } from '@study-abroad/shared';
+import {
+  defaultParagraphAnalysis,
+  normalizeEssayIdeas,
+  validateParagraphAnalysis,
+  type EssayBrainstormLlmResult,
+  type EssayParagraphAnalysisResponse,
+  type EssayReviewLlmResult,
+} from './essay-ai-response-normalizers';
+export {
+  normalizeLearningHighlights,
+  type EssayParagraphAnalysisResponse,
+  type ParagraphComment,
+} from './essay-ai-response-normalizers';
 
 /**
  * Versions the gallery `aiAnalysisCache[locale]` payload. Bump this when
@@ -56,50 +67,6 @@ import type { SchoolTestingPolicy } from '@study-abroad/shared';
  * (was `string[]`) to drive inline dimension-tagged annotation.
  */
 export const PARAGRAPH_PROMPT_VERSION = 'v2';
-
-const ESSAY_DIMENSIONS: readonly EssayDimension[] = [
-  'hook',
-  'structure',
-  'voice',
-  'insight',
-  'fit',
-  'detail',
-];
-
-function coerceEssayDimension(value: unknown): EssayDimension {
-  return typeof value === 'string' &&
-    (ESSAY_DIMENSIONS as readonly string[]).includes(value)
-    ? (value as EssayDimension)
-    : 'detail';
-}
-
-/**
- * Normalize LLM-returned paragraph highlights into `{ text, dimension }[]`.
- * Tolerant of the legacy `string[]` shape (coerced to `dimension: 'detail'`)
- * so any stale payload still renders without crashing.
- */
-export function normalizeLearningHighlights(
-  value: unknown,
-): GalleryLearningHighlight[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item): GalleryLearningHighlight | null => {
-      if (typeof item === 'string') {
-        const text = item.trim();
-        return text ? { text, dimension: 'detail' } : null;
-      }
-      if (item && typeof item === 'object' && !Array.isArray(item)) {
-        const obj = item as Record<string, unknown>;
-        const text = typeof obj.text === 'string' ? obj.text.trim() : '';
-        return text
-          ? { text, dimension: coerceEssayDimension(obj.dimension) }
-          : null;
-      }
-      return null;
-    })
-    .filter((h): h is GalleryLearningHighlight => h !== null)
-    .slice(0, 6);
-}
 
 @Injectable()
 export class EssayAiService {
@@ -299,7 +266,9 @@ export class EssayAiService {
         { temperature: 0.5, maxTokens: 2000 },
       );
 
-      const parsed = extractJsonFromLlm(result);
+      const parsed = extractJsonFromLlm<EssayReviewLlmResult>(result);
+      if (!parsed)
+        throw new BadRequestException('Invalid essay review response');
 
       const aiResult = await this.prisma.essayAIResult.create({
         data: {
@@ -500,14 +469,15 @@ export class EssayAiService {
   private async saveBrainstormToMemory(
     userId: string,
     dto: EssayBrainstormRequestDto,
-    result: { ideas: any[]; overallAdvice: string },
+    result: { ideas: EssayIdeaDto[]; overallAdvice: string },
   ): Promise<void> {
     if (!this.memoryManager) return;
 
     try {
       const ideaTitles = result.ideas
         .slice(0, 3)
-        .map((i) => i.title)
+        .map((idea) => idea.title)
+        .filter((title): title is string => typeof title === 'string')
         .join('、');
       await this.memoryManager.remember(userId, {
         type: MemoryType.FACT,
@@ -663,10 +633,11 @@ export class EssayAiService {
         { temperature: 0.8, maxTokens: 2000 },
       );
 
-      const parsed = extractJsonFromLlm(result);
+      const parsed = extractJsonFromLlm<EssayBrainstormLlmResult>(result);
+      if (!parsed) throw new BadRequestException('Invalid brainstorm response');
 
       const response = {
-        ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+        ideas: normalizeEssayIdeas(parsed.ideas),
         overallAdvice: parsed.overallAdvice || '',
         tokenUsed: this.estimateTokens(userContent + result),
       };
@@ -798,7 +769,9 @@ export class EssayAiService {
         { temperature: 0.5, maxTokens: 2000 },
       );
 
-      const parsed = extractJsonFromLlm(result);
+      const parsed = extractJsonFromLlm<EssayReviewLlmResult>(result);
+      if (!parsed)
+        throw new BadRequestException('Invalid essay review response');
       const tokenUsed = this.estimateTokens(content + result);
 
       // No EssayAIResult persistence (essayId is required FK) — results recorded in memory
@@ -857,10 +830,11 @@ export class EssayAiService {
         { temperature: 0.8, maxTokens: 2000 },
       );
 
-      const parsed = extractJsonFromLlm(result);
+      const parsed = extractJsonFromLlm<EssayBrainstormLlmResult>(result);
+      if (!parsed) throw new BadRequestException('Invalid brainstorm response');
 
       const response = {
-        ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+        ideas: normalizeEssayIdeas(parsed.ideas),
         overallAdvice: parsed.overallAdvice || '',
         tokenUsed: this.estimateTokens(userContent + result),
       };
@@ -1053,7 +1027,7 @@ export class EssayAiService {
       .filter((p) => p.length > 20); // 过滤太短的段落
 
     if (paragraphs.length === 0) {
-      return this.getDefaultParagraphAnalysis(locale);
+      return defaultParagraphAnalysis(locale);
     }
 
     const systemPrompt = buildParagraphAnalysisSystemPrompt(
@@ -1079,10 +1053,10 @@ export class EssayAiService {
       );
 
       const parsed = extractJsonFromLlm(result);
-      return this.validateParagraphAnalysis(parsed, paragraphs, locale);
+      return validateParagraphAnalysis(parsed, paragraphs, locale);
     } catch (error) {
       this.logger.error('Paragraph analysis failed', error);
-      return this.getDefaultParagraphAnalysis(locale);
+      return defaultParagraphAnalysis(locale);
     }
   }
 
@@ -1130,108 +1104,10 @@ export class EssayAiService {
     }
   }
 
-  // ============ Paragraph Analysis Helpers ============
-
-  private validateParagraphAnalysis(
-    data: any,
-    originalParagraphs: string[],
-    locale = 'zh',
-  ): EssayParagraphAnalysisResponse {
-    const validateParagraph = (p: any, index: number): ParagraphComment => {
-      const score =
-        typeof p?.score === 'number' ? Math.min(10, Math.max(1, p.score)) : 5;
-      let status: 'excellent' | 'good' | 'needs_work' = 'good';
-      if (score >= 8) status = 'excellent';
-      else if (score < 5) status = 'needs_work';
-
-      return {
-        paragraphIndex: index,
-        paragraphText: originalParagraphs[index]?.slice(0, 50) + '...' || '',
-        score,
-        status: p?.status || status,
-        comment:
-          p?.comment || (locale === 'zh' ? '暂无评价' : 'No comment available'),
-        highlights: normalizeLearningHighlights(p?.highlights),
-        suggestions: Array.isArray(p?.suggestions) ? p.suggestions : [],
-      };
-    };
-
-    const paragraphComments = Array.isArray(data.paragraphs)
-      ? data.paragraphs.map((p: any, i: number) => validateParagraph(p, i))
-      : originalParagraphs.map((_, i) => validateParagraph({}, i));
-
-    return {
-      paragraphs: paragraphComments,
-      overallScore:
-        typeof data.overallScore === 'number'
-          ? Math.min(100, Math.max(0, data.overallScore))
-          : 60,
-      structure: {
-        hasStrongOpening: data.structure?.hasStrongOpening ?? false,
-        hasClarity: data.structure?.hasClarity ?? true,
-        hasGoodConclusion: data.structure?.hasGoodConclusion ?? false,
-        feedback:
-          data.structure?.feedback ||
-          (locale === 'zh'
-            ? '请完善文书以获取更详细的结构分析。'
-            : 'Please improve your essay for a more detailed structural analysis.'),
-      },
-      summary:
-        data.summary ||
-        (locale === 'zh'
-          ? '文书分析完成，请查看各段落点评。'
-          : 'Essay analysis complete. Please review the paragraph-by-paragraph feedback.'),
-    };
-  }
-
-  private getDefaultParagraphAnalysis(
-    locale = 'zh',
-  ): EssayParagraphAnalysisResponse {
-    const isZh = locale === 'zh';
-    return {
-      paragraphs: [],
-      overallScore: 0,
-      structure: {
-        hasStrongOpening: false,
-        hasClarity: false,
-        hasGoodConclusion: false,
-        feedback: isZh
-          ? '文书内容不足，请提供更多内容以进行分析。'
-          : 'Not enough essay content. Please provide more content for analysis.',
-      },
-      summary: isZh
-        ? '文书内容过短或为空，无法分析。'
-        : 'Essay content is too short or empty for analysis.',
-    };
-  }
-
   // ============ Helper Methods ============
 
   private estimateTokens(text: string): number {
     // 粗略估算：中文约2字符/token，英文约4字符/token
     return Math.ceil(text.length / 3);
   }
-}
-
-// P1: 逐段点评类型定义
-export interface ParagraphComment {
-  paragraphIndex: number;
-  paragraphText: string;
-  score: number; // 1-10
-  status: 'excellent' | 'good' | 'needs_work';
-  comment: string;
-  highlights: GalleryLearningHighlight[]; // 亮点词句 + 维度标签
-  suggestions: string[];
-}
-
-export interface EssayParagraphAnalysisResponse {
-  paragraphs: ParagraphComment[];
-  overallScore: number;
-  structure: {
-    hasStrongOpening: boolean;
-    hasClarity: boolean;
-    hasGoodConclusion: boolean;
-    feedback: string;
-  };
-  summary: string;
 }

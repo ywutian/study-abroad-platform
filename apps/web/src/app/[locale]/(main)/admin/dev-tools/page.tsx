@@ -70,7 +70,7 @@ export default function AdminDevToolsPage() {
     try {
       await navigator.clipboard.writeText(accessToken);
       toast.success(t('tokenCopied'));
-    } catch (err) {
+    } catch {
       toast.error(t('copyFailed'));
     }
   };

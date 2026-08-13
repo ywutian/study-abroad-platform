@@ -47,6 +47,29 @@ export interface SchoolSearchOptions {
   maxResults?: number;
 }
 
+type SearchApiItem = {
+  title?: string;
+  snippet?: string;
+  link?: string;
+  url?: string;
+  content?: string;
+  pagemap?: { metatags?: Array<Record<string, string>> };
+};
+
+function searchItems(
+  value: unknown,
+  key: 'items' | 'results',
+): SearchApiItem[] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+  const items = (value as Record<string, unknown>)[key];
+  return Array.isArray(items)
+    ? items.filter(
+        (item): item is SearchApiItem =>
+          typeof item === 'object' && item !== null && !Array.isArray(item),
+      )
+    : [];
+}
+
 // ==================== 学校域名映射 ====================
 
 const SCHOOL_DOMAIN_MAP: Record<string, string> = {
@@ -425,11 +448,11 @@ export class WebSearchService {
       );
     }
 
-    const data = await res.json();
-    const items = data.items || [];
+    const data: unknown = await res.json();
+    const items = searchItems(data, 'items');
 
     return {
-      results: items.map((item: any) => ({
+      results: items.map((item) => ({
         title: item.title || '',
         snippet: item.snippet || '',
         url: item.link || '',
@@ -471,11 +494,11 @@ export class WebSearchService {
       );
     }
 
-    const data = await res.json();
-    const items = data.items || [];
+    const data: unknown = await res.json();
+    const items = searchItems(data, 'items');
 
     return {
-      results: items.map((item: any) => ({
+      results: items.map((item) => ({
         title: item.title || '',
         snippet: item.snippet || '',
         url: item.link || '',
@@ -516,11 +539,11 @@ export class WebSearchService {
       );
     }
 
-    const data = await res.json();
-    const results = data.results || [];
+    const data: unknown = await res.json();
+    const results = searchItems(data, 'results');
 
     return {
-      results: results.map((item: any) => ({
+      results: results.map((item) => ({
         title: item.title || '',
         snippet: item.content?.substring(0, 300) || '',
         url: item.url || '',
@@ -563,11 +586,11 @@ export class WebSearchService {
       );
     }
 
-    const data = await res.json();
-    const results = data.results || [];
+    const data: unknown = await res.json();
+    const results = searchItems(data, 'results');
 
     return {
-      results: results.map((item: any) => ({
+      results: results.map((item) => ({
         title: item.title || '',
         snippet: item.content?.substring(0, 300) || '',
         url: item.url || '',
@@ -658,7 +681,7 @@ export class WebSearchService {
         const raw = await this.redis.get(key);
         if (raw) {
           // @cache-parse-allowed - SearchResponse has no Date fields
-          return JSON.parse(raw);
+          return JSON.parse(raw) as SearchResponse;
         }
       } catch (err) {
         this.logger.debug(`Redis cache read failed: ${String(err)}`);

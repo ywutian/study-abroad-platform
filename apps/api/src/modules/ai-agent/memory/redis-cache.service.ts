@@ -205,20 +205,25 @@ export class RedisCacheService {
   /**
    * 获取用户上下文
    */
-  async getUserContext(userId: string): Promise<Record<string, any> | null> {
+  async getUserContext(
+    userId: string,
+  ): Promise<Record<string, unknown> | null> {
     const key = `user:ctx:${userId}`;
 
     try {
       const raw = await this.redis.withClient('read', key, (client) =>
         client.get(key),
       );
-      // @cache-parse-allowed - Record<string, any>; the type claims nothing
-      return raw ? JSON.parse(raw) : null;
+      // @cache-parse-allowed - user context is validated as an object boundary
+      const parsed: unknown = raw ? JSON.parse(raw) : null;
+      return typeof parsed === 'object' && parsed !== null
+        ? (parsed as Record<string, unknown>)
+        : null;
     } catch (err) {
       this.logger.debug(`Redis getUserContext failed: ${String(err)}`);
     }
 
-    return this.getFallback<Record<string, any>>(key);
+    return this.getFallback<Record<string, unknown>>(key);
   }
 
   /**

@@ -210,7 +210,7 @@ export default function AdminUserDetailPage() {
           {/* AI Usage */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-body">
                 <Zap className="h-5 w-5" />
                 {t('userDetail.aiUsage')}
               </CardTitle>
@@ -276,7 +276,7 @@ export default function AdminUserDetailPage() {
           {/* Activity Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-body">
                 <ScrollText className="h-5 w-5" />
                 {t('userDetail.activity')}
               </CardTitle>

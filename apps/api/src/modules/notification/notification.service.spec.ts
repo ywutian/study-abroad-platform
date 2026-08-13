@@ -3,6 +3,7 @@ import { NotificationService, NotificationType } from './notification.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PointsConfigService } from '../points/points-config.service';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -52,6 +53,10 @@ describe('NotificationService', () => {
               upsert: jest.fn(),
             },
           },
+        },
+        {
+          provide: PointsConfigService,
+          useValue: { isEnabled: jest.fn().mockResolvedValue(true) },
         },
       ],
     }).compile();
@@ -152,6 +157,22 @@ describe('NotificationService', () => {
       expect(result.relatedId).toBe('case-1');
       expect(result.relatedType).toBe('case');
     });
+
+    it('does not store or push a points-only notification while dormant', async () => {
+      const pointsConfig = (service as any).pointsConfig as PointsConfigService;
+      (pointsConfig.isEnabled as jest.Mock).mockResolvedValue(false);
+
+      const result = await service.createNotification(
+        'user-1',
+        NotificationType.POINTS_EARNED,
+        { data: { points: '50' } },
+      );
+
+      expect(result.type).toBe(NotificationType.POINTS_EARNED);
+      expect(redis.lpush).not.toHaveBeenCalled();
+      expect(redis.incr).not.toHaveBeenCalled();
+      expect(mockEventEmitter.emit).not.toHaveBeenCalled();
+    });
   });
 
   describe('getNotifications', () => {
@@ -184,6 +205,35 @@ describe('NotificationService', () => {
 
       expect(redis.lrange).toHaveBeenCalledWith('notifications:user-1', 5, 14);
     });
+
+    it('hides points-only history and sanitizes mixed notifications while dormant', async () => {
+      const pointsConfig = (service as any).pointsConfig as PointsConfigService;
+      (pointsConfig.isEnabled as jest.Mock).mockResolvedValue(false);
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify({
+          id: 'points',
+          type: NotificationType.POINTS_EARNED,
+          content: '你获得了 10 积分',
+          read: false,
+        }),
+        JSON.stringify({
+          id: 'case',
+          type: NotificationType.CASE_HELPFUL,
+          content: '你的案例被标记为有帮助，获得 +10 积分',
+          read: false,
+        }),
+      ]);
+
+      const result = await service.getNotifications('user-1', 20, 0);
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: 'case',
+          content: '你的案例被标记为有帮助',
+        }),
+      ]);
+      expect(redis.lrange).toHaveBeenCalledWith('notifications:user-1', 0, -1);
+    });
   });
 
   describe('getUnreadCount', () => {
@@ -199,6 +249,19 @@ describe('NotificationService', () => {
 
       const count = await service.getUnreadCount('user-1');
       expect(count).toBe(0);
+    });
+
+    it('counts only visible unread notifications while dormant', async () => {
+      const pointsConfig = (service as any).pointsConfig as PointsConfigService;
+      (pointsConfig.isEnabled as jest.Mock).mockResolvedValue(false);
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify({ type: NotificationType.POINTS_EARNED, read: false }),
+        JSON.stringify({ type: NotificationType.NEW_MESSAGE, read: false }),
+        JSON.stringify({ type: NotificationType.NEW_FOLLOWER, read: true }),
+      ]);
+
+      await expect(service.getUnreadCount('user-1')).resolves.toBe(1);
+      expect(redis.get).not.toHaveBeenCalledWith('unread_count:user-1');
     });
   });
 
@@ -451,6 +514,26 @@ describe('NotificationService', () => {
 
       const count = await service.markAllAsRead('user-1');
       expect(count).toBe(0);
+    });
+
+    it('returns the number of visible notifications marked while dormant', async () => {
+      const pointsConfig = (service as any).pointsConfig as PointsConfigService;
+      (pointsConfig.isEnabled as jest.Mock).mockResolvedValue(false);
+      (redis.lrange as jest.Mock).mockResolvedValue([
+        JSON.stringify({
+          id: 'points',
+          type: NotificationType.POINTS_EARNED,
+          read: false,
+        }),
+        JSON.stringify({
+          id: 'message',
+          type: NotificationType.NEW_MESSAGE,
+          read: false,
+        }),
+      ]);
+
+      await expect(service.markAllAsRead('user-1')).resolves.toBe(1);
+      expect(redis.lset).toHaveBeenCalledTimes(2);
     });
   });
 

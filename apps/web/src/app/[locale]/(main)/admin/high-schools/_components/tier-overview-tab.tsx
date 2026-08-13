@@ -157,7 +157,7 @@ export function TierOverviewTab() {
             <SelectItem value="all">{t('filters.allCountries')}</SelectItem>
             {COUNTRIES.map((c) => (
               <SelectItem key={c} value={c}>
-                {t(`countries.${c}` as any)}
+                {t(`countries.${c}` as never)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -187,7 +187,7 @@ export function TierOverviewTab() {
             <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
             {TYPES.map((tp) => (
               <SelectItem key={tp} value={tp}>
-                {t(`schoolTypes.${tp}` as any)}
+                {t(`schoolTypes.${tp}` as never)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -213,7 +213,7 @@ export function TierOverviewTab() {
           {[5, 4, 3, 2, 1].map((tier) => {
             const schools = grouped[tier];
             const style = TIER_STYLES[tier];
-            const tierLabel = t(`tierLabels.${tier}` as any);
+            const tierLabel = t(`tierLabels.${tier}` as never);
             const evaluated = schools.filter((s) => s.evaluatedAt).length;
             const defaultOpen = schools.length <= 12;
 

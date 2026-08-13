@@ -57,7 +57,7 @@ const RULES: Array<{
     pattern: /CREATE\s+(?:UNIQUE\s+)?INDEX(?!\s+CONCURRENTLY)/i,
     message: 'CREATE INDEX without CONCURRENTLY takes an exclusive lock, blocking writes.',
     suggestion:
-      'Use CREATE INDEX CONCURRENTLY. Note: Prisma does not support this natively — use a raw SQL migration.',
+      'For Prisma-managed migrations, bound lock_timeout/statement_timeout and schedule a low-traffic deploy. Use CONCURRENTLY only in a separately operated non-transactional SQL step.',
     exemption: /CREATE\s+(?:UNIQUE\s+)?INDEX\s+CONCURRENTLY/i,
   },
   {

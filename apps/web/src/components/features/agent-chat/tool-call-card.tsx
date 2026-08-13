@@ -153,13 +153,12 @@ export function ToolCallCard({ tool, isUser, index }: ToolCallCardProps) {
       const probability =
         (typeof payload.percentage === 'string' && payload.percentage) ||
         formatProbability(payload.probability);
-      const tier = formatMachineLabel(payload.tier);
       const confidence = formatMachineLabel(payload.confidence);
       const explanation =
         typeof payload.confidenceReason === 'string' ? payload.confidenceReason : undefined;
 
       return (
-        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-[11px] space-y-1.5">
+        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-2xs space-y-1.5">
           {schoolLabel ? <div className="font-medium truncate">{schoolLabel}</div> : null}
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {renderMetaRow(t('toolPreview.probability'), probability)}
@@ -182,7 +181,7 @@ export function ToolCallCard({ tool, isUser, index }: ToolCallCardProps) {
       const updated = current ? formatDate(current.updatedAt, locale) : undefined;
 
       return (
-        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-[11px] space-y-1.5">
+        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-2xs space-y-1.5">
           {schoolLabel ? <div className="font-medium truncate">{schoolLabel}</div> : null}
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {renderMetaRow(t('toolPreview.probability'), probability)}
@@ -199,7 +198,7 @@ export function ToolCallCard({ tool, isUser, index }: ToolCallCardProps) {
       const previewItems = predictions.slice(0, 3);
 
       return (
-        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-[11px] space-y-1.5">
+        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-2xs space-y-1.5">
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {renderMetaRow(
               t('toolPreview.schools'),
@@ -234,7 +233,7 @@ export function ToolCallCard({ tool, isUser, index }: ToolCallCardProps) {
       const previewItems = predictedItems.slice(0, 3);
 
       return (
-        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-[11px] space-y-1.5">
+        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-2xs space-y-1.5">
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {renderMetaRow(t('toolPreview.schools'), String(payload.length))}
             {renderMetaRow(t('toolPreview.predicted'), String(predictedItems.length))}
@@ -270,7 +269,7 @@ export function ToolCallCard({ tool, isUser, index }: ToolCallCardProps) {
       const trace = isRecord(payload.trace) ? payload.trace : null;
       if (!trace) {
         return (
-          <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-[11px] text-muted-foreground">
+          <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-2xs text-muted-foreground">
             {t('toolPreview.noPublicTrace')}
           </div>
         );
@@ -284,7 +283,7 @@ export function ToolCallCard({ tool, isUser, index }: ToolCallCardProps) {
         typeof trace.confidenceReason === 'string' ? trace.confidenceReason : undefined;
 
       return (
-        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-[11px] space-y-1.5">
+        <div className="mt-2 rounded-md bg-background/60 px-2.5 py-2 text-2xs space-y-1.5">
           {schoolLabel ? <div className="font-medium truncate">{schoolLabel}</div> : null}
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {renderMetaRow(t('toolPreview.round'), formatMachineLabel(trace.roundContext))}

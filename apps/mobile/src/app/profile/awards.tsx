@@ -11,7 +11,6 @@ import {
   Select,
   Loading,
   EmptyState,
-  Badge,
   Card,
   CardContent,
 } from '@/components/ui';
@@ -361,7 +360,7 @@ export default function AwardsScreen() {
             onChangeText={setDescription}
             multiline
             numberOfLines={3}
-            style={{ minHeight: 80, textAlignVertical: 'top' }}
+            style={styles.multilineInput}
           />
         </View>
       </Modal>
@@ -381,6 +380,7 @@ export default function AwardsScreen() {
 }
 
 const styles = StyleSheet.create({
+  multilineInput: { minHeight: 80, textAlignVertical: 'top' },
   container: {
     flex: 1,
   },
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 6,
+    elevation: 2,
   },
   formContainer: {
     paddingBottom: spacing.md,

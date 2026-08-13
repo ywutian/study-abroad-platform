@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
 import { initI18n, i18n } from '@/lib/i18n';
-import { initSentry, setUser as setSentryUser, captureException } from '@/lib/sentry';
+import { initSentry, captureException } from '@/lib/sentry';
 import { useAuthStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 import { useChatSocket } from '@/hooks/useChatSocket';
@@ -338,7 +338,7 @@ export default function RootLayout() {
           }
         }
       } catch (error) {
-        console.error('App initialization error:', error);
+        captureException(error);
       } finally {
         setIsReady(true);
         await SplashScreen.hideAsync();

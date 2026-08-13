@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
+import Image from 'next/image';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import {
   Users,
@@ -507,8 +508,15 @@ export function PostDetailDialog({
 function DetailImageGrid({ images }: { images: ForumImage[] }) {
   if (images.length === 1) {
     return (
-      <div className="overflow-hidden rounded-md border bg-muted">
-        <img src={images[0].url} alt="" className="max-h-[560px] w-full object-contain" />
+      <div className="relative h-[min(560px,70vh)] overflow-hidden rounded-md border bg-muted">
+        <Image
+          src={images[0].url}
+          alt=""
+          fill
+          sizes="100vw"
+          unoptimized
+          className="object-contain"
+        />
       </div>
     );
   }
@@ -516,8 +524,11 @@ function DetailImageGrid({ images }: { images: ForumImage[] }) {
   return (
     <div className="grid grid-cols-2 gap-2">
       {images.map((image) => (
-        <div key={image.id} className="overflow-hidden rounded-md border bg-muted">
-          <img src={image.url} alt="" className="aspect-square h-full w-full object-cover" />
+        <div
+          key={image.id}
+          className="relative aspect-square overflow-hidden rounded-md border bg-muted"
+        >
+          <Image src={image.url} alt="" fill sizes="50vw" unoptimized className="object-cover" />
         </div>
       ))}
     </div>

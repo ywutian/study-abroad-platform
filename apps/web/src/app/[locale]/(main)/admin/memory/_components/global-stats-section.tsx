@@ -30,7 +30,7 @@ export function GlobalStatsSection() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Database className="h-5 w-5" />
-          <CardTitle className="text-base">{t('globalStats')}</CardTitle>
+          <CardTitle className="text-body">{t('globalStats')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>

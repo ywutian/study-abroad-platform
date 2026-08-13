@@ -19,6 +19,15 @@ describe('SettingsController', () => {
             get: jest.fn(),
             set: jest.fn(),
             setMany: jest.fn(),
+            isProtectedPointSetting: jest
+              .fn()
+              .mockImplementation((key: string) =>
+                [
+                  'points_enabled',
+                  'POINTS_ENABLED',
+                  'points_action_SUBMIT_CASE',
+                ].includes(key),
+              ),
           },
         },
       ],
@@ -88,6 +97,23 @@ describe('SettingsController', () => {
 
     expect(settingsService.setMany).toHaveBeenCalledWith(settings);
     expect(result).toEqual({ success: true });
+  });
+
+  it('PUT /:key rejects direct writes to the points runtime toggle', async () => {
+    await expect(
+      controller.update('points_enabled', { value: 'true' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(settingsService.set).not.toHaveBeenCalled();
+  });
+
+  it('PUT / rejects batches containing protected points settings atomically', async () => {
+    await expect(
+      controller.updateMany([
+        { key: 'site_name', value: 'Safe' },
+        { key: 'points_action_SUBMIT_CASE', value: '500' },
+      ]),
+    ).rejects.toThrow(BadRequestException);
+    expect(settingsService.setMany).not.toHaveBeenCalled();
   });
 
   it('PUT / should throw BadRequestException for invalid payload', async () => {

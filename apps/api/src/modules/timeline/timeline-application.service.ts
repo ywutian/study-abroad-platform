@@ -9,9 +9,13 @@ import { ERR } from '../../common/constants/error-messages';
 import { ApplicationStatus, Prisma, type GlobalEvent } from '@prisma/client';
 import { TaskType } from '../../common/types/enums';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
+import { resolveApplicationYear } from '@study-abroad/shared';
 import {
+  cycleRoundKey,
+  inferApplicationYear,
+  isApplicationTimelineArchived,
   isBeforeUtcDay,
-  rollAnnualDateForward,
+  isTerminalApplicationStatus,
   withEffectiveRecurringGlobalEvent,
 } from './timeline-date.util';
 import {
@@ -22,7 +26,6 @@ import {
   UpdateTaskDto,
   TaskResponseDto,
   GenerateTimelineDto,
-  ApplicationRound,
 } from './dto';
 
 const DEFAULT_TASKS = [
@@ -38,6 +41,13 @@ const DEFAULT_TASKS = [
   { title: '填写申请表格', type: TaskType.OTHER },
   { title: '支付申请费', type: TaskType.OTHER },
 ];
+
+import {
+  mapTaskToResponse as mapTaskResponse,
+  mapTimelineToResponse as mapTimelineResponse,
+  type ApplicationTaskRecord,
+  type TimelineResponseInput,
+} from './timeline-response.mapper';
 
 @Injectable()
 export class TimelineApplicationService {
@@ -58,12 +68,15 @@ export class TimelineApplicationService {
       throw new NotFoundException(ERR.NOT_FOUND.school());
     }
 
+    const applicationYear =
+      dto.applicationYear ?? inferApplicationYear(dto.deadline);
     const existing = await this.prisma.applicationTimeline.findUnique({
       where: {
-        userId_schoolId_round: {
+        userId_schoolId_round_applicationYear: {
           userId,
           schoolId: dto.schoolId,
           round: dto.round,
+          applicationYear,
         },
       },
     });
@@ -78,6 +91,7 @@ export class TimelineApplicationService {
         schoolId: dto.schoolId,
         schoolName: getSchoolDisplayName(school, locale),
         round: dto.round,
+        applicationYear,
         deadline: dto.deadline ? new Date(dto.deadline) : undefined,
         priority: dto.priority || 0,
         notes: dto.notes,
@@ -105,7 +119,6 @@ export class TimelineApplicationService {
     const created: TimelineResponseDto[] = [];
     const failed: Array<{ schoolId: string; reason: string }> = [];
     const now = new Date();
-    const currentMonth = now.getMonth() + 1;
     // Fall-entry year of the cycle most likely active for new applications. The
     // seed stores deadlines by fall-entry year (e.g. CYCLE_YEAR 2027 = future
     // Nov-2026+ dates), so in the off-season (May–Jul) `applicationYear` lands on
@@ -113,8 +126,7 @@ export class TimelineApplicationService {
     // BOTH this and next year's deadlines below and let selectEffectiveDeadlines
     // pick the soonest *future* one per round — so generation produces dated
     // timelines year-round instead of empty results in the off-season.
-    const applicationYear =
-      currentMonth >= 8 ? now.getFullYear() + 1 : now.getFullYear();
+    const applicationYear = resolveApplicationYear(now);
 
     // Batch every read up front — the per-school N+1 (school + existing
     // timelines + essay prompts, ×N schools, serially) was the fan-out that
@@ -137,12 +149,12 @@ export class TimelineApplicationService {
 
     const existingTimelines = await this.prisma.applicationTimeline.findMany({
       where: { userId, schoolId: { in: dto.schoolIds } },
-      select: { schoolId: true, round: true },
+      select: { schoolId: true, round: true, applicationYear: true },
     });
     const existingRoundsBySchool = new Map<string, Set<string>>();
     for (const t of existingTimelines) {
       const set = existingRoundsBySchool.get(t.schoolId) ?? new Set<string>();
-      set.add(t.round);
+      set.add(cycleRoundKey(t.applicationYear, t.round));
       existingRoundsBySchool.set(t.schoolId, set);
     }
 
@@ -205,7 +217,8 @@ export class TimelineApplicationService {
         const sourceBackedEssayPrompts = promptsBySchool.get(schoolId) ?? [];
 
         for (const dl of effectiveDeadlines) {
-          if (existingRounds.has(dl.round)) continue;
+          const cycleRound = cycleRoundKey(dl.year, dl.round);
+          if (existingRounds.has(cycleRound)) continue;
 
           const tasks = this.buildSmartTasks(
             dl.round,
@@ -221,13 +234,14 @@ export class TimelineApplicationService {
               schoolId,
               schoolName: getSchoolDisplayName(school, locale),
               round: dl.round,
-              deadline: rollAnnualDateForward(dl.applicationDeadline, now),
+              applicationYear: dl.year,
+              deadline: dl.applicationDeadline,
               tasks: { create: tasks },
             },
             include: { tasks: true },
           });
           created.push(this.mapTimelineToResponse(timeline));
-          existingRounds.add(dl.round);
+          existingRounds.add(cycleRound);
         }
       } catch (error) {
         this.logger.warn(
@@ -269,32 +283,26 @@ export class TimelineApplicationService {
       byRound.set(deadline.round, group);
     }
 
-    return Array.from(byRound.values())
-      .map((items) => {
-        const future = items
-          .filter((item) => !isBeforeUtcDay(item.applicationDeadline, now))
-          .sort(
-            (a, b) =>
-              a.applicationDeadline.getTime() - b.applicationDeadline.getTime(),
-          );
-
-        if (future[0]) return future[0];
-
-        return [...items].sort(
+    const selected: T[] = [];
+    for (const items of byRound.values()) {
+      const next = items
+        .filter((item) => !isBeforeUtcDay(item.applicationDeadline, now))
+        .sort(
           (a, b) =>
-            b.applicationDeadline.getTime() - a.applicationDeadline.getTime(),
+            a.applicationDeadline.getTime() - b.applicationDeadline.getTime(),
         )[0];
-      })
-      .sort(
-        (a, b) =>
-          rollAnnualDateForward(a.applicationDeadline, now).getTime() -
-          rollAnnualDateForward(b.applicationDeadline, now).getTime(),
-      );
+      if (next) selected.push(next);
+    }
+
+    return selected.sort(
+      (a, b) =>
+        a.applicationDeadline.getTime() - b.applicationDeadline.getTime(),
+    );
   }
 
   private buildSmartTasks(
     round: string,
-    essayPrompts: any,
+    essayPrompts: unknown,
     options?: {
       interviewRequired?: boolean;
       financialAidDeadline?: Date | null;
@@ -341,8 +349,20 @@ export class TimelineApplicationService {
 
     if (Array.isArray(essayPrompts) && essayPrompts.length > 0) {
       for (const ep of essayPrompts) {
-        const prompt = typeof ep === 'string' ? ep : ep?.prompt || '补充文书';
-        const wordLimit = typeof ep === 'object' ? ep?.wordLimit : undefined;
+        const promptRecord =
+          typeof ep === 'object' && ep !== null
+            ? (ep as Record<string, unknown>)
+            : null;
+        const prompt =
+          typeof ep === 'string'
+            ? ep
+            : typeof promptRecord?.prompt === 'string'
+              ? promptRecord.prompt
+              : '补充文书';
+        const wordLimit =
+          typeof promptRecord?.wordLimit === 'number'
+            ? promptRecord.wordLimit
+            : undefined;
         tasks.push({
           title: `补充文书: ${prompt.substring(0, 60)}${prompt.length > 60 ? '...' : ''}`,
           type: TaskType.ESSAY,
@@ -467,7 +487,7 @@ export class TimelineApplicationService {
 
     return {
       ...this.mapTimelineToResponse(timeline),
-      tasks: (timeline.tasks || []).map((t: any) => this.mapTaskToResponse(t)),
+      tasks: timeline.tasks.map((task) => this.mapTaskToResponse(task)),
     };
   }
 
@@ -483,6 +503,7 @@ export class TimelineApplicationService {
     if (!timeline) {
       throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
+    this.assertTimelineMutable(timeline);
 
     const updated = await this.prisma.applicationTimeline.update({
       where: { id },
@@ -507,39 +528,32 @@ export class TimelineApplicationService {
     if (!timeline) {
       throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
+    this.assertTimelineMutable(timeline);
 
     await this.prisma.applicationTimeline.delete({ where: { id } });
   }
 
   async getOverview(userId: string) {
+    const now = new Date();
+    const applicationYear = resolveApplicationYear(now);
     const timelines = await this.prisma.applicationTimeline.findMany({
-      where: { userId },
+      where: { userId, applicationYear: { gte: applicationYear } },
       include: { tasks: true },
       orderBy: { deadline: 'asc' },
     });
 
-    const now = new Date();
-    // Filter + sort on the *effective* (read-time rolled) deadline so active
-    // timelines whose stored deadline has drifted into the past still surface as
-    // upcoming — consistent with what mapTimelineToResponse renders.
     const upcomingDeadlines = timelines
-      .map((timeline) => ({
-        timeline,
-        effective: this.effectiveDeadline(timeline.deadline, timeline.status),
-      }))
       .filter(
-        ({ timeline, effective }) =>
-          effective &&
-          effective > now &&
-          timeline.status !== ApplicationStatus.SUBMITTED,
+        (timeline) =>
+          timeline.deadline &&
+          timeline.deadline > now &&
+          !isTerminalApplicationStatus(timeline.status),
       )
-      .sort((a, b) => a.effective!.getTime() - b.effective!.getTime())
-      .slice(0, 5)
-      .map(({ timeline }) => timeline);
+      .slice(0, 5);
 
     const allTasks = await this.prisma.applicationTask.findMany({
       where: {
-        timeline: { userId },
+        timeline: { userId, applicationYear: { gte: applicationYear } },
         completed: false,
         dueDate: { lt: now },
       },
@@ -604,6 +618,7 @@ export class TimelineApplicationService {
     if (!timeline) {
       throw new NotFoundException(ERR.NOT_FOUND.timeline());
     }
+    this.assertTimelineMutable(timeline);
 
     const task = await this.prisma.$transaction(async (tx) => {
       const maxOrder = await tx.applicationTask.findFirst({
@@ -643,6 +658,7 @@ export class TimelineApplicationService {
     if (!task || task.timeline.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertTimelineMutable(task.timeline);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const u = await tx.applicationTask.update({
@@ -674,6 +690,7 @@ export class TimelineApplicationService {
     if (!task || task.timeline.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertTimelineMutable(task.timeline);
 
     await this.prisma.$transaction(async (tx) => {
       await tx.applicationTask.delete({ where: { id: taskId } });
@@ -693,6 +710,7 @@ export class TimelineApplicationService {
     if (!task || task.timeline.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertTimelineMutable(task.timeline);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       // Conditional flip: only flips if `completed` is still what we read, so two
@@ -717,6 +735,15 @@ export class TimelineApplicationService {
 
   // ============ Helpers ============
 
+  private assertTimelineMutable(timeline: {
+    status: string;
+    deadline?: Date | null;
+  }): void {
+    if (isApplicationTimelineArchived(timeline)) {
+      throw new ConflictException(ERR.CONFLICT.archivedTimelineReadOnly());
+    }
+  }
+
   // Accepts the active transaction client so the recompute reads the SAME
   // snapshot as the mutation that triggered it (no lost-update / stale-progress
   // race between concurrent task changes). Uses aggregate counts instead of
@@ -739,17 +766,9 @@ export class TimelineApplicationService {
       select: { status: true },
     });
 
-    const manualStatuses: Set<string> = new Set([
-      ApplicationStatus.SUBMITTED,
-      ApplicationStatus.ACCEPTED,
-      ApplicationStatus.REJECTED,
-      ApplicationStatus.WAITLISTED,
-      ApplicationStatus.WITHDRAWN,
-    ]);
-
     const data: { progress: number; status?: ApplicationStatus } = { progress };
 
-    if (!current || !manualStatuses.has(current.status)) {
+    if (!current || !isTerminalApplicationStatus(current.status)) {
       data.status =
         progress > 0
           ? ApplicationStatus.IN_PROGRESS
@@ -762,81 +781,11 @@ export class TimelineApplicationService {
     });
   }
 
-  /**
-   * Application deadlines recur annually, but the stored value is frozen at
-   * creation — so as time passes it drifts into the past and the UI shows a
-   * stale, already-expired date. For **active** (un-submitted) timelines, roll a
-   * past deadline to its next annual occurrence at read time (mirrors how global
-   * events are surfaced via `withEffectiveRecurringGlobalEvent`). Terminal
-   * statuses (submitted/accepted/rejected/waitlisted/withdrawn) keep the real
-   * historical deadline.
-   */
-  private effectiveDeadline(
-    deadline: Date | null | undefined,
-    status: string,
-  ): Date | undefined {
-    if (!deadline) return undefined;
-    const isActive = status === 'NOT_STARTED' || status === 'IN_PROGRESS';
-    return isActive ? rollAnnualDateForward(deadline) : deadline;
+  mapTimelineToResponse(timeline: TimelineResponseInput): TimelineResponseDto {
+    return mapTimelineResponse(timeline);
   }
 
-  mapTimelineToResponse(timeline: any): TimelineResponseDto {
-    const tasks = timeline.tasks || [];
-    return {
-      id: timeline.id,
-      schoolId: timeline.schoolId,
-      schoolName: timeline.schoolName,
-      round: timeline.round as ApplicationRound,
-      deadline: this.effectiveDeadline(timeline.deadline, timeline.status),
-      status: timeline.status,
-      progress: timeline.progress,
-      priority: timeline.priority,
-      notes: timeline.notes,
-      tasksTotal: tasks.length,
-      tasksCompleted: tasks.filter((t: any) => t.completed).length,
-      createdAt: timeline.createdAt,
-    };
-  }
-
-  mapTaskToResponse(task: any): TaskResponseDto {
-    const sourceState = this.resolveTaskSourceState(task);
-
-    return {
-      id: task.id,
-      timelineId: task.timelineId,
-      title: task.title,
-      type: task.type,
-      description: task.description,
-      dueDate: task.dueDate,
-      completed: task.completed,
-      completedAt: task.completedAt,
-      essayPrompt: task.essayPrompt,
-      wordLimit: task.wordLimit,
-      ...sourceState,
-      sortOrder: task.sortOrder,
-    };
-  }
-
-  private resolveTaskSourceState(
-    task: any,
-  ): Pick<TaskResponseDto, 'sourceStatus' | 'sourcePolicy'> {
-    if (task.type !== TaskType.ESSAY) {
-      return { sourceStatus: 'first_party' };
-    }
-
-    const text = `${task.title ?? ''} ${task.essayPrompt ?? ''}`.toLowerCase();
-    if (text.includes('common app') || text.includes('personal statement')) {
-      return {
-        sourceStatus: 'generic',
-        sourcePolicy:
-          'Generic Common App writing task; not a school-specific sourced prompt.',
-      };
-    }
-
-    return {
-      sourceStatus: 'source_review_required',
-      sourcePolicy:
-        'School-specific essay task must link to a source-backed verified EssayPrompt before it is treated as authoritative.',
-    };
+  mapTaskToResponse(task: ApplicationTaskRecord): TaskResponseDto {
+    return mapTaskResponse(task);
   }
 }

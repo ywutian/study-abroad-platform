@@ -1,28 +1,19 @@
+import { Body, Controller, Delete, Get, Put, Query, Res } from '@nestjs/common';
 import {
-  Body,
-  Controller,
-  Get,
-  Delete,
-  Patch,
-  Put,
-  Res,
-  Query,
-} from '@nestjs/common';
-import {
-  ApiTags,
   ApiBearerAuth,
   ApiOperation,
-  ApiResponse,
   ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { UserService } from './user.service';
-import { DashboardService } from './dashboard.service';
+import type { CurrentUserPayload } from '../../common/decorators';
+import { CurrentUser } from '../../common/decorators';
 import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
-import { CurrentUser } from '../../common/decorators';
-import type { CurrentUserPayload } from '../../common/decorators';
+import { DashboardService } from './dashboard.service';
 import { UpdateUserLocaleDto } from './dto/update-user-locale.dto';
+import { UserService } from './user.service';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -45,7 +36,11 @@ export class UserController {
   @ApiOperation({ summary: 'Get current user info' })
   async getCurrentUser(@CurrentUser() user: CurrentUserPayload) {
     const fullUser = await this.userService.findByIdOrThrow(user.id);
-    const { passwordHash: _passwordHash, ...result } = fullUser;
+    const {
+      passwordHash: _passwordHash,
+      points: _points,
+      ...result
+    } = fullUser;
     return result;
   }
 
@@ -58,7 +53,11 @@ export class UserController {
     const updatedUser = await this.userService.update(user.id, {
       locale: dto.locale,
     });
-    const { passwordHash: _passwordHash, ...result } = updatedUser;
+    const {
+      passwordHash: _passwordHash,
+      points: _points,
+      ...result
+    } = updatedUser;
     return result;
   }
 
@@ -111,7 +110,7 @@ export class UserController {
   @Get('me/points')
   @ApiOperation({ summary: 'Get current user points' })
   async getMyPoints(@CurrentUser() user: CurrentUserPayload) {
-    const points = await this.pointsService.getUserPoints(user.id);
+    const points = await this.pointsService.getVisibleUserPoints(user.id);
     return { points };
   }
 
@@ -127,12 +126,13 @@ export class UserController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('limit') limit?: string,
   ) {
-    const history = await this.pointsService.getPointHistory(
+    const history = await this.pointsService.getVisiblePointHistory(
       user.id,
       limit ? parseInt(limit, 10) : 20,
     );
 
     // 为每条记录添加中文描述（从动态配置读取）
+    if (history.length === 0) return [];
     const rules = await this.pointsConfigService.getAllRules();
     const enrichedHistory = history.map((item) => {
       const rule = rules.find((r) => r.action === item.action);
@@ -149,10 +149,9 @@ export class UserController {
   @Get('me/points/rules')
   @ApiOperation({ summary: 'Get points rules' })
   async getPointRules() {
-    const [enabled, rules] = await Promise.all([
-      this.pointsConfigService.isEnabled(),
-      this.pointsConfigService.getAllRules(),
-    ]);
+    const enabled = await this.pointsConfigService.isEnabled();
+    if (!enabled) return { enabled: false, earn: [], spend: [] };
+    const rules = await this.pointsConfigService.getAllRules();
     return {
       enabled,
       earn: rules.filter((r) => r.type === 'earn'),
@@ -166,9 +165,10 @@ export class UserController {
   @ApiOperation({ summary: 'Get or generate referral code and stats' })
   @ApiResponse({ status: 200, description: 'Referral code and statistics' })
   async getReferral(@CurrentUser() user: CurrentUserPayload) {
-    const [referralCode, stats] = await Promise.all([
+    const [referralCode, stats, pointsEnabled] = await Promise.all([
       this.userService.getOrCreateReferralCode(user.id),
       this.userService.getReferralStats(user.id),
+      this.pointsConfigService.isEnabled(),
     ]);
 
     const baseUrl = process.env.WEB_URL || 'https://studyabroad.example.com';
@@ -176,7 +176,7 @@ export class UserController {
       referralCode,
       referralLink: `${baseUrl}/register?ref=${referralCode}`,
       referralCount: stats.referralCount,
-      totalPointsEarned: stats.totalPointsEarned,
+      totalPointsEarned: pointsEnabled ? stats.totalPointsEarned : 0,
     };
   }
 
@@ -184,12 +184,32 @@ export class UserController {
   @ApiOperation({ summary: 'List users referred by current user' })
   @ApiResponse({ status: 200, description: 'List of referred users' })
   async getReferralList(@CurrentUser() user: CurrentUserPayload) {
-    return this.userService.getReferralList(user.id);
+    const [result, pointsEnabled] = await Promise.all([
+      this.userService.getReferralList(user.id),
+      this.pointsConfigService.isEnabled(),
+    ]);
+    if (pointsEnabled) return result;
+    return {
+      ...result,
+      referrals: result.referrals.map((referral) => ({
+        ...referral,
+        pointsEarned: 0,
+      })),
+    };
   }
 
   @Get('me/points/summary')
   @ApiOperation({ summary: 'Get points summary statistics' })
   async getPointSummary(@CurrentUser() user: CurrentUserPayload) {
+    if (!(await this.pointsConfigService.isEnabled())) {
+      return {
+        currentPoints: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        transactionCount: 0,
+        actionStats: {},
+      };
+    }
     const [points, history] = await Promise.all([
       this.pointsService.getUserPoints(user.id),
       this.pointsService.getPointHistory(user.id, 100),

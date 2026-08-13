@@ -1,145 +1,52 @@
 /**
  * Forum Post Detail Page - View post content, comments, likes, team info, and reporting.
  */
-import React, { useState, useCallback, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
-  Alert,
   RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  AnimatedButton,
   AnimatedCard,
-  CardContent,
   Badge,
+  CardContent,
+  ConfirmDialog,
   EmptyState,
   Loading,
-  AnimatedButton,
-  ConfirmDialog,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  withOpacity,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-} from '@/utils/theme';
-import { forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
+import { fontFamily, fontSize, spacing, useColors, withOpacity } from '@/utils/theme';
+import { forumRoutes } from '@study-abroad/shared';
+import { styles } from './[id].styles';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface CategoryDto {
-  id: string;
-  name: string;
-  nameZh: string;
-  description: string;
-  descriptionZh: string;
-  icon: string;
-  color: string;
-  postCount: number;
-}
-
-interface PostAuthor {
-  id: string;
-  name?: string;
-  avatar?: string;
-  isVerified?: boolean;
-  email?: string;
-  profile?: {
-    nickname?: string;
-    avatarUrl?: string;
-  };
-}
-
-interface CommentDto {
-  id: string;
-  postId: string;
-  author: PostAuthor;
-  content: string;
-  parentId: string | null;
-  children?: CommentDto[];
-  createdAt: string;
-}
-
-interface PostDto {
-  id: string;
-  categoryId: string;
-  category: CategoryDto;
-  author: PostAuthor;
-  title: string;
-  content: string;
-  tags: string[];
-  isTeamPost: boolean;
-  teamSize: number | null;
-  currentSize: number | null;
-  requirements: string | null;
-  teamDeadline: string | null;
-  teamStatus: string | null;
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-  isPinned: boolean;
-  isLocked: boolean;
-  isLiked: boolean;
-  createdAt: string;
-  updatedAt: string;
-  comments: CommentDto[];
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const fmtDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const timeAgo = (dateStr: string): string => {
-  const now = Date.now();
-  const diff = now - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d`;
-  const months = Math.floor(days / 30);
-  return `${months}mo`;
-};
-
-const getAuthorName = (author: PostAuthor): string => {
-  return author.name || author.profile?.nickname || author.email?.split('@')[0] || 'User';
-};
+import {
+  fmtDate,
+  getAuthorName,
+  timeAgo,
+  type CategoryDto,
+  type CommentDto,
+  type PostAuthor,
+  type PostDto,
+} from './post-detail.types';
 
 // ---------------------------------------------------------------------------
 // Main Component
@@ -359,7 +266,7 @@ export default function ForumPostDetailPage() {
           )}
           {post.isPinned && (
             <Badge variant="warning">
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+              <View style={styles.badgeContent}>
                 <Ionicons name="pin" size={10} color={c.warning} />
                 <Text style={{ color: c.warning, fontSize: fontSize.xs }}>{t('forum.pinned')}</Text>
               </View>
@@ -367,7 +274,7 @@ export default function ForumPostDetailPage() {
           )}
           {post.isLocked && (
             <Badge variant="secondary">
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+              <View style={styles.badgeContent}>
                 <Ionicons name="lock-closed" size={10} color={c.foregroundMuted} />
                 <Text style={{ color: c.foregroundMuted, fontSize: fontSize.xs }}>
                   {t('forum.locked')}
@@ -774,289 +681,3 @@ export default function ForumPostDetailPage() {
 // ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-
-  // Author header
-  postAuthorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  avatar: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontWeight: fontWeight.semibold,
-  },
-  authorInfo: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  authorNameLg: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  postDate: {
-    fontSize: fontSize.xs,
-    marginTop: 2,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  headerActionBtn: {
-    padding: spacing.sm,
-  },
-
-  // Meta row (category, tags)
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  tagChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  tagText: {
-    fontSize: fontSize.xs,
-  },
-
-  // Post content
-  postTitleLg: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    lineHeight: fontSize.xl * 1.4,
-    marginBottom: spacing.lg,
-  },
-  postContentText: {
-    fontSize: fontSize.base,
-    lineHeight: fontSize.base * 1.75,
-    marginBottom: spacing.lg,
-  },
-
-  // Stats bar
-  statsBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    marginBottom: spacing.lg,
-  },
-  likeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.xs,
-    paddingRight: spacing.md,
-  },
-  likeCount: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  statsBarRight: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  statIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  statBarText: {
-    fontSize: fontSize.sm,
-  },
-
-  // Team section
-  teamCard: {
-    marginBottom: spacing.lg,
-  },
-  teamHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  teamTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    flex: 1,
-  },
-  teamProgress: {
-    marginBottom: spacing.md,
-  },
-  teamProgressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  teamProgressText: {
-    fontSize: fontSize.sm,
-  },
-  teamProgressValue: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  progressTrack: {
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  teamRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  teamRowText: {
-    fontSize: fontSize.sm,
-  },
-  requirementsSection: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  requirementsLabel: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.xs,
-  },
-  requirementsText: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * 1.6,
-  },
-
-  // Comments
-  commentsHeader: {
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  noCommentsContainer: {
-    alignItems: 'center',
-    paddingVertical: spacing['3xl'],
-    gap: spacing.sm,
-  },
-  noCommentsText: {
-    fontSize: fontSize.sm,
-  },
-  commentItem: {
-    marginBottom: spacing.lg,
-  },
-  nestedComment: {
-    marginBottom: spacing.md,
-  },
-  commentRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  commentBody: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  commentMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  commentAuthor: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  commentTime: {
-    fontSize: fontSize.xs,
-  },
-  commentContent: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * 1.6,
-  },
-  replyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.xs,
-    paddingVertical: spacing.xs,
-  },
-  replyBtnText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-  repliesContainer: {
-    marginLeft: spacing.xl + spacing.md,
-    marginTop: spacing.sm,
-    borderLeftWidth: 2,
-    paddingLeft: spacing.md,
-  },
-
-  // Comment input bar
-  commentInputBar: {
-    borderTopWidth: 1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-  },
-  replyIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.sm,
-  },
-  replyIndicatorText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-    flex: 1,
-  },
-  commentInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.sm,
-  },
-  commentInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: fontSize.base,
-    maxHeight: 100,
-  },
-  sendButton: {
-    marginBottom: 2,
-  },
-  lockedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-  },
-  lockedText: {
-    fontSize: fontSize.sm,
-  },
-});

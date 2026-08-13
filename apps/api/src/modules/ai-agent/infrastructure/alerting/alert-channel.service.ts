@@ -50,7 +50,7 @@ export interface AlertPayload {
   /** 追踪 ID */
   traceId?: string;
   /** 额外数据 */
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   /** 时间戳 */
   timestamp?: Date;
 }
@@ -96,15 +96,16 @@ export class AlertChannelService implements OnModuleInit, OnModuleDestroy {
     private redis: RedisService,
   ) {
     this.config = {
-      slackWebhook: this.configService.get('ALERT_SLACK_WEBHOOK'),
-      emailEnabled: this.configService.get('ALERT_EMAIL_ENABLED') === 'true',
+      slackWebhook: this.configService.get<string>('ALERT_SLACK_WEBHOOK'),
+      emailEnabled:
+        this.configService.get<string>('ALERT_EMAIL_ENABLED') === 'true',
       emailRecipients: this.configService
-        .get('ALERT_EMAIL_RECIPIENTS', '')
+        .get<string>('ALERT_EMAIL_RECIPIENTS', '')
         .split(',')
         .filter(Boolean),
-      wechatWebhook: this.configService.get('ALERT_WECHAT_WEBHOOK'),
-      dingtalkWebhook: this.configService.get('ALERT_DINGTALK_WEBHOOK'),
-      pagerdutyRoutingKey: this.configService.get(
+      wechatWebhook: this.configService.get<string>('ALERT_WECHAT_WEBHOOK'),
+      dingtalkWebhook: this.configService.get<string>('ALERT_DINGTALK_WEBHOOK'),
+      pagerdutyRoutingKey: this.configService.get<string>(
         'ALERT_PAGERDUTY_ROUTING_KEY',
       ),
       aggregationWindow: parseInt(
@@ -122,7 +123,10 @@ export class AlertChannelService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('AlertChannelService initialized');
 
     // 定期刷新聚合告警
-    this.flushInterval = setInterval(() => this.flushAggregatedAlerts(), 30000);
+    this.flushInterval = setInterval(
+      () => void this.flushAggregatedAlerts(),
+      30000,
+    );
 
     // 重置每分钟告警计数
     this.resetInterval = setInterval(() => {
@@ -282,7 +286,7 @@ export class AlertChannelService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    throw lastError;
+    throw lastError ?? new Error('Alert delivery failed without an error');
   }
 
   /**
@@ -417,7 +421,10 @@ ${payload.message}${payload.traceId ? `\n\n**Trace ID**: ${payload.traceId}` : '
         source: payload.source || 'study-abroad-platform',
         component: 'ai-agent',
         group: 'security',
-        class: payload.metadata?.eventType || 'alert',
+        class:
+          typeof payload.metadata?.eventType === 'string'
+            ? payload.metadata.eventType
+            : 'alert',
         timestamp: (payload.timestamp || new Date()).toISOString(),
         custom_details: {
           title: payload.title,
@@ -642,7 +649,7 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
   /**
    * 获取告警投递日志
    */
-  async getDeliveryLog(alertId: string): Promise<Record<string, any>[]> {
+  async getDeliveryLog(alertId: string): Promise<Record<string, unknown>[]> {
     const key = `alert:delivery:${alertId}`;
     const entries = await this.redis.lrange(key, 0, -1);
 
@@ -651,7 +658,10 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
     return entries.map((v) => {
       try {
         // @cache-parse-allowed - Record<string, any>[]; the type claims nothing
-        return JSON.parse(v);
+        const parsed: unknown = JSON.parse(v);
+        return typeof parsed === 'object' && parsed !== null
+          ? (parsed as Record<string, unknown>)
+          : { raw: v };
       } catch {
         return { raw: v };
       }
@@ -700,16 +710,25 @@ ${payload.metadata ? `\nMetadata:\n${JSON.stringify(payload.metadata, null, 2)}`
   /**
    * 获取未确认的活跃告警列表
    */
-  async getActiveAlerts(limit = 50): Promise<any[]> {
+  async getActiveAlerts(limit = 50): Promise<Record<string, unknown>[]> {
     const raw = await this.redis.lrange('alerts:queue', 0, limit - 1);
 
     if (!raw || raw.length === 0) return [];
 
-    const alerts: any[] = [];
+    const alerts: Record<string, unknown>[] = [];
     for (const item of raw) {
       try {
-        const alert = JSON.parse(item);
-        const ackKey = `alert:ack:${alert.alertId || this.generateAlertId(alert.title, alert.source || '')}`;
+        const parsed: unknown = JSON.parse(item);
+        if (typeof parsed !== 'object' || parsed === null) continue;
+        const alert = parsed as Record<string, unknown>;
+        const alertId =
+          typeof alert.alertId === 'string'
+            ? alert.alertId
+            : this.generateAlertId(
+                typeof alert.title === 'string' ? alert.title : 'Alert',
+                typeof alert.source === 'string' ? alert.source : '',
+              );
+        const ackKey = `alert:ack:${alertId}`;
         const ack = await this.redis.get(ackKey);
         if (!ack) {
           alerts.push(alert);

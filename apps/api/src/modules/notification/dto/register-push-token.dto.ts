@@ -17,6 +17,7 @@ export class RegisterPushTokenDto {
   })
   @IsString()
   @IsIn(['ios', 'android'])
+  @MaxLength(10)
   platform!: 'ios' | 'android';
 }
 

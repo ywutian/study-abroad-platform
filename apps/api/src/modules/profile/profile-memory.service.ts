@@ -11,6 +11,12 @@ import {
   CreateEssayDto,
 } from './dto';
 
+interface TargetSchoolMemoryRecord {
+  schoolId: string;
+  priority?: number | null;
+  school?: { name: string; nameZh?: string | null } | null;
+}
+
 /**
  * Handles all memory system recording for profile-related events.
  * Contains all 11 record*ToMemory() methods.
@@ -288,7 +294,7 @@ export class ProfileMemoryService {
    */
   async recordSetTargetSchoolsToMemory(
     userId: string,
-    targetSchools: any[],
+    targetSchools: TargetSchoolMemoryRecord[],
   ): Promise<void> {
     if (!this.memoryManager || targetSchools.length === 0) return;
 
@@ -317,7 +323,7 @@ export class ProfileMemoryService {
           type: EntityType.SCHOOL,
           name: schoolName,
           description: `用户的目标学校，优先级${ts.priority}`,
-          attributes: { isTarget: true, priority: ts.priority },
+          attributes: { isTarget: true, priority: ts.priority ?? undefined },
         });
       }
     }

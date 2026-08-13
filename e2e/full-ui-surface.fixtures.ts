@@ -1379,6 +1379,23 @@ function apiData(path: string, role: FullUiRole, method: string) {
       return { data: responseData(E2E_RECOMMENDATION) };
     }
 
+    if (path === '/predictions/preview') {
+      return {
+        data: responseData({
+          results: E2E_SCHOOLS.map((school, index) => ({
+            schoolId: school.id,
+            schoolName: school.name,
+            probability: [0.14, 0.47, 0.81][index] ?? 0.5,
+            probabilityLow: [0.09, 0.39, 0.72][index] ?? 0.4,
+            probabilityHigh: [0.2, 0.56, 0.87][index] ?? 0.6,
+            tier: index === 0 ? 'reach' : index === 1 ? 'match' : 'safety',
+            factors: [],
+            suggestions: [],
+          })),
+        }),
+      };
+    }
+
     if (path === '/assessments') {
       return { data: responseData(E2E_ASSESSMENT_RESULT_MBTI) };
     }
@@ -1573,6 +1590,16 @@ function apiData(path: string, role: FullUiRole, method: string) {
   }
 
   if (path === '/admin/predictions/outcomes/pending-verification') {
+    return { data: responseData([]) };
+  }
+
+  // Dormant while POINTS_ECONOMY_AVAILABLE is false. Keeping the real array
+  // contract here makes the launch-gate flip testable without a second fixture
+  // change that could mask an API-shape regression.
+  if (
+    path === '/admin/points/redemptions/pending' ||
+    path === '/admin/points/redemptions/consultations'
+  ) {
     return { data: responseData([]) };
   }
 
@@ -1908,7 +1935,7 @@ function apiData(path: string, role: FullUiRole, method: string) {
     };
   }
 
-  if (path.startsWith('/prediction')) {
+  if (path.startsWith('/prediction') || path.startsWith('/predictions')) {
     return {
       data: responseData({
         readiness: 82,

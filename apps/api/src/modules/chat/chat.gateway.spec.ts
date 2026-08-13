@@ -31,7 +31,6 @@ describe('ChatGateway — conversation room scoping', () => {
       {} as never,
       {} as never,
       {} as never,
-      {},
     );
 
   it('broadcasts a typing event into a conversation the sender joined', () => {

@@ -4058,26 +4058,28 @@ model GlobalEvent {
 // ============================================
 
 model ApplicationTimeline {
-  id         String            @id @default(cuid())
-  userId     String
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  schoolId   String
-  school     School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  schoolName String // 冗余字段，便于查询展示
-  round      String // ED, EA, RD, ED2, REA, Rolling
-  deadline   DateTime?
-  status     ApplicationStatus @default(NOT_STARTED)
-  progress   Int               @default(0) // 0-100
-  priority   Int               @default(0)
-  notes      String?           @db.Text
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId        String
+  school          School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolName      String // 冗余字段，便于查询展示
+  round           String // ED, EA, RD, ED2, REA, Rolling
+  applicationYear Int               @default(dbgenerated("((EXTRACT(year FROM CURRENT_DATE))::integer +\nCASE\n    WHEN (EXTRACT(month FROM CURRENT_DATE) >= (8)::numeric) THEN 1\n    ELSE 0\nEND)")) // Fall entry year; keeps archived cycles distinct from the next cycle
+  deadline        DateTime?
+  status          ApplicationStatus @default(NOT_STARTED)
+  progress        Int               @default(0) // 0-100
+  priority        Int               @default(0)
+  notes           String?           @db.Text
 
   tasks ApplicationTask[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, schoolId, round])
+  @@unique([userId, schoolId, round, applicationYear])
   @@index([userId])
+  @@index([userId, applicationYear])
   @@index([deadline])
 }
 

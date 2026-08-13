@@ -174,7 +174,7 @@ export function EssayCaseReviewManager() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-500" />
               {t('caseStats.pending')}
             </CardTitle>
@@ -185,7 +185,7 @@ export function EssayCaseReviewManager() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-emerald-500" />
               {t('caseStats.verified')}
             </CardTitle>
@@ -196,7 +196,7 @@ export function EssayCaseReviewManager() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <FileText className="h-4 w-4 text-blue-500" />
               {t('caseStats.withEssay')}
             </CardTitle>
@@ -207,7 +207,7 @@ export function EssayCaseReviewManager() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <Shield className="h-4 w-4 text-violet-500" />
               {t('caseStats.total')}
             </CardTitle>
@@ -223,7 +223,7 @@ export function EssayCaseReviewManager() {
             zero it is a healthy gauge rather than a to-do. */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <HeartHandshake
                 className={`h-4 w-4 ${
                   stats?.unhonouredShareConsents ? 'text-rose-500' : 'text-muted-foreground'

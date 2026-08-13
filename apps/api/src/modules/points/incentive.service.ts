@@ -45,6 +45,12 @@ export class PointsService {
     return user?.points || 0;
   }
 
+  /** Product-facing balance. Historical ledger data stays private while closed. */
+  async getVisibleUserPoints(userId: string): Promise<number> {
+    if (!(await this.pointsConfig.isEnabled())) return 0;
+    return this.getUserPoints(userId);
+  }
+
   /**
    * 统一增加/扣除积分（核心方法）
    *
@@ -62,6 +68,7 @@ export class PointsService {
     metadata?: Record<string, unknown>,
     pointsOverride?: number,
     tx?: Prisma.TransactionClient,
+    options?: { allowWhileDisabled?: boolean },
   ): Promise<{
     success: boolean;
     newBalance: number;
@@ -71,7 +78,7 @@ export class PointsService {
   }> {
     const db = tx ?? this.prisma;
     const enabled = await this.pointsConfig.isEnabled();
-    if (!enabled) {
+    if (!enabled && !options?.allowWhileDisabled) {
       return { success: true, newBalance: 0, points: 0 };
     }
 
@@ -222,6 +229,38 @@ export class PointsService {
   }
 
   /**
+   * Refund a balance that was charged before the economy was disabled.
+   *
+   * This is intentionally separate from refund(): ordinary request-scoped
+   * refunds should remain a no-op when charging was also a no-op. Historical
+   * redemption cancellation is different: the debit already exists and must
+   * remain recoverable after a product shutdown.
+   */
+  async refundHistoricalAdjustment(
+    userId: string,
+    action: string,
+    amount: number,
+    metadata?: Record<string, unknown>,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{
+    success: boolean;
+    newBalance: number;
+    message?: string;
+    pointHistoryId?: string;
+    points?: number;
+  }> {
+    if (!Number.isSafeInteger(amount) || amount <= 0) {
+      throw new BadRequestException(
+        'Historical refund amount must be a positive integer',
+      );
+    }
+
+    return this.adjustPoints(userId, action, metadata, amount, tx, {
+      allowWhileDisabled: true,
+    });
+  }
+
+  /**
    * 检查用户是否可以执行某操作
    */
   async canPerformAction(
@@ -249,6 +288,12 @@ export class PointsService {
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
+  }
+
+  /** Product-facing history. Operational/admin reconciliation uses raw storage. */
+  async getVisiblePointHistory(userId: string, limit = 20) {
+    if (!(await this.pointsConfig.isEnabled())) return [];
+    return this.getPointHistory(userId, limit);
   }
 
   /**

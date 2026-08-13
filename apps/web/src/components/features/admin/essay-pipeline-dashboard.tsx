@@ -243,7 +243,7 @@ export function EssayPipelineDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>{t('coverage')}</CardDescription>
-              <CardTitle className="text-2xl">
+              <CardTitle className="text-subtitle">
                 {coverage.schoolsWithVerified}/{coverage.totalSchools}
               </CardTitle>
             </CardHeader>
@@ -256,7 +256,7 @@ export function EssayPipelineDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>{t('totalPrompts')}</CardDescription>
-              <CardTitle className="text-2xl">{coverage.totalPrompts}</CardTitle>
+              <CardTitle className="text-subtitle">{coverage.totalPrompts}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground">
@@ -268,7 +268,7 @@ export function EssayPipelineDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>{t('pendingReview')}</CardDescription>
-              <CardTitle className="text-2xl text-amber-600 dark:text-amber-400">
+              <CardTitle className="text-subtitle text-amber-600 dark:text-amber-400">
                 {coverage.pendingReview}
               </CardTitle>
             </CardHeader>

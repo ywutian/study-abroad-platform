@@ -36,7 +36,6 @@ export const RECOMMENDATION_SCHOOL_SELECT = {
   aliases: true,
   isPrivate: true,
   metadata: true,
-  updatedAt: true,
   hasEarlyDecision: true,
   retentionRate: true,
   roomAndBoard: true,
@@ -113,15 +112,15 @@ export function mapSourcedSchoolMeta(school: RecommendationSchoolResult) {
   );
 
   return {
-    nameZh: school.nameZh,
-    usNewsRank: school.usNewsRank,
+    nameZh: school.nameZh ?? undefined,
+    usNewsRank: school.usNewsRank ?? undefined,
     rankings: school.rankings,
     acceptanceRate: getRecommendationMetricValue(school, 'acceptanceRate'),
-    city: school.city,
-    state: school.state,
-    tuition: school.tuition,
-    isPrivate: school.isPrivate,
-    testingPolicy: school.testingPolicy,
+    city: school.city ?? undefined,
+    state: school.state ?? undefined,
+    tuition: school.tuition ?? undefined,
+    isPrivate: school.isPrivate ?? undefined,
+    testingPolicy: school.testingPolicy ?? undefined,
     testOptional: toLegacyTestOptionalFlag({
       testingPolicy: school.testingPolicy,
       testOptional: school.testOptional,

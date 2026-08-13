@@ -117,7 +117,7 @@ export function AssessmentMbtiResult({
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <Lightbulb className="h-4 w-4 text-amber-500 dark:text-amber-400" />
               {t('mbti.strengths')}
             </CardTitle>
@@ -135,7 +135,7 @@ export function AssessmentMbtiResult({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-blue-500 dark:text-blue-400" />
               {t('mbti.careers')}
             </CardTitle>
@@ -153,7 +153,7 @@ export function AssessmentMbtiResult({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
               {t('mbti.majors')}
             </CardTitle>

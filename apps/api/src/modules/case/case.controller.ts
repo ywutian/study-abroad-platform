@@ -126,12 +126,10 @@ export class CaseController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateCaseDto,
   ) {
-    return this.caseService.create(
-      user.id,
-      data,
-      user.locale,
-      user.role as any,
-    );
+    const role = Object.values(Role).includes(user.role as Role)
+      ? (user.role as Role)
+      : undefined;
+    return this.caseService.create(user.id, data, user.locale, role);
   }
 
   @Put(':id')

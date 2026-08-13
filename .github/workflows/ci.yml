@@ -107,6 +107,15 @@ jobs:
       - name: Generate Prisma client (lint 的类型感知规则依赖它)
         run: pnpm --filter api db:generate
 
+      # Root route/closure gates import the full-surface registry, which in
+      # turn resolves @study-abroad/shared through its package `require` entry
+      # (`dist/index.js`). A developer checkout often already has dist/ from a
+      # previous build, but a clean CI checkout does not. Build it explicitly
+      # so gate proofs test the seeded violation instead of failing before the
+      # gate can start (PR #594 exposed this clean-checkout-only dependency).
+      - name: Build shared package (root gate runtime dependency)
+        run: pnpm --filter @study-abroad/shared build
+
       - name: Lint all apps (parallel)
         run: |
           FAIL=0

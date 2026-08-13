@@ -2,16 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import {
   type DashboardEssayCoach,
-  type DashboardPriorityKind,
   type DashboardSeverity,
   type DashboardSignals,
   type DashboardSummary,
   type DashboardWorkbench,
+  resolveApplicationYear,
 } from '@study-abroad/shared';
 
-import { PrismaService } from '../../prisma/prisma.service';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PointsConfigService } from '../points/points-config.service';
 import { calculateProfileCompleteness } from '../profile/profile-completeness.util';
+import { getPersonalActionDate } from '../timeline/timeline-date.util';
 
 /**
  * 2026-05 Phase 1.5 #15: Per-query resilience wrapper.
@@ -88,10 +90,12 @@ type SchoolDeadlineSource = {
   round: string;
   applicationDeadline: Date;
 };
-
 @Injectable()
 export class DashboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private pointsConfig: PointsConfigService,
+  ) {}
 
   async getDashboardSummary(
     userId: string,
@@ -99,10 +103,16 @@ export class DashboardService {
   ): Promise<DashboardSummary> {
     // 并行获取所有数据
     const now = new Date();
+    const applicationYear = resolveApplicationYear(now);
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
     const startOfTomorrow = new Date(startOfToday);
     startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+    const pointsEnabled = await safe(
+      this.pointsConfig.isEnabled(),
+      'points-enabled',
+      false,
+    );
     const [
       user,
       profile,
@@ -182,6 +192,7 @@ export class DashboardService {
         this.prisma.applicationTimeline.findMany({
           where: {
             userId,
+            applicationYear: { gte: applicationYear },
             status: {
               notIn: [
                 'SUBMITTED',
@@ -204,15 +215,17 @@ export class DashboardService {
       ),
 
       // 最近积分变动
-      safe(
-        this.prisma.pointHistory.findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-        }),
-        'point-history',
-        [],
-      ),
+      pointsEnabled
+        ? safe(
+            this.prisma.pointHistory.findMany({
+              where: { userId },
+              orderBy: { createdAt: 'desc' },
+              take: 5,
+            }),
+            'point-history',
+            [],
+          )
+        : Promise.resolve([]),
 
       // 选校清单总数
       safe(
@@ -235,7 +248,10 @@ export class DashboardService {
       // 待办任务（未完成的 ApplicationTask）
       safe(
         this.prisma.applicationTask.count({
-          where: { timeline: { userId }, completed: false },
+          where: {
+            timeline: { userId, applicationYear: { gte: applicationYear } },
+            completed: false,
+          },
         }),
         'pending-task-count',
         0,
@@ -245,7 +261,10 @@ export class DashboardService {
       safe(
         this.prisma.applicationTask.groupBy({
           by: ['type'],
-          where: { timeline: { userId }, completed: false },
+          where: {
+            timeline: { userId, applicationYear: { gte: applicationYear } },
+            completed: false,
+          },
           _count: { type: true },
         }),
         'pending-task-types',
@@ -256,7 +275,7 @@ export class DashboardService {
       safe(
         this.prisma.applicationTask.count({
           where: {
-            timeline: { userId },
+            timeline: { userId, applicationYear: { gte: applicationYear } },
             completed: false,
             dueDate: { gte: startOfToday, lt: startOfTomorrow },
           },
@@ -318,7 +337,10 @@ export class DashboardService {
       // 首页优先级队列：最临近的未完成申请任务
       safe(
         this.prisma.applicationTask.findMany({
-          where: { timeline: { userId }, completed: false },
+          where: {
+            timeline: { userId, applicationYear: { gte: applicationYear } },
+            completed: false,
+          },
           orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
           take: 8,
           select: {
@@ -343,7 +365,7 @@ export class DashboardService {
       safe(
         this.prisma.applicationTask.count({
           where: {
-            timeline: { userId },
+            timeline: { userId, applicationYear: { gte: applicationYear } },
             completed: false,
             dueDate: { lt: now },
           },
@@ -356,6 +378,7 @@ export class DashboardService {
         this.prisma.applicationTimeline.findMany({
           where: {
             userId,
+            applicationYear: { gte: applicationYear },
             status: {
               notIn: [
                 'SUBMITTED',
@@ -378,7 +401,7 @@ export class DashboardService {
       safe(
         this.prisma.applicationTimeline.groupBy({
           by: ['status'],
-          where: { userId },
+          where: { userId, applicationYear: { gte: applicationYear } },
           _count: { status: true },
         }),
         'pipeline-groups',
@@ -393,6 +416,7 @@ export class DashboardService {
         this.prisma.applicationTimeline.findMany({
           where: {
             userId,
+            applicationYear: { gte: applicationYear },
             status: {
               in: [
                 'SUBMITTED',
@@ -561,9 +585,8 @@ export class DashboardService {
           new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
       )
       .slice(0, 10);
-
     const upcomingPersonalEvents = personalEvents.map((ev) => {
-      const date = ev.deadline ?? ev.eventDate!;
+      const date = getPersonalActionDate(ev, now)!;
       const daysLeft = Math.ceil(
         (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       );
@@ -682,7 +705,7 @@ export class DashboardService {
       user: {
         email: user?.email || '',
         role: user?.role || 'USER',
-        points: user?.points || 0,
+        points: pointsEnabled ? user?.points || 0 : 0,
         createdAt: user?.createdAt.toISOString() || '',
         nickname: profile?.nickname || undefined,
       },

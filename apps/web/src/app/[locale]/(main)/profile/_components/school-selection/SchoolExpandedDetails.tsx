@@ -107,7 +107,7 @@ export const SchoolExpandedDetails = memo(function SchoolExpandedDetails({
                             <TooltipTrigger asChild>
                               <span
                                 className={cn(
-                                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-help',
+                                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs font-medium cursor-help',
                                   format
                                     ? INTERVIEW_FORMAT_STYLES[format] ||
                                         INTERVIEW_FORMAT_STYLES.ALUMNI
@@ -213,7 +213,7 @@ export const SchoolExpandedDetails = memo(function SchoolExpandedDetails({
                     href={`https://collegescorecard.ed.gov/school/?${school.scorecardId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                    className="inline-flex items-center gap-1 text-2xs text-muted-foreground hover:text-primary transition-colors"
                   >
                     <ExternalLink className="h-2.5 w-2.5" />
                     College Scorecard
@@ -224,7 +224,7 @@ export const SchoolExpandedDetails = memo(function SchoolExpandedDetails({
                     href={`https://nces.ed.gov/ipeds/datacenter/institutionprofile.aspx?unitId=${school.ipedsId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                    className="inline-flex items-center gap-1 text-2xs text-muted-foreground hover:text-primary transition-colors"
                   >
                     <ExternalLink className="h-2.5 w-2.5" />
                     IPEDS

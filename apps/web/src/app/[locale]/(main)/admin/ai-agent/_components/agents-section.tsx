@@ -65,7 +65,7 @@ export function AgentsSection() {
           <div className="flex items-center gap-3">
             <Zap className="h-5 w-5" />
             <div>
-              <CardTitle className="text-base">{t('agentsTitle')}</CardTitle>
+              <CardTitle className="text-body">{t('agentsTitle')}</CardTitle>
               <CardDescription className="mt-1">{t('agentsDesc')}</CardDescription>
             </div>
           </div>

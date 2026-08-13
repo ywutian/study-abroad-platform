@@ -4,7 +4,11 @@ import {
   PaginationDto,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
-import { VerifiedRankingQueryDto, VerifiedRankingResponseDto } from './dto';
+import {
+  CreateUserListDto,
+  VerifiedRankingQueryDto,
+  VerifiedRankingResponseDto,
+} from './dto';
 import { HallRankingService } from './hall-ranking.service';
 import { HallListService } from './hall-list.service';
 import { HallVerifiedService } from './hall-verified.service';
@@ -46,11 +50,15 @@ export class HallService {
   // Lists
   // ============================================
 
-  createList(userId: string, data: any): Promise<UserList> {
+  createList(userId: string, data: CreateUserListDto): Promise<UserList> {
     return this.lists.createList(userId, data);
   }
 
-  updateList(listId: string, userId: string, data: any): Promise<UserList> {
+  updateList(
+    listId: string,
+    userId: string,
+    data: Partial<CreateUserListDto>,
+  ): Promise<UserList> {
     return this.lists.updateList(listId, userId, data);
   }
 

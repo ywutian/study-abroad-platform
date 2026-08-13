@@ -41,6 +41,7 @@ describe('AuthService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
+    points: 120,
   };
 
   beforeEach(async () => {
@@ -159,6 +160,7 @@ describe('AuthService', () => {
       });
 
       expect(result.user.email).toBe('test@example.com');
+      expect(result.user).not.toHaveProperty('points');
       expect(result.message).toContain('Registration successful');
       expect(emailService.sendVerificationEmail).toHaveBeenCalled();
     });
@@ -205,6 +207,7 @@ describe('AuthService', () => {
       });
 
       expect(result.user.email).toBe('test@example.com');
+      expect(result.user).not.toHaveProperty('points');
       expect(result.tokens.accessToken).toBe('mock_access_token');
     });
 

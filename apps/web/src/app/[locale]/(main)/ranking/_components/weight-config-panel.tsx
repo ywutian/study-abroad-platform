@@ -135,7 +135,7 @@ export function WeightConfigPanel({
               <Lightbulb className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-lg">{t('ranking.weights')}</CardTitle>
+              <CardTitle className="">{t('ranking.weights')}</CardTitle>
               <CardDescription>{t('ranking.weightsDesc')}</CardDescription>
             </div>
           </div>
@@ -217,7 +217,7 @@ export function WeightConfigPanel({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-body flex items-center gap-2">
             <Save className="h-4 w-4 text-muted-foreground" />
             {t('ranking.saveRanking')}
           </CardTitle>

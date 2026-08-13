@@ -43,7 +43,11 @@ export function HowItWorks() {
           ) : null}
         </motion.div>
 
-        <ol className="relative mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+        {/* Desktop connector lines deliberately extend through the grid gap. */}
+        <ol
+          className="relative mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-6"
+          data-allow-overflow-x
+        >
           {home.how.steps.map((step, index) => {
             const Icon = workflowIcons[index] ?? CircleCheckBig;
             const isPreview = index === home.how.steps.length - 1;

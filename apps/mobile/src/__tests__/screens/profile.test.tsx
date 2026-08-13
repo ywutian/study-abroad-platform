@@ -17,51 +17,64 @@ jest.mock('@/lib/api/client', () => ({
 }));
 
 jest.mock('@/components/ui', () => {
-  const React = require('react');
   const { Text, TouchableOpacity, View } = require('react-native');
   return {
-    Button: ({ children, onPress }: any) => (
+    Button: ({ children, onPress }: { children?: React.ReactNode; onPress?: () => void }) => (
       <TouchableOpacity onPress={onPress}>
         <Text>{children}</Text>
       </TouchableOpacity>
     ),
-    Avatar: ({ name }: any) => <Text>{name}</Text>,
-    Badge: ({ children }: any) => <Text>{children}</Text>,
+    Avatar: ({ name }: { name?: string }) => <Text>{name}</Text>,
+    Badge: ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>,
     Loading: () => <Text>Loading</Text>,
-    EmptyState: ({ title, description }: any) => (
+    EmptyState: ({ title, description }: { title?: string; description?: string }) => (
       <View>
         <Text>{title}</Text>
         <Text>{description}</Text>
       </View>
     ),
     ConfirmDialog: () => null,
-    Card: ({ children, onPress, accessibilityLabel }: any) => (
+    Card: ({
+      children,
+      onPress,
+      accessibilityLabel,
+    }: {
+      children?: React.ReactNode;
+      onPress?: () => void;
+      accessibilityLabel?: string;
+    }) => (
       <TouchableOpacity onPress={onPress} accessibilityLabel={accessibilityLabel}>
         <View>{children}</View>
       </TouchableOpacity>
     ),
-    CardContent: ({ children }: any) => <View>{children}</View>,
-    CardHeader: ({ children }: any) => <View>{children}</View>,
-    CardTitle: ({ children }: any) => <Text>{children}</Text>,
+    CardContent: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
+    CardHeader: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
+    CardTitle: ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>,
   };
 });
 
 jest.mock('@/components/ui/ListItem', () => {
-  const React = require('react');
   const { Text, TouchableOpacity, View } = require('react-native');
   return {
-    ListItem: ({ title, onPress, rightElement }: any) => (
+    ListItem: ({
+      title,
+      onPress,
+      rightElement,
+    }: {
+      title?: string;
+      onPress?: () => void;
+      rightElement?: React.ReactNode;
+    }) => (
       <TouchableOpacity onPress={onPress}>
         <Text>{title}</Text>
         {rightElement}
       </TouchableOpacity>
     ),
-    ListGroup: ({ children }: any) => <View>{children}</View>,
+    ListGroup: ({ children }: { children?: React.ReactNode }) => <View>{children}</View>,
   };
 });
 
 jest.mock('@/components/ui/Progress', () => {
-  const React = require('react');
   const { Text } = require('react-native');
   return {
     CircularProgress: () => <Text>CircularProgress</Text>,

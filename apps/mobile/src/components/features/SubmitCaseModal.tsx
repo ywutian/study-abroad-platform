@@ -2,22 +2,23 @@
  * Submit Case Modal - Multi-step form for submitting admission cases
  */
 
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import debounce from 'lodash.debounce';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import * as Haptics from 'expo-haptics';
-import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
-import type { School, CaseResult, PaginatedResponse } from '@/types';
+import type { CaseResult, PaginatedResponse, School } from '@/types';
+import { useColors } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
+import * as Haptics from 'expo-haptics';
+import { styles } from './SubmitCaseModal.styles';
 
 interface SubmitCaseModalProps {
   visible: boolean;
@@ -533,80 +534,3 @@ export function SubmitCaseModal({ visible, onClose, onSuccess }: SubmitCaseModal
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  stepIndicator: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  stepDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  stepDotActive: {
-    width: 24,
-    borderRadius: 4,
-  },
-  stepContent: {
-    paddingBottom: spacing.lg,
-  },
-  stepTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.lg,
-  },
-  schoolSearchContainer: {
-    position: 'relative',
-    zIndex: 10,
-  },
-  schoolDropdown: {
-    position: 'absolute',
-    top: 80,
-    left: 0,
-    right: 0,
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
-    maxHeight: 200,
-    zIndex: 20,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  schoolOption: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  schoolOptionName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-  },
-  schoolOptionNameZh: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  noSchoolResults: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-    paddingVertical: spacing.md,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  halfInput: {
-    flex: 1,
-  },
-  footerRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  footerButton: {
-    flex: 1,
-  },
-});

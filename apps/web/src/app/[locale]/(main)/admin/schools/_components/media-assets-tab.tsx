@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isSafeUrl } from '@/lib/utils/url';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { Check, ImageIcon, Loader2, RefreshCw, RotateCcw, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { schoolRoutes } from '@study-abroad/shared';
@@ -154,7 +155,7 @@ export function MediaAssetsTab() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t('coverage.approvedCovers')}</CardTitle>
+            <CardTitle className="text-body-sm">{t('coverage.approvedCovers')}</CardTitle>
             <CardDescription>{t('coverage.approvedCoversDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
@@ -163,7 +164,7 @@ export function MediaAssetsTab() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t('coverage.pendingReview')}</CardTitle>
+            <CardTitle className="text-body-sm">{t('coverage.pendingReview')}</CardTitle>
             <CardDescription>{t('coverage.pendingReviewDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
@@ -172,7 +173,7 @@ export function MediaAssetsTab() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t('coverage.candidates')}</CardTitle>
+            <CardTitle className="text-body-sm">{t('coverage.candidates')}</CardTitle>
             <CardDescription>{t('coverage.candidatesDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
@@ -181,7 +182,7 @@ export function MediaAssetsTab() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t('coverage.missingCovers')}</CardTitle>
+            <CardTitle className="text-body-sm">{t('coverage.missingCovers')}</CardTitle>
             <CardDescription>{t('coverage.missingCoversDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
@@ -227,9 +228,12 @@ export function MediaAssetsTab() {
                   <TableRow key={asset.id}>
                     <TableCell>
                       {previewUrl ? (
-                        <img
+                        <Image
                           src={previewUrl}
                           alt={asset.school.name}
+                          width={96}
+                          height={56}
+                          unoptimized
                           className="h-14 w-24 rounded-md object-cover"
                         />
                       ) : (

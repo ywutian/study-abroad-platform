@@ -6,6 +6,12 @@ import * as bcrypt from 'bcrypt';
 const KEY_PREFIX = 'mcp_';
 const KEY_BYTES = 32;
 const BCRYPT_ROUNDS = 10;
+const MCP_KEY_USER_SELECT = {
+  id: true,
+  role: true,
+  isBanned: true,
+  deletedAt: true,
+} as const;
 
 export interface McpKeyInfo {
   keyId: string;
@@ -76,7 +82,7 @@ export class McpApiKeyService {
       },
       include: {
         user: {
-          select: { id: true, role: true, isBanned: true, deletedAt: true },
+          select: MCP_KEY_USER_SELECT,
         },
       },
     });
@@ -119,7 +125,7 @@ export class McpApiKeyService {
       where: { keyPrefix: prefix },
       include: {
         user: {
-          select: { id: true, role: true, isBanned: true, deletedAt: true },
+          select: MCP_KEY_USER_SELECT,
         },
       },
     });

@@ -1,25 +1,25 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
   Optional,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { MemoryType, Prisma } from '@prisma/client';
+import { ERR } from '../../common/constants/error-messages';
+import { caseVisibilityWhereForRole } from '../../common/constants/prisma-selects';
 import { fireAndForget } from '../../common/utils/async.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import { Prisma, Visibility, MemoryType } from '@prisma/client';
-import { caseVisibilityWhereForRole } from '../../common/constants/prisma-selects';
-import { ERR } from '../../common/constants/error-messages';
+import { PrismaService } from '../../prisma/prisma.service';
+import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import {
   SwipeActionDto,
+  SwipeBatchResultDto,
   SwipeCaseDto,
+  SwipePrediction,
   SwipeResultDto,
   SwipeStatsDto,
-  SwipeBatchResultDto,
-  SwipePrediction,
 } from './swipe-dto';
-import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 // Prisma include 类型定义 — 含学校 + 用户档案 (活动、奖项、成绩)
 /**

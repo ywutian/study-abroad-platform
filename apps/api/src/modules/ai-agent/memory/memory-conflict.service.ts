@@ -9,10 +9,10 @@
  */
 
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { MemoryType } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -689,7 +689,11 @@ export class MemoryConflictService {
     switch (action) {
       case 'keep_new': {
         // Remove pending flag, keep this memory's content
-        const { pendingConflict, conflictWith, ...cleanMetadata } = metadata;
+        const {
+          pendingConflict: _pendingConflict,
+          conflictWith: _conflictWith,
+          ...cleanMetadata
+        } = metadata;
         // governance: admin-scope — admin conflict resolution (endpoint @Roles(ADMIN))
         await this.prisma.memory.update({
           where: { id: memoryId },
@@ -724,7 +728,11 @@ export class MemoryConflictService {
           );
         }
         // Update via PersistentMemoryService to trigger embedding re-computation
-        const { pendingConflict, conflictWith, ...cleanMetadata } = metadata;
+        const {
+          pendingConflict: _pendingConflict,
+          conflictWith: _conflictWith,
+          ...cleanMetadata
+        } = metadata;
         await this.persistent.updateMemory(memoryId, {
           content: mergedContent,
           metadata: {

@@ -59,11 +59,11 @@ export function SectionTab({ sectionFeedback, onApplySuggestion }: SectionTabPro
             <AccordionTrigger className="py-3 text-sm hover:no-underline">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{sf.sectionTitle}</span>
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-2xs">
                   {sf.issues.length} {t('issues')}
                 </Badge>
                 {highCount > 0 && (
-                  <Badge variant="destructive" className="text-[10px]">
+                  <Badge variant="destructive" className="text-2xs">
                     {highCount} {t('severity.high')}
                   </Badge>
                 )}

@@ -29,7 +29,7 @@ export function VaultSidebar({
       {/* Type Filter */}
       <Card className="bg-card border-border backdrop-blur-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-foreground text-lg flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Folder className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
             {t('categories')}
           </CardTitle>
@@ -68,7 +68,7 @@ export function VaultSidebar({
       {stats && stats.categories.length > 0 && (
         <Card className="bg-card border-border backdrop-blur-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-foreground text-lg flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <Tag className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
               {t('categories')}
             </CardTitle>

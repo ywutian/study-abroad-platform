@@ -188,7 +188,7 @@ async function callLlm(
   content: string,
   model: string,
 ): Promise<LlmExtracted> {
-  const { callLlm: unifiedCall } = await import('./lib/llm-call');
+  const { callLlm: unifiedCall } = await import('./lib/llm-call.js');
 
   const userPrompt = `Extract Common Data Set data from this HTML page for ${schoolName}.
 

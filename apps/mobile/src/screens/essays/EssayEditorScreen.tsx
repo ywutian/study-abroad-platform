@@ -2,42 +2,42 @@
  * Essay Editor with 6 AI tools
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams } from 'expo-router';
 import type { ComponentProps } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  Clipboard,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
-  Clipboard,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { router, useLocalSearchParams } from 'expo-router';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 
-import { AnimatedButton, Loading, Modal, Badge } from '@/components/ui';
+import { AnimatedButton, Loading, Modal } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  withOpacity,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-} from '@/utils/theme';
-import { AI_REQUEST_TIMEOUT_MS, essayAiRoutes, profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
+import { spacing, useColors, withOpacity } from '@/utils/theme';
+import { AI_REQUEST_TIMEOUT_MS, essayAiRoutes, profileRoutes } from '@study-abroad/shared';
+import {
+  BrainstormResult,
+  ContinueResult,
+  OpeningResult,
+  PolishResult,
+  ReviewResult,
+  RewriteResult,
+} from './EssayEditorResults';
+import { styles } from './EssayEditorScreen.styles';
 
 interface Essay {
   id: string;
@@ -52,32 +52,32 @@ interface Essay {
   updatedAt: string;
 }
 
-interface AIReviewResult {
+export interface AIReviewResult {
   overallScore: number;
   scores: { category: string; score: number; feedback: string }[];
   suggestions: string[];
   summary: string;
 }
 
-interface AIPolishResult {
+export interface AIPolishResult {
   polished: string;
   changes: { original: string; revised: string; reason: string }[];
 }
 
-interface AIBrainstormResult {
+export interface AIBrainstormResult {
   ideas: { title: string; description: string }[];
 }
 
-interface AIContinueResult {
+export interface AIContinueResult {
   continuation: string;
   suggestions: string[];
 }
 
-interface AIOpeningResult {
+export interface AIOpeningResult {
   openings: { style: string; content: string }[];
 }
 
-interface AIRewriteResult {
+export interface AIRewriteResult {
   versions: { style: string; content: string }[];
 }
 
@@ -142,19 +142,6 @@ export default function EssayEditorScreen() {
   // Word count
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
 
-  // Auto-save
-  const triggerAutoSave = useCallback(
-    (newContent: string) => {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-      autoSaveTimer.current = setTimeout(() => {
-        if (!isNew && id) {
-          saveMutation.mutate({ title, content: newContent });
-        }
-      }, 2000);
-    },
-    [id, isNew, title]
-  );
-
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: (data: { title: string; content: string }) => {
@@ -176,6 +163,20 @@ export default function EssayEditorScreen() {
       toast.show({ type: 'error', message: t('essayEditor.saveFailed') });
     },
   });
+
+  // Auto-save is declared after the mutation so the closure always sees the
+  // current mutation object and the latest title.
+  const triggerAutoSave = useCallback(
+    (newContent: string) => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      autoSaveTimer.current = setTimeout(() => {
+        if (!isNew && id) {
+          saveMutation.mutate({ title, content: newContent });
+        }
+      }, 2000);
+    },
+    [id, isNew, saveMutation, title]
+  );
 
   // AI mutations
   const reviewMutation = useMutation({
@@ -391,7 +392,10 @@ export default function EssayEditorScreen() {
       <ScrollView
         style={styles.editorScroll}
         keyboardDismissMode="interactive"
-        contentContainerStyle={{ paddingBottom: keyboardVisible ? 120 : insets.bottom + 80 }}
+        contentContainerStyle={[
+          styles.editorContent,
+          keyboardVisible ? styles.editorContentKeyboard : { paddingBottom: insets.bottom + 80 },
+        ]}
       >
         <TextInput
           ref={contentInputRef}
@@ -453,8 +457,8 @@ export default function EssayEditorScreen() {
                   {
                     backgroundColor: withOpacity(toolColor, 0.125),
                     borderColor: withOpacity(toolColor, 0.19),
-                    opacity: isAnyAILoading && !isLoading ? 0.5 : 1,
                   },
+                  isAnyAILoading && !isLoading && styles.dimmedTool,
                 ]}
               >
                 <Ionicons
@@ -626,492 +630,3 @@ export default function EssayEditorScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-// Sub-components for AI results
-
-function ReviewResult({
-  result,
-  colors,
-  t,
-}: {
-  result: AIReviewResult;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
-}) {
-  return (
-    <ScrollView style={styles.resultContainer}>
-      {/* Overall Score */}
-      <View
-        style={[
-          styles.scoreCard,
-          { backgroundColor: withOpacity(colors.primary, 0.1), borderColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.scoreValue, { color: colors.primary }]}>{result.overallScore}</Text>
-        <Text style={[styles.scoreLabel, { color: colors.foregroundMuted }]}>
-          {t('essayEditor.overallScore')}
-        </Text>
-      </View>
-
-      {/* Category Scores */}
-      {result.scores?.map((score, i) => (
-        <View key={i} style={[styles.categoryRow, { borderBottomColor: colors.border }]}>
-          <View style={styles.categoryInfo}>
-            <Text style={[styles.categoryName, { color: colors.foreground }]}>
-              {score.category}
-            </Text>
-            <Text style={[styles.categoryFeedback, { color: colors.foregroundMuted }]}>
-              {score.feedback}
-            </Text>
-          </View>
-          <Badge variant={score.score >= 8 ? 'success' : score.score >= 6 ? 'warning' : 'error'}>
-            {String(score.score)}/10
-          </Badge>
-        </View>
-      ))}
-
-      {/* Summary */}
-      {result.summary && (
-        <View style={styles.summarySection}>
-          <Text style={[styles.summaryTitle, { color: colors.foreground }]}>
-            {t('essayEditor.summary')}
-          </Text>
-          <Text style={[styles.summaryText, { color: colors.foregroundMuted }]}>
-            {result.summary}
-          </Text>
-        </View>
-      )}
-
-      {/* Suggestions */}
-      {result.suggestions?.length > 0 && (
-        <View style={styles.suggestionsSection}>
-          <Text style={[styles.suggestionsTitle, { color: colors.foreground }]}>
-            {t('essayEditor.suggestions')}
-          </Text>
-          {result.suggestions.map((suggestion, i) => (
-            <View key={i} style={styles.suggestionRow}>
-              <Ionicons name="bulb-outline" size={16} color={colors.warning} />
-              <Text style={[styles.suggestionText, { color: colors.foregroundMuted }]}>
-                {suggestion}
-              </Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </ScrollView>
-  );
-}
-
-function PolishResult({
-  result,
-  colors,
-  t,
-  onApply,
-  onCopy,
-}: {
-  result: AIPolishResult;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
-  onApply: () => void;
-  onCopy: () => void;
-}) {
-  return (
-    <ScrollView style={styles.resultContainer}>
-      {/* Changes */}
-      {result.changes?.map((change, i) => (
-        <View
-          key={i}
-          style={[styles.changeCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          <Text
-            style={[
-              styles.changeOriginal,
-              { color: colors.error, backgroundColor: withOpacity(colors.error, 0.1) },
-            ]}
-          >
-            {change.original}
-          </Text>
-          <Ionicons
-            name="arrow-down"
-            size={16}
-            color={colors.foregroundMuted}
-            style={styles.changeArrow}
-          />
-          <Text
-            style={[
-              styles.changeRevised,
-              { color: colors.success, backgroundColor: withOpacity(colors.success, 0.1) },
-            ]}
-          >
-            {change.revised}
-          </Text>
-          <Text style={[styles.changeReason, { color: colors.foregroundMuted }]}>
-            {change.reason}
-          </Text>
-        </View>
-      ))}
-
-      <View style={styles.resultActions}>
-        <AnimatedButton onPress={onApply} style={styles.resultActionBtn}>
-          {t('essayEditor.applyChanges')}
-        </AnimatedButton>
-        <AnimatedButton onPress={onCopy} variant="outline" style={styles.resultActionBtn}>
-          {t('essayEditor.copy')}
-        </AnimatedButton>
-      </View>
-    </ScrollView>
-  );
-}
-
-function BrainstormResult({
-  result,
-  colors,
-  t,
-  onCopy,
-}: {
-  result: AIBrainstormResult;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
-  onCopy: (text: string) => void;
-}) {
-  return (
-    <ScrollView style={styles.resultContainer}>
-      {result.ideas?.map((idea, i) => (
-        <TouchableOpacity
-          key={i}
-          onPress={() => onCopy(idea.description)}
-          accessibilityRole="button"
-          accessibilityLabel={`${idea.title} — ${t('essayEditor.tapToCopy')}`}
-          style={[styles.ideaCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          <View style={styles.ideaHeader}>
-            <Ionicons name="bulb" size={18} color={colors.warning} />
-            <Text style={[styles.ideaTitle, { color: colors.foreground }]}>{idea.title}</Text>
-          </View>
-          <Text style={[styles.ideaDesc, { color: colors.foregroundMuted }]}>
-            {idea.description}
-          </Text>
-          <Text style={[styles.tapToCopy, { color: colors.primary }]}>
-            {t('essayEditor.tapToCopy')}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  );
-}
-
-function ContinueResult({
-  result,
-  colors,
-  t,
-  onAppend,
-  onCopy,
-}: {
-  result: AIContinueResult;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
-  onAppend: () => void;
-  onCopy: () => void;
-}) {
-  return (
-    <ScrollView style={styles.resultContainer}>
-      <Text
-        style={[
-          styles.continuationText,
-          { color: colors.foreground, backgroundColor: withOpacity(colors.primary, 0.05) },
-        ]}
-      >
-        {result.continuation}
-      </Text>
-      {result.suggestions?.length > 0 && (
-        <View style={styles.suggestionsSection}>
-          <Text style={[styles.suggestionsTitle, { color: colors.foreground }]}>
-            {t('essayEditor.suggestions')}
-          </Text>
-          {result.suggestions.map((s, i) => (
-            <Text key={i} style={[styles.suggestionText, { color: colors.foregroundMuted }]}>
-              • {s}
-            </Text>
-          ))}
-        </View>
-      )}
-      <View style={styles.resultActions}>
-        <AnimatedButton onPress={onAppend} style={styles.resultActionBtn}>
-          {t('essayEditor.appendToEssay')}
-        </AnimatedButton>
-        <AnimatedButton onPress={onCopy} variant="outline" style={styles.resultActionBtn}>
-          {t('essayEditor.copy')}
-        </AnimatedButton>
-      </View>
-    </ScrollView>
-  );
-}
-
-function OpeningResult({
-  result,
-  colors,
-  t,
-  onApply,
-  onCopy,
-}: {
-  result: AIOpeningResult;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
-  onApply: (text: string) => void;
-  onCopy: (text: string) => void;
-}) {
-  return (
-    <ScrollView style={styles.resultContainer}>
-      {result.openings?.map((opening, i) => (
-        <View
-          key={i}
-          style={[styles.openingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          <Badge variant="secondary">{opening.style}</Badge>
-          <Text style={[styles.openingText, { color: colors.foreground }]}>{opening.content}</Text>
-          <View style={styles.openingActions}>
-            <TouchableOpacity
-              onPress={() => onApply(opening.content)}
-              accessibilityRole="button"
-              accessibilityLabel={t('essayEditor.use')}
-              hitSlop={8}
-              style={[styles.smallAction, { backgroundColor: withOpacity(colors.primary, 0.125) }]}
-            >
-              <Ionicons name="checkmark" size={16} color={colors.primary} />
-              <Text style={[styles.smallActionText, { color: colors.primary }]}>
-                {t('essayEditor.use')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onCopy(opening.content)}
-              accessibilityRole="button"
-              accessibilityLabel={t('essayEditor.copy')}
-              hitSlop={8}
-              style={[
-                styles.smallAction,
-                { backgroundColor: withOpacity(colors.foregroundMuted, 0.125) },
-              ]}
-            >
-              <Ionicons name="copy" size={16} color={colors.foregroundMuted} />
-              <Text style={[styles.smallActionText, { color: colors.foregroundMuted }]}>
-                {t('essayEditor.copy')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
-
-function RewriteResult({
-  result,
-  colors,
-  t,
-  onApply,
-  onCopy,
-}: {
-  result: AIRewriteResult;
-  colors: ReturnType<typeof useColors>;
-  t: ReturnType<typeof useTranslation>['t'];
-  onApply: (text: string) => void;
-  onCopy: (text: string) => void;
-}) {
-  return (
-    <ScrollView style={styles.resultContainer}>
-      {result.versions?.map((version, i) => (
-        <View
-          key={i}
-          style={[styles.openingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          <Badge variant="default">{version.style}</Badge>
-          <Text style={[styles.openingText, { color: colors.foreground }]}>{version.content}</Text>
-          <View style={styles.openingActions}>
-            <TouchableOpacity
-              onPress={() => onApply(version.content)}
-              accessibilityRole="button"
-              accessibilityLabel={t('essayEditor.use')}
-              hitSlop={8}
-              style={[styles.smallAction, { backgroundColor: withOpacity(colors.primary, 0.125) }]}
-            >
-              <Ionicons name="checkmark" size={16} color={colors.primary} />
-              <Text style={[styles.smallActionText, { color: colors.primary }]}>
-                {t('essayEditor.use')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onCopy(version.content)}
-              accessibilityRole="button"
-              accessibilityLabel={t('essayEditor.copy')}
-              hitSlop={8}
-              style={[
-                styles.smallAction,
-                { backgroundColor: withOpacity(colors.foregroundMuted, 0.125) },
-              ]}
-            >
-              <Ionicons name="copy" size={16} color={colors.foregroundMuted} />
-              <Text style={[styles.smallActionText, { color: colors.foregroundMuted }]}>
-                {t('essayEditor.copy')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: 1 },
-  titleInput: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, marginBottom: spacing.xs },
-  headerMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  wordCountText: { fontSize: fontSize.sm },
-  wordCountNum: { fontFamily: fontFamily.mono },
-  saveText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
-  editorScroll: { flex: 1 },
-  contentInput: {
-    flex: 1,
-    padding: spacing.lg,
-    fontSize: fontSize.base,
-    lineHeight: 26,
-    minHeight: 300,
-  },
-  aiToolbar: { borderTopWidth: 1, paddingTop: spacing.sm },
-  aiLoadingBar: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xs },
-  aiLoadingText: { fontSize: fontSize.xs, fontWeight: fontWeight.medium },
-  toolsRow: { paddingHorizontal: spacing.lg, gap: spacing.sm },
-  toolButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-  },
-  toolLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
-  resultContainer: { maxHeight: 500, paddingHorizontal: spacing.lg },
-  scoreCard: {
-    alignItems: 'center',
-    padding: spacing['2xl'],
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    marginBottom: spacing.lg,
-  },
-  scoreValue: { fontSize: 48, fontWeight: fontWeight.bold, fontFamily: fontFamily.mono },
-  scoreLabel: { fontSize: fontSize.sm, marginTop: spacing.xs },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-  },
-  categoryInfo: { flex: 1, marginRight: spacing.md },
-  categoryName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.xs,
-  },
-  categoryFeedback: { fontSize: fontSize.sm },
-  summarySection: { marginTop: spacing.lg },
-  summaryTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.sm,
-  },
-  summaryText: { fontSize: fontSize.sm, lineHeight: 22 },
-  suggestionsSection: { marginTop: spacing.lg },
-  suggestionsTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.sm,
-  },
-  suggestionRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-    alignItems: 'flex-start',
-  },
-  suggestionText: { flex: 1, fontSize: fontSize.sm, lineHeight: 20 },
-  changeCard: {
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-  },
-  changeOriginal: {
-    padding: spacing.sm,
-    borderRadius: borderRadius.sm,
-    fontSize: fontSize.sm,
-    overflow: 'hidden',
-  },
-  changeArrow: { alignSelf: 'center', marginVertical: spacing.xs },
-  changeRevised: {
-    padding: spacing.sm,
-    borderRadius: borderRadius.sm,
-    fontSize: fontSize.sm,
-    overflow: 'hidden',
-  },
-  changeReason: { fontSize: fontSize.xs, marginTop: spacing.sm, fontStyle: 'italic' },
-  resultActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  resultActionBtn: { flex: 1 },
-  ideaCard: {
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-  },
-  ideaHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  ideaTitle: { fontSize: fontSize.base, fontWeight: fontWeight.semibold },
-  ideaDesc: { fontSize: fontSize.sm, lineHeight: 20 },
-  tapToCopy: { fontSize: fontSize.xs, marginTop: spacing.sm },
-  continuationText: {
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    fontSize: fontSize.base,
-    lineHeight: 26,
-  },
-  rewriteInput: { paddingHorizontal: spacing.lg },
-  rewriteLabel: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.sm,
-  },
-  rewriteTextInput: {
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    fontSize: fontSize.base,
-    minHeight: 80,
-    marginBottom: spacing.md,
-  },
-  rewriteButton: { marginBottom: spacing.lg },
-  openingCard: {
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-  },
-  openingText: { fontSize: fontSize.sm, lineHeight: 22, marginVertical: spacing.sm },
-  openingActions: { flexDirection: 'row', gap: spacing.sm },
-  smallAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  smallActionText: { fontSize: fontSize.sm },
-});

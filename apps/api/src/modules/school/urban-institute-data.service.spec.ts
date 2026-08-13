@@ -4,6 +4,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolDataMerger } from './school-data-merger';
 import { AuditLogService } from '../../common/services/audit-log.service';
 
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
 describe('UrbanInstituteDataService', () => {
   let service: UrbanInstituteDataService;
 
@@ -22,6 +25,10 @@ describe('UrbanInstituteDataService', () => {
   };
 
   const mockMerger = {
+    merge: jest.fn().mockResolvedValue({
+      updatedFields: ['acceptanceRate'],
+      skippedFields: [],
+    }),
     mergeField: jest.fn(),
     mergeSchoolData: jest.fn().mockResolvedValue({ updated: true }),
   };
@@ -31,6 +38,9 @@ describe('UrbanInstituteDataService', () => {
   };
 
   beforeEach(async () => {
+    mockFetch.mockReset();
+    mockPrisma.school.findMany.mockReset();
+    mockPrisma.school.findUnique.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UrbanInstituteDataService,
@@ -49,5 +59,34 @@ describe('UrbanInstituteDataService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('targets requested schools by promoted IPEDS ids', async () => {
+    mockPrisma.school.findMany.mockResolvedValue([
+      { ipedsId: '166027' },
+      { ipedsId: null },
+      { ipedsId: '110635' },
+    ]);
+    mockPrisma.school.findUnique.mockResolvedValue({
+      id: 'school-a',
+      name: 'School A',
+    });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ results: [], next: null }),
+    });
+
+    await service.syncSchoolsByIds(['school-a', 'school-b', 'school-a'], 2023);
+
+    expect(mockPrisma.school.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ['school-a', 'school-b'] } },
+      select: { ipedsId: true },
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+    for (const [url] of mockFetch.mock.calls) {
+      const requestedUrl = new URL(String(url));
+      expect(requestedUrl.searchParams.get('unitid')).toBe('166027,110635');
+      expect(requestedUrl.searchParams.has('page')).toBe(false);
+    }
   });
 });

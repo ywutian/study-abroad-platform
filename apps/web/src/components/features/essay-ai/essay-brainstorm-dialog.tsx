@@ -160,7 +160,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
               {/* Overall Advice */}
               <Card className="bg-primary/10 border-primary/20">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="text-body-sm flex items-center gap-2">
                     <Lightbulb className="h-4 w-4 text-primary" />
                     {t('brainstorm.overallAdvice')}
                   </CardTitle>
@@ -176,7 +176,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
                   <Card key={idx} className="group hover:border-primary/50 transition-colors">
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-base flex items-center gap-2">
+                        <CardTitle className="text-body flex items-center gap-2">
                           <Badge variant="outline" className="shrink-0">
                             {idx + 1}
                           </Badge>

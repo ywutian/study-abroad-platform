@@ -80,13 +80,14 @@ function extractBalanced(
  * cause: the model returned prose. The fallback is now opt-in, so a caller
  * that wants it says so, and everyone else gets a `null` they must handle.
  */
-export function extractJsonFromLlm<T = any>(
+export function extractJsonFromLlm<T = unknown>(
   response: string,
   fallbackKey?: string,
 ): T | null {
   // 1. Try direct parse first
   try {
-    return JSON.parse(response);
+    const parsed: unknown = JSON.parse(response);
+    return parsed as T;
   } catch {
     // Not pure JSON, try extraction
   }
@@ -97,8 +98,8 @@ export function extractJsonFromLlm<T = any>(
       /```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/,
     );
     if (codeBlockMatch?.[1]) {
-      const parsed = JSON.parse(codeBlockMatch[1].trim());
-      return parsed;
+      const parsed: unknown = JSON.parse(codeBlockMatch[1].trim());
+      return parsed as T;
     }
   } catch {
     // Code block content wasn't valid JSON
@@ -108,7 +109,8 @@ export function extractJsonFromLlm<T = any>(
   try {
     const objectStr = extractBalanced(response, '{', '}');
     if (objectStr) {
-      return JSON.parse(objectStr);
+      const parsed: unknown = JSON.parse(objectStr);
+      return parsed as T;
     }
   } catch {
     // JSON object extraction failed
@@ -118,7 +120,8 @@ export function extractJsonFromLlm<T = any>(
   try {
     const arrayStr = extractBalanced(response, '[', ']');
     if (arrayStr) {
-      return JSON.parse(arrayStr);
+      const parsed: unknown = JSON.parse(arrayStr);
+      return parsed as T;
     }
   } catch {
     // Array extraction failed

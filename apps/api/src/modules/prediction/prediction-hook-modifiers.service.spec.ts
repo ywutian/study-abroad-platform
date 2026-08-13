@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  PredictionHookModifiersService,
-  HookShift,
-} from './prediction-hook-modifiers.service';
+import { adjustInLogOdds } from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  HookShift,
+  PredictionHookModifiersService,
+} from './prediction-hook-modifiers.service';
 import type { ProfileInput, SchoolInput } from './prediction.prompts';
-import { adjustInLogOdds, logit, invLogit } from '@study-abroad/shared/scoring';
 
 describe('PredictionHookModifiersService', () => {
   let service: PredictionHookModifiersService;
@@ -78,7 +78,7 @@ describe('PredictionHookModifiersService', () => {
         intlAcceptanceRate: 8,
       });
 
-      const result = await service.getBaseRate(school, makeProfile(), 'ED');
+      const result = service.getBaseRate(school, makeProfile(), 'ED');
 
       // ED rate (15%) should be selected, not overall (10%) or intl (8%)
       expect(result).toBeCloseTo(0.15, 2);
@@ -90,7 +90,7 @@ describe('PredictionHookModifiersService', () => {
         edAcceptanceRate: 12,
       });
 
-      const result = await service.getBaseRate(school, makeProfile(), 'SCEA');
+      const result = service.getBaseRate(school, makeProfile(), 'SCEA');
 
       expect(result).toBeCloseTo(0.12, 2);
     });
@@ -101,7 +101,7 @@ describe('PredictionHookModifiersService', () => {
         edAcceptanceRate: 14,
       });
 
-      const result = await service.getBaseRate(school, makeProfile(), 'REA');
+      const result = service.getBaseRate(school, makeProfile(), 'REA');
 
       expect(result).toBeCloseTo(0.14, 2);
     });
@@ -112,7 +112,7 @@ describe('PredictionHookModifiersService', () => {
         ed2AcceptanceRate: 18,
       });
 
-      const result = await service.getBaseRate(school, makeProfile(), 'ED2');
+      const result = service.getBaseRate(school, makeProfile(), 'ED2');
 
       expect(result).toBeCloseTo(0.18, 2);
     });
@@ -124,7 +124,7 @@ describe('PredictionHookModifiersService', () => {
       });
       const profile = makeProfile({ isInternational: true });
 
-      const result = await service.getBaseRate(school, profile, 'RD');
+      const result = service.getBaseRate(school, profile, 'RD');
 
       expect(result).toBeCloseTo(0.06, 2);
     });
@@ -132,7 +132,7 @@ describe('PredictionHookModifiersService', () => {
     it('should fall back to overall acceptanceRate when no specific rate available', async () => {
       const school = makeSchool({ acceptanceRate: 10 });
 
-      const result = await service.getBaseRate(school, makeProfile(), 'RD');
+      const result = service.getBaseRate(school, makeProfile(), 'RD');
 
       expect(result).toBeCloseTo(0.1, 2);
     });
@@ -140,7 +140,7 @@ describe('PredictionHookModifiersService', () => {
     it('should normalize rates stored as percentages (> 1)', async () => {
       const school = makeSchool({ acceptanceRate: 25 }); // 25% stored as 25
 
-      const result = await service.getBaseRate(school, makeProfile(), 'RD');
+      const result = service.getBaseRate(school, makeProfile(), 'RD');
 
       expect(result).toBeCloseTo(0.25, 2);
     });
@@ -157,7 +157,7 @@ describe('PredictionHookModifiersService', () => {
       });
       const profile = makeProfile({ nationality: 'CN' });
 
-      const result = await service.getBaseRate(school, profile, 'RD');
+      const result = service.getBaseRate(school, profile, 'RD');
 
       // Without Chinese adjustment: 0.03
       // With Chinese adjustment for ultra-selective: 0.03 * 0.4 = 0.012
@@ -174,7 +174,7 @@ describe('PredictionHookModifiersService', () => {
       });
       const profile = makeProfile({ nationality: 'CHN' });
 
-      const result = await service.getBaseRate(school, profile, 'RD');
+      const result = service.getBaseRate(school, profile, 'RD');
 
       expect(result).toBeLessThan(0.03);
     });
@@ -183,7 +183,7 @@ describe('PredictionHookModifiersService', () => {
       const school = makeSchool({ acceptanceRate: 5 });
       const profile = makeProfile({ nationality: 'US' });
 
-      const result = await service.getBaseRate(school, profile, 'RD');
+      const result = service.getBaseRate(school, profile, 'RD');
 
       expect(result).toBeCloseTo(0.05, 2);
     });
@@ -192,7 +192,7 @@ describe('PredictionHookModifiersService', () => {
       const school = makeSchool({ acceptanceRate: 10 });
 
       // competitiveness=5 => multiplier 0.30
-      const result = await service.getBaseRate(school, makeProfile(), 'RD', 5);
+      const result = service.getBaseRate(school, makeProfile(), 'RD', 5);
 
       // 0.10 * 0.30 = 0.03
       expect(result).toBeCloseTo(0.03, 2);
@@ -201,7 +201,7 @@ describe('PredictionHookModifiersService', () => {
     it('should not modify rate when major competitiveness is 3 (neutral)', async () => {
       const school = makeSchool({ acceptanceRate: 10 });
 
-      const result = await service.getBaseRate(school, makeProfile(), 'RD', 3);
+      const result = service.getBaseRate(school, makeProfile(), 'RD', 3);
 
       expect(result).toBeCloseTo(0.1, 2);
     });
@@ -209,7 +209,7 @@ describe('PredictionHookModifiersService', () => {
     it('should prefer program-specific rate over school rate × multiplier', async () => {
       const school = makeSchool({ acceptanceRate: 11 }); // UCB
       // UCB CS real rate is 6.45%, not 11% × 0.30 = 3.3%
-      const result = await service.getBaseRate(
+      const result = service.getBaseRate(
         school,
         makeProfile(),
         'RD',
@@ -225,7 +225,7 @@ describe('PredictionHookModifiersService', () => {
         acceptanceRate: 11,
         edAcceptanceRate: 18,
       });
-      const result = await service.getBaseRate(
+      const result = service.getBaseRate(
         school,
         makeProfile(),
         'ED',
@@ -238,7 +238,7 @@ describe('PredictionHookModifiersService', () => {
 
     it('should fall back to 5-band multiplier when programRate is undefined', async () => {
       const school = makeSchool({ acceptanceRate: 10 });
-      const result = await service.getBaseRate(
+      const result = service.getBaseRate(
         school,
         makeProfile(),
         'RD',
@@ -252,7 +252,7 @@ describe('PredictionHookModifiersService', () => {
     it('should handle program rates already in 0-1 range (decimal)', async () => {
       const school = makeSchool({ acceptanceRate: 11 });
       // Some callers may pass 0.0645 instead of 6.45
-      const result = await service.getBaseRate(
+      const result = service.getBaseRate(
         school,
         makeProfile(),
         'RD',
@@ -274,7 +274,7 @@ describe('PredictionHookModifiersService', () => {
       });
       const profile = makeProfile({ nationality: 'CN' });
 
-      const result = await service.getBaseRate(school, profile, 'RD', 5);
+      const result = service.getBaseRate(school, profile, 'RD', 5);
 
       // Even with extreme adjustments, should not go below 0.005
       expect(result).toBeGreaterThanOrEqual(0.005);
@@ -283,7 +283,7 @@ describe('PredictionHookModifiersService', () => {
     it('should clamp result to maximum 0.95', async () => {
       const school = makeSchool({ acceptanceRate: 99 });
 
-      const result = await service.getBaseRate(
+      const result = service.getBaseRate(
         school,
         makeProfile(),
         'RD',
@@ -301,7 +301,7 @@ describe('PredictionHookModifiersService', () => {
       });
       const profile = makeProfile({ isInternational: true });
 
-      const result = await service.getBaseRate(school, profile, 'ED');
+      const result = service.getBaseRate(school, profile, 'ED');
 
       // ED rate (20%) should take priority over intl rate (5%)
       expect(result).toBeCloseTo(0.2, 2);

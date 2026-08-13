@@ -206,7 +206,7 @@ function ConversationRail({
       <Card className="min-h-[300px] gap-0 py-0 xl:min-h-0">
         <CardHeader className="border-b px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-sm">{t('workspace.conversations.title')}</CardTitle>
+            <CardTitle className="text-body-sm">{t('workspace.conversations.title')}</CardTitle>
             <Button variant="ghost" size="icon-sm" onClick={onNewConversation}>
               <MessageSquarePlus className="h-4 w-4" />
               <span className="sr-only">{t('newConversation')}</span>
@@ -342,7 +342,7 @@ function TaskPanel({
   return (
     <Card className="gap-0 py-0">
       <CardHeader className="border-b px-4 py-3">
-        <CardTitle className="text-sm">{t('workspace.tasks.title')}</CardTitle>
+        <CardTitle className="text-body-sm">{t('workspace.tasks.title')}</CardTitle>
         <p className="text-xs leading-5 text-muted-foreground">{t('workspace.tasks.desc')}</p>
       </CardHeader>
       <CardContent className="space-y-3 p-4">
@@ -411,7 +411,7 @@ function AgentStatusPanel() {
     <Card className="gap-0 py-0">
       <CardHeader className="border-b px-4 py-3">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-sm">{t('workspace.status.title')}</CardTitle>
+          <CardTitle className="text-body-sm">{t('workspace.status.title')}</CardTitle>
           <Badge
             variant={isHealthy ? 'secondary' : 'destructive'}
             className="rounded-[var(--theme-radius-badge)]"

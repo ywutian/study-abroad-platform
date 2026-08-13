@@ -33,6 +33,11 @@ const WIKIMEDIA_SEARCH_LIMIT = 20;
 const WIKIMEDIA_CATEGORY_LIMIT = 20;
 const FETCH_TIMEOUT_MS = 12_000;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+/** Internal discovery candidate failure; callers aggregate these into diagnostics. */
+class SchoolMediaDiscoveryError extends Error {
+  override readonly name = 'SchoolMediaDiscoveryError';
+}
 const USER_AGENT =
   'Mozilla/5.0 (compatible; LumniEduSchoolMediaBot/1.0; +https://lumniedu.com)';
 const BROWSER_SAFE_IMAGE_MIMES = new Set([
@@ -895,7 +900,9 @@ export class SchoolMediaService {
     );
     const res = await this.fetchWithTimeout(pageUrl.toString());
     if (!res.ok) {
-      throw new Error(`Official site returned HTTP ${res.status}`);
+      throw new SchoolMediaDiscoveryError(
+        `Official site returned HTTP ${res.status}`,
+      );
     }
     const html = await res.text();
     const $ = load(html);
@@ -942,7 +949,9 @@ export class SchoolMediaService {
       }
     }
     if (urls.size > 0) {
-      throw new Error(rejections.join('; ') || 'No valid official image found');
+      throw new SchoolMediaDiscoveryError(
+        rejections.join('; ') || 'No valid official image found',
+      );
     }
     return null;
   }
@@ -1008,7 +1017,11 @@ export class SchoolMediaService {
       `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&${generator}` +
       `&${query}&prop=imageinfo&iiprop=url|mime|size|metadata|extmetadata`;
     const res = await this.fetchWithTimeout(url);
-    if (!res.ok) throw new Error(`Wikimedia returned HTTP ${res.status}`);
+    if (!res.ok) {
+      throw new SchoolMediaDiscoveryError(
+        `Wikimedia returned HTTP ${res.status}`,
+      );
+    }
     const data = (await res.json()) as {
       query?: { pages?: Record<string, WikimediaPage> };
     };
@@ -1086,34 +1099,42 @@ export class SchoolMediaService {
   ): Promise<ImageCandidate> {
     const parsed = new URL(imageUrl);
     if (parsed.protocol !== 'https:')
-      throw new Error('Image URL must be HTTPS');
+      throw new SchoolMediaDiscoveryError('Image URL must be HTTPS');
     if (
       officialWebsite &&
       !this.isAllowedOfficialImageHost(parsed.hostname, officialWebsite)
     ) {
-      throw new Error(
+      throw new SchoolMediaDiscoveryError(
         `Image host is not official or allowed CDN: ${parsed.hostname}`,
       );
     }
 
     const res = await this.fetchWithTimeout(parsed.toString());
-    if (!res.ok) throw new Error(`Image returned HTTP ${res.status}`);
+    if (!res.ok) {
+      throw new SchoolMediaDiscoveryError(`Image returned HTTP ${res.status}`);
+    }
     const contentType = res.headers.get('content-type');
     if (!contentType?.startsWith('image/')) {
-      throw new Error(`Unsupported content type: ${contentType ?? 'unknown'}`);
+      throw new SchoolMediaDiscoveryError(
+        `Unsupported content type: ${contentType ?? 'unknown'}`,
+      );
     }
     const arrayBuffer = await res.arrayBuffer();
     if (arrayBuffer.byteLength > MAX_IMAGE_BYTES) {
-      throw new Error('Image exceeds max bytes');
+      throw new SchoolMediaDiscoveryError('Image exceeds max bytes');
     }
     const buffer = Buffer.from(arrayBuffer);
     const probe = probeImage(buffer, contentType);
-    if (!probe) throw new Error('Could not read image dimensions');
+    if (!probe) {
+      throw new SchoolMediaDiscoveryError('Could not read image dimensions');
+    }
     if (probe.width < MIN_COVER_WIDTH || probe.height < MIN_COVER_HEIGHT) {
-      throw new Error(`Image too small: ${probe.width}x${probe.height}`);
+      throw new SchoolMediaDiscoveryError(
+        `Image too small: ${probe.width}x${probe.height}`,
+      );
     }
     if (isLogoLike(probe.width, probe.height)) {
-      throw new Error(
+      throw new SchoolMediaDiscoveryError(
         `Image looks square/logo-like: ${probe.width}x${probe.height}`,
       );
     }

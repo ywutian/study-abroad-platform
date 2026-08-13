@@ -2,47 +2,39 @@
  * Assessment Page - Personality assessments (MBTI, Holland, Major Match)
  * with questionnaire UI and results visualization.
  */
-import React, { useState, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  Platform,
-  UIManager,
-  LayoutAnimation,
-} from 'react-native';
-import { Stack, router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import Animated, { FadeInDown, FadeInUp, SlideInRight, SlideInLeft } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import {
   AnimatedButton,
   AnimatedCard,
-  CardContent,
   Badge,
+  CardContent,
   EmptyState,
   Loading,
   Progress,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
+import { fontFamily, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { API_ROUTES } from '@study-abroad/shared';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { Stack, router } from 'expo-router';
+import React, { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
+  LayoutAnimation,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  UIManager,
+  View,
+} from 'react-native';
+import Animated, { FadeInDown, FadeInUp, SlideInLeft, SlideInRight } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { S } from './assessment.styles';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -291,7 +283,7 @@ export default function AssessmentPage() {
           return (
             <Animated.View key={type} entering={FadeInUp.delay(idx * 100).springify()}>
               <AnimatedCard
-                style={[S.typeCard, { borderLeftColor: c, borderLeftWidth: 4 }]}
+                style={[S.typeCard, S.typeCardAccent, { borderLeftColor: c }]}
                 onPress={() => handleSelectType(type)}
                 accessibilityLabel={t(`assessment.types.${type}.title`, type)}
               >
@@ -378,12 +370,12 @@ export default function AssessmentPage() {
           height={4}
           color={tc}
           trackColor={colors.muted}
-          style={{ marginBottom: spacing.xl }}
+          style={S.quizProgress}
         />
         <Animated.View
           key={`q-${currentIndex}`}
           entering={Slide.duration(300).springify()}
-          style={{ minHeight: 280 }}
+          style={S.questionStage}
         >
           <Text style={[S.qNum, { color: tc, fontFamily: fontFamily.mono }]}>
             Q{currentIndex + 1}
@@ -402,20 +394,19 @@ export default function AssessmentPage() {
                     accessibilityLabel={loc(o.text, o.textZh)}
                     style={[
                       S.opt,
+                      sel ? S.selectedOption : S.defaultOption,
                       {
                         backgroundColor: sel ? withOpacity(tc, 0.125) : colors.card,
                         borderColor: sel ? tc : colors.border,
-                        borderWidth: sel ? 2 : 1,
                       },
                     ]}
                   >
                     <View
                       style={[
                         S.optDot,
-                        {
-                          backgroundColor: sel ? tc : 'transparent',
-                          borderColor: sel ? tc : colors.foregroundMuted,
-                        },
+                        sel
+                          ? { backgroundColor: tc, borderColor: tc }
+                          : { borderColor: colors.foregroundMuted },
                       ]}
                     >
                       {sel && (
@@ -520,22 +511,20 @@ export default function AssessmentPage() {
                   <View
                     style={[
                       S.dimFill,
+                      S.dimFillLeft,
                       {
                         width: `${lp}%`,
                         backgroundColor: dc,
-                        borderTopLeftRadius: 4,
-                        borderBottomLeftRadius: 4,
                       },
                     ]}
                   />
                   <View
                     style={[
                       S.dimFill,
+                      S.dimFillRight,
                       {
                         width: `${rp}%`,
                         backgroundColor: withOpacity(dc, 0.25),
-                        borderTopRightRadius: 4,
-                        borderBottomRightRadius: 4,
                       },
                     ]}
                   />
@@ -599,7 +588,7 @@ export default function AssessmentPage() {
                 <View style={[S.hKey, { backgroundColor: bc }]}>
                   <Text style={[S.hKeyTxt, { color: colors.primaryForeground }]}>{k}</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={S.flex}>
                   <Progress
                     value={pct}
                     max={100}
@@ -656,7 +645,7 @@ export default function AssessmentPage() {
           <Text style={[S.rHeaderTitle, { color: colors.foreground }]}>
             {t('assessment.result.title')}
           </Text>
-          <View style={{ width: 32 }} />
+          <View style={S.headerSpacer} />
         </View>
         {result.mbtiResult && renderMbti(result.mbtiResult)}
         {result.hollandResult && renderHolland(result.hollandResult)}
@@ -676,7 +665,7 @@ export default function AssessmentPage() {
             </Text>
           </View>
         )}
-        <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
+        <View style={S.resultActions}>
           <AnimatedButton
             onPress={() => result?.type && handleSelectType(result.type)}
             variant="outline"
@@ -722,7 +711,7 @@ export default function AssessmentPage() {
           <Text style={[S.title, { color: colors.foreground }]}>
             {t('assessment.history.title')}
           </Text>
-          <View style={{ width: 32 }} />
+          <View style={S.headerSpacer} />
         </View>
         {history.map((item, idx) => {
           const tc = TYPE_COLORS[item.type];
@@ -743,7 +732,7 @@ export default function AssessmentPage() {
                     <View style={[S.histIcon, { backgroundColor: withOpacity(tc, 0.125) }]}>
                       <Ionicons name={TYPE_ICONS[item.type]} size={22} color={tc} />
                     </View>
-                    <View style={{ flex: 1 }}>
+                    <View style={S.flex}>
                       <View style={S.histTop}>
                         <Badge variant={badgeVariant(item.type)}>{item.type}</Badge>
                         <Text style={[S.histSum, { color: tc, fontFamily: fontFamily.mono }]}>
@@ -819,167 +808,3 @@ export default function AssessmentPage() {
 }
 
 // ── Styles ───────────────────────────────────────────────
-const S = StyleSheet.create({
-  container: { flex: 1 },
-  navigationHeader: {
-    minHeight: 44,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  navigationBack: {
-    width: 56,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navigationTitle: {
-    height: 44,
-    textAlignVertical: 'center',
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    lineHeight: 44,
-  },
-  body: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  // Selection
-  title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, marginBottom: spacing.lg },
-  typeCard: { marginBottom: spacing.md },
-  typeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  typeIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  typeInfo: { flex: 1 },
-  typeTitle: { fontSize: fontSize.base, fontWeight: fontWeight.semibold, marginBottom: spacing.xs },
-  typeDesc: { fontSize: fontSize.sm, lineHeight: fontSize.sm * 1.5 },
-  fullBtn: { width: '100%', marginTop: spacing.lg },
-  // Quiz
-  quizHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  iconBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  progText: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
-  qNum: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, marginBottom: spacing.sm },
-  qText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    lineHeight: fontSize.lg * 1.5,
-    marginBottom: spacing.xl,
-  },
-  opt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    gap: spacing.md,
-  },
-  optDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optText: { flex: 1, fontSize: fontSize.base, lineHeight: fontSize.base * 1.4 },
-  navRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing.xl,
-    gap: spacing.md,
-  },
-  // Result
-  rHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  rHeaderTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
-  hero: {
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    padding: spacing['2xl'],
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  mbtiType: {
-    fontSize: fontSize['4xl'] + 8,
-    fontWeight: fontWeight.bold,
-    letterSpacing: 6,
-    marginBottom: spacing.sm,
-  },
-  hollandCode: {
-    fontSize: fontSize['4xl'],
-    fontWeight: fontWeight.bold,
-    letterSpacing: 4,
-    marginBottom: spacing.md,
-  },
-  hollandTypes: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
-  heroTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  heroDesc: { fontSize: fontSize.sm, textAlign: 'center', lineHeight: fontSize.sm * 1.6 },
-  // Dimensions
-  sec: { marginBottom: spacing.xl },
-  secLabel: { fontSize: fontSize.base, fontWeight: fontWeight.semibold, marginBottom: spacing.md },
-  dimLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xs },
-  dimLbl: { fontSize: fontSize.sm, fontWeight: fontWeight.bold },
-  dimTrack: { height: 10, borderRadius: 5, flexDirection: 'row', overflow: 'hidden' },
-  dimFill: { height: '100%' },
-  // Holland bars
-  hBar: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.sm },
-  hKey: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  hKeyTxt: { fontSize: fontSize.sm, fontWeight: fontWeight.bold },
-  hScore: { width: 32, fontSize: fontSize.sm, fontWeight: fontWeight.semibold, textAlign: 'right' },
-  // Chips
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-  },
-  chipTxt: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
-  // List
-  listRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  listText: { flex: 1, fontSize: fontSize.sm, lineHeight: fontSize.sm * 1.5 },
-  // History
-  histHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  histCard: { marginBottom: spacing.md },
-  histRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  histIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  histTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  histSum: { fontSize: fontSize.lg, fontWeight: fontWeight.bold },
-  histDate: { fontSize: fontSize.xs },
-});

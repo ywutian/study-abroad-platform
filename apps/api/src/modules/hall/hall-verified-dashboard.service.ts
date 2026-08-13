@@ -12,6 +12,12 @@ import type {
 import { PrismaService } from '../../prisma/prisma.service';
 import { VERIFIED_CASE_WHERE } from './hall.constants';
 
+const DASHBOARD_SCHOOL_SELECT = {
+  name: true,
+  nameZh: true,
+  usNewsRank: true,
+} as const;
+
 /**
  * Hall refactor Stage 3 — Verified China Admit Dashboard aggregation.
  *
@@ -89,7 +95,7 @@ export class HallVerifiedDashboardService {
         schoolId: true,
         year: true,
         result: true,
-        school: { select: { name: true, nameZh: true, usNewsRank: true } },
+        school: { select: DASHBOARD_SCHOOL_SELECT },
       },
     });
 
@@ -267,7 +273,7 @@ export class HallVerifiedDashboardService {
       select: {
         schoolId: true,
         round: true,
-        school: { select: { name: true, nameZh: true, usNewsRank: true } },
+        school: { select: DASHBOARD_SCHOOL_SELECT },
       },
     });
 

@@ -798,15 +798,16 @@ export function testBandMultiplier(
   const usableSat = usableSatBand(school);
   const sat25 = usableSat?.sat25;
   const sat75 = usableSat?.sat75;
+  const resolvedTestLabel = testLabel as string;
   const banded =
     !sat25 || !sat75
       ? {
           multiplier: 1.0,
           label: 'Test score',
-          evidence: `${testLabel} (no school percentile data; no adjustment)`,
+          evidence: `${resolvedTestLabel} (no school percentile data; no adjustment)`,
           impact: 'neutral' as const,
         }
-      : compareTestBand(bestEquivSat, sat25, sat75, testLabel);
+      : compareTestBand(bestEquivSat, sat25, sat75, resolvedTestLabel);
 
   return capSubstituteAtRequiredSchool(banded, school, hasDirectSatAct);
 }

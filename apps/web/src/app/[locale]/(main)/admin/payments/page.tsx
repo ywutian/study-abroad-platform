@@ -132,7 +132,7 @@ export default function AdminPaymentsPage() {
           <CardHeader className="flex flex-row items-start gap-3 space-y-0">
             <Archive className="mt-0.5 h-5 w-5 text-amber-700 dark:text-amber-400" />
             <div className="space-y-1">
-              <CardTitle className="text-base">{t('payments.readOnlyTitle')}</CardTitle>
+              <CardTitle className="text-body">{t('payments.readOnlyTitle')}</CardTitle>
               <p className="text-sm text-muted-foreground">{t('payments.readOnlyDescription')}</p>
             </div>
           </CardHeader>
@@ -149,7 +149,7 @@ export default function AdminPaymentsPage() {
             {statCards.map(({ label, value, icon: Icon, color }) => (
               <Card key={label}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                  <CardTitle className="text-body-sm font-medium">{label}</CardTitle>
                   <Icon className={`h-4 w-4 ${color}`} />
                 </CardHeader>
                 <CardContent>

@@ -95,18 +95,17 @@ export function PageHeader({
   const colors = useColors();
   const accentColor = resolveToneColor(colors, tone, color);
   const isCard = variantStyles[variant].card;
+  const themedContainerStyle = isCard
+    ? { backgroundColor: colors.card, borderColor: colors.border }
+    : undefined;
 
   return (
     <View
       style={[
         styles.container,
-        {
-          paddingTop: variantStyles[variant].paddingTop,
-          backgroundColor: isCard ? colors.card : 'transparent',
-          borderColor: isCard ? colors.border : 'transparent',
-          borderWidth: isCard ? StyleSheet.hairlineWidth : 0,
-          borderRadius: isCard ? borderRadius.xl : 0,
-        },
+        { paddingTop: variantStyles[variant].paddingTop },
+        isCard && styles.cardContainer,
+        themedContainerStyle,
         style,
       ]}
     >
@@ -182,6 +181,10 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
+  },
+  cardContainer: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: borderRadius.xl,
   },
   topRow: {
     flexDirection: 'row',

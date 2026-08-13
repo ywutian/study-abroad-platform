@@ -2,67 +2,47 @@
  * 录取预测页面
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  TouchableOpacity,
-  TextInput,
-  Switch,
-} from 'react-native';
-import { router, type Href } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { router, type Href } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CaseComparisonPanel } from '@/components/prediction/CaseComparisonPanel';
 import {
   AnimatedButton,
   AnimatedCard,
-  CardContent,
+  AnimatedCounter,
   Badge,
+  CardContent,
   EmptyState,
   Loading,
-  AnimatedCounter,
   Progress,
-  Modal,
-  Segment,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  withOpacity,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-} from '@/utils/theme';
+import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
+import { useAuthStore } from '@/stores';
+import { fontFamily, spacing, useColors, withOpacity } from '@/utils/theme';
 import {
   AI_REQUEST_TIMEOUT_MS,
   API_ROUTES,
-  type AIAnalysisResult,
-  type PredictionDashboardData,
   MAX_SCHOOLS_PER_BATCH,
   detectInternationalStatus,
   formatPercentValue,
   predictionRoutes,
   profileRoutes,
+  type AIAnalysisResult,
+  type PredictionDashboardData,
 } from '@study-abroad/shared';
-import { apiClient } from '@/lib/api/client';
-import { qk } from '@/lib/query';
-import { useAuthStore } from '@/stores';
-import { CaseComparisonPanel } from '@/components/prediction/CaseComparisonPanel';
 import { mapDashboardToPredictions } from './prediction-mapper';
+import { PredictionReportModal, type AdmissionResult } from './PredictionReportModal';
+import { styles } from './PredictionScreen.styles';
 export { mapDashboardToPredictions } from './prediction-mapper';
-
-type AdmissionResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN';
 
 interface PredictionProfileSummary {
   nationality?: string | null;
@@ -291,12 +271,7 @@ export default function PredictionScreen() {
     >
       {/* Header Card */}
       <Animated.View entering={FadeInDown.duration(400).springify()}>
-        <LinearGradient
-          colors={[colors.primary, withOpacity(colors.primary, 0.866)]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.headerCard}
-        >
+        <View style={[styles.headerCard, { backgroundColor: colors.primary }]}>
           <View style={styles.headerContent}>
             <View style={[styles.headerIcon, { backgroundColor: colors.onGradientOverlay }]}>
               <Ionicons name="analytics" size={32} color={colors.onGradient} />
@@ -343,7 +318,7 @@ export default function PredictionScreen() {
               </Text>
             ) : null}
           </View>
-        </LinearGradient>
+        </View>
       </Animated.View>
 
       {/* Quick Stats */}
@@ -833,472 +808,29 @@ export default function PredictionScreen() {
         </AnimatedButton>
       </View>
 
-      {/* Report Result Modal */}
-      <Modal
+      <PredictionReportModal
         visible={reportModalVisible}
         onClose={() => setReportModalVisible(false)}
-        title={t('prediction.reportActualResult')}
-      >
-        <View style={styles.reportContent}>
-          <Text style={[styles.reportLabel, { color: colors.foreground }]}>
-            {t('prediction.selectResult')}
-          </Text>
-          {(
-            ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED', 'WITHDRAWN'] as AdmissionResult[]
-          ).map((result) => {
-            const isSelected = reportResult === result;
-            const resultColors: Record<AdmissionResult, string> = {
-              ADMITTED: colors.success,
-              REJECTED: colors.error,
-              WAITLISTED: colors.warning,
-              DEFERRED: colors.info,
-              WITHDRAWN: colors.foregroundMuted,
-            };
-            return (
-              <TouchableOpacity
-                key={result}
-                onPress={() => setReportResult(result)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={t(`prediction.results.${result.toLowerCase()}`)}
-                style={[
-                  styles.resultOption,
-                  { borderColor: isSelected ? resultColors[result] : colors.border },
-                  isSelected && { backgroundColor: withOpacity(resultColors[result], 0.1) },
-                ]}
-              >
-                <Ionicons
-                  name={isSelected ? 'radio-button-on' : 'radio-button-off'}
-                  size={20}
-                  color={isSelected ? resultColors[result] : colors.foregroundMuted}
-                />
-                <Text
-                  style={[
-                    styles.resultOptionText,
-                    { color: isSelected ? resultColors[result] : colors.foreground },
-                  ]}
-                >
-                  {t(`prediction.results.${result.toLowerCase()}`)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-          <Text style={[styles.reportLabel, { color: colors.foreground }]}>
-            {t('prediction.round')}
-          </Text>
-          <View style={styles.roundOptions}>
-            {['RD', 'EA', 'ED', 'ED2', 'REA', 'SCEA', 'ROLLING'].map((round) => {
-              const isSelected = reportRound === round;
-              return (
-                <TouchableOpacity
-                  key={round}
-                  onPress={() => setReportRound(round)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={round}
-                  style={[
-                    styles.roundOption,
-                    {
-                      borderColor: isSelected ? colors.primary : colors.border,
-                      backgroundColor: isSelected
-                        ? withOpacity(colors.primary, 0.1)
-                        : 'transparent',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.roundOptionText,
-                      { color: isSelected ? colors.primary : colors.foreground },
-                    ]}
-                  >
-                    {round}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          <View style={styles.finalRow}>
-            <Text style={[styles.resultOptionText, { color: colors.foreground }]}>
-              {t('prediction.finalResult')}
-            </Text>
-            <Switch
-              value={reportIsFinal}
-              onValueChange={setReportIsFinal}
-              accessibilityLabel={t('prediction.finalResult')}
-            />
-          </View>
-          <TextInput
-            value={reportNotes}
-            onChangeText={setReportNotes}
-            placeholder={t('prediction.notesPlaceholder')}
-            placeholderTextColor={colors.foregroundMuted}
-            multiline
-            maxLength={500}
-            style={[
-              styles.notesInput,
-              {
-                color: colors.foreground,
-                borderColor: colors.border,
-                backgroundColor: colors.card,
-              },
-            ]}
-          />
-          <AnimatedButton
-            onPress={() => {
-              if (reportSchoolId) {
-                reportMutation.mutate({
-                  schoolId: reportSchoolId,
-                  result: reportResult,
-                  round: reportRound,
-                  isFinal: reportIsFinal,
-                  notes: reportNotes.trim() || undefined,
-                });
-              }
-            }}
-            loading={reportMutation.isPending}
-            style={styles.reportSubmitButton}
-          >
-            {t('prediction.submitResult')}
-          </AnimatedButton>
-        </View>
-      </Modal>
+        result={reportResult}
+        setResult={setReportResult}
+        round={reportRound}
+        setRound={setReportRound}
+        isFinal={reportIsFinal}
+        setIsFinal={setReportIsFinal}
+        notes={reportNotes}
+        setNotes={setReportNotes}
+        submitting={reportMutation.isPending}
+        onSubmit={() => {
+          if (reportSchoolId)
+            reportMutation.mutate({
+              schoolId: reportSchoolId,
+              result: reportResult,
+              round: reportRound,
+              isFinal: reportIsFinal,
+              notes: reportNotes.trim() || undefined,
+            });
+        }}
+      />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerCard: {
-    margin: spacing.lg,
-    padding: spacing.xl,
-    borderRadius: borderRadius.xl,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  headerIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  headerText: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
-  },
-  headerSubtitle: {
-    fontSize: fontSize.sm,
-  },
-  progressSection: {
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  progressLabel: {
-    fontSize: fontSize.sm,
-  },
-  progressValue: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-  },
-  progressBar: {
-    height: 6,
-  },
-  progressHint: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.sm,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  explanationCard: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.md,
-    gap: spacing.xs,
-  },
-  analysisCard: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  analysisCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  analysisCardTitleBlock: {
-    flex: 1,
-  },
-  analysisCardTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  analysisCardSubtitle: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-    lineHeight: fontSize.xs * 1.5,
-  },
-  analysisCardBadges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  analysisCardVerdict: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  analysisCardBody: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * 1.6,
-  },
-  analysisCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: spacing.xs,
-  },
-  analysisCardLink: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-  },
-  explanationText: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * 1.5,
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-  },
-  statValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    marginTop: spacing.sm,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-  section: {
-    padding: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.md,
-  },
-  predictionCard: {
-    marginBottom: spacing.md,
-  },
-  predictionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  predictionInfo: {
-    flex: 1,
-    gap: spacing.sm,
-  },
-  schoolName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  rateContainer: {
-    alignItems: 'flex-end',
-  },
-  rate: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-  },
-  tierVerdict: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    textAlign: 'right',
-  },
-  rateLabel: {
-    fontSize: fontSize.xs,
-  },
-  benchmarkLabel: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-    textAlign: 'right',
-  },
-  benchmarkDelta: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs / 2,
-    textAlign: 'right',
-  },
-  benchmarkBadges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  insightPanel: {
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  insightTitle: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-  },
-  insightBody: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * 1.5,
-  },
-  signalBadges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  uncertaintyText: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * 1.5,
-  },
-  updatedText: {
-    fontSize: fontSize.xs,
-  },
-  factors: {
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  explanationBox: {
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  explanationTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  suggestions: {
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  factorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  factorCopy: { flex: 1 },
-  factorDetail: { fontSize: fontSize.xs, marginTop: 2 },
-  factorLabel: {
-    fontSize: fontSize.xs,
-  },
-  factorValue: {
-    width: 24,
-    fontSize: fontSize.xs,
-    textAlign: 'right',
-  },
-  confidence: {
-    fontSize: fontSize.xs,
-    textAlign: 'right',
-  },
-  addButtonContainer: {
-    padding: spacing.lg,
-  },
-  addButton: {
-    width: '100%',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  reportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  reportButtonText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-  reportContent: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-  },
-  reportLabel: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.sm,
-  },
-  resultOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-    borderWidth: 1.5,
-    borderRadius: borderRadius.lg,
-  },
-  resultOptionText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-  },
-  roundOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  roundOption: {
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  roundOptionText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  finalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  notesInput: {
-    minHeight: 72,
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    fontSize: fontSize.sm,
-    textAlignVertical: 'top',
-  },
-  reportSubmitButton: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-});

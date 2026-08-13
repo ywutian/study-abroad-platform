@@ -91,6 +91,7 @@ export class CorrectedCaseDataDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(100, { each: true })
   tags?: string[];
 
   // --- New enrichment fields ---
@@ -159,6 +160,7 @@ export class CorrectedCaseDataDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(100, { each: true })
   demographicTags?: string[];
 
   @ApiPropertyOptional({ description: 'Financial aid status' })

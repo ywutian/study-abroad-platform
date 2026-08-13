@@ -5,7 +5,7 @@ import {
   clearAuthData,
 } from '../storage/secure-store';
 import { normalizeLocale, toBcp47 } from '@study-abroad/shared';
-import { addBreadcrumb } from '@/lib/sentry';
+import { addBreadcrumb, captureException } from '@/lib/sentry';
 import type { ApiError } from '@/types';
 // Expo's WinterCG fetch exposes a real ReadableStream body (response.body.getReader()),
 // which React Native's global fetch does not — required for SSE streaming.
@@ -140,13 +140,13 @@ class ApiClient {
       try {
         await saveTokens(data.accessToken, data.refreshToken);
       } catch (storageError) {
-        console.error('Failed to persist refreshed tokens:', storageError);
+        captureException(storageError);
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      captureException(error);
       await clearAuthData();
       this.onRefreshFailed?.();
       return false;

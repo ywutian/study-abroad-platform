@@ -104,10 +104,12 @@ export class SentryModule implements OnModuleInit, OnModuleDestroy {
 
         // Breadcrumb filtering — reduce noise
         beforeBreadcrumb(breadcrumb) {
+          const breadcrumbUrl = breadcrumb.data?.url;
           // Filter out health check noise
           if (
             breadcrumb.category === 'http' &&
-            breadcrumb.data?.url?.includes('/health')
+            typeof breadcrumbUrl === 'string' &&
+            breadcrumbUrl.includes('/health')
           ) {
             return null;
           }

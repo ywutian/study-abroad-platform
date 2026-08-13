@@ -42,6 +42,46 @@ const SCORECARD_WRITABLE_FIELDS = new Set([
   'graduationRate',
   'avgSalary',
 ]);
+
+interface ScorecardResponse {
+  results?: Array<Record<string, unknown>>;
+}
+
+const SCORECARD_FIELDS = [
+  'id',
+  'school.name',
+  'school.city',
+  'school.state',
+  'school.school_url',
+  'school.ownership',
+  'latest.admissions.admission_rate.overall',
+  'latest.admissions.sat_scores.average.overall',
+  'latest.admissions.sat_scores.25th_percentile.critical_reading',
+  'latest.admissions.sat_scores.75th_percentile.critical_reading',
+  'latest.admissions.sat_scores.25th_percentile.math',
+  'latest.admissions.sat_scores.75th_percentile.math',
+  'latest.admissions.act_scores.midpoint.cumulative',
+  'latest.admissions.act_scores.25th_percentile.cumulative',
+  'latest.admissions.act_scores.75th_percentile.cumulative',
+  'latest.cost.tuition.in_state',
+  'latest.cost.tuition.out_of_state',
+  'latest.student.size',
+  'latest.completion.completion_rate_4yr_150nt',
+  'latest.earnings.10_yrs_after_entry.median',
+].join(',');
+
+function parseScorecardResponse(value: unknown): ScorecardResponse {
+  if (!value || typeof value !== 'object') return {};
+  const results = (value as Record<string, unknown>).results;
+  return {
+    results: Array.isArray(results)
+      ? results.filter(
+          (item): item is Record<string, unknown> =>
+            typeof item === 'object' && item !== null && !Array.isArray(item),
+        )
+      : undefined,
+  };
+}
 @Injectable()
 export class SchoolDataService {
   private readonly logger = new Logger(SchoolDataService.name);
@@ -64,37 +104,42 @@ export class SchoolDataService {
   async syncSchoolsFromScorecard(
     limit = 100,
   ): Promise<{ synced: number; errors: number }> {
+    return this.syncScorecardPages(limit);
+  }
+
+  /** Refresh only the requested local schools, using their promoted Scorecard ids. */
+  async syncSchoolsFromScorecardBySchoolIds(
+    schoolIds: string[],
+  ): Promise<{ synced: number; errors: number }> {
+    const uniqueSchoolIds = [...new Set(schoolIds)].filter(Boolean);
+    if (uniqueSchoolIds.length === 0) return { synced: 0, errors: 0 };
+
+    // governance: system-scope — School / SchoolMetric are published institution data with no User relation; this scheduler resolves only promoted external ids for a bounded public-data refresh
+    const schools = await this.prisma.school.findMany({
+      where: { id: { in: uniqueSchoolIds } },
+      select: { scorecardId: true },
+    });
+    const scorecardIds = schools
+      .map((school) => school.scorecardId)
+      .filter((id): id is string => Boolean(id));
+
+    if (scorecardIds.length === 0) {
+      this.logger.warn('No Scorecard ids found for stale local schools');
+      return { synced: 0, errors: 0 };
+    }
+
+    return this.syncScorecardPages(scorecardIds.length, scorecardIds);
+  }
+
+  private async syncScorecardPages(
+    limit: number,
+    scorecardIds?: string[],
+  ): Promise<{ synced: number; errors: number }> {
     if (!this.apiKey) {
       throw new InternalServerErrorException(
         'COLLEGE_SCORECARD_API_KEY not configured',
       );
     }
-
-    const fields = [
-      'id',
-      'school.name',
-      'school.city',
-      'school.state',
-      'school.school_url',
-      'school.ownership', // 1=public, 2=private nonprofit, 3=private for-profit
-      'latest.admissions.admission_rate.overall',
-      // SAT scores
-      'latest.admissions.sat_scores.average.overall',
-      'latest.admissions.sat_scores.25th_percentile.critical_reading',
-      'latest.admissions.sat_scores.75th_percentile.critical_reading',
-      'latest.admissions.sat_scores.25th_percentile.math',
-      'latest.admissions.sat_scores.75th_percentile.math',
-      // ACT scores
-      'latest.admissions.act_scores.midpoint.cumulative',
-      'latest.admissions.act_scores.25th_percentile.cumulative',
-      'latest.admissions.act_scores.75th_percentile.cumulative',
-      // Cost, enrollment, outcomes
-      'latest.cost.tuition.in_state',
-      'latest.cost.tuition.out_of_state',
-      'latest.student.size',
-      'latest.completion.completion_rate_4yr_150nt',
-      'latest.earnings.10_yrs_after_entry.median',
-    ].join(',');
 
     let synced = 0;
     let errors = 0;
@@ -103,7 +148,19 @@ export class SchoolDataService {
 
     try {
       while (synced < limit) {
-        const url = `${this.baseUrl}?api_key=${this.apiKey}&school.operating=1&school.degrees_awarded.predominant=3&fields=${fields}&per_page=${perPage}&page=${page}`;
+        const params = new URLSearchParams({
+          api_key: this.apiKey,
+          fields: SCORECARD_FIELDS,
+          per_page: String(Math.min(perPage, limit - synced)),
+          page: String(page),
+        });
+        if (scorecardIds) {
+          params.set('id', scorecardIds.join(','));
+        } else {
+          params.set('school.operating', '1');
+          params.set('school.degrees_awarded.predominant', '3');
+        }
+        const url = `${this.baseUrl}?${params.toString()}`;
 
         this.logger.log(`Fetching page ${page}...`);
 
@@ -114,7 +171,7 @@ export class SchoolDataService {
           );
         }
 
-        const data = await response.json();
+        const data = parseScorecardResponse(await response.json());
         const schools = data.results || [];
 
         if (schools.length === 0) break;
@@ -129,18 +186,20 @@ export class SchoolDataService {
             }
             synced++;
           } catch (err) {
-            this.logger.error(
-              `Failed to upsert school: ${school['school.name']}`,
-              err,
-            );
+            const rawSchoolName = school['school.name'];
+            const schoolName =
+              typeof rawSchoolName === 'string' ? rawSchoolName : '';
+            this.logger.error(`Failed to upsert school: ${schoolName}`, err);
             errors++;
           }
         }
 
         page++;
 
-        // Rate limiting: 1 request per second
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (synced < limit) {
+          // Rate limiting: 1 request per second
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       }
 
       this.logger.log(
@@ -335,7 +394,7 @@ export class SchoolDataService {
       throw new InternalServerErrorException(`API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = parseScorecardResponse(await response.json());
     return data.results?.[0] || null;
   }
 }

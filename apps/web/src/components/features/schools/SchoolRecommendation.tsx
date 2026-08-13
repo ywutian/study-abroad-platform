@@ -169,7 +169,7 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
               <ClipboardCheck className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 ">
                 {t('aiSmartMatch')}
                 <Lightbulb className="h-4 w-4 text-blue-500" />
               </CardTitle>

@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { apiClient } from '@/lib/api';
-import { adminRoutes } from '@study-abroad/shared';
+import { adminRoutes, POINTS_ECONOMY_AVAILABLE } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores/auth';
 import {
   BarChart3,
@@ -75,6 +75,8 @@ interface NavItem {
   minRole?: AdminRole;
   /** Permission-based access: item shown if user has this permission */
   requiredPermission?: string;
+  /** Product-level availability gate; false items must not enter the navigation. */
+  available?: boolean;
 }
 
 interface NavGroup {
@@ -275,6 +277,7 @@ export function AdminSidebar() {
           icon: Coins,
           label: t('sidebar.pointsRedemptions'),
           minRole: 'ADMIN',
+          available: POINTS_ECONOMY_AVAILABLE,
         },
         {
           href: '/admin/audit-logs',
@@ -324,7 +327,9 @@ export function AdminSidebar() {
     .filter((group) => hasAccess(userRole, permissions, group))
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => hasAccess(userRole, permissions, item)),
+      items: group.items.filter(
+        (item) => item.available !== false && hasAccess(userRole, permissions, item)
+      ),
     }))
     .filter((group) => group.items.length > 0);
 

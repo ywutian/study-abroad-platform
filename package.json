@@ -103,7 +103,19 @@
     "typescript-eslint": "^8.65.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "apps/web/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --config apps/web/eslint.config.mjs --fix --no-warn-ignored --quiet"
+    ],
+    "apps/api/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --config apps/api/eslint.config.mjs --fix --no-warn-ignored --quiet"
+    ],
+    "apps/mobile/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --config apps/mobile/eslint.config.mjs --fix --no-warn-ignored --quiet"
+    ],
+    "{packages,scripts,e2e}/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix --no-warn-ignored --quiet"
     ],
@@ -193,7 +205,8 @@
         "GHSA-fx2h-pf6j-xcff",
         "GHSA-mh99-v99m-4gvg",
         "GHSA-5p2g-fcmc-qvqq",
-        "GHSA-w3rx-r6r6-pgpr"
+        "GHSA-w3rx-r6r6-pgpr",
+        "GHSA-jmr9-qjv8-65gv"
       ]
     }
   }

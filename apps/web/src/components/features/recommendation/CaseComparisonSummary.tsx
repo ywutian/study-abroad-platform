@@ -27,7 +27,7 @@ export function CaseComparisonSummary({ comparison }: CaseComparisonSummaryProps
         <div className="flex items-center gap-2">
           <Users className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">{t('title')}</span>
-          <Badge variant="outline" className="text-[10px] font-normal px-1.5 py-0">
+          <Badge variant="outline" className="text-2xs font-normal px-1.5 py-0">
             {comparison.totalCases} {t('cases')}
           </Badge>
         </div>
@@ -70,7 +70,7 @@ export function CaseComparisonSummary({ comparison }: CaseComparisonSummaryProps
           {/* Common traits */}
           {admitted.topTags && admitted.topTags.length > 0 && (
             <div className="space-y-1">
-              <div className="flex items-center gap-1 text-[10px] text-success font-medium">
+              <div className="flex items-center gap-1 text-2xs text-success font-medium">
                 <TrendingUp className="h-3 w-3" />
                 {t('admittedTraits')}
               </div>
@@ -79,7 +79,7 @@ export function CaseComparisonSummary({ comparison }: CaseComparisonSummaryProps
                   <Badge
                     key={tag}
                     variant="outline"
-                    className="text-[10px] px-1.5 py-0 bg-success/5 text-success border-success/20"
+                    className="text-2xs px-1.5 py-0 bg-success/5 text-success border-success/20"
                   >
                     {tag}
                   </Badge>
@@ -90,7 +90,7 @@ export function CaseComparisonSummary({ comparison }: CaseComparisonSummaryProps
 
           {rejected.topTags && rejected.topTags.length > 0 && (
             <div className="space-y-1">
-              <div className="flex items-center gap-1 text-[10px] text-destructive font-medium">
+              <div className="flex items-center gap-1 text-2xs text-destructive font-medium">
                 <TrendingDown className="h-3 w-3" />
                 {t('rejectedTraits')}
               </div>
@@ -99,7 +99,7 @@ export function CaseComparisonSummary({ comparison }: CaseComparisonSummaryProps
                   <Badge
                     key={tag}
                     variant="outline"
-                    className="text-[10px] px-1.5 py-0 bg-destructive/5 text-destructive border-destructive/20"
+                    className="text-2xs px-1.5 py-0 bg-destructive/5 text-destructive border-destructive/20"
                   >
                     {tag}
                   </Badge>
@@ -111,7 +111,7 @@ export function CaseComparisonSummary({ comparison }: CaseComparisonSummaryProps
           {/* Nationality subset */}
           {nationalitySubset && (
             <div className="border-t border-border/40 pt-2 space-y-1.5">
-              <p className="text-[10px] font-medium text-muted-foreground">
+              <p className="text-2xs font-medium text-muted-foreground">
                 {t('nationalityData', { nationality: nationalitySubset.nationality })}
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -147,7 +147,6 @@ function CohortCard({
   variant: 'success' | 'destructive';
   compact?: boolean;
 }) {
-  const t = useTranslations('recommendation.caseComparison');
   const isSuccess = variant === 'success';
 
   return (
@@ -159,16 +158,16 @@ function CohortCard({
     >
       <div className="flex items-center justify-between">
         <span
-          className={cn('text-[10px] font-medium', isSuccess ? 'text-success' : 'text-destructive')}
+          className={cn('text-2xs font-medium', isSuccess ? 'text-success' : 'text-destructive')}
         >
           {label}
         </span>
-        <span className="text-[10px] text-muted-foreground">n={stats.count}</span>
+        <span className="text-2xs text-muted-foreground">n={stats.count}</span>
       </div>
       {!compact && (
         <div className="mt-1 space-y-0.5">
           {stats.gpaMedian != null && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               GPA {stats.gpaMedian.toFixed(2)}
               {stats.gpaP25 != null && (
                 <span className="opacity-70">
@@ -179,7 +178,7 @@ function CohortCard({
             </p>
           )}
           {stats.satMedian != null && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               SAT {stats.satMedian}
               {stats.satP25 != null && (
                 <span className="opacity-70">
@@ -210,7 +209,7 @@ function ComparisonRow({
   const diffSign = diff > 0 ? '+' : '';
 
   return (
-    <div className="flex items-center justify-between text-[10px]">
+    <div className="flex items-center justify-between text-2xs">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
         <span className="text-success font-medium">{format(admittedValue)}</span>

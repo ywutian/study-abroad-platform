@@ -7,8 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import type {
   ApplicationAnalysisResponseV2,
   ApplicationAnalysisSchoolResult,
-  SchoolTestingPolicy,
 } from '../src/modules/ai/ai.types';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 import {
   AnalysisSnapshot,
   ProfileApplicationAnalysisV2Service,
@@ -123,7 +123,7 @@ async function loadGoldCases(filters: ParsedArgs): Promise<GoldCase[]> {
     .slice(0, filters.limit ?? Number.MAX_SAFE_INTEGER);
 }
 
-function reviveDates<T>(value: T): T {
+function reviveDates<T>(value: unknown): T {
   if (Array.isArray(value)) {
     return value.map((entry) => reviveDates(entry)) as T;
   }
@@ -138,7 +138,7 @@ function reviveDates<T>(value: T): T {
   ) {
     return new Date(value) as T;
   }
-  return value;
+  return value as T;
 }
 
 function lower(value: string) {
@@ -700,9 +700,9 @@ async function main() {
     for (const goldCase of goldCases) {
       const startedAt = Date.now();
       try {
-        const snapshot = reviveDates(
+        const snapshot = reviveDates<AnalysisSnapshot>(
           goldCase.analysisSnapshot,
-        ) as AnalysisSnapshot;
+        );
         const response = await analysisService.runSnapshot(snapshot, {
           debug: true,
           mode: args.mode,

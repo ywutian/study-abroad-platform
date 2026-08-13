@@ -106,7 +106,7 @@ export class AdminService {
     page = 1,
     pageSize = 20,
     priority?: ReportPriority,
-    assignedTo?: string | 'unassigned',
+    assignedTo?: string,
   ) {
     const where: Prisma.ReportWhereInput = {};
     if (status) where.status = status;

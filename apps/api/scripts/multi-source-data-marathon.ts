@@ -1191,7 +1191,6 @@ async function buildInitialLedger(
       website: true,
       state: true,
       acceptanceRate: true,
-      usNewsRank: true,
       metadata: true,
       intlAcceptanceRate: true,
       oosAcceptanceRate: true,
@@ -1580,7 +1579,7 @@ async function applyExtractedValue(entry: LedgerEntry, policy: FieldPolicy) {
         [String(policy.scalarField)]: entry.extracted
           ?.value as Prisma.InputJsonValue,
         metadata: await mergedMetadata(entry.schoolId, metadataPatch),
-      } as Prisma.SchoolUpdateInput,
+      },
     });
     return true;
   }
@@ -1630,10 +1629,7 @@ function deepMerge(
   for (const [key, value] of Object.entries(patch)) {
     const existing = asJsonObject(output[key]);
     const incoming = asJsonObject(value);
-    output[key] =
-      existing && incoming
-        ? deepMerge(existing, incoming)
-        : (value as Prisma.JsonValue);
+    output[key] = existing && incoming ? deepMerge(existing, incoming) : value;
   }
   return output;
 }
@@ -1670,7 +1666,7 @@ function buildProvenancePatch(
         generatedBy: 'multi-source-data-marathon',
       },
     },
-  };
+  } as Prisma.JsonObject;
 }
 
 function extractFromCandidate(
@@ -2369,7 +2365,7 @@ function hasValue(value: unknown, policy: FieldPolicy) {
     return value.trim().length > 0 && value !== 'UNKNOWN';
   if (typeof value === 'object') {
     if (Array.isArray(value)) return value.length > 0;
-    return Object.keys(value as object).length > 0;
+    return Object.keys(value).length > 0;
   }
   return true;
 }
@@ -2626,7 +2622,7 @@ function acronym(name: string) {
 
 function asJsonObject(value: unknown): Prisma.JsonObject | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  return value as Prisma.JsonObject;
+  return value;
 }
 
 function decimalToNumber(value: unknown) {

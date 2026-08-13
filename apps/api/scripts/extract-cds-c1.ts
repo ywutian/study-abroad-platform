@@ -272,7 +272,7 @@ async function callOpenAi(
   text: string,
   model: string,
 ) {
-  const { callLlm } = await import('./lib/llm-call');
+  const { callLlm } = await import('./lib/llm-call.js');
   const userPrompt = `Extract Common Data Set sections C1, C9/C11, and C21 from the PDF text for ${schoolName}.
 
 Return only JSON with this exact shape:
@@ -397,7 +397,7 @@ function toOutputRow(
       notes:
         'Rates are derived directly from admitted/applicants counts in this script.',
     },
-  ] as CdsOutputRow['verification']['validators'];
+  ] as NonNullable<CdsOutputRow['verification']>['validators'];
   const hasIntl =
     applicants.international != null &&
     applicants.international > 0 &&

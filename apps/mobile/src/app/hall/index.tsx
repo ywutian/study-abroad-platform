@@ -51,7 +51,7 @@ export default function HallPage() {
           </ScrollView>
         </View>
 
-        <View style={[S.content, { flex: 1 }]}>
+        <View style={[S.content, S.flex]}>
           {activeTab === 'verified' && <VerifiedTab />}
           {activeTab === 'ranking' && <RankingTab />}
           {activeTab === 'path' && <PathTab />}
@@ -62,6 +62,7 @@ export default function HallPage() {
 }
 
 const S = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
     flex: 1,
   },

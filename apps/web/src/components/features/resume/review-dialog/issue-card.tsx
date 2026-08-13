@@ -25,16 +25,16 @@ export function IssueCard({ issue, applied, onApply }: IssueCardProps) {
     <div className="space-y-2 rounded-lg border p-3">
       {/* Header badges */}
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-2xs">
           {t(`issueTypes.${issue.type}`)}
         </Badge>
         <span
-          className={`inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium ${SEVERITY_COLORS[issue.severity] ?? SEVERITY_COLORS.medium}`}
+          className={`inline-flex rounded-full px-1.5 py-0.5 text-2xs font-medium ${SEVERITY_COLORS[issue.severity] ?? SEVERITY_COLORS.medium}`}
         >
           {t(`severity.${issue.severity}`)}
         </span>
         {issue.bulletIndex !== undefined && (
-          <span className="text-[10px] text-muted-foreground">Bullet #{issue.bulletIndex}</span>
+          <span className="text-2xs text-muted-foreground">Bullet #{issue.bulletIndex}</span>
         )}
       </div>
 
@@ -59,12 +59,12 @@ export function IssueCard({ issue, applied, onApply }: IssueCardProps) {
 
       {/* Reason + Apply */}
       <div className="flex items-end justify-between gap-2">
-        <p className="text-[11px] leading-relaxed text-muted-foreground">{issue.reason}</p>
+        <p className="text-2xs leading-relaxed text-muted-foreground">{issue.reason}</p>
         {onApply && (
           <Button
             variant="outline"
             size="sm"
-            className="h-6 shrink-0 gap-1 px-2 text-[10px]"
+            className="h-6 shrink-0 gap-1 px-2 text-2xs"
             onClick={onApply}
             disabled={applied}
           >

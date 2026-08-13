@@ -59,14 +59,15 @@ export function ToastProvider({ children }: ToastProviderProps) {
         useNativeDriver: true,
       }).start();
 
-      const tc = getTypeConfig();
+      const defaultDuration =
+        newConfig.type === 'error' ? 5000 : newConfig.type === 'warning' ? 4000 : 3000;
       timeoutRef.current = setTimeout(() => {
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 200,
           useNativeDriver: true,
         }).start(() => setVisible(false));
-      }, newConfig.duration || tc.defaultDuration);
+      }, newConfig.duration || defaultDuration);
     },
     [fadeAnim]
   );
@@ -165,6 +166,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
             accessibilityLiveRegion={typeConfig.liveRegion}
             style={[
               styles.toast,
+              { shadowColor: colors.foreground },
               {
                 backgroundColor: typeConfig.bgColor,
                 borderColor: withOpacity(typeConfig.color, 0.3),
@@ -263,6 +265,7 @@ export function Toast({
       <View
         style={[
           styles.toast,
+          { shadowColor: colors.foreground },
           {
             backgroundColor: colors.card,
             borderColor: colors.border,
@@ -298,11 +301,10 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.lg,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 24,
-    elevation: 8,
+    elevation: 2,
     overflow: 'hidden',
   },
   accentBar: {

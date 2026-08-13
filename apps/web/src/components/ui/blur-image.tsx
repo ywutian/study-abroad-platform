@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element -- NativeBlurImage deliberately preserves native img attributes; BlurAvatar avoids next/image layout overhead for tiny avatars. */
+
 import { useState, useEffect, ImgHTMLAttributes } from 'react';
 import Image, { ImageProps } from 'next/image';
 import { cn } from '@/lib/utils';

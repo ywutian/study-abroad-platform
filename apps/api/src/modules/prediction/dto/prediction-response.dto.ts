@@ -183,7 +183,14 @@ export class PredictionOutcomeLabelDto {
       'CENSORED',
     ],
   })
-  result: string;
+  result:
+    | 'ADMITTED'
+    | 'REJECTED'
+    | 'WAITLISTED'
+    | 'DEFERRED'
+    | 'WITHDRAWN'
+    | 'UNKNOWN'
+    | 'CENSORED';
 
   @ApiProperty({
     description: 'Outcome label trust state',

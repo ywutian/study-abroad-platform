@@ -1,11 +1,10 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TimelinePersonalEventService } from './timeline-personal-event.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
+import { TimelinePersonalEventService } from './timeline-personal-event.service';
 
 describe('TimelinePersonalEventService', () => {
   let service: TimelinePersonalEventService;
-  let prisma: PrismaService;
 
   const mockEvent = {
     id: 'evt-1',
@@ -47,11 +46,13 @@ describe('TimelinePersonalEventService', () => {
     globalEvent: {
       findUnique: jest.fn(),
     },
-    // Runs the callback with the mock as the tx client (interactive-txn paths).
-    $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb(mockPrisma)),
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
+    mockPrisma.$transaction.mockImplementation(
+      (cb: (tx: typeof mockPrisma) => unknown) => cb(mockPrisma),
+    );
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TimelinePersonalEventService,
@@ -62,7 +63,6 @@ describe('TimelinePersonalEventService', () => {
     service = module.get<TimelinePersonalEventService>(
       TimelinePersonalEventService,
     );
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -127,7 +127,7 @@ describe('TimelinePersonalEventService', () => {
         isRecurring: true,
       });
       mockPrisma.personalEvent.findUnique.mockResolvedValue(null);
-      mockPrisma.personalEvent.create.mockImplementation(({ data }) =>
+      mockPrisma.personalEvent.create.mockImplementation(({ data }: any) =>
         Promise.resolve({
           ...mockEvent,
           ...data,
@@ -200,6 +200,33 @@ describe('TimelinePersonalEventService', () => {
         service.deletePersonalEvent('user-1', 'nonexistent'),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('rejects deletion after the event lifecycle has ended', async () => {
+      mockPrisma.personalEvent.findFirst.mockResolvedValue({
+        ...mockEvent,
+        deadline: new Date('2020-01-01T00:00:00.000Z'),
+        eventDate: new Date('2020-02-01T00:00:00.000Z'),
+      });
+
+      await expect(
+        service.deletePersonalEvent('user-1', 'evt-1'),
+      ).rejects.toThrow(ConflictException);
+      expect(mockPrisma.personalEvent.delete).not.toHaveBeenCalled();
+    });
+
+    it('keeps an event mutable when registration closed but the event is upcoming', async () => {
+      mockPrisma.personalEvent.findFirst.mockResolvedValue({
+        ...mockEvent,
+        deadline: new Date('2020-01-01T00:00:00.000Z'),
+        eventDate: new Date('2099-02-01T00:00:00.000Z'),
+      });
+
+      await service.deletePersonalEvent('user-1', 'evt-1');
+
+      expect(mockPrisma.personalEvent.delete).toHaveBeenCalledWith({
+        where: { id: 'evt-1' },
+      });
+    });
   });
 
   describe('togglePersonalTaskComplete', () => {
@@ -236,6 +263,25 @@ describe('TimelinePersonalEventService', () => {
       await expect(
         service.togglePersonalTaskComplete('user-1', 'nonexistent'),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('rejects task mutation when the personal event is archived', async () => {
+      mockPrisma.personalTask.findFirst.mockResolvedValue({
+        id: 'task-archived',
+        eventId: 'evt-archived',
+        completed: false,
+        event: {
+          userId: 'user-1',
+          status: 'COMPLETED',
+          deadline: new Date('2099-01-01T00:00:00.000Z'),
+          eventDate: new Date('2099-02-01T00:00:00.000Z'),
+        },
+      });
+
+      await expect(
+        service.togglePersonalTaskComplete('user-1', 'task-archived'),
+      ).rejects.toThrow(ConflictException);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
   });
 });

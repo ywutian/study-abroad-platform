@@ -1,5 +1,15 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+
+const LINKED_ESSAY_PROMPT_SELECT = {
+  id: true,
+  type: true,
+  prompt: true,
+  promptZh: true,
+  wordLimit: true,
+  isRequired: true,
+  school: { select: { id: true, name: true, nameZh: true } },
+} as const;
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import {
   Education,
@@ -290,12 +300,12 @@ export class ProfileEducationService {
     );
     const autoHighSchoolId =
       data.highSchoolId === undefined &&
-      !(_education as any).highSchoolId &&
+      !_education.highSchoolId &&
       (data.schoolName !== undefined || data.schoolType !== undefined)
         ? await this.resolveHighSchoolId(
             userId,
-            data.schoolName ?? (_education as any).schoolName,
-            data.schoolType ?? (_education as any).schoolType,
+            data.schoolName ?? _education.schoolName,
+            data.schoolType ?? _education.schoolType,
             undefined,
           )
         : undefined;
@@ -447,6 +457,7 @@ export class ProfileEducationService {
     // Check if already exists
     const existing = await this.prisma.profileTargetSchool.findUnique({
       where: { profileId_schoolId: { profileId, schoolId } },
+      include: { school: true },
     });
 
     if (existing) {
@@ -594,15 +605,7 @@ export class ProfileEducationService {
         essays: {
           include: {
             linkedPrompt: {
-              select: {
-                id: true,
-                type: true,
-                prompt: true,
-                promptZh: true,
-                wordLimit: true,
-                isRequired: true,
-                school: { select: { id: true, name: true, nameZh: true } },
-              },
+              select: LINKED_ESSAY_PROMPT_SELECT,
             },
           },
           orderBy: { updatedAt: 'desc' },
@@ -629,15 +632,7 @@ export class ProfileEducationService {
         include: {
           profile: { select: { userId: true } },
           linkedPrompt: {
-            select: {
-              id: true,
-              type: true,
-              prompt: true,
-              promptZh: true,
-              wordLimit: true,
-              isRequired: true,
-              school: { select: { id: true, name: true, nameZh: true } },
-            },
+            select: LINKED_ESSAY_PROMPT_SELECT,
           },
         },
       }),

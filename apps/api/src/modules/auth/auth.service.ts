@@ -1,26 +1,23 @@
 import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
   BadRequestException,
+  ConflictException,
+  Injectable,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { JwtService } from '@nestjs/jwt';
+import { Prisma, User } from '@prisma/client';
+import { normalizeLocale } from '@study-abroad/shared';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { EmailService } from '../../common/email/email.service';
+import { USER_REGISTERED } from '../../common/events/notification.events';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserService } from '../user/user.service';
-import { EmailService } from '../../common/email/email.service';
-import { SessionManager } from './session-manager.service';
 import { BruteForceService } from './brute-force.service';
-import {
-  USER_REGISTERED,
-  type UserRegisteredPayload,
-} from '../../common/events/notification.events';
-import { User, Prisma } from '@prisma/client';
-import { normalizeLocale } from '@study-abroad/shared';
-import { randomBytes } from 'crypto';
+import { SessionManager } from './session-manager.service';
 
 export interface AuthTokens {
   accessToken: string;
@@ -70,7 +67,7 @@ export class AuthService {
    * @returns The created user (without password hash) and a success message
    */
   async register(data: RegisterDto): Promise<{
-    user: Omit<User, 'passwordHash'>;
+    user: Omit<User, 'passwordHash' | 'points'>;
     tokens: AuthTokens;
     message: string;
   }> {
@@ -105,7 +102,7 @@ export class AuthService {
     // Create user
     const skipVerification =
       this.configService.get('SKIP_EMAIL_VERIFICATION') === 'true';
-    const createData: any = {
+    const createData: Prisma.UserCreateInput = {
       email: data.email,
       passwordHash,
       emailVerified: skipVerification,
@@ -140,7 +137,7 @@ export class AuthService {
     // Auto-login: generate tokens immediately after registration
     const tokens = await this.generateTokens(user);
 
-    const { passwordHash: _, ...result } = user;
+    const { passwordHash: _, points: _points, ...result } = user;
     return {
       user: result,
       tokens,
@@ -158,7 +155,7 @@ export class AuthService {
     inviteToken: string;
     locale?: string;
   }): Promise<{
-    user: Omit<User, 'passwordHash'>;
+    user: Omit<User, 'passwordHash' | 'points'>;
     tokens: AuthTokens;
     message: string;
   }> {
@@ -232,7 +229,7 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user);
 
-    const { passwordHash: _, ...result } = user;
+    const { passwordHash: _, points: _points, ...result } = user;
     return {
       user: result,
       tokens,
@@ -247,7 +244,7 @@ export class AuthService {
    * @returns The authenticated user (without password hash) and access/refresh tokens
    */
   async login(data: LoginDto): Promise<{
-    user: Omit<User, 'passwordHash'>;
+    user: Omit<User, 'passwordHash' | 'points'>;
     tokens: AuthTokens;
     isNewUser: boolean;
   }> {
@@ -297,7 +294,7 @@ export class AuthService {
       data: { lastLoginAt: new Date() },
     });
 
-    const { passwordHash: _, ...result } = user;
+    const { passwordHash: _, points: _points, ...result } = user;
     return { user: result, tokens, isNewUser };
   }
 
@@ -566,7 +563,7 @@ export class AuthService {
     // Generate refresh token
     const refreshToken = randomBytes(64).toString('hex');
     const refreshExpiresIn =
-      this.configService.get('JWT_REFRESH_EXPIRES_IN') || '7d';
+      this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
     const expiresAt = new Date();
 
     // Parse expiration

@@ -9,6 +9,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { MemoryType } from '@prisma/client';
+import { MemoryTier } from './types';
+
+export { MemoryTier } from './types';
 
 // ==================== 类型定义 ====================
 
@@ -47,13 +50,6 @@ export interface MemoryScoreResult {
   tier: MemoryTier; // 推荐存储层级
   shouldDecay: boolean; // 是否应该衰减
   shouldArchive: boolean; // 是否应该归档
-}
-
-export enum MemoryTier {
-  WORKING = 'WORKING', // L1: 工作记忆 (RAM)
-  SHORT = 'SHORT', // L2: 短期记忆 (Redis)
-  LONG = 'LONG', // L3: 长期记忆 (PostgreSQL)
-  ARCHIVE = 'ARCHIVE', // L4: 归档 (冷存储)
 }
 
 // ==================== 重要性规则 ====================

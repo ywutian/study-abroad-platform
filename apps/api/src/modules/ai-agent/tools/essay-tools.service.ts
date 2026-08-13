@@ -10,6 +10,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { PolishStyle } from '../../essay/dto/essay-polish.dto';
 import { EssayStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { LLMService } from '../core/llm.service';
@@ -125,7 +126,9 @@ export class EssayToolsService implements IToolHandlerProvider {
       return await this.essayAiService.polishEssayDirect(
         userId,
         args.content,
-        (args.style as any) || 'default',
+        Object.values(PolishStyle).includes(args.style as PolishStyle)
+          ? (args.style as PolishStyle)
+          : undefined,
         locale,
       );
     } catch (error: any) {

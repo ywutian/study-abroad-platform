@@ -22,7 +22,7 @@ interface ErrorFallbackProps {
   onReload: () => void;
 }
 
-function ErrorFallback({ error, errorInfo, onRetry, onReload }: ErrorFallbackProps) {
+function ErrorFallback({ error, errorInfo: _errorInfo, onRetry, onReload }: ErrorFallbackProps) {
   const themeColors = useColors();
 
   return (
@@ -56,7 +56,9 @@ function ErrorFallback({ error, errorInfo, onRetry, onReload }: ErrorFallbackPro
             onPress={onRetry}
           >
             <Ionicons name="refresh-outline" size={20} color="#fff" />
-            <Text style={styles.retryButtonText}>{i18n.t('common.retry')}</Text>
+            <Text style={[styles.retryButtonText, { color: themeColors.primaryForeground }]}>
+              {i18n.t('common.retry')}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -108,7 +110,6 @@ export class ErrorBoundary extends Component<Props, State> {
     captureException(error, {
       componentStack: errorInfo.componentStack ?? undefined,
     });
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
   handleRetry = () => {
@@ -202,7 +203,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
   },
   retryButtonText: {
-    color: '#fff',
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
   },

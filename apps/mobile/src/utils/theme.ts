@@ -24,6 +24,7 @@ import {
 } from '@study-abroad/shared';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useThemeStore } from '@/stores/theme';
+import type { ImageStyle, TextStyle, ViewStyle } from 'react-native';
 
 type MobileThemeContract = ReturnType<typeof getMobileThemeContract>;
 type SharedColorRow = MobileThemeContract['colors'];
@@ -129,7 +130,9 @@ export function getColors(isDark?: boolean, palette: ColorPalette = DEFAULT_COLO
   return getPaletteColors(palette, isDark ? 'dark' : 'light');
 }
 
-export function createStyles<T extends Record<string, any>>(stylesCreator: (theme: Colors) => T) {
+export function createStyles<T extends Record<string, ViewStyle | TextStyle | ImageStyle>>(
+  stylesCreator: (theme: Colors) => T
+) {
   return (isDark: boolean): T => {
     const theme: Colors = getColors(isDark);
     return stylesCreator(theme);

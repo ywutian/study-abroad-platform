@@ -15,6 +15,7 @@ function school(overrides: Partial<TimelineResponse>): TimelineResponse {
     schoolId: 'school-id-1',
     schoolName: 'Princeton University',
     round: 'RD',
+    applicationYear: 2026,
     deadline: '2026-06-01T00:00:00.000Z',
     status: 'NOT_STARTED',
     progress: 0,
@@ -92,6 +93,25 @@ describe('timeline view model', () => {
     expect(model.archivedTimelines.map((item) => item.id)).toEqual(['stale-school']);
     expect(model.archivedPersonalEvents.map((item) => item.id)).toEqual(['stale-event']);
     expect(model.metrics.overdue).toBe(2);
+  });
+
+  it('keeps an upcoming event actionable after its registration deadline passes', () => {
+    const model = buildTimelineBoardModel(
+      [],
+      [
+        personal({
+          id: 'sat-test-day',
+          title: 'SAT',
+          deadline: '2026-05-01T00:00:00.000Z',
+          eventDate: '2026-06-06T00:00:00.000Z',
+        }),
+      ],
+      now
+    );
+
+    expect(model.todoItems.map((item) => item.id)).toEqual(['sat-test-day']);
+    expect(model.todoItems[0].date).toBe('2026-06-06T00:00:00.000Z');
+    expect(model.archivedPersonalEvents).toEqual([]);
   });
 
   it('sorts todo by urgency, then date, then priority', () => {

@@ -80,6 +80,7 @@ export default function PointsRedemptionsPage() {
   };
 
   const fulfil = useMutation({
+    // @cache-invalidation-allowed: onSuccess calls invalidate(), which invalidates the shared admin redemption prefix.
     mutationFn: ({ id, bookingUrl }: { id: string; bookingUrl?: string }) =>
       apiClient.patch(pointsAdminRoutes.fulfil(id), {
         fulfillment: bookingUrl ? { bookingUrl } : undefined,
@@ -92,6 +93,7 @@ export default function PointsRedemptionsPage() {
   });
 
   const cancel = useMutation({
+    // @cache-invalidation-allowed: onSuccess calls invalidate(), which invalidates the shared admin redemption prefix.
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       apiClient.patch(pointsAdminRoutes.cancel(id), { reason }),
     onSuccess: () => {
@@ -102,6 +104,7 @@ export default function PointsRedemptionsPage() {
   });
 
   const recordOutcome = useMutation({
+    // @cache-invalidation-allowed: onSuccess calls invalidate(), which invalidates the shared admin redemption prefix.
     mutationFn: ({ id, draft }: { id: string; draft: OutcomeDraft }) =>
       apiClient.patch(pointsAdminRoutes.recordOutcome(id), {
         attended: draft.attended,

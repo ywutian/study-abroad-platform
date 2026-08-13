@@ -121,11 +121,9 @@ async function setupAndroidChannel(): Promise<void> {
  */
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (IS_EXPO_GO_ANDROID || !Notifications) {
-    console.warn('useNotifications: Expo Go Android does not support remote push registration');
     return null;
   }
   if (!Device.isDevice) {
-    console.info('useNotifications: skipping push token registration on simulator/emulator');
     return null;
   }
 
@@ -146,7 +144,6 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       granted: boolean;
     };
     if (!newPerms.granted) {
-      console.warn('useNotifications: push notification permission not granted');
       return null;
     }
   }
@@ -313,7 +310,6 @@ export function useNotifications() {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
-  const userEmail = useAuthStore((state) => state.user?.email ?? null);
 
   const { setUnreadCount } = useNotificationStore();
   const notificationsEnabled = isAuthenticated && !!userId;
@@ -328,29 +324,8 @@ export function useNotifications() {
     refetch: refreshNotifications,
   } = useQuery<Notification[]>({
     queryKey: qk.notifications.list(userId),
-    queryFn: async () => {
-      try {
-        const result = await apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS);
-        if (__DEV__) {
-          console.info('useNotifications:list success', {
-            userId,
-            userEmail,
-            count: result.length,
-          });
-        }
-        return normalizeVisibleNotifications(result);
-      } catch (error) {
-        if (__DEV__) {
-          console.warn('useNotifications:list failed', {
-            userId,
-            userEmail,
-            isAuthenticated,
-            message: error instanceof Error ? error.message : String(error),
-          });
-        }
-        throw error;
-      }
-    },
+    queryFn: async () =>
+      normalizeVisibleNotifications(await apiClient.get<Notification[]>(API_ROUTES.NOTIFICATIONS)),
     enabled: notificationsEnabled,
     staleTime: 30_000, // 30 seconds
     refetchOnMount: 'always',
@@ -359,37 +334,9 @@ export function useNotifications() {
   // -------------------------------------------------------------------------
   // Fetch unread count
   // -------------------------------------------------------------------------
-  const {
-    data: unreadCountData,
-    error: unreadCountError,
-    refetch: refetchUnreadCount,
-  } = useQuery<UnreadCountResponse>({
+  const { data: unreadCountData, error: unreadCountError } = useQuery<UnreadCountResponse>({
     queryKey: qk.notifications.unreadCount(userId),
-    queryFn: async () => {
-      try {
-        const result = await apiClient.get<UnreadCountResponse>(
-          `${API_ROUTES.NOTIFICATIONS}/unread-count`
-        );
-        if (__DEV__) {
-          console.info('useNotifications:unread success', {
-            userId,
-            userEmail,
-            count: result.count,
-          });
-        }
-        return result;
-      } catch (error) {
-        if (__DEV__) {
-          console.warn('useNotifications:unread failed', {
-            userId,
-            userEmail,
-            isAuthenticated,
-            message: error instanceof Error ? error.message : String(error),
-          });
-        }
-        throw error;
-      }
-    },
+    queryFn: () => apiClient.get<UnreadCountResponse>(`${API_ROUTES.NOTIFICATIONS}/unread-count`),
     enabled: notificationsEnabled,
     staleTime: 15_000, // 15 seconds
     refetchOnMount: 'always',
@@ -518,7 +465,7 @@ export function useNotificationRuntime() {
           return Notifications.clearLastNotificationResponseAsync();
         }
       })
-      .catch((error) => console.info('useNotifications: cold-start response unavailable', error));
+      .catch(() => undefined);
 
     return () => {
       notificationListener.current?.remove();
@@ -532,9 +479,7 @@ export function useNotificationRuntime() {
     if (!enabled || preferences === undefined) return;
 
     if (!remotePushEnabled) {
-      void unregisterStoredPushToken().catch((error) =>
-        console.info('useNotifications: push-token cleanup unavailable', error)
-      );
+      void unregisterStoredPushToken().catch(() => undefined);
       setExpoPushToken(null);
       return;
     }
@@ -545,7 +490,7 @@ export function useNotificationRuntime() {
         await registerTokenWithRetry(token);
         setExpoPushToken(token);
       })
-      .catch((error) => console.info('useNotifications: push unavailable', error));
+      .catch(() => undefined);
   }, [enabled, preferences, remotePushEnabled]);
 
   const scheduleLocalNotification = useCallback(

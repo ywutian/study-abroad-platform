@@ -193,7 +193,7 @@ export function AssessmentIntro({
                         <Icon className="h-6 w-6" />
                       </span>
                       <div>
-                        <CardTitle className="text-xl">{test.title}</CardTitle>
+                        <CardTitle className="text-body-lg">{test.title}</CardTitle>
                         <p className="mt-1 text-sm text-muted-foreground">{test.description}</p>
                       </div>
                     </div>

@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RateLimiterService } from './rate-limiter.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import { RateLimiterService } from './rate-limiter.service';
 
 describe('RateLimiterService', () => {
   let service: RateLimiterService;
-  let redis: jest.Mocked<RedisService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,7 +20,6 @@ describe('RateLimiterService', () => {
     }).compile();
 
     service = module.get(RateLimiterService);
-    redis = module.get(RedisService);
   });
 
   it('should be defined', () => {

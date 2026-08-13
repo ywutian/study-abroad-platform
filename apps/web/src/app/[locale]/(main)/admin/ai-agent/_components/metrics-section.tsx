@@ -34,7 +34,7 @@ export function MetricsSection() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Gauge className="h-5 w-5" />
-            <CardTitle className="text-base">{t('metricsTitle')}</CardTitle>
+            <CardTitle className="text-body">{t('metricsTitle')}</CardTitle>
           </div>
           <Button
             variant="outline"
@@ -119,7 +119,7 @@ export function MetricsSection() {
                     return total > 0 ? `${((fallback / total) * 100).toFixed(1)}%` : '0%';
                   })()}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                <p className="text-2xs text-muted-foreground mt-0.5">
                   fast: {metrics.routing?.fast ?? 0} · embed: {metrics.routing?.embedding ?? 0} ·
                   llm: {metrics.routing?.llm ?? 0}
                 </p>
@@ -133,7 +133,7 @@ export function MetricsSection() {
                 <p className="text-lg font-bold mt-1">
                   {((metrics.critiques.passed / metrics.critiques.total) * 100).toFixed(1)}%
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
+                <p className="text-2xs text-muted-foreground mt-0.5">
                   {metrics.critiques.passed}/{metrics.critiques.total} passed ·{' '}
                   {metrics.critiques.failed} failed
                 </p>

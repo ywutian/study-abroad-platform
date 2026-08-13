@@ -1,14 +1,13 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminReviewService } from './admin-review.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
+import { AdminReviewService } from './admin-review.service';
 
 describe('AdminReviewService', () => {
   let service: AdminReviewService;
-  let prisma: PrismaService;
 
   const mockPrisma: any = {
     dataImportStaging: {
@@ -62,7 +61,6 @@ describe('AdminReviewService', () => {
     }).compile();
 
     service = module.get<AdminReviewService>(AdminReviewService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

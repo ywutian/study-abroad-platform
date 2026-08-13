@@ -172,7 +172,7 @@ async function callOpenAi(
   text: string,
   model: string,
 ): Promise<Extracted> {
-  const { callLlm } = await import('./lib/llm-call');
+  const { callLlm } = await import('./lib/llm-call.js');
   const userPrompt = `Extract Common Data Set Sections C9 (freshman class profile — high school GPA distribution) AND C21 (Early Decision/Early Action breakdown) from the PDF text for ${schoolName}.
 
 Return ONLY this JSON shape (no prose, no markdown):

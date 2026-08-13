@@ -39,7 +39,7 @@ export function SchoolPicker({
             <Target className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <CardTitle className="text-lg">{t('hall.ranking.selectSchools')}</CardTitle>
+            <CardTitle className="">{t('hall.ranking.selectSchools')}</CardTitle>
             <CardDescription>{t('hall.ranking.selectSchoolsDesc')}</CardDescription>
           </div>
         </div>

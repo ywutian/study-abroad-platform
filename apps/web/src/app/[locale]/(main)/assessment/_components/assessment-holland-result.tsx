@@ -128,7 +128,7 @@ export function AssessmentHollandResult({
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <Briefcase className="h-4 w-4 text-blue-500 dark:text-blue-400" />
               {t('holland.fields')}
             </CardTitle>
@@ -146,7 +146,7 @@ export function AssessmentHollandResult({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
               {t('holland.majors')}
             </CardTitle>

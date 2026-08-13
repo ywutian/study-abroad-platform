@@ -90,62 +90,77 @@ export class ProfileAiService {
   }
 
   private validateDetailedAnalysis(
-    data: any,
+    data: unknown,
     locale = 'zh',
   ): DetailedProfileAnalysisResponse {
     const isZh = locale === 'zh';
-    const validateSection = (section: any): SectionAnalysis => ({
-      status: ['green', 'yellow', 'red'].includes(section?.status)
-        ? section.status
-        : 'yellow',
-      score:
-        typeof section?.score === 'number'
-          ? Math.min(10, Math.max(1, section.score))
-          : 5,
-      feedback:
-        section?.feedback || (isZh ? '暂无评价' : 'No evaluation available'),
-      highlights: Array.isArray(section?.highlights) ? section.highlights : [],
-      improvements: Array.isArray(section?.improvements)
-        ? section.improvements
-        : [],
-    });
+    const record = (value: unknown): Record<string, unknown> =>
+      typeof value === 'object' && value !== null && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : {};
+    const strings = (value: unknown): string[] =>
+      Array.isArray(value)
+        ? value.filter((item): item is string => typeof item === 'string')
+        : [];
+    const root = record(data);
+    const sections = record(root.sections);
+    const suggestions = record(root.suggestions);
+    const validateSection = (value: unknown): SectionAnalysis => {
+      const section = record(value);
+      return {
+        status:
+          section.status === 'green' ||
+          section.status === 'yellow' ||
+          section.status === 'red'
+            ? section.status
+            : 'yellow',
+        score:
+          typeof section.score === 'number'
+            ? Math.min(10, Math.max(1, section.score))
+            : 5,
+        feedback:
+          typeof section.feedback === 'string'
+            ? section.feedback
+            : isZh
+              ? '暂无评价'
+              : 'No evaluation available',
+        highlights: strings(section.highlights),
+        improvements: strings(section.improvements),
+      };
+    };
 
     return {
       sections: {
-        academic: validateSection(data.sections?.academic),
-        testScores: validateSection(data.sections?.testScores),
-        activities: validateSection(data.sections?.activities),
-        awards: validateSection(data.sections?.awards),
+        academic: validateSection(sections.academic),
+        testScores: validateSection(sections.testScores),
+        activities: validateSection(sections.activities),
+        awards: validateSection(sections.awards),
       },
       overallScore:
-        typeof data.overallScore === 'number'
-          ? Math.min(100, Math.max(0, data.overallScore))
+        typeof root.overallScore === 'number'
+          ? Math.min(100, Math.max(0, root.overallScore))
           : 50,
-      tier: ['top10', 'top30', 'top50', 'top100', 'other'].includes(data.tier)
-        ? data.tier
-        : 'top50',
+      tier:
+        root.tier === 'top10' ||
+        root.tier === 'top30' ||
+        root.tier === 'top50' ||
+        root.tier === 'top100' ||
+        root.tier === 'other'
+          ? root.tier
+          : 'top50',
       suggestions: {
-        majors: Array.isArray(data.suggestions?.majors)
-          ? data.suggestions.majors
-          : [],
-        competitions: Array.isArray(data.suggestions?.competitions)
-          ? data.suggestions.competitions
-          : [],
-        activities: Array.isArray(data.suggestions?.activities)
-          ? data.suggestions.activities
-          : [],
-        summerPrograms: Array.isArray(data.suggestions?.summerPrograms)
-          ? data.suggestions.summerPrograms
-          : [],
-        timeline: Array.isArray(data.suggestions?.timeline)
-          ? data.suggestions.timeline
-          : [],
+        majors: strings(suggestions.majors),
+        competitions: strings(suggestions.competitions),
+        activities: strings(suggestions.activities),
+        summerPrograms: strings(suggestions.summerPrograms),
+        timeline: strings(suggestions.timeline),
       },
       summary:
-        data.summary ||
-        (isZh
-          ? '请完善档案信息以获取更准确的分析。'
-          : 'Please complete your profile for a more accurate analysis.'),
+        typeof root.summary === 'string'
+          ? root.summary
+          : isZh
+            ? '请完善档案信息以获取更准确的分析。'
+            : 'Please complete your profile for a more accurate analysis.',
     };
   }
 

@@ -11,6 +11,10 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { EssayType, EssayStatus } from '../../../common/types/enums';
 
+function parseOptionalInteger(value: unknown): number {
+  return Number.parseInt(String(value), 10);
+}
+
 export class QueryEssayPromptDto {
   @ApiPropertyOptional({ description: 'School ID' })
   @IsOptional()
@@ -20,7 +24,7 @@ export class QueryEssayPromptDto {
 
   @ApiPropertyOptional({ description: 'Application year' })
   @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => parseOptionalInteger(value))
   @IsInt()
   year?: number;
 
@@ -42,14 +46,14 @@ export class QueryEssayPromptDto {
 
   @ApiPropertyOptional({ description: 'Page number', default: 1 })
   @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => parseOptionalInteger(value))
   @IsInt()
   @Min(1)
   page?: number;
 
   @ApiPropertyOptional({ description: 'Items per page', default: 20 })
   @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => parseOptionalInteger(value))
   @IsInt()
   @Min(1)
   @Max(100)

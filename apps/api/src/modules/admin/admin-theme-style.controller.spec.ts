@@ -146,7 +146,7 @@ describe('AdminThemeStyleController', () => {
   });
 
   it('returns enterprise certification matrix for every theme combination', async () => {
-    const response = await controller.getCertificationMatrix();
+    const response = controller.getCertificationMatrix();
 
     expect(response.defaultPalette).toBe('cobalt-saas');
     expect(response.defaultHeroVisual).toBe('command-center');
@@ -157,7 +157,7 @@ describe('AdminThemeStyleController', () => {
   });
 
   it('certifies a single theme style without saving it', async () => {
-    const certification = await controller.certifyThemeStyle({
+    const certification = controller.certifyThemeStyle({
       palette: 'cobalt-saas',
       heroVisual: 'command-center',
       appearanceOverrides: {},

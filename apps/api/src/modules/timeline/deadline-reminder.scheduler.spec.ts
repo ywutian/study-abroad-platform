@@ -24,13 +24,11 @@ describe('DeadlineReminderScheduler', () => {
   // Fixed "now" so the 1/3/7-day windows are deterministic.
   const FIXED_NOW = new Date('2026-06-20T12:00:00Z');
 
-  // A deadline whose effective (rolled) date lands `days` from FIXED_NOW.
-  // `yearsAgo` lets a test store a PAST deadline that must roll forward (#436).
-  const deadlineForWindow = (days: number, yearsAgo = 0) => {
+  // A stored deadline that lands `days` from FIXED_NOW.
+  const deadlineForWindow = (days: number) => {
     const d = new Date(FIXED_NOW);
     d.setDate(d.getDate() + days);
     d.setHours(12, 0, 0, 0);
-    d.setFullYear(d.getFullYear() - yearsAgo);
     return d;
   };
 
@@ -85,29 +83,21 @@ describe('DeadlineReminderScheduler', () => {
     );
   });
 
-  it('rolls a past stored application deadline forward into the window (#436 consistency)', async () => {
-    // Stored deadline sits a year in the past (the drift case #436 fixes for the
-    // UI); its rolled next-occurrence lands 7 days out, so the reminder must fire.
+  it('does not turn a historical deadline into a reminder for a new cycle', async () => {
     prisma.applicationTimeline.findMany.mockResolvedValue([
       {
         id: 't1',
         schoolName: 'Yale',
         round: 'RD',
         userId: 'u1',
-        deadline: deadlineForWindow(7, 1),
+        deadline: new Date('2025-06-27T12:00:00Z'),
       },
     ]);
 
     const sent = await runWindow(7);
 
-    expect(sent).toBe(1);
-    expect(notifications.createNotification).toHaveBeenCalledWith(
-      'u1',
-      NotificationType.DEADLINE_REMINDER,
-      expect.objectContaining({
-        customContent: expect.stringContaining('Yale（RD）'),
-      }),
-    );
+    expect(sent).toBe(0);
+    expect(notifications.createNotification).not.toHaveBeenCalled();
   });
 
   it('ignores timelines whose effective deadline is outside the window or undated', async () => {
@@ -139,7 +129,10 @@ describe('DeadlineReminderScheduler', () => {
     expect(prisma.applicationTimeline.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          deadline: { not: null },
+          deadline: {
+            gte: new Date('2026-06-27T00:00:00.000Z'),
+            lte: new Date('2026-06-27T23:59:59.999Z'),
+          },
           status: {
             notIn: [
               'SUBMITTED',

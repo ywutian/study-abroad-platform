@@ -41,12 +41,12 @@ export function GapsTab({ contentGaps }: GapsTabProps) {
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">
                 {gap.sectionType && (
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-2xs">
                     {gap.sectionType}
                   </Badge>
                 )}
                 <span
-                  className={`inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium ${PRIORITY_COLORS[gap.priority] ?? PRIORITY_COLORS.medium}`}
+                  className={`inline-flex rounded-full px-1.5 py-0.5 text-2xs font-medium ${PRIORITY_COLORS[gap.priority] ?? PRIORITY_COLORS.medium}`}
                 >
                   {t(`severity.${gap.priority}`)}
                 </span>

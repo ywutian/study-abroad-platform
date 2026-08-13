@@ -3,10 +3,37 @@ import { MemoryType, EntityType } from '@prisma/client';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import {
+  type CaseActivity,
+  type CaseAward,
+  type CaseSource,
   parseCaseActivities,
   parseCaseAwards,
   parseCaseTestScores,
 } from '../../common/constants/data-formats';
+
+type CaseMemoryRecord = {
+  id: string;
+  schoolId?: string;
+  school?: { name: string; nameZh?: string | null } | null;
+  activities?: unknown;
+  awards?: unknown;
+  testScores?: unknown;
+  highSchoolType?: string | null;
+  curriculumType?: string | null;
+  demographicTags?: unknown;
+  year?: number;
+  result?: string;
+};
+
+type CaseMemoryInput = {
+  source?: CaseSource;
+  result?: string;
+  year?: number;
+  schoolId?: string;
+  major?: string;
+  gpaRange?: string;
+  round?: string;
+};
 
 @Injectable()
 export class CaseMemoryService {
@@ -22,8 +49,8 @@ export class CaseMemoryService {
    */
   async recordCreateCaseToMemory(
     userId: string,
-    admissionCase: any,
-    data: any,
+    admissionCase: CaseMemoryRecord,
+    data: CaseMemoryInput,
     locale = 'zh',
   ): Promise<void> {
     if (!this.memoryManager) return;
@@ -37,22 +64,23 @@ export class CaseMemoryService {
         : isZh
           ? '未知学校'
           : 'Unknown school';
+      const result = data.result ?? 'UNKNOWN';
       const resultText = isZh
-        ? data.result === 'ADMITTED'
+        ? result === 'ADMITTED'
           ? '录取'
-          : data.result === 'REJECTED'
+          : result === 'REJECTED'
             ? '拒绝'
-            : data.result === 'WAITLISTED'
+            : result === 'WAITLISTED'
               ? '候补'
-              : data.result
-        : data.result.toLowerCase();
+              : result
+        : result.toLowerCase();
 
       // Parse structured fields for rich memory content
       const activities = parseCaseActivities(admissionCase.activities);
       const awards = parseCaseAwards(admissionCase.awards);
       const testScores = parseCaseTestScores(admissionCase.testScores);
-      const satScore = testScores.find((t: any) => t.type === 'SAT');
-      const actScore = testScores.find((t: any) => t.type === 'ACT');
+      const satScore = testScores.find((score) => score.type === 'SAT');
+      const actScore = testScores.find((score) => score.type === 'ACT');
 
       // Build rich memory content
       const parts = isZh
@@ -65,12 +93,12 @@ export class CaseMemoryService {
             activities.length > 0 &&
               `活动：${activities.length}项 (${activities
                 .slice(0, 3)
-                .map((a: any) => a.description)
+                .map((activity: CaseActivity) => activity.description)
                 .join('、')})`,
             awards.length > 0 &&
               `奖项：${awards.length}项 (${awards
                 .slice(0, 3)
-                .map((a: any) => a.name)
+                .map((award: CaseAward) => award.name)
                 .join('、')})`,
             admissionCase.highSchoolType &&
               `高中类型：${admissionCase.highSchoolType}`,
@@ -86,12 +114,12 @@ export class CaseMemoryService {
             activities.length > 0 &&
               `Activities: ${activities.length} (${activities
                 .slice(0, 3)
-                .map((a: any) => a.description)
+                .map((activity: CaseActivity) => activity.description)
                 .join(', ')})`,
             awards.length > 0 &&
               `Awards: ${awards.length} (${awards
                 .slice(0, 3)
-                .map((a: any) => a.name)
+                .map((award: CaseAward) => award.name)
                 .join(', ')})`,
             admissionCase.highSchoolType &&
               `HS Type: ${admissionCase.highSchoolType}`,
@@ -145,7 +173,7 @@ export class CaseMemoryService {
    */
   async recordViewCaseToMemory(
     userId: string,
-    caseItem: any,
+    caseItem: CaseMemoryRecord,
     locale = 'zh',
   ): Promise<void> {
     if (!this.memoryManager) return;

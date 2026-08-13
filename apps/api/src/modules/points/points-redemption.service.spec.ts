@@ -62,6 +62,20 @@ describe('PointsRedemptionService', () => {
     await expect(service.getCatalog()).resolves.toEqual([]);
   });
 
+  it('returns no user redemption history while the points economy is disabled', async () => {
+    const findMany = jest.fn();
+    const service = new PointsRedemptionService(
+      { pointsRedemption: { findMany } } as unknown as PrismaService,
+      {} as PointsService,
+      {
+        isEnabled: jest.fn().mockResolvedValue(false),
+      } as unknown as PointsConfigService,
+    );
+
+    await expect(service.getHistory('user-1')).resolves.toEqual([]);
+    expect(findMany).not.toHaveBeenCalled();
+  });
+
   // ── the spend must be atomic ────────────────────────────────────────────
   // Before this, redeem() charged the points and THEN created the ledger row.
   // A failure in between took the user's points and left no redemption to
@@ -160,10 +174,10 @@ describe('PointsRedemptionService', () => {
         updateMany,
       },
     });
-    const adjustPoints = jest
+    const refundHistoricalAdjustment = jest
       .fn()
-      .mockResolvedValue({ success: true, newBalance: 5000 });
-    const points = { adjustPoints } as unknown as PointsService;
+      .mockResolvedValue({ success: true, newBalance: 5000, points: 2000 });
+    const points = { refundHistoricalAdjustment } as unknown as PointsService;
 
     const service = new PointsRedemptionService(
       prisma,
@@ -173,19 +187,84 @@ describe('PointsRedemptionService', () => {
     await service.cancel('r-1', 'counselor unavailable');
 
     expect(committed.value).toBe(true);
-    expect(adjustPoints).toHaveBeenCalledWith(
+    expect(refundHistoricalAdjustment).toHaveBeenCalledWith(
       'user-1',
       'REFUND_CONSULT_15MIN',
-      expect.objectContaining({ reason: 'counselor unavailable' }),
       2000, // positive — the refund
+      expect.objectContaining({ reason: 'counselor unavailable' }),
       expect.anything(), // the tx client
     );
+  });
+
+  it('refunds an existing redemption even when the points economy is disabled', async () => {
+    const { prisma, committed } = txPrisma({
+      pointsRedemption: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'r-closed',
+          userId: 'user-1',
+          type: RedemptionType.CASE_PREMIUM_UNLOCK,
+          pointsSpent: 500,
+          status: RedemptionStatus.PENDING,
+        }),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+    });
+    const refundHistoricalAdjustment = jest
+      .fn()
+      .mockResolvedValue({ success: true, newBalance: 500, points: 500 });
+    const service = new PointsRedemptionService(
+      prisma,
+      { refundHistoricalAdjustment } as unknown as PointsService,
+      {
+        isEnabled: jest.fn().mockResolvedValue(false),
+      } as unknown as PointsConfigService,
+    );
+
+    await service.cancel('r-closed', 'product retired');
+
+    expect(committed.value).toBe(true);
+    expect(refundHistoricalAdjustment).toHaveBeenCalledWith(
+      'user-1',
+      'REFUND_CASE_PREMIUM_UNLOCK',
+      500,
+      expect.objectContaining({ redemptionId: 'r-closed' }),
+      expect.anything(),
+    );
+  });
+
+  it('rolls back cancellation when the historical refund does not apply', async () => {
+    const { prisma, committed } = txPrisma({
+      pointsRedemption: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'r-failed',
+          userId: 'user-1',
+          type: RedemptionType.CONSULT_15MIN,
+          pointsSpent: 2000,
+          status: RedemptionStatus.PENDING,
+        }),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+    });
+    const service = new PointsRedemptionService(
+      prisma,
+      {
+        refundHistoricalAdjustment: jest
+          .fn()
+          .mockResolvedValue({ success: false, newBalance: 10, points: 0 }),
+      } as unknown as PointsService,
+      enabledConfig(),
+    );
+
+    await expect(service.cancel('r-failed', 'refund failure')).rejects.toThrow(
+      'Failed to refund',
+    );
+    expect(committed.value).toBe(false);
   });
 
   it('does not refund twice when two cancels race', async () => {
     // Second caller: the conditional update matches nothing because the first
     // already moved the row out of PENDING.
-    const adjustPoints = jest.fn();
+    const refundHistoricalAdjustment = jest.fn();
     const { prisma } = txPrisma({
       pointsRedemption: {
         findUnique: jest.fn().mockResolvedValue({
@@ -198,7 +277,7 @@ describe('PointsRedemptionService', () => {
         updateMany: jest.fn().mockResolvedValue({ count: 0 }),
       },
     });
-    const points = { adjustPoints } as unknown as PointsService;
+    const points = { refundHistoricalAdjustment } as unknown as PointsService;
 
     const service = new PointsRedemptionService(
       prisma,
@@ -208,7 +287,7 @@ describe('PointsRedemptionService', () => {
     await expect(service.cancel('r-1', 'dup')).rejects.toThrow(
       BadRequestException,
     );
-    expect(adjustPoints).not.toHaveBeenCalled();
+    expect(refundHistoricalAdjustment).not.toHaveBeenCalled();
   });
 
   it('does not fulfil the same redemption twice', async () => {

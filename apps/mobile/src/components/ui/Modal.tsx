@@ -57,14 +57,9 @@ export function Modal({
                   styles.container,
                   {
                     backgroundColor: colors.card,
-                    maxHeight: fullScreen ? '100%' : '80%',
                     paddingBottom: insets.bottom || spacing.lg,
                   },
-                  fullScreen && {
-                    height: '100%',
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                  },
+                  fullScreen ? styles.fullScreen : styles.constrainedHeight,
                   style,
                 ]}
               >
@@ -168,6 +163,13 @@ const styles = StyleSheet.create({
     maxWidth: 500,
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
+  },
+  constrainedHeight: { maxHeight: '80%' },
+  fullScreen: {
+    maxHeight: '100%',
+    height: '100%',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   header: {
     flexDirection: 'row',

@@ -2,7 +2,7 @@
  * API 客户端 - 与主平台通信
  */
 
-import type { UserProfile, StorageData } from './types';
+import type { Activity, Award, Essay, StorageData, UserProfile } from './types';
 
 // 从环境变量或默认值获取 API 地址
 const API_BASE_URL = 'https://www.lumniedu.com/api/v1';
@@ -139,114 +139,162 @@ export async function checkLoginStatus(): Promise<boolean> {
 /**
  * 转换 API 响应为 UserProfile 格式
  */
-function transformApiResponse(data: any): UserProfile {
-  const profile = data.profile || {};
-  const user = data.user || data;
+type ApiRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): ApiRecord {
+  return typeof value === 'object' && value !== null ? (value as ApiRecord) : {};
+}
+
+function asRecords(value: unknown): ApiRecord[] {
+  return Array.isArray(value) ? value.map(asRecord) : [];
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function transformApiResponse(data: unknown): UserProfile {
+  const root = asRecord(data);
+  const profile = asRecord(root.profile);
+  const user = Object.keys(asRecord(root.user)).length > 0 ? asRecord(root.user) : root;
+  const address = asRecord(profile.address);
+  const citizenship = asRecord(profile.citizenship);
+  const gender = ['male', 'female', 'other'].includes(String(profile.gender))
+    ? (profile.gender as UserProfile['gender'])
+    : undefined;
 
   return {
-    firstName: profile.firstName || '',
-    lastName: profile.lastName || '',
-    middleName: profile.middleName,
-    preferredName: profile.preferredName,
-    dateOfBirth: profile.dateOfBirth,
-    gender: profile.gender,
-    email: user.email || '',
-    phone: profile.phone,
+    firstName: optionalString(profile.firstName) ?? '',
+    lastName: optionalString(profile.lastName) ?? '',
+    middleName: optionalString(profile.middleName),
+    preferredName: optionalString(profile.preferredName),
+    dateOfBirth: optionalString(profile.dateOfBirth),
+    gender,
+    email: optionalString(user.email) ?? '',
+    phone: optionalString(profile.phone),
 
     address: profile.address
       ? {
-          street: profile.address.street,
-          city: profile.address.city,
-          state: profile.address.state,
-          zipCode: profile.address.zipCode,
-          country: profile.address.country,
+          street: optionalString(address.street),
+          city: optionalString(address.city),
+          state: optionalString(address.state),
+          zipCode: optionalString(address.zipCode),
+          country: optionalString(address.country),
         }
       : undefined,
 
     citizenship: profile.citizenship
       ? {
-          country: profile.citizenship.country,
-          status: profile.citizenship.status,
+          country: optionalString(citizenship.country),
+          status: optionalString(citizenship.status),
         }
       : undefined,
 
     education: {
-      currentSchool: profile.currentSchool,
-      schoolCity: profile.schoolCity,
-      schoolState: profile.schoolState,
-      graduationYear: profile.graduationYear,
-      gpa: profile.gpa,
-      gpaScale: profile.gpaScale || 4.0,
-      classRank: profile.classRank,
-      classSize: profile.classSize,
+      currentSchool: optionalString(profile.currentSchool),
+      schoolCity: optionalString(profile.schoolCity),
+      schoolState: optionalString(profile.schoolState),
+      graduationYear: optionalNumber(profile.graduationYear),
+      gpa: optionalNumber(profile.gpa),
+      gpaScale: optionalNumber(profile.gpaScale) ?? 4,
+      classRank: optionalNumber(profile.classRank),
+      classSize: optionalNumber(profile.classSize),
     },
 
-    testScores: transformTestScores(data.testScores || []),
+    testScores: transformTestScores(root.testScores),
 
-    activities: (data.activities || []).map((a: any) => ({
-      name: a.name,
-      type: a.type,
-      description: a.description,
-      role: a.role || '',
-      grade9: a.grades?.includes('9') || false,
-      grade10: a.grades?.includes('10') || false,
-      grade11: a.grades?.includes('11') || false,
-      grade12: a.grades?.includes('12') || false,
-      hoursPerWeek: a.hoursPerWeek || 0,
-      weeksPerYear: a.weeksPerYear || 0,
-    })),
+    activities: asRecords(root.activities).map(transformActivity),
 
-    awards: (data.awards || []).map((a: any) => ({
-      name: a.name,
-      level: a.level || 'school',
-      year: a.year,
-      description: a.description,
-    })),
+    awards: asRecords(root.awards).map(transformAward),
 
-    essays: (data.essays || []).map((e: any) => ({
-      prompt: e.prompt || '',
-      content: e.content || '',
-      wordCount: e.wordCount || 0,
-    })),
+    essays: asRecords(root.essays).map(transformEssay),
+  };
+}
+
+function transformActivity(activity: ApiRecord): Activity {
+  const grades = Array.isArray(activity.grades) ? activity.grades : [];
+  return {
+    name: optionalString(activity.name) ?? '',
+    type: optionalString(activity.type) ?? '',
+    description: optionalString(activity.description) ?? '',
+    role: optionalString(activity.role) ?? '',
+    grade9: grades.includes('9'),
+    grade10: grades.includes('10'),
+    grade11: grades.includes('11'),
+    grade12: grades.includes('12'),
+    hoursPerWeek: optionalNumber(activity.hoursPerWeek) ?? 0,
+    weeksPerYear: optionalNumber(activity.weeksPerYear) ?? 0,
+  };
+}
+
+function transformAward(award: ApiRecord): Award {
+  const allowedLevels: Award['level'][] = [
+    'school',
+    'regional',
+    'state',
+    'national',
+    'international',
+  ];
+  const level = allowedLevels.includes(award.level as Award['level'])
+    ? (award.level as Award['level'])
+    : 'school';
+  return {
+    name: optionalString(award.name) ?? '',
+    level,
+    year: optionalNumber(award.year) ?? new Date().getFullYear(),
+    description: optionalString(award.description),
+  };
+}
+
+function transformEssay(essay: ApiRecord): Essay {
+  return {
+    prompt: optionalString(essay.prompt) ?? '',
+    content: optionalString(essay.content) ?? '',
+    wordCount: optionalNumber(essay.wordCount) ?? 0,
   };
 }
 
 /**
  * 转换标化成绩
  */
-function transformTestScores(scores: any[]): UserProfile['testScores'] {
+function transformTestScores(value: unknown): UserProfile['testScores'] {
   const result: UserProfile['testScores'] = {};
 
-  for (const score of scores) {
-    switch (score.testType?.toUpperCase()) {
+  for (const score of asRecords(value)) {
+    const sections = asRecord(score.scores);
+    switch (optionalString(score.testType)?.toUpperCase()) {
       case 'SAT':
         result.SAT = {
-          total: score.totalScore,
-          math: score.scores?.math,
-          reading: score.scores?.reading,
+          total: optionalNumber(score.totalScore),
+          math: optionalNumber(sections.math),
+          reading: optionalNumber(sections.reading),
         };
         break;
       case 'ACT':
         result.ACT = {
-          composite: score.totalScore,
-          english: score.scores?.english,
-          math: score.scores?.math,
-          reading: score.scores?.reading,
-          science: score.scores?.science,
+          composite: optionalNumber(score.totalScore),
+          english: optionalNumber(sections.english),
+          math: optionalNumber(sections.math),
+          reading: optionalNumber(sections.reading),
+          science: optionalNumber(sections.science),
         };
         break;
       case 'TOEFL':
         result.TOEFL = {
-          total: score.totalScore,
-          reading: score.scores?.reading,
-          listening: score.scores?.listening,
-          speaking: score.scores?.speaking,
-          writing: score.scores?.writing,
+          total: optionalNumber(score.totalScore),
+          reading: optionalNumber(sections.reading),
+          listening: optionalNumber(sections.listening),
+          speaking: optionalNumber(sections.speaking),
+          writing: optionalNumber(sections.writing),
         };
         break;
       case 'IELTS':
         result.IELTS = {
-          overall: score.totalScore,
+          overall: optionalNumber(score.totalScore),
         };
         break;
     }

@@ -91,7 +91,10 @@ export class ProfileReadinessService {
         },
       }),
       this.prisma.applicationTimeline.findMany({
-        where: { userId },
+        where: {
+          userId,
+          applicationYear: { gte: resolveApplicationYear(now) },
+        },
         select: {
           schoolId: true,
           round: true,

@@ -56,16 +56,16 @@ function getAddErrorMessage(
 export function useProfileMutations() {
   const t = useTranslations();
   const queryClient = useQueryClient();
-  const invalidateAnalysisQueries = () => {
+  const invalidateAnalysisQueries = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
     queryClient.invalidateQueries({ queryKey: ['prediction'] });
     queryClient.invalidateQueries({ queryKey: ['predictions'] });
-  };
-  const invalidateProfileDependents = () => {
+  }, [queryClient]);
+  const invalidateProfileDependents = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['profile'] });
     queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     invalidateAnalysisQueries();
-  };
+  }, [invalidateAnalysisQueries, queryClient]);
 
   // Form dialog state
   const [scoreFormOpen, setScoreFormOpen] = useState(false);
@@ -318,7 +318,14 @@ export function useProfileMutations() {
         toast.success(t('profile.toast.schoolRemoved'));
       }
     },
-    [addSchoolMutation, removeSchoolMutation, defaultRound, queryClient, t]
+    [
+      addSchoolMutation,
+      removeSchoolMutation,
+      defaultRound,
+      queryClient,
+      invalidateProfileDependents,
+      t,
+    ]
   );
 
   const handleAiSortAccept = useCallback(

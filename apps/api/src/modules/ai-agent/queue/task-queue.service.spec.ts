@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TaskQueueService, TaskType, TaskStatus } from './task-queue.service';
-import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { TaskQueueService, TaskType } from './task-queue.service';
 
 describe('TaskQueueService', () => {
   let service: TaskQueueService;

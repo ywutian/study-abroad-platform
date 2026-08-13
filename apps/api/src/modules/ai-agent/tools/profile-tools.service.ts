@@ -27,7 +27,12 @@ export class ProfileToolsService implements IToolHandlerProvider {
       [
         'update_profile',
         (args, userId, _ctx, locale) =>
-          this.updateProfile(userId, args.field, args.value, locale),
+          this.updateProfile(
+            userId,
+            args.field ?? '',
+            args.value ?? '',
+            locale,
+          ),
       ],
     ]);
   }

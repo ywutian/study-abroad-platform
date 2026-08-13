@@ -132,7 +132,7 @@ export function NetworkProvider({ children }: NetworkProviderProps) {
               size={20}
               color="#fff"
             />
-            <Text style={styles.bannerText}>
+            <Text style={[styles.bannerText, { color: colors.primaryForeground }]}>
               {isOffline ? t('ui.network.offline') : t('ui.network.restored')}
             </Text>
           </View>
@@ -158,7 +158,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   bannerText: {
-    color: '#fff',
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
   },

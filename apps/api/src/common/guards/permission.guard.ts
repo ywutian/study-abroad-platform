@@ -16,6 +16,18 @@ const CACHE_TTL = REDIS_TTL.PERMISSION;
 const ROLE_CACHE_PREFIX = 'role_perms:';
 const USER_CACHE_PREFIX = 'user_perms:';
 
+type PermissionRequest = {
+  user?: { id: string; role: Role };
+};
+
+function parsePermissionList(value: string): string[] | null {
+  const parsed: unknown = JSON.parse(value);
+  return Array.isArray(parsed) &&
+    parsed.every((item) => typeof item === 'string')
+    ? parsed
+    : null;
+}
+
 @Injectable()
 export class PermissionGuard implements CanActivate {
   private readonly logger = new Logger(PermissionGuard.name);
@@ -37,7 +49,7 @@ export class PermissionGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const { user } = context.switchToHttp().getRequest<PermissionRequest>();
     if (!user) {
       throw new ForbiddenException('User not found');
     }
@@ -80,7 +92,8 @@ export class PermissionGuard implements CanActivate {
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       // @cache-parse-allowed - returns string[]; no Date to lose
-      return JSON.parse(cached);
+      const parsed = parsePermissionList(cached);
+      if (parsed) return parsed;
     }
 
     // Get role-level permissions
@@ -123,7 +136,8 @@ export class PermissionGuard implements CanActivate {
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       // @cache-parse-allowed - returns string[]; no Date to lose
-      return JSON.parse(cached);
+      const parsed = parsePermissionList(cached);
+      if (parsed) return parsed;
     }
 
     // Query DB

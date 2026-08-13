@@ -1,325 +1,47 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { Stack, router } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
-  TouchableOpacity,
+  Image,
   RefreshControl,
   ScrollView,
-  TextInput,
-  Image,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import {
   AnimatedCard,
-  CardContent,
   Badge,
-  RankingBadge,
+  CardContent,
   EmptyState,
   Loading,
+  RankingBadge,
   SearchBar,
   Skeleton,
-  AnimatedButton,
 } from '@/components/ui';
-import { SchoolAvatar } from '@/components/features/SchoolAvatar';
-import { Modal } from '@/components/ui/Modal';
-import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
-import { useDebouncedSearch } from '@/hooks/api';
-import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
+import { useDebouncedSearch, usePaginatedQuery } from '@/hooks/api';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
-import { usePaginatedQuery } from '@/hooks/api';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
-import { formatAcceptanceRate } from '@/utils/format';
 import type { School } from '@/types';
+import { formatAcceptanceRate } from '@/utils/format';
+import { fontFamily, spacing, useColors, withOpacity } from '@/utils/theme';
+import { API_ROUTES, schoolListRoutes } from '@study-abroad/shared';
+import { styles } from './find-college.styles';
 
-// ============== Constants ==============
-
-const US_STATES = [
-  'California',
-  'New York',
-  'Massachusetts',
-  'Texas',
-  'Pennsylvania',
-  'Illinois',
-  'Florida',
-  'Michigan',
-  'Ohio',
-  'Georgia',
-  'North Carolina',
-  'Virginia',
-  'Washington',
-  'Maryland',
-  'Connecticut',
-  'New Jersey',
-  'Indiana',
-  'Minnesota',
-  'Wisconsin',
-  'Colorado',
-];
-
-const SCHOOL_TYPE_OPTIONS = [
-  { value: 'all', labelKey: 'findCollege.filters.typeAll' },
-  { value: 'private', labelKey: 'findCollege.filters.typePrivate' },
-  { value: 'public', labelKey: 'findCollege.filters.typePublic' },
-];
-
-const PAGE_LIMIT = 20;
-
-// ============== Types ==============
-
-interface Filters {
-  minRank: string;
-  maxRank: string;
-  minTuition: string;
-  maxTuition: string;
-  minAcceptanceRate: string;
-  maxAcceptanceRate: string;
-  state: string;
-  type: string;
-}
-
-const DEFAULT_FILTERS: Filters = {
-  minRank: '',
-  maxRank: '',
-  minTuition: '',
-  maxTuition: '',
-  minAcceptanceRate: '',
-  maxAcceptanceRate: '',
-  state: '',
-  type: 'all',
-};
-
-// ============== Filter Modal ==============
-
-interface FilterModalProps {
-  visible: boolean;
-  onClose: () => void;
-  filters: Filters;
-  onApply: (filters: Filters) => void;
-  onReset: () => void;
-}
-
-function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModalProps) {
-  const { t } = useTranslation();
-  const colors = useColors();
-  const [draft, setDraft] = useState<Filters>(filters);
-
-  // Sync draft when modal opens
-  React.useEffect(() => {
-    if (visible) {
-      setDraft(filters);
-    }
-  }, [visible, filters]);
-
-  const updateDraft = (key: keyof Filters, value: string) => {
-    setDraft((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const stateOptions = [
-    { value: '', label: t('findCollege.filters.allStates') },
-    ...US_STATES.map((s) => ({ value: s, label: s })),
-  ];
-
-  const typeOptions = SCHOOL_TYPE_OPTIONS.map((o) => ({
-    value: o.value,
-    label: t(o.labelKey, o.value === 'all' ? 'All' : o.value === 'private' ? 'Private' : 'Public'),
-  }));
-
-  const handleApply = () => {
-    onApply(draft);
-    onClose();
-  };
-
-  const handleReset = () => {
-    setDraft(DEFAULT_FILTERS);
-    onReset();
-    onClose();
-  };
-
-  return (
-    <Modal
-      visible={visible}
-      onClose={onClose}
-      title={t('findCollege.filters.title')}
-      footer={
-        <>
-          <AnimatedButton variant="outline" onPress={handleReset} style={styles.filterActionButton}>
-            {t('findCollege.filters.reset')}
-          </AnimatedButton>
-          <AnimatedButton onPress={handleApply} style={styles.filterActionButton}>
-            {t('findCollege.filters.apply')}
-          </AnimatedButton>
-        </>
-      }
-    >
-      {/* Rank Range */}
-      <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.rankRange')}
-      </Text>
-      <View style={styles.rangeRow}>
-        <View style={styles.rangeInputWrapper}>
-          <TextInput
-            style={[
-              styles.rangeInput,
-              {
-                backgroundColor: colors.input,
-                borderColor: colors.inputBorder,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder={t('findCollege.filters.min')}
-            placeholderTextColor={colors.placeholder}
-            value={draft.minRank}
-            onChangeText={(v) => updateDraft('minRank', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            maxLength={3}
-          />
-        </View>
-        <Text style={[styles.rangeSeparator, { color: colors.foregroundMuted }]}>-</Text>
-        <View style={styles.rangeInputWrapper}>
-          <TextInput
-            style={[
-              styles.rangeInput,
-              {
-                backgroundColor: colors.input,
-                borderColor: colors.inputBorder,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder={t('findCollege.filters.max')}
-            placeholderTextColor={colors.placeholder}
-            value={draft.maxRank}
-            onChangeText={(v) => updateDraft('maxRank', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            maxLength={3}
-          />
-        </View>
-      </View>
-
-      {/* Tuition Range */}
-      <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.tuitionRange')}
-      </Text>
-      <View style={styles.rangeRow}>
-        <View style={styles.rangeInputWrapper}>
-          <TextInput
-            style={[
-              styles.rangeInput,
-              {
-                backgroundColor: colors.input,
-                borderColor: colors.inputBorder,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder="$0"
-            placeholderTextColor={colors.placeholder}
-            value={draft.minTuition}
-            onChangeText={(v) => updateDraft('minTuition', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-        </View>
-        <Text style={[styles.rangeSeparator, { color: colors.foregroundMuted }]}>-</Text>
-        <View style={styles.rangeInputWrapper}>
-          <TextInput
-            style={[
-              styles.rangeInput,
-              {
-                backgroundColor: colors.input,
-                borderColor: colors.inputBorder,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder="$80,000"
-            placeholderTextColor={colors.placeholder}
-            value={draft.maxTuition}
-            onChangeText={(v) => updateDraft('maxTuition', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-        </View>
-      </View>
-
-      {/* Acceptance Rate Range */}
-      <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.acceptanceRate')}
-      </Text>
-      <View style={styles.rangeRow}>
-        <View style={styles.rangeInputWrapper}>
-          <TextInput
-            style={[
-              styles.rangeInput,
-              {
-                backgroundColor: colors.input,
-                borderColor: colors.inputBorder,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder="0%"
-            placeholderTextColor={colors.placeholder}
-            value={draft.minAcceptanceRate}
-            onChangeText={(v) => updateDraft('minAcceptanceRate', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            maxLength={3}
-          />
-        </View>
-        <Text style={[styles.rangeSeparator, { color: colors.foregroundMuted }]}>-</Text>
-        <View style={styles.rangeInputWrapper}>
-          <TextInput
-            style={[
-              styles.rangeInput,
-              {
-                backgroundColor: colors.input,
-                borderColor: colors.inputBorder,
-                color: colors.foreground,
-              },
-            ]}
-            placeholder="100%"
-            placeholderTextColor={colors.placeholder}
-            value={draft.maxAcceptanceRate}
-            onChangeText={(v) => updateDraft('maxAcceptanceRate', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            maxLength={3}
-          />
-        </View>
-      </View>
-
-      {/* State */}
-      <Select
-        label={t('findCollege.filters.state')}
-        options={stateOptions}
-        value={draft.state}
-        onChange={(v) => updateDraft('state', v)}
-        placeholder={t('findCollege.filters.allStates')}
-      />
-
-      {/* School Type */}
-      <Select
-        label={t('findCollege.filters.type')}
-        options={typeOptions}
-        value={draft.type}
-        onChange={(v) => updateDraft('type', v)}
-      />
-    </Modal>
-  );
-}
+import {
+  DEFAULT_FILTERS,
+  FilterModal,
+  PAGE_LIMIT,
+  type Filters,
+} from '@/components/features/find-college/FilterModal';
 
 // ============== Helpers ==============
 
@@ -726,6 +448,7 @@ export default function FindCollegePage() {
       toggleSchoolList,
       addToListMutation.isPending,
       removeFromListMutation.isPending,
+      t,
     ]
   );
 
@@ -758,8 +481,8 @@ export default function FindCollegePage() {
                     <Skeleton width={56} height={56} borderRadius={28} />
                     <View style={styles.schoolInfo}>
                       <Skeleton width="80%" height={18} />
-                      <Skeleton width="50%" height={14} style={{ marginTop: 8 }} />
-                      <Skeleton width="40%" height={12} style={{ marginTop: 6 }} />
+                      <Skeleton width="50%" height={14} style={styles.skeletonMarginTop} />
+                      <Skeleton width="40%" height={12} style={styles.skeletonMarginTopSmall} />
                     </View>
                   </View>
                   <View style={[styles.statsRow, { marginTop: spacing.md }]}>
@@ -850,10 +573,12 @@ export default function FindCollegePage() {
                 accessibilityState={{ selected: active }}
                 style={[
                   styles.chip,
-                  {
-                    backgroundColor: active ? withOpacity(colors.primary, 0.08) : colors.muted,
-                    borderColor: active ? colors.primary : 'transparent',
-                  },
+                  active
+                    ? {
+                        backgroundColor: withOpacity(colors.primary, 0.08),
+                        borderColor: colors.primary,
+                      }
+                    : { backgroundColor: colors.muted },
                 ]}
               >
                 <Ionicons
@@ -951,212 +676,3 @@ export default function FindCollegePage() {
 }
 
 // ============== Styles ==============
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
-  // Search
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    paddingBottom: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  searchBar: {
-    flex: 1,
-    marginRight: spacing.sm,
-    marginBottom: 0,
-  },
-  filterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  filterBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  filterBadgeText: {
-    fontSize: 10,
-    fontWeight: fontWeight.bold,
-  },
-
-  // Filter Chips
-  chipsScroll: {
-    flexGrow: 0,
-  },
-  chipsContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.xs + 2,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-  },
-  chipIcon: {
-    marginRight: spacing.xs,
-  },
-  chipText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-
-  // Active Filter Tags
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.xs,
-    paddingLeft: spacing.sm,
-    paddingRight: spacing.xs,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-  },
-  tagText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-  tagCloseIcon: {
-    marginLeft: spacing.xs,
-  },
-
-  // Results count
-  resultCountContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  resultCountText: {
-    fontSize: fontSize.sm,
-  },
-
-  // List
-  list: {
-    padding: spacing.lg,
-    paddingTop: 0,
-  },
-  cardWrapper: {
-    marginBottom: spacing.md,
-  },
-  cardContent: {
-    gap: spacing.sm,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  mediaStack: {
-    width: 92,
-    height: 64,
-    justifyContent: 'center',
-  },
-  coverThumb: {
-    width: 92,
-    height: 64,
-    borderRadius: borderRadius.md,
-  },
-  logoOverlay: {
-    position: 'absolute',
-    left: 6,
-    bottom: 6,
-  },
-  schoolInfo: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  schoolName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: 2,
-  },
-  schoolNameZh: {
-    fontSize: fontSize.sm,
-    marginBottom: 2,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 2,
-  },
-  locationText: {
-    fontSize: fontSize.xs,
-  },
-  heartButton: {
-    padding: spacing.xs,
-    marginLeft: spacing.sm,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-  },
-
-  // Loading / Footer
-  loadingContainer: {
-    flex: 1,
-  },
-  skeletonCard: {
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.lg,
-  },
-  footer: {
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-
-  // Filter Modal
-  filterSectionLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    marginBottom: spacing.sm,
-    marginTop: spacing.md,
-  },
-  rangeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  rangeInputWrapper: {
-    flex: 1,
-  },
-  rangeInput: {
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: fontSize.base,
-    minHeight: 44,
-  },
-  rangeSeparator: {
-    marginHorizontal: spacing.sm,
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-  },
-  filterActionButton: {
-    flex: 1,
-  },
-});

@@ -45,7 +45,7 @@ export function PoliciesTab() {
       }),
   });
 
-  const policies = data?.items ?? [];
+  const policies = useMemo(() => data?.items ?? [], [data]);
 
   useEffect(() => {
     if (selectedPolicyId || policies.length === 0) return;
@@ -127,7 +127,7 @@ export function PoliciesTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <GitBranch className="h-4 w-4" />
             {t('title')}
           </CardTitle>
@@ -227,7 +227,7 @@ export function PoliciesTab() {
         <div className="grid min-w-0 gap-4 xl:grid-cols-[1.1fr_0.9fr]">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-body">
                 <BarChart3 className="h-4 w-4" />
                 {t('gateSummary')}
               </CardTitle>
@@ -318,7 +318,7 @@ export function PoliciesTab() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-body">
                 <Compass className="h-4 w-4" />
                 {t('releaseControls')}
               </CardTitle>

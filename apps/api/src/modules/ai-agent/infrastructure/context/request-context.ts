@@ -38,7 +38,7 @@ export interface RequestContextData {
   agentType?: string;
 
   // 自定义数据
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 /**
@@ -63,14 +63,17 @@ class RequestContextStore {
     return this.storage.getStore();
   }
 
-  set(key: keyof RequestContextData, value: any): void {
+  set<K extends keyof RequestContextData>(
+    key: K,
+    value: RequestContextData[K],
+  ): void {
     const store = this.storage.getStore();
     if (store) {
-      (store as any)[key] = value;
+      store[key] = value;
     }
   }
 
-  setMetadata(key: string, value: any): void {
+  setMetadata(key: string, value: unknown): void {
     const store = this.storage.getStore();
     if (store) {
       store.metadata[key] = value;
@@ -180,7 +183,11 @@ export class RequestContextMiddleware implements NestMiddleware {
 @Injectable()
 export class UserContextMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {
-    const user = (req as any).user;
+    const user = (
+      req as Request & {
+        user?: { sub?: string; userId?: string; role?: string };
+      }
+    ).user;
     if (user) {
       requestContext.set('userId', user.sub || user.userId);
       requestContext.set('userRole', user.role);
@@ -198,22 +205,24 @@ export class UserContextMiddleware implements NestMiddleware {
  */
 export function createContextLogger(name: string) {
   const logger = new Logger(name);
+  const detail = (args: unknown[]): unknown =>
+    args.length === 0 ? undefined : args.length === 1 ? args[0] : args;
 
   return {
-    log: (message: string, ...args: any[]) => {
-      logger.log(`[${getRequestId()}] ${message}`, ...args);
+    log: (message: string, ...args: unknown[]) => {
+      logger.log(`[${getRequestId()}] ${message}`, detail(args));
     },
-    error: (message: string, ...args: any[]) => {
-      logger.error(`[${getRequestId()}] ${message}`, ...args);
+    error: (message: string, ...args: unknown[]) => {
+      logger.error(`[${getRequestId()}] ${message}`, detail(args));
     },
-    warn: (message: string, ...args: any[]) => {
-      logger.warn(`[${getRequestId()}] ${message}`, ...args);
+    warn: (message: string, ...args: unknown[]) => {
+      logger.warn(`[${getRequestId()}] ${message}`, detail(args));
     },
-    debug: (message: string, ...args: any[]) => {
-      logger.debug(`[${getRequestId()}] ${message}`, ...args);
+    debug: (message: string, ...args: unknown[]) => {
+      logger.debug(`[${getRequestId()}] ${message}`, detail(args));
     },
-    verbose: (message: string, ...args: any[]) => {
-      logger.verbose(`[${getRequestId()}] ${message}`, ...args);
+    verbose: (message: string, ...args: unknown[]) => {
+      logger.verbose(`[${getRequestId()}] ${message}`, detail(args));
     },
   };
 }

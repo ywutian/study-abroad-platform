@@ -1,114 +1,76 @@
 /**
  * Timeline Page - Application timelines, tasks, personal & global events.
  */
-import React, { useState, useCallback, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import { Stack, router } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
   LayoutAnimation,
   Platform,
+  RefreshControl,
+  ScrollView,
+  Text,
   UIManager,
+  View,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 
+import { InlineTaskList } from '@/components/features/timeline/InlineTaskList';
+import {
+  TimelineArchive,
+  isArchivedPersonalEvent,
+  isArchivedTimeline,
+} from '@/components/features/timeline/TimelineArchive';
 import {
   AnimatedButton,
   AnimatedCard,
-  CardContent,
   Badge,
+  CardContent,
+  Checkbox,
+  ConfirmDialog,
   EmptyState,
-  Loading,
   Input,
+  Loading,
   Modal,
   Progress,
   Segment,
-  Checkbox,
-  ConfirmDialog,
   Select,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { API_ROUTES, PERSONAL_EVENT_CATEGORIES } from '@study-abroad/shared';
-import type {
-  TimelineResponse,
-  TimelineStatus,
-  TaskResponse,
-  TimelineOverview,
-  // PersonalEventDetail carries the optional inline `tasks` this screen reads.
-  PersonalEventDetail as PersonalEventResponse,
-  GlobalEvent as GlobalEventResponse,
-} from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
+import { fontFamily, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
+import type {
+  GlobalEvent as GlobalEventResponse,
+  // PersonalEventDetail carries the optional inline `tasks` this screen reads.
+  PersonalEventDetail as PersonalEventResponse,
+  TaskResponse,
+  TimelineOverview,
+  TimelineResponse,
+  TimelineStatus,
+} from '@study-abroad/shared';
 import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
+  API_ROUTES,
+  PERSONAL_EVENT_CATEGORIES,
+  resolveApplicationYear,
+} from '@study-abroad/shared';
+import { TimelineOverviewHeader } from '@/components/features/timeline/TimelineOverviewHeader';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// ── Constants ──────────────────────────────────────────────
-
-const ROUND_VARIANTS: Record<string, 'error' | 'default' | 'secondary' | 'success'> = {
-  ED: 'error',
-  ED2: 'error',
-  EA: 'default',
-  REA: 'default',
-  RD: 'secondary',
-  ROLLING: 'success',
-};
-const STATUS_VARIANTS: Record<string, 'secondary' | 'default' | 'success' | 'error' | 'warning'> = {
-  NOT_STARTED: 'secondary',
-  IN_PROGRESS: 'default',
-  SUBMITTED: 'default',
-  ACCEPTED: 'success',
-  REJECTED: 'error',
-  WAITLISTED: 'warning',
-  WITHDRAWN: 'secondary',
-};
-const TASK_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  ESSAY: 'document-text-outline',
-  DOCUMENT: 'folder-outline',
-  TEST: 'school-outline',
-  INTERVIEW: 'people-outline',
-  RECOMMENDATION: 'mail-outline',
-  OTHER: 'ellipsis-horizontal',
-};
-
-// ── Helpers ────────────────────────────────────────────────
-
-const getDaysLeft = (d?: Date | string) => {
-  if (!d) return null;
-  const target = new Date(d);
-  const now = new Date();
-  target.setHours(0, 0, 0, 0);
-  now.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - now.getTime()) / 86400000);
-};
-const fmtDate = (d?: Date | string) => {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
+import {
+  ROUND_VARIANTS,
+  STATUS_VARIANTS,
+  TASK_ICONS,
+  fmtDate,
+  getDaysLeft,
+} from './timeline.constants';
 
 // ── Main Component ─────────────────────────────────────────
 
@@ -178,7 +140,7 @@ export default function TimelinePage() {
   } = useQuery<PersonalEventResponse[]>({
     queryKey: qk.timeline.personal(),
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/personal-events`),
-    enabled: activeTab === 'events',
+    enabled: activeTab === 'events' || activeTab === 'archive',
   });
   const yr = new Date().getFullYear();
   const { data: globalEvents, isLoading: geLoading } = useQuery<GlobalEventResponse[]>({
@@ -252,7 +214,7 @@ export default function TimelinePage() {
     },
     onError: (e) => toast.error(e.message),
   });
-  const togglePTask = useMutation<any, Error, string>({
+  const togglePTask = useMutation<unknown, Error, string>({
     mutationFn: (id) => apiClient.post(`${API_ROUTES.TIMELINES}/personal-tasks/${id}/toggle`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: qk.timeline.personal() });
@@ -265,13 +227,39 @@ export default function TimelinePage() {
 
   const sorted = useMemo(() => {
     if (!timelines) return [];
-    return [...timelines].sort((a, b) => {
-      if (!a.deadline && !b.deadline) return 0;
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    });
+    return timelines
+      .filter((timeline) => !isArchivedTimeline(timeline))
+      .sort((a, b) => {
+        if (!a.deadline && !b.deadline) return 0;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      });
   }, [timelines]);
+
+  const archivedTimelines = useMemo(() => {
+    if (!timelines) return [];
+    return timelines
+      .filter(isArchivedTimeline)
+      .sort((a, b) => new Date(b.deadline ?? 0).getTime() - new Date(a.deadline ?? 0).getTime());
+  }, [timelines]);
+
+  const currentCycleTimelines = useMemo(() => {
+    const currentApplicationYear = resolveApplicationYear();
+    return (
+      timelines?.filter((timeline) => timeline.applicationYear >= currentApplicationYear) ?? []
+    );
+  }, [timelines]);
+
+  const activePersonalEvents = useMemo(
+    () => personalEvents?.filter((event) => !isArchivedPersonalEvent(event)) ?? [],
+    [personalEvents]
+  );
+
+  const archivedPersonalEvents = useMemo(
+    () => personalEvents?.filter(isArchivedPersonalEvent) ?? [],
+    [personalEvents]
+  );
 
   const sortedGlobal = useMemo(() => {
     if (!globalEvents) return [];
@@ -296,7 +284,7 @@ export default function TimelinePage() {
       [
         refetchTl(),
         activeTab === 'overview' ? refetchOv() : null,
-        activeTab === 'events' ? refetchPe() : null,
+        activeTab === 'events' || activeTab === 'archive' ? refetchPe() : null,
       ].filter(Boolean)
     );
     setRefreshing(false);
@@ -307,68 +295,26 @@ export default function TimelinePage() {
     setDeleteDialog(null);
   };
 
-  // ── Render: Overview Header ──
-
-  const renderHeader = () => {
-    const total = timelines?.length ?? 0;
-    const sub = timelines?.filter((x) => x.status === 'SUBMITTED').length ?? 0;
-    const prog = timelines?.filter((x) => x.status === 'IN_PROGRESS').length ?? 0;
-    const upcoming =
-      timelines?.filter((x) => {
-        const d = getDaysLeft(x.deadline);
-        return d !== null && d >= 0 && d <= 14;
-      }).length ?? 0;
-    return (
-      <Animated.View entering={FadeInDown.duration(400).springify()}>
-        <AnimatedCard style={s.headerCard}>
-          <CardContent>
-            <View style={s.headerRow}>
-              {[
-                { v: total, l: t('timeline.overview.totalSchools'), c: colors.foreground },
-                { v: sub, l: t('timeline.overview.submitted'), c: colors.primary },
-                { v: prog, l: t('timeline.overview.inProgress'), c: colors.info },
-                { v: upcoming, l: t('timeline.overview.upcoming'), c: colors.warning },
-              ].map((s) => (
-                <View key={s.l} style={styles.headerStat}>
-                  <Text style={[styles.headerStatVal, { color: s.c, fontFamily: fontFamily.mono }]}>
-                    {s.v}
-                  </Text>
-                  <Text style={[styles.headerStatLbl, { color: colors.foregroundMuted }]}>
-                    {s.l}
-                  </Text>
-                </View>
-              ))}
-            </View>
-            <Progress
-              value={total > 0 ? Math.round((sub / total) * 100) : 0}
-              max={100}
-              height={6}
-              color={colors.primary}
-              trackColor={colors.muted}
-              style={{ marginTop: spacing.md }}
-            />
-          </CardContent>
-        </AnimatedCard>
-      </Animated.View>
-    );
-  };
+  const renderHeader = () => (
+    <TimelineOverviewHeader timelines={currentCycleTimelines} sorted={sorted} />
+  );
 
   // ── Render: Schools Tab ──
 
-  const renderSchoolCard = (item: TimelineResponse, idx: number) => {
+  const renderSchoolCard = (item: TimelineResponse, idx: number, readOnly = false) => {
     const open = expandedId === item.id;
     const days = getDaysLeft(item.deadline);
     const overdue = days !== null && days < 0;
     return (
       <Animated.View key={item.id} entering={FadeInUp.delay(idx * 60).springify()}>
         <AnimatedCard
-          style={[s.card, { borderLeftWidth: 3, borderLeftColor: statusColor(item.status) }]}
+          style={[s.card, s.statusCard, { borderLeftColor: statusColor(item.status) }]}
           onPress={() => toggle(item.id)}
           accessibilityLabel={item.schoolName}
         >
           <CardContent>
             <View style={s.row}>
-              <View style={{ flex: 1, marginRight: spacing.md, gap: spacing.sm }}>
+              <View style={s.schoolInfo}>
                 <Text style={[s.name, { color: colors.foreground }]} numberOfLines={1}>
                   {item.schoolName}
                 </Text>
@@ -376,12 +322,15 @@ export default function TimelinePage() {
                   <Badge variant={ROUND_VARIANTS[item.round] ?? 'secondary'}>
                     {t(`timeline.round.${item.round}`, item.round)}
                   </Badge>
+                  <Badge variant="outline">
+                    {t('timeline.applicationYear', { year: item.applicationYear })}
+                  </Badge>
                   <Badge variant={STATUS_VARIANTS[item.status] ?? 'secondary'}>
                     {t(`timeline.status.${item.status}`, item.status)}
                   </Badge>
                 </View>
               </View>
-              <View style={{ alignItems: 'flex-end', gap: 2 }}>
+              <View style={s.deadlineInfo}>
                 {item.deadline && (
                   <View style={s.deadlineRow}>
                     <Ionicons
@@ -424,7 +373,7 @@ export default function TimelinePage() {
                 height={4}
                 color={statusColor(item.status)}
                 trackColor={colors.muted}
-                style={{ flex: 1 }}
+                style={s.flex}
               />
               <Text
                 style={[s.progTxt, { color: colors.foregroundMuted, fontFamily: fontFamily.mono }]}
@@ -436,33 +385,29 @@ export default function TimelinePage() {
               <View style={[s.expanded, { borderTopColor: colors.border }]}>
                 <InlineTaskList
                   timelineId={item.id}
-                  colors={colors}
                   t={t}
+                  readOnly={readOnly}
                   onToggle={(id) => toggleTask.mutate(id)}
                   onAdd={() => {
                     setTaskModal({ visible: true, timelineId: item.id });
                     setNewTaskTitle('');
                   }}
                 />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'flex-end',
-                    marginTop: spacing.sm,
-                  }}
-                >
-                  <AnimatedButton
-                    variant="ghost"
-                    size="sm"
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      setDeleteDialog({ visible: true, type: 'timeline', id: item.id });
-                    }}
-                    leftIcon={<Ionicons name="trash-outline" size={16} color={colors.error} />}
-                  >
-                    <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
-                  </AnimatedButton>
-                </View>
+                {!readOnly && (
+                  <View style={s.deleteRow}>
+                    <AnimatedButton
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        setDeleteDialog({ visible: true, type: 'timeline', id: item.id });
+                      }}
+                      leftIcon={<Ionicons name="trash-outline" size={16} color={colors.error} />}
+                    >
+                      <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
+                    </AnimatedButton>
+                  </View>
+                )}
               </View>
             )}
           </CardContent>
@@ -507,7 +452,7 @@ export default function TimelinePage() {
             {t('timeline.addEvent')}
           </AnimatedButton>
         </View>
-        {!personalEvents?.length ? (
+        {!activePersonalEvents.length ? (
           <EmptyState
             icon="calendar-outline"
             title={t('timeline.empty.noEvents')}
@@ -515,7 +460,7 @@ export default function TimelinePage() {
             style={{ paddingVertical: spacing.xl }}
           />
         ) : (
-          personalEvents.map((ev, i) => {
+          activePersonalEvents.map((ev, i) => {
             const open = expandedEventId === ev.id;
             const done = ev.tasks?.filter((t) => t.completed).length ?? 0;
             const total = ev.tasks?.length ?? 0;
@@ -527,26 +472,13 @@ export default function TimelinePage() {
                   accessibilityLabel={ev.title}
                 >
                   <CardContent>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <View
-                        style={{
-                          flex: 1,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          gap: spacing.sm,
-                        }}
-                      >
+                    <View style={s.eventHeader}>
+                      <View style={s.eventTitleRow}>
                         <Badge variant="outline">
                           {t(`timeline.category.${ev.category}`, ev.category)}
                         </Badge>
                         <Text
-                          style={[s.name, { color: colors.foreground, flex: 1 }]}
+                          style={[s.name, s.flex, { color: colors.foreground }]}
                           numberOfLines={1}
                         >
                           {ev.title}
@@ -559,7 +491,7 @@ export default function TimelinePage() {
                       />
                     </View>
                     {(ev.deadline || ev.eventDate) && (
-                      <View style={[s.deadlineRow, { marginTop: spacing.sm }]}>
+                      <View style={[s.deadlineRow, s.marginTopSm]}>
                         <Ionicons name="time-outline" size={14} color={colors.foregroundMuted} />
                         <Text style={[s.deadlineTxt, { color: colors.foregroundMuted }]}>
                           {fmtDate(ev.deadline || ev.eventDate)}
@@ -574,7 +506,7 @@ export default function TimelinePage() {
                           height={4}
                           color={colors.primary}
                           trackColor={colors.muted}
-                          style={{ flex: 1 }}
+                          style={s.flex}
                         />
                         <Text
                           style={[
@@ -620,7 +552,7 @@ export default function TimelinePage() {
                           leftIcon={
                             <Ionicons name="trash-outline" size={16} color={colors.error} />
                           }
-                          style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}
+                          style={s.deleteButton}
                         >
                           <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
                         </AnimatedButton>
@@ -639,20 +571,12 @@ export default function TimelinePage() {
           </Text>
         </View>
         {!sortedGlobal.length ? (
-          <Text
-            style={{
-              fontSize: fontSize.sm,
-              fontStyle: 'italic',
-              textAlign: 'center',
-              paddingVertical: spacing.xl,
-              color: colors.foregroundMuted,
-            }}
-          >
+          <Text style={[s.emptyGlobalText, { color: colors.foregroundMuted }]}>
             {t('timeline.events.noGlobal')}
           </Text>
         ) : (
           <AnimatedCard>
-            <CardContent style={{ paddingVertical: 0 }}>
+            <CardContent style={s.noVerticalPadding}>
               {sortedGlobal.map((ge, i) => {
                 const d = getDaysLeft(ge.eventDate);
                 return (
@@ -660,21 +584,14 @@ export default function TimelinePage() {
                     key={ge.id}
                     style={[
                       s.globalRow,
-                      i < sortedGlobal.length - 1 && {
-                        borderBottomWidth: 1,
-                        borderBottomColor: colors.border,
-                      },
+                      i < sortedGlobal.length - 1 && [
+                        s.rowDivider,
+                        { borderBottomColor: colors.border },
+                      ],
                     ]}
                   >
-                    <View style={{ alignItems: 'center', width: 44 }}>
-                      <Text
-                        style={{
-                          fontSize: fontSize.xs,
-                          fontWeight: fontWeight.semibold,
-                          textTransform: 'uppercase',
-                          color: colors.primary,
-                        }}
-                      >
+                    <View style={s.calendarDate}>
+                      <Text style={[s.calendarMonth, { color: colors.primary }]}>
                         {new Date(ge.eventDate).toLocaleDateString(undefined, { month: 'short' })}
                       </Text>
                       <Text
@@ -688,7 +605,7 @@ export default function TimelinePage() {
                         {new Date(ge.eventDate).getDate()}
                       </Text>
                     </View>
-                    <View style={{ flex: 1 }}>
+                    <View style={s.flex}>
                       <Text
                         style={{
                           fontSize: fontSize.sm,
@@ -699,13 +616,7 @@ export default function TimelinePage() {
                       >
                         {ge.title}
                       </Text>
-                      <Text
-                        style={{
-                          fontSize: fontSize.xs,
-                          color: colors.foregroundMuted,
-                          marginTop: 2,
-                        }}
-                      >
+                      <Text style={[s.secondaryText, { color: colors.foregroundMuted }]}>
                         {t(`timeline.category.${ge.category}`, ge.category)}
                         {d !== null && d >= 0 ? ` - ${t('timeline.daysLeft', { count: d })}` : ''}
                       </Text>
@@ -767,10 +678,10 @@ export default function TimelinePage() {
             <Animated.View
               key={st.l}
               entering={FadeInUp.delay(i * 80).springify()}
-              style={{ width: '47%' }}
+              style={s.statCard}
             >
               <AnimatedCard>
-                <CardContent style={{ alignItems: 'center', gap: spacing.xs }}>
+                <CardContent style={s.centeredCard}>
                   <Ionicons name={st.i} size={22} color={st.c} />
                   <Text
                     style={{
@@ -783,11 +694,7 @@ export default function TimelinePage() {
                     {st.v}
                   </Text>
                   <Text
-                    style={{
-                      fontSize: fontSize.xs,
-                      color: colors.foregroundMuted,
-                      textAlign: 'center',
-                    }}
+                    style={[s.centeredCaption, { color: colors.foregroundMuted }]}
                     numberOfLines={1}
                   >
                     {st.l}
@@ -805,26 +712,9 @@ export default function TimelinePage() {
             {overview.upcomingDeadlines.slice(0, 5).map((item) => {
               const d = getDaysLeft(item.deadline);
               return (
-                <View
-                  key={item.id}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: spacing.md,
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.border,
-                    gap: spacing.md,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: statusColor(item.status),
-                    }}
-                  />
-                  <View style={{ flex: 1 }}>
+                <View key={item.id} style={[s.upcomingRow, { borderBottomColor: colors.border }]}>
+                  <View style={[s.statusDot, { backgroundColor: statusColor(item.status) }]} />
+                  <View style={s.flex}>
                     <Text
                       style={{
                         fontSize: fontSize.sm,
@@ -835,9 +725,7 @@ export default function TimelinePage() {
                     >
                       {item.schoolName}
                     </Text>
-                    <Text
-                      style={{ fontSize: fontSize.xs, color: colors.foregroundMuted, marginTop: 2 }}
-                    >
+                    <Text style={[s.secondaryText, { color: colors.foregroundMuted }]}>
                       {fmtDate(item.deadline)}
                     </Text>
                   </View>
@@ -852,34 +740,27 @@ export default function TimelinePage() {
           </Animated.View>
         )}
         {overview.overdueTasks.length > 0 && (
-          <Animated.View
-            entering={FadeInUp.delay(400).springify()}
-            style={{ marginTop: spacing.xl }}
-          >
+          <Animated.View entering={FadeInUp.delay(400).springify()} style={s.marginTopXl}>
             <Text style={[s.sectionTitle, { color: colors.error, marginBottom: spacing.md }]}>
               {t('timeline.overview.overdueTasks')}
             </Text>
             {overview.overdueTasks.map((tk) => (
               <View
                 key={tk.id}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: spacing.md,
-                  padding: spacing.md,
-                  borderRadius: borderRadius.md,
-                  borderWidth: 1,
-                  borderColor: withOpacity(colors.error, 0.125),
-                  backgroundColor: withOpacity(colors.error, 0.03),
-                  marginBottom: spacing.sm,
-                }}
+                style={[
+                  s.overdueTask,
+                  {
+                    borderColor: withOpacity(colors.error, 0.125),
+                    backgroundColor: withOpacity(colors.error, 0.03),
+                  },
+                ]}
               >
                 <Ionicons
                   name={TASK_ICONS[tk.type] ?? 'ellipsis-horizontal'}
                   size={16}
                   color={colors.error}
                 />
-                <View style={{ flex: 1 }}>
+                <View style={s.flex}>
                   <Text
                     style={{
                       fontSize: fontSize.sm,
@@ -890,7 +771,7 @@ export default function TimelinePage() {
                     {tk.title}
                   </Text>
                   {tk.dueDate && (
-                    <Text style={{ fontSize: fontSize.xs, color: colors.error, marginTop: 2 }}>
+                    <Text style={[s.secondaryText, { color: colors.error }]}>
                       {t('timeline.overdue')} - {fmtDate(tk.dueDate)}
                     </Text>
                   )}
@@ -921,6 +802,7 @@ export default function TimelinePage() {
               { key: 'schools', label: t('timeline.tabs.schools') },
               { key: 'events', label: t('timeline.tabs.events') },
               { key: 'overview', label: t('timeline.tabs.overview') },
+              { key: 'archive', label: t('timeline.tabs.archive') },
             ]}
             value={activeTab}
             onChange={(k) => {
@@ -933,6 +815,14 @@ export default function TimelinePage() {
           {activeTab === 'schools' && renderSchools()}
           {activeTab === 'events' && renderEvents()}
           {activeTab === 'overview' && renderOverview()}
+          {activeTab === 'archive' && (
+            <TimelineArchive
+              timelines={archivedTimelines}
+              personalEvents={archivedPersonalEvents}
+              loading={tlLoading || peLoading}
+              renderSchoolCard={renderSchoolCard}
+            />
+          )}
         </View>
       </ScrollView>
 
@@ -1023,132 +913,4 @@ export default function TimelinePage() {
   );
 }
 
-// ── Inline Task List ───────────────────────────────────────
-
-function InlineTaskList({
-  timelineId,
-  colors,
-  t,
-  onToggle,
-  onAdd,
-}: {
-  timelineId: string;
-  colors: ReturnType<typeof useColors>;
-  t: TFunction;
-  onToggle: (id: string) => void;
-  onAdd: () => void;
-}) {
-  const { data: timeline, isLoading } = useQuery<{ tasks?: TaskResponse[] }>({
-    queryKey: qk.timeline.tasks(timelineId),
-    queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/${timelineId}`),
-    staleTime: 30_000,
-  });
-  const tasks = timeline?.tasks ?? [];
-  if (isLoading) return <Loading size="small" />;
-  return (
-    <View style={{ gap: spacing.xs }}>
-      {tasks?.length ? (
-        tasks.map((tk) => (
-          <View key={tk.id} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Checkbox checked={tk.completed} onPress={() => onToggle(tk.id)} />
-            <Ionicons
-              name={TASK_ICONS[tk.type] ?? 'ellipsis-horizontal'}
-              size={16}
-              color={tk.completed ? colors.foregroundMuted : colors.foreground}
-              style={{ marginLeft: spacing.xs }}
-            />
-            <View style={{ flex: 1, marginLeft: spacing.sm }}>
-              <Text
-                style={{
-                  fontSize: fontSize.sm,
-                  color: tk.completed ? colors.foregroundMuted : colors.foreground,
-                  textDecorationLine: tk.completed ? 'line-through' : 'none',
-                }}
-                numberOfLines={1}
-              >
-                {tk.title}
-              </Text>
-              {tk.dueDate && (
-                <Text
-                  style={{ fontSize: fontSize.xs, color: colors.foregroundMuted, marginTop: 2 }}
-                >
-                  {fmtDate(tk.dueDate)}
-                </Text>
-              )}
-            </View>
-          </View>
-        ))
-      ) : (
-        <Text
-          style={{
-            fontSize: fontSize.sm,
-            fontStyle: 'italic',
-            color: colors.foregroundMuted,
-            paddingVertical: spacing.sm,
-          }}
-        >
-          {t('timeline.noTasks')}
-        </Text>
-      )}
-      <AnimatedButton
-        variant="ghost"
-        size="sm"
-        onPress={onAdd}
-        leftIcon={<Ionicons name="add-circle-outline" size={16} color={colors.primary} />}
-        style={{ alignSelf: 'flex-start', marginTop: spacing.xs }}
-      >
-        {t('timeline.addTask')}
-      </AnimatedButton>
-    </View>
-  );
-}
-
-// ── Styles ─────────────────────────────────────────────────
-
-const s = StyleSheet.create({
-  container: { flex: 1 },
-  px: { paddingHorizontal: spacing.lg },
-  tabs: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-  headerCard: { marginTop: spacing.lg, marginBottom: spacing.sm },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  card: { marginBottom: spacing.md },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  name: { fontSize: fontSize.base, fontWeight: fontWeight.semibold },
-  badges: { flexDirection: 'row', gap: spacing.xs },
-  deadlineRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  deadlineTxt: { fontSize: fontSize.xs },
-  daysLeft: { fontSize: fontSize.xs, fontWeight: fontWeight.medium },
-  progRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md },
-  progTxt: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-    minWidth: 32,
-    textAlign: 'right' as const,
-  },
-  expanded: {
-    marginTop: spacing.lg,
-    borderTopWidth: 1,
-    paddingTop: spacing.md,
-  },
-  sectionHdr: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    marginTop: spacing.sm,
-  },
-  sectionTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
-  globalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    gap: spacing.md,
-  },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginBottom: spacing.xl },
-});
-
-const styles = StyleSheet.create({
-  headerStat: { alignItems: 'center', flex: 1 },
-  headerStatVal: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold },
-  headerStatLbl: { fontSize: fontSize.xs, marginTop: 2 },
-});
+import { timelineLocalStyles as s } from './timeline-local.styles';

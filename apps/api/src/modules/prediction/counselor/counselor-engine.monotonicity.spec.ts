@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { CounselorEngineService } from './counselor-engine.service';
-import { AnchorResolverService } from './anchor-resolver.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
+import { AnchorResolverService } from './anchor-resolver.service';
+import { CounselorEngineService } from './counselor-engine.service';
 
 /**
  * Monotonicity regression guard — CDS-band path (the recurring-bug surface).
@@ -50,18 +50,6 @@ describe('CounselorEngineService — CDS-band monotonicity (regression guard for
     schoolCdsAdmitBand: { findFirst: jest.Mock; findMany: jest.Mock };
     schoolProgram: { findFirst: jest.Mock };
   };
-
-  // GPA-band ladder convention (standard 4.0 scale), low → high — must match the
-  // engine's gpaToBands() output and isotonicBandRate()'s LADDERS constant.
-  const GPA_LADDER = [
-    '<3.00',
-    '3.00-3.24',
-    '3.25-3.49',
-    '3.50-3.74',
-    '3.75-4.00',
-  ] as const;
-  // SAT-band ladder convention, low → high — must match the engine's satToBand().
-  const SAT_LADDER = ['<1300', '1300-1399', '1400-1499', '1500-1600'] as const;
 
   /**
    * Build a Prisma mock that serves a synthetic CDS band table.

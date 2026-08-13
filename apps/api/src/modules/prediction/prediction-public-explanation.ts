@@ -4,9 +4,8 @@ import type {
   PredictionSourceSummary,
 } from '@study-abroad/shared';
 
-type Tier =
-  'reach' | 'match' | 'safety' | 'unavailable' | string | null | undefined;
-type Confidence = 'low' | 'medium' | 'high' | string | null | undefined;
+type Tier = string | null | undefined;
+type Confidence = string | null | undefined;
 
 export interface PredictionPublicExplanationInput {
   locale?: string;

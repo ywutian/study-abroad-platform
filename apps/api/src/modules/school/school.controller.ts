@@ -430,7 +430,10 @@ export class SchoolController {
     // Check Redis cache
     const cacheKey = `ai:recommend:${user.id}`;
     try {
-      const cached = await this.redis.getJSON<any>(cacheKey);
+      const cached =
+        await this.redis.getJSON<
+          Awaited<ReturnType<SchoolListService['getAIRecommendations']>>
+        >(cacheKey);
       if (cached) {
         return { ...cached, status: 'cached' as const };
       }

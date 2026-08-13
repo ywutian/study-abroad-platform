@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { motion } from 'framer-motion';
@@ -50,17 +51,19 @@ export function SchoolHeroHeader({
     >
       {campusCoverUrl && (
         <div className="relative h-48 w-full overflow-hidden bg-muted sm:h-56 lg:h-64">
-          <img
+          <Image
             src={campusCoverUrl}
             alt={schoolName}
-            loading="eager"
-            decoding="async"
+            fill
+            priority
+            sizes="100vw"
+            unoptimized
             onError={() => setCoverFailed(true)}
             title={campusCoverSourceUrl ?? campusCover?.sourceType}
             data-source-url={campusCoverSourceUrl ?? undefined}
             data-source-quality={campusCoverSourceQuality}
             data-source-type={campusCover?.sourceType ?? undefined}
-            className="h-full w-full object-cover"
+            className="object-cover"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
         </div>
@@ -121,7 +124,7 @@ export function SchoolHeroHeader({
                   variant="outline"
                   className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                 >
-                  {testingPolicyT(school.testingPolicy as any)}
+                  {testingPolicyT(school.testingPolicy as never)}
                 </Badge>
               )}
               {school.hasEarlyDecision && (

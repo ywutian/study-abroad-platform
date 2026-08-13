@@ -62,8 +62,20 @@ const AWARD_LEVEL_RANK: Record<string, number> = {
   SCHOOL: 1,
 };
 
+function scalarText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return String(value);
+  }
+  return '';
+}
+
 function normalizeTestType(type: unknown): string {
-  return String(type ?? '')
+  return scalarText(type)
     .trim()
     .toUpperCase()
     .replace(/[-\s]+/g, '_');
@@ -120,11 +132,7 @@ function buildSubjectScoreLabel(
   subject: string | null,
   score: unknown,
 ): string {
-  const parts = [
-    displayTestType(type),
-    subject,
-    score == null ? '' : String(score),
-  ]
+  const parts = [displayTestType(type), subject, scalarText(score)]
     .filter(Boolean)
     .map(String);
   return parts.join(' ');
@@ -235,7 +243,7 @@ function extractAcademicHighlights(
       chips.push({
         label: SUBJECT_TEST_TYPES.has(type)
           ? buildSubjectScoreLabel(type, subject, score)
-          : `${displayTestType(type)} ${score}`,
+          : `${displayTestType(type)} ${scalarText(score)}`,
         tone: type === 'AP' ? getApHighlightTone(score) : 'neutral',
         source: 'RESUME',
         sourceId: typeof item.id === 'string' ? item.id : undefined,
@@ -264,10 +272,8 @@ function extractExperienceHighlights(
 
   [...awards]
     .sort((a, b) => {
-      const left = String((a as { level?: unknown }).level ?? '').toUpperCase();
-      const right = String(
-        (b as { level?: unknown }).level ?? '',
-      ).toUpperCase();
+      const left = scalarText((a as { level?: unknown }).level).toUpperCase();
+      const right = scalarText((b as { level?: unknown }).level).toUpperCase();
       return (AWARD_LEVEL_RANK[right] ?? 0) - (AWARD_LEVEL_RANK[left] ?? 0);
     })
     .forEach((rawAward) => {
@@ -345,7 +351,7 @@ function extractExperienceHighlights(
         null;
       if (!label) continue;
       chips.push({
-        label: String(label),
+        label: scalarText(label),
         tone: 'neutral',
         source: 'RESUME',
         sourceId: typeof item.id === 'string' ? item.id : typedSection.id,
@@ -357,9 +363,9 @@ function extractExperienceHighlights(
 }
 
 function normalizeHollandCodes(value: unknown): string | null {
-  if (Array.isArray(value)) return value.map(String).join('').toUpperCase();
+  if (Array.isArray(value)) return value.map(scalarText).join('').toUpperCase();
   if (value)
-    return String(value)
+    return scalarText(value)
       .replace(/[\s,]+/g, '')
       .toUpperCase();
   return null;
@@ -380,14 +386,14 @@ function extractPersonalityHighlights(
       assessment?: { type?: string } | null;
       result?: unknown;
     };
-    const type = String(item.assessment?.type ?? '').toUpperCase();
+    const type = scalarText(item.assessment?.type).toUpperCase();
     const result = parseJsonObject(item.result);
 
     if (type === 'MBTI') {
       const mbtiType = result.type ?? result.mbtiType;
       if (mbtiType) {
         chips.push({
-          label: String(mbtiType).toUpperCase(),
+          label: scalarText(mbtiType).toUpperCase(),
           tone: 'neutral',
           source: 'ASSESSMENT',
           sourceId: item.id,

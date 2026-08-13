@@ -211,7 +211,7 @@ export function SchoolEditDialog({
                   <SelectContent>
                     {SCHOOL_TYPES.map((st) => (
                       <SelectItem key={st} value={st}>
-                        {t(`schoolTypes.${st}` as any)}
+                        {t(`schoolTypes.${st}` as never)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -232,8 +232,8 @@ export function SchoolEditDialog({
             <TooltipProvider delayDuration={200}>
               {DIMENSION_KEYS.map((dimKey) => {
                 const currentValue = form[dimKey as keyof typeof form] as number;
-                const labelFull = t(`rubric.${dimKey}.labelFull` as any);
-                const weight = t(`rubric.${dimKey}.weight` as any);
+                const labelFull = t(`rubric.${dimKey}.labelFull` as never);
+                const weight = t(`rubric.${dimKey}.weight` as never);
 
                 return (
                   <div key={dimKey} className="space-y-2 rounded-lg border p-3">
@@ -241,7 +241,7 @@ export function SchoolEditDialog({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Label className="text-sm">{labelFull}</Label>
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                        <Badge variant="outline" className="text-2xs px-1.5 py-0">
                           {weight}
                         </Badge>
                         <Tooltip>
@@ -250,7 +250,7 @@ export function SchoolEditDialog({
                               type="button"
                               className="text-muted-foreground hover:text-foreground"
                               aria-label={t('dialog.helpFor', {
-                                label: t(`rubric.${dimKey}.label` as any),
+                                label: t(`rubric.${dimKey}.label` as never),
                               })}
                             >
                               <HelpCircle className="h-3.5 w-3.5" />
@@ -266,11 +266,11 @@ export function SchoolEditDialog({
                                   }
                                 >
                                   <span className="font-mono">{score}:</span>{' '}
-                                  {t(`rubric.${dimKey}.${score}.criteria` as any)}
+                                  {t(`rubric.${dimKey}.${score}.criteria` as never)}
                                   <br />
                                   <span className="italic">
                                     {t('dialog.egPrefix')}{' '}
-                                    {t(`rubric.${dimKey}.${score}.examples` as any)}
+                                    {t(`rubric.${dimKey}.${score}.examples` as never)}
                                   </span>
                                 </div>
                               ))}
@@ -296,11 +296,11 @@ export function SchoolEditDialog({
                     <div className="text-xs space-y-0.5">
                       <p className="text-muted-foreground">
                         <span className="font-medium text-foreground">{t('dialog.criteria')}</span>{' '}
-                        {t(`rubric.${dimKey}.${currentValue}.criteria` as any)}
+                        {t(`rubric.${dimKey}.${currentValue}.criteria` as never)}
                       </p>
                       <p className="text-muted-foreground">
                         <span className="font-medium text-foreground">{t('dialog.reference')}</span>{' '}
-                        {t(`rubric.${dimKey}.${currentValue}.examples` as any)}
+                        {t(`rubric.${dimKey}.${currentValue}.examples` as never)}
                       </p>
                     </div>
                   </div>
@@ -352,7 +352,7 @@ export function SchoolEditDialog({
                   <SelectContent>
                     {GRADE_INFLATION_OPTIONS.map((opt) => (
                       <SelectItem key={opt} value={opt}>
-                        {t(`gradeInflationOptions.${opt}` as any)}
+                        {t(`gradeInflationOptions.${opt}` as never)}
                       </SelectItem>
                     ))}
                   </SelectContent>

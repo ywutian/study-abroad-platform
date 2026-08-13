@@ -95,7 +95,7 @@ export interface CoverageFieldStatus {
   validatorCount: number | null;
   originalFormula: string | null;
   realDataStatus: RealDataStatus | null;
-  terminalStatus: RealDataStatus | string | null;
+  terminalStatus: string | null;
   extractionMethod: string | null;
   reason: string | null;
   permanent: boolean | null;
@@ -184,7 +184,7 @@ export class AdminSchoolDataCoverageService {
     };
 
     const items = schools.map((school) => {
-      const provenance = buildNormalizedSchoolProvenance(school as any);
+      const provenance = buildNormalizedSchoolProvenance({ ...school });
       const fields = [...CRITICAL_FIELDS, ...OPTIONAL_FIELDS].map((field) => {
         const status = this.buildFieldStatus(school, field, provenance);
         this.trackFieldStatus(status, fieldTotals[field], {
@@ -736,13 +736,11 @@ export class AdminSchoolDataCoverageService {
         (school.testingPolicy !== 'UNKNOWN' ? school.testingPolicy : null)
       );
     }
-    const value = (school as any)[field];
+    const value: unknown = school[field];
     if (value instanceof Prisma.Decimal) return value.toNumber();
     if (Array.isArray(value)) return value.length > 0 ? value : null;
     if (value && typeof value === 'object') {
-      return Object.keys(value as Record<string, unknown>).length > 0
-        ? value
-        : null;
+      return Object.keys(value).length > 0 ? value : null;
     }
     return value ?? null;
   }

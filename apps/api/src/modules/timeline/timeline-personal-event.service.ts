@@ -19,7 +19,37 @@ import {
   CreatePersonalTaskDto,
   PersonalTaskResponseDto,
 } from './dto';
-import { withEffectiveRecurringGlobalEvent } from './timeline-date.util';
+import {
+  isPersonalEventArchived,
+  withEffectiveRecurringGlobalEvent,
+} from './timeline-date.util';
+
+type PersonalEventWithTasks = Pick<
+  Prisma.PersonalEventGetPayload<object>,
+  | 'id'
+  | 'category'
+  | 'title'
+  | 'globalEventId'
+  | 'deadline'
+  | 'eventDate'
+  | 'status'
+  | 'progress'
+  | 'priority'
+  | 'description'
+  | 'url'
+  | 'notes'
+  | 'createdAt'
+> & { tasks?: Array<{ completed: boolean }> };
+type PersonalTaskRecord = Pick<
+  Prisma.PersonalTaskGetPayload<object>,
+  | 'id'
+  | 'eventId'
+  | 'title'
+  | 'dueDate'
+  | 'completed'
+  | 'completedAt'
+  | 'sortOrder'
+>;
 
 @Injectable()
 export class TimelinePersonalEventService {
@@ -204,6 +234,7 @@ export class TimelinePersonalEventService {
     if (!event) {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
+    this.assertPersonalEventMutable(event);
 
     const updated = await this.prisma.personalEvent.update({
       where: { id },
@@ -233,6 +264,7 @@ export class TimelinePersonalEventService {
     if (!event) {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
+    this.assertPersonalEventMutable(event);
 
     await this.prisma.personalEvent.delete({ where: { id } });
   }
@@ -250,6 +282,7 @@ export class TimelinePersonalEventService {
     if (!event) {
       throw new NotFoundException(ERR.NOT_FOUND.personalEvent());
     }
+    this.assertPersonalEventMutable(event);
 
     const task = await this.prisma.$transaction(async (tx) => {
       const maxOrder = await tx.personalTask.findFirst({
@@ -284,6 +317,7 @@ export class TimelinePersonalEventService {
     if (!task || task.event.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertPersonalEventMutable(task.event);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       // Conditional flip guards against concurrent toggles both applying.
@@ -313,6 +347,7 @@ export class TimelinePersonalEventService {
     if (!task || task.event.userId !== userId) {
       throw new NotFoundException(ERR.NOT_FOUND.task());
     }
+    this.assertPersonalEventMutable(task.event);
 
     await this.prisma.$transaction(async (tx) => {
       await tx.personalTask.delete({ where: { id: taskId } });
@@ -321,6 +356,16 @@ export class TimelinePersonalEventService {
   }
 
   // ============ Helpers ============
+
+  private assertPersonalEventMutable(event: {
+    status: string;
+    deadline?: Date | null;
+    eventDate?: Date | null;
+  }): void {
+    if (isPersonalEventArchived(event)) {
+      throw new ConflictException(ERR.CONFLICT.archivedTimelineReadOnly());
+    }
+  }
 
   // Accepts the active transaction client so the recompute reads the same
   // snapshot as the mutation (no lost-update race). The recomputed progress
@@ -352,35 +397,37 @@ export class TimelinePersonalEventService {
     });
   }
 
-  mapPersonalEventToResponse(event: any): PersonalEventResponseDto {
-    const tasks = event.tasks || [];
+  mapPersonalEventToResponse(
+    event: PersonalEventWithTasks,
+  ): PersonalEventResponseDto {
+    const tasks = event.tasks ?? [];
     return {
       id: event.id,
       category: event.category,
       title: event.title,
-      globalEventId: event.globalEventId,
-      deadline: event.deadline,
-      eventDate: event.eventDate,
+      globalEventId: event.globalEventId ?? undefined,
+      deadline: event.deadline ?? undefined,
+      eventDate: event.eventDate ?? undefined,
       status: event.status,
       progress: event.progress,
       priority: event.priority,
-      description: event.description,
-      url: event.url,
-      notes: event.notes,
+      description: event.description ?? undefined,
+      url: event.url ?? undefined,
+      notes: event.notes ?? undefined,
       tasksTotal: tasks.length,
-      tasksCompleted: tasks.filter((t: any) => t.completed).length,
+      tasksCompleted: tasks.filter((task) => task.completed).length,
       createdAt: event.createdAt,
     };
   }
 
-  mapPersonalTaskToResponse(task: any): PersonalTaskResponseDto {
+  mapPersonalTaskToResponse(task: PersonalTaskRecord): PersonalTaskResponseDto {
     return {
       id: task.id,
       eventId: task.eventId,
       title: task.title,
-      dueDate: task.dueDate,
+      dueDate: task.dueDate ?? undefined,
       completed: task.completed,
-      completedAt: task.completedAt,
+      completedAt: task.completedAt ?? undefined,
       sortOrder: task.sortOrder,
     };
   }

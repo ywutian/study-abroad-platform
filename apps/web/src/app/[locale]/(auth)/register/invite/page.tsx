@@ -88,7 +88,7 @@ export default function InviteRegisterPage() {
           </div>
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">{ti('invalidToken')}</h1>
+          <h1 className="text-title font-bold">{ti('invalidToken')}</h1>
         </div>
         <Button asChild variant="outline">
           <Link href="/login">{t('auth.login.title')}</Link>
@@ -145,7 +145,7 @@ export default function InviteRegisterPage() {
             <Shield className="h-7 w-7 text-primary" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold">{ti('title')}</h1>
+        <h1 className="text-title font-bold">{ti('title')}</h1>
         <p className="text-sm text-muted-foreground">{ti('subtitle')}</p>
       </div>
 

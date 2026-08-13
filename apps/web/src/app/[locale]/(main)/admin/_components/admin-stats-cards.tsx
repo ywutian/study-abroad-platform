@@ -39,7 +39,7 @@ interface AdminStatsCardsProps {
   permissions?: string[];
 }
 
-export function AdminStatsCards({ stats, isAdmin = true, permissions = [] }: AdminStatsCardsProps) {
+export function AdminStatsCards({ stats, permissions = [] }: AdminStatsCardsProps) {
   const t = useTranslations('admin');
 
   const statCards = [
@@ -199,7 +199,7 @@ export function AdminStatsCards({ stats, isAdmin = true, permissions = [] }: Adm
                 })}
               />
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <CardTitle className="text-body-sm font-medium">{stat.title}</CardTitle>
                 <div
                   className={cn('flex h-8 w-8 items-center justify-center rounded-lg', {
                     'bg-blue-500/10 text-blue-500': stat.color === 'blue',

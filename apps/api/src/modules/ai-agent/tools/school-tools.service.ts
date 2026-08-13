@@ -60,7 +60,11 @@ export class SchoolToolsService implements IToolHandlerProvider {
       [
         'compare_schools',
         (args, _userId, _ctx, locale) =>
-          this.compareSchools(args.schoolIds?.split(','), args.aspects, locale),
+          this.compareSchools(
+            args.schoolIds?.split(',') ?? [],
+            args.aspects,
+            locale,
+          ),
       ],
     ]);
   }
@@ -429,7 +433,10 @@ export class SchoolToolsService implements IToolHandlerProvider {
             ? null
             : Number(program.acceptanceRateEstimate),
         medianEarnings: program.medianEarnings ?? null,
-        updatedAt: program.updatedAt?.toISOString?.() ?? null,
+        updatedAt:
+          program.updatedAt instanceof Date
+            ? program.updatedAt.toISOString()
+            : String(program.updatedAt),
       })),
       source,
       sourceQuality: source ? 'field_provenance_present' : 'unknown',

@@ -28,10 +28,8 @@ import type {
   ConfidenceLevel,
   PredictionFactor,
   PredictionSourceSummary,
-  PredictionPublicExplanation,
   PredictionOutcomeLabel,
 } from '@study-abroad/shared';
-import { getSchoolDisplayName } from '@study-abroad/shared/utils';
 import {
   ThrottleAI,
   ThrottleSensitive,
@@ -52,46 +50,7 @@ import { SCHOOL_PREDICTION_CONTEXT_SELECT } from '../../common/constants/prisma-
 import { PredictionReportingService } from './prediction-reporting.service';
 import { PredictionFeedbackService } from './prediction-feedback.service';
 import { PredictionExplanationService } from './prediction-explanation.service';
-import { buildPredictionPublicExplanation } from './prediction-public-explanation';
-
-function readStoredPublicExplanation(
-  row: any,
-  locale: SupportedLocale,
-  school?: any,
-) {
-  const stored =
-    row?.servedTrace?.publicExplanation?.rules ??
-    row?.servedTrace?.publicExplanation?.llm?.publicExplanation;
-  if (stored?.headline && Array.isArray(stored.reasons)) {
-    return stored;
-  }
-
-  return buildPredictionPublicExplanation({
-    locale,
-    schoolName: school ? getSchoolDisplayName(school, locale) : row?.schoolName,
-    probability: row?.probability != null ? Number(row.probability) : null,
-    probabilityLow:
-      row?.probabilityLow != null ? Number(row.probabilityLow) : undefined,
-    probabilityHigh:
-      row?.probabilityHigh != null ? Number(row.probabilityHigh) : undefined,
-    tier: row?.tier,
-    confidence: row?.confidence,
-    factors: Array.isArray(row?.factors) ? row.factors : [],
-    suggestions: Array.isArray(row?.suggestions) ? row.suggestions : [],
-    sourceSummary: Array.isArray(row?.sourceSummary) ? row.sourceSummary : [],
-    uncertaintyReasons: Array.isArray(row?.uncertaintyReasons)
-      ? row.uncertaintyReasons
-      : [],
-    predictionMethod:
-      row?.servedTrace?.engine === 'counselor'
-        ? 'counselor'
-        : (row?.predictionMethod ?? 'fusion'),
-    schoolAcceptanceRate:
-      school?.acceptanceRate != null
-        ? Number(school.acceptanceRate)
-        : undefined,
-  });
-}
+import { readStoredPublicExplanation } from './prediction-public-explanation.reader';
 
 @ApiTags('predictions')
 @ApiBearerAuth()
@@ -394,7 +353,7 @@ export class PredictionController {
           p,
           locale,
           schoolMap.get(p.schoolId),
-        ) as PredictionPublicExplanation,
+        ),
         cohortKey: p.cohortKey ?? undefined,
         roundContext: p.applicationRound ?? undefined,
         sourceSummary:

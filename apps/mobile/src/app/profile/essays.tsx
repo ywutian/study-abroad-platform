@@ -1,14 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
 import { Card, CardContent, Badge, Loading, EmptyState } from '@/components/ui';
 import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
 import type { Profile } from '@/types';
 import type { Essay } from '@study-abroad/shared/types';
 

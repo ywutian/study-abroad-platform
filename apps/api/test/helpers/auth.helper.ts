@@ -10,7 +10,13 @@ export function extractCookie(
   res: request.Response,
   cookieName: string,
 ): string | undefined {
-  const setCookie = res.headers['set-cookie'];
+  const rawSetCookie: unknown = res.headers['set-cookie'];
+  const setCookie =
+    typeof rawSetCookie === 'string' ||
+    (Array.isArray(rawSetCookie) &&
+      rawSetCookie.every((value) => typeof value === 'string'))
+      ? rawSetCookie
+      : undefined;
   if (!setCookie) return undefined;
   const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
   const match = cookies.find((c: string) => c.startsWith(`${cookieName}=`));
@@ -20,8 +26,11 @@ export function extractCookie(
 /**
  * Unwrap TransformInterceptor response: { success, data, meta } → data
  */
-export function unwrap(body: any): any {
-  return body.data ?? body;
+export function unwrap<T = any>(body: unknown): T {
+  if (typeof body === 'object' && body !== null && 'data' in body) {
+    return (body as { data: T }).data;
+  }
+  return body as T;
 }
 
 interface AuthResult {
@@ -59,7 +68,7 @@ export async function registerAndLogin(
     .send({ email, password })
     .expect(200);
 
-  const payload = unwrap(loginRes.body);
+  const payload = unwrap<{ accessToken: string }>(loginRes.body);
 
   return {
     accessToken: payload.accessToken,

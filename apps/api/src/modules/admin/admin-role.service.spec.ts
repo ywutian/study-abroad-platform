@@ -1,18 +1,17 @@
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminRoleService } from './admin-role.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Role } from '@prisma/client';
 import { RedisService } from '../../common/redis/redis.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
-import {
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AdminRoleService } from './admin-role.service';
 
 describe('AdminRoleService', () => {
   let service: AdminRoleService;
-  let prisma: PrismaService;
 
   const mockPrisma: any = {
     rolePermission: {
@@ -57,7 +56,6 @@ describe('AdminRoleService', () => {
     }).compile();
 
     service = module.get<AdminRoleService>(AdminRoleService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

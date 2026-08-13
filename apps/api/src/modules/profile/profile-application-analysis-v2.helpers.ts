@@ -1,15 +1,16 @@
 import { Prisma, SchoolPolicyDimension, SchoolTier } from '@prisma/client';
+import type { SchoolTestingPolicy } from '@study-abroad/shared';
 import {
   getSchoolDisplayName,
   resolveSchoolTestingPolicyValue,
 } from '@study-abroad/shared/utils';
+import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
 import type {
   AnalysisActionPlan,
   AnalysisApplicantType,
   AnalysisContextFlag,
   AnalysisDataQuality,
   AnalysisState,
-  ApplicationAnalysisAssessment,
   ApplicationAnalysisConfidenceSummary,
   ApplicationAnalysisEvidenceSummaryItem,
   ApplicationAnalysisFreshnessSummary,
@@ -17,16 +18,14 @@ import type {
   ApplicationAnalysisPortfolioSummary,
   ApplicationAnalysisProfileSummary,
   ApplicationAnalysisSchoolResult,
-  ApplicationAnalysisStatus,
   ApplicationAnalysisSourceRef,
+  ApplicationAnalysisStatus,
   PortfolioBalance,
   SchoolIntlAidPolicy,
   SchoolRoundContext,
 } from '../ai/ai.types';
-import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
 import type { CaseComparisonResult } from '../prediction/prediction-historical.service';
 import { resolveEffectiveTier } from '../school-list/school-list.constants';
-import type { SchoolTestingPolicy } from '@study-abroad/shared';
 
 export const MAX_FOCUS_SCHOOLS = 5;
 
@@ -1419,8 +1418,12 @@ function normalizeFactorStrings(
   const results: string[] = [];
   for (const entry of factors as unknown[]) {
     if (!isRecord(entry)) continue;
-    if (String(entry.impact ?? '').toLowerCase() !== impact) continue;
-    const detail = String(entry.detail ?? '').trim();
+    if (
+      typeof entry.impact !== 'string' ||
+      entry.impact.toLowerCase() !== impact
+    )
+      continue;
+    const detail = typeof entry.detail === 'string' ? entry.detail.trim() : '';
     if (detail) results.push(detail);
     if (results.length >= 4) break;
   }
@@ -1431,7 +1434,13 @@ function asStringArray(
   value: Prisma.JsonValue | string[] | null | undefined,
 ): string[] {
   if (!Array.isArray(value)) return [];
-  return value.map((item) => String(item).trim()).filter(Boolean);
+  const strings: string[] = [];
+  for (const item of value) {
+    if (typeof item !== 'string') continue;
+    const trimmed = item.trim();
+    if (trimmed) strings.push(trimmed);
+  }
+  return strings;
 }
 
 function normalizePredictionTier(
@@ -1453,18 +1462,6 @@ function normalizeConfidence(
     .trim()
     .toLowerCase();
   if (token === 'low' || token === 'medium' || token === 'high') return token;
-  return undefined;
-}
-
-function readStringMetadata(
-  metadata: Record<string, unknown> | null,
-  keys: string[],
-): string | undefined {
-  if (!metadata) return undefined;
-  for (const key of keys) {
-    const value = metadata[key];
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  }
   return undefined;
 }
 

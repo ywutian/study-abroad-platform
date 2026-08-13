@@ -2,63 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { isProtectedPointSettingKey } from './protected-point-settings';
+import { SETTING_KEYS } from './setting-keys';
 
-// System setting key constants
-export const SETTING_KEYS = {
-  ADMIN_EMAIL: 'admin_email',
-  SITE_NAME: 'site_name',
-  SUPPORT_EMAIL: 'support_email',
-  NOTIFICATION_ENABLED: 'notification_enabled',
-  IPEDS_MONITOR_ENABLED: 'ipeds_monitor_enabled',
-  // Points system
-  POINTS_ENABLED: 'points_enabled',
-  POINTS_ACTION_SUBMIT_CASE: 'points_action_SUBMIT_CASE',
-  POINTS_ACTION_CASE_VERIFIED: 'points_action_CASE_VERIFIED',
-  POINTS_ACTION_CASE_HELPFUL: 'points_action_CASE_HELPFUL',
-  POINTS_ACTION_COMPLETE_PROFILE: 'points_action_COMPLETE_PROFILE',
-  POINTS_ACTION_REFER_USER: 'points_action_REFER_USER',
-  POINTS_ACTION_VIEW_CASE_DETAIL: 'points_action_VIEW_CASE_DETAIL',
-  POINTS_ACTION_AI_ANALYSIS: 'points_action_AI_ANALYSIS',
-  POINTS_ACTION_MESSAGE_VERIFIED: 'points_action_MESSAGE_VERIFIED',
-  POINTS_ACTION_VERIFICATION_APPROVED: 'points_action_VERIFICATION_APPROVED',
-  POINTS_ACTION_SWIPE_CORRECT: 'points_action_SWIPE_CORRECT',
-  POINTS_ACTION_SUBMIT_REVIEW: 'points_action_SUBMIT_REVIEW',
-  POINTS_ACTION_REVIEW_HELPFUL: 'points_action_REVIEW_HELPFUL',
-  // Hall refactor Phase 1 — Tinder review + challenge + application-progress
-  POINTS_ACTION_REVIEW_SWIPE_COMPLETE: 'points_action_REVIEW_SWIPE_COMPLETE',
-  POINTS_ACTION_REVIEW_HELPFUL_RECEIVED:
-    'points_action_REVIEW_HELPFUL_RECEIVED',
-  POINTS_ACTION_REVIEWER_LEVEL_UP: 'points_action_REVIEWER_LEVEL_UP',
-  POINTS_ACTION_CHALLENGE_COMPLETE: 'points_action_CHALLENGE_COMPLETE',
-  POINTS_ACTION_CASE_STUDY_COMPLETE: 'points_action_CASE_STUDY_COMPLETE',
-  POINTS_ACTION_PROFILE_RESEARCHED_5_SCHOOLS:
-    'points_action_PROFILE_RESEARCHED_5_SCHOOLS',
-  POINTS_ACTION_ESSAY_DRAFT_COMPLETE: 'points_action_ESSAY_DRAFT_COMPLETE',
-  POINTS_ACTION_ED_SUBMITTED: 'points_action_ED_SUBMITTED',
-  POINTS_ACTION_RANKING_ANALYZED: 'points_action_RANKING_ANALYZED',
-  POINTS_ACTION_REVIEW_REPORTED: 'points_action_REVIEW_REPORTED',
-  POINTS_ACTION_AI_ESSAY_POLISH: 'points_action_AI_ESSAY_POLISH',
-  POINTS_ACTION_AI_ESSAY_REVIEW: 'points_action_AI_ESSAY_REVIEW',
-  POINTS_ACTION_AI_ESSAY_BRAINSTORM: 'points_action_AI_ESSAY_BRAINSTORM',
-  POINTS_ACTION_AI_ESSAY_GALLERY: 'points_action_AI_ESSAY_GALLERY',
-  POINTS_ACTION_AI_ESSAY_GALLERY_ASK: 'points_action_AI_ESSAY_GALLERY_ASK',
-  POINTS_ACTION_AI_ESSAY_COMPARE: 'points_action_AI_ESSAY_COMPARE',
-  POINTS_ACTION_AI_SCHOOL_RECOMMENDATION:
-    'points_action_AI_SCHOOL_RECOMMENDATION',
-  POINTS_ACTION_AI_ACTIVITY_REFINE: 'points_action_AI_ACTIVITY_REFINE',
-  POINTS_ACTION_AI_ESSAY_DEBATE_TURN: 'points_action_AI_ESSAY_DEBATE_TURN',
-  // Subscription pricing
-  SUBSCRIPTION_PRO_PRICE: 'subscription_pro_price',
-  SUBSCRIPTION_PREMIUM_PRICE: 'subscription_premium_price',
-  SUBSCRIPTION_YEARLY_DISCOUNT: 'subscription_yearly_discount',
-  // AI quotas
-  AI_QUOTA_DEFAULT_DAILY: 'ai_quota_default_daily',
-  AI_QUOTA_DEFAULT_MONTHLY: 'ai_quota_default_monthly',
-  AI_QUOTA_PRO_DAILY: 'ai_quota_pro_daily',
-  AI_QUOTA_PRO_MONTHLY: 'ai_quota_pro_monthly',
-  AI_QUOTA_PREMIUM_DAILY: 'ai_quota_premium_daily',
-  AI_QUOTA_PREMIUM_MONTHLY: 'ai_quota_premium_monthly',
-} as const;
+export { SETTING_KEYS } from './setting-keys';
 
 // Default setting values
 const DEFAULT_SETTINGS: Record<
@@ -411,6 +358,10 @@ export class SettingsService {
     // Invalidate cache
     await this.redis.del(`${CACHE_PREFIX}${normalizedKey}`);
     this.logger.log(`Setting updated: ${normalizedKey}`);
+  }
+
+  isProtectedPointSetting(key: string): boolean {
+    return isProtectedPointSettingKey(this.normalizeKey(key));
   }
 
   /**

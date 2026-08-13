@@ -31,7 +31,7 @@ export function AdminHealthIndicator({ health }: AdminHealthIndicatorProps) {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <Activity className="h-5 w-5" />
             {t('dashboard.systemHealth')}
           </CardTitle>

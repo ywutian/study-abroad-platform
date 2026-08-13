@@ -99,7 +99,7 @@ const CaseListItem = memo(function CaseListItem({ item }: CaseListItemProps) {
               <Badge variant="success">
                 <View style={styles.badgeContent}>
                   <Ionicons name="checkmark-circle" size={12} color={colors.success} />
-                  <Text style={{ marginLeft: 4 }}>{t('cases.verified')}</Text>
+                  <Text style={styles.badgeText}>{t('cases.verified')}</Text>
                 </View>
               </Badge>
             )}
@@ -188,11 +188,11 @@ export default function CasesScreen() {
                 <View style={styles.caseHeader}>
                   <View style={styles.caseInfo}>
                     <Skeleton width="70%" height={18} />
-                    <Skeleton width="50%" height={14} style={{ marginTop: 8 }} />
+                    <Skeleton width="50%" height={14} style={styles.skeletonMarginTop} />
                   </View>
                   <Skeleton width={60} height={24} borderRadius={12} />
                 </View>
-                <View style={[styles.statsRow, { marginTop: spacing.md }]}>
+                <View style={[styles.statsRow, styles.loadingStatsRow]}>
                   <Skeleton width={50} height={32} />
                   <Skeleton width={50} height={32} />
                   <Skeleton width={50} height={32} />
@@ -343,6 +343,9 @@ export default function CasesScreen() {
 }
 
 const styles = StyleSheet.create({
+  badgeText: { marginLeft: 4 },
+  skeletonMarginTop: { marginTop: 8 },
+  loadingStatsRow: { marginTop: spacing.md },
   container: {
     flex: 1,
   },

@@ -109,7 +109,7 @@ export function setContext(name: string, context: Record<string, unknown>) {
 /**
  * 手动捕获异常
  */
-export function captureException(error: Error, context?: Record<string, unknown>) {
+export function captureException(error: unknown, context?: Record<string, unknown>) {
   Sentry?.captureException(error, {
     extra: context,
   });

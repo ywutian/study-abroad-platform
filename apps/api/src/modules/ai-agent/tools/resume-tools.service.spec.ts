@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ResumeToolsService } from './resume-tools.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ResumeService } from '../../resume/resume.service';
+import { ResumeToolsService } from './resume-tools.service';
 
 describe('ResumeToolsService', () => {
   let service: ResumeToolsService;
-  let prisma: { resume: { findMany: jest.Mock } };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,7 +30,6 @@ describe('ResumeToolsService', () => {
     }).compile();
 
     service = module.get(ResumeToolsService);
-    prisma = module.get(PrismaService);
   });
 
   it('should be defined', () => {

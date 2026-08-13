@@ -1,33 +1,38 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { EssayStatus, Prisma } from '@prisma/client';
+import { ERR } from '../../common/constants/error-messages';
 import {
-  CreateEssayPromptDto,
-  UpdateEssayPromptDto,
-  QueryEssayPromptDto,
-  VerifyEssayPromptDto,
-  BatchImportEssayPromptDto,
-} from './dto';
+  SCHOOL_NAME_RANK_SELECT,
+  SCHOOL_NAME_SELECT,
+} from '../../common/constants/prisma-selects';
 import {
   resolveSchoolId,
   type BatchImportResult,
 } from '../../common/utils/import-normalizers';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
-  SCHOOL_NAME_SELECT,
-  SCHOOL_NAME_RANK_SELECT,
-} from '../../common/constants/prisma-selects';
-import { EssayType } from '../../common/types/enums';
-import { ERR } from '../../common/constants/error-messages';
+  BatchImportEssayPromptDto,
+  CreateEssayPromptDto,
+  QueryEssayPromptDto,
+  UpdateEssayPromptDto,
+  VerifyEssayPromptDto,
+} from './dto';
 
 /** Number of leading characters used for deduplication matching */
 const DEDUP_PREFIX_LENGTH = 50;
 const SOURCE_BACKED_PROMPT_WHERE: Prisma.EssayPromptWhereInput = {
   sources: { some: { sourceUrl: { not: null } } },
 };
+const ESSAY_PROMPT_SOURCE_SELECT = {
+  sourceType: true,
+  sourceUrl: true,
+  scrapedAt: true,
+  confidence: true,
+} as const;
 
 interface EssayPromptQueryOptions {
   requireSourceEvidence?: boolean;
@@ -138,12 +143,7 @@ export class EssayPromptService {
             select: SCHOOL_NAME_RANK_SELECT,
           },
           sources: {
-            select: {
-              sourceType: true,
-              sourceUrl: true,
-              scrapedAt: true,
-              confidence: true,
-            },
+            select: ESSAY_PROMPT_SOURCE_SELECT,
           },
         },
         orderBy: [{ school: { usNewsRank: 'asc' } }, { sortOrder: 'asc' }],
@@ -226,12 +226,7 @@ export class EssayPromptService {
           select: SCHOOL_NAME_RANK_SELECT,
         },
         sources: {
-          select: {
-            sourceType: true,
-            sourceUrl: true,
-            scrapedAt: true,
-            confidence: true,
-          },
+          select: ESSAY_PROMPT_SOURCE_SELECT,
         },
       },
     });
@@ -264,12 +259,7 @@ export class EssayPromptService {
       orderBy: [{ sortOrder: 'asc' }, { type: 'asc' }],
       include: {
         sources: {
-          select: {
-            sourceType: true,
-            sourceUrl: true,
-            scrapedAt: true,
-            confidence: true,
-          },
+          select: ESSAY_PROMPT_SOURCE_SELECT,
         },
       },
     });

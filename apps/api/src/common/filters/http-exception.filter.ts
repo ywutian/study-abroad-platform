@@ -34,7 +34,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const correlationId = request.correlationId;
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = 'Internal server error';
     let code = 'INTERNAL_ERROR';
     let details: Record<string, unknown> | undefined;
@@ -211,23 +211,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   private getCodeFromStatus(status: number): string {
     switch (status) {
-      case HttpStatus.BAD_REQUEST:
+      case Number(HttpStatus.BAD_REQUEST):
         return 'BAD_REQUEST';
-      case HttpStatus.UNAUTHORIZED:
+      case Number(HttpStatus.UNAUTHORIZED):
         return 'UNAUTHORIZED';
-      case HttpStatus.FORBIDDEN:
+      case Number(HttpStatus.FORBIDDEN):
         return 'FORBIDDEN';
-      case HttpStatus.NOT_FOUND:
+      case Number(HttpStatus.NOT_FOUND):
         return 'NOT_FOUND';
-      case HttpStatus.CONFLICT:
+      case Number(HttpStatus.CONFLICT):
         return 'CONFLICT';
-      case HttpStatus.TOO_MANY_REQUESTS:
+      case Number(HttpStatus.TOO_MANY_REQUESTS):
         return 'RATE_LIMIT_EXCEEDED';
-      case HttpStatus.UNPROCESSABLE_ENTITY:
+      case Number(HttpStatus.UNPROCESSABLE_ENTITY):
         return 'UNPROCESSABLE_ENTITY';
-      case HttpStatus.SERVICE_UNAVAILABLE:
+      case Number(HttpStatus.SERVICE_UNAVAILABLE):
         return 'SERVICE_UNAVAILABLE';
-      case HttpStatus.GATEWAY_TIMEOUT:
+      case Number(HttpStatus.GATEWAY_TIMEOUT):
         return 'GATEWAY_TIMEOUT';
       default:
         return 'INTERNAL_ERROR';

@@ -13,10 +13,10 @@ Application timeline management with per-school deadline tracking, task manageme
 
 ## Data Model
 
-- `ApplicationTimeline` — Per-school timeline with userId, schoolId, round, status
-- `TimelineTask` — Tasks within timelines (title, dueDate, isCompleted, category)
+- `ApplicationTimeline` — Per-school, per-entry-year timeline; unique by userId + schoolId + round + applicationYear
+- `ApplicationTask` — Tasks within timelines (title, type, dueDate, completed)
 - `PersonalEvent` — User-created events with deadline, eventDate, status, category
-- `PersonalTask` — Standalone personal tasks (not tied to a timeline)
+- `PersonalTask` — Tasks within a personal event
 - `GlobalEvent` — Platform-wide events (exams, competitions, scholarships)
 
 ## Dependencies
@@ -26,14 +26,15 @@ PrismaService | AI/LLM: No
 ## Business Rules
 
 - `generateTimelines` batch-creates timelines for multiple schools with auto-generated tasks
-- Overview aggregates both application timeline stats and personal event stats
+- Overview counts the current/future application cycle, not archived history
 - Global events can be subscribed to personal timeline
-- Personal events have statuses: NOT_STARTED, IN_PROGRESS, COMPLETED
-- Tasks support toggle completion (flip isCompleted boolean)
+- Personal events have statuses: NOT_STARTED, IN_PROGRESS, COMPLETED, CANCELLED
+- Terminal or past-lifecycle records are archived and immutable; personal lifecycle uses the later of deadline/eventDate
 
 ## Gotchas
 
 - Thin facade pattern: `TimelineService` delegates all calls to `TimelineApplicationService` or `TimelinePersonalEventService`
 - Overview merges data from both sub-services (app timelines + personal events)
 - Timeline creation accepts locale for i18n-aware task generation
+- Stored application deadlines never roll forward; only recurring GlobalEvent dates do
 - All endpoints require JWT auth (JwtAuthGuard at controller level)

@@ -204,7 +204,7 @@ export function OverviewTab() {
       {chartData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('charts.accuracyTitle')}</CardTitle>
+            <CardTitle className="text-body">{t('charts.accuracyTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -245,7 +245,7 @@ export function OverviewTab() {
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <Zap className="h-4 w-4" />
               {t('suggestions.title')}
             </CardTitle>

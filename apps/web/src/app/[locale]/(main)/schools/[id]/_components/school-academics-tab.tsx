@@ -50,7 +50,7 @@ export function SchoolAcademicsTab({
     <div className="grid md:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t('school.requirements.title')}</CardTitle>
+          <CardTitle className="">{t('school.requirements.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center">
@@ -147,7 +147,7 @@ export function SchoolAcademicsTab({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t('school.difficultyAnalysis')}</CardTitle>
+          <CardTitle className="">{t('school.difficultyAnalysis')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -242,7 +242,7 @@ export function SchoolEssaysTab({ school, essayPrompts }: SchoolEssaysTabProps) 
       {/* Essay list */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             {t('school.essays.title')}
           </CardTitle>

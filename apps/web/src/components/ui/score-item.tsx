@@ -67,7 +67,7 @@ export function ScoreItem({
         <span
           className={cn(
             'text-overline text-muted-foreground',
-            size === 'sm' ? 'text-[10px]' : 'text-xs'
+            size === 'sm' ? 'text-2xs' : 'text-xs'
           )}
         >
           {label}
@@ -107,7 +107,7 @@ export function CompactScore({ label, value, className }: CompactScoreProps) {
     <div
       className={cn('px-3 py-2 rounded-lg bg-muted/50 border text-center min-w-[80px]', className)}
     >
-      <p className="text-overline text-muted-foreground text-[10px] uppercase tracking-wider">
+      <p className="text-overline text-muted-foreground text-2xs uppercase tracking-wider">
         {label}
       </p>
       <p className="text-metric text-lg font-semibold">{value}</p>

@@ -1,33 +1,26 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   Button,
-  Input,
-  Modal,
-  Select,
-  Loading,
-  EmptyState,
   Card,
   CardContent,
+  EmptyState,
+  Input,
+  Loading,
+  Modal,
+  Select,
 } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
-import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
-import type { Profile, Activity } from '@/types';
+import type { Activity, Profile } from '@/types';
+import { fontFamily, useColors, withOpacity } from '@/utils/theme';
+import { profileRoutes } from '@study-abroad/shared';
+import { styles } from './activities.styles';
 
 const ACTIVITY_CATEGORIES = [
   { value: 'ACADEMIC', key: 'academic' },
@@ -154,12 +147,12 @@ export default function ActivitiesScreen() {
     saveMutation.mutate(newActivity);
   }, [
     name,
+    category,
     role,
     organization,
     description,
     hoursPerWeek,
     weeksPerYear,
-    editingActivity,
     saveMutation,
     toast,
     t,
@@ -387,7 +380,7 @@ export default function ActivitiesScreen() {
             onChangeText={setDescription}
             multiline
             numberOfLines={3}
-            style={{ minHeight: 80, textAlignVertical: 'top' }}
+            style={styles.multilineInput}
           />
 
           <View style={styles.rowInputs}>
@@ -426,113 +419,3 @@ export default function ActivitiesScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingBottom: spacing['5xl'],
-  },
-  listContainer: {
-    gap: spacing.md,
-  },
-  itemCard: {
-    marginBottom: 0,
-  },
-  itemCardContent: {
-    padding: spacing.lg,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  itemInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  iconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  itemTextContainer: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  itemSubtitle: {
-    fontSize: fontSize.sm,
-    marginTop: 2,
-  },
-  itemActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  actionButton: {
-    padding: spacing.xs,
-  },
-  itemDescription: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.sm,
-    lineHeight: 20,
-  },
-  timeInfo: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  timeText: {
-    fontSize: fontSize.xs,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: spacing['2xl'],
-    right: spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  formContainer: {
-    paddingBottom: spacing.md,
-  },
-  rowInputs: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  halfInput: {
-    flex: 1,
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  modalButton: {
-    flex: 1,
-  },
-});

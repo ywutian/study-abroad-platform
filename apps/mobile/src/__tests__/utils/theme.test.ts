@@ -203,8 +203,9 @@ describe('useColors', () => {
   });
 
   it('returns default palette colors when colorPalette is default', () => {
-    (useThemeStore as unknown as jest.Mock).mockImplementation((selector: any) =>
-      selector({ colorScheme: 'light', colorPalette: 'default' })
+    (useThemeStore as unknown as jest.Mock).mockImplementation(
+      (selector: (state: { colorScheme: string; colorPalette: string }) => unknown) =>
+        selector({ colorScheme: 'light', colorPalette: 'default' })
     );
 
     const { result } = renderHook(() => useColors());

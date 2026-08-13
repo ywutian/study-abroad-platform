@@ -57,7 +57,6 @@ const TIER_VARIANT: Record<
 
 export function SchoolListTab() {
   const t = useTranslations('admin.highSchools');
-  const tc = useTranslations('admin.common');
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [country, setCountry] = useState('');
@@ -143,7 +142,7 @@ export function SchoolListTab() {
             <SelectItem value="all">{t('filters.allCountries')}</SelectItem>
             {COUNTRIES.map((c) => (
               <SelectItem key={c} value={c}>
-                {t(`countries.${c}` as any)}
+                {t(`countries.${c}` as never)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -162,7 +161,7 @@ export function SchoolListTab() {
             <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
             {TYPES.map((tp) => (
               <SelectItem key={tp} value={tp}>
-                {t(`schoolTypes.${tp}` as any)}
+                {t(`schoolTypes.${tp}` as never)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -211,7 +210,7 @@ export function SchoolListTab() {
       {/* Table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-body-sm font-medium">
             {t('messages.schoolsFound', { count: total })}
           </CardTitle>
         </CardHeader>

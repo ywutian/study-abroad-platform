@@ -26,7 +26,7 @@ export default async function ApplicationAnalysisQAPage({ params }: PageProps) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
       <div className="space-y-1">
         <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">QA Fixture</p>
-        <h1 className="text-2xl font-semibold text-foreground">
+        <h1 className="text-title font-semibold text-foreground">
           Application Analysis Render Parity
         </h1>
         <p className="text-sm text-muted-foreground">{fixture.caseId}</p>

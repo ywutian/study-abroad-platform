@@ -63,7 +63,7 @@ export function ResultsGrid({
               <Trophy className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <CardTitle className="text-lg">{t('hall.ranking.title')}</CardTitle>
+              <CardTitle className="">{t('hall.ranking.title')}</CardTitle>
               <CardDescription>{t('hall.ranking.resultsDesc')}</CardDescription>
             </div>
           </div>

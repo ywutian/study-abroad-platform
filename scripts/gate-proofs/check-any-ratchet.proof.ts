@@ -1,6 +1,9 @@
 import { runGate, withPatchedFile, expectClean, expectFired } from './harness';
 
-const SRC = 'apps/api/src/modules/prediction/outcome/outcome.service.ts';
+// Use a file that does not currently exceed the file-size ratchet. The former
+// 900-line outcome service made an explicit-any seed improve the size overage
+// when ESLint reformatted it, so the type gate could incorrectly stay green.
+const SRC = 'apps/api/src/modules/hall/hall-overview.service.ts';
 const BASELINE = 'scripts/any-baseline.json';
 const GATE = 'check-any-ratchet.ts';
 
@@ -39,8 +42,15 @@ export async function prove(): Promise<void> {
     expectFired(runGate(GATE), 'doubleCast')
   );
 
-  await withPatchedFile(SRC, append('const __probe2 = {} as any;'), () =>
-    expectFired(runGate(GATE), 'explicitAny')
+  // Seed enough escapes to stay above the checked-in ceiling even when the
+  // working tree has removed a few existing `any`s. A single seed can merely
+  // consume an uncommitted improvement and make this proof falsely stay green.
+  await withPatchedFile(
+    SRC,
+    append(
+      Array.from({ length: 16 }, (_, index) => `const __probeAny${index} = {} as any;`).join('\n')
+    ),
+    () => expectFired(runGate(GATE), 'explicitAny')
   );
 
   await withPatchedFile(SRC, append('// @ts-ignore\nconst __probe3: number = "x";'), () =>

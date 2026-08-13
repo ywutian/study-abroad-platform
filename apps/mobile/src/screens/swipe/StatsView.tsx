@@ -59,7 +59,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
           <Ionicons name="arrow-back" size={24} color={c.foreground} />
         </TouchableOpacity>
         <Text style={[styles.statsTitle, { color: c.foreground }]}>{t('swipe.statsTitle')}</Text>
-        <View style={{ width: 32 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       {statsLoading ? (
@@ -124,6 +124,7 @@ export default function StatsView({ onBack }: StatsViewProps) {
 }
 
 const styles = StyleSheet.create({
+  headerSpacer: { width: 32 },
   statsViewContainer: {
     flex: 1,
     paddingHorizontal: spacing.lg,

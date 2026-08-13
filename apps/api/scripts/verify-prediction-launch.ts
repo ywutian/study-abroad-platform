@@ -156,7 +156,10 @@ async function main() {
       gpaScale: 4,
       targetMajor: 'Computer Science',
       testScores: [{ type: 'SAT', score: 1500 }],
-      activities: [{ name: 'Research' }, { name: 'Robotics' }],
+      activities: [
+        { name: 'Research', category: 'ACADEMIC', role: 'Researcher' },
+        { name: 'Robotics', category: 'STEM', role: 'Team member' },
+      ],
       awards: [],
     },
     [numericSchool.id],
@@ -423,7 +426,7 @@ async function main() {
       where: { predictionResultId },
       orderBy: { createdAt: 'desc' },
     });
-    const canonical = reporting.resolveCanonicalOutcome(allLabels as any);
+    const canonical = reporting.resolveCanonicalOutcome(allLabels);
     const verifiedOverridesSelfReport =
       canonical.canonicalRecord?.status === 'DOCUMENT_VERIFIED' &&
       canonical.canonicalRecord?.result === 'REJECTED' &&

@@ -1,15 +1,14 @@
 import {
   Injectable,
-  NotFoundException,
-  ForbiddenException,
-  Logger,
   InternalServerErrorException,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { User, Prisma, TeamStatus } from '@prisma/client';
-import { safeDelete } from '../../common/utils/safe-delete';
-import { PeerReviewService } from '../peer-review/peer-review.service';
+import { Prisma, TeamStatus, User } from '@prisma/client';
 import { randomBytes } from 'crypto';
+import { safeDelete } from '../../common/utils/safe-delete';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PeerReviewService } from '../peer-review/peer-review.service';
 
 @Injectable()
 export class UserService {

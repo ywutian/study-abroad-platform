@@ -4423,7 +4423,7 @@
     "aiRecommendationsError": "Failed to get recommendations",
     "recommendationsLoaded": "Candidate schools generated",
     "recommendationsError": "Failed to generate candidate schools",
-    "recommendationsBlocked": "Your profile or point balance is not ready for recommendations yet",
+    "recommendationsBlocked": "Your profile is not ready for recommendations yet",
     "workspace": {
       "syncSuccess": "Application requirements synced",
       "syncError": "Could not sync requirements. Please try again.",
@@ -7178,7 +7178,7 @@
   },
   "timeline": {
     "title": "Application Timeline",
-    "description": "Focus on next actions, deadline risk, and task progress",
+    "description": "Turn each school, exam, and personal event into a dated plan with clear next actions, deadline risk, and task progress.",
     "dynamicNote": "Timelines are auto-generated from your school list and subscribed events. Deadline data sourced from school websites and admin configurations.",
     "addSchool": "Add School",
     "daysLeft": "{days} days left",
@@ -7205,7 +7205,7 @@
       "overdue": "Overdue unfinished",
       "overdueDesc": "Moved to archive for handling",
       "pendingSchools": "School timelines needed",
-      "pendingSchoolsDesc": "Complete from your school list",
+      "pendingSchoolsDesc": "Generate dated application tasks from schools already saved in your list",
       "incompleteTasks": "Open tasks",
       "incompleteTasksDesc": "Across actionable items"
     },
@@ -7217,7 +7217,7 @@
     },
     "archive": {
       "emptyTitle": "Archive is Empty",
-      "emptyDescription": "Completed, cancelled, or overdue unfinished items appear here instead of crowding the default view."
+      "emptyDescription": "Completed, cancelled, or overdue unfinished items appear here instead of crowding the default view; archived records are read-only."
     },
     "statuses": {
       "notStarted": "Not Started",
@@ -7294,7 +7294,8 @@
       "title": "School Timelines",
       "description": "Application progress sorted by registration deadline",
       "archiveTitle": "Archived School Applications",
-      "archiveDescription": "Finished, withdrawn, or overdue unfinished school applications",
+      "archiveDescription": "Read-only history of finished, withdrawn, or overdue applications by cycle",
+      "applicationYear": "Fall {year}",
       "deadline": "Registration Deadline",
       "tasks": "Tasks",
       "statusLabel": "Application status",
@@ -11161,6 +11162,9 @@
     "pointsRedemptions": {
       "title": "Points redemption queue",
       "description": "Fulfilment to-do plus consultation outcomes — every row has already been charged",
+      "unavailableTitle": "Points system is not available",
+      "unavailableDescription": "The points economy is currently closed. No points are earned, deducted, or available for redemption.",
+      "backToAdmin": "Back to admin",
       "pendingTitle": "Awaiting fulfilment",
       "pendingEmpty": "Nothing awaiting fulfilment",
       "consultTitle": "Consultations awaiting an outcome",
@@ -11473,7 +11477,7 @@
     "stats": {
       "invited": "Friends Invited",
       "signups": "Successful Signups",
-      "points": "Points Earned"
+      "points": "Referral Rewards"
     },
     "howItWorks": "How It Works",
     "step1": "Share your unique referral code",
@@ -11493,9 +11497,9 @@
     },
     "emailSubject": "Join me on Lumni",
     "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code}: {link}",
-    "step3": "You both earn 50 points",
-    "step3Desc": "Points are awarded once registration is complete",
-    "pointsAwarded": "+{points} points"
+    "step3": "Track the referral",
+    "step3Desc": "Your friend appears in referral history after registration",
+    "pointsAwarded": "Referral complete"
   },
   "tour": {
     "next": "Next",

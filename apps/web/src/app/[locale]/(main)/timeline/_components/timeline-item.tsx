@@ -42,6 +42,7 @@ interface TimelineItemProps {
   /** When provided, the expanded panel allows adding/removing tasks (non-archive). */
   addTaskMutation?: UseMutationResult<unknown, Error, AddTaskVars>;
   deleteTaskMutation?: UseMutationResult<unknown, Error, string>;
+  readOnly?: boolean;
 }
 
 export function TimelineItem({
@@ -60,6 +61,7 @@ export function TimelineItem({
   updateTimelineMutation,
   addTaskMutation,
   deleteTaskMutation,
+  readOnly = false,
 }: TimelineItemProps) {
   const t = useTranslations('timeline');
   const days = getDaysUntil(tl.deadline);
@@ -83,6 +85,9 @@ export function TimelineItem({
             >
               {tl.schoolName}
             </Link>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {t('schoolTimelines.applicationYear', { year: tl.applicationYear })}
+            </span>
             {getRoundBadge(tl.round)}
             {getStatusBadge(tl.status)}
           </div>
@@ -163,8 +168,13 @@ export function TimelineItem({
             isLoading={timelineDetailLoading}
             toggleTaskMutation={toggleTaskMutation}
             formatDate={formatDate}
-            onDelete={() => setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })}
-            deleteLabel={t('deleteTimeline')}
+            onDelete={
+              readOnly
+                ? undefined
+                : () => setDeleteTarget({ type: 'timeline', id: tl.id, name: tl.schoolName })
+            }
+            deleteLabel={readOnly ? undefined : t('deleteTimeline')}
+            readOnly={readOnly}
             showTaskType
             onAddTask={
               addTaskMutation

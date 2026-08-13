@@ -123,7 +123,15 @@ export interface TeacherSignalProvider {
 
   evaluate(
     input: DistillationEvaluationInput,
-  ): Promise<
-    Omit<DistillationTeacherSignal, 'configuredWeight' | 'effectiveBlendWeight'>
-  >;
+  ):
+    | Omit<
+        DistillationTeacherSignal,
+        'configuredWeight' | 'effectiveBlendWeight'
+      >
+    | Promise<
+        Omit<
+          DistillationTeacherSignal,
+          'configuredWeight' | 'effectiveBlendWeight'
+        >
+      >;
 }

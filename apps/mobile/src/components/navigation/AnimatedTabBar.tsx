@@ -7,7 +7,6 @@ import Animated, {
   withSpring,
   withTiming,
   interpolate,
-  interpolateColor,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -34,7 +33,7 @@ function AnimatedTabIcon({ name, focused, color, size }: TabIconProps) {
       damping: 15,
       stiffness: 200,
     });
-  }, [focused]);
+  }, [focused, scale, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }, { translateY: translateY.value }],
@@ -67,7 +66,7 @@ function AnimatedTabBarButton({
   iconName,
   activeColor,
   inactiveColor,
-  backgroundColor,
+  backgroundColor: _backgroundColor,
   badge,
 }: AnimatedTabBarButtonProps) {
   const colors = useColors();
@@ -76,7 +75,7 @@ function AnimatedTabBarButton({
 
   React.useEffect(() => {
     focused.value = withTiming(isFocused ? 1 : 0, { duration: 200 });
-  }, [isFocused]);
+  }, [focused, isFocused]);
 
   const containerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.92]) }],
@@ -125,7 +124,9 @@ function AnimatedTabBarButton({
           />
           {badge != null && badge > 0 && (
             <View style={[styles.badge, { backgroundColor: colors.error }]}>
-              <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+              <Text style={[styles.badgeText, { color: colors.primaryForeground }]}>
+                {badge > 99 ? '99+' : badge}
+              </Text>
             </View>
           )}
         </View>
@@ -270,7 +271,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: '#fff9ef',
     fontSize: 10,
     fontWeight: '700',
     textAlign: 'center',

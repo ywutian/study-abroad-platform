@@ -136,6 +136,7 @@ export function AvatarGroup({ children, max = 3, size = 'default' }: AvatarGroup
         return -16;
     }
   };
+  const overlapStyle = { marginLeft: getSizeOffset() };
 
   return (
     <View style={styles.group}>
@@ -144,13 +145,12 @@ export function AvatarGroup({ children, max = 3, size = 'default' }: AvatarGroup
           key={index}
           style={[
             styles.groupItem,
+            styles.groupItemBorder,
             {
-              marginLeft: index > 0 ? getSizeOffset() : 0,
               zIndex: visibleChildren.length - index,
-              borderWidth: 2,
               borderColor: colors.background,
-              borderRadius: borderRadius.full,
             },
+            index > 0 && overlapStyle,
           ]}
         >
           {child}
@@ -160,13 +160,12 @@ export function AvatarGroup({ children, max = 3, size = 'default' }: AvatarGroup
         <View
           style={[
             styles.groupItem,
+            styles.groupItemBorder,
             {
-              marginLeft: getSizeOffset(),
               backgroundColor: colors.muted,
-              borderWidth: 2,
               borderColor: colors.background,
-              borderRadius: borderRadius.full,
             },
+            overlapStyle,
           ]}
         >
           <Avatar name={`+${remainingCount}`} size={size} />
@@ -192,5 +191,9 @@ const styles = StyleSheet.create({
   },
   groupItem: {
     overflow: 'hidden',
+  },
+  groupItemBorder: {
+    borderWidth: 2,
+    borderRadius: borderRadius.full,
   },
 });

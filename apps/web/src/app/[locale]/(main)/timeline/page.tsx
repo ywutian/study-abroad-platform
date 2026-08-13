@@ -60,6 +60,8 @@ import {
   buildTimelineBoardModel,
   daysUntilDate,
   getArchivedDisplayStatus,
+  getCurrentCycleSchoolIds,
+  getPersonalLifecycleDate,
   resolveTimelineTab,
 } from './_components/timeline-view-model';
 import type {
@@ -417,12 +419,10 @@ export default function TimelinePage() {
     () => buildTimelineBoardModel(timelines, personalEvents),
     [timelines, personalEvents]
   );
-
   const schoolsWithoutTimeline = useMemo(() => {
-    const timelineSchoolIds = new Set(timelines.map((tl) => tl.schoolId));
+    const timelineSchoolIds = getCurrentCycleSchoolIds(timelines);
     return schoolListItems.filter((item) => item.school && !timelineSchoolIds.has(item.schoolId));
   }, [timelines, schoolListItems]);
-
   const formatDate = useCallback((dateStr?: string) => formatDateHelper(dateStr, format), [format]);
 
   const formatDaysUntil = useCallback((days: number | null) => formatDaysUntilHelper(days, t), [t]);
@@ -442,7 +442,6 @@ export default function TimelinePage() {
     () => new Map(board.actionablePersonalEvents.map((item) => [item.id, item])),
     [board.actionablePersonalEvents]
   );
-
   const upcomingGlobalEvents = useMemo(() => {
     const subscribedIds = new Set(personalEvents.map((e) => e.globalEventId).filter(Boolean));
     return globalEvents
@@ -468,7 +467,7 @@ export default function TimelinePage() {
         ...event,
         status: getArchivedDisplayStatus(
           event.status,
-          daysUntilDate(event.deadline ?? event.eventDate)
+          daysUntilDate(getPersonalLifecycleDate(event))
         ),
       })),
     [board.archivedPersonalEvents]
@@ -872,6 +871,7 @@ export default function TimelinePage() {
               />
               <PersonalEventsSection
                 sortedPersonalEvents={archivedPersonalEvents}
+                readOnly
                 onEditEvent={openEditEvent}
                 addPersonalTaskMutation={addPersonalTaskMutation}
                 deletePersonalTaskMutation={deletePersonalTaskMutation}

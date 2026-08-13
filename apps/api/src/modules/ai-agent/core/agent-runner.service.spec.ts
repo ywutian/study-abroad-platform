@@ -5,18 +5,17 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { AgentType, ConversationState } from '../types';
 import { AgentRunnerService } from './agent-runner.service';
-import { WorkflowEngineService } from './workflow-engine.service';
 import { LLMService } from './llm.service';
-import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
 import { ResilienceService } from './resilience.service';
-import { AgentType, ConversationState } from '../types';
+import { ToolExecutorService } from './tool-executor.service';
+import { WorkflowEngineService } from './workflow-engine.service';
 
 describe('AgentRunnerService', () => {
   let service: AgentRunnerService;
   let workflow: jest.Mocked<WorkflowEngineService>;
-  let memory: jest.Mocked<MemoryService>;
 
   const mockConversation: ConversationState = {
     id: 'conv_1',
@@ -84,7 +83,6 @@ describe('AgentRunnerService', () => {
 
     service = module.get<AgentRunnerService>(AgentRunnerService);
     workflow = module.get(WorkflowEngineService);
-    memory = module.get(MemoryService);
   });
 
   it('should be defined', () => {

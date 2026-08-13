@@ -131,9 +131,9 @@ cd apps/api && pnpm test --coverage
 
 ### Phase 4: 学校库前端验证 (P2)
 
-| 状态          | 说明                                                                       |
-| ------------- | -------------------------------------------------------------------------- |
-| ⚠️ 待手动验证 | 已添加 `console.error` 调试日志到 `schools/page.tsx`，需启动完整服务后确认 |
+| 状态      | 说明                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------- |
+| ✅ 已关闭 | 前端统一发送 `page` / `pageSize`，与 `PaginationDto` 一致；参数序列化单测及学校关键页面全表面门禁覆盖 |
 
 ### Phase 5: React Hydration 警告修复 (P3)
 
@@ -682,12 +682,12 @@ Please make sure your database server is running at `localhost:5432`.
 | AI Agent | 30+    | ✅ 已注册 |
 | Hall     | 20+    | ✅ 已注册 |
 
-### 待处理项
+### 当时待处理项（当前已关闭）
 
-| 项目       | 说明                        | 优先级 |
-| ---------- | --------------------------- | ------ |
-| Redis 认证 | 需要配置 Redis 密码         | P2     |
-| 数据库种子 | `seed-rankings.ts` 类型错误 | P2     |
+| 项目       | 说明                                                            | 状态      |
+| ---------- | --------------------------------------------------------------- | --------- |
+| Redis 认证 | 生产连接由 `REDIS_URL`/TLS 与部署环境管理；代码配置和门禁已覆盖 | ✅ 已关闭 |
+| 数据库种子 | 历史脚本类型债务已清理；当前 API 类型检查、构建与种子门禁通过   | ✅ 已修复 |
 
 ### 新增页面（已实现）
 
@@ -697,7 +697,7 @@ Please make sure your database server is running at `localhost:5432`.
 | 服务条款 | `/terms`                 | ✅ 已实现 | 条款分类展示、联系方式                       |
 | 隐私政策 | `/privacy`               | ✅ 已实现 | 隐私承诺、数据权利说明                       |
 | 账号安全 | `/settings/security`     | ✅ 已实现 | 密码修改、两步验证、会话管理                 |
-| 订阅管理 | `/settings/subscription` | ✅ 已实现 | 订阅计划、账单历史                           |
+| 订阅管理 | `/settings/subscription` | ➖ 已退役 | 当前设置页无此入口；产品未开放订阅流程       |
 | 关于我们 | `/about`                 | ✅ 已实现 | 统计数据、故事、愿景、价值观、发展历程、团队 |
 | 院校库   | `/schools`               | ✅ 已实现 | 学校搜索、国家筛选、排序、学校卡片           |
 
@@ -1210,60 +1210,60 @@ cd apps/mobile && pnpm test:coverage
 
 ## 八、问题记录
 
-| 日期       | 模块      | 问题描述                                                                     | 状态        | 负责人                                       |
-| ---------- | --------- | ---------------------------------------------------------------------------- | ----------- | -------------------------------------------- |
-| 2026-01-21 | i18n      | `profile.gpaScales` 键名包含非法字符 `.`（4.0, 5.0）                         | ✅ 已修复   | -                                            |
-| 2026-01-21 | i18n      | `helpCenter.faqData` 应为 `helpCenter.faqItems`                              | ✅ 已修复   | -                                            |
-| 2026-01-21 | i18n      | `helpCenter.resources` 结构需改为嵌套格式                                    | ✅ 已修复   | -                                            |
-| 2026-01-21 | i18n      | 首页 `scrollDown` 缺少命名空间前缀                                           | ✅ 已修复   | -                                            |
-| 2026-01-21 | i18n      | `helpCenter` 多个 key 命名与组件不一致                                       | ✅ 已修复   | -                                            |
-| 2026-01-21 | i18n      | `helpCenter.categories.featureUsage` 缺失                                    | ✅ 已修复   | -                                            |
-| 2026-01-21 | API       | TypeScript 编译错误 (import type, userId→id 等)                              | ✅ 已修复   | -                                            |
-| 2026-01-21 | API       | 28 个 TS 类型错误导致 API 无法启动                                           | ✅ 已修复   | -                                            |
-| 2026-01-21 | API       | CORS 预检请求缺少 Access-Control-Allow-Origin 头                             | ✅ 已修复   | -                                            |
-| 2026-01-21 | Web       | API URL 默认端口已统一为 4101                                                | ✅ 已修复   | -                                            |
-| 2026-01-21 | Web       | auth store API URL 默认端口已统一为 4101                                     | ✅ 已修复   | -                                            |
-| 2026-01-21 | Web       | 登录组件未正确解析 API 响应 (response.data)                                  | ✅ 已修复   | -                                            |
-| 2026-01-21 | Web       | AI Agent API 路径缺少 /api/v1 前缀                                           | ✅ 已修复   | -                                            |
-| 2026-01-21 | Profile   | 保存时需选择年级和预算（必填字段验证）                                       | ⚠️ 预期行为 | -                                            |
-| 2026-01-21 | 排名      | API返回格式需解析 response.data                                              | ✅ 已修复   | -                                            |
-| 2026-01-21 | 排名      | score 为 null 导致 toFixed 错误                                              | ✅ 已修复   | -                                            |
-| 2026-01-21 | 案例库    | API 需要 @Public() 装饰器支持匿名访问                                        | ✅ 已修复   | -                                            |
-| 2026-01-21 | 案例库    | PaginationDto 不支持额外查询参数，需创建 CaseQueryDto                        | ✅ 已修复   | -                                            |
-| 2026-01-21 | 案例库    | CaseResult 类型缺少 DEFERRED                                                 | ✅ 已修复   | -                                            |
-| 2026-01-21 | i18n      | cases.result.deferred 翻译缺失                                               | ✅ 已修复   | -                                            |
-| 2026-01-21 | 学校      | SchoolQueryDto 缺失导致搜索参数被拒                                          | ✅ 已修复   | -                                            |
-| 2026-01-21 | 学校详情  | API 返回 {success, data} 需正确解析 response.data                            | ✅ 已修复   | -                                            |
-| 2026-01-21 | 管理后台  | Select.Item value="" 空值导致 Radix UI 错误                                  | ✅ 已修复   | 改为 value="ALL"                             |
-| 2026-01-21 | 录取预测  | SchoolSelector 组件 schools API 返回 items 非 data                           | ✅ 已修复   | -                                            |
-| 2026-01-21 | 辅助页面  | /help, /terms, /privacy, /settings/security, /settings/subscription 返回 404 | ⚠️ 待实现   | 设置页面链接存在但页面未创建                 |
-| 2026-01-21 | 文书      | 创建文书后列表未刷新显示                                                     | ✅ 已修复   | API 响应需解析 response.data                 |
-| 2026-01-21 | 档案      | 个人档案保存后数据未持久化                                                   | ✅ 已修复   | useQuery 响应需解析 data 属性                |
-| 2026-01-21 | 关注页    | followers.filter is not a function                                           | ✅ 已修复   | API 响应需解析 data 属性                     |
-| 2026-01-21 | 聊天页    | 对话列表可能无法正确显示                                                     | ✅ 已修复   | API 响应需解析 data 属性                     |
-| 2026-01-21 | 管理后台  | stats/reports/users 数据解析                                                 | ✅ 已修复   | API 响应需解析 data 属性                     |
-| 2026-01-21 | 功能大厅  | publicLists/rankingResults 解析                                              | ✅ 已修复   | API 响应需解析 data 属性                     |
-| 2026-01-21 | AI助手    | formatToolName is not defined                                                | ✅ 已修复   | 函数移到组件外部顶层作用域                   |
-| 2026-01-21 | UI        | 反馈按钮与AI按钮重叠                                                         | ✅ 已修复   | 反馈按钮移到左下角                           |
-| 2026-01-21 | UI        | ThemeToggle Hydration 错误                                                   | ✅ 已修复   | 添加 mounted 状态避免 SSR 不匹配             |
-| 2026-01-23 | i18n      | `ui.milestone.profileCompleteTitle/Desc` 等翻译缺失                          | ✅ 已修复   | 添加 milestone 相关翻译到 zh.json 和 en.json |
-| 2026-01-23 | Dashboard | API 端点错误 `/profile/me` 应为 `/profiles/me`                               | ✅ 已修复   | 修正 dashboard/page.tsx 中的 API 路径        |
-| 2026-01-27 | i18n      | `hall.description` 等英文翻译缺失                                            | ✅ 已修复   | 添加完整 hall.review.\* 翻译到 en.json       |
-| 2026-01-27 | i18n      | `agentChat.usingTools` 翻译缺失                                              | ✅ 已修复   | 添加到 zh.json 和 en.json                    |
-| 2026-01-27 | i18n      | `cases.result.deferred` 翻译缺失                                             | ✅ 已修复   | 添加到 zh.json 和 en.json                    |
-| 2026-01-27 | i18n      | 英文 profile 页面多项翻译缺失                                                | ✅ 已修复   | 添加 description, completeness 等翻译        |
-| 2026-01-27 | 预测      | 前端 mock schoolIds 无效                                                     | ✅ 已修复   | 改为真实 ID: mit, harvard, stanford          |
-| 2026-01-27 | 预测      | 前端数据解析路径错误                                                         | ✅ 已修复   | `data.data?.results` 改为 `data.results`     |
-| 2026-01-27 | 预测      | 前端结果显示问题                                                             | ⚠️ 待调试   | API 返回正确，React 状态未更新               |
-| 2026-01-27 | 数据库    | PostgreSQL 5432 未运行                                                       | ✅ 已修复   | docker-compose up -d db redis                |
-| 2026-01-27 | 页面      | `/ai` 页面为空                                                               | ✅ 已修复   | 创建完整 AI 对话页面组件                     |
-| 2026-01-27 | i18n      | essays 翻译缺失                                                              | ✅ 已修复   | 添加 essays/essayAi 命名空间                 |
-| 2026-01-27 | i18n      | assessment 翻译缺失                                                          | ✅ 已修复   | 添加 assessment 命名空间                     |
-| 2026-01-27 | 页面      | `/timeline` 页面为空                                                         | ✅ 已修复   | 创建时间线页面+翻译                          |
-| 2026-01-27 | 移动端    | 10个硬编码字符串                                                             | ⚠️ 待修复   | SettingsScreen, case/, schools等             |
-| 2026-01-27 | i18n      | recommendation 翻译缺失                                                      | ✅ 已修复   | 添加 recommendation 命名空间 (25+ keys)      |
-| 2026-01-27 | i18n      | swipe 翻译缺失                                                               | ✅ 已修复   | 添加 swipe 命名空间 (10 keys)                |
-| 2026-01-27 | i18n      | vault 翻译缺失                                                               | ✅ 已修复   | 添加 vault 命名空间 (50+ keys)               |
+| 日期       | 模块      | 问题描述                                                                     | 状态        | 负责人                                         |
+| ---------- | --------- | ---------------------------------------------------------------------------- | ----------- | ---------------------------------------------- |
+| 2026-01-21 | i18n      | `profile.gpaScales` 键名包含非法字符 `.`（4.0, 5.0）                         | ✅ 已修复   | -                                              |
+| 2026-01-21 | i18n      | `helpCenter.faqData` 应为 `helpCenter.faqItems`                              | ✅ 已修复   | -                                              |
+| 2026-01-21 | i18n      | `helpCenter.resources` 结构需改为嵌套格式                                    | ✅ 已修复   | -                                              |
+| 2026-01-21 | i18n      | 首页 `scrollDown` 缺少命名空间前缀                                           | ✅ 已修复   | -                                              |
+| 2026-01-21 | i18n      | `helpCenter` 多个 key 命名与组件不一致                                       | ✅ 已修复   | -                                              |
+| 2026-01-21 | i18n      | `helpCenter.categories.featureUsage` 缺失                                    | ✅ 已修复   | -                                              |
+| 2026-01-21 | API       | TypeScript 编译错误 (import type, userId→id 等)                              | ✅ 已修复   | -                                              |
+| 2026-01-21 | API       | 28 个 TS 类型错误导致 API 无法启动                                           | ✅ 已修复   | -                                              |
+| 2026-01-21 | API       | CORS 预检请求缺少 Access-Control-Allow-Origin 头                             | ✅ 已修复   | -                                              |
+| 2026-01-21 | Web       | API URL 默认端口已统一为 4101                                                | ✅ 已修复   | -                                              |
+| 2026-01-21 | Web       | auth store API URL 默认端口已统一为 4101                                     | ✅ 已修复   | -                                              |
+| 2026-01-21 | Web       | 登录组件未正确解析 API 响应 (response.data)                                  | ✅ 已修复   | -                                              |
+| 2026-01-21 | Web       | AI Agent API 路径缺少 /api/v1 前缀                                           | ✅ 已修复   | -                                              |
+| 2026-01-21 | Profile   | 保存时需选择年级和预算（必填字段验证）                                       | ⚠️ 预期行为 | -                                              |
+| 2026-01-21 | 排名      | API返回格式需解析 response.data                                              | ✅ 已修复   | -                                              |
+| 2026-01-21 | 排名      | score 为 null 导致 toFixed 错误                                              | ✅ 已修复   | -                                              |
+| 2026-01-21 | 案例库    | API 需要 @Public() 装饰器支持匿名访问                                        | ✅ 已修复   | -                                              |
+| 2026-01-21 | 案例库    | PaginationDto 不支持额外查询参数，需创建 CaseQueryDto                        | ✅ 已修复   | -                                              |
+| 2026-01-21 | 案例库    | CaseResult 类型缺少 DEFERRED                                                 | ✅ 已修复   | -                                              |
+| 2026-01-21 | i18n      | cases.result.deferred 翻译缺失                                               | ✅ 已修复   | -                                              |
+| 2026-01-21 | 学校      | SchoolQueryDto 缺失导致搜索参数被拒                                          | ✅ 已修复   | -                                              |
+| 2026-01-21 | 学校详情  | API 返回 {success, data} 需正确解析 response.data                            | ✅ 已修复   | -                                              |
+| 2026-01-21 | 管理后台  | Select.Item value="" 空值导致 Radix UI 错误                                  | ✅ 已修复   | 改为 value="ALL"                               |
+| 2026-01-21 | 录取预测  | SchoolSelector 组件 schools API 返回 items 非 data                           | ✅ 已修复   | -                                              |
+| 2026-01-21 | 辅助页面  | /help, /terms, /privacy, /settings/security, /settings/subscription 返回 404 | ✅ 已关闭   | 前四个路由已实现；已移除的订阅入口不再产生死链 |
+| 2026-01-21 | 文书      | 创建文书后列表未刷新显示                                                     | ✅ 已修复   | API 响应需解析 response.data                   |
+| 2026-01-21 | 档案      | 个人档案保存后数据未持久化                                                   | ✅ 已修复   | useQuery 响应需解析 data 属性                  |
+| 2026-01-21 | 关注页    | followers.filter is not a function                                           | ✅ 已修复   | API 响应需解析 data 属性                       |
+| 2026-01-21 | 聊天页    | 对话列表可能无法正确显示                                                     | ✅ 已修复   | API 响应需解析 data 属性                       |
+| 2026-01-21 | 管理后台  | stats/reports/users 数据解析                                                 | ✅ 已修复   | API 响应需解析 data 属性                       |
+| 2026-01-21 | 功能大厅  | publicLists/rankingResults 解析                                              | ✅ 已修复   | API 响应需解析 data 属性                       |
+| 2026-01-21 | AI助手    | formatToolName is not defined                                                | ✅ 已修复   | 函数移到组件外部顶层作用域                     |
+| 2026-01-21 | UI        | 反馈按钮与AI按钮重叠                                                         | ✅ 已修复   | 反馈按钮移到左下角                             |
+| 2026-01-21 | UI        | ThemeToggle Hydration 错误                                                   | ✅ 已修复   | 添加 mounted 状态避免 SSR 不匹配               |
+| 2026-01-23 | i18n      | `ui.milestone.profileCompleteTitle/Desc` 等翻译缺失                          | ✅ 已修复   | 添加 milestone 相关翻译到 zh.json 和 en.json   |
+| 2026-01-23 | Dashboard | API 端点错误 `/profile/me` 应为 `/profiles/me`                               | ✅ 已修复   | 修正 dashboard/page.tsx 中的 API 路径          |
+| 2026-01-27 | i18n      | `hall.description` 等英文翻译缺失                                            | ✅ 已修复   | 添加完整 hall.review.\* 翻译到 en.json         |
+| 2026-01-27 | i18n      | `agentChat.usingTools` 翻译缺失                                              | ✅ 已修复   | 添加到 zh.json 和 en.json                      |
+| 2026-01-27 | i18n      | `cases.result.deferred` 翻译缺失                                             | ✅ 已修复   | 添加到 zh.json 和 en.json                      |
+| 2026-01-27 | i18n      | 英文 profile 页面多项翻译缺失                                                | ✅ 已修复   | 添加 description, completeness 等翻译          |
+| 2026-01-27 | 预测      | 前端 mock schoolIds 无效                                                     | ✅ 已修复   | 改为真实 ID: mit, harvard, stanford            |
+| 2026-01-27 | 预测      | 前端数据解析路径错误                                                         | ✅ 已修复   | `data.data?.results` 改为 `data.results`       |
+| 2026-01-27 | 预测      | 前端结果显示问题                                                             | ✅ 已修复   | 响应归一化并由现有预测页面测试覆盖             |
+| 2026-01-27 | 数据库    | PostgreSQL 5432 未运行                                                       | ✅ 已修复   | docker-compose up -d db redis                  |
+| 2026-01-27 | 页面      | `/ai` 页面为空                                                               | ✅ 已修复   | 创建完整 AI 对话页面组件                       |
+| 2026-01-27 | i18n      | essays 翻译缺失                                                              | ✅ 已修复   | 添加 essays/essayAi 命名空间                   |
+| 2026-01-27 | i18n      | assessment 翻译缺失                                                          | ✅ 已修复   | 添加 assessment 命名空间                       |
+| 2026-01-27 | 页面      | `/timeline` 页面为空                                                         | ✅ 已修复   | 创建时间线页面+翻译                            |
+| 2026-01-27 | 移动端    | 10个硬编码字符串                                                             | ✅ 已修复   | 翻译键迁移完成；`lint:i18n` 全量门禁通过       |
+| 2026-01-27 | i18n      | recommendation 翻译缺失                                                      | ✅ 已修复   | 添加 recommendation 命名空间 (25+ keys)        |
+| 2026-01-27 | i18n      | swipe 翻译缺失                                                               | ✅ 已修复   | 添加 swipe 命名空间 (10 keys)                  |
+| 2026-01-27 | i18n      | vault 翻译缺失                                                               | ✅ 已修复   | 添加 vault 命名空间 (50+ keys)                 |
 
 ---
 
@@ -1437,7 +1437,7 @@ cd apps/web && pnpm dev
 | 功能完整性   | ❓        | 需实机测试              |
 | API 集成     | ❓        | 需端到端测试            |
 
-#### 移动端硬编码问题清单 (2026-01-27)
+#### 移动端硬编码问题清单（历史快照，现已全部修复）(2026-01-27)
 
 | 文件               | 行号  | 内容               | 建议 key                  |
 | ------------------ | ----- | ------------------ | ------------------------- |
@@ -1473,10 +1473,10 @@ cd apps/web && pnpm dev
 
 ## 十二、下一步测试计划
 
-1. **优先修复**: 预测页面前端显示问题
+1. ~~**优先修复**: 预测页面前端显示问题~~ ✅ 已完成
 2. ~~空页面修复~~: ✅ 所有页面已有内容
 3. ~~动态路由~~: ✅ `/schools/[id]`, `/cases/[id]` i18n 已完成
-4. **移动端修复**: 仍有部分硬编码 (US News, words, points 等)
+4. ~~**移动端修复**: 仍有部分硬编码 (US News, words, points 等)~~ ✅ 已完成并纳入 `lint:i18n`
 5. **API 模块测试**: essay-ai, recommendation, swipe, vault, notification 等
 6. **端到端测试**: 完整用户流程测试
 7. ~~**组件级 i18n**~~ ✅ 全部完成:

@@ -462,7 +462,7 @@ export class SanitizerService {
       if (typeof value === 'string') {
         result[key] = this.sanitize(value, options);
       } else if (Array.isArray(value)) {
-        result[key] = value.map((v) =>
+        result[key] = (value as unknown[]).map((v) =>
           typeof v === 'string' ? this.sanitize(v, options) : v,
         );
       } else if (typeof value === 'object' && value !== null) {

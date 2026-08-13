@@ -8,7 +8,6 @@ import Animated, {
   interpolate,
   Easing,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useColors, borderRadius as br } from '@/utils/theme';
 
@@ -38,7 +37,7 @@ export function AnimatedSkeleton({
       -1, // infinite
       false
     );
-  }, []);
+  }, [reducedMotion, shimmerProgress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: reducedMotion ? 0.5 : interpolate(shimmerProgress.value, [0, 0.5, 1], [0.3, 0.6, 0.3]),
@@ -95,12 +94,12 @@ export function SkeletonCard({ style }: SkeletonCardProps) {
         <AnimatedSkeleton variant="circle" height={40} />
         <View style={styles.cardHeaderText}>
           <AnimatedSkeleton width="60%" height={16} />
-          <AnimatedSkeleton width="40%" height={12} style={{ marginTop: 8 }} />
+          <AnimatedSkeleton width="40%" height={12} style={styles.marginTop} />
         </View>
       </View>
       <View style={styles.cardBody}>
-        <AnimatedSkeleton height={14} style={{ marginBottom: 8 }} />
-        <AnimatedSkeleton width="80%" height={14} style={{ marginBottom: 8 }} />
+        <AnimatedSkeleton height={14} style={styles.marginBottom} />
+        <AnimatedSkeleton width="80%" height={14} style={styles.marginBottom} />
         <AnimatedSkeleton width="60%" height={14} />
       </View>
     </View>
@@ -121,9 +120,9 @@ export function SkeletonListItem({ style, hasAvatar = true }: SkeletonListItemPr
       style={[styles.listItem, { backgroundColor: colors.card, borderColor: colors.border }, style]}
     >
       {hasAvatar && <AnimatedSkeleton variant="circle" height={48} />}
-      <View style={[styles.listItemContent, !hasAvatar && { marginLeft: 0 }]}>
+      <View style={[styles.listItemContent, !hasAvatar && styles.noAvatarMargin]}>
         <AnimatedSkeleton width="70%" height={16} />
-        <AnimatedSkeleton width="50%" height={12} style={{ marginTop: 8 }} />
+        <AnimatedSkeleton width="50%" height={12} style={styles.marginTop} />
       </View>
       <AnimatedSkeleton width={60} height={24} borderRadius={br.md} />
     </View>
@@ -162,4 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
   },
+  marginTop: { marginTop: 8 },
+  marginBottom: { marginBottom: 8 },
+  noAvatarMargin: { marginLeft: 0 },
 });

@@ -836,7 +836,7 @@ export class AdminThemeStyleController {
 
   @Get('certification')
   @ApiOperation({ summary: 'Get enterprise theme certification matrix' })
-  async getCertificationMatrix() {
+  getCertificationMatrix() {
     return buildThemeCertificationMatrix();
   }
 
@@ -844,7 +844,7 @@ export class AdminThemeStyleController {
   @ApiOperation({
     summary: 'Certify a theme style without publishing or saving it',
   })
-  async certifyThemeStyle(@Body() body: ThemeStyleCertifyInput) {
+  certifyThemeStyle(@Body() body: ThemeStyleCertifyInput) {
     const normalized = normalizeStyleInput(body);
     const blockingIssue = normalized.issues.find(
       (issue) => issue.severity === 'error',

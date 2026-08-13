@@ -2,9 +2,10 @@
  * Popup 脚本 - 扩展弹出窗口逻辑
  */
 
-import type { UserProfile, Message, MessageResponse } from '../utils/types';
 import { applyI18n, msg } from '../utils/i18n';
 import { injectExtensionThemeVars } from '../utils/theme';
+import type { Message, MessageResponse, UserProfile } from '../utils/types';
+import { isLoginStatus, isUserProfile } from '../utils/types';
 
 let profile: UserProfile | null = null;
 
@@ -42,7 +43,7 @@ async function checkLoginStatus(): Promise<void> {
 
   const response = await sendMessage({ type: 'LOGIN_STATUS' });
 
-  if (response.success && response.data?.isLoggedIn) {
+  if (response.success && isLoginStatus(response.data) && response.data.isLoggedIn) {
     await loadProfile();
     showLoggedInView();
   } else {
@@ -58,7 +59,7 @@ async function checkLoginStatus(): Promise<void> {
 async function loadProfile(): Promise<void> {
   const response = await sendMessage({ type: 'GET_PROFILE' });
 
-  if (response.success && response.data) {
+  if (response.success && isUserProfile(response.data)) {
     profile = response.data;
     updateProfileDisplay();
   }
@@ -153,7 +154,7 @@ async function handleSync(): Promise<void> {
 
   const response = await sendMessage({ type: 'SYNC_PROFILE' });
 
-  if (response.success && response.data) {
+  if (response.success && isUserProfile(response.data)) {
     profile = response.data;
     updateProfileDisplay();
     showStatus(msg('syncSuccess'), 'success');
@@ -188,7 +189,7 @@ async function handleFillCurrentPage(): Promise<void> {
     } else {
       showStatus(msg('fillFailed'), 'error');
     }
-  } catch (error) {
+  } catch {
     showStatus(msg('cannotConnectPage'), 'error');
   }
 }

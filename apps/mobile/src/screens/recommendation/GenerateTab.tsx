@@ -1,37 +1,28 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LayoutAnimation, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 import { AnimatedButton, AnimatedCard, CardContent, Progress } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { recommendationRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import {
-  useColors,
-  withOpacity,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-} from '@/utils/theme';
+import { fontFamily, useColors, withOpacity } from '@/utils/theme';
+import { recommendationRoutes } from '@study-abroad/shared';
 
+import { styles } from './GenerateTab.styles';
 import { SchoolCard } from './SchoolCard';
 import {
-  RecommendationResult,
-  RecommendationPreflight,
-  GenerateRecommendationDto,
-  REGION_OPTIONS,
-  MAJOR_OPTIONS,
   BUDGET_OPTIONS,
-  TIER_CONFIG,
+  GenerateRecommendationDto,
+  getTierConfig,
+  MAJOR_OPTIONS,
   recommendationKeys,
-  ColorsType,
+  RecommendationPreflight,
+  RecommendationResult,
+  REGION_OPTIONS,
 } from './types';
 
 interface GenerateTabProps {
@@ -43,6 +34,7 @@ interface GenerateTabProps {
 export function GenerateTab({ externalResult, onExternalResultConsumed }: GenerateTabProps) {
   const { t } = useTranslation();
   const colors = useColors();
+  const tierConfig = getTierConfig(colors);
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -172,15 +164,13 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
 
     return (
       <Animated.View entering={FadeInDown.duration(400).springify()}>
-        <LinearGradient
-          colors={
-            profileComplete
-              ? [withOpacity(colors.success, 0.125), withOpacity(colors.success, 0.03)]
-              : [withOpacity(colors.warning, 0.125), withOpacity(colors.warning, 0.03)]
-          }
+        <View
           style={[
             styles.profileBanner,
             {
+              backgroundColor: profileComplete
+                ? withOpacity(colors.success, 0.08)
+                : withOpacity(colors.warning, 0.08),
               borderColor: profileComplete
                 ? withOpacity(colors.success, 0.25)
                 : withOpacity(colors.warning, 0.25),
@@ -271,7 +261,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
               </Text>
             </View>
           )}
-        </LinearGradient>
+        </View>
       </Animated.View>
     );
   };
@@ -318,7 +308,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                   name="checkmark"
                   size={14}
                   color={colors.primaryForeground}
-                  style={{ marginLeft: 4 }}
+                  style={styles.checkIcon}
                 />
               )}
             </TouchableOpacity>
@@ -470,9 +460,11 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
 
   const renderLoadingState = () => (
     <Animated.View entering={FadeInUp.duration(400).springify()} style={styles.loadingContainer}>
-      <LinearGradient
-        colors={[withOpacity(colors.primary, 0.0625), withOpacity(colors.primary, 0.03)]}
-        style={[styles.loadingCard, { borderColor: colors.border }]}
+      <View
+        style={[
+          styles.loadingCard,
+          { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+        ]}
       >
         <Ionicons name="sparkles" size={40} color={colors.primary} style={styles.loadingIcon} />
         <Text style={[styles.loadingTitle, { color: colors.foreground }]}>
@@ -501,7 +493,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             {Math.round(loadingProgress)}%
           </Text>
         </View>
-      </LinearGradient>
+      </View>
     </Animated.View>
   );
 
@@ -518,12 +510,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
       <>
         {/* Summary Card */}
         <Animated.View entering={FadeInDown.duration(400).springify()}>
-          <LinearGradient
-            colors={[colors.primary, withOpacity(colors.primary, 0.87)]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.summaryCard}
-          >
+          <View style={[styles.summaryCard, { backgroundColor: colors.primary }]}>
             <View style={styles.summaryHeader}>
               <Ionicons name="sparkles" size={24} color={colors.onGradient} />
               <Text style={[styles.summaryTitle, { color: colors.onGradient }]}>
@@ -540,7 +527,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             {/* Tier Counts */}
             <View style={styles.tierCountsRow}>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
-                <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.reach.color }]} />
+                <View style={[styles.tierDot, { backgroundColor: tierConfig.reach.color }]} />
                 <Text style={[styles.tierCountLabel, { color: colors.onGradientMuted }]}>
                   {t('recommendation.tierReach')}
                 </Text>
@@ -554,7 +541,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                 </Text>
               </View>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
-                <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.match.color }]} />
+                <View style={[styles.tierDot, { backgroundColor: tierConfig.match.color }]} />
                 <Text style={[styles.tierCountLabel, { color: colors.onGradientMuted }]}>
                   {t('recommendation.tierMatch')}
                 </Text>
@@ -568,7 +555,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                 </Text>
               </View>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
-                <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.safety.color }]} />
+                <View style={[styles.tierDot, { backgroundColor: tierConfig.safety.color }]} />
                 <Text style={[styles.tierCountLabel, { color: colors.onGradientMuted }]}>
                   {t('recommendation.tierSafety')}
                 </Text>
@@ -582,7 +569,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                 </Text>
               </View>
             </View>
-          </LinearGradient>
+          </View>
         </Animated.View>
 
         {/* School Cards */}
@@ -707,290 +694,3 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
 // ============================================================
 // Styles
 // ============================================================
-
-const styles = StyleSheet.create({
-  // Profile Banner
-  profileBanner: {
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    marginBottom: spacing.lg,
-  },
-  profileBannerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  profileBannerTitle: {
-    flex: 1,
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  profileSummaryRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  summaryChip: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  summaryChipLabel: {
-    fontSize: fontSize.xs,
-    marginBottom: 2,
-  },
-  summaryChipValue: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-  },
-  missingFieldsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.md,
-  },
-  missingFieldsLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  missingFieldsText: {
-    fontSize: fontSize.sm,
-    flex: 1,
-  },
-
-  // Form
-  formSection: {
-    marginBottom: spacing.xl,
-  },
-  formLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.md,
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-  },
-  chipText: {
-    fontSize: fontSize.sm,
-  },
-
-  // Budget
-  budgetRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  budgetOption: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  budgetText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-
-  // School Count
-  sliderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  countBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-  },
-  countBadgeText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-  },
-  schoolCountRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  countOption: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  countOptionText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-
-  // Generate Button
-  generateButtonContainer: {
-    alignItems: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  generateButton: {
-    width: '100%',
-  },
-  cannotGenerateText: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.sm,
-    fontWeight: fontWeight.medium,
-  },
-
-  // Loading
-  loadingContainer: {
-    marginTop: spacing.lg,
-  },
-  loadingCard: {
-    borderRadius: borderRadius.xl,
-    padding: spacing['2xl'],
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  loadingIcon: {
-    marginBottom: spacing.lg,
-  },
-  loadingTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  loadingSubtitle: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-    lineHeight: fontSize.sm * 1.5,
-  },
-  loadingProgressContainer: {
-    width: '100%',
-    gap: spacing.sm,
-  },
-  loadingPercent: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    textAlign: 'center',
-  },
-
-  // Summary Card
-  summaryCard: {
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    marginBottom: spacing.lg,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  summaryTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  summaryText: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * 1.6,
-    marginBottom: spacing.lg,
-  },
-  summaryHint: {
-    fontSize: fontSize.xs,
-    lineHeight: fontSize.xs * 1.5,
-    marginTop: -spacing.sm,
-    marginBottom: spacing.md,
-  },
-  tierCountsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  tierCount: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  tierDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  tierCountLabel: {
-    fontSize: fontSize.xs,
-  },
-  tierCountValue: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-  },
-
-  // School List Section
-  schoolListSection: {
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.md,
-  },
-
-  // Analysis
-  analysisSection: {
-    marginBottom: spacing.lg,
-  },
-  analysisCard: {
-    marginBottom: spacing.sm,
-  },
-  analysisHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  analysisLabel: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  analysisItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  analysisBullet: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    width: 16,
-    textAlign: 'center',
-  },
-  analysisItemText: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * 1.5,
-  },
-
-  // Reset
-  resetContainer: {
-    marginTop: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  resetButton: {
-    width: '100%',
-  },
-});

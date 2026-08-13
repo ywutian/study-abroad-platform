@@ -1564,7 +1564,8 @@
     "tabs": {
       "schools": "学校",
       "events": "事件",
-      "overview": "概览"
+      "overview": "概览",
+      "archive": "归档"
     },
     "overview": {
       "totalSchools": "学校总数",
@@ -1584,7 +1585,9 @@
       "ACCEPTED": "已录取",
       "REJECTED": "已拒绝",
       "WAITLISTED": "候补中",
-      "WITHDRAWN": "已撤回"
+      "WITHDRAWN": "已撤回",
+      "COMPLETED": "已完成",
+      "CANCELLED": "已取消"
     },
     "round": {
       "ED": "ED",
@@ -1618,6 +1621,13 @@
     "priority": "优先级",
     "notes": "备注",
     "noDeadline": "无截止日期",
+    "applicationYear": "{{year}} 入学",
+    "archive": {
+      "schoolTitle": "归档学校申请",
+      "personalTitle": "归档个人事件",
+      "emptyTitle": "归档为空",
+      "emptyDescription": "已完成、已取消和逾期记录会作为只读历史保留在这里。"
+    },
     "events": {
       "personal": "个人事件",
       "global": "全局事件",
@@ -1740,7 +1750,7 @@
       "generateAnalysis": "生成策略",
       "analyzing": "分析中...",
       "generateRecommendations": "生成推荐",
-      "recommendationBlocked": "档案或积分暂不满足推荐条件，请先进入推荐页处理。",
+      "recommendationBlocked": "档案信息暂不满足推荐条件，请先进入推荐页处理。",
       "analysisGenerated": "申请策略已生成",
       "analysisFailed": "申请策略生成失败，请重试",
       "tasks": {

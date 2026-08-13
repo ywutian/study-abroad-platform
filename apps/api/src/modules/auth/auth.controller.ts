@@ -243,8 +243,12 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     // 企业级：优先从 httpOnly cookie 获取，其次从 body 获取（向后兼容）
+    const cookieToken: unknown = (
+      req.cookies as Record<string, unknown> | undefined
+    )?.[REFRESH_TOKEN_COOKIE_NAME];
     const refreshToken =
-      req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] || data?.refreshToken;
+      (typeof cookieToken === 'string' ? cookieToken : undefined) ||
+      data?.refreshToken;
 
     if (!refreshToken) {
       this.logger.warn('Token refresh attempted without refresh token');
@@ -302,8 +306,12 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     // 企业级：从 httpOnly cookie 获取 refreshToken
+    const cookieToken: unknown = (
+      req.cookies as Record<string, unknown> | undefined
+    )?.[REFRESH_TOKEN_COOKIE_NAME];
     const refreshToken =
-      req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] || data?.refreshToken;
+      (typeof cookieToken === 'string' ? cookieToken : undefined) ||
+      data?.refreshToken;
 
     // 即使没有 refreshToken 也要清除 cookie（防止残留）
     await this.authService.logout(user.id, refreshToken);

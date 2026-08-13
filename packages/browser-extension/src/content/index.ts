@@ -2,17 +2,19 @@
  * Content Script - 在 CommonApp 页面注入填充功能
  */
 
+import './styles.css';
+
 import {
   autoFillForm,
-  getAvailableFields,
-  fillField,
-  getNestedValue,
   COMMONAPP_FIELD_MAPPINGS,
+  fillField,
+  getAvailableFields,
+  getNestedValue,
 } from '../utils/field-mapper';
-import type { UserProfile, Message, MessageResponse } from '../utils/types';
 import { msg } from '../utils/i18n';
 import { injectExtensionThemeVars } from '../utils/theme';
-import './styles.css';
+import type { Message, MessageResponse, UserProfile } from '../utils/types';
+import { isUserProfile } from '../utils/types';
 
 let cachedProfile: UserProfile | null = null;
 
@@ -22,13 +24,15 @@ injectExtensionThemeVars('#studyabroad-floating-container');
  * 初始化 content script
  */
 function initialize(): void {
-  console.log('[Lumni Extension] Content script loaded on CommonApp');
-
   // 注入浮动按钮
   injectFloatingButton();
 
   // 监听来自 background 的消息
-  chrome.runtime.onMessage.addListener((message: any, _sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+    if (typeof message !== 'object' || message === null || !('type' in message)) {
+      return false;
+    }
+
     if (message.type === 'FILL_CURRENT_FIELD') {
       fillCurrentFocusedField();
       sendResponse({ success: true });
@@ -169,7 +173,7 @@ async function loadProfile(): Promise<void> {
 
   const response = await sendMessage({ type: 'GET_PROFILE' });
 
-  if (response.success && response.data) {
+  if (response.success && isUserProfile(response.data)) {
     cachedProfile = response.data;
     updateStatus(`${msg('profileLoaded')} ✓`);
   } else {
@@ -211,7 +215,7 @@ async function handleSync(): Promise<void> {
 
   const response = await sendMessage({ type: 'SYNC_PROFILE' });
 
-  if (response.success && response.data) {
+  if (response.success && isUserProfile(response.data)) {
     cachedProfile = response.data;
     updateStatus(`${msg('syncSuccess')} ✓`, 'success');
   } else {

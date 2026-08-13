@@ -1,6 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
+
+const CDS_BAND_SCHOOL_SELECT = {
+  id: true,
+  name: true,
+  nameZh: true,
+  usNewsRank: true,
+} as const;
 import { ListCdsBandRowsDto, UpdateCdsBandRowDto } from './distillation.dto';
 
 export type CdsBandInputRow = {
@@ -143,7 +150,7 @@ export class CdsBandsIngestionService {
       },
       include: {
         school: {
-          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          select: CDS_BAND_SCHOOL_SELECT,
         },
       },
       orderBy: [
@@ -214,7 +221,7 @@ export class CdsBandsIngestionService {
       data,
       include: {
         school: {
-          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          select: CDS_BAND_SCHOOL_SELECT,
         },
       },
     });

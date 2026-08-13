@@ -195,12 +195,17 @@ function SchoolHeroMedia({
           className={imageClassName}
         />
       ) : (
-        <img
+        <Image
           src={displayUrl}
           alt={schoolName}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
-          fetchPriority={priority ? 'high' : 'low'}
+          fill
+          sizes={
+            size === 'list'
+              ? '(min-width: 640px) 280px, 100vw'
+              : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+          }
+          priority={priority}
+          unoptimized
           onError={() => setFailed(true)}
           title={sourceUrl ?? sourceType ?? undefined}
           data-source-url={sourceUrl ?? undefined}

@@ -2,7 +2,7 @@
  * CommonApp 字段映射器
  */
 
-import type { UserProfile, FieldMapping } from './types';
+import type { FieldMapping, UserProfile } from './types';
 
 /**
  * CommonApp 字段映射配置
@@ -144,16 +144,19 @@ export const COMMONAPP_FIELD_MAPPINGS: FieldMapping[] = [
 /**
  * 根据路径获取对象属性值
  */
-export function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => {
-    return current && current[key] !== undefined ? current[key] : undefined;
+export function getNestedValue(obj: unknown, path: string): unknown {
+  return path.split('.').reduce<unknown>((current, key) => {
+    if (typeof current !== 'object' || current === null) {
+      return undefined;
+    }
+    return (current as Record<string, unknown>)[key];
   }, obj);
 }
 
 /**
  * 填充表单字段
  */
-export function fillField(element: HTMLElement, value: any, type: string): boolean {
+export function fillField(element: HTMLElement, value: unknown, type: string): boolean {
   if (value === undefined || value === null) {
     return false;
   }

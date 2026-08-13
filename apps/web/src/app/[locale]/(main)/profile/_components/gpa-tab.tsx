@@ -129,12 +129,15 @@ export function GpaTab({
   const watchedGpa12 = watch('gpa12');
   const watchedGpa = watch('gpa');
 
-  const gradeValues = {
-    gpa9: watchedGpa9,
-    gpa10: watchedGpa10,
-    gpa11: watchedGpa11,
-    gpa12: watchedGpa12,
-  };
+  const gradeValues = useMemo(
+    () => ({
+      gpa9: watchedGpa9,
+      gpa10: watchedGpa10,
+      gpa11: watchedGpa11,
+      gpa12: watchedGpa12,
+    }),
+    [watchedGpa9, watchedGpa10, watchedGpa11, watchedGpa12]
+  );
   const hasDetailedData = GRADE_KEYS.some((key) => gradeValues[key] !== '');
   const [mode, setMode] = useState<'simple' | 'detailed'>(hasDetailedData ? 'detailed' : 'simple');
 

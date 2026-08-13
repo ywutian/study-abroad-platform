@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 
 declare global {
+  // Express request augmentation requires its global namespace declaration.
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       correlationId: string;

@@ -121,7 +121,7 @@ export class AuditService {
     @Optional() private alertChannelService?: AlertChannelService,
   ) {
     // 启动定时刷新
-    this.flushTimer = setInterval(() => this.flush(), 5000);
+    this.flushTimer = setInterval(() => void this.flush(), 5000);
   }
 
   /**

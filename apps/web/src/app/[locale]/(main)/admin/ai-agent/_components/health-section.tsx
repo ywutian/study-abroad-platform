@@ -39,7 +39,7 @@ export function HealthSection() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Activity className="h-5 w-5" />
-            <CardTitle className="text-base">{t('healthTitle')}</CardTitle>
+            <CardTitle className="text-body">{t('healthTitle')}</CardTitle>
           </div>
           <div className="flex items-center gap-2">
             <div className={cn('h-2.5 w-2.5 rounded-full animate-pulse', statusDot)} />
