@@ -1,7 +1,7 @@
 # 录取预测 —— 完整数据需求清单(全面补齐基线)
 
 > 2026-05-22 · 这份文档是预测系统数据的**唯一权威清单**。目的:一次性确认「需要哪些数据」,然后全面补齐。
-> 关联:[PREDICTION_ACCURACY_DECISION_2026-05-22.md](./PREDICTION_ACCURACY_DECISION_2026-05-22.md) · [PREDICTION_ADMISSIONS_LENS_DECISION_2026-05-22.md](./PREDICTION_ADMISSIONS_LENS_DECISION_2026-05-22.md)
+> 关联：[PREDICTION_ACCURACY_DECISION_2026-05-22.md](./PREDICTION_ACCURACY_DECISION_2026-05-22.md) · 2026-05-22 admissions-lens 历史决策记录（原始文档已归档移除）
 
 数据分三个域,性质完全不同:
 

@@ -67,7 +67,7 @@ p_new = posterior_odds / (1 + posterior_odds)
 
 ## 3. 数据锚点表（每个 profile 维度的来源）
 
-> ⚠️ **2026-05-22 修订**：基于实际 DB 深挖（[PREDICTION_DATA_INVENTORY_2026-05-22.md](./PREDICTION_DATA_INVENTORY_2026-05-22.md)），覆盖度数据已修正。之前"数据稀缺"的估计错了——DB 实际比预期丰富 5-10 倍。
+> ⚠️ **2026-05-22 修订**：基于当日实际 DB 深挖记录，覆盖度数据已修正。原始盘点文档已归档移除；本节保留经复核后的结论。之前“数据稀缺”的估计错了——DB 实际比预期丰富 5-10 倍。
 
 ### 3.1 进入概率的维度
 
@@ -300,7 +300,7 @@ UCLA 既有 CDS band 也有 admit pool 分布。两条路径预测同 profile �
 ## 11. 修订记录 (Revision History)
 
 - **2026-05-22 v2.0**：初版（基于"数据稀缺"假设）
-- **2026-05-22 v2.1**：基于实际 DB 深挖 ([PREDICTION_DATA_INVENTORY_2026-05-22.md](./PREDICTION_DATA_INVENTORY_2026-05-22.md)) 大幅修订：
+- **2026-05-22 v2.1**：基于当日实际 DB 深挖记录（原始盘点文档已归档移除，本节保留复核结论）大幅修订：
   - §3.1 数据覆盖度全部纠正（SAT 226/240, GPA 182/240, SchoolProgram 1788 行, HighSchool 165）
   - §3.2 新增"LOW tier 进概率"分类 — activities/awards 从 diagnostics 移入概率
   - §7 工作量缩水（M2 从 2-3 天 → 0.5 天）

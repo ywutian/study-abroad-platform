@@ -1,7 +1,7 @@
 # 录取预测「尽量精准」—— 决策记录
 
 > 2026-05-22 · 6-lens architecture debate(统计严谨 / 产品务实 / 风险声誉 / 创始人 / 学生家长 / 留学顾问)+ Stage-4 devil's advocate
-> 关联:[PREDICTION_BACKTEST_2026-05-21.md](./PREDICTION_BACKTEST_2026-05-21.md) · [PREDICTION_ACCURACY_STRATEGY.md](./PREDICTION_ACCURACY_STRATEGY.md)
+> 关联：2026-05-21 历史回测记录（原始文档已归档移除） · [PREDICTION_ACCURACY_STRATEGY.md](./PREDICTION_ACCURACY_STRATEGY.md)
 > 触发:tier-first 改版(PR #268)已上线后,平台所有者要求「让大概的范围也尽量精准」。
 
 ## 背景事实(已验证)

@@ -96,7 +96,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+        uses: rharkor/caching-for-turbo@v2.5.1
 
       # 这一步不能省：下面的 lint 是 `pnpm --filter api lint`（直接调，不走 turbo），
       # 所以 turbo.json 里给 lint 声明的 `dependsOn: ["db:generate"]` 覆盖不到这里。
@@ -288,7 +288,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+        uses: rharkor/caching-for-turbo@v2.5.1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -336,7 +336,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+        uses: rharkor/caching-for-turbo@v2.5.1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -1110,24 +1110,7 @@ jobs:
           fi
 
       - name: Verify doc links
-        run: |
-          BROKEN=0
-          for file in docs/*.md; do
-            while IFS= read -r line; do
-              link=$(echo "$line" | grep -oP '\]\(\K[^)]+' | head -1)
-              if [ -n "$link" ] && [[ ! "$link" =~ ^http ]] && [[ ! "$link" =~ ^# ]] && [[ ! "$link" =~ ^mailto ]]; then
-                dir=$(dirname "$file")
-                resolved="$dir/$link"
-                if [ ! -e "$resolved" ]; then
-                  echo "::warning file=$file::Broken link: $link"
-                  BROKEN=$((BROKEN + 1))
-                fi
-              fi
-            done < <(grep -n '\](' "$file" || true)
-          done
-          if [ "$BROKEN" -gt "0" ]; then
-            echo "::warning::Found $BROKEN potentially broken documentation links"
-          fi
+        run: node scripts/ci/check-doc-links.mjs
 
   # ── Secret Scan ───────────────────────────────────────────
   # Uses the OSS gitleaks binary directly (rather than gitleaks-action@v2)
@@ -1183,7 +1166,7 @@ jobs:
             p/typescript
             p/nodejs
             p/owasp-top-ten
-          generateSarif: '1'
+          args: --sarif --output=semgrep.sarif
 
       - name: Upload SARIF
         if: always()
@@ -1236,7 +1219,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: dtinth/setup-github-actions-caching-for-turbo@v1
+        uses: rharkor/caching-for-turbo@v2.5.1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -1273,6 +1256,8 @@ jobs:
         with:
           name: web-build
           path: apps/web/.next
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 7
 
   # ── Docker Build ──────────────────────────────────────────

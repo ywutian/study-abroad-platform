@@ -11,10 +11,10 @@
 | **新人**         | [ONBOARDING.md](ONBOARDING.md) → [QUICK_REFERENCE.md](QUICK_REFERENCE.md) → [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) → [ENGINEERING_STANDARDS.md](ENGINEERING_STANDARDS.md) → [CONTRIBUTING.md](../CONTRIBUTING.md)                                        |
 | **后端开发**     | [ARCHITECTURE.md](ARCHITECTURE.md) → [API_REFERENCE.md](API_REFERENCE.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)                                                                                                                                                                                           |
 | **前端开发**     | [ARCHITECTURE.md](ARCHITECTURE.md) (Section 7) → [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                                                                                                                                                                                                              |
-| **运维**         | [RUNBOOK.md](RUNBOOK.md) → [DEPLOY.md](DEPLOY.md) → [ARCHITECTURE.md](ARCHITECTURE.md) (Section 12)                                                                                                                                                                                                                |
+| **运维**         | [RUNBOOK.md](RUNBOOK.md) → [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md) → [ARCHITECTURE.md](ARCHITECTURE.md) (Section 12)                                                                                                                                                                                            |
 | **QA / Release** | [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) → [RELEASE_GATE_ONE_PAGER.md](RELEASE_GATE_ONE_PAGER.md) → [QA_RELEASE_GATE_SOP.md](QA_RELEASE_GATE_SOP.md) → [FULL_SURFACE_REGISTRY.md](FULL_SURFACE_REGISTRY.md) → [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) |
 | **产品经理**     | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [GLOSSARY.md](GLOSSARY.md)                                                                                                                                                                                                                                              |
-| **管理层**       | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [INVESTOR_PITCH_AI_SYSTEM.md](INVESTOR_PITCH_AI_SYSTEM.md)                                                                                                                                                                                                              |
+| **管理层**       | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) → [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md)                                                                                                                                                                                                          |
 
 ---
 
@@ -55,33 +55,29 @@
 
 ### arc42 S2-5: 架构约束、上下文、构建块
 
-| 文档                                                                                       | 说明                                                                           |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| [ARCHITECTURE.md](ARCHITECTURE.md)                                                         | **核心** — 系统架构 (70 models, 29 enums, 400+ APIs, 15 sections + arc42 补全) |
-| [API_REFERENCE.md](API_REFERENCE.md)                                                       | API 端点参考 (32 controllers, 400+ endpoints)                                  |
-| [SCORING_SYSTEM.md](SCORING_SYSTEM.md)                                                     | 评分系统详细规范                                                               |
-| [PREDICTION_SYSTEM.md](PREDICTION_SYSTEM.md)                                               | **预测系统技术文档 (v3-enterprise 多引擎融合)**                                |
-| [APPLICATION_ANALYSIS_RESEARCH_2026-04-09.md](APPLICATION_ANALYSIS_RESEARCH_2026-04-09.md) | 申请分析研究与产品落点                                                         |
-| [APPLICATION_ANALYSIS_WORKFLOW_SOP.md](APPLICATION_ANALYSIS_WORKFLOW_SOP.md)               | 申请分析治理闭环 SOP                                                           |
-| [APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md](APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md)       | 申请分析实验能力闭环 SOP                                                       |
-| [COMPETITION_DATABASE.md](COMPETITION_DATABASE.md)                                         | 竞赛数据库文档 (90+ 竞赛)                                                      |
-| [DATA_SOURCES.md](DATA_SOURCES.md)                                                         | 数据来源 (College Scorecard API)                                               |
+| 文档                                                                                 | 说明                                                                           |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                                                   | **核心** — 系统架构 (70 models, 29 enums, 400+ APIs, 15 sections + arc42 补全) |
+| [API_REFERENCE.md](API_REFERENCE.md)                                                 | API 端点参考 (32 controllers, 400+ endpoints)                                  |
+| [SCORING_SYSTEM.md](SCORING_SYSTEM.md)                                               | 评分系统详细规范                                                               |
+| [PREDICTION_SYSTEM.md](PREDICTION_SYSTEM.md)                                         | **预测系统技术文档 (v3-enterprise 多引擎融合)**                                |
+| [APPLICATION_ANALYSIS_WORKFLOW_SOP.md](APPLICATION_ANALYSIS_WORKFLOW_SOP.md)         | 申请分析治理闭环 SOP                                                           |
+| [APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md](APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md) | 申请分析实验能力闭环 SOP                                                       |
+| [COMPETITION_DATABASE.md](COMPETITION_DATABASE.md)                                   | 竞赛数据库文档 (90+ 竞赛)                                                      |
+| [DATA_SOURCES.md](DATA_SOURCES.md)                                                   | 数据来源 (College Scorecard API)                                               |
 
 ### arc42 S8: 横切关注点 — AI 系统
 
 | 文档                                                             | 说明                    |
 | ---------------------------------------------------------------- | ----------------------- |
-| [AI_AGENT_ARCHITECTURE.md](AI_AGENT_ARCHITECTURE.md)             | AI Agent 架构设计       |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                               | AI Agent 与系统架构设计 |
 | [AI_AGENT_MEMORY_SYSTEM_SPEC.md](AI_AGENT_MEMORY_SYSTEM_SPEC.md) | AI Agent 记忆系统规范   |
-| [ENTERPRISE_AI_SOLUTION.md](ENTERPRISE_AI_SOLUTION.md)           | 企业级 AI 解决方案      |
-| [ENTERPRISE_MEMORY_SYSTEM.md](ENTERPRISE_MEMORY_SYSTEM.md)       | 企业级记忆系统          |
-| [AGENT_ENTERPRISE_UPGRADE.md](AGENT_ENTERPRISE_UPGRADE.md)       | AI Agent 企业级升级计划 |
 
 ### arc42 S9: 运维与部署
 
 | 文档                                                      | 说明                               |
 | --------------------------------------------------------- | ---------------------------------- |
-| [DEPLOY.md](DEPLOY.md)                                    | 部署指南 (GCP Cloud Run)           |
+| [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md)                | 部署指南 (GCP Cloud Run)           |
 | [RUNBOOK.md](RUNBOOK.md)                                  | 运维排障手册                       |
 | [积分系统开放 Runbook](runbooks/points-economy-launch.md) | 积分系统双闸门开放、验证与回滚流程 |
 | [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                     | 环境变量说明                       |
@@ -91,7 +87,6 @@
 | 文档 | 说明 |
 | ---------------------------------------------------------------------------------------- | -------------------------------------- | --- |
 | [CODE_REVIEW.md](CODE_REVIEW.md) | 代码审查报告 |
-| [QUALITY_CHECK.md](QUALITY_CHECK.md) | 质量检查报告 |
 | [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) | 测试清单 (24/24 suites, 468/468 tests) |
 | [AI_AGENT_EVALUATION_RUBRIC.md](AI_AGENT_EVALUATION_RUBRIC.md) | AI Agent 功能与输出评估 Rubric | ZH |
 | [CROSS_PLATFORM_REUSE_RUBRIC.md](CROSS_PLATFORM_REUSE_RUBRIC.md) | Web / Mobile 复用合理性 Rubric | ZH |
@@ -104,8 +99,6 @@
 | [templates/full-surface-capability-check.md](templates/full-surface-capability-check.md) | 全产品面 capability 检查模板 | ZH |
 | [templates/full-surface-batch-summary.md](templates/full-surface-batch-summary.md) | 全产品面批次总结模板 | ZH |
 | [examples/AI_FIRST_RELEASE_GATE_SAMPLE.md](examples/AI_FIRST_RELEASE_GATE_SAMPLE.md) | 发版门禁样例包 | ZH |
-| [P0_OPTIMIZATION_PLAN.md](P0_OPTIMIZATION_PLAN.md) | P0 优化计划 |
-| [DATA_VERIFICATION.md](DATA_VERIFICATION.md) | 数据验证记录 |
 
 ### 入职与指南
 
@@ -120,15 +113,13 @@
 | [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                   | 设计系统规范                                                                      |
 | [UI_LANGUAGE_RESEARCH_FRAMEWORK.md](UI_LANGUAGE_RESEARCH_FRAMEWORK.md) | 多端 UI 语言研究框架（与 DS v2.1 对齐的分层规范与阶段交付物）                     |
 | [I18N_GUIDE.md](I18N_GUIDE.md)                                         | 国际化 (i18n) 开发指南                                                            |
-| [TYPOGRAPHY_GUIDE.md](TYPOGRAPHY_GUIDE.md)                             | 排版规范指南                                                                      |
 
 ### 技术备忘
 
-| 文档                                                             | 说明                    |
-| ---------------------------------------------------------------- | ----------------------- |
-| [技术文档/已知问题与解决方案.md](技术文档/已知问题与解决方案.md) | 已知问题及修复方案      |
-| [技术文档/数据库迁移记录.md](技术文档/数据库迁移记录.md)         | 数据库迁移历史          |
-| [ERROR_FIX_LOG_2026-02-08.md](ERROR_FIX_LOG_2026-02-08.md)       | 2026-02-08 错误修复日志 |
+| 文档                                                             | 说明               |
+| ---------------------------------------------------------------- | ------------------ |
+| [技术文档/已知问题与解决方案.md](技术文档/已知问题与解决方案.md) | 已知问题及修复方案 |
+| [技术文档/数据库迁移记录.md](技术文档/数据库迁移记录.md)         | 数据库迁移历史     |
 
 ### GitHub 模板
 

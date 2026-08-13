@@ -331,10 +331,10 @@ curl "http://localhost:4101/api/v1/schools?page=1&take=10" \
 | [I18N_GUIDE.md](I18N_GUIDE.md)                                   | 国际化开发指南           |
 | [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                             | 设计系统规范             |
 | [DOCUMENTATION_STANDARDS.md](DOCUMENTATION_STANDARDS.md)         | 文档编写标准             |
-| [DEPLOY.md](DEPLOY.md)                                           | 部署指南                 |
+| [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md)                       | GCP 部署指南             |
 | [GLOSSARY.md](GLOSSARY.md)                                       | 项目术语表               |
 | [技术文档/已知问题与解决方案.md](技术文档/已知问题与解决方案.md) | 已知问题与修复记录       |
-| [AI_AGENT_ARCHITECTURE.md](AI_AGENT_ARCHITECTURE.md)             | AI Agent 系统架构        |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                               | AI Agent 与系统架构      |
 
 ---
 
