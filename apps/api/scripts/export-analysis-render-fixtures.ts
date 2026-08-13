@@ -29,7 +29,7 @@ function ensureEnvDefaults() {
   process.env.JWT_REFRESH_EXPIRES_IN ??= '7d';
 }
 
-function reviveDates<T>(value: T): T {
+function reviveDates<T>(value: unknown): T {
   if (Array.isArray(value)) {
     return value.map((entry) => reviveDates(entry)) as T;
   }
@@ -44,7 +44,7 @@ function reviveDates<T>(value: T): T {
   ) {
     return new Date(value) as T;
   }
-  return value;
+  return value as T;
 }
 
 async function loadGoldCases() {
@@ -112,7 +112,7 @@ async function main() {
   const fixtures: ApplicationAnalysisRenderFixture[] = [];
 
   for (const goldCase of goldCases) {
-    const snapshot = reviveDates(goldCase.analysisSnapshot) as AnalysisSnapshot;
+    const snapshot = reviveDates<AnalysisSnapshot>(goldCase.analysisSnapshot);
     const analysis = await analysisService.runSnapshot(snapshot, {
       debug: true,
       mode: 'deterministic',

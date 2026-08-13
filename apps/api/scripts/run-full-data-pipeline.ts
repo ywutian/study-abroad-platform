@@ -200,13 +200,13 @@ async function main() {
 
     const updates: Record<string, number> = {};
     const changedFields: string[] = [];
-    const canFill = (field: string, value: unknown) =>
-      value == null || opts.forceHeuristic;
+    const canFill = (_field: string, value: unknown): boolean =>
+      value == null || Boolean(opts.forceHeuristic);
 
     if (canFill('intlAcceptanceRate', school.intlAcceptanceRate)) {
       updates.intlAcceptanceRate = deriveIntlRate(
         overall,
-        school.needBlindInternational,
+        Boolean(school.needBlindInternational),
       );
       changedFields.push('intlAcceptanceRate');
     }

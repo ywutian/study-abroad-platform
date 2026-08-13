@@ -101,7 +101,7 @@ export function DashboardQuickAsk({ personalizedSuggestions }: DashboardQuickAsk
 
   return (
     <div className="rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-3 shadow-[var(--theme-card-shadow)]">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-1 items-center gap-2 rounded-[var(--theme-radius-control,0.5rem)] border border-border bg-[color:var(--theme-control-bg)] px-3 py-2 transition-colors focus-within:border-primary/50">
           <HelpCircle className="h-4 w-4 shrink-0 text-primary" />
           <input

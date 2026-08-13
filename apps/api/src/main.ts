@@ -59,10 +59,8 @@ async function bootstrap() {
   // Trust proxy headers from Cloud Load Balancer / reverse proxies
   // Ensures request.ip returns real client IP (critical for rate limiting)
   // 'uniquelocal' covers GCP internal network (fd00::/8, 10.0.0.0/8, etc.)
-  app
-    .getHttpAdapter()
-    .getInstance()
-    .set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  const expressApp: express.Express = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
   // CORS configuration [A5-004]
   // Production REQUIRES CORS_ORIGINS to be set; development falls back to allow-all
@@ -300,8 +298,8 @@ async function bootstrap() {
     }
   };
 
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => void gracefulShutdown('SIGINT'));
 
   // Catch unhandled rejections (should not happen, but safety net)
   process.on('unhandledRejection', (reason) => {

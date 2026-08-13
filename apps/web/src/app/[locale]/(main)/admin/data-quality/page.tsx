@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/layout';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { adminRoutes } from '@study-abroad/shared';
 import { DataQualityTab } from '../schools/_components/data-quality-tab';
+import type { ComponentProps } from 'react';
 
 export default function AdminDataQualityPage() {
   const t = useTranslations('admin');
@@ -29,7 +30,11 @@ export default function AdminDataQualityPage() {
         icon={BarChart3}
         color="emerald"
       />
-      <DataQualityTab qualityData={qualityData as any} isLoading={isLoading} onRefresh={refetch} />
+      <DataQualityTab
+        qualityData={qualityData as ComponentProps<typeof DataQualityTab>['qualityData']}
+        isLoading={isLoading}
+        onRefresh={refetch}
+      />
     </div>
   );
 }

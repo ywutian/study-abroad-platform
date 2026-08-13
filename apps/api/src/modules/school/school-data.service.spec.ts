@@ -21,6 +21,7 @@ describe('SchoolDataService', () => {
 
   const mockPrisma: any = {
     school: {
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
       create: jest.fn(),
@@ -47,6 +48,7 @@ describe('SchoolDataService', () => {
   beforeEach(async () => {
     mockConfigService.get.mockReturnValue('test-api-key');
     mockFetch.mockReset();
+    mockPrisma.school.findMany.mockResolvedValue([]);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -67,6 +69,32 @@ describe('SchoolDataService', () => {
   });
 
   describe('syncSchoolsFromScorecard', () => {
+    it('targets the Scorecard ids belonging to the requested local schools', async () => {
+      mockPrisma.school.findMany.mockResolvedValue([
+        { scorecardId: '166027' },
+        { scorecardId: null },
+        { scorecardId: '110635' },
+      ]);
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ results: [] }),
+      });
+
+      await service.syncSchoolsFromScorecardBySchoolIds([
+        'school-a',
+        'school-b',
+        'school-a',
+      ]);
+
+      const requestedUrl = new URL(String(mockFetch.mock.calls[0]?.[0]));
+      expect(requestedUrl.searchParams.get('id')).toBe('166027,110635');
+      expect(requestedUrl.searchParams.has('school.operating')).toBe(false);
+      expect(mockPrisma.school.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ['school-a', 'school-b'] } },
+        select: { scorecardId: true },
+      });
+    });
+
     it('should sync schools from College Scorecard API', async () => {
       const apiResponse = {
         results: [

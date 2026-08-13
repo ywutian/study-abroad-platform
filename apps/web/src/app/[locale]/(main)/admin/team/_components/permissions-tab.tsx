@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -30,7 +29,7 @@ import { AdminFeatureGuide } from '../../_components/admin-feature-guide';
 import { ContextualHelp } from '@/components/ui/contextual-help';
 import { RoleBadge } from '../../_components/role-badge';
 import { toast } from 'sonner';
-import { Save, Lock, Search, User, RotateCcw } from 'lucide-react';
+import { Save, Lock, User, RotateCcw } from 'lucide-react';
 
 interface RolePermissionEntry {
   role: string;
@@ -119,8 +118,6 @@ export function PermissionsTab() {
   };
 
   if (isLoading) return <ListSkeleton />;
-
-  const allPermissions = Object.values(PERMISSION_GROUPS).flat();
 
   return (
     <div className="space-y-6">

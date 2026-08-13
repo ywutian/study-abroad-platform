@@ -14,7 +14,7 @@ const countBadgeVariants = cva(
         destructive: 'bg-red-500',
       },
       size: {
-        sm: 'h-4 min-w-[16px] px-1 text-[10px]',
+        sm: 'h-4 min-w-[16px] px-1 text-2xs',
         md: 'h-5 min-w-[20px] px-1.5 text-2xs',
         lg: 'h-6 min-w-[24px] px-2 text-xs',
       },

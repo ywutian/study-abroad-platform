@@ -96,13 +96,18 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       className={`${GeistSans.variable} ${GeistMono.variable} ${newsreader.variable} ${inter.variable}`}
     >
       <head>
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: getWebThemeBootstrapScript() }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: getWebThemeBootstrapScript() }}
+        />
         {/* Link first so the parser finds it before the inline block. Both sit
             after Next's own CSS chunks, which is what lets `--ds-*` beat the
             legacy `:root` rules in the bundled sheet. */}
         <link rel="stylesheet" href={THEME_CSS_HREF} />
         <style
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: getThemeCssText(CRITICAL_COLOR_PALETTE_IDS) }}
         />
         {/* Rendered in dev too: gating this on NODE_ENV was the only reason

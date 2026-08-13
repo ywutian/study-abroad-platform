@@ -25,10 +25,9 @@ export function getDaysUntil(dateStr?: string): number | null {
   return daysUntilDate(dateStr);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatDaysUntil(
   days: number | null,
-  t: (key: string, values?: any) => string
+  t: (key: string, values?: Record<string, string | number | Date>) => string
 ): string {
   if (days === null) return '';
   if (days < 0) return t('daysAgo', { days: Math.abs(days) });

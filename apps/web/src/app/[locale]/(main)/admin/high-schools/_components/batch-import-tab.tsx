@@ -95,7 +95,7 @@ export function BatchImportTab() {
     <div className="space-y-4">
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('import.title')}</CardTitle>
+          <CardTitle className="text-body-sm font-medium">{t('import.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -155,7 +155,7 @@ export function BatchImportTab() {
       {lastResult && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">{t('import.resultsTitle')}</CardTitle>
+            <CardTitle className="text-body-sm font-medium">{t('import.resultsTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4 mb-4">
@@ -200,7 +200,7 @@ export function BatchImportTab() {
       {/* Instructions */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('import.pipelineTitle')}</CardTitle>
+          <CardTitle className="text-body-sm font-medium">{t('import.pipelineTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p className="font-medium text-foreground">{t('import.pipelineIntro')}</p>

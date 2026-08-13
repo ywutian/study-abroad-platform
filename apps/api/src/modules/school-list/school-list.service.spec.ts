@@ -8,6 +8,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import * as scoring from '../../common/utils/scoring';
 
 // Mock scoring utils
 jest.mock('../../common/utils/scoring', () => ({
@@ -500,9 +501,8 @@ describe('SchoolListService', () => {
         })),
       );
 
-      const { calculateTier } = require('../../common/utils/scoring');
       // Return mixed tiers so all categories get filled
-      (calculateTier as jest.Mock)
+      (scoring.calculateTier as jest.Mock)
         .mockReturnValueOnce('reach')
         .mockReturnValueOnce('match')
         .mockReturnValueOnce('safety')

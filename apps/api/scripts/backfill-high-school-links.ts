@@ -102,7 +102,14 @@ async function findHighSchoolIdByName(schoolName: string) {
           { name: { equals: candidate, mode: 'insensitive' } },
           { abbreviation: { equals: candidate, mode: 'insensitive' } },
           ...(canUseBroadNameContains
-            ? [{ name: { contains: candidate, mode: 'insensitive' } }]
+            ? [
+                {
+                  name: {
+                    contains: candidate,
+                    mode: 'insensitive' as const,
+                  },
+                },
+              ]
             : []),
           { abbreviation: { contains: candidate, mode: 'insensitive' } },
         ],

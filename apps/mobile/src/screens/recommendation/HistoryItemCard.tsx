@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedButton, AnimatedCard, CardContent } from '@/components/ui';
 import { spacing, fontSize, fontWeight, fontFamily } from '@/utils/theme';
 
-import { RecommendationResult, ColorsType, TIER_CONFIG, formatDate } from './types';
+import { RecommendationResult, ColorsType, getTierConfig, formatDate } from './types';
 
 interface HistoryItemCardProps {
   item: RecommendationResult;
@@ -24,6 +24,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
   colors,
 }: HistoryItemCardProps) {
   const { t } = useTranslation();
+  const tierConfig = getTierConfig(colors);
   const reachCount = item.recommendations.filter((r) => r.tier === 'reach').length;
   const matchCount = item.recommendations.filter((r) => r.tier === 'match').length;
   const safetyCount = item.recommendations.filter((r) => r.tier === 'safety').length;
@@ -64,7 +65,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
                 <View
                   style={[
                     styles.historyTierBadgeDot,
-                    { backgroundColor: TIER_CONFIG[tier.tier].color },
+                    { backgroundColor: tierConfig[tier.tier].color },
                   ]}
                 />
                 <Text style={[styles.historyTierBadgeText, { color: colors.foregroundMuted }]}>
@@ -95,7 +96,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
                   <View
                     style={[
                       styles.historySchoolDot,
-                      { backgroundColor: TIER_CONFIG[school.tier].color },
+                      { backgroundColor: tierConfig[school.tier].color },
                     ]}
                   />
                   <Text

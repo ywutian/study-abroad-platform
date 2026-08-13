@@ -1,11 +1,10 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
 import * as cheerio from 'cheerio';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
-import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../common/redis/cron-lock.util';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 const DEADLINE_REFRESH_LOCK_KEY = 'deadline-refresh:cron-lock';
 
@@ -186,7 +185,7 @@ export class DeadlineRefreshScheduler {
     // Single-flight across replicas: otherwise every Cloud Run instance fetches
     // each tentative school's page (N× outbound HTTP) and writes duplicate
     // DEADLINE_NEEDS_REVIEW audit rows.
-    const ran = await runWithCronLock(
+    const _ran = await runWithCronLock(
       this.redis,
       DEADLINE_REFRESH_LOCK_KEY,
       REDIS_TTL.DEADLINE_REFRESH_CRON_LOCK,

@@ -7,6 +7,9 @@
  * Conditionally enabled: only starts when OTEL_EXPORTER_OTLP_ENDPOINT is set.
  * Local development without the env var incurs zero overhead.
  */
+import { createRequire } from 'node:module';
+
+const loadModule = createRequire(__filename);
 
 const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
@@ -22,20 +25,24 @@ if (otlpEndpoint) {
   }
 
   if (isValidUrl) {
-    const { NodeSDK } = require('@opentelemetry/sdk-node');
-    const {
-      getNodeAutoInstrumentations,
-    } = require('@opentelemetry/auto-instrumentations-node');
-    const {
-      OTLPTraceExporter,
-    } = require('@opentelemetry/exporter-trace-otlp-http');
-    const {
-      OTLPMetricExporter,
-    } = require('@opentelemetry/exporter-metrics-otlp-http');
-    const {
-      PeriodicExportingMetricReader,
-    } = require('@opentelemetry/sdk-metrics');
-    const { PrismaInstrumentation } = require('@prisma/instrumentation');
+    const { NodeSDK } = loadModule(
+      '@opentelemetry/sdk-node',
+    ) as typeof import('@opentelemetry/sdk-node');
+    const { getNodeAutoInstrumentations } = loadModule(
+      '@opentelemetry/auto-instrumentations-node',
+    ) as typeof import('@opentelemetry/auto-instrumentations-node');
+    const { OTLPTraceExporter } = loadModule(
+      '@opentelemetry/exporter-trace-otlp-http',
+    ) as typeof import('@opentelemetry/exporter-trace-otlp-http');
+    const { OTLPMetricExporter } = loadModule(
+      '@opentelemetry/exporter-metrics-otlp-http',
+    ) as typeof import('@opentelemetry/exporter-metrics-otlp-http');
+    const { PeriodicExportingMetricReader } = loadModule(
+      '@opentelemetry/sdk-metrics',
+    ) as typeof import('@opentelemetry/sdk-metrics');
+    const { PrismaInstrumentation } = loadModule(
+      '@prisma/instrumentation',
+    ) as typeof import('@prisma/instrumentation');
 
     const serviceName = process.env.OTEL_SERVICE_NAME || 'study-abroad-api';
 

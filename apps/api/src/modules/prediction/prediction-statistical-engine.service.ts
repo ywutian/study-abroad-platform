@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
+import { PredictionComparison, PredictionFactor } from './dto';
+import { PredictionTransformerService } from './prediction-transformer.service';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
-import { PredictionFactor, PredictionComparison } from './dto';
 import {
   HistoricalDistribution,
   calculateOverallScoreDetailed,
   calculateProbability,
   normalizeGpa,
 } from './utils/score-calculator';
-import type { HsConfidenceResult } from '@study-abroad/shared/scoring';
-import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
-import { PredictionTransformerService } from './prediction-transformer.service';
 
 /**
  * Engine 1: Statistical prediction algorithm.

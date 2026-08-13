@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { CounselorEngineService } from './counselor-engine.service';
-import { AnchorResolverService } from './anchor-resolver.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
+import { AnchorResolverService } from './anchor-resolver.service';
+import { CounselorEngineService } from './counselor-engine.service';
 
 /**
  * Behavioral matrix for the counselor prediction engine.

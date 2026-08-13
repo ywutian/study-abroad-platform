@@ -18,10 +18,11 @@ export class HooksTeacherService implements TeacherSignalProvider {
 
   constructor(private readonly hookModifiers: PredictionHookModifiersService) {}
 
-  async evaluate(
+  evaluate(
     input: DistillationEvaluationInput,
-  ): Promise<
-    Omit<DistillationTeacherSignal, 'configuredWeight' | 'effectiveBlendWeight'>
+  ): Omit<
+    DistillationTeacherSignal,
+    'configuredWeight' | 'effectiveBlendWeight'
   > {
     const shifts = this.hookModifiers
       .computeHookShifts(input.profile, input.school)

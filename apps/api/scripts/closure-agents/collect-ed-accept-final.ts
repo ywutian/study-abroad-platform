@@ -198,7 +198,7 @@ async function main() {
         ? (existingMetadata.provenance as Record<string, unknown>)
         : {};
 
-    const mergedMetadata: Prisma.InputJsonValue = {
+    const mergedMetadata = {
       ...existingMetadata,
       provenance: {
         ...existingProvenance,
@@ -211,7 +211,7 @@ async function main() {
           tier: r.tier,
         },
       },
-    };
+    } as Prisma.InputJsonObject;
 
     await prisma.school.update({
       where: { id: r.schoolId },

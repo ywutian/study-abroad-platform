@@ -138,9 +138,10 @@ export class MemoryService {
    */
   private summarizeToolResult(data: unknown): unknown {
     if (Array.isArray(data)) {
-      const total = data.length;
+      const values = data as unknown[];
+      const total = values.length;
       const shown = Math.min(total, 8); // 从 5 提升到 8
-      const items = data
+      const items = values
         .slice(0, shown)
         .map((item) =>
           typeof item === 'object' && item !== null

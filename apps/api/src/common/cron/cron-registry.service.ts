@@ -15,6 +15,11 @@ import { DiscoveryService, MetadataScanner } from '@nestjs/core';
  */
 const SCHEDULE_CRON_OPTIONS = 'SCHEDULE_CRON_OPTIONS';
 
+/** Invalid scheduler metadata is a startup configuration failure, not an HTTP error. */
+class CronRegistryConfigurationError extends Error {
+  override readonly name = 'CronRegistryConfigurationError';
+}
+
 interface CronMetadata {
   cronTime: string | Date | object;
   name?: string;
@@ -89,7 +94,7 @@ export class CronRegistryService implements OnModuleInit {
         if (typeof metadata.cronTime !== 'string') {
           // Date/DateTime one-shots can't be expressed as a Cloud Scheduler
           // schedule; nothing in this repo uses them. Fail fast if one appears.
-          throw new Error(
+          throw new CronRegistryConfigurationError(
             `@Cron on ${className}.${methodName} uses a non-string cronTime; ` +
               `only cron expressions are supported (see cron-registry.service.ts).`,
           );
@@ -98,7 +103,7 @@ export class CronRegistryService implements OnModuleInit {
         const name = metadata.name ?? deriveJobName(className, methodName);
         const existing = this.jobs.get(name);
         if (existing) {
-          throw new Error(
+          throw new CronRegistryConfigurationError(
             `Duplicate cron job name "${name}" ` +
               `(${existing.className}.${existing.methodName} vs ${className}.${methodName}). ` +
               `Give one an explicit { name } in its @Cron options.`,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { categorizeSuggestion, type SuggestionCategory } from './SuggestionsPanel';
+import { categorizeSuggestion } from './SuggestionsPanel';
 
 describe('categorizeSuggestion', () => {
   // ---------------------------------------------------------------------------

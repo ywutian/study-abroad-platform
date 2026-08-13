@@ -1,12 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PointsConfigService, PointAction } from './points-config.service';
-import { SettingsService } from '../settings/settings.service';
 import { BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { POINTS_ECONOMY_AVAILABLE } from '@study-abroad/shared';
+import { SettingsService } from '../settings/settings.service';
+import { PointAction, PointsConfigService } from './points-config.service';
 
 describe('PointsConfigService', () => {
   let service: PointsConfigService;
-  let settingsService: SettingsService;
 
   const mockSettingsService = {
     getTyped: jest.fn(),
@@ -24,7 +23,6 @@ describe('PointsConfigService', () => {
     }).compile();
 
     service = module.get<PointsConfigService>(PointsConfigService);
-    settingsService = module.get<SettingsService>(SettingsService);
   });
 
   afterEach(() => {

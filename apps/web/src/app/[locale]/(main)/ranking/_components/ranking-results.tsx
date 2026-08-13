@@ -45,7 +45,7 @@ export function RankingResults({ ranking, isLoading, onCalculate }: RankingResul
               <Medal className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-lg">{t('ranking.rankingResults')}</CardTitle>
+              <CardTitle className="">{t('ranking.rankingResults')}</CardTitle>
               <CardDescription>{t('ranking.rankingResultsDesc')}</CardDescription>
             </div>
           </div>

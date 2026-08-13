@@ -15,10 +15,11 @@ export class IntlPoolTeacherService implements TeacherSignalProvider {
   readonly sourceType = 'OFFICIAL_SCHOOL' as const;
   readonly defaultWeight = DEFAULT_WEIGHT;
 
-  async evaluate(
+  evaluate(
     input: DistillationEvaluationInput,
-  ): Promise<
-    Omit<DistillationTeacherSignal, 'configuredWeight' | 'effectiveBlendWeight'>
+  ): Omit<
+    DistillationTeacherSignal,
+    'configuredWeight' | 'effectiveBlendWeight'
   > {
     if (!input.profile.isInternational) {
       return inactiveSignal(this.key, this.label, this.sourceType, [

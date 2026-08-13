@@ -10,7 +10,6 @@ import type {
   OwnedSiteJourneyObservation,
   OwnedSiteMutationBudget,
   OwnedSitePaginationBehavior,
-  OwnedSitePrivilegeTransition,
 } from '@study-abroad/shared';
 import {
   inferTargetStatusFromObservations,

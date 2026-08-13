@@ -71,7 +71,7 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
-                    <CardTitle className="text-base flex items-center gap-1.5">
+                    <CardTitle className="text-body flex items-center gap-1.5">
                       <span>{school.schoolName}</span>
                       {school.schoolMeta?.nameZh && (
                         <span className="text-sm font-normal text-muted-foreground">
@@ -162,7 +162,7 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
       {result.analysis && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('analysis')}</CardTitle>
+            <CardTitle className="text-body">{t('analysis')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {result.analysis.strengths.length > 0 && (
@@ -206,7 +206,7 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
       {result.summerPrograms && result.summerPrograms.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <Star className="h-4 w-4 text-amber-500" />
               {t('summerPrograms')}
             </CardTitle>

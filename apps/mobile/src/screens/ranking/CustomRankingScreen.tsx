@@ -2,43 +2,35 @@
  * 自定义排名页面
  */
 
-import React, { useState, useCallback } from 'react';
-import type { ComponentProps } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import type { ComponentProps } from 'react';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import {
   AnimatedButton,
   AnimatedCard,
-  CardContent,
   Badge,
+  CardContent,
   EmptyState,
-  Loading,
   Input,
+  Loading,
   Slider,
 } from '@/components/ui';
-import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  type Colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
-import { API_ROUTES } from '@study-abroad/shared';
-import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
+import { fontFamily, spacing, useColors, withOpacity, type Colors } from '@/utils/theme';
+import { API_ROUTES } from '@study-abroad/shared';
+import type { SchoolPublicMedia } from '@study-abroad/shared/types';
+import { styles } from './CustomRankingScreen.styles';
 
 interface RankingWeights {
   usNewsRank: number;
@@ -387,124 +379,3 @@ function WeightSlider({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerCard: {
-    margin: spacing.lg,
-    padding: spacing.xl,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  headerIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  headerTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
-  },
-  headerDesc: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-  },
-  weightsCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  weightHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  sliderContainer: {
-    marginBottom: spacing.lg,
-  },
-  sliderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  sliderLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  sliderValue: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-  },
-  sliderHint: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-  calculateButton: {
-    marginTop: spacing.sm,
-  },
-  saveCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  input: {
-    marginBottom: spacing.md,
-  },
-  resultsSection: {
-    padding: spacing.lg,
-  },
-  schoolCard: {
-    marginBottom: spacing.sm,
-  },
-  schoolContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rankContainer: {
-    width: 36,
-    alignItems: 'center',
-  },
-  rankNumber: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  schoolInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  schoolText: {
-    flex: 1,
-  },
-  schoolName: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  schoolNameZh: {
-    fontSize: fontSize.xs,
-  },
-  scoreContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginRight: spacing.sm,
-  },
-  score: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  scoreLabel: {
-    fontSize: fontSize.xs,
-    marginLeft: 2,
-  },
-});

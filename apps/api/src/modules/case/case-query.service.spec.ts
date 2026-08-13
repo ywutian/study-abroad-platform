@@ -1,13 +1,12 @@
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CaseQueryService } from './case-query.service';
+import { Role, Visibility } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CaseMemoryService } from './case-memory.service';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { Role, Visibility } from '@prisma/client';
+import { CaseQueryService } from './case-query.service';
 
 describe('CaseQueryService', () => {
   let service: CaseQueryService;
-  let prisma: PrismaService;
 
   const mockCase = {
     id: 'case-1',
@@ -46,7 +45,6 @@ describe('CaseQueryService', () => {
     }).compile();
 
     service = module.get<CaseQueryService>(CaseQueryService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

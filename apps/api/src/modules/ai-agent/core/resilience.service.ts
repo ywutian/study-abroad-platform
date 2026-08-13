@@ -90,7 +90,20 @@ class RedisCircuitStorage implements CircuitBreakerStorage {
     if (raw) {
       try {
         // @cache-parse-allowed - CircuitBreakerState keeps lastFailureTime as a number
-        return JSON.parse(raw);
+        const parsed: unknown = JSON.parse(raw);
+        if (
+          typeof parsed === 'object' &&
+          parsed !== null &&
+          typeof (parsed as Record<string, unknown>).state === 'string' &&
+          typeof (parsed as Record<string, unknown>).failures === 'number' &&
+          typeof (parsed as Record<string, unknown>).successes === 'number' &&
+          typeof (parsed as Record<string, unknown>).lastFailureTime ===
+            'number' &&
+          typeof (parsed as Record<string, unknown>).halfOpenAllowed ===
+            'number'
+        ) {
+          return parsed as CircuitBreakerState;
+        }
       } catch (err) {
         this.logger.debug(`Redis getState parse failed: ${String(err)}`);
       }
@@ -289,7 +302,7 @@ export class ResilienceService {
       }
     }
 
-    throw lastError;
+    throw lastError ?? new Error('Retry operation failed without an error');
   }
 
   /**

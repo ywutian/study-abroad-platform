@@ -21,12 +21,12 @@ export interface ApiResponse<T> {
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<
   T,
-  ApiResponse<T>
+  T | ApiResponse<T>
 > {
   intercept(
     context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<ApiResponse<T>> {
+    next: CallHandler<T>,
+  ): Observable<T | ApiResponse<T>> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<ExpressResponse>();
     const correlationId = request.correlationId;

@@ -62,7 +62,10 @@ export default function NotificationsPage() {
     enabled: authReady,
   });
   const unreadCount = unreadData?.count || 0;
-  const displayNotifications = isClientReady ? notifications : [];
+  const displayNotifications = useMemo(
+    () => (isClientReady ? notifications : []),
+    [isClientReady, notifications]
+  );
   const displayUnreadCount = isClientReady ? unreadCount : 0;
 
   // Mark as read

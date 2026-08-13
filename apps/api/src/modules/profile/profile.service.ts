@@ -489,9 +489,7 @@ export class ProfileService {
       this.memoryService.recordTargetSchoolAddToMemory(
         userId,
         schoolId,
-        (result as any).school?.name ??
-          (result as any).school?.nameZh ??
-          undefined,
+        result.school?.name ?? result.school?.nameZh ?? undefined,
       ),
       this.logger,
       'Failed to record target school add to memory',

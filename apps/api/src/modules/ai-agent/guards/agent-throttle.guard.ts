@@ -16,6 +16,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { Request, Response } from 'express';
 import { RateLimiterService } from '../core/rate-limiter.service';
 import { TokenTrackerService } from '../core/token-tracker.service';
 
@@ -25,23 +26,22 @@ export const AGENT_THROTTLE_TYPE = 'agentThrottleType';
 
 // 跳过限流装饰器
 export const SkipAgentThrottle =
-  () => (target: any, key?: string, descriptor?: PropertyDescriptor) => {
-    Reflect.defineMetadata(
-      SKIP_AGENT_THROTTLE,
-      true,
-      descriptor?.value || target,
-    );
+  () =>
+  (target: object, _key?: string | symbol, descriptor?: PropertyDescriptor) => {
+    const descriptorValue: unknown = descriptor?.value;
+    const metadataTarget =
+      typeof descriptorValue === 'function' ? descriptorValue : target;
+    Reflect.defineMetadata(SKIP_AGENT_THROTTLE, true, metadataTarget);
   };
 
 // 自定义限流类型装饰器
 export const AgentThrottleType =
   (type: 'user' | 'conversation' | 'agent') =>
-  (target: any, key?: string, descriptor?: PropertyDescriptor) => {
-    Reflect.defineMetadata(
-      AGENT_THROTTLE_TYPE,
-      type,
-      descriptor?.value || target,
-    );
+  (target: object, _key?: string | symbol, descriptor?: PropertyDescriptor) => {
+    const descriptorValue: unknown = descriptor?.value;
+    const metadataTarget =
+      typeof descriptorValue === 'function' ? descriptorValue : target;
+    Reflect.defineMetadata(AGENT_THROTTLE_TYPE, type, metadataTarget);
   };
 
 // 并发限制配置
@@ -71,8 +71,19 @@ export class AgentThrottleGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const response = context.switchToHttp().getResponse();
+    const request = context.switchToHttp().getRequest<
+      Request & {
+        user?: { sub?: string; role?: string };
+        rateLimit?: {
+          remaining: number;
+          limit: number;
+          resetIn: number;
+          concurrent: number;
+          maxConcurrent: number;
+        };
+      }
+    >();
+    const response = context.switchToHttp().getResponse<Response>();
     const user = request.user;
 
     if (!user?.sub) {

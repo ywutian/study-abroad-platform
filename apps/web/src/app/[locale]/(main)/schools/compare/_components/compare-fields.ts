@@ -113,7 +113,7 @@ export function buildFields(
       key: 'testingPolicy',
       labelKey: 'fields.testingPolicy',
       getValue: (s) => s.testingPolicy,
-      format: (_v) => (typeof _v === 'string' && _v.length > 0 ? testingPolicyT(_v as any) : '-'),
+      format: (_v) => (typeof _v === 'string' && _v.length > 0 ? testingPolicyT(_v as never) : '-'),
       best: 'higher',
     },
     // Test Scores

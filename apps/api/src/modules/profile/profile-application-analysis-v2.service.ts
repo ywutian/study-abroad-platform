@@ -1,27 +1,27 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { randomUUID, createHash } from 'crypto';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
+import { createHash, randomUUID } from 'crypto';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
-import { PredictionService } from '../prediction/prediction.service';
-import {
-  CaseComparisonResult,
-  PredictionHistoricalService,
-} from '../prediction/prediction-historical.service';
-import { LLMService } from '../ai-agent/core/llm.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LLMService } from '../ai-agent/core/llm.service';
 import {
   AnalysisActionPlan,
   AnalysisState,
+  ApplicationAnalysisPortfolioSummary,
   ApplicationAnalysisPredictionContext,
   ApplicationAnalysisResponseV2,
   ApplicationAnalysisSchoolResult,
-  ApplicationAnalysisPortfolioSummary,
   FairnessDisclosure,
   RecourseGuidance,
   StrategyUncertainty,
 } from '../ai/ai.types';
+import {
+  CaseComparisonResult,
+  PredictionHistoricalService,
+} from '../prediction/prediction-historical.service';
+import { PredictionService } from '../prediction/prediction.service';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
 import {
   ANALYSIS_SCHOOL_SELECT,
@@ -443,14 +443,16 @@ export class ProfileApplicationAnalysisV2Service {
   async replayRun(
     runId: string,
     actorId: string,
-    options: { debug?: boolean } = {},
+    _options: { debug?: boolean } = {},
   ) {
     // governance: admin-scope — operator surface (admin/application-analysis-workflow: @Roles(OPERATOR) + SYSTEM_CALIBRATION); cross-user aggregation is the purpose
     const sourceRun = await this.prisma.applicationAnalysisRun.findUnique({
       where: { id: runId },
     });
     if (!sourceRun?.inputSnapshot) {
-      throw new Error('Application-analysis run snapshot not found.');
+      throw new NotFoundException(
+        'Application-analysis run snapshot not found.',
+      );
     }
 
     const snapshot = sourceRun.inputSnapshot as unknown as AnalysisSnapshot;

@@ -4396,7 +4396,7 @@
     "aiRecommendationsError": "获取推荐失败",
     "recommendationsLoaded": "候选学校已生成",
     "recommendationsError": "生成候选学校失败",
-    "recommendationsBlocked": "当前档案或积分暂不满足生成推荐条件",
+    "recommendationsBlocked": "当前档案信息暂不满足生成推荐条件",
     "workspace": {
       "syncSuccess": "申请要求已同步",
       "syncError": "同步申请要求失败，请稍后重试",
@@ -7151,7 +7151,7 @@
   },
   "timeline": {
     "title": "申请时间线",
-    "description": "聚焦下一步行动、截止风险与任务完成状态",
+    "description": "把每所学校、考试和个人事件整理成带日期的计划，明确下一步行动、截止风险和任务进度。",
     "dynamicNote": "时间线根据您的选校清单和订阅的事件自动生成，截止日期数据来源于学校官网和管理员配置。",
     "addSchool": "添加学校",
     "daysLeft": "剩余 {days} 天",
@@ -7178,7 +7178,7 @@
       "overdue": "逾期未完成",
       "overdueDesc": "已移入归档待处理",
       "pendingSchools": "待生成学校时间线",
-      "pendingSchoolsDesc": "从选校清单补齐",
+      "pendingSchoolsDesc": "从已保存的选校清单生成带日期的申请任务",
       "incompleteTasks": "未完成任务",
       "incompleteTasksDesc": "当前可行动事项"
     },
@@ -11450,7 +11450,7 @@
     "stats": {
       "invited": "已邀请好友",
       "signups": "成功注册",
-      "points": "获得积分"
+      "points": "邀请奖励"
     },
     "howItWorks": "如何运作",
     "step1": "分享你的专属邀请码",
@@ -11470,9 +11470,9 @@
     },
     "emailSubject": "和我一起使用 Lumni",
     "emailBody": "嗨！我一直在用 Lumni 做留学申请规划。使用我的邀请码 {code} 注册：{link}",
-    "step3": "双方各得50积分",
-    "step3Desc": "注册完成后积分即刻到账",
-    "pointsAwarded": "+{points} 积分"
+    "step3": "查看邀请结果",
+    "step3Desc": "好友注册后会出现在邀请记录中",
+    "pointsAwarded": "邀请成功"
   },
   "tour": {
     "next": "下一步",

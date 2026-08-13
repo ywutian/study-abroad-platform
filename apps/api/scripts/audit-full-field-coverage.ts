@@ -155,7 +155,7 @@ async function main() {
 
   const items = schools.map((school) => {
     const fields = specs.map((spec) => {
-      const result = classifyField(school as Record<string, unknown>, spec, {
+      const result = classifyField(school, spec, {
         allowLegacyValues: args.allowLegacyValues,
       });
       totals[spec.key][result.bucket] += 1;
@@ -195,10 +195,12 @@ async function main() {
     items,
   };
 
-  fs.mkdirSync(path.dirname(args.out), { recursive: true });
-  fs.writeFileSync(args.out, `${JSON.stringify(report, null, 2)}\n`);
+  const outputPath = args.out;
+  if (!outputPath) throw new Error('Missing required --out path');
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`);
 
-  console.log(`Full-field coverage: ${args.out}`);
+  console.log(`Full-field coverage: ${outputPath}`);
   console.log(`Schools: ${schools.length}`);
   console.log(`Fields: ${specs.length}`);
   console.log(`Hard gates: ${report.hardGates.pass ? 'PASS' : 'FAIL'}`);
@@ -280,7 +282,7 @@ function hasValue(value: unknown, spec: FullFieldAuditSpec) {
     return value.trim().length > 0 && value !== 'UNKNOWN';
   if (typeof value === 'object') {
     if (Array.isArray(value)) return value.length > 0;
-    return Object.keys(value as Record<string, unknown>).length > 0;
+    return Object.keys(value).length > 0;
   }
   return true;
 }

@@ -132,7 +132,7 @@ export default function ReferralPage() {
               <Card className="overflow-hidden border-border">
                 <div className="h-1 bg-gradient-to-r from-primary to-violet-600" />
                 <CardHeader>
-                  <CardTitle className="text-lg text-foreground">{t('yourCode')}</CardTitle>
+                  <CardTitle className="text-foreground">{t('yourCode')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Code display */}
@@ -264,7 +264,7 @@ export default function ReferralPage() {
               <Card className="border-border">
                 <div className="h-1 bg-gradient-to-r from-primary to-violet-600" />
                 <CardHeader>
-                  <CardTitle className="text-lg text-foreground">{t('howItWorks')}</CardTitle>
+                  <CardTitle className="text-foreground">{t('howItWorks')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -326,7 +326,7 @@ export default function ReferralPage() {
             >
               <Card className="border-border">
                 <CardHeader>
-                  <CardTitle className="text-lg text-foreground">{t('history')}</CardTitle>
+                  <CardTitle className="text-foreground">{t('history')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {referrals.length > 0 ? (

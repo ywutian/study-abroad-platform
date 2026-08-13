@@ -29,7 +29,7 @@ describe('ChineseOutcomeTeacherService', () => {
   });
 
   it('filters snapshot groupBy to authority=AUTHORITATIVE only', async () => {
-    await service.evaluate({
+    service.evaluate({
       profileId: 'profile-1',
       schoolId: 'school-1',
       schoolCountry: 'US',

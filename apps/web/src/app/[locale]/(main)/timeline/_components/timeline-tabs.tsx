@@ -39,7 +39,7 @@ export function TimelineTabs({
       {sortedTimelines.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">
+            <CardTitle className="text-body">
               {t(isArchive ? 'schoolTimelines.archiveTitle' : 'schoolTimelines.title')}
             </CardTitle>
             <CardDescription>
@@ -78,7 +78,7 @@ export function TimelineTabs({
       {schoolsWithoutTimeline.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('schoolTimelines.pendingSchools')}</CardTitle>
+            <CardTitle className="text-body">{t('schoolTimelines.pendingSchools')}</CardTitle>
             <CardDescription>{t('schoolTimelines.pendingSchoolsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">

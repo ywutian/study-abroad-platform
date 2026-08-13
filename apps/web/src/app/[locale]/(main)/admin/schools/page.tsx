@@ -271,7 +271,7 @@ export default function AdminSchoolsPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardTitle className="text-body-sm font-medium flex items-center gap-2">
                     <Globe className="h-4 w-4" />
                     {t('data.scrapeSchools')}
                   </CardTitle>
@@ -306,7 +306,7 @@ export default function AdminSchoolsPage() {
               {logoFillConfigured && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="text-body-sm font-medium flex items-center gap-2">
                       <ImageIcon className="h-4 w-4" />
                       {t('schools.fillByDomain')}
                     </CardTitle>
@@ -335,7 +335,7 @@ export default function AdminSchoolsPage() {
 
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardTitle className="text-body-sm font-medium flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     {t('data.status')}
                   </CardTitle>

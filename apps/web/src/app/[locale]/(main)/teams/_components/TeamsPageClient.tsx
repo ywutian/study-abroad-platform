@@ -28,7 +28,6 @@ import {
   Clock3,
   Copy,
   MessageSquare,
-  Plus,
   ShieldCheck,
   Lightbulb,
   Target,
@@ -344,14 +343,20 @@ export function TeamsPageClient() {
     enabled: isAuthenticated,
   });
 
-  const publicPools = matchPoolsData?.items ?? [];
-  const publicEntries = selectedPoolDetail?.entries ?? [];
-  const officialContextOptions = officialContextsData?.items ?? [];
-  const privateContexts = myCommunityContextsData?.items ?? [];
+  const publicPools = useMemo(() => matchPoolsData?.items ?? [], [matchPoolsData]);
+  const publicEntries = useMemo(() => selectedPoolDetail?.entries ?? [], [selectedPoolDetail]);
+  const officialContextOptions = useMemo(
+    () => officialContextsData?.items ?? [],
+    [officialContextsData]
+  );
+  const privateContexts = useMemo(
+    () => myCommunityContextsData?.items ?? [],
+    [myCommunityContextsData]
+  );
   const resumes = resumesData ?? [];
   const matches = matchesData?.items ?? [];
-  const deckCards = deckData?.items ?? [];
-  const previewDeckCards = previewDeckData?.items ?? [];
+  const deckCards = useMemo(() => deckData?.items ?? [], [deckData]);
+  const previewDeckCards = useMemo(() => previewDeckData?.items ?? [], [previewDeckData]);
   const isPreviewMode = !currentCard && previewDeckCards.length > 0;
 
   // Funnel: emit a deduped impression event for each card the deck surfaces.
@@ -1466,7 +1471,7 @@ export function TeamsPageClient() {
                   <CardHeader>
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <CardTitle className="text-base">{match.otherCard.team.name}</CardTitle>
+                        <CardTitle className="text-body">{match.otherCard.team.name}</CardTitle>
                         <CardDescription>
                           {getRecruitmentContextMeta(match.otherCard, locale)} /{' '}
                           {getRecruitmentContextLabel(match.otherCard, locale)}
@@ -2200,7 +2205,7 @@ function DeckPanel({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{t('recruitment.currentCard')}</CardTitle>
+              <CardTitle className="text-body">{t('recruitment.currentCard')}</CardTitle>
               {activeDeckCard ? (
                 <CardDescription>{activeDeckCard.team.name}</CardDescription>
               ) : null}

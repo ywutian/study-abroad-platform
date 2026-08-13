@@ -2,44 +2,34 @@
  * 文书管理页面
  */
 
-import React, { useState, useMemo } from 'react';
-import type { ComponentProps } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import type { TFunction } from 'i18next';
+import type { ComponentProps } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   AnimatedButton,
   AnimatedCard,
   CardContent,
-  Badge,
+  ConfirmDialog,
   EmptyState,
   Loading,
-  Tabs,
-  ConfirmDialog,
   StatusBadge,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  type Colors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
-import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { qk } from '@/lib/query';
 import { useAuthStore } from '@/stores';
+import { fontFamily, spacing, useColors, withOpacity, type Colors } from '@/utils/theme';
+import { profileRoutes } from '@study-abroad/shared';
+import { styles } from './EssaysScreen.styles';
 
 type EssayStatus = 'draft' | 'in_progress' | 'review' | 'completed';
 type EssayType = 'personal_statement' | 'supplemental' | 'why_school' | 'activity' | 'other';
@@ -418,111 +408,3 @@ function EssayCard({
     </AnimatedCard>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    gap: spacing.xs,
-  },
-  statValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    fontFamily: fontFamily.mono,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-  },
-  listSection: {
-    padding: spacing.lg,
-    paddingTop: 0,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.md,
-  },
-  essayCard: {
-    marginBottom: spacing.md,
-  },
-  essayHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  typeIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  essayInfo: {
-    flex: 1,
-  },
-  essayTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.xs,
-  },
-  essayMeta: {
-    fontSize: fontSize.xs,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  wordCount: {
-    fontSize: fontSize.xs,
-    minWidth: 80,
-    textAlign: 'right',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  actionText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  fab: {
-    position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-  },
-  fabButton: {
-    width: '100%',
-  },
-});

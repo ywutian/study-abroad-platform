@@ -8,15 +8,7 @@ import {
   TextStyle,
   StyleProp,
 } from 'react-native';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  borderRadius,
-  fontWeight,
-  withOpacity,
-  elevation,
-} from '@/utils/theme';
+import { useColors, spacing, fontSize, borderRadius, fontWeight, withOpacity } from '@/utils/theme';
 
 type ButtonVariant =
   'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'soft';

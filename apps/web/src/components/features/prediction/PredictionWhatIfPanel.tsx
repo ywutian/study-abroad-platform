@@ -127,9 +127,13 @@ export function PredictionWhatIfPanel({
       { schoolIds, scenario },
       {
         onSuccess: (data) => {
-          setPreviewResults(data.results);
+          // Treat an incomplete success envelope as an empty result set. A
+          // provider/proxy degradation must not crash the whole prediction page
+          // while rendering `results.length`.
+          const results = Array.isArray(data?.results) ? data.results : [];
+          setPreviewResults(results);
           setHasRun(true);
-          toast.success(t('whatIf.success', { count: data.results.length }));
+          toast.success(t('whatIf.success', { count: results.length }));
         },
         onError: () => toast.error(t('whatIf.error')),
       }
@@ -154,6 +158,7 @@ export function PredictionWhatIfPanel({
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Field label={t('whatIf.gpa')}>
           <Input
+            aria-label={t('whatIf.gpa')}
             value={gpa}
             inputMode="decimal"
             placeholder="3.85"
@@ -162,6 +167,7 @@ export function PredictionWhatIfPanel({
         </Field>
         <Field label={t('whatIf.gpaScale')}>
           <Input
+            aria-label={t('whatIf.gpaScale')}
             value={gpaScale}
             inputMode="decimal"
             placeholder="4"
@@ -170,6 +176,7 @@ export function PredictionWhatIfPanel({
         </Field>
         <Field label={t('whatIf.sat')}>
           <Input
+            aria-label={t('whatIf.sat')}
             value={satScore}
             inputMode="numeric"
             placeholder="1500"
@@ -178,6 +185,7 @@ export function PredictionWhatIfPanel({
         </Field>
         <Field label={t('whatIf.act')}>
           <Input
+            aria-label={t('whatIf.act')}
             value={actScore}
             inputMode="numeric"
             placeholder="34"
@@ -189,6 +197,7 @@ export function PredictionWhatIfPanel({
       <div className="mt-2 grid gap-2">
         <Field label={t('whatIf.major')}>
           <Input
+            aria-label={t('whatIf.major')}
             value={targetMajor}
             placeholder={t('whatIf.majorPlaceholder')}
             onChange={(event) => setTargetMajor(event.target.value)}
@@ -216,6 +225,7 @@ export function PredictionWhatIfPanel({
           </Field>
           <Field label={t('whatIf.grade')}>
             <Input
+              aria-label={t('whatIf.grade')}
               value={grade}
               placeholder="12"
               onChange={(event) => setGrade(event.target.value)}

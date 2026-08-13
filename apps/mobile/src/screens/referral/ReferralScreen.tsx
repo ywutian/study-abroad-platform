@@ -15,7 +15,6 @@ import {
   withOpacity,
 } from '@/utils/theme';
 import { Loading } from '@/components/ui';
-import { StatsRow } from '@/components/ui/StatsRow';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useToast } from '@/components/ui/Toast';

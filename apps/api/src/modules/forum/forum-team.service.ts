@@ -75,7 +75,7 @@ export class ForumTeamService {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return list.map((ta: any) => ({
+    return list.map((ta) => ({
       id: ta.id,
       applicant: mapForumAuthor(ta.applicant),
       message: ta.message ?? undefined,

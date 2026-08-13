@@ -147,6 +147,7 @@ describe('RecommendationService', () => {
           useValue: {
             charge: jest.fn().mockResolvedValue(undefined),
             refund: jest.fn().mockResolvedValue(undefined),
+            getVisibleUserPoints: jest.fn().mockResolvedValue(100),
           },
         },
         {

@@ -1,11 +1,10 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TimelinePersonalEventService } from './timeline-personal-event.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
+import { TimelinePersonalEventService } from './timeline-personal-event.service';
 
 describe('TimelinePersonalEventService', () => {
   let service: TimelinePersonalEventService;
-  let prisma: PrismaService;
 
   const mockEvent = {
     id: 'evt-1',
@@ -64,7 +63,6 @@ describe('TimelinePersonalEventService', () => {
     service = module.get<TimelinePersonalEventService>(
       TimelinePersonalEventService,
     );
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

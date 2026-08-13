@@ -24,6 +24,33 @@ import {
   withEffectiveRecurringGlobalEvent,
 } from './timeline-date.util';
 
+type PersonalEventWithTasks = Pick<
+  Prisma.PersonalEventGetPayload<object>,
+  | 'id'
+  | 'category'
+  | 'title'
+  | 'globalEventId'
+  | 'deadline'
+  | 'eventDate'
+  | 'status'
+  | 'progress'
+  | 'priority'
+  | 'description'
+  | 'url'
+  | 'notes'
+  | 'createdAt'
+> & { tasks?: Array<{ completed: boolean }> };
+type PersonalTaskRecord = Pick<
+  Prisma.PersonalTaskGetPayload<object>,
+  | 'id'
+  | 'eventId'
+  | 'title'
+  | 'dueDate'
+  | 'completed'
+  | 'completedAt'
+  | 'sortOrder'
+>;
+
 @Injectable()
 export class TimelinePersonalEventService {
   private readonly logger = new Logger(TimelinePersonalEventService.name);
@@ -370,35 +397,37 @@ export class TimelinePersonalEventService {
     });
   }
 
-  mapPersonalEventToResponse(event: any): PersonalEventResponseDto {
-    const tasks = event.tasks || [];
+  mapPersonalEventToResponse(
+    event: PersonalEventWithTasks,
+  ): PersonalEventResponseDto {
+    const tasks = event.tasks ?? [];
     return {
       id: event.id,
       category: event.category,
       title: event.title,
-      globalEventId: event.globalEventId,
-      deadline: event.deadline,
-      eventDate: event.eventDate,
+      globalEventId: event.globalEventId ?? undefined,
+      deadline: event.deadline ?? undefined,
+      eventDate: event.eventDate ?? undefined,
       status: event.status,
       progress: event.progress,
       priority: event.priority,
-      description: event.description,
-      url: event.url,
-      notes: event.notes,
+      description: event.description ?? undefined,
+      url: event.url ?? undefined,
+      notes: event.notes ?? undefined,
       tasksTotal: tasks.length,
-      tasksCompleted: tasks.filter((t: any) => t.completed).length,
+      tasksCompleted: tasks.filter((task) => task.completed).length,
       createdAt: event.createdAt,
     };
   }
 
-  mapPersonalTaskToResponse(task: any): PersonalTaskResponseDto {
+  mapPersonalTaskToResponse(task: PersonalTaskRecord): PersonalTaskResponseDto {
     return {
       id: task.id,
       eventId: task.eventId,
       title: task.title,
-      dueDate: task.dueDate,
+      dueDate: task.dueDate ?? undefined,
       completed: task.completed,
-      completedAt: task.completedAt,
+      completedAt: task.completedAt ?? undefined,
       sortOrder: task.sortOrder,
     };
   }

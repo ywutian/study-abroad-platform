@@ -9,7 +9,7 @@ import {
   StyleProp,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import { BottomSheet } from './Modal';
 
 interface SelectOption {
@@ -211,19 +211,16 @@ export function MultiSelect({
                 disabled={item.disabled || isDisabledByMax}
                 style={[
                   styles.option,
-                  isSelected && {
-                    backgroundColor: colors.primary + '10',
-                  },
+                  isSelected && { backgroundColor: withOpacity(colors.primary, 0.063) },
                   (item.disabled || isDisabledByMax) && styles.optionDisabled,
                 ]}
               >
                 <View
                   style={[
                     styles.checkbox,
-                    {
-                      borderColor: isSelected ? colors.primary : colors.border,
-                      backgroundColor: isSelected ? colors.primary : 'transparent',
-                    },
+                    isSelected
+                      ? { borderColor: colors.primary, backgroundColor: colors.primary }
+                      : { borderColor: colors.border },
                   ]}
                 >
                   {isSelected && (

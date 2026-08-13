@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProfileAiService } from './profile-ai.service';
-import { LLMService } from '../ai-agent/core/llm.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { LLMService } from '../ai-agent/core/llm.service';
+import { ProfileAiService } from './profile-ai.service';
 
 jest.mock('../../common/utils/llm-json.util', () => ({
   extractJsonFromLlm: jest.fn(),
@@ -11,7 +11,6 @@ import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 
 describe('ProfileAiService', () => {
   let service: ProfileAiService;
-  let llmService: LLMService;
 
   const mockLLMService = {
     chatSimple: jest.fn(),
@@ -34,7 +33,6 @@ describe('ProfileAiService', () => {
     }).compile();
 
     service = module.get<ProfileAiService>(ProfileAiService);
-    llmService = module.get<LLMService>(LLMService);
   });
 
   afterEach(() => {

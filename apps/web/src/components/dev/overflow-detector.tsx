@@ -111,13 +111,12 @@ function scanForOverflow(seen: WeakMap<Element, WarnRecord>) {
     // which itself emits false "params/searchParams must be unwrapped" warnings.
     // Do not mutate the element to visually outline it: changing SSR-owned DOM
     // before hydration settles makes the detector create hydration mismatches.
-    // eslint-disable-next-line no-console
+
     console.warn(
       `[OverflowDetector] horizontal overflow +${delta}px on <${el.tagName.toLowerCase()}> — ${shortPath(el)} (scrollWidth=${sw}, clientWidth=${cw})`
     );
   }
   if (flagged > 5) {
-    // eslint-disable-next-line no-console
     console.warn(
       `[OverflowDetector] ${flagged} elements flagged in this pass. Likely a single root culprit cascading — check the outermost flagged ancestor first.`
     );

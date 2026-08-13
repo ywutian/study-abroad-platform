@@ -291,7 +291,7 @@ export const FULL_UI_SURFACE_ROUTES: FullUiSurfaceRoute[] = [
     path: '/admin/points-redemptions',
     role: 'admin',
     availability: POINTS_ECONOMY_AVAILABLE ? 'active' : 'disabled',
-    viewports: ['desktop'],
+    viewports: ['desktop', 'mobile'],
     notes:
       'Product kill switch is off; direct access must render the noindex unavailable surface and navigation must stay hidden.',
   },

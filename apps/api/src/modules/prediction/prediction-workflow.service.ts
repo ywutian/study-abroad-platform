@@ -1,42 +1,54 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
 import { createPaginatedResponse } from '../../common/dto/pagination.dto';
+import { RedisService } from '../../common/redis/redis.service';
 import {
   AuditAction,
   AuditLogService,
 } from '../../common/services/audit-log.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   BuildPredictionSignalsDto,
   CreatePredictionObservationDto,
   CreatePredictionPolicyVersionDto,
-  PredictionOutcomeQueryDto,
   PredictionObservationQueryDto,
-  PredictionSignalQueryDto,
+  PredictionOutcomeQueryDto,
   PredictionPolicyQueryDto,
-  ReviewPredictionOutcomeDto,
+  PredictionSignalQueryDto,
   ReviewPredictionObservationDto,
+  ReviewPredictionOutcomeDto,
 } from '../admin/dto';
 import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import {
+  confidenceTier,
+  deriveCohortKeyFromCase,
+  wilsonInterval,
+} from './utils/cohort-key';
 import {
   parseGpaRange,
   parseTestScoreRange,
   toTestScoreEntry,
   type NormalizedTestScoreEntry,
 } from './utils/legacy-case-parser';
-import {
-  deriveCohortKeyFromCase,
-  wilsonInterval,
-  confidenceTier,
-} from './utils/cohort-key';
+
+const WORKFLOW_SCHOOL_SELECT = {
+  id: true,
+  name: true,
+  nameZh: true,
+  usNewsRank: true,
+} as const;
+const WORKFLOW_HIGH_SCHOOL_SELECT = {
+  id: true,
+  name: true,
+  tier: true,
+} as const;
 
 const DEFAULT_POLICY_THRESHOLDS = {
   minShadowPredictions: 1000,
@@ -61,8 +73,6 @@ type ObservationStatus =
   | 'SUPERSEDED'
   | 'LICENSE_BLOCKED'
   | 'CONFLICT_FLAGGED';
-
-type PolicyStatus = 'DRAFT' | 'CANDIDATE' | 'SHADOW' | 'ACTIVE' | 'RETIRED';
 
 @Injectable()
 export class PredictionWorkflowService {
@@ -467,10 +477,10 @@ export class PredictionWorkflowService {
         take: pageSize,
         include: {
           school: {
-            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+            select: WORKFLOW_SCHOOL_SELECT,
           },
           highSchool: {
-            select: { id: true, name: true, tier: true },
+            select: WORKFLOW_HIGH_SCHOOL_SELECT,
           },
         },
       }),
@@ -604,7 +614,7 @@ export class PredictionWorkflowService {
         take: limit,
         include: {
           school: {
-            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+            select: WORKFLOW_SCHOOL_SELECT,
           },
         },
       }),
@@ -615,7 +625,7 @@ export class PredictionWorkflowService {
         take: limit,
         include: {
           school: {
-            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+            select: WORKFLOW_SCHOOL_SELECT,
           },
         },
       }),
@@ -626,10 +636,10 @@ export class PredictionWorkflowService {
         take: limit,
         include: {
           targetSchool: {
-            select: { id: true, name: true, nameZh: true, usNewsRank: true },
+            select: WORKFLOW_SCHOOL_SELECT,
           },
           sourceHighSchool: {
-            select: { id: true, name: true, tier: true },
+            select: WORKFLOW_HIGH_SCHOOL_SELECT,
           },
         },
       }),

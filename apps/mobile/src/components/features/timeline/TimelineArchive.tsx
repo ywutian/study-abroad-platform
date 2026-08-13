@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { PersonalEventDetail, TimelineResponse } from '@study-abroad/shared';
 
@@ -77,53 +77,29 @@ export function TimelineArchive({
 
   return (
     <>
-      <View style={{ marginBottom: spacing.md }}>
-        <Text
-          style={{
-            color: colors.foreground,
-            fontSize: fontSize.lg,
-            fontWeight: fontWeight.semibold,
-          }}
-        >
+      <View style={styles.schoolHeading}>
+        <Text style={[styles.headingText, { color: colors.foreground }]}>
           {t('timeline.archive.schoolTitle')}
         </Text>
       </View>
       {timelines.map((timeline, index) => renderSchoolCard(timeline, index, true))}
 
-      <View style={{ marginTop: spacing.lg, marginBottom: spacing.md }}>
-        <Text
-          style={{
-            color: colors.foreground,
-            fontSize: fontSize.lg,
-            fontWeight: fontWeight.semibold,
-          }}
-        >
+      <View style={styles.personalHeading}>
+        <Text style={[styles.headingText, { color: colors.foreground }]}>
           {t('timeline.archive.personalTitle')}
         </Text>
       </View>
       {personalEvents.map((event) => {
         const lifecycleDate = getPersonalLifecycleDate(event);
         return (
-          <AnimatedCard key={event.id} style={{ marginBottom: spacing.md }}>
+          <AnimatedCard key={event.id} style={styles.eventCard}>
             <CardContent>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <View style={{ flex: 1, gap: spacing.sm }}>
-                  <Text
-                    style={{
-                      color: colors.foreground,
-                      fontSize: fontSize.base,
-                      fontWeight: fontWeight.semibold,
-                    }}
-                  >
+              <View style={styles.eventRow}>
+                <View style={styles.eventContent}>
+                  <Text style={[styles.eventTitle, { color: colors.foreground }]}>
                     {event.title}
                   </Text>
-                  <View style={{ flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' }}>
+                  <View style={styles.badges}>
                     <Badge variant="outline">
                       {t(`timeline.category.${event.category}`, event.category)}
                     </Badge>
@@ -145,3 +121,14 @@ export function TimelineArchive({
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  schoolHeading: { marginBottom: spacing.md },
+  personalHeading: { marginTop: spacing.lg, marginBottom: spacing.md },
+  headingText: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  eventCard: { marginBottom: spacing.md },
+  eventRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  eventContent: { flex: 1, gap: spacing.sm },
+  eventTitle: { fontSize: fontSize.base, fontWeight: fontWeight.semibold },
+  badges: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },
+});

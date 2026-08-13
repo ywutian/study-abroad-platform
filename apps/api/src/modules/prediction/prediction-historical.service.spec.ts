@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PredictionHistoricalService } from './prediction-historical.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PredictionHistoricalService } from './prediction-historical.service';
 
 describe('PredictionHistoricalService', () => {
   let service: PredictionHistoricalService;
-  let prisma: PrismaService;
 
   const mockPrisma = {
     admissionCase: {
@@ -33,7 +32,6 @@ describe('PredictionHistoricalService', () => {
     service = module.get<PredictionHistoricalService>(
       PredictionHistoricalService,
     );
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

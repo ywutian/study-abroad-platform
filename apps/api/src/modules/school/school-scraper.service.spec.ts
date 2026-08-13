@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SchoolScraperService } from './school-scraper.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SchoolScraperService } from './school-scraper.service';
 import { SchoolWriteService } from './school-write.service';
 
 describe('SchoolScraperService', () => {
   let service: SchoolScraperService;
-  let prisma: PrismaService;
 
   const mockPrisma = {
     school: {
@@ -32,7 +31,6 @@ describe('SchoolScraperService', () => {
     }).compile();
 
     service = module.get<SchoolScraperService>(SchoolScraperService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

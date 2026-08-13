@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PredictionWhatIfPanel } from './PredictionWhatIfPanel';
 import enMessages from '@/messages/en.json';
 
@@ -17,8 +17,10 @@ import enMessages from '@/messages/en.json';
  * #480 shipped a fix for this same complaint with no test and the complaint
  * returned five weeks later. This is that test.
  */
+const { mutatePreview } = vi.hoisted(() => ({ mutatePreview: vi.fn() }));
+
 vi.mock('@/hooks/use-prediction', () => ({
-  usePreviewPrediction: () => ({ mutate: vi.fn(), isPending: false }),
+  usePreviewPrediction: () => ({ mutate: mutatePreview, isPending: false }),
 }));
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -43,6 +45,11 @@ function renderPanel(props: { selectedSchools?: (typeof SCHOOL)[]; disabled?: bo
 const previewButton = () => screen.getByRole('button', { name: /preview/i });
 
 describe('What-if — a disabled Preview explains itself', () => {
+  beforeEach(() => {
+    mutatePreview.mockClear();
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
   it('says which input is missing when no school is selected', () => {
     renderPanel({ selectedSchools: [] });
     expect(previewButton()).toBeDisabled();
@@ -71,5 +78,17 @@ describe('What-if — a disabled Preview explains itself', () => {
       expect(screen.getByRole('status').textContent?.trim()).toBeTruthy();
       unmount();
     }
+  });
+
+  it('turns a malformed success response into an empty result instead of crashing', () => {
+    renderPanel({});
+    fireEvent.click(previewButton());
+
+    const options = mutatePreview.mock.calls[0]?.[1] as
+      { onSuccess?: (data: unknown) => void } | undefined;
+    act(() => options?.onSuccess?.({}));
+
+    expect(screen.getByTestId('prediction-preview-results')).toBeVisible();
+    expect(screen.getByText(enMessages.prediction.whatIf.noResults)).toBeVisible();
   });
 });

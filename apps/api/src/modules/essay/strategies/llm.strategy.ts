@@ -11,7 +11,7 @@ import {
   ScrapedEssay,
 } from './base.strategy';
 
-interface ScrapeConfig {
+export interface ScrapeConfig {
   cssSelectors?: string[];
   removeSelectors?: string[];
   llmHint?: string;

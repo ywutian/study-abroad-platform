@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, BarChart3, Info, ShieldCheck, type LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';

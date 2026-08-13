@@ -1,11 +1,10 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TimelineApplicationService } from './timeline-application.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
+import { TimelineApplicationService } from './timeline-application.service';
 
 describe('TimelineApplicationService', () => {
   let service: TimelineApplicationService;
-  let prisma: PrismaService;
 
   const mockTimeline = {
     id: 'tl-1',
@@ -63,7 +62,6 @@ describe('TimelineApplicationService', () => {
     service = module.get<TimelineApplicationService>(
       TimelineApplicationService,
     );
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

@@ -4,6 +4,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import type { DebateContextPayload } from './essay-debate.prompts';
 import type { DebateTurnDto } from './dto/debate-turn-response.dto';
 
+const DEBATE_SCHOOL_SELECT = {
+  name: true,
+  nameZh: true,
+  usNewsRank: true,
+  acceptanceRate: true,
+} as const;
+
 /**
  * Phase 2 V1 PR2 — assembles the 6 context classes documented in
  * `CONTEXT_AUDIT.md` for an essay-debate turn. The loader fans out in
@@ -90,12 +97,7 @@ export class DebateContextLoaderService {
           essayContent: true,
           aiAnalysisCache: true,
           school: {
-            select: {
-              name: true,
-              nameZh: true,
-              usNewsRank: true,
-              acceptanceRate: true,
-            },
+            select: DEBATE_SCHOOL_SELECT,
           },
         },
       });
@@ -155,12 +157,7 @@ export class DebateContextLoaderService {
         if (essay.schoolId) {
           const school = await this.prisma.school.findUnique({
             where: { id: essay.schoolId },
-            select: {
-              name: true,
-              nameZh: true,
-              usNewsRank: true,
-              acceptanceRate: true,
-            },
+            select: DEBATE_SCHOOL_SELECT,
           });
           if (school) {
             schoolPayload = {

@@ -97,7 +97,7 @@ export function AnimatedButton({
       case 'destructive':
         return {
           container: { backgroundColor: colors.error },
-          text: { color: '#fff9ef' },
+          text: { color: colors.primaryForeground },
         };
       case 'outline':
         return {

@@ -51,7 +51,7 @@ describe('ScorecardTeacherService', () => {
   const service = new ScorecardTeacherService();
 
   it('uses full score distribution when quartiles exist', async () => {
-    const result = await service.evaluate(buildInput());
+    const result = service.evaluate(buildInput());
 
     expect(result.active).toBe(true);
     expect(result.confidence).toBe('medium');
@@ -67,7 +67,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('uses low-confidence avg-only SAT heuristic when quartiles are missing', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         school: {
           acceptanceRate: 20,
@@ -108,7 +108,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('returns inactive when there is no test score anchor at all', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         inputSummary: {
           sat: null,
@@ -129,7 +129,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('uses a low-confidence GPA axis at the expected selectivity GPA', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         inputSummary: {
           sat: null,
@@ -162,7 +162,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('rewards GPA one sigma above the expected selectivity GPA', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         inputSummary: {
           sat: null,
@@ -185,7 +185,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('penalizes GPA one sigma below the expected selectivity GPA', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         inputSummary: {
           sat: null,
@@ -208,7 +208,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('averages SAT, ACT, and GPA axes when all are present', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         inputSummary: {
           sat: 1520,
@@ -233,7 +233,7 @@ describe('ScorecardTeacherService', () => {
   });
 
   it('emits SAT, ACT, and GPA axes for UC-style avg-only test data', async () => {
-    const result = await service.evaluate(
+    const result = service.evaluate(
       buildInput({
         school: {
           acceptanceRate: 11,

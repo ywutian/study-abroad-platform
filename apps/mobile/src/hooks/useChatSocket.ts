@@ -279,6 +279,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
     }
 
     connect();
+    const typingTimeouts = typingTimeoutRef.current;
 
     return () => {
       mountedRef.current = false;
@@ -288,8 +289,8 @@ export function useChatSocket(options: UseChatSocketOptions = {}): UseChatSocket
       socketRef.current = null;
 
       // Clean up all typing timeouts
-      typingTimeoutRef.current.forEach((timeout) => clearTimeout(timeout));
-      typingTimeoutRef.current.clear();
+      typingTimeouts.forEach((timeout) => clearTimeout(timeout));
+      typingTimeouts.clear();
     };
   }, []); // Intentionally no deps — token is fetched async inside
 

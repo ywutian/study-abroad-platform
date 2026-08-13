@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MemoryScorerService, MemoryTier } from './memory-scorer.service';
 import { MemoryType } from '@prisma/client';
+import { MemoryScorerService } from './memory-scorer.service';
 
 describe('MemoryScorerService', () => {
   let service: MemoryScorerService;

@@ -85,7 +85,7 @@ export function WelcomeDialog({ forceShow = false, onClose }: WelcomeDialogProps
       steps: getWelcomeTourSteps(tTour),
       onComplete: () => {},
     });
-  }, [registerTour]);
+  }, [registerTour, tTour]);
 
   const handleClose = () => {
     setOpen(false);

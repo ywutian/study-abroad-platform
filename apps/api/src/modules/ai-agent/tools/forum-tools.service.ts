@@ -23,7 +23,12 @@ export class ForumToolsService implements IToolHandlerProvider {
       [
         'search_forum_posts',
         (args, _userId, _ctx, locale) =>
-          this.searchForumPosts(args.query, args.category, args.limit, locale),
+          this.searchForumPosts(
+            args.query ?? '',
+            args.category,
+            args.limit,
+            locale,
+          ),
       ],
       [
         'get_popular_discussions',
@@ -33,7 +38,7 @@ export class ForumToolsService implements IToolHandlerProvider {
       [
         'answer_forum_question',
         (args, _userId, _ctx, locale) =>
-          this.answerForumQuestion(args.question, args.context, locale),
+          this.answerForumQuestion(args.question ?? '', args.context, locale),
       ],
     ]);
   }

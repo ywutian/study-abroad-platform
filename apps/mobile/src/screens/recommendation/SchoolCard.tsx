@@ -20,7 +20,7 @@ import { isSafeUrl } from '@study-abroad/shared/utils';
 import {
   RecommendedSchool,
   ColorsType,
-  TIER_CONFIG,
+  getTierConfig,
   getTierBadgeVariant,
   formatCurrency,
 } from './types';
@@ -32,7 +32,7 @@ interface SchoolCardProps {
 
 export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCardProps) {
   const { t } = useTranslation();
-  const tierConfig = TIER_CONFIG[school.tier];
+  const tierConfig = getTierConfig(colors)[school.tier];
 
   const getTierLabel = (tier: 'reach' | 'match' | 'safety') => {
     const labels: Record<string, string> = {
@@ -45,7 +45,7 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
 
   return (
     <AnimatedCard
-      style={[styles.schoolCard, { borderLeftColor: tierConfig.color, borderLeftWidth: 3 }]}
+      style={[styles.schoolCard, styles.tierAccent, { borderLeftColor: tierConfig.color }]}
     >
       <CardContent>
         <View style={styles.schoolCardHeader}>
@@ -59,7 +59,7 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
           <View style={styles.schoolCardInfo}>
             <View style={styles.schoolNameRow}>
               <Text
-                style={[styles.schoolName, { color: colors.foreground, flex: 1 }]}
+                style={[styles.schoolName, styles.flex, { color: colors.foreground }]}
                 numberOfLines={2}
               >
                 {school.schoolName}
@@ -181,6 +181,8 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
 });
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  tierAccent: { borderLeftWidth: 3 },
   schoolCard: {
     marginBottom: spacing.md,
   },

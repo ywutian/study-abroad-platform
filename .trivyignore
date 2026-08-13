@@ -158,3 +158,9 @@ CVE-2026-69192
 # ===================================================================
 CVE-2025-71329
 CVE-2025-71330
+
+# extract-zip@2.0.1 (= GHSA-jmr9-qjv8-65gv). No patched release exists as of
+# 2026-08-12. It is reachable only through Puppeteer's vendor-browser installer,
+# not through the deployed API or any user-supplied archive path. Remove this
+# together with the pnpm audit exemption when extract-zip or Puppeteer ships a fix.
+CVE-2026-56876

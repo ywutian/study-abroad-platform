@@ -1,13 +1,11 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProfileHelpersService } from './profile-helpers.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ProfileHelpersService } from './profile-helpers.service';
 
 describe('ProfileHelpersService', () => {
   let service: ProfileHelpersService;
-  let prisma: PrismaService;
-  let auth: AuthorizationService;
 
   const mockPrisma = {
     profile: {
@@ -30,8 +28,6 @@ describe('ProfileHelpersService', () => {
     }).compile();
 
     service = module.get<ProfileHelpersService>(ProfileHelpersService);
-    prisma = module.get<PrismaService>(PrismaService);
-    auth = module.get<AuthorizationService>(AuthorizationService);
   });
 
   afterEach(() => {

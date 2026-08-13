@@ -339,7 +339,10 @@ function deepMerge(
       typeof out[key] === 'object' &&
       !Array.isArray(out[key])
     ) {
-      out[key] = deepMerge(out[key] as Record<string, unknown>, value);
+      out[key] = deepMerge(
+        out[key] as Record<string, unknown>,
+        value as Record<string, unknown>,
+      );
     } else {
       out[key] = value;
     }

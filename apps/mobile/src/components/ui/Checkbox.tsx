@@ -21,6 +21,9 @@ export function Checkbox({
   style,
 }: CheckboxProps) {
   const colors = useColors();
+  const checkboxColors = checked
+    ? { borderColor: colors.primary, backgroundColor: colors.primary }
+    : { borderColor: colors.border };
 
   return (
     <TouchableOpacity
@@ -33,15 +36,7 @@ export function Checkbox({
       style={[styles.container, disabled && styles.disabled, style]}
       activeOpacity={0.7}
     >
-      <View
-        style={[
-          styles.checkbox,
-          {
-            borderColor: checked ? colors.primary : colors.border,
-            backgroundColor: checked ? colors.primary : 'transparent',
-          },
-        ]}
-      >
+      <View style={[styles.checkbox, checkboxColors]}>
         {checked && <Ionicons name="checkmark" size={16} color={colors.primaryForeground} />}
       </View>
       {(label || description) && (

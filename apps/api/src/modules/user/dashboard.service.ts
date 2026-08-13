@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 import {
   type DashboardEssayCoach,
-  type DashboardPriorityKind,
   type DashboardSeverity,
   type DashboardSignals,
   type DashboardSummary,
@@ -10,8 +9,9 @@ import {
   resolveApplicationYear,
 } from '@study-abroad/shared';
 
-import { PrismaService } from '../../prisma/prisma.service';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PointsConfigService } from '../points/points-config.service';
 import { calculateProfileCompleteness } from '../profile/profile-completeness.util';
 import { getPersonalActionDate } from '../timeline/timeline-date.util';
 
@@ -92,7 +92,10 @@ type SchoolDeadlineSource = {
 };
 @Injectable()
 export class DashboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private pointsConfig: PointsConfigService,
+  ) {}
 
   async getDashboardSummary(
     userId: string,
@@ -105,6 +108,11 @@ export class DashboardService {
     startOfToday.setHours(0, 0, 0, 0);
     const startOfTomorrow = new Date(startOfToday);
     startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+    const pointsEnabled = await safe(
+      this.pointsConfig.isEnabled(),
+      'points-enabled',
+      false,
+    );
     const [
       user,
       profile,
@@ -207,15 +215,17 @@ export class DashboardService {
       ),
 
       // 最近积分变动
-      safe(
-        this.prisma.pointHistory.findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-        }),
-        'point-history',
-        [],
-      ),
+      pointsEnabled
+        ? safe(
+            this.prisma.pointHistory.findMany({
+              where: { userId },
+              orderBy: { createdAt: 'desc' },
+              take: 5,
+            }),
+            'point-history',
+            [],
+          )
+        : Promise.resolve([]),
 
       // 选校清单总数
       safe(
@@ -695,7 +705,7 @@ export class DashboardService {
       user: {
         email: user?.email || '',
         role: user?.role || 'USER',
-        points: user?.points || 0,
+        points: pointsEnabled ? user?.points || 0 : 0,
         createdAt: user?.createdAt.toISOString() || '',
         nickname: profile?.nickname || undefined,
       },

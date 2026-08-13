@@ -30,9 +30,6 @@ const REQUEST_DELAY = 500;
 /** Maximum schools per sync batch */
 const MAX_BATCH_SIZE = 2000;
 
-/** API page size */
-const PAGE_SIZE = 100;
-
 interface UrbanApiResponse {
   results: Record<string, unknown>[];
   next?: string | null;
@@ -111,101 +108,195 @@ export class UrbanInstituteDataService {
     return { admissions, enrollment, characteristics, total };
   }
 
+  /** Refresh only the requested local schools, using their promoted IPEDS ids. */
+  async syncSchoolsByIds(
+    schoolIds: string[],
+    year?: number,
+  ): Promise<{
+    admissions: SyncResult;
+    enrollment: SyncResult;
+    characteristics: SyncResult;
+    total: { synced: number; errors: number };
+  }> {
+    const uniqueSchoolIds = [...new Set(schoolIds)].filter(Boolean);
+    // governance: system-scope — School / SchoolMetric are published institution data with no User relation; this scheduler resolves only promoted external ids for a bounded public-data refresh
+    const schools = await this.prisma.school.findMany({
+      where: { id: { in: uniqueSchoolIds } },
+      select: { ipedsId: true },
+    });
+    const ipedsIds = schools
+      .map((school) => school.ipedsId)
+      .filter((id): id is string => Boolean(id));
+    const targetYear = year || new Date().getFullYear() - 1;
+
+    if (ipedsIds.length === 0) {
+      this.logger.warn('No IPEDS ids found for stale local schools');
+      const empty = (source: string): SyncResult => ({
+        synced: 0,
+        updated: 0,
+        errors: 0,
+        notFound: 0,
+        source,
+      });
+      return {
+        admissions: empty('admissions'),
+        enrollment: empty('enrollment'),
+        characteristics: empty('characteristics'),
+        total: { synced: 0, errors: 0 },
+      };
+    }
+
+    const admissions = await this.syncAdmissions(
+      targetYear,
+      Number.MAX_SAFE_INTEGER,
+      ipedsIds,
+    );
+    const enrollment = await this.syncEnrollment(
+      targetYear,
+      Number.MAX_SAFE_INTEGER,
+      ipedsIds,
+    );
+    const characteristics = await this.syncCharacteristics(
+      targetYear,
+      Number.MAX_SAFE_INTEGER,
+      ipedsIds,
+    );
+    return {
+      admissions,
+      enrollment,
+      characteristics,
+      total: {
+        synced: admissions.synced + enrollment.synced + characteristics.synced,
+        errors: admissions.errors + enrollment.errors + characteristics.errors,
+      },
+    };
+  }
+
   /**
    * 同步录取数据 (admissions-enrollment)
    * 数据: 申请人数、录取人数、录取率
    */
-  async syncAdmissions(year: number, limit: number): Promise<SyncResult> {
+  async syncAdmissions(
+    year: number,
+    limit: number,
+    ipedsIds?: string[],
+  ): Promise<SyncResult> {
     const endpoint = `${BASE_URL}/admissions-enrollment/${year}`;
-    return this.syncEndpoint(endpoint, 'admissions', limit, (row) => {
-      const applicants = this.toNum(row['number_applied']);
-      const admitted = this.toNum(row['number_admitted']);
+    return this.syncEndpoint(
+      endpoint,
+      'admissions',
+      limit,
+      (row) => {
+        const applicants = this.toNum(row['number_applied']);
+        const admitted = this.toNum(row['number_admitted']);
 
-      const data: Record<string, unknown> = {};
+        const data: Record<string, unknown> = {};
 
-      if (applicants && admitted && applicants > 0) {
-        data.acceptanceRate = normalizePercentRate(admitted / applicants);
-      }
+        if (applicants && admitted && applicants > 0) {
+          data.acceptanceRate = normalizePercentRate(admitted / applicants);
+        }
 
-      return {
-        unitid: String(row['unitid'] ?? ''),
-        data,
-        metrics:
-          applicants && admitted
-            ? [
-                { key: 'applications', value: applicants },
-                { key: 'admissions', value: admitted },
-              ]
-            : [],
-      };
-    });
+        return {
+          unitid: this.toText(row['unitid']),
+          data,
+          metrics:
+            applicants && admitted
+              ? [
+                  { key: 'applications', value: applicants },
+                  { key: 'admissions', value: admitted },
+                ]
+              : [],
+        };
+      },
+      ipedsIds,
+    );
   }
 
   /**
    * 同步入学数据 (fall-enrollment/residence)
    * 数据: 国际生比例、总入学人数
    */
-  async syncEnrollment(year: number, limit: number): Promise<SyncResult> {
+  async syncEnrollment(
+    year: number,
+    limit: number,
+    ipedsIds?: string[],
+  ): Promise<SyncResult> {
     // Use residence endpoint for international student data
     const endpoint = `${BASE_URL}/fall-enrollment/residence/${year}`;
-    return this.syncEndpoint(endpoint, 'enrollment', limit, (row) => {
-      const levelOfStudy = this.toNum(row['level_of_study']);
-      // level_of_study: 1 = undergraduate, 2 = graduate, 99 = total
-      if (levelOfStudy !== 99) return null; // Only total
+    return this.syncEndpoint(
+      endpoint,
+      'enrollment',
+      limit,
+      (row) => {
+        const levelOfStudy = this.toNum(row['level_of_study']);
+        // level_of_study: 1 = undergraduate, 2 = graduate, 99 = total
+        if (levelOfStudy !== 99) return null; // Only total
 
-      const total = this.toNum(row['enrollment_fall']);
-      const intl = this.toNum(row['enrollment_nonresident']);
+        const total = this.toNum(row['enrollment_fall']);
+        const intl = this.toNum(row['enrollment_nonresident']);
 
-      const data: Record<string, unknown> = {};
-      if (total && total > 0) {
-        data.totalEnrollment = total;
-        if (intl != null) {
-          data.intlStudentPct = normalizePercentRate(intl / total);
+        const data: Record<string, unknown> = {};
+        if (total && total > 0) {
+          data.totalEnrollment = total;
+          if (intl != null) {
+            data.intlStudentPct = normalizePercentRate(intl / total);
+          }
         }
-      }
 
-      return {
-        unitid: String(row['unitid'] ?? ''),
-        data,
-        metrics:
-          total && intl != null
-            ? [
-                { key: 'intl_student_count', value: intl },
-                { key: 'intl_student_pct', value: (intl / total) * 100 },
-              ]
-            : [],
-      };
-    });
+        return {
+          unitid: this.toText(row['unitid']),
+          data,
+          metrics:
+            total && intl != null
+              ? [
+                  { key: 'intl_student_count', value: intl },
+                  { key: 'intl_student_pct', value: (intl / total) * 100 },
+                ]
+              : [],
+        };
+      },
+      ipedsIds,
+    );
   }
 
   /**
    * 同步院校特征 (institutional-characteristics)
    * 数据: 公立/私立、校园面积
    */
-  async syncCharacteristics(year: number, limit: number): Promise<SyncResult> {
+  async syncCharacteristics(
+    year: number,
+    limit: number,
+    ipedsIds?: string[],
+  ): Promise<SyncResult> {
     const endpoint = `${BASE_URL}/institutional-characteristics/${year}`;
-    return this.syncEndpoint(endpoint, 'characteristics', limit, (row) => {
-      const control = this.toNum(row['inst_control']);
-      // inst_control: 1 = public, 2 = private nonprofit, 3 = private for-profit
+    return this.syncEndpoint(
+      endpoint,
+      'characteristics',
+      limit,
+      (row) => {
+        const control = this.toNum(row['inst_control']);
+        // inst_control: 1 = public, 2 = private nonprofit, 3 = private for-profit
 
-      const data: Record<string, unknown> = {};
-      if (control === 2 || control === 3) {
-        data.isPrivate = true;
-      } else if (control === 1) {
-        data.isPrivate = false;
-      }
+        const data: Record<string, unknown> = {};
+        if (control === 2 || control === 3) {
+          data.isPrivate = true;
+        } else if (control === 1) {
+          data.isPrivate = false;
+        }
 
-      const tuitionOutOfState = this.toNum(row['tuition_fees_out_of_state']);
-      if (tuitionOutOfState && tuitionOutOfState > 0) {
-        data.tuition = tuitionOutOfState;
-      }
+        const tuitionOutOfState = this.toNum(row['tuition_fees_out_of_state']);
+        if (tuitionOutOfState && tuitionOutOfState > 0) {
+          data.tuition = tuitionOutOfState;
+        }
 
-      return {
-        unitid: String(row['unitid'] ?? ''),
-        data,
-        metrics: [],
-      };
-    });
+        return {
+          unitid: this.toText(row['unitid']),
+          data,
+          metrics: [],
+        };
+      },
+      ipedsIds,
+    );
   }
 
   /**
@@ -220,17 +311,21 @@ export class UrbanInstituteDataService {
       data: Record<string, unknown>;
       metrics: Array<{ key: string; value: number }>;
     } | null,
+    ipedsIds?: string[],
   ): Promise<SyncResult> {
     let synced = 0;
     let updated = 0;
     let errors = 0;
     let notFound = 0;
-    let page = 0;
+    const params = new URLSearchParams();
+    if (ipedsIds?.length) params.set('unitid', ipedsIds.join(','));
+    let nextUrl =
+      params.size > 0 ? `${endpoint}?${params.toString()}` : endpoint;
 
     try {
-      while (synced < limit) {
-        const url = `${endpoint}?page=${page}&per_page=${PAGE_SIZE}`;
-        this.logger.debug(`Fetching ${label} page ${page}...`);
+      while (synced < limit && nextUrl) {
+        const url = nextUrl;
+        this.logger.debug(`Fetching ${label}: ${url}`);
 
         const response = await fetch(url, {
           headers: { Accept: 'application/json' },
@@ -295,12 +390,13 @@ export class UrbanInstituteDataService {
           }
         }
 
-        // Check if there are more pages
-        if (!body.next || rows.length < PAGE_SIZE) break;
-        page++;
+        // The Urban endpoint currently returns the complete filtered result set
+        // and rejects the old page=0/per_page query. Retain `next` support if
+        // the provider adds a real continuation URL later.
+        nextUrl = body.next || '';
 
         // Rate limiting
-        await this.delay(REQUEST_DELAY);
+        if (nextUrl && synced < limit) await this.delay(REQUEST_DELAY);
       }
     } catch (err) {
       this.logger.error(`Sync ${label} failed: ${String(err)}`);
@@ -368,6 +464,12 @@ export class UrbanInstituteDataService {
     if (val == null) return null;
     const n = Number(val);
     return isNaN(n) ? null : n;
+  }
+
+  private toText(value: unknown): string {
+    return typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : '';
   }
 
   private delay(ms: number): Promise<void> {

@@ -1122,7 +1122,7 @@ async function mergeProvenance(
   return {
     ...existingMetadata,
     provenance: { ...existingProvenance, [field]: entry },
-  };
+  } as Prisma.InputJsonObject;
 }
 
 async function main() {

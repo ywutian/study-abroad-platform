@@ -88,7 +88,7 @@ export function EngagementTab() {
       {/* User registration trend */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t('engagement.userTrend')}</CardTitle>
+          <CardTitle className="text-body">{t('engagement.userTrend')}</CardTitle>
         </CardHeader>
         <CardContent>
           {data.length > 0 ? (

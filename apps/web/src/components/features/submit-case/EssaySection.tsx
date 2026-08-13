@@ -35,6 +35,40 @@ const VISIBILITY_OPTIONS = [
   { value: 'VERIFIED_ONLY', labelKey: 'verifiedOnly' },
 ];
 
+interface PdfTextItem {
+  str?: string;
+}
+
+interface PdfPage {
+  getTextContent: () => Promise<{ items: PdfTextItem[] }>;
+}
+
+interface PdfDocument {
+  numPages: number;
+  getPage: (pageNumber: number) => Promise<PdfPage>;
+}
+
+interface PdfJsModule {
+  version: string;
+  GlobalWorkerOptions: { workerSrc: string };
+  getDocument: (data: ArrayBuffer) => { promise: Promise<PdfDocument> };
+}
+
+function isPdfJsModule(value: unknown): value is PdfJsModule {
+  if (typeof value !== 'object' || value === null) return false;
+
+  const candidate = value as Record<string, unknown>;
+  const workerOptions = candidate.GlobalWorkerOptions;
+
+  return (
+    typeof candidate.version === 'string' &&
+    typeof candidate.getDocument === 'function' &&
+    typeof workerOptions === 'object' &&
+    workerOptions !== null &&
+    'workerSrc' in workerOptions
+  );
+}
+
 interface EssaySectionProps {
   includeEssay: boolean;
   setIncludeEssay: (v: boolean) => void;
@@ -59,7 +93,6 @@ export function EssaySection({
   const essayFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const processEssayFile = useCallback(
     async (file: File) => {
       const ext = file.name.split('.').pop()?.toLowerCase();
@@ -73,16 +106,21 @@ export function EssaySection({
           const result = await mammoth.extractRawText({ arrayBuffer });
           onFieldChange('essayContent', result.value);
         } else if (ext === 'pdf') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const pdfjsLib = (await import(/* webpackIgnore: true */ 'pdfjs-dist' as string)) as any;
+          const importedPdfJs: unknown = await import(
+            /* webpackIgnore: true */ 'pdfjs-dist' as string
+          );
+          if (!isPdfJsModule(importedPdfJs)) {
+            throw new Error('Unsupported PDF.js module shape');
+          }
+          const pdfjsLib = importedPdfJs;
           pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
           const pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
           const pages: string[] = [];
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const content = await page.getTextContent();
-            pages.push(content.items.map((item: any) => item.str).join(' '));
+            pages.push(content.items.map((item) => item.str ?? '').join(' '));
           }
           onFieldChange('essayContent', pages.join('\n\n'));
         } else {
@@ -92,7 +130,7 @@ export function EssaySection({
         toast.error(tc('failedToReadFile'));
       }
     },
-    [onFieldChange]
+    [onFieldChange, tc]
   );
 
   return (

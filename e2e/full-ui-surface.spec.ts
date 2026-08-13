@@ -1018,14 +1018,23 @@ test.describe('Full UI surface crawler', () => {
           });
 
           if (route.availability === 'disabled') {
-            await gotoSurface(page, `/${locale}/admin`);
+            const response = await gotoSurface(page, url);
+            expect(response?.status() ?? 200, `${url} should not return HTTP error`).toBeLessThan(
+              400
+            );
+            await expect(page).toHaveURL(new RegExp(`${url.replace('/', '\\/')}/?$`), {
+              timeout: 30_000,
+            });
+            await expect(page.getByTestId('points-economy-unavailable')).toBeVisible({
+              timeout: 30_000,
+            });
+            // The direct route includes the admin shell on desktop. On mobile
+            // the sidebar is intentionally collapsed, so this also guards
+            // against an accidentally rendered hidden navigation item.
             await expect(
               page.locator('a[href$="/admin/points-redemptions"]'),
               `${route.pattern} should be absent from admin navigation while disabled`
             ).toHaveCount(0);
-
-            await gotoSurface(page, url);
-            await expect(page.getByTestId('points-economy-unavailable')).toBeVisible();
             await expect(page.getByRole('link', { name: /admin|管理后台/i })).toBeVisible();
             await expect(
               page.locator('meta[name="robots"]'),
@@ -1046,6 +1055,61 @@ test.describe('Full UI surface crawler', () => {
           await recoverBlankDocument(page, url, route);
 
           await assertPageIntegrity(page, locale, route);
+
+          if (route.pattern === '/prediction' && viewportName === 'desktop') {
+            await expect(page.getByText(/0 selected|已选 0 所/i).first()).toBeVisible();
+
+            const previewButton = page.getByRole('button', { name: /preview|模拟/i });
+            await expect(previewButton).toBeDisabled();
+            await expect(
+              page.getByText(/pick at least one school|选择至少一所学校/i)
+            ).toBeVisible();
+
+            const importList = page.getByRole('button', {
+              name: /add all from my list|添加全部选校单/i,
+            });
+            await expect(importList).toBeVisible();
+            await importList.click();
+
+            await page.getByRole('textbox', { name: /^(scale|满分)$/i }).fill('100');
+            await page.getByRole('textbox', { name: /^gpa$/i }).fill('95');
+
+            await expect(previewButton).toBeEnabled();
+            const previewRequest = page.waitForRequest(
+              (request) =>
+                request.method() === 'POST' &&
+                new URL(request.url()).pathname.endsWith('/predictions/preview')
+            );
+            await previewButton.click();
+            const previewPayload = (await previewRequest).postDataJSON() as {
+              scenario?: { gpa?: number; gpaScale?: number };
+            };
+            expect(previewPayload.scenario).toMatchObject({ gpa: 95, gpaScale: 100 });
+            await expect(page.getByText(/preview result|模拟结果/i)).toBeVisible();
+          }
+
+          if (route.pattern === '/prediction' && viewportName !== 'mobile') {
+            const predictionScrollOwners = await page.locator('main').evaluate((main) => {
+              const descendants = Array.from(main.querySelectorAll<HTMLElement>('*'));
+              return descendants
+                .filter((element) => {
+                  const style = window.getComputedStyle(element);
+                  return (
+                    (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+                    element.scrollHeight > element.clientHeight + 2
+                  );
+                })
+                .map((element) => ({
+                  className: element.className,
+                  clientHeight: element.clientHeight,
+                  scrollHeight: element.scrollHeight,
+                }));
+            });
+            expect(
+              predictionScrollOwners,
+              'prediction workbench should use the page scrollbar, not hide What-if in an inner vertical scroller'
+            ).toEqual([]);
+          }
 
           const screenshotPath = await captureSurfaceScreenshot(page, route, locale, viewportName);
           if (ENABLE_VISUAL_DIFF && route.critical) {

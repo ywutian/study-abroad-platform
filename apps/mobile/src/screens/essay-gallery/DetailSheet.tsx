@@ -90,7 +90,7 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
   };
 
   return (
-    <View style={[StyleSheet.absoluteFill, { zIndex: 100 }]}>
+    <View style={[StyleSheet.absoluteFill, S.sheetLayer]}>
       {/* Backdrop */}
       <TouchableOpacity
         activeOpacity={1}
@@ -249,6 +249,7 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
 // ---------------------------------------------------------------------------
 
 const S = StyleSheet.create({
+  sheetLayer: { zIndex: 100 },
   // Backdrop & sheet
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -301,15 +302,6 @@ const S = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     flexWrap: 'wrap',
-  },
-  rankBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  rankText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
   },
   verifiedBadge: {
     flexDirection: 'row',

@@ -86,6 +86,7 @@ export class CreateEssayRevisionDto {
   @IsOptional()
   @IsString()
   @IsIn(['manual', 'autosave', 'ai_apply', 'restore'])
+  @MaxLength(20)
   source?: string;
 }
 
@@ -96,5 +97,6 @@ export class UpdateEssaySuggestionDto {
   })
   @IsString()
   @IsIn(['PENDING', 'APPLIED', 'REJECTED'])
+  @MaxLength(20)
   status: string;
 }

@@ -1,44 +1,48 @@
-import React, { useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { Image } from 'expo-image';
-import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  Badge,
-  Button,
-  Loading,
   ErrorState,
   Skeleton,
 } from '@/components/ui';
 import { getRankingListShortLabel } from '@/components/ui/RankingBadge';
+import { Tabs } from '@/components/ui/Tabs';
+import { useToast } from '@/components/ui/Toast';
+import { apiClient } from '@/lib/api/client';
+import { cachePolicy, qk } from '@/lib/query';
+import { useAuthStore } from '@/stores';
+import type { Case, PaginatedResponse, School } from '@/types';
+import { getResultBadgeVariant } from '@/utils/case-helpers';
+import { formatAcceptanceRate } from '@/utils/format';
+import { fontFamily, spacing, useColors } from '@/utils/theme';
+import type { SchoolProvenance } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  DATA_SOURCE_LABELS,
+  schoolListRoutes,
+  schoolRoutes,
+} from '@study-abroad/shared';
 import {
   createLegacyUsNewsRanking,
   getRankingSourceLabel,
   groupRankingsBySource,
 } from '@study-abroad/shared/ranking';
-import { SchoolAvatar } from '@/components/features/SchoolAvatar';
-import { Tabs } from '@/components/ui/Tabs';
-import { API_ROUTES, schoolRoutes, schoolListRoutes } from '@study-abroad/shared';
-import { apiClient } from '@/lib/api/client';
-import { qk, cachePolicy } from '@/lib/query';
-import { useToast } from '@/components/ui/Toast';
-import { useAuthStore } from '@/stores';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
-import { getResultBadgeVariant } from '@/utils/case-helpers';
-import { formatAcceptanceRate } from '@/utils/format';
-import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
-import type { SchoolProvenance } from '@study-abroad/shared';
 import { isSafeUrl } from '@study-abroad/shared/utils';
-import type { School, Case, PaginatedResponse } from '@/types';
+import { styles } from './[id].styles';
 
 function DataSourceLabel({
   field,
@@ -58,10 +62,7 @@ function DataSourceLabel({
   const date = new Date(prov.fetchedAt);
   const freshness = date.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
   return (
-    <Text
-      style={{ fontSize: fontSize.xs - 2, color: colors.foregroundMuted, marginTop: 2 }}
-      numberOfLines={1}
-    >
+    <Text style={[styles.sourceLabel, { color: colors.foregroundMuted }]} numberOfLines={1}>
       {t('schools.detail.dataSource', { source: label })} ·{' '}
       {t('schools.detail.updatedAt', { date: freshness })}
     </Text>
@@ -87,6 +88,7 @@ export default function SchoolDetailScreen() {
   });
 
   const { data: casesData, isLoading: casesLoading } = useQuery({
+    placeholderData: keepPreviousData,
     queryKey: ['schoolCases', id],
     queryFn: () =>
       apiClient.get<PaginatedResponse<Case>>(API_ROUTES.CASES, {
@@ -260,7 +262,7 @@ export default function SchoolDetailScreen() {
                     key={r.source}
                     style={[
                       styles.rankingListRow,
-                      index > 0 && { borderTopWidth: 1, borderTopColor: colors.border },
+                      index > 0 && [styles.rankingDivider, { borderTopColor: colors.border }],
                     ]}
                   >
                     <View style={styles.rankingListInfo}>
@@ -432,7 +434,7 @@ export default function SchoolDetailScreen() {
                     isInList ? t('findCollege.removeFromList') : t('findCollege.addToList')
                   }
                   hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                  style={{ paddingLeft: 8 }}
+                  style={styles.headerAction}
                 >
                   <Ionicons
                     name={isInList ? 'bookmark' : 'bookmark-outline'}
@@ -523,160 +525,3 @@ export default function SchoolDetailScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    alignItems: 'center',
-    overflow: 'hidden',
-    padding: spacing.xl,
-    paddingTop: spacing['2xl'],
-  },
-  coverImage: {
-    width: '100%',
-    height: 180,
-    marginTop: -spacing['2xl'],
-    marginBottom: spacing.md,
-  },
-  logo: {
-    marginBottom: spacing.lg,
-  },
-  logoOnCover: {
-    marginTop: -44,
-  },
-  name: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    textAlign: 'center',
-    marginBottom: spacing.xs,
-  },
-  nameZh: {
-    fontSize: fontSize.base,
-    marginBottom: spacing.sm,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  location: {
-    fontSize: fontSize.sm,
-    marginLeft: spacing.xs,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-    textAlign: 'center',
-  },
-  tabsContainer: {
-    padding: spacing.lg,
-  },
-  tabContent: {
-    paddingTop: spacing.sm,
-  },
-  card: {
-    marginBottom: spacing.md,
-  },
-  description: {
-    fontSize: fontSize.base,
-    lineHeight: 24,
-  },
-  rankingsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  rankItem: {
-    alignItems: 'center',
-  },
-  rankingListRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-  },
-  rankingListInfo: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  rankSource: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  rankValue: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-  },
-  rankLabel: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  websiteButton: {
-    marginTop: spacing.md,
-  },
-  deadlineItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  deadlineInfo: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  deadlineType: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-  },
-  deadlineNotes: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  essayPrompt: {
-    fontSize: fontSize.base,
-    lineHeight: 22,
-    marginBottom: spacing.md,
-  },
-  essayMeta: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  caseItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  caseInfo: {
-    flex: 1,
-  },
-  caseMajor: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-  },
-  caseYear: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  emptyText: {
-    textAlign: 'center',
-    padding: spacing.xl,
-    fontSize: fontSize.base,
-  },
-});

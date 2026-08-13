@@ -1,37 +1,36 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { FlashList, type FlashListRef } from '@shopify/flash-list';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import Markdown from 'react-native-markdown-display';
+import Markdown, { type MarkdownProps } from 'react-native-markdown-display';
 
-import * as Haptics from 'expo-haptics';
-import { Card, CardContent, Badge, Button, Loading } from '@/components/ui';
+import { Loading } from '@/components/ui';
 import { Segment } from '@/components/ui/Tabs';
-import { AI_REQUEST_TIMEOUT_MS } from '@study-abroad/shared';
+import { useToast } from '@/components/ui/Toast';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import type { AiChatMessage } from '@/types';
+import { borderRadius, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
+import { AI_REQUEST_TIMEOUT_MS } from '@study-abroad/shared';
+import * as Haptics from 'expo-haptics';
+import { styles } from './ai.styles';
 
 type AgentMode = 'auto' | 'essay' | 'school' | 'profile' | 'timeline';
 
 interface ChatMessageItemProps {
   item: AiChatMessage;
   colors: ReturnType<typeof useColors>;
-  markdownStyles: Record<string, any>;
+  markdownStyles: NonNullable<MarkdownProps['style']>;
   isLast: boolean;
   isLoading: boolean;
   t: (key: string) => string;
@@ -78,7 +77,10 @@ const ChatMessageItem = React.memo(function ChatMessageItem({
           styles.messageBubble,
           isUser
             ? { backgroundColor: colors.primary }
-            : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+            : [
+                styles.assistantBubble,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ],
         ]}
       >
         {isUser ? (
@@ -118,9 +120,8 @@ const ChatMessageItem = React.memo(function ChatMessageItem({
 export default function AIScreen() {
   const { t } = useTranslation();
   const colors = useColors();
-  const insets = useSafeAreaInsets();
   const toast = useToast();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const scrollRef = useRef<FlashListRef<AiChatMessage>>(null);
   const params = useLocalSearchParams<{ prompt?: string }>();
 
@@ -513,160 +514,3 @@ export default function AIScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  modeSelector: {
-    padding: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  modeSelectorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  modeSelectorSegment: {
-    flex: 1,
-  },
-  newChatButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
-  },
-  emptyContainer: {
-    flex: 1,
-  },
-  emptyContent: {
-    padding: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100%',
-  },
-  welcomeIcon: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.xl,
-  },
-  welcomeTitle: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.sm,
-  },
-  welcomeSubtitle: {
-    fontSize: fontSize.base,
-    textAlign: 'center',
-    marginBottom: spacing['2xl'],
-  },
-  suggestions: {
-    width: '100%',
-  },
-  suggestionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    marginBottom: spacing.md,
-  },
-  suggestionText: {
-    flex: 1,
-    fontSize: fontSize.base,
-    marginLeft: spacing.md,
-  },
-  messagesList: {
-    padding: spacing.lg,
-  },
-  messageContainer: {
-    marginBottom: spacing.lg,
-    flexDirection: 'row',
-  },
-  userMessage: {
-    justifyContent: 'flex-end',
-  },
-  assistantMessage: {
-    justifyContent: 'flex-start',
-  },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  messageBubble: {
-    maxWidth: '80%',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-  },
-  messageText: {
-    fontSize: fontSize.base,
-    lineHeight: 22,
-  },
-  toolCall: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.sm,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.sm,
-  },
-  toolCallText: {
-    fontSize: fontSize.sm,
-    marginLeft: spacing.xs,
-  },
-  thinkingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  thinkingText: {
-    marginLeft: spacing.sm,
-    fontSize: fontSize.sm,
-  },
-  inputContainer: {
-    padding: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.xs,
-    paddingVertical: spacing.xs,
-  },
-  input: {
-    flex: 1,
-    fontSize: fontSize.base,
-    maxHeight: 100,
-    paddingVertical: spacing.sm,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  authHintRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.sm,
-  },
-  authHint: {
-    fontSize: fontSize.xs,
-    textAlign: 'center',
-  },
-  authHintLink: {
-    fontWeight: fontWeight.semibold,
-  },
-});

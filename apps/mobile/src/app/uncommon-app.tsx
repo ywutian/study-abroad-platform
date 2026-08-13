@@ -1,25 +1,31 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Stack, router, type Href } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Stack, router, type Href } from 'expo-router';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import Markdown from 'react-native-markdown-display';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AnimatedCard, Badge, Loading, ProgressBar } from '@/components/ui';
 import { CardContent } from '@/components/ui/Card';
+import { useToast } from '@/components/ui/Toast';
+import { useAiAgentConversation } from '@/hooks/useAiAgentConversation';
+import { apiClient } from '@/lib/api/client';
+import { qk } from '@/lib/query';
+import { useAuthStore } from '@/stores';
+import type { AiChatMessage } from '@/types';
+import { borderRadius, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
 import {
   AI_REQUEST_TIMEOUT_MS,
   API_ROUTES,
@@ -30,78 +36,18 @@ import {
   type RecommendationPreflight,
   type RecommendationResult,
 } from '@study-abroad/shared';
-import { apiClient } from '@/lib/api/client';
-import { qk } from '@/lib/query';
-import { useAuthStore } from '@/stores';
-import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
-import type { AiChatMessage, StreamEvent } from '@/types';
+import { MetricTile } from '@/components/features/uncommon-app/MetricTile';
+import { styles } from './uncommon-app.styles';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type AgentType = 'orchestrator' | 'essay' | 'school' | 'profile' | 'timeline';
-type AgentMode = 'auto' | AgentType;
-
-interface QuotaData {
-  used: number;
-  limit: number;
-  remaining: number;
-  resetAt?: string;
-}
-
-interface UsageData {
-  totalTokens: number;
-  promptTokens: number;
-  completionTokens: number;
-  requestCount: number;
-}
-
-interface AgentChip {
-  key: AgentMode;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}
-
-interface QuickAction {
-  agent: AgentType;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-  titleKey: string;
-  descKey: string;
-  prompt: string;
-}
-
-interface SchoolListItem {
-  id: string;
-  tier: 'REACH' | 'TARGET' | 'SAFETY';
-  essayPromptCount?: number;
-}
-
-interface ProfileSummary {
-  gpa?: number | null;
-  testScores?: unknown[];
-  activities?: unknown[];
-  awards?: unknown[];
-}
-
-interface PredictionDashboard {
-  totalSchools?: number;
-  predictions?: Array<{
-    schoolId: string;
-    tier: 'reach' | 'match' | 'safety' | 'unavailable';
-    probability: number | null;
-  }>;
-}
+import type {
+  AgentChip,
+  AgentMode,
+  PredictionDashboard,
+  ProfileSummary,
+  QuickAction,
+  QuotaData,
+  SchoolListItem,
+} from './uncommon-app.types';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -117,13 +63,18 @@ export default function UncommonAppScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   // ---- State ---------------------------------------------------------------
-  const [messages, setMessages] = useState<AiChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('auto');
-  const [conversationId, setConversationId] = useState<string | undefined>();
-  const [activeAgent, setActiveAgent] = useState<string | undefined>();
-  const [activeTool, setActiveTool] = useState<string | undefined>();
+  const { messages, isStreaming, activeAgent, activeTool, sendMessage, resetConversation } =
+    useAiAgentConversation({
+      input,
+      setInput,
+      isAuthenticated,
+      agentMode,
+      toast,
+      t,
+      queryClient,
+    });
 
   // ---- Queries -------------------------------------------------------------
   const { data: quota } = useQuery<QuotaData>({
@@ -131,12 +82,6 @@ export default function UncommonAppScreen() {
     queryFn: () => apiClient.get(`${API_ROUTES.AI_AGENT}/quota`),
     enabled: isAuthenticated,
     refetchInterval: 60_000,
-  });
-
-  const { data: usage } = useQuery<UsageData>({
-    queryKey: ['ai-agent', 'usage'],
-    queryFn: () => apiClient.get(`${API_ROUTES.AI_AGENT}/usage`),
-    enabled: isAuthenticated,
   });
 
   const { data: profile } = useQuery<ProfileSummary>({
@@ -192,10 +137,7 @@ export default function UncommonAppScreen() {
   const clearMutation = useMutation({
     mutationFn: () => apiClient.delete(`${API_ROUTES.AI_AGENT}/conversation`),
     onSuccess: () => {
-      setMessages([]);
-      setConversationId(undefined);
-      setActiveAgent(undefined);
-      setActiveTool(undefined);
+      resetConversation();
       queryClient.invalidateQueries({ queryKey: ['ai-agent'] });
       toast.success(t('uncommonApp.conversationCleared'));
     },
@@ -327,166 +269,6 @@ export default function UncommonAppScreen() {
     [colors]
   );
 
-  // ---- Send message (streaming) --------------------------------------------
-  const sendMessage = useCallback(
-    async (messageText?: string, directAgent?: AgentType) => {
-      const text = messageText || input.trim();
-      if (!text || isStreaming) return;
-
-      if (!isAuthenticated) {
-        toast.error(t('errors.unauthorized'));
-        return;
-      }
-
-      const userMessage: AiChatMessage = {
-        id: `user-${Date.now()}`,
-        role: 'user',
-        content: text,
-        timestamp: new Date(),
-      };
-
-      const assistantMessage: AiChatMessage = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, userMessage, assistantMessage]);
-      setInput('');
-      setIsStreaming(true);
-      setActiveTool(undefined);
-
-      try {
-        const agentToUse = directAgent || (agentMode !== 'auto' ? agentMode : undefined);
-        const endpoint = agentToUse ? '/ai-agent/agent' : '/ai-agent/chat';
-        const body = agentToUse
-          ? { agent: agentToUse, message: text, conversationId }
-          : { message: text, conversationId, stream: true };
-
-        if (agentToUse) {
-          // Non-streaming direct agent invocation
-          const response = await apiClient.post<{
-            message: string;
-            agentType: string;
-            conversationId?: string;
-          }>(endpoint, body);
-
-          if (response.conversationId) {
-            setConversationId(response.conversationId);
-          }
-          setActiveAgent(response.agentType);
-          setMessages((prev) => {
-            const updated = [...prev];
-            const last = updated[updated.length - 1];
-            if (last.role === 'assistant') {
-              last.content = response.message;
-            }
-            return updated;
-          });
-        } else {
-          // Streaming chat
-          for await (const chunk of apiClient.stream(endpoint, body)) {
-            try {
-              const event: StreamEvent = JSON.parse(chunk);
-
-              switch (event.type) {
-                case 'start':
-                  if (event.agent) setActiveAgent(event.agent);
-                  break;
-
-                case 'content':
-                  if (event.content) {
-                    setMessages((prev) => {
-                      const updated = [...prev];
-                      const last = updated[updated.length - 1];
-                      if (last.role === 'assistant') {
-                        last.content += event.content;
-                      }
-                      return updated;
-                    });
-                  }
-                  break;
-
-                case 'tool_start':
-                  if (event.tool) {
-                    setActiveTool(event.tool);
-                    setMessages((prev) => {
-                      const updated = [...prev];
-                      const last = updated[updated.length - 1];
-                      if (last.role === 'assistant') {
-                        last.toolCalls = [
-                          ...(last.toolCalls || []),
-                          { name: event.tool!, status: 'running' },
-                        ];
-                      }
-                      return updated;
-                    });
-                  }
-                  break;
-
-                case 'tool_end':
-                  setActiveTool(undefined);
-                  setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last.role === 'assistant' && last.toolCalls) {
-                      const tc = last.toolCalls[last.toolCalls.length - 1];
-                      if (tc) tc.status = 'done';
-                    }
-                    return updated;
-                  });
-                  break;
-
-                case 'agent_switch':
-                  if (event.agent) setActiveAgent(event.agent);
-                  break;
-
-                case 'done':
-                  if (event.response?.agentType) {
-                    setActiveAgent(event.response.agentType);
-                  }
-                  break;
-
-                case 'error':
-                  toast.error(event.error || t('errors.unknown'));
-                  break;
-              }
-            } catch {
-              // Non-JSON chunk – append as raw text
-              setMessages((prev) => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (last.role === 'assistant') {
-                  last.content += chunk;
-                }
-                return updated;
-              });
-            }
-          }
-        }
-
-        // Refresh quota after each request
-        queryClient.invalidateQueries({ queryKey: ['ai-agent', 'quota'] });
-        queryClient.invalidateQueries({ queryKey: ['ai-agent', 'usage'] });
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : t('errors.unknown'));
-        // Remove the empty assistant message on error
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (last?.role === 'assistant' && !last.content) {
-            return prev.slice(0, -1);
-          }
-          return prev;
-        });
-      } finally {
-        setIsStreaming(false);
-        setActiveTool(undefined);
-      }
-    },
-    [input, isStreaming, isAuthenticated, agentMode, conversationId, toast, t, queryClient]
-  );
-
   // ---- Quick action handler ------------------------------------------------
   const handleQuickAction = useCallback(
     (action: QuickAction) => {
@@ -497,17 +279,20 @@ export default function UncommonAppScreen() {
   );
 
   // ---- Agent label helper --------------------------------------------------
-  const getAgentLabel = (agent?: string): string => {
-    if (!agent) return '';
-    const map: Record<string, string> = {
-      orchestrator: t('uncommonApp.agents.auto'),
-      essay: t('uncommonApp.agents.essay'),
-      school: t('uncommonApp.agents.school'),
-      profile: t('uncommonApp.agents.profile'),
-      timeline: t('uncommonApp.agents.timeline'),
-    };
-    return map[agent] || agent;
-  };
+  const getAgentLabel = useCallback(
+    (agent?: string): string => {
+      if (!agent) return '';
+      const map: Record<string, string> = {
+        orchestrator: t('uncommonApp.agents.auto'),
+        essay: t('uncommonApp.agents.essay'),
+        school: t('uncommonApp.agents.school'),
+        profile: t('uncommonApp.agents.profile'),
+        timeline: t('uncommonApp.agents.timeline'),
+      };
+      return map[agent] || agent;
+    },
+    [t]
+  );
 
   // ---- Quota percentage ----------------------------------------------------
   const quotaPercent = quota ? Math.round((quota.used / quota.limit) * 100) : 0;
@@ -779,7 +564,7 @@ export default function UncommonAppScreen() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.quickActionsContainer}
       >
-        {quickActions.map((action, index) => (
+        {quickActions.map((action) => (
           <AnimatedCard
             key={action.agent}
             onPress={() => handleQuickAction(action)}
@@ -842,26 +627,34 @@ export default function UncommonAppScreen() {
 
   // ---- Message rendering ---------------------------------------------------
 
-  const renderToolIndicator = (toolName: string, status?: string) => (
-    <View style={[styles.toolIndicator, { backgroundColor: colors.muted }]}>
-      <Ionicons
-        name={status === 'done' ? 'checkmark-circle' : 'cog'}
-        size={14}
-        color={status === 'done' ? colors.success : colors.foregroundMuted}
-      />
-      <Text style={[styles.toolIndicatorText, { color: colors.foregroundMuted }]}>{toolName}</Text>
-      {status !== 'done' && <Loading size="small" />}
-    </View>
+  const renderToolIndicator = useCallback(
+    (toolName: string, status?: string) => (
+      <View style={[styles.toolIndicator, { backgroundColor: colors.muted }]}>
+        <Ionicons
+          name={status === 'done' ? 'checkmark-circle' : 'cog'}
+          size={14}
+          color={status === 'done' ? colors.success : colors.foregroundMuted}
+        />
+        <Text style={[styles.toolIndicatorText, { color: colors.foregroundMuted }]}>
+          {toolName}
+        </Text>
+        {status !== 'done' && <Loading size="small" />}
+      </View>
+    ),
+    [colors.foregroundMuted, colors.muted, colors.success]
   );
 
-  const renderAgentBadge = (agent: string) => (
-    <View style={styles.agentBadgeRow}>
-      <Badge variant="secondary">
-        <Text style={[styles.agentBadgeText, { color: colors.primary }]}>
-          {getAgentLabel(agent)}
-        </Text>
-      </Badge>
-    </View>
+  const renderAgentBadge = useCallback(
+    (agent: string) => (
+      <View style={styles.agentBadgeRow}>
+        <Badge variant="secondary">
+          <Text style={[styles.agentBadgeText, { color: colors.primary }]}>
+            {getAgentLabel(agent)}
+          </Text>
+        </Badge>
+      </View>
+    ),
+    [colors.primary, getAgentLabel]
   );
 
   const renderMessage = useCallback(
@@ -886,7 +679,10 @@ export default function UncommonAppScreen() {
                 styles.bubble,
                 isUser
                   ? { backgroundColor: colors.primary }
-                  : { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 },
+                  : [
+                      styles.assistantBubble,
+                      { backgroundColor: colors.card, borderColor: colors.border },
+                    ],
               ]}
             >
               {/* Agent switch badge */}
@@ -922,7 +718,17 @@ export default function UncommonAppScreen() {
         </Animated.View>
       );
     },
-    [messages.length, isStreaming, activeAgent, activeTool, colors, markdownStyles, t]
+    [
+      messages.length,
+      isStreaming,
+      activeAgent,
+      activeTool,
+      colors,
+      markdownStyles,
+      renderAgentBadge,
+      renderToolIndicator,
+      t,
+    ]
   );
 
   // ---- Chat view -----------------------------------------------------------
@@ -1029,366 +835,6 @@ export default function UncommonAppScreen() {
   );
 }
 
-function MetricTile({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value: string;
-  color: string;
-}) {
-  const colors = useColors();
-
-  return (
-    <View style={[styles.metricTile, { backgroundColor: colors.backgroundSecondary }]}>
-      <View style={[styles.metricIcon, { backgroundColor: withOpacity(color, 0.094) }]}>
-        <Ionicons name={icon} size={16} color={color} />
-      </View>
-      <Text style={[styles.metricValue, { color: colors.foreground, fontFamily: fontFamily.mono }]}>
-        {value}
-      </Text>
-      <Text style={[styles.metricLabel, { color: colors.foregroundMuted }]} numberOfLines={1}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 // ===========================================================================
 // Styles
 // ===========================================================================
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
-  // ---- Application dashboard ---------------------------------------------
-  dashboardCard: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-  },
-  dashboardHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  dashboardEyebrow: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-    marginBottom: spacing.xs,
-  },
-  dashboardTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  dashboardSummary: {
-    fontSize: fontSize.sm,
-    lineHeight: 20,
-    marginTop: spacing.md,
-  },
-  metricGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  metricTile: {
-    width: '48%',
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-  },
-  metricIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  metricValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  metricLabel: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-  dashboardActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  dashboardButton: {
-    flex: 1,
-    minWidth: 150,
-    minHeight: 44,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-  },
-  dashboardButtonSecondary: {
-    borderWidth: 1,
-  },
-  dashboardButtonText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  taskList: {
-    marginTop: spacing.lg,
-    gap: spacing.xs,
-  },
-  taskRow: {
-    minHeight: 42,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  taskText: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    lineHeight: 18,
-  },
-
-  // ---- Quota header --------------------------------------------------------
-  quotaCard: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-  },
-  quotaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  quotaLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  quotaTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  quotaBody: {
-    gap: spacing.xs,
-  },
-  quotaText: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-
-  // ---- Agent chips ---------------------------------------------------------
-  agentChipContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    gap: spacing.sm,
-  },
-  agentChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    gap: spacing.xs,
-  },
-  agentChipText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-
-  // ---- Quick actions -------------------------------------------------------
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  quickActionsContainer: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.md,
-    paddingBottom: spacing.sm,
-  },
-  quickActionCard: {
-    width: 160,
-  },
-  quickActionContent: {
-    alignItems: 'flex-start',
-    padding: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.lg,
-  },
-  quickActionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  quickActionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    marginBottom: spacing.xs,
-  },
-  quickActionDesc: {
-    fontSize: fontSize.xs,
-    lineHeight: 16,
-  },
-
-  // ---- Welcome section -----------------------------------------------------
-  welcomeScroll: {
-    flex: 1,
-  },
-  welcomeContent: {
-    paddingBottom: spacing.xl,
-  },
-  welcomeSection: {
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing['3xl'],
-  },
-  welcomeIcon: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.xl,
-  },
-  welcomeTitle: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  welcomeSubtitle: {
-    fontSize: fontSize.base,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-
-  // ---- Chat header (compact) -----------------------------------------------
-  chatHeader: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingBottom: spacing.xs,
-  },
-  chatHeaderTop: {},
-
-  // ---- Message list --------------------------------------------------------
-  messageList: {
-    padding: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  messageRow: {
-    flexDirection: 'row',
-    marginBottom: spacing.lg,
-  },
-  messageRowUser: {
-    justifyContent: 'flex-end',
-  },
-  messageRowAssistant: {
-    justifyContent: 'flex-start',
-  },
-  avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  bubble: {
-    maxWidth: '80%',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-  },
-  userText: {
-    fontSize: fontSize.base,
-    lineHeight: 22,
-  },
-
-  // ---- Tool indicator ------------------------------------------------------
-  toolIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    marginBottom: spacing.sm,
-    gap: spacing.xs,
-  },
-  toolIndicatorText: {
-    fontSize: fontSize.xs,
-    flex: 1,
-  },
-
-  // ---- Agent badge ---------------------------------------------------------
-  agentBadgeRow: {
-    marginBottom: spacing.sm,
-  },
-  agentBadgeText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-
-  // ---- Typing indicator ----------------------------------------------------
-  typingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  typingText: {
-    fontSize: fontSize.sm,
-  },
-
-  // ---- Input bar -----------------------------------------------------------
-  inputBar: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    borderRadius: borderRadius.xl,
-    borderWidth: 1,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.xs,
-    paddingVertical: spacing.xs,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: fontSize.base,
-    maxHeight: 120,
-    paddingVertical: spacing.sm,
-  },
-  sendBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  authHint: {
-    fontSize: fontSize.xs,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-});

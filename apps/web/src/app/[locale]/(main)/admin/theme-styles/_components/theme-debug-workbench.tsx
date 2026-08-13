@@ -444,7 +444,7 @@ function ThemeCertificationMatrix({
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-body">
               <ShieldCheck className="h-4 w-4 text-primary" />
               {t('themeMatrix')}
             </CardTitle>
@@ -596,7 +596,7 @@ function StyleLibraryCard({
                 {t(`certification.${certificationStatus}`)}
               </Badge>
             </div>
-            <CardTitle className="truncate text-base">{labels.palette}</CardTitle>
+            <CardTitle className="truncate text-body">{labels.palette}</CardTitle>
             <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
               {labels.paletteDescription}
             </p>
@@ -768,7 +768,7 @@ function CompareWorkbench({
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <Scale className="h-4 w-4 text-primary" />
             {t('compareWorkbench')}
           </CardTitle>
@@ -913,7 +913,7 @@ function DiagnosticsPanel({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-3">
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-body">
               <Code2 className="h-4 w-4 text-primary" />
               {t('diagnostics')}
             </CardTitle>
@@ -964,7 +964,7 @@ function DiagnosticsPanel({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t('localSnapshot')}</CardTitle>
+          <CardTitle className="text-body">{t('localSnapshot')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {snapshot ? (

@@ -2,6 +2,32 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import type { SchoolCommunityRatingSummary } from '@study-abroad/shared';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+
+const COMMUNITY_RATING_SELECT = {
+  id: true,
+  schoolId: true,
+  userId: true,
+  safetyRating: true,
+  lifeRating: true,
+  foodRating: true,
+  isHidden: true,
+  hiddenReason: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+const COMMUNITY_RATING_MODERATION_SELECT = {
+  id: true,
+  schoolId: true,
+  isHidden: true,
+  hiddenAt: true,
+  hiddenBy: true,
+  hiddenReason: true,
+} as const;
+const COMMUNITY_RATING_IDENTITY_SELECT = {
+  id: true,
+  schoolId: true,
+  isHidden: true,
+} as const;
 import { RedisService } from '../../common/redis/redis.service';
 import {
   AuditAction,
@@ -112,18 +138,7 @@ export class SchoolCommunityRatingService {
             userId,
           },
         },
-        select: {
-          id: true,
-          schoolId: true,
-          userId: true,
-          safetyRating: true,
-          lifeRating: true,
-          foodRating: true,
-          isHidden: true,
-          hiddenReason: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: COMMUNITY_RATING_SELECT,
       });
     } catch (error) {
       if (this.isMissingRatingTableError(error)) {
@@ -162,18 +177,7 @@ export class SchoolCommunityRatingService {
         lifeRating: dto.lifeRating,
         foodRating: dto.foodRating,
       },
-      select: {
-        id: true,
-        schoolId: true,
-        userId: true,
-        safetyRating: true,
-        lifeRating: true,
-        foodRating: true,
-        isHidden: true,
-        hiddenReason: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: COMMUNITY_RATING_SELECT,
     });
 
     await this.invalidateSchoolCaches(schoolId);
@@ -251,7 +255,7 @@ export class SchoolCommunityRatingService {
   async hideRating(ratingId: string, adminUserId: string, reason?: string) {
     const existing = await this.ratingModel.findUnique({
       where: { id: ratingId },
-      select: { id: true, schoolId: true, isHidden: true },
+      select: COMMUNITY_RATING_IDENTITY_SELECT,
     });
 
     if (!existing) {
@@ -261,14 +265,7 @@ export class SchoolCommunityRatingService {
     const rating = existing.isHidden
       ? await this.ratingModel.findUnique({
           where: { id: ratingId },
-          select: {
-            id: true,
-            schoolId: true,
-            isHidden: true,
-            hiddenAt: true,
-            hiddenBy: true,
-            hiddenReason: true,
-          },
+          select: COMMUNITY_RATING_MODERATION_SELECT,
         })
       : await this.ratingModel.update({
           where: { id: ratingId },
@@ -278,14 +275,7 @@ export class SchoolCommunityRatingService {
             hiddenBy: adminUserId,
             hiddenReason: reason?.trim() || null,
           },
-          select: {
-            id: true,
-            schoolId: true,
-            isHidden: true,
-            hiddenAt: true,
-            hiddenBy: true,
-            hiddenReason: true,
-          },
+          select: COMMUNITY_RATING_MODERATION_SELECT,
         });
 
     await this.invalidateSchoolCaches(existing.schoolId);
@@ -307,7 +297,7 @@ export class SchoolCommunityRatingService {
   async restoreRating(ratingId: string, adminUserId: string) {
     const existing = await this.ratingModel.findUnique({
       where: { id: ratingId },
-      select: { id: true, schoolId: true, isHidden: true },
+      select: COMMUNITY_RATING_IDENTITY_SELECT,
     });
 
     if (!existing) {
@@ -322,14 +312,7 @@ export class SchoolCommunityRatingService {
         hiddenBy: null,
         hiddenReason: null,
       },
-      select: {
-        id: true,
-        schoolId: true,
-        isHidden: true,
-        hiddenAt: true,
-        hiddenBy: true,
-        hiddenReason: true,
-      },
+      select: COMMUNITY_RATING_MODERATION_SELECT,
     });
 
     await this.invalidateSchoolCaches(existing.schoolId);

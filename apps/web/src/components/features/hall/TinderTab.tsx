@@ -113,7 +113,7 @@ export function TinderTab() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-emerald-500" />
-                <CardTitle className="text-base">{t('hall.calibration.title')}</CardTitle>
+                <CardTitle className="text-body">{t('hall.calibration.title')}</CardTitle>
               </div>
               <CardDescription>{t('hall.calibration.description')}</CardDescription>
             </CardHeader>

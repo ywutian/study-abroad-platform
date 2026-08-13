@@ -96,16 +96,14 @@ export function OverviewTab({ result }: OverviewTabProps) {
                   <div key={c.key} className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="mb-0.5 flex items-center justify-between">
-                        <span className="text-[11px] font-medium">
-                          {t(`criteriaKeys.${c.key}`)}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-2xs font-medium">{t(`criteriaKeys.${c.key}`)}</span>
+                        <span className="text-2xs text-muted-foreground">
                           {c.score}/{c.maxScore}
                         </span>
                       </div>
                       <Progress value={c.score * 10} className="h-1" />
                       {c.detail && (
-                        <p className="mt-0.5 text-[10px] text-muted-foreground">{c.detail}</p>
+                        <p className="mt-0.5 text-2xs text-muted-foreground">{c.detail}</p>
                       )}
                     </div>
                   </div>

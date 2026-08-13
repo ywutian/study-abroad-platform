@@ -70,8 +70,8 @@ export function Input({
             {
               color: colors.foreground,
             },
-            leftIcon ? { paddingLeft: 0 } : undefined,
-            rightIcon || isPasswordInput ? { paddingRight: 0 } : undefined,
+            leftIcon ? styles.noLeftPadding : undefined,
+            rightIcon || isPasswordInput ? styles.noRightPadding : undefined,
             style,
           ]}
           placeholderTextColor={colors.placeholder}
@@ -131,6 +131,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
+  noLeftPadding: { paddingLeft: 0 },
+  noRightPadding: { paddingRight: 0 },
   iconLeft: {
     paddingLeft: spacing.md,
   },

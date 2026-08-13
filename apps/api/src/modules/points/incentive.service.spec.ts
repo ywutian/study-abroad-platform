@@ -66,6 +66,31 @@ describe('PointsService', () => {
     });
   });
 
+  describe('product-facing reads', () => {
+    it('returns neutral values without reading the ledger while disabled', async () => {
+      mockPointsConfig.isEnabled.mockResolvedValue(false);
+
+      await expect(service.getVisibleUserPoints('user-1')).resolves.toBe(0);
+      await expect(service.getVisiblePointHistory('user-1')).resolves.toEqual(
+        [],
+      );
+      expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.pointHistory.findMany).not.toHaveBeenCalled();
+    });
+
+    it('returns stored balance and history while enabled', async () => {
+      const history = [{ id: 'h1', action: 'SUBMIT_CASE', points: 50 }];
+      mockPointsConfig.isEnabled.mockResolvedValue(true);
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 150 });
+      mockPrisma.pointHistory.findMany.mockResolvedValue(history);
+
+      await expect(service.getVisibleUserPoints('user-1')).resolves.toBe(150);
+      await expect(service.getVisiblePointHistory('user-1', 5)).resolves.toBe(
+        history,
+      );
+    });
+  });
+
   describe('adjustPoints', () => {
     it('should skip adjustment when points system is disabled', async () => {
       mockPointsConfig.isEnabled.mockResolvedValue(false);
@@ -232,6 +257,44 @@ describe('PointsService', () => {
 
       await expect(
         service.charge('user-1', PointAction.AI_ANALYSIS),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('refundHistoricalAdjustment', () => {
+    it('applies an existing liability while the points economy is disabled', async () => {
+      mockPointsConfig.isEnabled.mockResolvedValue(false);
+      mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.user.findUnique.mockResolvedValue({ points: 250 });
+
+      const result = await service.refundHistoricalAdjustment(
+        'user-1',
+        'REFUND_REDEMPTION',
+        200,
+      );
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          success: true,
+          newBalance: 250,
+          points: 200,
+        }),
+      );
+      expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { points: { increment: 200 } },
+      });
+      expect(mockPrisma.pointHistory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          action: 'REFUND_REDEMPTION',
+          points: 200,
+        }),
+      });
+    });
+
+    it('rejects an invalid historical refund amount', async () => {
+      await expect(
+        service.refundHistoricalAdjustment('user-1', 'REFUND_REDEMPTION', 0),
       ).rejects.toThrow(BadRequestException);
     });
   });

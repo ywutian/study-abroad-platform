@@ -6,37 +6,31 @@
  * 3. Active Sessions management
  * 4. Delete Account (destructive)
  */
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Switch as RNSwitch } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useMutation } from '@tanstack/react-query';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import * as LocalAuthentication from 'expo-local-authentication';
-import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { Stack, router } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, Switch as RNSwitch, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AnimatedButton, AnimatedCard, CardContent, Input } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  colors as themeColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-} from '@/utils/theme';
+import { apiClient } from '@/lib/api/client';
+import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
+import { useAuthStore } from '@/stores';
+import { spacing, useColors } from '@/utils/theme';
 import {
   authRoutes,
   getPasswordPolicyChecks,
   isPasswordCompliant,
   userRoutes,
 } from '@study-abroad/shared';
-import { apiClient } from '@/lib/api/client';
-import { useAuthStore } from '@/stores';
-import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
+import { styles } from './security.styles';
 
 type StrengthLevel = 'weak' | 'fair' | 'good' | 'strong';
 
@@ -449,103 +443,3 @@ export default function SecurityScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  section: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  cardInner: { padding: spacing.lg },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  headerTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold, flex: 1 },
-  strengthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    marginTop: -spacing.sm,
-  },
-  strengthBar: { flexDirection: 'row', flex: 1, gap: spacing.xs, marginRight: spacing.md },
-  strengthSeg: { flex: 1, height: 4, borderRadius: 2 },
-  strengthLabel: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-    minWidth: 48,
-    textAlign: 'right',
-  },
-  reqText: {
-    fontSize: fontSize.xs,
-    lineHeight: 18,
-    marginBottom: spacing.lg,
-    marginTop: -spacing.sm,
-  },
-  desc: { fontSize: fontSize.sm, lineHeight: 20, marginBottom: spacing.lg },
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-  },
-  toggleLabel: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    gap: spacing.sm,
-  },
-  bannerText: { fontSize: fontSize.sm, flex: 1 },
-  btn: { marginTop: spacing.xs },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: themeColors.light.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-    zIndex: 100,
-  },
-  dialog: {
-    width: '100%',
-    maxWidth: 340,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  dialogIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-  },
-  dialogTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  dialogMsg: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 20,
-  },
-  dialogInput: { width: '100%', marginBottom: spacing.md },
-  dialogActions: { flexDirection: 'row', gap: spacing.md, width: '100%' },
-  dialogBtn: { flex: 1 },
-});

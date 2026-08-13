@@ -69,7 +69,7 @@ export function EntitiesSection() {
           <div className="flex items-center gap-3">
             <Network className="h-5 w-5" />
             <div>
-              <CardTitle className="text-base">{t('entities')}</CardTitle>
+              <CardTitle className="text-body">{t('entities')}</CardTitle>
               <CardDescription className="mt-1">{t('entitiesDesc')}</CardDescription>
             </div>
           </div>

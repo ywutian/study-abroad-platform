@@ -20,6 +20,10 @@
 - 管理后台不显示“积分兑换”；
 - 直接访问 `/admin/points-redemptions` 只呈现带 `noindex` 的“功能未开放”状态，不挂载积分业务页面，也不请求积分 API；
 - Full UI 验证的是“入口隐藏、直达仅显示未开放状态且不请求积分 API”，不是积分业务页面。
+- 用户积分相关接口返回中性值：余额为 `0`，规则、流水、兑换目录和兑换历史为空；登录与当前用户对象不暴露历史余额。
+- 积分专属历史通知不展示，混合业务通知中的旧积分奖励文案会被去除，未读数只统计可见通知。
+
+关闭产品不等于删除账本。管理员仍须处理关闭前已扣分的待履约兑换：后台 API 可继续列出、履约或取消；取消时状态变更与原额退款在同一事务内完成，即使运行时开关为 `false`。不要直接改 `User.points` 或删除 `PointHistory`。
 
 ## 开放前置条件
 
@@ -32,6 +36,9 @@
 - 已验证所有收费型 AI 操作失败后会退款；
 - 已设置监控：负余额、重复记账、兑换积压、退款失败和单用户异常增长；
 - staging 已跑完 API 单元测试和 Full UI。
+- Web 和移动端均已重新实现可发现、可访问的用户积分中心与兑换入口；当前仓库没有这些用户界面，因此这是现阶段明确的开放阻断项；
+- 双语文案、桌面端和移动端均明确解释积分价值、扣减时机、退款、履约周期与申诉方式；
+- 如计划分批开放，已另行实现并验证按用户/租户的授权策略；现有 `points_enabled` 是平台全局开关，不具备灰度能力。
 
 ## 开放步骤
 
@@ -78,9 +85,15 @@ export const POINTS_ECONOMY_AVAILABLE = true;
 
 ```bash
 pnpm --filter @study-abroad/shared build
-pnpm --filter api test -- points-config.service points-redemption.service incentive.service
+pnpm --filter api exec jest --runInBand \
+  src/modules/points/points-config.service.spec.ts \
+  src/modules/points/points-redemption.service.spec.ts \
+  src/modules/points/incentive.service.spec.ts \
+  src/modules/notification/notification.service.spec.ts \
+  src/modules/user/user.controller.spec.ts
 pnpm --filter api build
 pnpm --filter web exec tsc --noEmit --pretty false
+pnpm --filter study-abroad-mobile exec tsc --noEmit --pretty false
 FULL_UI_ROUTE_FILTER='=/admin/points-redemptions' pnpm test:e2e:web:full-ui --reporter=line
 ```
 
@@ -98,9 +111,12 @@ FULL_UI_ROUTE_FILTER='=/admin/points-redemptions' pnpm test:e2e:web:full-ui --re
 - 履约、取消与退款可审计且幂等；
 - AI 调用失败会原额退款；
 - 中英文以及桌面端、移动端展示正确；
+- Web 与移动端的积分中心、兑换确认、成功、失败、退款与空状态均有真实后端验收，不只依赖 mock；
 - 管理端可查看待履约和已履约咨询。
 
-### 5. 小流量启用运行时开关
+### 5. 全局启用运行时开关
+
+`points_enabled` 是平台全局开关。执行下列请求会同时影响所有用户，不是小流量、灰度或 canary。若审批范围不是全量用户，停止发布，先实现独立的受众策略。
 
 完成审批后执行：
 
@@ -120,13 +136,31 @@ curl --fail-with-body \
 
 ```bash
 pnpm --filter @study-abroad/shared lint
-pnpm --filter api test -- points-config.service points-redemption.service incentive.service
+pnpm --filter api exec jest --runInBand \
+  src/modules/points/points-config.service.spec.ts \
+  src/modules/points/points-redemption.service.spec.ts \
+  src/modules/points/incentive.service.spec.ts \
+  src/modules/notification/notification.service.spec.ts \
+  src/modules/user/user.controller.spec.ts
 pnpm --filter api build
 pnpm --filter web exec tsc --noEmit --pretty false
+pnpm --filter study-abroad-mobile exec tsc --noEmit --pretty false
 FULL_UI_ROUTE_FILTER='=/admin/points-redemptions' pnpm test:e2e:web:full-ui --reporter=line
 ```
 
-还必须人工确认管理侧边栏只对授权管理员显示，普通用户不存在任何积分入口，并检查日志中没有 `Insufficient points`、重复记账或退款失败异常峰值。
+还必须人工确认管理侧边栏只对授权管理员显示，普通用户的积分入口只在双闸门开启后出现，并检查日志中没有 `Insufficient points`、重复记账或退款失败异常峰值。Full UI 路由必须同时覆盖 desktop 与 mobile。
+
+## 关闭期间处理历史兑换
+
+使用管理员令牌读取关闭前的待办，不要临时打开积分系统：
+
+```bash
+curl --fail-with-body \
+  "$POINTS_API_BASE/admin/points/redemptions/pending?limit=100" \
+  -H "Authorization: Bearer $POINTS_ADMIN_TOKEN"
+```
+
+确认已经交付后调用 `PATCH /admin/points/redemptions/:id/fulfil`；无法交付时调用 `PATCH /admin/points/redemptions/:id/cancel` 并提交 `{"reason":"..."}`。取消成功后同时核对兑换状态、用户真实历史余额和新增的 `REFUND_*` 账本记录。用户产品接口仍会保持中性，不会因此重新展示积分系统。
 
 ## 回滚
 
@@ -147,3 +181,9 @@ curl --fail-with-body \
 ### 完全撤回
 
 将 `POINTS_ECONOMY_AVAILABLE` 改回 `false` 并重新部署。Full UI 应重新验证入口隐藏以及直达时只呈现带 `noindex` 的“功能未开放”状态。对事故窗口内的账本执行对账和补偿；不得通过直接修改余额绕过 `PointsService`。
+
+完成操作后清理令牌：
+
+```bash
+unset POINTS_ADMIN_TOKEN
+```

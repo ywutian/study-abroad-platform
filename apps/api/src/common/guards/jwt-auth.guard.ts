@@ -34,7 +34,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (!result) return false;
 
     // After JWT is validated, check if user is banned
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user?: { id?: string } }>();
     const user = request.user;
     if (user?.id) {
       await this.checkBanStatus(user.id);

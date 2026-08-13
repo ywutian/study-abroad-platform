@@ -1,16 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { ProfileInput, SchoolInput } from './prediction.prompts';
+import type { SchoolMetrics } from '@study-abroad/shared/scoring';
 import {
   adjustInLogOdds,
-  logit,
-  getMajorSelectivityMultiplier,
   calculateSelectivityIndex,
+  getMajorSelectivityMultiplier,
 } from '@study-abroad/shared/scoring';
-import type {
-  ProfileMetrics,
-  SchoolMetrics,
-} from '@study-abroad/shared/scoring';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ProfileInput, SchoolInput } from './prediction.prompts';
 
 // ============================================
 // Hook Shift Interface
@@ -122,7 +118,7 @@ export class PredictionHookModifiersService {
    *
    * @returns Effective base rate as a probability (0-1 scale)
    */
-  async getBaseRate(
+  getBaseRate(
     school: SchoolMetrics & {
       edAcceptanceRate?: number;
       ed2AcceptanceRate?: number;
@@ -139,7 +135,7 @@ export class PredictionHookModifiersService {
      * Format: percentage (e.g. 6.45 means 6.45%) — same as school.acceptanceRate.
      */
     programAcceptanceRate?: number,
-  ): Promise<number> {
+  ): number {
     // Step 1: Select the most specific acceptance rate
     let baseRate: number;
 

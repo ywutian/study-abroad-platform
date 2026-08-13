@@ -1,132 +1,28 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   Button,
-  Input,
-  Modal,
-  Select,
-  Loading,
-  EmptyState,
   Card,
   CardContent,
+  EmptyState,
+  Input,
+  Loading,
+  Modal,
+  Select,
 } from '@/components/ui';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/Toast';
-import { profileRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
 import type { TestScore } from '@/types';
+import { fontFamily, useColors, withOpacity } from '@/utils/theme';
+import { profileRoutes } from '@study-abroad/shared';
+import { styles } from './scores.styles';
 
-const TEST_TYPES = ['SAT', 'ACT', 'TOEFL', 'IELTS', 'DUOLINGO', 'AP', 'IB', 'A_LEVEL', 'IGCSE'];
-
-const SUBJECT_MAP: Record<string, string[]> = {
-  AP: [
-    'Calculus AB',
-    'Calculus BC',
-    'Statistics',
-    'Physics C: Mechanics',
-    'Physics C: E&M',
-    'Physics 1',
-    'Physics 2',
-    'Chemistry',
-    'Biology',
-    'Computer Science A',
-    'CS Principles',
-    'English Language',
-    'English Literature',
-    'US History',
-    'World History',
-    'European History',
-    'Psychology',
-    'Macroeconomics',
-    'Microeconomics',
-    'Environmental Science',
-    'Chinese Language',
-    'Spanish Language',
-  ],
-  IB: [
-    'English A',
-    'Chinese A',
-    'English B',
-    'Chinese B',
-    'Spanish B',
-    'French B',
-    'History',
-    'Economics',
-    'Psychology',
-    'Geography',
-    'Business Management',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
-    'ESS',
-    'Mathematics AA',
-    'Mathematics AI',
-    'Visual Arts',
-    'Music',
-  ],
-  A_LEVEL: [
-    'Mathematics',
-    'Further Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
-    'Economics',
-    'Business',
-    'Accounting',
-    'History',
-    'Geography',
-    'Psychology',
-    'Sociology',
-    'English Literature',
-    'Chinese',
-    'French',
-    'Spanish',
-    'Art & Design',
-  ],
-  IGCSE: [
-    'Mathematics',
-    'Additional Math',
-    'English Language',
-    'English Literature',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Combined Science',
-    'Chinese (First Language)',
-    'Chinese (Second Language)',
-    'French',
-    'Spanish',
-    'History',
-    'Geography',
-    'Economics',
-    'Business Studies',
-    'Computer Science',
-    'Accounting',
-    'Art & Design',
-    'Music',
-  ],
-};
-
-const NEEDS_SUBJECT = ['AP', 'IB', 'A_LEVEL', 'IGCSE'];
-const NEEDS_SUBSCORES: Record<string, string[]> = {
-  SAT: ['readingEBRW', 'math'],
-  TOEFL: ['reading', 'listening', 'speaking', 'writing'],
-};
+import { NEEDS_SUBJECT, NEEDS_SUBSCORES, SUBJECT_MAP, TEST_TYPES } from './scores.constants';
 
 export default function ScoresScreen() {
   const { t } = useTranslation();
@@ -537,100 +433,3 @@ export default function ScoresScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingBottom: spacing['5xl'],
-  },
-  listContainer: {
-    gap: spacing.md,
-  },
-  scoreCard: {
-    marginBottom: 0,
-  },
-  scoreCardContent: {
-    padding: spacing.lg,
-  },
-  scoreHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
-  },
-  scoreTypeContainer: {
-    flex: 1,
-  },
-  scoreTypeBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.xs,
-  },
-  scoreTypeText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  scoreSubject: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  scoreDate: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-  scoreActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  actionButton: {
-    padding: spacing.xs,
-  },
-  scoreValue: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: spacing['2xl'],
-    right: spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  formContainer: {
-    paddingBottom: spacing.md,
-  },
-  subScoresContainer: {
-    gap: spacing.xs,
-  },
-  subScoresTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    marginTop: spacing.xs,
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  modalButton: {
-    flex: 1,
-  },
-});

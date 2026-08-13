@@ -1,15 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import {
+  BadRequestException,
   ConflictException,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
-import { PredictionWorkflowService } from './prediction-workflow.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Test, TestingModule } from '@nestjs/testing';
 import { RedisService } from '../../common/redis/redis.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import { PredictionWorkflowService } from './prediction-workflow.service';
 
 // ---------------------------------------------------------------------------
 // Factory helpers
@@ -99,7 +99,6 @@ describe('PredictionWorkflowService', () => {
   let prisma: PrismaService;
   let redis: RedisService;
   let auditLog: AuditLogService;
-  let historicalService: PredictionHistoricalService;
   let reportingService: PredictionReportingService;
 
   // Transaction mock: callback-style
@@ -266,7 +265,6 @@ describe('PredictionWorkflowService', () => {
     prisma = module.get(PrismaService);
     redis = module.get(RedisService);
     auditLog = module.get(AuditLogService);
-    historicalService = module.get(PredictionHistoricalService);
     reportingService = module.get(PredictionReportingService);
 
     // Reset tx mocks each test

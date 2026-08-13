@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PointsConfigService } from '../points/points-config.service';
 
 describe('DashboardService', () => {
   let service: DashboardService;
@@ -125,6 +126,10 @@ describe('DashboardService', () => {
             $queryRaw: jest.fn(),
             $transaction: jest.fn(),
           },
+        },
+        {
+          provide: PointsConfigService,
+          useValue: { isEnabled: jest.fn().mockResolvedValue(true) },
         },
       ],
     }).compile();
@@ -282,6 +287,18 @@ describe('DashboardService', () => {
       expect(result.user.role).toBe('USER');
       expect(result.user.points).toBe(0);
       expect(result.user.createdAt).toBe('');
+    });
+
+    it('does not expose balance or point history while the economy is dormant', async () => {
+      setupDefaultMocks();
+      const pointsConfig = (service as any).pointsConfig as PointsConfigService;
+      (pointsConfig.isEnabled as jest.Mock).mockResolvedValue(false);
+
+      const result = await service.getDashboardSummary(userId);
+
+      expect(result.user.points).toBe(0);
+      expect(result.recentActivity).toEqual([]);
+      expect(prisma.pointHistory.findMany).not.toHaveBeenCalled();
     });
 
     it('should return 0 completeness and all gaps when no profile exists', async () => {

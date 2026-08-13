@@ -1,4 +1,4 @@
-type RankingSource = 'US_NEWS' | string;
+type RankingSource = string;
 
 export interface CatalogRanking {
   source: RankingSource;

@@ -16,19 +16,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { StorageService } from '../../../common/storage/storage.service';
-import { Role } from '@prisma/client';
-import { CurrentUser, Roles } from '../../../common/decorators';
 import type { CurrentUserPayload } from '../../../common/decorators';
+import { CurrentUser } from '../../../common/decorators';
 import {
   ThrottleRelaxed,
   ThrottleSensitive,
 } from '../../../common/decorators/throttle.decorator';
-import {
-  ListMyOutcomesDto,
-  SubmitOutcomeDto,
-  VerifyOutcomeDto,
-} from './dto/submit-outcome.dto';
+import { StorageService } from '../../../common/storage/storage.service';
+import { ListMyOutcomesDto, SubmitOutcomeDto } from './dto/submit-outcome.dto';
 import { OutcomeService } from './outcome.service';
 
 @ApiTags('Prediction Outcomes')

@@ -11,19 +11,6 @@ import { UrbanInstituteDataService } from './urban-institute-data.service';
 const COVERAGE_MONITOR_LOCK_KEY = 'cron:school:coverage-monitor';
 const STALE_REFRESH_LOCK_KEY = 'cron:school:stale-refresh';
 
-/**
- * Batch size for the weekly bulk refresh.
- *
- * ponytail: a fixed number, because neither `syncSchoolsFromScorecard` nor
- * `syncAll` can be pointed at specific schools — both walk their API from the
- * top. This used to pass `staleScorecardSchools.size`, which read as "refresh
- * the stale ones" but only ever set how many arbitrary schools to pull; a run
- * that found 3 stale schools refreshed the API's first 3, which are almost
- * certainly not those 3. Upgrade path: teach the sync services to accept a
- * school-id list, then pass the stale sets themselves.
- */
-const BULK_REFRESH_BATCH = 500;
-
 @Injectable()
 export class SchoolProvenanceScheduler {
   private readonly logger = new Logger(SchoolProvenanceScheduler.name);
@@ -124,9 +111,7 @@ export class SchoolProvenanceScheduler {
       `Detected ${staleOfficialFields.length} stale official fields across ${staleSchoolIds.size} schools`,
     );
 
-    // Log the ids. The sync below cannot target them (see BULK_REFRESH_BATCH),
-    // so this is the only record of WHICH schools were stale — without it the
-    // job reports a count nobody can act on.
+    // Keep the ids in logs so an operator can reconcile the targeted refresh.
     this.logger.warn(
       `Stale scorecard schools: ${[...staleScorecardSchools].join(', ') || 'none'}`,
     );
@@ -140,12 +125,12 @@ export class SchoolProvenanceScheduler {
     // unhandled rejection. One dead source must not stop the other.
     if (staleScorecardSchools.size > 0) {
       this.logger.log(
-        `Bulk-refreshing College Scorecard (untargeted, batch ${BULK_REFRESH_BATCH})`,
+        `Refreshing ${staleScorecardSchools.size} stale College Scorecard schools`,
       );
       try {
-        await this.schoolDataService.syncSchoolsFromScorecard(
-          BULK_REFRESH_BATCH,
-        );
+        await this.schoolDataService.syncSchoolsFromScorecardBySchoolIds([
+          ...staleScorecardSchools,
+        ]);
       } catch (error) {
         this.logger.error(
           `College Scorecard refresh failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -155,10 +140,12 @@ export class SchoolProvenanceScheduler {
 
     if (staleIpedsSchools.size > 0) {
       this.logger.log(
-        `Bulk-refreshing Urban Institute/IPEDS (untargeted, batch ${BULK_REFRESH_BATCH})`,
+        `Refreshing ${staleIpedsSchools.size} stale Urban Institute/IPEDS schools`,
       );
       try {
-        await this.urbanInstituteService.syncAll(undefined, BULK_REFRESH_BATCH);
+        await this.urbanInstituteService.syncSchoolsByIds([
+          ...staleIpedsSchools,
+        ]);
       } catch (error) {
         this.logger.error(
           `Urban Institute/IPEDS refresh failed: ${error instanceof Error ? error.message : String(error)}`,

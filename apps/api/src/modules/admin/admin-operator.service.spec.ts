@@ -1,11 +1,10 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminOperatorService } from './admin-operator.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { AdminOperatorService } from './admin-operator.service';
 
 describe('AdminOperatorService', () => {
   let service: AdminOperatorService;
-  let prisma: PrismaService;
 
   const mockPrisma = {
     operatorInvite: {
@@ -33,7 +32,6 @@ describe('AdminOperatorService', () => {
     }).compile();
 
     service = module.get<AdminOperatorService>(AdminOperatorService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

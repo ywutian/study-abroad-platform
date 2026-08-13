@@ -186,7 +186,7 @@ export function DistillationTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t('chinaGates.title')}</CardTitle>
+          <CardTitle className="text-body">{t('chinaGates.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -222,7 +222,7 @@ export function DistillationTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t('teacherStats.title')}</CardTitle>
+          <CardTitle className="text-body">{t('teacherStats.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -260,7 +260,7 @@ export function DistillationTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t('schools.title')}</CardTitle>
+          <CardTitle className="text-body">{t('schools.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>

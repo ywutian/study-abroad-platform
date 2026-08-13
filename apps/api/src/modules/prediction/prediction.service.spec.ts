@@ -359,7 +359,7 @@ describe('PredictionService counselor primary', () => {
       }) as any;
 
     const earlyTip = (school: Record<string, unknown>, profile: any) =>
-      (service as any).buildEarlyRoundSuggestion(school, profile, '', false) as
+      (service as any).buildEarlyRoundSuggestion(school, profile, false) as
         string | null;
 
     const callSuggest = (
@@ -394,7 +394,7 @@ describe('PredictionService counselor primary', () => {
       );
 
       // Was 2 before: essay + early round.
-      expect(out.length).toBeGreaterThan(2);
+      expect(out.length).toBeGreaterThanOrEqual(4);
       // Both catalogue halves must surface, not just summer-inside-early-round.
       expect(out.some((s) => /summer program/i.test(s))).toBe(true);
       expect(out.some((s) => /competition/i.test(s))).toBe(true);

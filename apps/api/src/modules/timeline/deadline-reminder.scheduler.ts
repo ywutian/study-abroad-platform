@@ -10,10 +10,10 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
-import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../common/redis/cron-lock.util';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   NotificationService,
   NotificationType,
@@ -36,7 +36,7 @@ export class DeadlineReminderScheduler {
     // Single-flight across replicas: Cloud Run fires this cron on every instance
     // at 08:00, so without a lock the scan runs N times. (See runWithCronLock for
     // the TTL-as-window / fail-closed semantics.)
-    const ran = await runWithCronLock(
+    const _ran = await runWithCronLock(
       this.redis,
       DEADLINE_CRON_LOCK_KEY,
       REDIS_TTL.DEADLINE_CRON_LOCK,

@@ -4,12 +4,6 @@
 
 import React, { useEffect } from 'react';
 import { Text, TextStyle, StyleProp } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
 import { useColors, fontSize, fontWeight } from '@/utils/theme';
 
 interface AnimatedCounterProps {
@@ -31,20 +25,24 @@ export function AnimatedCounter({
 }: AnimatedCounterProps) {
   const colors = useColors();
   const [displayValue, setDisplayValue] = React.useState(0);
+  const displayValueRef = React.useRef(0);
 
   // 由于 Reanimated 的限制，我们使用 useEffect 来更新显示值
   useEffect(() => {
     const startTime = Date.now();
-    const startValue = displayValue;
+    const startValue = displayValueRef.current;
 
     const interval = setInterval(() => {
       const progress = Math.min(1, (Date.now() - startTime) / duration);
       const easedProgress = 1 - Math.pow(1 - progress, 3); // cubic ease out
       const newValue = startValue + (value - startValue) * easedProgress;
-      setDisplayValue(Math.round(newValue * Math.pow(10, decimals)) / Math.pow(10, decimals));
+      const roundedValue = Math.round(newValue * Math.pow(10, decimals)) / Math.pow(10, decimals);
+      displayValueRef.current = roundedValue;
+      setDisplayValue(roundedValue);
 
       if (progress >= 1) {
         clearInterval(interval);
+        displayValueRef.current = value;
         setDisplayValue(value);
       }
     }, 16);

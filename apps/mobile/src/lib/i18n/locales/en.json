@@ -1750,7 +1750,7 @@
       "generateAnalysis": "Generate strategy",
       "analyzing": "Analyzing...",
       "generateRecommendations": "Generate recs",
-      "recommendationBlocked": "Your profile or points are not ready; open Recommendations to fix it.",
+      "recommendationBlocked": "Your profile is not ready; open Recommendations to fix it.",
       "analysisGenerated": "Application strategy generated",
       "analysisFailed": "Failed to generate application strategy. Please try again.",
       "tasks": {

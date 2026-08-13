@@ -4,7 +4,10 @@ import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { EssayStatus, EssayType, SourceType } from '../../common/types/enums';
 import { OfficialScrapeStrategy } from './strategies/official.strategy';
 import { CollegeVineScrapeStrategy } from './strategies/collegevine.strategy';
-import { LlmScrapeStrategy } from './strategies/llm.strategy';
+import {
+  LlmScrapeStrategy,
+  type ScrapeConfig,
+} from './strategies/llm.strategy';
 import { CommonAppScrapeStrategy } from './strategies/commonapp.strategy';
 import { AiValidatorService } from './ai-validator.service';
 import { NotificationService } from '../notification/notification.service';
@@ -32,6 +35,30 @@ export interface TestScrapeResult {
     }
   >;
   rawContentPreview: string;
+}
+
+function normalizeScrapeConfig(value: unknown): ScrapeConfig | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+  const config = value as Record<string, unknown>;
+  return {
+    cssSelectors: Array.isArray(config.cssSelectors)
+      ? config.cssSelectors.filter(
+          (item): item is string => typeof item === 'string',
+        )
+      : undefined,
+    removeSelectors: Array.isArray(config.removeSelectors)
+      ? config.removeSelectors.filter(
+          (item): item is string => typeof item === 'string',
+        )
+      : undefined,
+    llmHint: typeof config.llmHint === 'string' ? config.llmHint : undefined,
+    maxContentLength:
+      typeof config.maxContentLength === 'number'
+        ? config.maxContentLength
+        : undefined,
+  };
 }
 
 @Injectable()
@@ -245,7 +272,7 @@ export class EssayScraperService {
 
     // 尝试 LLM 策略
     if (source) {
-      const config = (source.scrapeConfig as any) || undefined;
+      const config = normalizeScrapeConfig(source.scrapeConfig);
       scrapeResult = await this.llmStrategy.scrapeWithConfig(
         schoolName,
         year,

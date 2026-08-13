@@ -63,7 +63,7 @@ function pdfToText(p: string) {
 }
 
 async function callLlm(schoolName: string, sourceUrl: string, text: string) {
-  const { callLlm } = await import('./lib/llm-call');
+  const { callLlm } = await import('./lib/llm-call.js');
   const userPrompt = `From the Common Data Set PDF text below, extract ONLY the C1 residency breakdown for ${schoolName}.
 
 You are looking for a small section with rows like:

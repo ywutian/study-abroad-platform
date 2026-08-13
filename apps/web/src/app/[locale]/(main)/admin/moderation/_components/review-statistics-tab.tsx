@@ -139,7 +139,7 @@ export function ReviewStatisticsTab() {
       {/* Throughput trend (simple bar chart) */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="text-body-sm font-medium flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             {t('throughputTrend')}
           </CardTitle>
@@ -162,7 +162,7 @@ export function ReviewStatisticsTab() {
       {/* Per-reviewer table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="text-body-sm font-medium flex items-center gap-2">
             <Users className="h-4 w-4" />
             {t('reviewer')}
           </CardTitle>

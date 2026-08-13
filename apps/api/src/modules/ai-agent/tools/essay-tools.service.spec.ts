@@ -144,8 +144,8 @@ describe('EssayToolsService', () => {
     );
 
     expect(result.count).toBe(1);
-    expect(result.prompts[0]).not.toHaveProperty('sources');
-    expect(result.prompts[0].sourceSummary).toEqual(
+    expect(result.prompts?.[0]).not.toHaveProperty('sources');
+    expect(result.prompts?.[0]?.sourceSummary).toEqual(
       expect.objectContaining({
         hasSourceEvidence: true,
         sourceUrls: ['https://mit.edu/apply/essays'],

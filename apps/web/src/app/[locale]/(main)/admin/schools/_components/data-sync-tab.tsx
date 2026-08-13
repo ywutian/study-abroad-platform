@@ -114,7 +114,7 @@ export function DataSyncTab() {
       {(jobs ?? []).map((job) => (
         <Card key={job.id}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               {(() => {
                 const Icon = getJobIcon(job.id);
                 return <Icon className="h-4 w-4" />;

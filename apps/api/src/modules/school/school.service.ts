@@ -11,7 +11,6 @@ import type {
   TrustTier,
 } from '@study-abroad/shared';
 import {
-  toLegacyTestOptionalFlag,
   normalizeSchoolProvenance,
   toSchoolFieldSource,
 } from '@study-abroad/shared/utils';
@@ -31,7 +30,6 @@ import {
   createPaginatedResponse,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
-import { clampPercentRate } from '../../common/utils/percent.util';
 import { toPublicSchoolMediaAsset } from '../../common/utils/school-public-media.util';
 import { createHash } from 'crypto';
 import { SchoolCommunityRatingService } from './school-community-rating.service';
@@ -81,6 +79,50 @@ interface LocalCacheEntry<T> {
   expiresAt: number;
 }
 
+export interface SchoolDataQualityReport {
+  summary: {
+    total: number;
+    fullyComplete: number;
+    missingCritical: number;
+    averageCompleteness: number;
+  };
+  fieldCoverage: Record<
+    string,
+    { filled: number; missing: number; percent: number }
+  >;
+  tierDistribution: Record<string, { count: number; percent: number }>;
+  predictionEligibleCoverage: Record<
+    string,
+    { eligible: number; total: number; percent: number }
+  >;
+  top200OfficialCoverage: {
+    schools: number;
+    covered: number;
+    totalSlots: number;
+    percent: number;
+    threshold: number;
+  };
+  staleFields: Array<{
+    schoolId: string;
+    schoolName: string;
+    schoolNameZh?: string;
+    field: string;
+    tier: TrustTier;
+    source: string;
+    fetchedAt: string;
+    staleness: string;
+    usNewsRank?: number;
+  }>;
+  worstSchools: Array<{
+    id: string;
+    name: string;
+    nameZh: string | null;
+    usNewsRank: number | null;
+    missingFields: string[];
+    completeness: number;
+  }>;
+}
+
 /** UC campuses (9) for one-click prediction */
 const UC_SCHOOL_NAMES = [
   'University of California, Berkeley',
@@ -94,10 +136,12 @@ const UC_SCHOOL_NAMES = [
   'University of California, Merced',
 ];
 
-type SchoolWithPresentation<T> = T & {
-  fieldSources: SchoolFieldSources;
-  communityRatingSummary: SchoolCommunityRatingSummary;
-};
+import {
+  buildFieldSources,
+  createEmptyCommunitySummary,
+  enrichSchoolPresentation,
+  type SchoolWithPresentation,
+} from './school-presentation.helper';
 
 type SchoolWithAliases = Pick<
   School,
@@ -117,10 +161,6 @@ interface RankingContext {
   list: RankingListSelection;
   rankMin?: number;
   rankMax?: number;
-}
-
-function normalizeRankingSourceForDisplay(source: unknown): unknown {
-  return source === 'US_NEWS' ? 'US News' : source;
 }
 
 const PUBLIC_SCHOOL_MEDIA_SOURCE_TYPES: SchoolMediaSourceType[] = [
@@ -222,7 +262,7 @@ interface SchoolFilters {
   hasEarlyDecision?: boolean;
   sortBy?: 'rank' | 'name' | 'acceptance' | 'salary' | 'weighted';
   rankingSource?: 'US_NEWS';
-  rankingList?: RankingListSelection | string;
+  rankingList?: string;
   weightRank?: number;
   weightAcceptance?: number;
   weightTuition?: number;
@@ -515,7 +555,7 @@ export class SchoolService {
     const enrichedSchools = schools.map((school) =>
       this.enrichSchool(
         school,
-        communitySummaries[school.id] ?? this.createEmptyCommunitySummary(),
+        communitySummaries[school.id] ?? createEmptyCommunitySummary(),
       ),
     );
 
@@ -1093,76 +1133,28 @@ export class SchoolService {
     return score;
   }
 
-  private createEmptyCommunitySummary(): SchoolCommunityRatingSummary {
-    return {
-      count: 0,
-      safetyAvg: null,
-      lifeAvg: null,
-      foodAvg: null,
-      isPublic: false,
-    };
-  }
-
   private buildFieldSources<T extends Record<string, unknown>>(
     school: T,
   ): SchoolFieldSources {
-    const provenance = buildNormalizedSchoolProvenance(school);
-
-    return Object.fromEntries(
-      Object.entries(provenance)
-        .filter(([, entry]) => Boolean(entry))
-        .map(([field, entry]) => [field, toSchoolFieldSource(entry!)]),
-    );
+    return buildFieldSources(school);
   }
 
-  private enrichSchool<T extends Record<string, any>>(
+  private enrichSchool<
+    T extends Record<string, unknown> & {
+      mediaAssets?: PublicSchoolMediaAssetRow[] | null;
+      acceptanceRate?: unknown;
+      graduationRate?: unknown;
+      testOptional?: boolean | null;
+    },
+  >(
     school: T,
     communityRatingSummary: SchoolCommunityRatingSummary,
   ): SchoolWithPresentation<T> {
-    const { mediaAssets, ...schoolBase } = school;
-    const media = buildPublicSchoolMedia(mediaAssets);
-    const metadata = {
-      ...toRecord(schoolBase.metadata),
-      provenance: buildNormalizedSchoolProvenance(schoolBase),
-    };
-    const fieldSources = this.buildFieldSources({
-      ...schoolBase,
-      metadata,
-    });
-
-    const testingPolicy =
-      (
-        schoolBase as {
-          testingPolicy?: SchoolTestingPolicy | null;
-        }
-      ).testingPolicy ?? 'UNKNOWN';
-    const nextSchool = {
-      ...schoolBase,
-      rankings: Array.isArray(schoolBase.rankings)
-        ? schoolBase.rankings.map((ranking: any) => ({
-            ...ranking,
-            source: normalizeRankingSourceForDisplay(ranking.source),
-          }))
-        : schoolBase.rankings,
-      acceptanceRate:
-        clampPercentRate(schoolBase.acceptanceRate) ??
-        schoolBase.acceptanceRate,
-      gpaDistribution: schoolBase.gpaDistribution ?? null,
-      programRates: schoolBase.programRates ?? null,
-      graduationRate:
-        clampPercentRate(schoolBase.graduationRate) ??
-        schoolBase.graduationRate,
-      testingPolicy,
-      testOptional: toLegacyTestOptionalFlag({
-        testingPolicy,
-        testOptional: schoolBase.testOptional,
-      }),
-      media,
-      metadata,
-      fieldSources,
+    return enrichSchoolPresentation(
+      school,
       communityRatingSummary,
-    } as unknown as SchoolWithPresentation<T>;
-    return nextSchool;
+      buildPublicSchoolMedia,
+    );
   }
 
   // For calculating custom rankings
@@ -1179,10 +1171,13 @@ export class SchoolService {
   /**
    * 数据质量报告 — 分析学校库各字段的完整度
    */
-  async getDataQualityReport(options?: { bypassCache?: boolean }) {
+  async getDataQualityReport(options?: {
+    bypassCache?: boolean;
+  }): Promise<SchoolDataQualityReport> {
     const cacheKey = 'school:data-quality';
     if (!options?.bypassCache) {
-      const cached = await this.redis.getJSON<any>(cacheKey);
+      const cached =
+        await this.redis.getJSON<SchoolDataQualityReport>(cacheKey);
       if (cached) return cached;
     }
 
@@ -1358,9 +1353,9 @@ export class SchoolService {
     const fullyComplete = schoolCompleteness.filter(
       (s) => s.missingFields.length === 0,
     ).length;
-    const criticalFields = ['acceptanceRate', 'tuition', 'satAvg'];
+    const criticalFields = ['acceptanceRate', 'tuition', 'satAvg'] as const;
     const missingCritical = allSchools.filter((s) =>
-      criticalFields.some((f) => (s as any)[f] == null),
+      criticalFields.some((field) => s[field] == null),
     ).length;
 
     // Worst schools — sorted by most missing fields, then by rank
@@ -1413,7 +1408,7 @@ export class SchoolService {
       ]),
     );
 
-    const report = {
+    const report: SchoolDataQualityReport = {
       summary: {
         total: allSchools.length,
         fullyComplete,

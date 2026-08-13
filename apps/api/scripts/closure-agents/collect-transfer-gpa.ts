@@ -748,7 +748,7 @@ async function main() {
         const provenanceEntry =
           t.kind === 'transferAcceptanceRate'
             ? {
-                value: (t as TransferTarget).value,
+                value: t.value,
                 sourceUrl: t.sourceUrl,
                 fetchedAt: FETCHED_AT,
                 verifiedBy: VERIFIED_BY,
@@ -765,24 +765,24 @@ async function main() {
                 note: t.note,
               };
 
-        const mergedMetadata: Prisma.InputJsonValue = {
+        const mergedMetadata = {
           ...existingMetadata,
           provenance: {
             ...existingProvenance,
             [t.kind]: provenanceEntry,
           },
-        };
+        } as Prisma.InputJsonObject;
 
         if (t.kind === 'transferAcceptanceRate') {
           await prisma.$executeRaw`
             UPDATE "School"
-            SET "transferAcceptanceRate" = ${(t as TransferTarget).value},
+            SET "transferAcceptanceRate" = ${t.value},
                 metadata = ${JSON.stringify(mergedMetadata)}::jsonb
             WHERE id = ${t.schoolId}`;
         } else {
           await prisma.$executeRaw`
             UPDATE "School"
-            SET "gpaDistribution" = ${JSON.stringify((t as GpaTarget).bands)}::jsonb,
+            SET "gpaDistribution" = ${JSON.stringify(t.bands)}::jsonb,
                 metadata = ${JSON.stringify(mergedMetadata)}::jsonb
             WHERE id = ${t.schoolId}`;
         }
@@ -813,8 +813,8 @@ async function main() {
     if (status === 'CLOSED') {
       const display =
         t.kind === 'transferAcceptanceRate'
-          ? `${(t as TransferTarget).value}%`
-          : JSON.stringify((t as GpaTarget).bands);
+          ? `${t.value}%`
+          : JSON.stringify(t.bands);
       console.log(`  CLOSED       [${t.kind}] ${t.name} => ${display}`);
     } else if (status === 'UNAVAILABLE') {
       console.log(`  UNAVAILABLE  [${t.kind}] ${t.name}`);

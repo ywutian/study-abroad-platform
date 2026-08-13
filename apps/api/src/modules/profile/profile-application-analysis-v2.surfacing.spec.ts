@@ -14,20 +14,21 @@ import {
 
 // Minimal deterministic "floor" — the generic template the old served output was
 // stuck on (only the fields the merge reads are populated).
+const floorAssessment = {
+  summary:
+    'This estimate leans on broad school-level data because activities are incomplete (low support).',
+  whyThisIsHard: ['floor: high selectivity'],
+  compensatingStrengths: ['floor: SAT in band'],
+  topGaps: ['floor: complete your profile'],
+  nextActions: ['floor: add scores'],
+  historicalSignals: [],
+  hardStopRisks: [],
+};
 const floorSchool = {
   evidenceIds: ['ev-1', 'ev-2'],
   unknowns: ['floor: testing policy unresolved'],
   prediction: { probabilityLow: 0.02, probabilityHigh: 0.08 },
-  assessment: {
-    summary:
-      'This estimate leans on broad school-level data because activities are incomplete (low support).',
-    whyThisIsHard: ['floor: high selectivity'],
-    compensatingStrengths: ['floor: SAT in band'],
-    topGaps: ['floor: complete your profile'],
-    nextActions: ['floor: add scores'],
-    historicalSignals: [],
-    hardStopRisks: [],
-  },
+  assessment: floorAssessment,
 } as never;
 
 const richLlmSchool = {
@@ -70,10 +71,8 @@ describe('normalizeSchoolAnalysis — LLM surfaces over the deterministic floor'
 
   it('falls back to the floor when the LLM is sparse/empty (degradation safety net)', () => {
     const r = normalizeSchoolAnalysis(floorSchool, {});
-    expect(r.assessment.summary).toBe(floorSchool['assessment'].summary);
-    expect(r.assessment.whyThisIsHard).toEqual(
-      floorSchool['assessment'].whyThisIsHard,
-    );
+    expect(r.assessment.summary).toBe(floorAssessment.summary);
+    expect(r.assessment.whyThisIsHard).toEqual(floorAssessment.whyThisIsHard);
   });
 });
 

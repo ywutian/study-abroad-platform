@@ -73,8 +73,9 @@ export class AiAgentGateway
    */
   handleConnection(client: AuthenticatedSocket) {
     try {
+      const authToken: unknown = client.handshake.auth.token;
       const token =
-        client.handshake.auth.token ||
+        (typeof authToken === 'string' ? authToken : undefined) ??
         client.handshake.headers.authorization?.split(' ')[1];
 
       if (!token) {
@@ -83,10 +84,14 @@ export class AiAgentGateway
         return;
       }
 
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<{ sub?: string }>(token, {
         secret: this.configService.get('JWT_SECRET'),
       });
 
+      if (!payload.sub) {
+        client.disconnect();
+        return;
+      }
       client.userId = payload.sub;
       const userId = client.userId;
 

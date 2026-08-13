@@ -1,12 +1,8 @@
 /**
  * LLMService 单元测试
  */
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { LLMService } from './llm.service';
-import { ResilienceService } from './resilience.service';
-import { TokenTrackerService } from './token-tracker.service';
-import { Message } from '../types';
+import { Test, TestingModule } from '@nestjs/testing';
 import {
   ILLMProvider,
   LLM_PROVIDER_TOKEN,
@@ -14,9 +10,13 @@ import {
 import {
   LLMChatRequest,
   LLMChatResponse,
-  LLMProviderError,
   LLMErrorCode,
+  LLMProviderError,
 } from '../providers/llm-provider.types';
+import { Message } from '../types';
+import { LLMService } from './llm.service';
+import { ResilienceService } from './resilience.service';
+import { TokenTrackerService } from './token-tracker.service';
 
 // 辅助函数：创建测试用 Message
 function createMessage(
@@ -488,7 +488,7 @@ describe('LLMService', () => {
         }),
       };
 
-      const moduleWithGuard = await Test.createTestingModule({
+      const _moduleWithGuard = await Test.createTestingModule({
         providers: [
           LLMService,
           { provide: ConfigService, useValue: mockConfigService },

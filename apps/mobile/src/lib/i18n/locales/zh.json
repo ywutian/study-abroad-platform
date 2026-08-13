@@ -1750,7 +1750,7 @@
       "generateAnalysis": "生成策略",
       "analyzing": "分析中...",
       "generateRecommendations": "生成推荐",
-      "recommendationBlocked": "档案或积分暂不满足推荐条件，请先进入推荐页处理。",
+      "recommendationBlocked": "档案信息暂不满足推荐条件，请先进入推荐页处理。",
       "analysisGenerated": "申请策略已生成",
       "analysisFailed": "申请策略生成失败，请重试",
       "tasks": {

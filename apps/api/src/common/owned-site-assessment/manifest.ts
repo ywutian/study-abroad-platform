@@ -1,13 +1,11 @@
-import { z } from 'zod';
 import type {
   OwnedSiteAssessmentManifest,
   OwnedSiteAssessmentTarget,
-  OwnedSiteDefenseBacklogItem,
-  OwnedSiteEnvironment,
   OwnedSiteJourneyDefinition,
   OwnedSitePrivilegeTransition,
   OwnedSiteRole,
 } from '@study-abroad/shared';
+import { z } from 'zod';
 
 const ownedSiteKeySchema = z.enum([
   'collegevine',
@@ -133,7 +131,7 @@ function resolveTemplatesDeep<T>(
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) =>
+    return (value as unknown[]).map((item) =>
       resolveTemplatesDeep(item, env, unresolvedEnvVars),
     ) as T;
   }

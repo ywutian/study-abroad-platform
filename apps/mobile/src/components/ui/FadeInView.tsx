@@ -4,7 +4,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  withSpring,
   withDelay,
   withRepeat,
   Easing,
@@ -123,7 +122,7 @@ export function CustomAnimatedView({
         easing: Easing.out(Easing.cubic),
       })
     );
-  }, []);
+  }, [delay, duration, progress, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: progress.value * (1 - opacity) + opacity,
@@ -151,7 +150,7 @@ export function PulseView({
   children,
   style,
   duration = 1000,
-  minScale = 0.97,
+  minScale: _minScale = 0.97,
   maxScale = 1.03,
 }: PulseViewProps) {
   const reducedMotion = useReducedMotion();
@@ -160,7 +159,7 @@ export function PulseView({
   useEffect(() => {
     if (reducedMotion) return;
     scale.value = withRepeat(withTiming(maxScale, { duration: duration / 2 }), -1, true);
-  }, []);
+  }, [duration, maxScale, reducedMotion, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

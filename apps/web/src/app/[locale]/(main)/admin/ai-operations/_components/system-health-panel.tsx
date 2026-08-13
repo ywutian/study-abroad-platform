@@ -100,7 +100,7 @@ export function SystemHealthPanel() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-body-sm font-medium text-muted-foreground">
               {t('health.status')}
             </CardTitle>
           </CardHeader>
@@ -118,7 +118,7 @@ export function SystemHealthPanel() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-body-sm font-medium text-muted-foreground">
               {t('health.uptime')}
             </CardTitle>
           </CardHeader>

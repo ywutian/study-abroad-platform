@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -34,6 +34,7 @@ import { apiClient } from '@/lib/api';
 
 import { MetricCard, PreviewCard } from './shared-cards';
 import { EXPERIMENT_CAPABILITIES, formatDateTime, humanizeEnum } from './utils';
+import { ExperimentCard } from './experiment-card';
 
 export function ExperimentsTab({
   policies,
@@ -75,7 +76,7 @@ export function ExperimentsTab({
         }),
     });
 
-  const experiments = experimentsData?.items ?? [];
+  const experiments = useMemo(() => experimentsData?.items ?? [], [experimentsData]);
   const selectedExperiment = experiments.find((item) => item.id === selectedExperimentId);
 
   useEffect(() => {
@@ -317,80 +318,24 @@ export function ExperimentsTab({
             </div>
           ) : (
             experiments.map((experiment) => (
-              <div
+              <ExperimentCard
                 key={experiment.id}
-                className="rounded-lg border p-4"
-                onClick={() => setSelectedExperimentId(experiment.id)}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="font-medium">
-                      {experiment.capability} · {experiment.version}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {experiment.methodVersion} ·{' '}
-                      {experiment.policyVersion?.version ?? 'No linked policy'}
-                    </div>
-                  </div>
-                  <Badge variant="outline">{humanizeEnum(experiment.status)}</Badge>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {experiment.status === 'DRAFT' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => shadowMutation.mutate(experiment.id)}
-                    >
-                      {t('experiments.promoteShadow')}
-                    </Button>
-                  ) : null}
-                  {experiment.status === 'SHADOW' ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => evaluateMutation.mutate(experiment.id)}
-                      >
-                        {t('experiments.refreshEvaluation')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => canaryMutation.mutate(experiment.id)}
-                      >
-                        {t('experiments.promoteCanary')}
-                      </Button>
-                    </>
-                  ) : null}
-                  {experiment.status === 'CANARY' ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => evaluateMutation.mutate(experiment.id)}
-                      >
-                        {t('experiments.refreshEvaluation')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => activateMutation.mutate(experiment.id)}
-                      >
-                        {t('experiments.activate')}
-                      </Button>
-                    </>
-                  ) : null}
-                  {experiment.status === 'ACTIVE' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => retireMutation.mutate(experiment.id)}
-                    >
-                      {t('experiments.retire')}
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
+                experiment={experiment}
+                selected={selectedExperimentId === experiment.id}
+                labels={{
+                  promoteShadow: t('experiments.promoteShadow'),
+                  refreshEvaluation: t('experiments.refreshEvaluation'),
+                  promoteCanary: t('experiments.promoteCanary'),
+                  activate: t('experiments.activate'),
+                  retire: t('experiments.retire'),
+                }}
+                onSelect={() => setSelectedExperimentId(experiment.id)}
+                onShadow={() => shadowMutation.mutate(experiment.id)}
+                onEvaluate={() => evaluateMutation.mutate(experiment.id)}
+                onCanary={() => canaryMutation.mutate(experiment.id)}
+                onActivate={() => activateMutation.mutate(experiment.id)}
+                onRetire={() => retireMutation.mutate(experiment.id)}
+              />
             ))
           )}
         </CardContent>

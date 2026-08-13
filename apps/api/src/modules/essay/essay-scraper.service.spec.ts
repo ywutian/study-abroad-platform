@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EssayScraperService } from './essay-scraper.service';
+import { EssayStatus } from '../../common/types/enums';
 import { PrismaService } from '../../prisma/prisma.service';
-import { LlmScrapeStrategy } from './strategies/llm.strategy';
-import { OfficialScrapeStrategy } from './strategies/official.strategy';
+import { NotificationService } from '../notification/notification.service';
+import { AiValidatorService } from './ai-validator.service';
+import { EssayScraperService } from './essay-scraper.service';
+import { ScrapeResult } from './strategies/base.strategy';
 import { CollegeVineScrapeStrategy } from './strategies/collegevine.strategy';
 import { CommonAppScrapeStrategy } from './strategies/commonapp.strategy';
-import { AiValidatorService } from './ai-validator.service';
-import { NotificationService } from '../notification/notification.service';
-import { SourceType, EssayStatus } from '../../common/types/enums';
-import { ScrapeResult } from './strategies/base.strategy';
+import { LlmScrapeStrategy } from './strategies/llm.strategy';
+import { OfficialScrapeStrategy } from './strategies/official.strategy';
 
 describe('EssayScraperService', () => {
   let service: EssayScraperService;

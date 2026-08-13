@@ -45,6 +45,10 @@ export enum SchoolRankingList {
   ENGINEERING_NO_PHD = 'ENGINEERING_NO_PHD',
 }
 
+function normalizeNicheGrade(value: unknown): unknown {
+  return typeof value === 'string' ? value.trim().toUpperCase() : value;
+}
+
 export class SchoolQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: 'Country code' })
   @IsOptional()
@@ -264,9 +268,7 @@ export class SchoolQueryDto extends PaginationDto {
     enum: NICHE_GRADE_QUERY_VALUES,
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toUpperCase() : value,
-  )
+  @Transform(({ value }) => normalizeNicheGrade(value))
   @IsIn(NICHE_GRADE_QUERY_VALUES)
   minSafetyGrade?: NicheGradeQueryValue;
 
@@ -275,9 +277,7 @@ export class SchoolQueryDto extends PaginationDto {
     enum: NICHE_GRADE_QUERY_VALUES,
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toUpperCase() : value,
-  )
+  @Transform(({ value }) => normalizeNicheGrade(value))
   @IsIn(NICHE_GRADE_QUERY_VALUES)
   minLifeGrade?: NicheGradeQueryValue;
 
@@ -286,9 +286,7 @@ export class SchoolQueryDto extends PaginationDto {
     enum: NICHE_GRADE_QUERY_VALUES,
   })
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.trim().toUpperCase() : value,
-  )
+  @Transform(({ value }) => normalizeNicheGrade(value))
   @IsIn(NICHE_GRADE_QUERY_VALUES)
   minFoodGrade?: NicheGradeQueryValue;
 }

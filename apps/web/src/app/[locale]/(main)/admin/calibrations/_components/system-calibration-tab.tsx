@@ -86,7 +86,7 @@ export function SystemCalibrationTab() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-body flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5" />
               {t('title')}
             </CardTitle>
@@ -168,7 +168,7 @@ export function SystemCalibrationTab() {
       {status.enabled && curveData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('curveTitle')}</CardTitle>
+            <CardTitle className="text-body">{t('curveTitle')}</CardTitle>
             <p className="text-sm text-muted-foreground">{t('curveDesc')}</p>
           </CardHeader>
           <CardContent>

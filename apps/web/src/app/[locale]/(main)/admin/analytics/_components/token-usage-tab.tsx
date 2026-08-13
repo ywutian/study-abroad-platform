@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api';
 import { adminAiAgentRoutes } from '@study-abroad/shared';
@@ -87,7 +86,7 @@ export function TokenUsageTab() {
             size="sm"
             onClick={() => setDays(d)}
           >
-            {t(`days${d}` as any)}
+            {t(`days${d}` as never)}
           </Button>
         ))}
       </div>
@@ -137,7 +136,7 @@ export function TokenUsageTab() {
       {/* Daily trend chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t('tokenUsage.dailyTrend')}</CardTitle>
+          <CardTitle className="text-body">{t('tokenUsage.dailyTrend')}</CardTitle>
         </CardHeader>
         <CardContent>
           {daily.length > 0 ? (
@@ -215,7 +214,7 @@ export function TokenUsageTab() {
       {modelData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('tokenUsage.byModel')}</CardTitle>
+            <CardTitle className="text-body">{t('tokenUsage.byModel')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">

@@ -146,7 +146,7 @@ describe('expanded distillation teachers', () => {
   });
 
   it('intl-pool fires only for international profiles with an intl rate', async () => {
-    const result = await new IntlPoolTeacherService().evaluate(
+    const result = new IntlPoolTeacherService().evaluate(
       buildInput({
         profile: {
           targetMajor: 'Economics',

@@ -21,6 +21,11 @@ import { ContentModerationService } from '../security/content-moderation.service
 import { AuditService } from '../security/audit.service';
 import { ConfigValidatorService } from './config-validator.service';
 
+/** Raised during bootstrap when a production security dependency is absent. */
+class ArchitectureValidationError extends Error {
+  override readonly name = 'ArchitectureValidationError';
+}
+
 export type AiSecurityStatus = 'ok' | 'degraded' | 'unknown';
 export type EmbeddingConsistency = 'ok' | 'partial' | 'missing';
 
@@ -141,7 +146,7 @@ export class ArchitectureValidatorService implements OnModuleInit {
       } catch {
         const msg = `Security service ${svc.name} not resolvable`;
         if (isStrictEnv) {
-          throw new Error(
+          throw new ArchitectureValidationError(
             `[ArchitectureValidator] FATAL: ${msg}. Cannot start in ${this.configService.get('NODE_ENV')} without security services.`,
           );
         }
@@ -159,7 +164,7 @@ export class ArchitectureValidatorService implements OnModuleInit {
     } catch {
       const msg = 'ConfigValidatorService not resolvable';
       if (isStrictEnv) {
-        throw new Error(
+        throw new ArchitectureValidationError(
           `[ArchitectureValidator] FATAL: ${msg}. Cannot start in ${this.configService.get('NODE_ENV')} without config validation.`,
         );
       }

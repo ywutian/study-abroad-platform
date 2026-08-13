@@ -102,7 +102,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
     <Card className={cn('overflow-hidden border-border', className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <CardTitle className="flex items-center gap-2 text-body font-semibold">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
               <Lightbulb className="h-4 w-4 text-primary" />
             </div>

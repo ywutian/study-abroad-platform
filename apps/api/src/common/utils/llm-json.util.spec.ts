@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { extractJsonFromLlm } from './llm-json.util';
 
 describe('extractJsonFromLlm', () => {
@@ -67,7 +68,7 @@ describe('extractJsonFromLlm', () => {
 
     it('logs a warning so a silent degradation is still visible', () => {
       const spy = jest
-        .spyOn(require('@nestjs/common').Logger.prototype, 'warn')
+        .spyOn(Logger.prototype, 'warn')
         .mockImplementation(() => undefined);
 
       extractJsonFromLlm('not json at all');

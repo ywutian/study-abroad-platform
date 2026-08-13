@@ -43,7 +43,7 @@ export function FeaturesSection() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <ToggleLeft className="h-5 w-5" />
-          <CardTitle className="text-base">{t('featuresTitle')}</CardTitle>
+          <CardTitle className="text-body">{t('featuresTitle')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
@@ -61,7 +61,7 @@ export function FeaturesSection() {
                       <p className="text-sm font-medium">{meta?.label || feature}</p>
                       <Badge
                         variant={enabled ? 'success' : 'secondary'}
-                        className="text-[10px] px-1.5 py-0"
+                        className="text-2xs px-1.5 py-0"
                       >
                         {enabled ? t('enabled') : t('disabled')}
                       </Badge>

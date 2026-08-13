@@ -24,6 +24,7 @@ describe('UserController', () => {
     email: 'test@test.com',
     role: 'USER',
     passwordHash: 'hashed_password',
+    points: 100,
     createdAt: new Date(),
   };
 
@@ -96,6 +97,10 @@ describe('UserController', () => {
           useValue: {
             getUserPoints: jest.fn().mockResolvedValue(100),
             getPointHistory: jest.fn().mockResolvedValue(mockPointHistory),
+            getVisibleUserPoints: jest.fn().mockResolvedValue(100),
+            getVisiblePointHistory: jest
+              .fn()
+              .mockResolvedValue(mockPointHistory),
           },
         },
         {
@@ -137,6 +142,7 @@ describe('UserController', () => {
 
       expect(userService.findByIdOrThrow).toHaveBeenCalledWith('user-1');
       expect(result).not.toHaveProperty('passwordHash');
+      expect(result).not.toHaveProperty('points');
       expect(result).toHaveProperty('email', 'test@test.com');
     });
   });
@@ -190,7 +196,7 @@ describe('UserController', () => {
     it('should return the current user points', async () => {
       const result = await controller.getMyPoints(mockUser);
 
-      expect(pointsService.getUserPoints).toHaveBeenCalledWith('user-1');
+      expect(pointsService.getVisibleUserPoints).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ points: 100 });
     });
   });
@@ -199,7 +205,10 @@ describe('UserController', () => {
     it('should return enriched point history with default limit', async () => {
       const result = await controller.getPointHistory(mockUser, undefined);
 
-      expect(pointsService.getPointHistory).toHaveBeenCalledWith('user-1', 20);
+      expect(pointsService.getVisiblePointHistory).toHaveBeenCalledWith(
+        'user-1',
+        20,
+      );
       expect(pointsConfigService.getAllRules).toHaveBeenCalled();
       expect(result).toHaveLength(2);
       expect(result[0]).toHaveProperty('description');
@@ -210,7 +219,10 @@ describe('UserController', () => {
     it('should use provided limit', async () => {
       await controller.getPointHistory(mockUser, '5');
 
-      expect(pointsService.getPointHistory).toHaveBeenCalledWith('user-1', 5);
+      expect(pointsService.getVisiblePointHistory).toHaveBeenCalledWith(
+        'user-1',
+        5,
+      );
     });
   });
 
@@ -225,6 +237,17 @@ describe('UserController', () => {
       expect(result.spend).toHaveLength(1);
       expect(result.earn[0].action).toBe('SHARE_CASE');
       expect(result.spend[0].action).toBe('VIEW_CASE');
+    });
+
+    it('returns no rules while the economy is dormant', async () => {
+      (pointsConfigService.isEnabled as jest.Mock).mockResolvedValue(false);
+
+      await expect(controller.getPointRules()).resolves.toEqual({
+        enabled: false,
+        earn: [],
+        spend: [],
+      });
+      expect(pointsConfigService.getAllRules).not.toHaveBeenCalled();
     });
   });
 
@@ -264,6 +287,19 @@ describe('UserController', () => {
       expect(result.totalSpent).toBe(5);
       expect(result.transactionCount).toBe(2);
       expect(result.actionStats).toEqual({ SHARE_CASE: 1, VIEW_CASE: 1 });
+    });
+
+    it('returns a neutral summary while the economy is dormant', async () => {
+      (pointsConfigService.isEnabled as jest.Mock).mockResolvedValue(false);
+
+      await expect(controller.getPointSummary(mockUser)).resolves.toEqual({
+        currentPoints: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        transactionCount: 0,
+        actionStats: {},
+      });
+      expect(pointsService.getPointHistory).not.toHaveBeenCalled();
     });
   });
 });

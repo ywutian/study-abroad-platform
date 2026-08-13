@@ -1,21 +1,19 @@
-import {
-  IsString,
-  IsInt,
-  IsBoolean,
-  IsOptional,
-  IsEnum,
-  IsIn,
-  IsArray,
-  ValidateNested,
-  Min,
-  Max,
-  ArrayMinSize,
-  ArrayMaxSize,
-  MaxLength,
-} from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Visibility } from '@prisma/client';
+import { Type } from 'class-transformer';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { CASE_VISIBILITY_ALLOWED } from '../../../common/constants/prisma-selects';
 
 export class BatchImportCaseItemDto {

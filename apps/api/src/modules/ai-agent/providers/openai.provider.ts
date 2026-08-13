@@ -55,7 +55,7 @@ export class OpenAIProvider implements ILLMProvider {
     const body = this.buildRequestBody(request, false);
 
     const response = await this.doFetch(body);
-    const data = await response.json();
+    const data: unknown = await response.json();
 
     return this.parseResponse(data);
   }
@@ -122,7 +122,18 @@ export class OpenAIProvider implements ILLMProvider {
           }
 
           try {
-            const json = JSON.parse(data);
+            const json = JSON.parse(data) as {
+              choices?: Array<{
+                delta?: {
+                  content?: string;
+                  tool_calls?: Array<{
+                    index: number;
+                    id?: string;
+                    function?: { name?: string; arguments?: string };
+                  }>;
+                };
+              }>;
+            };
             const delta = json.choices?.[0]?.delta;
 
             if (delta?.content) {
@@ -311,7 +322,11 @@ export class OpenAIProvider implements ILLMProvider {
     return response;
   }
 
-  private parseResponse(data: Record<string, unknown>): LLMChatResponse {
+  private parseResponse(value: unknown): LLMChatResponse {
+    const data =
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : {};
     const choices = data.choices as Array<Record<string, unknown>>;
     const choice = choices?.[0];
     const message = choice?.message as Record<string, unknown>;
@@ -417,7 +432,10 @@ function safeParseJSON(
   fallback: Record<string, unknown> = {},
 ): Record<string, unknown> {
   try {
-    return JSON.parse(str);
+    const parsed: unknown = JSON.parse(str);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : fallback;
   } catch {
     return fallback;
   }

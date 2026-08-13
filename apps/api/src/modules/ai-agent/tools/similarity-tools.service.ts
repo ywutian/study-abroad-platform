@@ -9,19 +9,18 @@
  */
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { caseVisibilityWhereForRole } from '../../../common/constants/prisma-selects';
-import { getCurrentUserRole } from '../infrastructure/context/request-context';
 import {
   parseCaseActivities,
   parseCaseAwards,
-  parseCaseTestScores,
 } from '../../../common/constants/data-formats';
+import { caseVisibilityWhereForRole } from '../../../common/constants/prisma-selects';
 import { parseRange } from '../../../common/utils/scoring';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { getCurrentUserRole } from '../infrastructure/context/request-context';
+import { PersistentMemoryService } from '../memory/persistent-memory.service';
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
-import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
-import { PersistentMemoryService } from '../memory/persistent-memory.service';
+import { IToolHandlerProvider, ToolHandler } from './tool-handler.interface';
 
 interface SimilarApplicantResult {
   cases: Array<{

@@ -12,20 +12,20 @@
 **13 项全部关闭。** 复核方式是读当前 `main` 上的代码，不是读本文自己的结论 —— 一份
 说自己已修的审计报告，和一份没修的，在文件里长得一模一样。
 
-| #   | 判定          | 复核依据                                                                                                                                                                                                            |
-| --- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | ✅ 已修       | `#542`（Penn 单校）+ `#548`（10 所 >20% 录取率却 require SAT/ACT 的学校在读 1.0x）                                                                                                                                  |
-| 2   | ✅ 已修       | `MODEL_CATALOG` 合并了原先四张互相漂移的表；`UNKNOWN_MODEL_PRICING` 由目录**取 max 推导**而非手写，所以未知模型只会高报。当年 gpt-5.4-mini 少算 7.5× 的经过写在该常量的注释里                                       |
-| 3   | ✅ 已修       | 以旧制 TOEFL 为枢轴 + 三张官方 concordance；顺带修好 ETS 2026-01-21 新制 1–6 分被算成 0.046 的数据完整性 bug                                                                                                        |
-| 4   | ⏸️ 原修法作废 | 四个 agent 一致否决；同代码路径上的一组真 bug 已落地                                                                                                                                                                |
-| 5   | ⏸️ N_A        | 两个 agent 一致判定不该做；只修了注释                                                                                                                                                                               |
-| 6   | ⏸️ 不删       | `scoring/ml` **不是死代码** —— `metrics.ts` 在 api 侧是活的                                                                                                                                                         |
-| 8   | ✅ 已修       | `SOURCE_PRIORITY` 改回与枚举声明一致；未知来源从 `?? 99`（放行）改为 fail-safe 保护。**三条"顺带未处理"也都已修**：id 现在被记录并注明 sync 无法定向、两个 `@Cron` 都有 `runWithCronLock`、每个 sync 各自 try/catch |
-| 9   | ✅ 已接入     | 16 条不变量 sweep 进了 CI                                                                                                                                                                                           |
-| 10  | ✅ 已修       | scheduler 三处缺陷                                                                                                                                                                                                  |
-| 11  | ⬜ N_A        | 实测证伪后关闭                                                                                                                                                                                                      |
-| 12  | ✅ 已修       | `capSubstituteAtRequiredSchool()`；刻意**不引入惩罚系数**（那是 n=1076 下禁止的 per-axis 调参），只消除假阳性                                                                                                       |
-| 13  | ✅ 已收敛     | `TestingPolicy` union SSOT                                                                                                                                                                                          |
+| #   | 判定          | 复核依据                                                                                                                                                                                                  |
+| --- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | ✅ 已修       | `#542`（Penn 单校）+ `#548`（10 所 >20% 录取率却 require SAT/ACT 的学校在读 1.0x）                                                                                                                        |
+| 2   | ✅ 已修       | `MODEL_CATALOG` 合并了原先四张互相漂移的表；`UNKNOWN_MODEL_PRICING` 由目录**取 max 推导**而非手写，所以未知模型只会高报。当年 gpt-5.4-mini 少算 7.5× 的经过写在该常量的注释里                             |
+| 3   | ✅ 已修       | 以旧制 TOEFL 为枢轴 + 三张官方 concordance；顺带修好 ETS 2026-01-21 新制 1–6 分被算成 0.046 的数据完整性 bug                                                                                              |
+| 4   | ⏸️ 原修法作废 | 四个 agent 一致否决；同代码路径上的一组真 bug 已落地                                                                                                                                                      |
+| 5   | ⏸️ N_A        | 两个 agent 一致判定不该做；只修了注释                                                                                                                                                                     |
+| 6   | ⏸️ 不删       | `scoring/ml` **不是死代码** —— `metrics.ts` 在 api 侧是活的                                                                                                                                               |
+| 8   | ✅ 已修       | `SOURCE_PRIORITY` 改回与枚举声明一致；未知来源从 `?? 99`（放行）改为 fail-safe 保护。**三条顺带问题也都已修**：按 stale school id 定向同步、两个 `@Cron` 使用 `runWithCronLock`、各数据源独立 `try/catch` |
+| 9   | ✅ 已接入     | 16 条不变量 sweep 进了 CI                                                                                                                                                                                 |
+| 10  | ✅ 已修       | scheduler 三处缺陷                                                                                                                                                                                        |
+| 11  | ⬜ N_A        | 实测证伪后关闭                                                                                                                                                                                            |
+| 12  | ✅ 已修       | `capSubstituteAtRequiredSchool()`；刻意**不引入惩罚系数**（那是 n=1076 下禁止的 per-axis 调参），只消除假阳性                                                                                             |
+| 13  | ✅ 已收敛     | `TestingPolicy` union SSOT                                                                                                                                                                                |
 
 三项 ⏸️ 是**决定不做**，不是待办 —— 每项的理由写在对应小节里，重开需要新证据。
 
@@ -515,14 +515,16 @@ CU Boulder 80.5）整体静默回退到滞后约两年的值。**没有任何测
 
 232 项 school 模块测试全过。
 
-### 顺带（agent 发现，未处理，建议单开）
+### 顺带发现的问题 — 已完成 2026-08-12
 
-- `school-provenance.scheduler.ts` 精心算出的 `staleScorecardSchools` 集合
-  **只被用来取 `.size` 当批量大小**，`syncSchoolsFromScorecard(limit)` 不接受 school id
-  —— 「刷新陈旧学校」实际刷的是 Scorecard 第 0 页起的任意 N 条。
-- 两个 `@Cron` 都没有 Redis single-flight 锁，违反 #448/#450 的规则。
-  目前无害仅因为工作本身是 no-op。
-- `refreshStaleOfficialFields` 没有 try/catch，每周产生一次未捕获 rejection。
+- `school-provenance.scheduler.ts` 现在把 stale school id 直接交给数据服务；Scorecard
+  先解析对应 `scorecardId` 并使用 `id` 精确过滤，Urban Institute 先解析 `ipedsId`
+  并使用 `unitid` 精确过滤，不再用 `.size` 从第 0 页刷新任意学校。
+- 两个 `@Cron` 均使用 Redis `runWithCronLock`，多副本下只允许一个执行者。
+- 两个外部数据源各自 `try/catch`；其中一个失败不会中断另一个，也不会产生未捕获
+  rejection。
+- 回归覆盖：`school-data.service.spec.ts`、`urban-institute-data.service.spec.ts`、
+  `school-provenance.scheduler.spec.ts` 共 18 条针对性测试通过。
 
 ---
 
@@ -758,20 +760,19 @@ throw**（prod 当前正是如此），而调用点没有保护 → 每周一产
 读起来像「刷新这些陈旧学校」，实际只是决定了**拉多少所任意学校** ——
 一次发现 3 所陈旧的运行，会去刷新 API 的前 3 所，而那几乎必然不是那 3 所。
 
-**修法 — 已完成 2026-07-25**
+**修法 — 锁与错误隔离完成 2026-07-25；定向刷新完成 2026-08-12**
 
 - 两个 cron 都接 `runWithCronLock`（复用仓库既有助手）。新增两个 TTL 常量：
   覆盖率监控 10 分钟；刷新任务 **1 小时** —— 它要打外部批量 API，
   窗口必须能舒服地覆盖一次慢同步。
 - 两个 sync **各自独立 try/catch**，一个死源不能拖垮另一个。
-- `.size` 换成显式的 `BULK_REFRESH_BATCH = 500`，并标 `ponytail:` 注释写明
-  这是因为两个 sync 都无法定向、以及升级路径（让它们接受 school-id 列表）。
-  同时**把陈旧学校的 id 打进日志** —— sync 既然定向不了，这就是唯一能让人
-  实际行动的记录，否则这个任务只报一个没人能用的计数。
+- stale school id 现在直接传入数据服务：Scorecard 映射到 `scorecardId` 后用 `id`
+  过滤，Urban Institute 映射到 `ipedsId` 后用 `unitid` 过滤。日志保留本次目标 id，
+  便于运维核对。
 
-**测试**：`school-provenance.scheduler.spec.ts` 7 条 —— 锁被占则两个 cron 都不执行；
-拿到锁则执行；Scorecard 失败不得阻断 IPEDS；IPEDS 失败不得抛出；只看 OFFICIAL 层级；
-无陈旧字段时不调用任何 sync。3747 项 API 测试全过。
+**测试**：`school-data.service.spec.ts`、`urban-institute-data.service.spec.ts` 与
+`school-provenance.scheduler.spec.ts` 的 18 条针对性测试覆盖 id 映射、目标查询、锁、
+错误隔离与 OFFICIAL 层级过滤。
 
 ---
 

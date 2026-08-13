@@ -1,10 +1,10 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { EmailService } from '../../common/email/email.service';
-import { SettingsService, SETTING_KEYS } from '../settings/settings.module';
-import { RedisService } from '../../common/redis/redis.service';
-import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { runWithCronLock } from '../../common/redis/cron-lock.util';
+import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
+import { RedisService } from '../../common/redis/redis.service';
+import { SETTING_KEYS, SettingsService } from '../settings/settings.module';
 
 const IPEDS_MONITOR_LOCK_KEY = 'ipeds-monitor:cron-lock';
 const IPEDS_FINGERPRINT_KEY = 'ipeds-monitor:last-fingerprint';
@@ -42,7 +42,7 @@ export class IpedsMonitorService {
   @Cron('0 9 * * 1') // 每周一上午 9 点
   async checkForUpdates() {
     // Single-flight across replicas so the admin gets one email, not N.
-    const ran = await runWithCronLock(
+    const _ran = await runWithCronLock(
       this.redis,
       IPEDS_MONITOR_LOCK_KEY,
       REDIS_TTL.IPEDS_MONITOR_CRON_LOCK,

@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-  Loading,
   ErrorState,
   Skeleton,
 } from '@/components/ui';
@@ -164,7 +163,7 @@ export default function CaseDetailScreen() {
               <Badge variant="success">
                 <View style={styles.badgeContent}>
                   <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-                  <Text style={{ marginLeft: 4, color: colors.success }}>
+                  <Text style={[styles.badgeText, { color: colors.success }]}>
                     {t('cases.verified')}
                   </Text>
                 </View>
@@ -284,6 +283,7 @@ function EssayCard({
 }
 
 const styles = StyleSheet.create({
+  badgeText: { marginLeft: 4 },
   container: {
     flex: 1,
   },

@@ -46,7 +46,7 @@ export function LlmConfigSection() {
         <div className="flex items-center gap-3">
           <Cpu className="h-5 w-5" />
           <div>
-            <CardTitle className="text-base">{t('llmTitle')}</CardTitle>
+            <CardTitle className="text-body">{t('llmTitle')}</CardTitle>
             <CardDescription className="mt-1">{t('llmDesc')}</CardDescription>
           </div>
         </div>
@@ -58,14 +58,12 @@ export function LlmConfigSection() {
               <div className="rounded-lg border p-3">
                 <p className="text-xs text-muted-foreground">{t('llmDefaultModel')}</p>
                 <p className="text-sm font-bold mt-1">{getModelLabel(llmConfig.defaultModel)}</p>
-                <p className="text-[10px] text-muted-foreground font-mono">
-                  {llmConfig.defaultModel}
-                </p>
+                <p className="text-2xs text-muted-foreground font-mono">{llmConfig.defaultModel}</p>
               </div>
               <div className="rounded-lg border p-3">
                 <p className="text-xs text-muted-foreground">{t('llmFallbackModel')}</p>
                 <p className="text-sm font-bold mt-1">{getModelLabel(llmConfig.fallbackModel)}</p>
-                <p className="text-[10px] text-muted-foreground font-mono">
+                <p className="text-2xs text-muted-foreground font-mono">
                   {llmConfig.fallbackModel}
                 </p>
               </div>

@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CaseMemoryService } from './case-memory.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { CaseMemoryService } from './case-memory.service';
 
 describe('CaseMemoryService', () => {
   let service: CaseMemoryService;
-  let memoryManager: MemoryManagerService;
 
   const mockMemoryManager = {
     remember: jest.fn().mockResolvedValue(undefined),
@@ -20,7 +19,6 @@ describe('CaseMemoryService', () => {
     }).compile();
 
     service = module.get<CaseMemoryService>(CaseMemoryService);
-    memoryManager = module.get<MemoryManagerService>(MemoryManagerService);
   });
 
   afterEach(() => {

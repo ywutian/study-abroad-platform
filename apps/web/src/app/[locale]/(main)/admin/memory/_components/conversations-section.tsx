@@ -68,7 +68,7 @@ export function ConversationsSection() {
           <div className="flex items-center gap-3">
             <MessageSquare className="h-5 w-5" />
             <div>
-              <CardTitle className="text-base">{t('conversations')}</CardTitle>
+              <CardTitle className="text-body">{t('conversations')}</CardTitle>
               <CardDescription className="mt-1">{t('conversationsDesc')}</CardDescription>
             </div>
           </div>

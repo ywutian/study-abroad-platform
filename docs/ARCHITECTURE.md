@@ -1458,9 +1458,11 @@ Competition-tier-weighted award scoring requires linking `Award.competitionId` �
 
 **Status: RESOLVED** (2026-02-09) — ChatGateway now sends NEW_MESSAGE notifications to offline users. Online/offline events are broadcast on connect/disconnect.
 
-### 14.5 Dashboard targetSchoolCount
+### 14.5 Dashboard targetSchoolCount — RESOLVED
 
-**Problem:** `dashboard.service.ts` line 154 hardcodes `targetSchoolCount: 0` with a TODO comment.
+`dashboard.service.ts` now returns the user's real school-list count as
+`targetSchoolCount`; `dashboard.service.spec.ts` asserts the populated value instead of a
+hardcoded zero.
 
 ### 14.6 CORS Configuration — RESOLVED
 

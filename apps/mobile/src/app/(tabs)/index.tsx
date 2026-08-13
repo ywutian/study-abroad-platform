@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import Animated, { SlideInUp } from 'react-native-reanimated';
 
 import { apiClient } from '@/lib/api/client';
@@ -48,6 +48,7 @@ export default function HomeScreen() {
     isLoading: schoolsLoading,
     refetch: refetchSchools,
   } = useQuery({
+    placeholderData: keepPreviousData,
     queryKey: ['topSchools'],
     queryFn: () =>
       apiClient.get<PaginatedResponse<School>>(schoolRoutes.list(), {
@@ -62,6 +63,7 @@ export default function HomeScreen() {
     isLoading: casesLoading,
     refetch: refetchCases,
   } = useQuery({
+    placeholderData: keepPreviousData,
     queryKey: ['recentCases'],
     queryFn: () =>
       apiClient.get<PaginatedResponse<Case>>(caseRoutes.list(), {

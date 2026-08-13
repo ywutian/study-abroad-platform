@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import type { TFunction } from 'i18next';
@@ -53,10 +53,10 @@ export function InlineTaskList({
   if (isLoading) return <Loading size="small" />;
 
   return (
-    <View style={{ gap: spacing.xs }}>
+    <View style={styles.container}>
       {tasks.length ? (
         tasks.map((task) => (
-          <View key={task.id} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View key={task.id} style={styles.taskRow}>
             <Checkbox
               checked={task.completed}
               onPress={() => onToggle(task.id)}
@@ -66,23 +66,21 @@ export function InlineTaskList({
               name={TASK_ICONS[task.type] ?? 'ellipsis-horizontal'}
               size={16}
               color={task.completed ? colors.foregroundMuted : colors.foreground}
-              style={{ marginLeft: spacing.xs }}
+              style={styles.taskIcon}
             />
-            <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <View style={styles.taskContent}>
               <Text
-                style={{
-                  fontSize: fontSize.sm,
-                  color: task.completed ? colors.foregroundMuted : colors.foreground,
-                  textDecorationLine: task.completed ? 'line-through' : 'none',
-                }}
+                style={[
+                  styles.taskTitle,
+                  { color: task.completed ? colors.foregroundMuted : colors.foreground },
+                  task.completed && styles.completedTitle,
+                ]}
                 numberOfLines={1}
               >
                 {task.title}
               </Text>
               {task.dueDate && (
-                <Text
-                  style={{ fontSize: fontSize.xs, color: colors.foregroundMuted, marginTop: 2 }}
-                >
+                <Text style={[styles.dueDate, { color: colors.foregroundMuted }]}>
                   {formatDate(task.dueDate)}
                 </Text>
               )}
@@ -90,14 +88,7 @@ export function InlineTaskList({
           </View>
         ))
       ) : (
-        <Text
-          style={{
-            fontSize: fontSize.sm,
-            fontStyle: 'italic',
-            color: colors.foregroundMuted,
-            paddingVertical: spacing.sm,
-          }}
-        >
+        <Text style={[styles.emptyText, { color: colors.foregroundMuted }]}>
           {t('timeline.noTasks')}
         </Text>
       )}
@@ -107,7 +98,7 @@ export function InlineTaskList({
           size="sm"
           onPress={onAdd}
           leftIcon={<Ionicons name="add-circle-outline" size={16} color={colors.primary} />}
-          style={{ alignSelf: 'flex-start', marginTop: spacing.xs }}
+          style={styles.addButton}
         >
           {t('timeline.addTask')}
         </AnimatedButton>
@@ -115,3 +106,15 @@ export function InlineTaskList({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { gap: spacing.xs },
+  taskRow: { flexDirection: 'row', alignItems: 'center' },
+  taskIcon: { marginLeft: spacing.xs },
+  taskContent: { flex: 1, marginLeft: spacing.sm },
+  taskTitle: { fontSize: fontSize.sm },
+  completedTitle: { textDecorationLine: 'line-through' },
+  dueDate: { fontSize: fontSize.xs, marginTop: 2 },
+  emptyText: { fontSize: fontSize.sm, fontStyle: 'italic', paddingVertical: spacing.sm },
+  addButton: { alignSelf: 'flex-start', marginTop: spacing.xs },
+});

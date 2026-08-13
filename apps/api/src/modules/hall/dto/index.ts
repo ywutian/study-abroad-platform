@@ -114,7 +114,7 @@ export class VerifiedDashboardQueryDto {
           .map((s) => s.trim())
           .filter(Boolean)
       : Array.isArray(value)
-        ? value
+        ? value.filter((item): item is string => typeof item === 'string')
         : [],
   )
   @IsArray()

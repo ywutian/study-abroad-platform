@@ -5,6 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
 import { SCHOOL_PREDICTION_CONTEXT_SELECT } from '../../../common/constants/prisma-selects';
@@ -90,7 +91,14 @@ export class PredictionToolsService implements IToolHandlerProvider {
     );
   }
 
-  private formatPredictionResult(prediction: any) {
+  private formatPredictionResult(
+    prediction:
+      | Prisma.PredictionResultGetPayload<{
+          include: { outcomeLabelRecords: true };
+        }>
+      | null
+      | undefined,
+  ) {
     if (!prediction) return null;
     return {
       probability: this.numberFromValue(prediction.probability),
@@ -122,7 +130,9 @@ export class PredictionToolsService implements IToolHandlerProvider {
     };
   }
 
-  private formatPredictionSnapshot(snapshot: any) {
+  private formatPredictionSnapshot(
+    snapshot: Prisma.PredictionSnapshotGetPayload<object> | null,
+  ) {
     if (!snapshot) return null;
     return {
       probability: this.numberFromValue(snapshot.probability),

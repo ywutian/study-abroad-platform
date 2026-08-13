@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
-  COMMONAPP_FIELD_MAPPINGS,
   autoFillForm,
+  COMMONAPP_FIELD_MAPPINGS,
   getAvailableFields,
   getNestedValue,
 } from './field-mapper';

@@ -34,7 +34,7 @@ export function TracesSection() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Activity className="h-5 w-5" />
-          <CardTitle className="text-base">{t('tracesTitle')}</CardTitle>
+          <CardTitle className="text-body">{t('tracesTitle')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>

@@ -152,6 +152,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(100, { each: true })
   @ArrayMaxSize(MAX_REGION_PREFERENCES)
   regionPref?: string[];
 

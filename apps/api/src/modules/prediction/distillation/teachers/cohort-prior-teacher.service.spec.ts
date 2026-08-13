@@ -199,7 +199,7 @@ describe('CohortPriorTeacherService', () => {
       null,
     );
 
-    await service.evaluate(buildInput());
+    service.evaluate(buildInput());
 
     const calls = (prisma.schoolCohortRoundPrior.findFirst as jest.Mock).mock
       .calls;
@@ -212,7 +212,7 @@ describe('CohortPriorTeacherService', () => {
     (prisma.schoolCohortRoundPrior.findFirst as jest.Mock).mockResolvedValue(
       null,
     );
-    await service.evaluate(buildInput({ applicationRound: 'ed' }));
+    service.evaluate(buildInput({ applicationRound: 'ed' }));
     const call = (prisma.schoolCohortRoundPrior.findFirst as jest.Mock).mock
       .calls[0][0];
     expect(call.where.round).toBe('ED');

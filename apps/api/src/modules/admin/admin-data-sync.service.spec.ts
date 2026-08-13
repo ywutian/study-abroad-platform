@@ -1,17 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AdminDataSyncService } from './admin-data-sync.service';
-import { PrismaService } from '../../prisma/prisma.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchoolDataService } from '../school/school-data.service';
-import { UrbanInstituteDataService } from '../school/urban-institute-data.service';
-import { BigFutureScrapeService } from '../school/scrapers/bigfuture.scraper';
-import { AppilyScrapeService } from '../school/scrapers/appily.scraper';
-import { CampusLifeIngestionService } from '../school/campus-life-ingestion.service';
 import { BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CampusLifeIngestionService } from '../school/campus-life-ingestion.service';
+import { SchoolDataService } from '../school/school-data.service';
+import { AppilyScrapeService } from '../school/scrapers/appily.scraper';
+import { BigFutureScrapeService } from '../school/scrapers/bigfuture.scraper';
+import { UrbanInstituteDataService } from '../school/urban-institute-data.service';
+import { AdminDataSyncService } from './admin-data-sync.service';
 
 describe('AdminDataSyncService', () => {
   let service: AdminDataSyncService;
-  let prisma: PrismaService;
 
   const mockPrisma = {
     auditLog: {
@@ -91,7 +90,6 @@ describe('AdminDataSyncService', () => {
     }).compile();
 
     service = module.get<AdminDataSyncService>(AdminDataSyncService);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

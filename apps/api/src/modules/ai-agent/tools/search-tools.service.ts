@@ -19,12 +19,16 @@ export class SearchToolsService implements IToolHandlerProvider {
       [
         'web_search',
         (args, _userId, _ctx, locale) =>
-          this.webSearch(args.query, args.topic, locale),
+          this.webSearch(args.query ?? '', args.topic, locale),
       ],
       [
         'search_school_website',
         (args, _userId, _ctx, locale) =>
-          this.searchSchoolWebsite(args.schoolName, args.query, locale),
+          this.searchSchoolWebsite(
+            args.schoolName ?? '',
+            args.query ?? '',
+            locale,
+          ),
       ],
     ]);
   }

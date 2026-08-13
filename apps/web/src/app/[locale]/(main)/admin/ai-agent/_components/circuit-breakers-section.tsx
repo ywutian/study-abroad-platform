@@ -34,7 +34,7 @@ export function CircuitBreakersSection() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Shield className="h-5 w-5" />
-          <CardTitle className="text-base">{t('circuitTitle')}</CardTitle>
+          <CardTitle className="text-body">{t('circuitTitle')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>

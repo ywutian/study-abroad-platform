@@ -29,11 +29,11 @@ import { PointsConfigService } from '../src/modules/points/points-config.service
  *
  * WHY THE SERVICE TESTS FORCE THE FEATURE ON
  * ------------------------------------------
- * `PointsConfigService.FEATURE_AVAILABLE` is a hardcoded `false` — a product
- * decision that no setting can override — so `adjustPoints` returns early and
- * never reaches its own guard. The race is therefore unreachable in production
- * today, which is also why the constraint could be added as a plain follow-up
- * rather than a hotfix.
+ * `POINTS_ECONOMY_AVAILABLE` is a shared build-time `false` gate — a product
+ * decision that no runtime setting can override — so `adjustPoints` returns
+ * early and never reaches its own guard. The race is therefore unreachable in
+ * production today, which is also why the constraint could be added as a plain
+ * follow-up rather than a hotfix.
  *
  * The two service tests below stub `isEnabled` to exercise the path anyway. The
  * moment the economy is switched back on is exactly the moment the guard has to

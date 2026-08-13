@@ -25,6 +25,7 @@ import { ResilienceService } from './resilience.service';
 import {
   IToolHandlerProvider,
   ToolHandler,
+  ToolContext,
 } from '../tools/tool-handler.interface';
 
 // Domain tool services
@@ -174,12 +175,19 @@ export class ToolExecutorService implements OnModuleInit {
       // Record metrics
       this.metrics?.recordToolLatency(toolCall.name, duration);
 
-      // Check for error in result
-      if (result?.error && !result?.success) {
+      // Check for an error-shaped result after crossing the unknown tool boundary.
+      const resultRecord =
+        typeof result === 'object' && result !== null && !Array.isArray(result)
+          ? (result as Record<string, unknown>)
+          : null;
+      if (
+        typeof resultRecord?.error === 'string' &&
+        resultRecord.success !== true
+      ) {
         this.logger.warn(
-          `Tool ${toolCall.name} returned error: ${result.error}`,
+          `Tool ${toolCall.name} returned error: ${resultRecord.error}`,
         );
-        return { success: false, error: result.error, duration };
+        return { success: false, error: resultRecord.error, duration };
       }
 
       return { success: true, result, duration };
@@ -256,7 +264,10 @@ export class ToolExecutorService implements OnModuleInit {
   /**
    * Convert UserContext to legacy context format for tool consumption.
    */
-  private convertToLegacyContext(context: UserContext, locale = 'zh'): any {
+  private convertToLegacyContext(
+    context: UserContext,
+    locale = 'zh',
+  ): ToolContext {
     return {
       profile: context.profile
         ? {

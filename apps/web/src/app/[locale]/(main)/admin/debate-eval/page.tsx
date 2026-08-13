@@ -246,7 +246,7 @@ export default function AdminDebateEvalPage() {
               {/* col 1 — essay (collapsed) */}
               <Card className="col-span-12 lg:col-span-4 min-w-0">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center justify-between gap-2">
+                  <CardTitle className="text-body flex items-center justify-between gap-2">
                     Essay
                     {item.schoolName && (
                       <Badge variant="secondary" className="font-normal">
@@ -296,7 +296,7 @@ export default function AdminDebateEvalPage() {
               {/* col 2 — AI turn (blinded) */}
               <Card className="col-span-12 lg:col-span-5 min-w-0">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">AI rebuttal</CardTitle>
+                  <CardTitle className="text-body">AI rebuttal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {item.userTurn && (
@@ -366,7 +366,7 @@ export default function AdminDebateEvalPage() {
               {/* col 3 — rating form */}
               <Card className="col-span-12 lg:col-span-3 min-w-0">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Rate this turn</CardTitle>
+                  <CardTitle className="text-body">Rate this turn</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <RadioGroup

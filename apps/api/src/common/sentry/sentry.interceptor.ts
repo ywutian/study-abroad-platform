@@ -38,8 +38,17 @@ export class SentryInterceptor implements NestInterceptor {
                 next: (value) => subscriber.next(value),
                 complete: () => subscriber.complete(),
               }),
-              catchError((error) => {
-                const statusCode = error.status || error.statusCode || 500;
+              catchError((error: unknown) => {
+                const errorRecord =
+                  typeof error === 'object' && error !== null
+                    ? (error as Record<string, unknown>)
+                    : {};
+                const statusCodeCandidate =
+                  errorRecord.status ?? errorRecord.statusCode;
+                const statusCode =
+                  typeof statusCodeCandidate === 'number'
+                    ? statusCodeCandidate
+                    : 500;
 
                 if (statusCode >= 500) {
                   Sentry.withScope((scope) => {
@@ -60,7 +69,9 @@ export class SentryInterceptor implements NestInterceptor {
               }),
             )
             .subscribe({
-              error: (err) => subscriber.error(err),
+              error: (error: unknown): void => {
+                subscriber.error(error);
+              },
             });
         },
       );

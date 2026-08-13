@@ -181,7 +181,7 @@ export function VerificationStatusCard({
                   <Icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">{config.title}</CardTitle>
+                  <CardTitle className="">{config.title}</CardTitle>
                   <CardDescription>{config.description}</CardDescription>
                 </div>
               </div>

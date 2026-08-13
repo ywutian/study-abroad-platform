@@ -143,7 +143,7 @@ export default function LoginPage() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">{t('auth.login.title')}</h1>
+        <h1 className="text-title font-bold">{t('auth.login.title')}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t('auth.login.subtitle')}</p>
       </div>
       <Form {...form}>

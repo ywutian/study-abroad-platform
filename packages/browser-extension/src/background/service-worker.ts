@@ -2,14 +2,12 @@
  * 后台服务工作者 - 管理扩展状态和消息传递
  */
 
-import { fetchProfile, checkLoginStatus, getCachedProfile } from '../utils/api-client';
-import type { Message, MessageResponse } from '../utils/types';
+import { checkLoginStatus, fetchProfile, getCachedProfile } from '../utils/api-client';
 import { msg } from '../utils/i18n';
+import type { Message, MessageResponse } from '../utils/types';
 
 // 监听扩展安装/更新
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('[Lumni Extension] Installed:', details.reason);
-
   if (details.reason === 'install') {
     // 首次安装，显示欢迎页面
     chrome.tabs.create({
@@ -111,5 +109,3 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
   }
 });
-
-console.log('[Lumni Extension] Background service worker initialized');

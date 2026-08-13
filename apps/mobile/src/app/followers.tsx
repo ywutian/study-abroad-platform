@@ -2,32 +2,28 @@
  * Followers / Following / Blocked page
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Stack, router } from 'expo-router';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { FlashList } from '@shopify/flash-list';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { Stack, router } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  AnimatedButton,
-  AnimatedCard,
-  Avatar,
-  Badge,
-  EmptyState,
-  Loading,
-  Segment,
-  SearchBar,
-  ConfirmDialog,
-} from '@/components/ui';
+import { ConfirmDialog, EmptyState, Loading, SearchBar, Segment } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
-import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
+import { spacing, useColors } from '@/utils/theme';
+import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
+import {
+  BlockedUserCard,
+  RecommendationCard,
+  UserCard,
+} from '@/components/features/followers/FollowerCards';
+import { styles } from './followers.styles';
 
 // ==================== Types ====================
 
@@ -39,7 +35,7 @@ interface UserProfile {
   targetMajor?: string;
 }
 
-interface UserWithProfile {
+export interface UserWithProfile {
   id: string;
   email?: string;
   profile?: UserProfile;
@@ -225,9 +221,12 @@ export default function FollowersPage() {
     [searchText]
   );
 
-  const handleUserPress = (user: UserWithProfile) => {
-    startConversationMutation.mutate(user.id);
-  };
+  const handleUserPress = useCallback(
+    (user: UserWithProfile) => {
+      startConversationMutation.mutate(user.id);
+    },
+    [startConversationMutation]
+  );
 
   // ==================== Refresh ====================
 
@@ -406,7 +405,16 @@ export default function FollowersPage() {
         </Animated.View>
       );
     },
-    [activeTab, colors, isFollowing, followMutation, unfollowMutation, unblockMutation, t]
+    [
+      activeTab,
+      colors,
+      isFollowing,
+      followMutation,
+      unfollowMutation,
+      unblockMutation,
+      handleUserPress,
+      t,
+    ]
   );
 
   // ==================== Render ====================
@@ -493,309 +501,3 @@ export default function FollowersPage() {
     </>
   );
 }
-
-// ==================== Sub-components ====================
-
-const RecommendationCard = React.memo(function RecommendationCard({
-  user,
-  colors,
-  isFollowing: alreadyFollowing,
-  onFollow,
-  onUnfollow,
-  onPress,
-  getDisplayName,
-  getSubtitle,
-  t,
-  followLoading,
-  unfollowLoading,
-}: {
-  user: UserWithProfile;
-  colors: ReturnType<typeof useColors>;
-  isFollowing: boolean;
-  onFollow: () => void;
-  onUnfollow: () => void;
-  onPress: () => void;
-  getDisplayName: (u: UserWithProfile) => string;
-  getSubtitle: (u: UserWithProfile) => string;
-  t: (key: string) => string;
-  followLoading: boolean;
-  unfollowLoading: boolean;
-}) {
-  return (
-    <AnimatedCard
-      style={[styles.recommendationCard, { borderColor: colors.border }]}
-      onPress={onPress}
-      accessibilityLabel={`${t('chat.startChat')}: ${getDisplayName(user)}`}
-    >
-      <View style={styles.recommendationContent}>
-        <Avatar source={user.profile?.avatarUrl} name={getDisplayName(user)} size="lg" />
-        <Text style={[styles.recommendationName, { color: colors.foreground }]} numberOfLines={1}>
-          {getDisplayName(user)}
-        </Text>
-        <Text
-          style={[styles.recommendationSubtitle, { color: colors.foregroundMuted }]}
-          numberOfLines={1}
-        >
-          {getSubtitle(user)}
-        </Text>
-        <AnimatedButton
-          size="sm"
-          variant={alreadyFollowing ? 'outline' : 'default'}
-          onPress={alreadyFollowing ? onUnfollow : onFollow}
-          loading={alreadyFollowing ? unfollowLoading : followLoading}
-          style={styles.recommendationButton}
-        >
-          {alreadyFollowing ? t('followers.actions.unfollow') : t('followers.actions.follow')}
-        </AnimatedButton>
-      </View>
-    </AnimatedCard>
-  );
-});
-
-const UserCard = React.memo(function UserCard({
-  user,
-  colors,
-  isFollowing: alreadyFollowing,
-  showFollowStatus,
-  onFollow,
-  onUnfollow,
-  onBlock,
-  onPress,
-  getDisplayName,
-  getSubtitle,
-  t,
-  followLoading,
-  unfollowLoading,
-}: {
-  user: UserWithProfile;
-  colors: ReturnType<typeof useColors>;
-  isFollowing: boolean;
-  showFollowStatus: boolean;
-  onFollow: () => void;
-  onUnfollow: () => void;
-  onBlock: () => void;
-  onPress: () => void;
-  getDisplayName: (u: UserWithProfile) => string;
-  getSubtitle: (u: UserWithProfile) => string;
-  t: (key: string) => string;
-  followLoading: boolean;
-  unfollowLoading: boolean;
-}) {
-  return (
-    <AnimatedCard
-      style={styles.userCard}
-      onPress={onPress}
-      accessibilityLabel={`${t('chat.startChat')}: ${getDisplayName(user)}`}
-    >
-      <View style={styles.userCardInner}>
-        {/* Left: Avatar */}
-        <Avatar source={user.profile?.avatarUrl} name={getDisplayName(user)} size="default" />
-
-        {/* Middle: Info */}
-        <View style={styles.userInfo}>
-          <View style={styles.userNameRow}>
-            <Text style={[styles.userName, { color: colors.foreground }]} numberOfLines={1}>
-              {getDisplayName(user)}
-            </Text>
-            {showFollowStatus && alreadyFollowing && (
-              <Badge variant="success">{t('followers.badge.mutual')}</Badge>
-            )}
-          </View>
-          <Text style={[styles.userSubtitle, { color: colors.foregroundMuted }]} numberOfLines={1}>
-            {getSubtitle(user)}
-          </Text>
-        </View>
-
-        {/* Right: Actions */}
-        <View style={styles.userActions}>
-          <AnimatedButton
-            size="sm"
-            variant={alreadyFollowing ? 'outline' : 'default'}
-            onPress={alreadyFollowing ? onUnfollow : onFollow}
-            loading={alreadyFollowing ? unfollowLoading : followLoading}
-          >
-            {alreadyFollowing ? t('followers.actions.unfollow') : t('followers.actions.follow')}
-          </AnimatedButton>
-          <TouchableOpacity
-            onPress={onBlock}
-            style={[styles.blockButton, { backgroundColor: withOpacity(colors.error, 0.0625) }]}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel={t('chat.block')}
-          >
-            <Ionicons name="ban-outline" size={16} color={colors.error} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </AnimatedCard>
-  );
-});
-
-const BlockedUserCard = React.memo(function BlockedUserCard({
-  user,
-  colors,
-  onUnblock,
-  getDisplayName,
-  getSubtitle,
-  t,
-  loading,
-}: {
-  user: UserWithProfile;
-  colors: ReturnType<typeof useColors>;
-  onUnblock: () => void;
-  getDisplayName: (u: UserWithProfile) => string;
-  getSubtitle: (u: UserWithProfile) => string;
-  t: (key: string) => string;
-  loading: boolean;
-}) {
-  return (
-    <AnimatedCard style={styles.userCard}>
-      <View style={styles.userCardInner}>
-        {/* Left: Avatar */}
-        <View style={styles.blockedAvatarContainer}>
-          <Avatar source={user.profile?.avatarUrl} name={getDisplayName(user)} size="default" />
-          <View
-            style={[styles.blockedOverlay, { backgroundColor: withOpacity(colors.error, 0.19) }]}
-          >
-            <Ionicons name="ban" size={16} color={colors.error} />
-          </View>
-        </View>
-
-        {/* Middle: Info */}
-        <View style={styles.userInfo}>
-          <Text style={[styles.userName, { color: colors.foregroundMuted }]} numberOfLines={1}>
-            {getDisplayName(user)}
-          </Text>
-          <Text style={[styles.userSubtitle, { color: colors.foregroundMuted }]} numberOfLines={1}>
-            {getSubtitle(user)}
-          </Text>
-        </View>
-
-        {/* Right: Unblock */}
-        <AnimatedButton size="sm" variant="outline" onPress={onUnblock} loading={loading}>
-          {t('followers.actions.unblock')}
-        </AnimatedButton>
-      </View>
-    </AnimatedCard>
-  );
-});
-
-// ==================== Styles ====================
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  searchContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
-  segmentContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-  },
-  listContentEmpty: {
-    flexGrow: 1,
-  },
-
-  // Recommendations
-  recommendationsSection: {
-    marginBottom: spacing.lg,
-  },
-  recommendationsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  recommendationsHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  recommendationsTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  recommendationsList: {
-    gap: spacing.md,
-  },
-  recommendationCard: {
-    width: 140,
-  },
-  recommendationContent: {
-    alignItems: 'center',
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  recommendationName: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    textAlign: 'center',
-    maxWidth: 120,
-  },
-  recommendationSubtitle: {
-    fontSize: fontSize.xs,
-    textAlign: 'center',
-    maxWidth: 120,
-  },
-  recommendationButton: {
-    marginTop: spacing.xs,
-    width: '100%',
-  },
-
-  // User card
-  userCard: {
-    marginBottom: spacing.md,
-  },
-  userCardInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  userInfo: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  userNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  userName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    flexShrink: 1,
-  },
-  userSubtitle: {
-    fontSize: fontSize.sm,
-  },
-  userActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  blockButton: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Blocked avatar
-  blockedAvatarContainer: {
-    position: 'relative',
-  },
-  blockedOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

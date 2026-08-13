@@ -60,7 +60,7 @@ export class CreateSchoolEssaySourceDto {
   })
   @IsOptional()
   @IsObject()
-  scrapeConfig?: Record<string, any>;
+  scrapeConfig?: Record<string, unknown>;
 }
 
 export class UpdateSchoolEssaySourceDto {
@@ -113,7 +113,7 @@ export class TestScrapeDto {
 export class ConfirmSaveDto {
   @ApiProperty({ description: 'Full data returned from test scrape' })
   @IsObject()
-  data: any;
+  data: import('../essay-scraper.service').TestScrapeResult;
 
   @ApiPropertyOptional({
     description: 'Selected prompt indices (saves all if not provided)',

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
+import Image from 'next/image';
 import {
   Eye,
   Flag,
@@ -424,7 +425,7 @@ function ImageGrid({ images }: { images: ForumImage[] }) {
             visible.length === 1 ? 'aspect-[16/9]' : 'aspect-square'
           }`}
         >
-          <img src={image.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <Image src={image.url} alt="" fill sizes="50vw" unoptimized className="object-cover" />
           {overflow > 0 && index === visible.length - 1 && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/55 text-xl font-semibold text-white">
               +{overflow}

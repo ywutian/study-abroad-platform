@@ -266,7 +266,7 @@ export class TaskResponseDto {
   completed: boolean;
 
   @ApiProperty()
-  completedAt?: Date;
+  completedAt?: Date | null;
 
   @ApiProperty()
   essayPrompt?: string;

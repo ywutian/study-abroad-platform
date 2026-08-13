@@ -26,7 +26,6 @@ import {
   UpdateTaskDto,
   TaskResponseDto,
   GenerateTimelineDto,
-  ApplicationRound,
 } from './dto';
 
 const DEFAULT_TASKS = [
@@ -42,6 +41,13 @@ const DEFAULT_TASKS = [
   { title: '填写申请表格', type: TaskType.OTHER },
   { title: '支付申请费', type: TaskType.OTHER },
 ];
+
+import {
+  mapTaskToResponse as mapTaskResponse,
+  mapTimelineToResponse as mapTimelineResponse,
+  type ApplicationTaskRecord,
+  type TimelineResponseInput,
+} from './timeline-response.mapper';
 
 @Injectable()
 export class TimelineApplicationService {
@@ -296,7 +302,7 @@ export class TimelineApplicationService {
 
   private buildSmartTasks(
     round: string,
-    essayPrompts: any,
+    essayPrompts: unknown,
     options?: {
       interviewRequired?: boolean;
       financialAidDeadline?: Date | null;
@@ -343,8 +349,20 @@ export class TimelineApplicationService {
 
     if (Array.isArray(essayPrompts) && essayPrompts.length > 0) {
       for (const ep of essayPrompts) {
-        const prompt = typeof ep === 'string' ? ep : ep?.prompt || '补充文书';
-        const wordLimit = typeof ep === 'object' ? ep?.wordLimit : undefined;
+        const promptRecord =
+          typeof ep === 'object' && ep !== null
+            ? (ep as Record<string, unknown>)
+            : null;
+        const prompt =
+          typeof ep === 'string'
+            ? ep
+            : typeof promptRecord?.prompt === 'string'
+              ? promptRecord.prompt
+              : '补充文书';
+        const wordLimit =
+          typeof promptRecord?.wordLimit === 'number'
+            ? promptRecord.wordLimit
+            : undefined;
         tasks.push({
           title: `补充文书: ${prompt.substring(0, 60)}${prompt.length > 60 ? '...' : ''}`,
           type: TaskType.ESSAY,
@@ -469,7 +487,7 @@ export class TimelineApplicationService {
 
     return {
       ...this.mapTimelineToResponse(timeline),
-      tasks: (timeline.tasks || []).map((t: any) => this.mapTaskToResponse(t)),
+      tasks: timeline.tasks.map((task) => this.mapTaskToResponse(task)),
     };
   }
 
@@ -763,64 +781,11 @@ export class TimelineApplicationService {
     });
   }
 
-  mapTimelineToResponse(timeline: any): TimelineResponseDto {
-    const tasks = timeline.tasks || [];
-    return {
-      id: timeline.id,
-      schoolId: timeline.schoolId,
-      schoolName: timeline.schoolName,
-      round: timeline.round as ApplicationRound,
-      applicationYear: timeline.applicationYear,
-      deadline: timeline.deadline ?? undefined,
-      status: timeline.status,
-      progress: timeline.progress,
-      priority: timeline.priority,
-      notes: timeline.notes,
-      tasksTotal: tasks.length,
-      tasksCompleted: tasks.filter((t: any) => t.completed).length,
-      createdAt: timeline.createdAt,
-    };
+  mapTimelineToResponse(timeline: TimelineResponseInput): TimelineResponseDto {
+    return mapTimelineResponse(timeline);
   }
 
-  mapTaskToResponse(task: any): TaskResponseDto {
-    const sourceState = this.resolveTaskSourceState(task);
-
-    return {
-      id: task.id,
-      timelineId: task.timelineId,
-      title: task.title,
-      type: task.type,
-      description: task.description,
-      dueDate: task.dueDate,
-      completed: task.completed,
-      completedAt: task.completedAt,
-      essayPrompt: task.essayPrompt,
-      wordLimit: task.wordLimit,
-      ...sourceState,
-      sortOrder: task.sortOrder,
-    };
-  }
-
-  private resolveTaskSourceState(
-    task: any,
-  ): Pick<TaskResponseDto, 'sourceStatus' | 'sourcePolicy'> {
-    if (task.type !== TaskType.ESSAY) {
-      return { sourceStatus: 'first_party' };
-    }
-
-    const text = `${task.title ?? ''} ${task.essayPrompt ?? ''}`.toLowerCase();
-    if (text.includes('common app') || text.includes('personal statement')) {
-      return {
-        sourceStatus: 'generic',
-        sourcePolicy:
-          'Generic Common App writing task; not a school-specific sourced prompt.',
-      };
-    }
-
-    return {
-      sourceStatus: 'source_review_required',
-      sourcePolicy:
-        'School-specific essay task must link to a source-backed verified EssayPrompt before it is treated as authoritative.',
-    };
+  mapTaskToResponse(task: ApplicationTaskRecord): TaskResponseDto {
+    return mapTaskResponse(task);
   }
 }

@@ -3,15 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, fontFamily } from '@/utils/theme';
 import { SectionHeader } from './SectionHeader';
 
 export interface TierTilesProps {

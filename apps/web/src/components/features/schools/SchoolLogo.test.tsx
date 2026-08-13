@@ -1,4 +1,5 @@
 import type { ImgHTMLAttributes } from 'react';
+/* eslint-disable @next/next/no-img-element -- Test mock intentionally represents next/image as its rendered DOM element. */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SchoolLogo } from './SchoolLogo';

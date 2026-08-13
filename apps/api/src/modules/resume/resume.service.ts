@@ -268,7 +268,7 @@ export class ResumeService {
       .digest('hex');
   }
 
-  private familyForType(type: ResumeType | string): 'STUDY_ABROAD' | 'CAREER' {
+  private familyForType(type: string): 'STUDY_ABROAD' | 'CAREER' {
     return type === 'INTERNSHIP' || type === 'FULL_TIME_JOB'
       ? 'CAREER'
       : 'STUDY_ABROAD';
@@ -278,7 +278,7 @@ export class ResumeService {
     return Array.isArray(value) ? value : [];
   }
 
-  private sectionTitleForType(type: ResumeSectionType | string): string {
+  private sectionTitleForType(type: string): string {
     const titles: Record<string, string> = {
       HEADER: 'Contact Information',
       EDUCATION: 'Education',
@@ -1775,7 +1775,7 @@ export class ResumeService {
       data: {
         lastReviewAt: new Date(),
         status: 'REVIEWED',
-        qualitySummary: await this.computeQualitySummary(resume),
+        qualitySummary: this.computeQualitySummary(resume),
       },
     });
 
@@ -1926,7 +1926,9 @@ export class ResumeService {
         (bullet) => typeof bullet === 'string' && bullet.includes(original),
       );
       if (index >= 0) {
-        bullets[index] = String(bullets[index]).replace(original, suggestion);
+        const bullet = bullets[index];
+        if (typeof bullet !== 'string') continue;
+        bullets[index] = bullet.replace(original, suggestion);
         return { applied: true, content: next };
       }
     }
@@ -1935,7 +1937,7 @@ export class ResumeService {
 
   async getQualitySummary(userId: string, resumeId: string) {
     const resume = await this.findById(userId, resumeId);
-    const summary = await this.computeQualitySummary(resume);
+    const summary = this.computeQualitySummary(resume);
     await this.prisma.resume.update({
       where: { id: resumeId },
       data: { qualitySummary: summary },
@@ -1943,7 +1945,7 @@ export class ResumeService {
     return summary;
   }
 
-  private async computeQualitySummary(resume: ResumeWithSections) {
+  private computeQualitySummary(resume: ResumeWithSections) {
     const family = this.familyForType(resume.type);
     const visible = resume.sections.filter((section) => section.isVisible);
     const sectionTypes = new Set(visible.map((section) => section.type));

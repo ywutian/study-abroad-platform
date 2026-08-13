@@ -147,7 +147,11 @@ export class ProfileController {
     @Body() data: OnboardingDto,
   ) {
     const profileInput = data.profile ?? {};
-    const profileData: any = {
+    const profileData: UpdateProfileDto & {
+      birthday?: Date;
+      graduationDate?: Date;
+      onboardingCompleted: boolean;
+    } = {
       ...profileInput,
       realName: profileInput.realName ?? data.realName,
       onboardingCompleted: true,
@@ -166,7 +170,7 @@ export class ProfileController {
     // matching the rest of the app's test-score form behavior.
     if (data.testScores && data.testScores.length > 0) {
       for (const score of data.testScores) {
-        const scoreData: any = {
+        const scoreData: CreateTestScoreDto = {
           type: score.type,
           score: Math.round(score.score),
         };

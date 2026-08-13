@@ -65,7 +65,7 @@ export function RankingBadge({
           const isFallback = r.confidence === 'fallback';
           const listLabel = isFallback
             ? t('rankingFallbackShort')
-            : t(`rankingList.${getRankingListLabelKey(r.list)}` as any);
+            : t(`rankingList.${getRankingListLabelKey(r.list)}` as never);
           const tooltipText = isFallback
             ? t('rankingTooltipFallback', { source: sourceLabel, year: r.year })
             : t('rankingTooltip', { source: sourceLabel, year: r.year });

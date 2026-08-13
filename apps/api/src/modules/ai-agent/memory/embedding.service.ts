@@ -148,8 +148,17 @@ export class EmbeddingService {
           );
         }
 
-        const data = await response.json();
-        return data.data?.[0]?.embedding || [];
+        const data: unknown = await response.json();
+        if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
+        const rows = (data as Record<string, unknown>).data;
+        if (!Array.isArray(rows) || !rows[0] || typeof rows[0] !== 'object') {
+          return [];
+        }
+        const embedding = (rows[0] as Record<string, unknown>).embedding;
+        return Array.isArray(embedding) &&
+          embedding.every((value) => typeof value === 'number')
+          ? embedding
+          : [];
       });
 
       if (embedding.length > 0) {
@@ -308,7 +317,13 @@ export class EmbeddingService {
     if (raw) {
       try {
         // @cache-parse-allowed - number[]; no Date to lose
-        return JSON.parse(raw);
+        const parsed: unknown = JSON.parse(raw);
+        if (
+          Array.isArray(parsed) &&
+          parsed.every((value) => typeof value === 'number')
+        ) {
+          return parsed;
+        }
       } catch {
         // corrupt entry — fall through to memory
       }

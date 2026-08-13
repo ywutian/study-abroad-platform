@@ -32,7 +32,7 @@ export function AdminRecentActivity({ recentActivity }: AdminRecentActivityProps
     >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <Clock className="h-5 w-5" />
             {t('dashboard.recentActivity')}
           </CardTitle>
@@ -59,7 +59,7 @@ export function AdminRecentActivity({ recentActivity }: AdminRecentActivityProps
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{log.details}</p>
                     )}
                   </div>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  <span className="text-2xs text-muted-foreground whitespace-nowrap">
                     {new Date(log.createdAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',

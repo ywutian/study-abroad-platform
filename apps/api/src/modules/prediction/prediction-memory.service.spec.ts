@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PredictionMemoryService } from './prediction-memory.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { PredictionMemoryService } from './prediction-memory.service';
 
 describe('PredictionMemoryService', () => {
   let service: PredictionMemoryService;
-  let memoryManager: MemoryManagerService;
 
   const mockMemoryManager = {
     recall: jest.fn().mockResolvedValue([]),
@@ -21,7 +20,6 @@ describe('PredictionMemoryService', () => {
     }).compile();
 
     service = module.get<PredictionMemoryService>(PredictionMemoryService);
-    memoryManager = module.get<MemoryManagerService>(MemoryManagerService);
   });
 
   afterEach(() => {

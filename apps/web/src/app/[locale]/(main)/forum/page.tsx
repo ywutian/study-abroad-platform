@@ -277,7 +277,9 @@ export default function ForumPage() {
                   <MessageSquare className="h-4 w-4" />
                   {t('title')}
                 </div>
-                <h1 className="truncate text-2xl font-semibold tracking-normal">{currentTitle}</h1>
+                <h1 className="truncate text-title font-semibold tracking-normal">
+                  {currentTitle}
+                </h1>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
                   {selectedCommunity?.description || t('forumDescription')}
                 </p>

@@ -8,7 +8,6 @@ import {
   IsEnum,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
 } from 'class-validator';
 

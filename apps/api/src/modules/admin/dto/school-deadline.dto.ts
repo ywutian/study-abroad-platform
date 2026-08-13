@@ -33,6 +33,7 @@ export class CreateSchoolDeadlineDto {
   @IsString()
   @IsNotEmpty()
   @IsIn([...APPLICATION_ROUND_VALUES])
+  @MaxLength(20)
   round: string;
 
   @ApiProperty({ description: 'Application deadline' })

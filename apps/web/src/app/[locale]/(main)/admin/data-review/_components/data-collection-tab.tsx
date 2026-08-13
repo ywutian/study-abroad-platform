@@ -49,7 +49,7 @@ export function DataCollectionTab({ onSwitchTab }: Props) {
       {/* Data flow diagram */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">{t('dataFlow')}</CardTitle>
+          <CardTitle className="text-body-sm font-medium">{t('dataFlow')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center gap-2 sm:gap-4 py-2">

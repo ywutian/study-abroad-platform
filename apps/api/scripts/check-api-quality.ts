@@ -21,6 +21,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { gatherParenText, hasIgnoreTag } from './check-api-quality-helpers';
 
 const API_SRC = path.resolve(__dirname, '../src');
 const isCI = !!process.env.CI;
@@ -415,8 +416,24 @@ function checkMissingTest(filePath: string, lines: string[]): Issue[] {
   const specFile = path.join(dir, `${baseName}.spec.ts`);
   const testDir = path.join(dir, '__tests__');
   const testFile = path.join(testDir, `${baseName}.spec.ts`);
+  const serviceStem = baseName.replace(/\.service$/, '');
+  const classMatch = lines.join('\n').match(/export\s+class\s+(\w+Service)\b/);
+  const hasConsolidatedSpec = getAllFiles(API_SRC)
+    .filter((candidate) => candidate.endsWith('.spec.ts'))
+    .some((candidate) => {
+      const spec = fs.readFileSync(candidate, 'utf8');
+      return (
+        spec.includes(`/${serviceStem}.service`) ||
+        spec.includes(`./${serviceStem}.service`) ||
+        Boolean(classMatch?.[1] && spec.includes(classMatch[1]))
+      );
+    });
 
-  if (!fs.existsSync(specFile) && !fs.existsSync(testFile)) {
+  if (
+    !fs.existsSync(specFile) &&
+    !fs.existsSync(testFile) &&
+    !hasConsolidatedSpec
+  ) {
     issues.push({
       file: relativePath(filePath),
       line: 1,
@@ -524,10 +541,19 @@ function checkSelectMappingDrift(filePath: string, lines: string[]): Issue[] {
   while ((selectMatch = selectConstRegex.exec(content)) !== null) {
     const constName = selectMatch[1];
     const selectBody = selectMatch[2];
-    // Extract fields (skip spread patterns like `...SCHOOL_BASIC_SELECT`)
-    const fields = [...selectBody.matchAll(/^\s*(\w+):\s*true/gm)].map(
-      (m) => m[1],
-    );
+    // Only compare direct fields of the SELECT. Nested relation fields belong
+    // to their own mapper/serializer and must not be attributed to the first
+    // top-level mapper in the file.
+    let depth = 0;
+    const fields: string[] = [];
+    for (const line of selectBody.split('\n')) {
+      if (depth === 0) {
+        const fieldMatch = line.match(/^\s*(\w+):\s*true\b/);
+        if (fieldMatch) fields.push(fieldMatch[1]);
+      }
+      depth += (line.match(/\{/g) ?? []).length;
+      depth -= (line.match(/\}/g) ?? []).length;
+    }
     if (fields.length === 0) continue;
 
     // Find the closest matching mapper function by naming convention:
@@ -538,15 +564,20 @@ function checkSelectMappingDrift(filePath: string, lines: string[]): Issue[] {
     const mapperMatch = mapperRegex.exec(content);
     if (mapperMatch && mapperMatch.index > selectMatch.index) {
       const mapperName = mapperMatch[1];
-      const mapperBody = mapperMatch[2];
+      // A selected value can be consumed by a helper called from the mapper,
+      // so inspect the implementation region after the SELECT rather than one
+      // regex-captured function body (which also breaks on nested braces).
+      const mappingRegion = content.slice(
+        selectMatch.index + selectMatch[0].length,
+      );
 
       for (const field of fields) {
         if (field === 'id') continue; // id is always implicitly used
         if (field === 'aliases') continue; // aliases used for matching, not response
         // Check if field is referenced in mapper (e.g., `.fieldName` or `field:`)
         if (
-          !mapperBody.includes(`.${field}`) &&
-          !mapperBody.includes(`${field}:`)
+          !mappingRegion.includes(`.${field}`) &&
+          !mappingRegion.includes(`${field}:`)
         ) {
           const lineNum = content
             .substring(0, selectMatch.index)
@@ -569,54 +600,6 @@ function checkSelectMappingDrift(filePath: string, lines: string[]): Issue[] {
 }
 
 // ── Cache / Redis governance (added 2026-06) ───────────────
-
-/** True when the current line (trailing comment) or the preceding line carries the tag. */
-function hasIgnoreTag(lines: string[], idx: number, tag: string): boolean {
-  // Tag may be inline on the decorator line, OR anywhere in the contiguous
-  // comment block immediately above it — so a multi-line justification works and
-  // the tag need not sit on the single line directly above the decorator. Stops
-  // at the first non-comment line, so a tag can't leak across an unrelated
-  // decorator.
-  if ((lines[idx] ?? '').includes(tag)) return true;
-  for (let j = idx - 1; j >= 0; j--) {
-    const line = (lines[j] ?? '').trim();
-    const isComment =
-      line.startsWith('//') || line.startsWith('*') || line.startsWith('/*');
-    if (!isComment) break;
-    if (line.includes(tag)) return true;
-  }
-  return false;
-}
-
-/**
- * Collect the text BETWEEN the outer parens of a call whose opening `(` is at
- * `lines[startIdx][openCol]`, tracking paren depth across up to 40 lines.
- */
-function gatherParenText(
-  lines: string[],
-  startIdx: number,
-  openCol: number,
-): string {
-  let depth = 0;
-  let text = '';
-  const end = Math.min(lines.length, startIdx + 40);
-  for (let i = startIdx; i < end; i++) {
-    const seg = i === startIdx ? lines[i].slice(openCol) : lines[i];
-    for (let c = 0; c < seg.length; c++) {
-      const ch = seg[c];
-      if (ch === '(') {
-        depth++;
-        if (depth === 1) continue; // skip the outer open paren itself
-      } else if (ch === ')') {
-        depth--;
-        if (depth === 0) return text;
-      }
-      if (depth >= 1) text += ch;
-    }
-    if (depth >= 1) text += '\n';
-  }
-  return text;
-}
 
 // Rule 8: raw redis.getClient() bypasses metrics + circuit breaker (#274 blind spot).
 // Rule 12: a cache read that JSON.parses without saying what survived.

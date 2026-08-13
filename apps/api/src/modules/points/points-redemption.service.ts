@@ -258,13 +258,18 @@ export class PointsRedemptionService {
       }
 
       // Refund: positive adjust (override the value rather than going through enum)
-      await this.pointsService.adjustPoints(
+      const refunded = await this.pointsService.refundHistoricalAdjustment(
         redemption.userId,
         `REFUND_${redemption.type}`,
-        { redemptionId, reason },
         redemption.pointsSpent,
+        { redemptionId, reason },
         tx,
       );
+      if (!refunded.success || refunded.points !== redemption.pointsSpent) {
+        throw new BadRequestException(
+          'Failed to refund the cancelled redemption',
+        );
+      }
     });
   }
 
@@ -272,6 +277,7 @@ export class PointsRedemptionService {
    * Get a user's redemption history.
    */
   async getHistory(userId: string, limit = 20) {
+    if (!(await this.pointsConfig.isEnabled())) return [];
     return this.prisma.pointsRedemption.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },

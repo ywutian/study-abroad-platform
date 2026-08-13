@@ -409,6 +409,7 @@ export class CreateSchoolDto {
   // (no user/mobile consumer sends this field) — not a user-submitted list.
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(500, { each: true })
   campusSafetyServices?: string[];
 
   @ApiPropertyOptional({

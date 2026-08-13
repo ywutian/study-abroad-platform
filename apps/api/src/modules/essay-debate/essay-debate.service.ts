@@ -13,8 +13,8 @@ import { randomUUID } from 'crypto';
 
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CASE_PUBLIC_WHERE } from '../essay/constants/essay-gallery.constants';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { CASE_PUBLIC_WHERE } from '../essay/constants/essay-gallery.constants';
 import { PointAction, PointsService } from '../points/incentive.service';
 import { DebateBudgetService } from './debate-budget.service';
 import { DebateContextLoaderService } from './debate-context-loader.service';
@@ -237,7 +237,7 @@ export class EssayDebateService {
     };
     try {
       parsed = extractJsonFromLlm(rawLlm) ?? {};
-    } catch (err) {
+    } catch {
       this.logger.warn(
         `extractJsonFromLlm failed; raw len=${rawLlm.length}; first 120 chars=${rawLlm.slice(0, 120)}`,
       );

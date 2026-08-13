@@ -1,19 +1,18 @@
 import {
-  Injectable,
-  NotFoundException,
   ForbiddenException,
-  BadRequestException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
+import { Prisma, Profile, Role, Visibility } from '@prisma/client';
+import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import type { MaybeSerialized } from '../../common/redis/redis-json.types';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
-import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
-import { Profile, Prisma, Visibility, Role } from '@prisma/client';
+import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
-  UpdateProfileDto,
   CreateRecommendationLetterDto,
+  UpdateProfileDto,
   UpdateRecommendationLetterDto,
 } from './dto';
 
@@ -317,14 +316,13 @@ export class ProfileCrudService {
       const targets = Array.isArray(
         (error as { meta?: { target?: unknown } })?.meta?.target,
       )
-        ? ((error as { meta?: { target?: unknown[] } }).meta?.target ?? []).map(
-            String,
-          )
-        : [
-            String(
-              (error as { meta?: { target?: unknown } })?.meta?.target ?? '',
-            ),
-          ];
+        ? (
+            (error as { meta?: { target?: unknown[] } }).meta?.target ?? []
+          ).filter((target): target is string => typeof target === 'string')
+        : typeof (error as { meta?: { target?: unknown } })?.meta?.target ===
+            'string'
+          ? [(error as { meta?: { target?: string } }).meta?.target ?? '']
+          : [];
       const isUserIdRace =
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002' &&

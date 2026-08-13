@@ -1,19 +1,15 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { CASE_CSV_COLUMNS, CsvColumnDef } from '../constants/csv-templates';
+import { CaseRound, CaseStandardFormat } from '../constants/data-formats';
 import {
-  CaseStandardFormat,
-  CaseResult,
-  CaseRound,
-} from '../constants/data-formats';
-import { CsvColumnDef, CASE_CSV_COLUMNS } from '../constants/csv-templates';
-import {
+  normalizeCurriculum,
+  normalizeHighSchoolType,
   normalizeResult,
   normalizeRound,
   normalizeSchoolName,
   parseActivitiesText,
   parseAwardsText,
   parseTestScoresFromRanges,
-  normalizeHighSchoolType,
-  normalizeCurriculum,
 } from '../utils/import-normalizers';
 
 export interface CsvParseError {

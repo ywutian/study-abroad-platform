@@ -372,6 +372,13 @@ async function checkUrl(
         recommendedAction: 'retry-or-external-source-search',
       };
     }
+    return failedUrl(
+      sourceUrl,
+      response.status,
+      finalUrl,
+      contentType,
+      'Readable response contained no extractable text',
+    );
   } catch (error) {
     return failedUrl(
       sourceUrl,

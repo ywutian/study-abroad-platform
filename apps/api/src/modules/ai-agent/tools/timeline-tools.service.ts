@@ -42,7 +42,17 @@ export class TimelineToolsService implements IToolHandlerProvider {
       [
         'create_personal_event',
         (args, userId, _ctx, locale) =>
-          this.createPersonalEvent(userId, args as any, locale),
+          this.createPersonalEvent(
+            userId,
+            {
+              title: args.title ?? '',
+              category: args.category ?? '',
+              deadline: args.deadline,
+              eventDate: args.eventDate,
+              description: args.description,
+            },
+            locale,
+          ),
       ],
     ]);
   }

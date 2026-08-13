@@ -17,7 +17,16 @@ import { RecommendationService } from '../../recommendation/recommendation.servi
 import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import {} from './helpers/education-context.helper';
-import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
+import {
+  ToolHandler,
+  IToolHandlerProvider,
+  type ToolContext,
+} from './tool-handler.interface';
+import type { LoadedProfile } from './helpers/profile-loader.helper';
+
+function isProfileContext(value: unknown): value is LoadedProfile {
+  return typeof value === 'object' && value !== null;
+}
 
 @Injectable()
 export class RecommendationToolsService implements IToolHandlerProvider {
@@ -50,7 +59,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
 
   async recommendSchools(
     userId: string,
-    context: any,
+    context: ToolContext,
     args: { count?: number; preference?: string },
     locale = 'zh',
   ) {
@@ -58,7 +67,7 @@ export class RecommendationToolsService implements IToolHandlerProvider {
 
     // Quick profile check before delegating (avoid charging if profile is empty)
     const profile =
-      context?.profile ||
+      (isProfileContext(context.profile) ? context.profile : null) ||
       (await this.profileLoader.loadProfile(userId, locale));
 
     if (!profile || (!profile.gpa && !profile.testScores?.length)) {
@@ -82,7 +91,8 @@ export class RecommendationToolsService implements IToolHandlerProvider {
         if (cached) {
           this.logger.debug(`recommend_schools cache hit for ${userId}`);
           // @cache-parse-allowed - recommendation payload, no Date fields
-          return JSON.parse(cached);
+          const parsed: unknown = JSON.parse(cached);
+          return parsed;
         }
       }
 

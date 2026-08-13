@@ -71,7 +71,7 @@ export function DecaySection() {
           <div className="flex items-center gap-3">
             <Clock className="h-5 w-5" />
             <div>
-              <CardTitle className="text-base">{t('decay')}</CardTitle>
+              <CardTitle className="text-body">{t('decay')}</CardTitle>
               <CardDescription className="mt-1">{t('decayDesc')}</CardDescription>
             </div>
           </div>

@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PredictionCalibrationService } from './prediction-calibration.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PredictionCalibrationService } from './prediction-calibration.service';
 
 describe('PredictionCalibrationService', () => {
   let service: PredictionCalibrationService;
-  let prisma: PrismaService;
-  let redis: RedisService;
   const createOutcomeRecord = (
     result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED',
     status:
@@ -56,8 +54,6 @@ describe('PredictionCalibrationService', () => {
     service = module.get<PredictionCalibrationService>(
       PredictionCalibrationService,
     );
-    prisma = module.get<PrismaService>(PrismaService);
-    redis = module.get<RedisService>(RedisService);
   });
 
   afterEach(() => {

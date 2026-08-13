@@ -1,35 +1,36 @@
 import {
   Injectable,
-  NotFoundException,
   Logger,
+  NotFoundException,
   Optional,
 } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import {
   AdmissionCase,
   DataReviewStatus,
-  Prisma,
-  Visibility,
-  Role,
   EssayType,
+  Role,
 } from '@prisma/client';
-import { fireAndForget } from '../../common/utils/async.util';
-import {
-  PaginationDto,
-  PaginatedResponseDto,
-} from '../../common/dto/pagination.dto';
-import { PointsService, PointAction } from '../points/incentive.service';
-import {
-  BatchImportCaseDto,
-  ReviewCaseEssayDto,
-  BatchVerifyCaseDto,
-} from './dto/batch-import-case.dto';
-import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
 import { computeCaseQualityScore } from '../../common/constants/data-formats';
-import { CaseQueryService, CaseStats } from './case-query.service';
+import {
+  PaginatedResponseDto,
+  PaginationDto,
+} from '../../common/dto/pagination.dto';
+import { fireAndForget } from '../../common/utils/async.util';
+import { type BatchImportResult } from '../../common/utils/import-normalizers';
+import { PrismaService } from '../../prisma/prisma.service';
+import { PointAction, PointsService } from '../points/incentive.service';
 import { CaseBatchService } from './case-batch.service';
 import { CaseMemoryService } from './case-memory.service';
-import { type BatchImportResult } from '../../common/utils/import-normalizers';
+import { CaseQueryService, CaseStats } from './case-query.service';
+import {
+  BatchImportCaseDto,
+  BatchVerifyCaseDto,
+  ReviewCaseEssayDto,
+} from './dto/batch-import-case.dto';
+import { CreateCaseDto } from './dto/create-case.dto';
+import { toJsonInput } from '../resume/resume-content.helpers';
+
+type CreateCaseInput = Omit<CreateCaseDto, 'result'> & { result: string };
 
 @Injectable()
 export class CaseService {
@@ -99,7 +100,9 @@ export class CaseService {
     return this.caseBatchService.getBatchHistory(page, limit);
   }
 
-  async getImportProgress(batchId: string) {
+  async getImportProgress(
+    batchId: string,
+  ): Promise<Record<string, unknown> & { status: string }> {
     return this.caseBatchService.getImportProgress(batchId);
   }
 
@@ -125,45 +128,7 @@ export class CaseService {
    */
   async create(
     userId: string,
-    data: {
-      schoolId: string;
-      year: number;
-      round?: string;
-      result: string;
-      major?: string;
-      gpaRange?: string;
-      gpa9?: number;
-      gpa10?: number;
-      gpa11?: number;
-      gpa12?: number;
-      satRange?: string;
-      actRange?: string;
-      toeflRange?: string;
-      tags?: string[];
-      activityList?: string;
-      visibility?: 'PRIVATE' | 'PUBLIC' | 'ANONYMOUS' | 'VERIFIED_ONLY';
-      // Structured enrichment fields
-      testScores?: any[];
-      activities?: any[];
-      awards?: any[];
-      apCount?: number;
-      apSubjects?: string[];
-      ibScore?: number;
-      ibPredicted?: boolean;
-      highSchoolId?: string;
-      highSchoolType?: string;
-      curriculumType?: string;
-      demographicTags?: string[];
-      nationality?: string;
-      financialAid?: string;
-      enrollmentStatus?: string;
-      narrative?: string;
-      // Essay fields
-      essayType?: EssayType;
-      essayPrompt?: string;
-      essayContent?: string;
-      promptNumber?: number;
-    },
+    data: CreateCaseInput,
     locale = 'zh',
     userRole: Role = Role.USER,
   ): Promise<AdmissionCase> {
@@ -201,9 +166,9 @@ export class CaseService {
       act: rest.actRange ? { range: rest.actRange } : undefined,
       toefl: rest.toeflRange ? { range: rest.toeflRange } : undefined,
       tags: rest.tags,
-      testScores: testScores as any,
-      activities: activitiesJson as any,
-      awards: awardsJson as any,
+      testScores,
+      activities: activitiesJson,
+      awards: awardsJson,
       ap: apCount ? { count: apCount, subjects: apSubjects } : undefined,
       ib: ibScore ? { score: ibScore, predicted: ibPredicted } : undefined,
       highSchoolType,
@@ -217,10 +182,10 @@ export class CaseService {
       rest.activityList ||
       (activitiesJson?.length
         ? activitiesJson
-            .map((a: any) =>
-              a.category
-                ? `${a.category} - ${a.description}${a.role ? ` (${a.role})` : ''}`
-                : a.description,
+            .map((activity) =>
+              activity.category
+                ? `${activity.category} - ${activity.description}${activity.role ? ` (${activity.role})` : ''}`
+                : activity.description,
             )
             .join('\n')
         : undefined);
@@ -266,13 +231,13 @@ export class CaseService {
         ...(essayType && { essayType }),
         // Structured enrichment fields (cast to Prisma JSON)
         ...(testScores?.length && {
-          testScores: testScores,
+          testScores: toJsonInput(testScores),
         }),
         ...(activitiesJson?.length && {
-          activities: activitiesJson,
+          activities: toJsonInput(activitiesJson),
         }),
         ...(awardsJson?.length && {
-          awards: awardsJson,
+          awards: toJsonInput(awardsJson),
         }),
         ...(apCount !== undefined && { apCount }),
         ...(apSubjects?.length && { apSubjects }),

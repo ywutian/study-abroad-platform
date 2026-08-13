@@ -65,7 +65,7 @@ export function ReviewTab() {
     <div className="space-y-4">
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-body-sm font-medium">
             {t('review.needsReEvaluation', { count: items.length })}
           </CardTitle>
         </CardHeader>

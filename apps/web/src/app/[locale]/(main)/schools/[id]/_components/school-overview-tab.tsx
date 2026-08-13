@@ -868,7 +868,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
     school.testingPolicy &&
     school.testingPolicy !== 'UNKNOWN'
       ? {
-          label: testingPolicyT(school.testingPolicy as any),
+          label: testingPolicyT(school.testingPolicy as never),
           source: getSchoolFieldSource(school, 'testingPolicy'),
         }
       : null,
@@ -907,7 +907,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.95fr)]">
         <Card className="lg:col-start-1 lg:row-start-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 ">
               <GraduationCap className="h-5 w-5" />
               {t('school.officialData.title')}
             </CardTitle>
@@ -935,7 +935,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
         <Card className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 ">
               <Calendar className="h-5 w-5" />
               {t('school.deadlines.title')}
             </CardTitle>
@@ -1000,7 +1000,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
         {publishedSnapshotRows.length > 0 && (
           <Card className="lg:col-start-1 lg:row-start-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 ">
                 <ClipboardList className="h-5 w-5" />
                 {t('school.publishedSnapshot.title')}
               </CardTitle>
@@ -1028,7 +1028,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 ">
             <Shield className="h-5 w-5" />
             {t('school.campusLifeOfficial.title')}
           </CardTitle>
@@ -1186,7 +1186,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       {hasSupplementalSection && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 ">
               <ClipboardList className="h-5 w-5" />
               {t('school.supplemental.title')}
             </CardTitle>
@@ -1248,7 +1248,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       {(school.description || school.descriptionZh) && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 ">
               <TrendingUp className="h-5 w-5" />
               {t('school.about')}
             </CardTitle>

@@ -359,7 +359,13 @@ export class CaseBatchService {
     if (!data) return { status: 'not_found' };
     try {
       // @cache-parse-allowed - progress counters only, no Date fields
-      return { status: 'in_progress', ...JSON.parse(data) };
+      const parsed: unknown = JSON.parse(data);
+      return {
+        status: 'in_progress',
+        ...(typeof parsed === 'object' && parsed !== null
+          ? (parsed as Record<string, unknown>)
+          : {}),
+      };
     } catch {
       return { status: 'unknown' };
     }

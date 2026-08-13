@@ -161,7 +161,7 @@ export class ForumPostService {
       this.prisma.forumPost.count({ where }),
     ]);
 
-    const formattedPosts: PostDto[] = posts.map((post: any) => ({
+    const formattedPosts: PostDto[] = posts.map((post) => ({
       id: post.id,
       categoryId: post.categoryId,
       category: this.mapCategory(post.category),
@@ -171,7 +171,7 @@ export class ForumPostService {
       title: post.title,
       content: post.content,
       tags: post.tags,
-      images: (post.images || []).map((image: any) => this.mapImage(image)),
+      images: (post.images || []).map((image) => this.mapImage(image)),
       isTeamPost: post.isTeamPost,
       teamSize: post.teamSize || undefined,
       currentSize: post.currentSize || undefined,
@@ -183,7 +183,7 @@ export class ForumPostService {
       commentCount: post._count.comments,
       isPinned: post.isPinned,
       isLocked: post.isLocked,
-      isLiked: userId ? (post.likes as any[]).length > 0 : false,
+      isLiked: userId ? post.likes.length > 0 : false,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
     }));
@@ -255,7 +255,7 @@ export class ForumPostService {
         teamApplications:
           userId === null
             ? false
-            : ({
+            : {
                 where: {
                   OR: [{ applicantId: userId }, { post: { authorId: userId } }],
                 },
@@ -265,16 +265,13 @@ export class ForumPostService {
                   },
                   resume: { select: { id: true, title: true } },
                 },
-              } as any),
+              },
       },
     });
 
     if (!post) {
       throw new NotFoundException('Post not found');
     }
-    // Conditional includes (likes, teamApplications) prevent TS from inferring relation types
-    const postData = post as any;
-
     // 增加浏览量
     await this.prisma.forumPost.update({
       where: { id: postId },
@@ -290,7 +287,16 @@ export class ForumPostService {
       );
     }
 
-    const formatComment = (comment: any): CommentDto => ({
+    type CommentTree = {
+      id: string;
+      author: Parameters<typeof mapForumAuthor>[0];
+      content: string;
+      parentId: string | null;
+      likeCount: number;
+      createdAt: Date;
+      replies?: CommentTree[];
+    };
+    const formatComment = (comment: CommentTree): CommentDto => ({
       id: comment.id,
       author: mapForumAuthor(comment.author),
       content: comment.content,
@@ -300,17 +306,25 @@ export class ForumPostService {
       createdAt: comment.createdAt,
     });
 
+    const teamApplications = userId
+      ? (post.teamApplications as Prisma.TeamApplicationGetPayload<{
+          include: {
+            applicant: { select: typeof FORUM_AUTHOR_SELECT };
+          };
+        }>[])
+      : [];
+
     return {
       id: post.id,
       categoryId: post.categoryId,
-      category: this.mapCategory(postData.category),
-      communityId: postData.communityId || undefined,
-      community: this.mapCommunity(postData.community, userId),
-      author: mapForumAuthor(postData.author),
+      category: this.mapCategory(post.category),
+      communityId: post.communityId || undefined,
+      community: this.mapCommunity(post.community, userId),
+      author: mapForumAuthor(post.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
-      images: (postData.images || []).map((image: any) => this.mapImage(image)),
+      images: (post.images || []).map((image) => this.mapImage(image)),
       isTeamPost: post.isTeamPost,
       teamSize: post.teamSize || undefined,
       currentSize: post.currentSize || undefined,
@@ -319,20 +333,20 @@ export class ForumPostService {
       teamStatus: post.teamStatus || undefined,
       viewCount: post.viewCount + 1,
       likeCount: post.likeCount,
-      commentCount: postData._count.comments,
+      commentCount: post._count.comments,
       isPinned: post.isPinned,
       isLocked: post.isLocked,
-      isLiked: userId ? postData.likes?.length > 0 : false,
+      isLiked: userId ? post.likes.length > 0 : false,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
-      comments: postData.comments.map(formatComment),
-      teamMembers: postData.teamMembers?.map((tm: any) => ({
+      comments: post.comments.map(formatComment),
+      teamMembers: post.teamMembers.map((tm) => ({
         id: tm.id,
         user: mapForumAuthor(tm.user),
         role: tm.role,
         joinedAt: tm.joinedAt,
       })),
-      teamApplications: postData.teamApplications?.map((ta: any) => ({
+      teamApplications: teamApplications.map((ta) => ({
         id: ta.id,
         applicant: mapForumAuthor(ta.applicant),
         message: ta.message || undefined,

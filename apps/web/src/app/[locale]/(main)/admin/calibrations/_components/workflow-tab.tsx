@@ -125,7 +125,7 @@ export function WorkflowTab() {
       }),
   });
 
-  const policies = policiesResponse?.items ?? [];
+  const policies = useMemo(() => policiesResponse?.items ?? [], [policiesResponse]);
 
   useEffect(() => {
     if (selectedPolicyId || policies.length === 0) return;
@@ -230,7 +230,7 @@ export function WorkflowTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-body">
             <SearchCheck className="h-4 w-4" />
             {t('hubTitle')}
           </CardTitle>
@@ -273,7 +273,7 @@ export function WorkflowTab() {
       <div className="grid min-w-0 gap-4 xl:grid-cols-[1.4fr_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-body">
               <Filter className="h-4 w-4" />
               {t('observationsTitle')}
             </CardTitle>
@@ -400,7 +400,7 @@ export function WorkflowTab() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <CardTitle className="flex items-center gap-2 text-body">
                 <Activity className="h-4 w-4" />
                 {t('activeSignalsTitle')}
               </CardTitle>

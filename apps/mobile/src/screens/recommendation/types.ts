@@ -113,11 +113,21 @@ export const BUDGET_OPTIONS = [
   { key: 'unlimited', label: 'No Limit' },
 ];
 
-export const TIER_CONFIG = {
-  reach: { color: '#ef4444', icon: 'rocket-outline' as const, labelKey: 'tierReach' },
-  match: { color: '#f59e0b', icon: 'checkmark-circle-outline' as const, labelKey: 'tierMatch' },
-  safety: { color: '#6f7b58', icon: 'shield-checkmark-outline' as const, labelKey: 'tierSafety' },
-} as const;
+export function getTierConfig(colors: ReturnType<typeof useColors>) {
+  return {
+    reach: { color: colors.error, icon: 'rocket-outline' as const, labelKey: 'tierReach' },
+    match: {
+      color: colors.warning,
+      icon: 'checkmark-circle-outline' as const,
+      labelKey: 'tierMatch',
+    },
+    safety: {
+      color: colors.success,
+      icon: 'shield-checkmark-outline' as const,
+      labelKey: 'tierSafety',
+    },
+  } as const;
+}
 
 // ============================================================
 // Query Key Factory

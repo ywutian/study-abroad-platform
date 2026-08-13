@@ -101,7 +101,7 @@ export function MemoryBrowserSection() {
           <div className="flex items-center gap-3">
             <Search className="h-5 w-5" />
             <div>
-              <CardTitle className="text-base">{t('browse')}</CardTitle>
+              <CardTitle className="text-body">{t('browse')}</CardTitle>
               <CardDescription className="mt-1">{t('browseDesc')}</CardDescription>
             </div>
           </div>

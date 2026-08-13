@@ -522,7 +522,7 @@ export class WorkflowEngineService {
     tools: ToolDefinition[],
     memoryContext: string = '',
   ): Promise<ExecutionPlan> {
-    const systemPrompt = await this.buildPlanPrompt(
+    const systemPrompt = this.buildPlanPrompt(
       config,
       conversation,
       memoryContext,
@@ -884,7 +884,7 @@ export class WorkflowEngineService {
     conversation: ConversationState,
     memoryContext: string = '',
   ): AsyncGenerator<string> {
-    const systemPrompt = await this.buildSolvePrompt(
+    const systemPrompt = this.buildSolvePrompt(
       config,
       conversation,
       memoryContext,
@@ -1058,7 +1058,11 @@ ${solveOutput.slice(0, 2000)}
           if (!toolResult.success || !toolResult.result) return;
 
           const schoolData = toolResult.result as Record<string, unknown>;
-          const actualValue = String(schoolData[fact.field] ?? 'N/A');
+          const rawValue = schoolData[fact.field];
+          const actualValue =
+            typeof rawValue === 'string' || typeof rawValue === 'number'
+              ? String(rawValue)
+              : 'N/A';
 
           // Simple mismatch check: if the claim contains a number, compare with actual
           const claimNumbers = fact.claim.match(/[\d.]+%?/g);
@@ -1115,7 +1119,7 @@ ${solveOutput.slice(0, 2000)}
     memoryContext: string = '',
   ): AsyncGenerator<string> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
-    const basePrompt = await this.buildSolvePrompt(
+    const basePrompt = this.buildSolvePrompt(
       config,
       conversation,
       memoryContext,
@@ -1282,11 +1286,11 @@ ${solveOutput.slice(0, 2000)}
    * Build the system prompt for the Plan phase, enriched with enterprise memory
    * when MemoryManagerService is available. Falls back to basic in-memory context.
    */
-  private async buildPlanPrompt(
+  private buildPlanPrompt(
     config: AgentConfig,
     conversation: ConversationState,
     memoryContext: string = '',
-  ): Promise<string> {
+  ): string {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
     const dateLabel =
@@ -1309,11 +1313,11 @@ ${uiContext}${memoryContext}${getPlanSystemSuffix(locale)}`;
    * Build the system prompt for the Solve phase, enriched with enterprise memory
    * when MemoryManagerService is available. Falls back to basic in-memory context.
    */
-  private async buildSolvePrompt(
+  private buildSolvePrompt(
     config: AgentConfig,
     conversation: ConversationState,
     memoryContext: string = '',
-  ): Promise<string> {
+  ): string {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
     const dateLabel =

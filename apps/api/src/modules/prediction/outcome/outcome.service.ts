@@ -162,7 +162,7 @@ export class OutcomeService {
         });
       } catch (err) {
         this.logger.warn(
-          `Failed to award points for outcome ${record.id}: ${err instanceof Error ? err.message : err}`,
+          `Failed to award points for outcome ${record.id}: ${err instanceof Error ? err.message : 'unknown error'}`,
         );
         // Non-fatal — outcome is recorded regardless of point reward success
       }
@@ -428,7 +428,7 @@ export class OutcomeService {
         });
       } catch (err) {
         this.logger.warn(
-          `Failed to award verification points for outcome ${outcomeId}: ${err instanceof Error ? err.message : err}`,
+          `Failed to award verification points for outcome ${outcomeId}: ${err instanceof Error ? err.message : 'unknown error'}`,
         );
       }
     }
@@ -444,7 +444,7 @@ export class OutcomeService {
         await this.createAdmissionCaseFromOutcome(updated.id);
       } catch (err) {
         this.logger.warn(
-          `Failed to create AdmissionCase from outcome ${outcomeId}: ${err instanceof Error ? err.message : err}`,
+          `Failed to create AdmissionCase from outcome ${outcomeId}: ${err instanceof Error ? err.message : 'unknown error'}`,
         );
         // Non-fatal — verification succeeds regardless
       }

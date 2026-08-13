@@ -1,352 +1,47 @@
 /**
  * Forum Page - Community discussion board with categories, search, and post creation.
  */
-import React, { useState, useCallback, useMemo, memo } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { Stack, router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
+import { Stack, router } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  AnimatedButton,
   AnimatedCard,
-  CardContent,
   Badge,
+  CardContent,
   EmptyState,
   Loading,
-  SearchBar,
-  Segment,
-  AnimatedButton,
   Modal,
-  Checkbox,
-  AnimatedCounter,
 } from '@/components/ui';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
-import {
-  useColors,
-  spacing,
-  fontSize,
-  fontWeight,
-  borderRadius,
-  fontFamily,
-  withOpacity,
-} from '@/utils/theme';
-import { API_ROUTES, forumRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { qk, cachePolicy } from '@/lib/query';
+import { cachePolicy, qk } from '@/lib/query';
+import { spacing, useColors, withOpacity } from '@/utils/theme';
+import { API_ROUTES, forumRoutes } from '@study-abroad/shared';
+import { styles } from './forum.styles';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface CategoryDto {
-  id: string;
-  name: string;
-  nameZh: string;
-  description: string;
-  descriptionZh: string;
-  icon: string;
-  color: string;
-  postCount: number;
-}
-
-interface PostAuthor {
-  id: string;
-  name?: string;
-  avatar?: string;
-  isVerified?: boolean;
-  email?: string;
-  profile?: {
-    nickname?: string;
-    avatarUrl?: string;
-  };
-}
-
-interface PostDto {
-  id: string;
-  categoryId: string;
-  category: CategoryDto;
-  author: PostAuthor;
-  title: string;
-  content: string;
-  tags: string[];
-  isTeamPost: boolean;
-  teamSize: number | null;
-  currentSize: number | null;
-  requirements: string | null;
-  teamDeadline: string | null;
-  teamStatus: string | null;
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-  isPinned: boolean;
-  isLocked: boolean;
-  isLiked: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ForumStats {
-  postCount?: number;
-  userCount?: number;
-  teamingCount?: number;
-  activeToday?: number;
-  totalPosts?: number;
-  totalComments?: number;
-  totalUsers?: number;
-  todayPosts?: number;
-}
-
-interface PostsResponse {
-  posts: PostDto[];
-  total: number;
-  hasMore: boolean;
-}
-
-enum PostSortBy {
-  latest = 'latest',
-  popular = 'popular',
-  comments = 'comments',
-  recommended = 'recommended',
-}
-
-interface CreatePostDto {
-  categoryId: string;
-  title: string;
-  content: string;
-  tags: string[];
-  isTeamPost: boolean;
-  teamSize?: number;
-  requirements?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const PAGE_SIZE = 15;
-
-const SORT_OPTIONS: { key: PostSortBy; labelKey: string }[] = [
-  { key: PostSortBy.latest, labelKey: 'forum.sort.latest' },
-  { key: PostSortBy.popular, labelKey: 'forum.sort.popular' },
-  { key: PostSortBy.comments, labelKey: 'forum.sort.comments' },
-];
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const timeAgo = (
-  dateStr: string,
-  t: (key: string, opts?: Record<string, unknown>) => string
-): string => {
-  const now = Date.now();
-  const diff = now - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return t('common.time.justNow');
-  if (mins < 60) return t('common.time.minutesShort', { count: mins });
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return t('common.time.hoursShort', { count: hours });
-  const days = Math.floor(hours / 24);
-  if (days < 30) return t('common.time.daysShort', { count: days });
-  const months = Math.floor(days / 30);
-  return t('common.time.monthsShort', { count: months });
-};
-
-const getAuthorName = (author: PostAuthor): string => {
-  return author.name || author.profile?.nickname || author.email?.split('@')[0] || 'User';
-};
-
-// ---------------------------------------------------------------------------
-// Memoized header for FlashList ListHeaderComponent
-// ---------------------------------------------------------------------------
-
-interface ForumHeaderProps {
-  stats: ForumStats | undefined;
-  search: string;
-  onSearchChange: (text: string) => void;
-  categories: CategoryDto[] | undefined;
-  selectedCategoryId: string | null;
-  onSelectCategory: (id: string | null) => void;
-  sortBy: PostSortBy;
-  onSortChange: (key: PostSortBy) => void;
-  postsTotal: number | undefined;
-  isFetching: boolean;
-  isLoading: boolean;
-  colors: ReturnType<typeof useColors>;
-  isZh: boolean;
-}
-
-const ForumHeader = memo(function ForumHeader({
-  stats,
-  search,
-  onSearchChange,
-  categories,
-  selectedCategoryId,
-  onSelectCategory,
-  sortBy,
-  onSortChange,
-  postsTotal,
-  isFetching,
-  isLoading,
-  colors: c,
-  isZh,
-}: ForumHeaderProps) {
-  const { t } = useTranslation();
-
-  const categoryLabel = (cat: CategoryDto) => (isZh ? cat.nameZh || cat.name : cat.name);
-
-  const statItems = useMemo(() => {
-    if (!stats) return [];
-    return [
-      {
-        value: stats.postCount ?? stats.totalPosts ?? 0,
-        label: t('forum.stats.posts'),
-        color: c.primary,
-      },
-      {
-        value: stats.userCount ?? stats.totalUsers ?? 0,
-        label: t('forum.stats.users'),
-        color: c.info,
-      },
-      {
-        value: stats.teamingCount ?? stats.totalComments ?? 0,
-        label: t('forum.stats.teaming'),
-        color: c.success,
-      },
-      {
-        value: stats.activeToday ?? stats.todayPosts ?? 0,
-        label: t('forum.stats.activeToday'),
-        color: c.warning,
-      },
-    ];
-  }, [stats, t, c.primary, c.info, c.success, c.warning]);
-
-  return (
-    <View>
-      {/* Stats */}
-      {stats && (
-        <Animated.View entering={FadeInDown.duration(400).springify()}>
-          <AnimatedCard style={styles.statsCard}>
-            <CardContent>
-              <View style={styles.statsRow}>
-                {statItems.map((stat) => (
-                  <View key={stat.label} style={styles.statItem}>
-                    <AnimatedCounter
-                      value={stat.value}
-                      style={[styles.statValue, { color: stat.color }]}
-                    />
-                    <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>
-                      {stat.label}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </CardContent>
-          </AnimatedCard>
-        </Animated.View>
-      )}
-
-      {/* Search */}
-      <SearchBar
-        value={search}
-        onChangeText={onSearchChange}
-        placeholder={t('forum.searchPlaceholder')}
-        style={styles.searchBar}
-      />
-
-      {/* Category filters */}
-      {categories && categories.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterScroll}
-          contentContainerStyle={styles.filterScrollContent}
-        >
-          <TouchableOpacity
-            onPress={() => onSelectCategory(null)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: selectedCategoryId === null }}
-            accessibilityLabel={t('forum.allCategories')}
-            style={[
-              styles.categoryChip,
-              { backgroundColor: selectedCategoryId === null ? c.primary : c.muted },
-            ]}
-          >
-            <Text
-              style={[
-                styles.categoryChipText,
-                { color: selectedCategoryId === null ? c.primaryForeground : c.foreground },
-              ]}
-            >
-              {t('forum.allCategories')}
-            </Text>
-          </TouchableOpacity>
-          {categories.map((cat) => {
-            const isActive = selectedCategoryId === cat.id;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => onSelectCategory(isActive ? null : cat.id)}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isActive }}
-                accessibilityLabel={categoryLabel(cat)}
-                style={[
-                  styles.categoryChip,
-                  { backgroundColor: isActive ? cat.color || c.primary : c.muted },
-                ]}
-              >
-                {cat.icon ? <Text style={styles.categoryIcon}>{cat.icon}</Text> : null}
-                <Text
-                  style={[
-                    styles.categoryChipText,
-                    { color: isActive ? c.onGradient : c.foreground },
-                  ]}
-                >
-                  {categoryLabel(cat)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      )}
-
-      {/* Sort */}
-      <Segment
-        segments={SORT_OPTIONS.map((opt) => ({ key: opt.key, label: t(opt.labelKey) }))}
-        value={sortBy}
-        onChange={(key) => onSortChange(key as PostSortBy)}
-        style={styles.sortSegment}
-      />
-
-      {/* Results count */}
-      {postsTotal != null && (
-        <View style={styles.resultsRow}>
-          <Text style={[styles.resultsCount, { color: c.foregroundMuted }]}>
-            {t('forum.resultsCount', { count: postsTotal })}
-          </Text>
-          {isFetching && !isLoading && (
-            <ActivityIndicator size="small" color={c.primary} style={{ marginLeft: spacing.sm }} />
-          )}
-        </View>
-      )}
-    </View>
-  );
-});
+import {
+  ForumHeader,
+  PAGE_SIZE,
+  PostSortBy,
+  getAuthorName,
+  timeAgo,
+  type CategoryDto,
+  type CreatePostDto,
+  type ForumStats,
+  type PostDto,
+  type PostsResponse,
+} from '@/components/features/forum/ForumHeader';
 
 // ---------------------------------------------------------------------------
 // Main Component
@@ -523,7 +218,7 @@ export default function ForumPage() {
             accessibilityLabel={`${item.title}, ${authorName}`}
             style={[
               styles.postCard,
-              item.isPinned && { borderLeftWidth: 3, borderLeftColor: c.warning },
+              item.isPinned && [styles.pinnedCard, { borderLeftColor: c.warning }],
             ]}
           >
             <CardContent>
@@ -558,9 +253,7 @@ export default function ForumPage() {
                   <Badge variant="default">
                     <View style={styles.teamBadgeContent}>
                       <Ionicons name="people" size={10} color={c.primaryForeground} />
-                      <Text
-                        style={{ color: c.primaryForeground, fontSize: fontSize.xs, marginLeft: 2 }}
-                      >
+                      <Text style={[styles.teamBadgeText, { color: c.primaryForeground }]}>
                         {t('forum.team')}
                       </Text>
                     </View>
@@ -657,7 +350,6 @@ export default function ForumPage() {
       c.primaryForeground,
       c.muted,
       c.error,
-      c.onGradient,
       t,
       categoryLabel,
     ]
@@ -707,7 +399,7 @@ export default function ForumPage() {
         value: cat.id,
         label: categoryLabel(cat),
       })),
-    [categories, isZh]
+    [categories, categoryLabel]
   );
 
   const renderCreatePostModal = () => (
@@ -757,7 +449,7 @@ export default function ForumPage() {
         onChangeText={(val) => setNewPost((p) => ({ ...p, content: val }))}
         multiline
         numberOfLines={6}
-        style={{ minHeight: 120, textAlignVertical: 'top' }}
+        style={styles.contentInput}
       />
 
       {/* Tags input */}
@@ -769,7 +461,7 @@ export default function ForumPage() {
             value={tagInput}
             onChangeText={setTagInput}
             onSubmitEditing={addTag}
-            containerStyle={{ flex: 1, marginBottom: 0 }}
+            containerStyle={styles.tagInput}
             returnKeyType="done"
           />
           <AnimatedButton
@@ -879,241 +571,3 @@ export default function ForumPage() {
 // ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-  },
-  emptyContainer: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
-
-  // Stats
-  statsCard: {
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statValue: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    fontFamily: fontFamily.mono,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
-  },
-
-  // Search
-  searchBar: {
-    marginBottom: spacing.md,
-  },
-
-  // Category filters
-  filterScroll: {
-    marginBottom: spacing.md,
-  },
-  filterScrollContent: {
-    paddingRight: spacing.lg,
-    gap: spacing.sm,
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: borderRadius.full,
-    gap: spacing.xs,
-  },
-  categoryIcon: {
-    fontSize: fontSize.sm,
-  },
-  categoryChipText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-
-  // Sort
-  sortSegment: {
-    marginBottom: spacing.md,
-  },
-
-  // Results
-  resultsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  resultsCount: {
-    fontSize: fontSize.sm,
-  },
-
-  // Post card
-  postCard: {
-    marginBottom: spacing.md,
-  },
-  pinnedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.xs,
-  },
-  pinnedText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-  },
-  postTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    lineHeight: fontSize.base * 1.4,
-    marginBottom: spacing.sm,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
-  },
-  teamBadgeContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tagChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  tagText: {
-    fontSize: 10,
-  },
-  teamInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.sm,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.sm,
-  },
-  teamInfoText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-    flex: 1,
-  },
-  postFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  avatarPlaceholder: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: 11,
-    fontWeight: fontWeight.semibold,
-  },
-  authorName: {
-    fontSize: fontSize.xs,
-    marginLeft: spacing.xs,
-    maxWidth: 80,
-  },
-  timeSeparator: {
-    fontSize: fontSize.xs,
-  },
-  timeText: {
-    fontSize: fontSize.xs,
-  },
-  statsRow2: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  statIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  statText: {
-    fontSize: fontSize.xs,
-    fontFamily: fontFamily.mono,
-  },
-
-  // FAB
-  fab: {
-    position: 'absolute',
-    right: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    shadowOpacity: 0.18,
-    elevation: 3,
-  },
-  fabInner: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-
-  // Create post modal
-  inputLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    marginBottom: spacing.sm,
-  },
-  tagsSection: {
-    marginBottom: spacing.lg,
-  },
-  tagsInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  tagsList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  tagRemovable: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-    gap: spacing.xs,
-  },
-  tagRemovableText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.medium,
-  },
-  teamSection: {
-    marginBottom: spacing.lg,
-  },
-  teamFields: {
-    marginTop: spacing.md,
-    paddingLeft: spacing.xl + spacing.md,
-  },
-});

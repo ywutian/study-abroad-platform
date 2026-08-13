@@ -43,7 +43,7 @@ export function QuotaSection() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Settings className="h-5 w-5" />
-          <CardTitle className="text-base">{t('quotaTitle')}</CardTitle>
+          <CardTitle className="text-body">{t('quotaTitle')}</CardTitle>
         </div>
         <CardDescription>{t('quotaDesc')}</CardDescription>
       </CardHeader>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -53,7 +53,7 @@ export function AutomationTab() {
         }),
     });
 
-  const experiments = experimentsData?.items ?? [];
+  const experiments = useMemo(() => experimentsData?.items ?? [], [experimentsData]);
   const selectedExperiment = experiments.find((item) => item.id === selectedExperimentId);
 
   useEffect(() => {

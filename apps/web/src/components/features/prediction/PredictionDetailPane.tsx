@@ -5,7 +5,6 @@ import { type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import {
   Award,

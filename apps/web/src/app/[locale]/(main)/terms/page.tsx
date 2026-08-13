@@ -123,7 +123,7 @@ export default function TermsPage() {
               <Card className="overflow-hidden hover:shadow-md transition-shadow">
                 <div className={cn('h-1 bg-gradient-to-r', colors.gradient)} />
                 <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-3 text-lg">
+                  <CardTitle className="flex items-center gap-3 ">
                     <div
                       className={cn(
                         'flex h-9 w-9 items-center justify-center rounded-lg',

@@ -434,7 +434,7 @@ function fitIRLS(
   tol = 1e-6,
 ): FitResult {
   const n = y.length;
-  let beta = new Float64Array(D); // β₀ + β₁..βₚ
+  let beta: Float64Array<ArrayBufferLike> = new Float64Array(D); // β₀ + β₁..βₚ
   let iter = 0;
   let prevLL = -Infinity;
 

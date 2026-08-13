@@ -154,9 +154,90 @@ export function BulkImportTab() {
   const [step, setStep] = useState<Step>(1);
   const [importType, setImportType] = useState<ImportType>('cases');
   const [fileName, setFileName] = useState('');
-  const [rawData, setRawData] = useState<Record<string, string>[]>([]);
   const [validationResults, setValidationResults] = useState<ValidationRow[]>([]);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+
+  // Step 1: Upload
+  // Step 2: Validate
+  const validateData = useCallback(
+    (data: Record<string, string>[]) => {
+      const required = importType === 'cases' ? CASE_REQUIRED_FIELDS : ESSAY_REQUIRED_FIELDS;
+      const results: ValidationRow[] = data.map((row, i) => {
+        const issues: { field: string; message: string }[] = [];
+
+        // Required fields
+        for (const field of required) {
+          if (!row[field]?.trim()) {
+            issues.push({ field, message: `Missing required field: ${field}` });
+          }
+        }
+
+        // Type-specific validations
+        if (importType === 'cases') {
+          if (
+            row.year &&
+            (isNaN(Number(row.year)) || Number(row.year) < 2000 || Number(row.year) > 2030)
+          ) {
+            issues.push({ field: 'year', message: 'Invalid year' });
+          }
+          if (row.gpa && !/^\d+\.?\d*(-\d+\.?\d*)?$/.test(row.gpa)) {
+            issues.push({ field: 'gpa', message: 'Invalid GPA format (expected: 3.8-4.0)' });
+          }
+        } else {
+          // Essay prompt validations
+          const VALID_ESSAY_TYPES = [
+            'SUPPLEMENTAL',
+            'SHORT_ANSWER',
+            'PERSONAL_STATEMENT',
+            'WHY_SCHOOL',
+            'ACTIVITY',
+            'OPTIONAL',
+            'OTHER',
+            'COMMON_APP',
+            'UC',
+            'MAIN',
+          ];
+          if (row.type && !VALID_ESSAY_TYPES.includes(row.type.trim().toUpperCase())) {
+            issues.push({
+              field: 'type',
+              message: `Invalid essay type. Expected: ${VALID_ESSAY_TYPES.join(', ')}`,
+            });
+          }
+          if (
+            row.year &&
+            (isNaN(Number(row.year)) || Number(row.year) < 2020 || Number(row.year) > 2030)
+          ) {
+            issues.push({ field: 'year', message: 'Invalid year (2020-2030)' });
+          }
+          if (row.prompt && row.prompt.length > 5000) {
+            issues.push({
+              field: 'prompt',
+              message: `Prompt too long (${row.prompt.length}/5000)`,
+            });
+          }
+          if (
+            row.wordLimit &&
+            (isNaN(Number(row.wordLimit)) ||
+              Number(row.wordLimit) < 0 ||
+              Number(row.wordLimit) > 10000)
+          ) {
+            issues.push({ field: 'wordLimit', message: 'Invalid word limit (0-10000)' });
+          }
+        }
+
+        const hasError = issues.some((i) => required.includes(i.field));
+        return {
+          row: i + 1,
+          status: issues.length === 0 ? 'valid' : hasError ? 'error' : 'warning',
+          issues,
+          data: row,
+        };
+      });
+
+      setValidationResults(results);
+    },
+    [importType]
+  );
 
   // Step 1: Upload
   const handleFileSelect = useCallback(
@@ -169,93 +250,15 @@ export function BulkImportTab() {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-          setRawData(results.data as Record<string, string>[]);
+          const rows = results.data as Record<string, string>[];
           setStep(2);
-          // Auto-validate
-          validateData(results.data as Record<string, string>[]);
+          validateData(rows);
         },
-        error: (err) => {
-          toast.error(err.message);
-        },
+        error: (err) => toast.error(err.message),
       });
     },
-    [importType]
+    [validateData]
   );
-
-  // Step 2: Validate
-  const validateData = (data: Record<string, string>[]) => {
-    const required = importType === 'cases' ? CASE_REQUIRED_FIELDS : ESSAY_REQUIRED_FIELDS;
-    const results: ValidationRow[] = data.map((row, i) => {
-      const issues: { field: string; message: string }[] = [];
-
-      // Required fields
-      for (const field of required) {
-        if (!row[field]?.trim()) {
-          issues.push({ field, message: `Missing required field: ${field}` });
-        }
-      }
-
-      // Type-specific validations
-      if (importType === 'cases') {
-        if (
-          row.year &&
-          (isNaN(Number(row.year)) || Number(row.year) < 2000 || Number(row.year) > 2030)
-        ) {
-          issues.push({ field: 'year', message: 'Invalid year' });
-        }
-        if (row.gpa && !/^\d+\.?\d*(-\d+\.?\d*)?$/.test(row.gpa)) {
-          issues.push({ field: 'gpa', message: 'Invalid GPA format (expected: 3.8-4.0)' });
-        }
-      } else {
-        // Essay prompt validations
-        const VALID_ESSAY_TYPES = [
-          'SUPPLEMENTAL',
-          'SHORT_ANSWER',
-          'PERSONAL_STATEMENT',
-          'WHY_SCHOOL',
-          'ACTIVITY',
-          'OPTIONAL',
-          'OTHER',
-          'COMMON_APP',
-          'UC',
-          'MAIN',
-        ];
-        if (row.type && !VALID_ESSAY_TYPES.includes(row.type.trim().toUpperCase())) {
-          issues.push({
-            field: 'type',
-            message: `Invalid essay type. Expected: ${VALID_ESSAY_TYPES.join(', ')}`,
-          });
-        }
-        if (
-          row.year &&
-          (isNaN(Number(row.year)) || Number(row.year) < 2020 || Number(row.year) > 2030)
-        ) {
-          issues.push({ field: 'year', message: 'Invalid year (2020-2030)' });
-        }
-        if (row.prompt && row.prompt.length > 5000) {
-          issues.push({ field: 'prompt', message: `Prompt too long (${row.prompt.length}/5000)` });
-        }
-        if (
-          row.wordLimit &&
-          (isNaN(Number(row.wordLimit)) ||
-            Number(row.wordLimit) < 0 ||
-            Number(row.wordLimit) > 10000)
-        ) {
-          issues.push({ field: 'wordLimit', message: 'Invalid word limit (0-10000)' });
-        }
-      }
-
-      const hasError = issues.some((i) => required.includes(i.field));
-      return {
-        row: i + 1,
-        status: issues.length === 0 ? 'valid' : hasError ? 'error' : 'warning',
-        issues,
-        data: row,
-      };
-    });
-
-    setValidationResults(results);
-  };
 
   const validCount = validationResults.filter((r) => r.status === 'valid').length;
   const warningCount = validationResults.filter((r) => r.status === 'warning').length;
@@ -315,7 +318,6 @@ export function BulkImportTab() {
   const resetWizard = () => {
     setStep(1);
     setFileName('');
-    setRawData([]);
     setValidationResults([]);
     setImportResult(null);
     if (fileInputRef.current) fileInputRef.current.value = '';

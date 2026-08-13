@@ -90,7 +90,7 @@ export function SuggestionsTab() {
     <div className="space-y-4">
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-body-sm font-medium">
             {t('suggestions.pendingCount', { count: items.length })}
           </CardTitle>
         </CardHeader>
@@ -185,7 +185,7 @@ export function SuggestionsTab() {
                 <SelectContent>
                   {SCHOOL_TYPES.map((st) => (
                     <SelectItem key={st} value={st}>
-                      {t(`schoolTypes.${st}` as any)}
+                      {t(`schoolTypes.${st}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>

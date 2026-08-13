@@ -82,7 +82,7 @@ export function LlmCallsTab() {
       <CardHeader>
         <div className="flex items-center gap-3">
           <Terminal className="h-5 w-5" />
-          <CardTitle className="text-base">{t('llmCalls.title')}</CardTitle>
+          <CardTitle className="text-body">{t('llmCalls.title')}</CardTitle>
           {data && (
             <Badge variant="secondary" className="ml-auto">
               {total} {t('llmCalls.total')}

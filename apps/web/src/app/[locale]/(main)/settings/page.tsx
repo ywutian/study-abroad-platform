@@ -350,7 +350,7 @@ export default function SettingsPage() {
                     >
                       <SectionIcon className={cn('h-4 w-4', colors.icon)} />
                     </div>
-                    <CardTitle className="text-base">{section.title}</CardTitle>
+                    <CardTitle className="text-body">{section.title}</CardTitle>
                     {section.comingSoon && (
                       <Badge variant="secondary" className="gap-1 text-xs">
                         <Clock className="h-3 w-3" />

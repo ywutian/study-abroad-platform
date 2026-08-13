@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
+
+const DISTILLATION_SCHOOL_SELECT = {
+  id: true,
+  name: true,
+  nameZh: true,
+  usNewsRank: true,
+} as const;
 import {
   DISTILLATION_LIVE_STAGE,
   DISTILLATION_SHADOW_STAGE,
@@ -333,12 +340,7 @@ export class DistillationStatsRollupService {
       take: Math.max(1, Math.min(200, query?.limit ?? 50)),
       include: {
         school: {
-          select: {
-            id: true,
-            name: true,
-            nameZh: true,
-            usNewsRank: true,
-          },
+          select: DISTILLATION_SCHOOL_SELECT,
         },
       },
     });
@@ -366,7 +368,7 @@ export class DistillationStatsRollupService {
       take: Math.max(1, Math.min(500, query?.limit ?? 100)),
       include: {
         school: {
-          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+          select: DISTILLATION_SCHOOL_SELECT,
         },
       },
     });

@@ -24,6 +24,7 @@ PrismaService, RedisService, EventEmitter2 | AI/LLM: No
 - Listens to events: `CHAT_MESSAGE_OFFLINE`, `NOTIFICATION_PUSH`, `USER_REGISTERED`
 - 17 notification types: NEW_FOLLOWER, NEW_MESSAGE, CASE_HELPFUL, POST_REPLY, VERIFICATION_APPROVED, DEADLINE_REMINDER, SYSTEM_BROADCAST, etc.
 - Templates generate title/content from event metadata
+- While the points economy is dormant, points-only notifications are suppressed, retained points-only history is hidden, mixed historical copy is sanitized, and unread counts include visible items only
 - Push token management for mobile (Expo push notifications)
 - Readiness live-channel consent is read-only and requires explicit user preference; remote push also requires a valid Expo push token
 - `@ThrottleRelaxed()` on controller

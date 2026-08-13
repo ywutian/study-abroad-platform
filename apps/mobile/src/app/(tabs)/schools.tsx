@@ -188,8 +188,8 @@ export default function SchoolsScreen() {
                 <Skeleton width={56} height={56} borderRadius={28} />
                 <View style={styles.schoolInfo}>
                   <Skeleton width="80%" height={18} />
-                  <Skeleton width="50%" height={14} style={{ marginTop: 8 }} />
-                  <View style={[styles.badges, { marginTop: 8 }]}>
+                  <Skeleton width="50%" height={14} style={styles.skeletonMarginTop} />
+                  <View style={[styles.badges, styles.skeletonMarginTop]}>
                     <Skeleton width={50} height={20} borderRadius={10} />
                     <Skeleton width={40} height={20} borderRadius={10} />
                   </View>
@@ -291,6 +291,7 @@ export default function SchoolsScreen() {
 }
 
 const styles = StyleSheet.create({
+  skeletonMarginTop: { marginTop: 8 },
   container: {
     flex: 1,
   },

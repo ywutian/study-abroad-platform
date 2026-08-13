@@ -242,7 +242,7 @@ export function EssayPromptManager() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-500" />
               {t('status.pending')}
             </CardTitle>
@@ -253,7 +253,7 @@ export function EssayPromptManager() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-emerald-500" />
               {t('status.verified')}
             </CardTitle>
@@ -264,7 +264,7 @@ export function EssayPromptManager() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <XCircle className="h-4 w-4 text-red-500" />
               {t('status.rejected')}
             </CardTitle>
@@ -275,7 +275,7 @@ export function EssayPromptManager() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CardTitle className="text-body-sm font-medium flex items-center gap-2">
               <FileText className="h-4 w-4 text-blue-500" />
               {t('total')}
             </CardTitle>
