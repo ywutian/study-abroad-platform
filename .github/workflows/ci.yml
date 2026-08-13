@@ -1159,14 +1159,18 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Run Semgrep
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: >-
-            p/javascript
-            p/typescript
-            p/nodejs
-            p/owasp-top-ten
-          args: --sarif --output=semgrep.sarif
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            semgrep/semgrep@sha256:65dcd4408adda7c183a6b4550cb1e9b19f7f627a6fbb7e0559bd466bedc44d7b \
+            semgrep scan \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/nodejs \
+            --config p/owasp-top-ten \
+            --sarif \
+            --output semgrep.sarif
 
       - name: Upload SARIF
         if: always()
