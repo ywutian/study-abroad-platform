@@ -82,9 +82,10 @@ describe('PredictionPersistenceService', () => {
 
       expect(prisma.predictionResult.upsert).toHaveBeenCalledWith({
         where: {
-          profileId_schoolId: {
+          profileId_schoolId_applicationYear: {
             profileId: 'profile-1',
             schoolId: 'school-1',
+            applicationYear: resolveApplicationYear(),
           },
         },
         update: {

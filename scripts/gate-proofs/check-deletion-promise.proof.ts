@@ -1,4 +1,4 @@
-import { runGate, withPatchedFile, expectClean, expectFired } from './harness';
+import { runGate, withPatchedFile, withSeededViolation, expectClean, expectFired } from './harness';
 
 /**
  * Seed: turn the purge flag off while the UI still promises a 30-day deletion.
@@ -14,5 +14,11 @@ export async function prove(): Promise<void> {
     '.github/workflows/ci.yml',
     (s) => s.replace('ACCOUNT_PURGE_ENABLED=true', 'ACCOUNT_PURGE_ENABLED=false'),
     () => expectFired(runGate('check-deletion-promise.ts'), 'does not match')
+  );
+
+  await withSeededViolation(
+    'apps/mobile/src/lib/i18n/locales/de.json',
+    JSON.stringify({ settings: { deleteAccountConfirm: 'Konto löschen' } }),
+    () => expectFired(runGate('check-deletion-promise.ts'), 'locales/de.json')
   );
 }

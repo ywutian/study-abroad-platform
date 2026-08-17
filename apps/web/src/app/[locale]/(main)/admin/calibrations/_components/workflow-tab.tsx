@@ -136,6 +136,7 @@ export function WorkflowTab() {
   const { data: observationsResponse, isLoading: observationsLoading } = useQuery<
     PaginatedResponse<PredictionWorkflowObservation>
   >({
+    placeholderData: keepPreviousData,
     queryKey: ['predictionWorkflowObservations', page, statusFilter, sourceFilter],
     queryFn: () =>
       apiClient.get(adminRoutes.predictionWorkflowObservations(), {

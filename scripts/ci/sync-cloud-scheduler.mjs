@@ -109,7 +109,7 @@ for (const job of pruneOnly ? [] : manifest.jobs) {
     // Scheduler's 30m HTTP maximum and Cloud Run's --timeout=1800.
     '--attempt-deadline=1740s',
     '--max-retry-attempts=1',
-    '--min-backoff=300s',
+    '--min-backoff=3600s',
     `--${isUpdate ? 'update-headers' : 'headers'}=x-cron-secret=${SECRET}`,
     '--quiet',
   ];

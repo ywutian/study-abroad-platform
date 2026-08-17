@@ -253,12 +253,10 @@ async function main() {
       insufficientData: { tier: 4, reason: 'launch_smoke' },
     } as any,
   );
-  const skippedPersistenceRow = await prisma.predictionResult.findUnique({
+  const skippedPersistenceRow = await prisma.predictionResult.findFirst({
     where: {
-      profileId_schoolId: {
-        profileId: 'launch-tier4-profile-fixture',
-        schoolId: 'launch-tier4-school-fixture',
-      },
+      profileId: 'launch-tier4-profile-fixture',
+      schoolId: 'launch-tier4-school-fixture',
     },
   });
 

@@ -294,6 +294,39 @@ function main(): void {
     process.exit(1);
   }
   console.log(`✅ cron manifest in sync (${jobs.length} jobs)`);
+  checkSchedulerMinBackoff();
+}
+
+const HOUR = 3600;
+const MINUTE = 60;
+const UNIT: Record<string, number> = { HOUR, MINUTE, DAY: 24 * HOUR };
+
+function checkSchedulerMinBackoff(): void {
+  const ttlSrc = fs.readFileSync(
+    path.join(ROOT, 'apps/api/src/common/redis/redis-ttl.constants.ts'),
+    'utf8'
+  );
+  let maxLock = 0;
+  for (const m of ttlSrc.matchAll(/(\w+_CRON_LOCK):\s*(\d+)\s*\*\s*(HOUR|MINUTE|DAY)/g)) {
+    const seconds = Number(m[2]) * (UNIT[m[3]] ?? 0);
+    if (seconds > maxLock) maxLock = seconds;
+  }
+  const scheduler = fs.readFileSync(path.join(ROOT, 'scripts/ci/sync-cloud-scheduler.mjs'), 'utf8');
+  const backoff = scheduler.match(/--min-backoff=(\d+)s/);
+  if (!backoff) {
+    console.error('❌ sync-cloud-scheduler.mjs has no --min-backoff=Ns flag.');
+    process.exit(1);
+  }
+  const minBackoff = Number(backoff[1]);
+  if (minBackoff < maxLock) {
+    console.error(
+      `❌ Cloud Scheduler --min-backoff=${minBackoff}s is shorter than the longest cron lock TTL (${maxLock}s).\n` +
+        `   A 5xx retry would hit a still-held lock and look like healthy contention (HTTP 200).\n` +
+        `   Raise --min-backoff to >= ${maxLock}s.`
+    );
+    process.exit(1);
+  }
+  console.log(`✅ Scheduler min-backoff ${minBackoff}s >= max cron lock TTL ${maxLock}s`);
 }
 
 main();

@@ -20,7 +20,9 @@ import {
 } from 'ts-morph';
 
 const ROOT = path.resolve(__dirname, '..');
-const CLIENT_ROOTS = ['apps/web/src', 'apps/mobile/src'].map((item) => path.join(ROOT, item));
+const CLIENT_ROOTS = ['apps/web/src', 'apps/mobile/src', 'packages/browser-extension/src'].map(
+  (item) => path.join(ROOT, item)
+);
 const API_ROOT = path.join(ROOT, 'apps/api/src');
 const METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'upload']);
 const stagedOnly = process.argv.includes('--staged');

@@ -22,8 +22,12 @@ DashboardService, PointsService, PointsConfigService | AI/LLM: No
 
 ## Business Rules
 
+- Soft delete requires the current password (`DeleteAccountDto.password`)
 - Soft delete anonymizes email, hashes password to "DELETED", sets deletedAt timestamp
 - Soft delete also: revokes refresh tokens, anonymizes messages, privatizes cases, removes follows/blocks
+- Hard delete deletes owned object-storage keys first (verification / outcome evidence / forum images), then the DB row. Blob failure leaves the account so the user can retry.
+- Hard delete also `deleteMany`s orphan `userId` tables with no User FK (Memory, AgentConversation, Entity, UserAIPreference, AgentTokenUsage, AgentQuota, MemoryCompaction, AgentTask, ForumLike, CaseSwipe, GraphEntity, EntityRelationship, ApplicationAnalysis*). `AuditLog` / `AgentAuditLog` / `AgentSecurityEvent` are retain-allowlisted.
+- Accounts with `Payment` rows are skipped by `AccountPurgeService`; copy discloses that exception
 - GDPR export returns all user data as downloadable JSON (excludes passwordHash)
 - Referral codes are 12-char uppercase hex, generated on first access
 - Points summary calculates total earned/spent from history
@@ -32,6 +36,7 @@ DashboardService, PointsService, PointsConfigService | AI/LLM: No
 ## Gotchas
 
 - `findById` excludes soft-deleted users (`deletedAt: null` filter)
-- Hard delete is irreversible — cascades through all related data in a transaction
+- Hard delete is irreversible. Prisma cascades FK relations off `User`; orphan `userId` tables are deleted explicitly in `hardDelete`. Audit tables are not cascaded.
+- Object storage delete runs before the DB transaction; a COS/S3/OSS failure keeps the account
 - `safeDelete` utility handles non-critical cleanup failures gracefully
 - Points history enriched with Chinese descriptions from PointsConfigService at controller level

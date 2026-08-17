@@ -23,6 +23,34 @@ export interface StorageFile {
 
 type SchoolMediaKind = 'LOGO' | 'CAMPUS_COVER';
 
+/** Object-key prefixes owned by a user, not by a school or the platform. */
+export const USER_OBJECT_KEY_PREFIXES = [
+  'verification/',
+  'outcome-evidence/',
+  'forum/',
+] as const;
+
+/**
+ * Turn a stored URL or key into an owned object key, or null if it is not
+ * ours (external avatars, dicebear, empty). Used by account purge so we
+ * never `deleteFile` a third-party URL.
+ */
+export function extractOwnedObjectKey(
+  ref: string | null | undefined,
+): string | null {
+  if (!ref) return null;
+  const trimmed = ref.trim().split(/[?#]/)[0];
+  if (!trimmed || trimmed.includes('..')) return null;
+  for (const prefix of USER_OBJECT_KEY_PREFIXES) {
+    const idx = trimmed.indexOf(prefix);
+    if (idx >= 0) {
+      const key = trimmed.slice(idx);
+      return key.includes('..') ? null : key;
+    }
+  }
+  return null;
+}
+
 /**
  * 存储后端类型
  *
@@ -394,29 +422,195 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
-   * 删除文件
+   * Delete an object. Missing keys are success (idempotent); any other
+   * failure throws — account purge must not swallow a leftover blob.
    */
   async deleteFile(key: string): Promise<void> {
+    this.assertSafeObjectKey(key);
     switch (this.storageType) {
-      case 'local':
-        await this.deleteLocal(key);
-        break;
-      // 云存储删除逻辑可按需添加
+      case 's3':
+        await this.deleteS3(key);
+        return;
+      case 'oss':
+        await this.deleteOSS(key);
+        return;
+      case 'cos':
+        await this.deleteCOS(key);
+        return;
       default:
         await this.deleteLocal(key);
     }
   }
 
+  /**
+   * Delete every key, then throw once if any failed. Tries the whole set so
+   * one missing-permission object does not skip the rest.
+   */
+  async deleteFiles(keys: string[]): Promise<void> {
+    const unique = [...new Set(keys.filter(Boolean))];
+    const failures: string[] = [];
+    for (const key of unique) {
+      try {
+        await this.deleteFile(key);
+      } catch (err) {
+        failures.push(
+          `${key}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+    if (failures.length > 0) {
+      throw new InternalServerErrorException(
+        `Storage delete failed for ${failures.length} key(s): ${failures.join('; ')}`,
+      );
+    }
+  }
+
+  /**
+   * Local-disk listing of a user's objects. Cloud providers return [] here
+   * and rely on DB-collected keys; the purge proof exercises local storage.
+   */
+  async listUserObjectKeys(userId: string): Promise<string[]> {
+    if (
+      !userId ||
+      userId.includes('..') ||
+      userId.includes('/') ||
+      userId.includes('\\')
+    ) {
+      return [];
+    }
+    const keys: string[] = [];
+    for (const prefix of USER_OBJECT_KEY_PREFIXES) {
+      keys.push(...(await this.listKeysByPrefix(`${prefix}${userId}/`)));
+    }
+    return keys;
+  }
+
+  async listKeysByPrefix(prefix: string): Promise<string[]> {
+    this.assertSafeObjectKey(prefix.replace(/\/+$/, '') || prefix);
+    if (this.storageType !== 'local') {
+      return [];
+    }
+    const absDir = path.resolve(this.localBasePath, prefix);
+    const root = path.resolve(this.localBasePath);
+    const rel = path.relative(root, absDir);
+    if (rel.startsWith('..') || path.isAbsolute(rel)) {
+      throw new InternalServerErrorException('Invalid storage prefix');
+    }
+    return this.walkLocalKeys(absDir, prefix.replace(/\/+$/, ''));
+  }
+
+  private async walkLocalKeys(
+    absDir: string,
+    keyPrefix: string,
+  ): Promise<string[]> {
+    let entries;
+    try {
+      entries = await fs.readdir(absDir, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
+    const keys: string[] = [];
+    for (const entry of entries) {
+      const rel = `${keyPrefix}/${entry.name}`;
+      if (entry.isDirectory()) {
+        keys.push(
+          ...(await this.walkLocalKeys(path.join(absDir, entry.name), rel)),
+        );
+      } else if (entry.isFile()) {
+        keys.push(rel);
+      }
+    }
+    return keys;
+  }
+
+  private assertSafeObjectKey(key: string): void {
+    if (!key || key.includes('..') || path.isAbsolute(key)) {
+      throw new InternalServerErrorException('Invalid storage key');
+    }
+  }
+
   private async deleteLocal(key: string): Promise<void> {
     const filePath = path.join(this.localBasePath, key);
+    const root = path.resolve(this.localBasePath);
+    const abs = path.resolve(filePath);
+    if (
+      path.relative(root, abs).startsWith('..') ||
+      path.isAbsolute(path.relative(root, abs))
+    ) {
+      throw new InternalServerErrorException('Invalid storage key');
+    }
     try {
-      await fs.unlink(filePath);
-      this.logger.debug(`文件已删除: ${filePath}`);
+      await fs.unlink(abs);
+      this.logger.debug(`文件已删除: ${abs}`);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
       }
     }
+  }
+
+  private async deleteS3(key: string): Promise<void> {
+    const { S3Client, DeleteObjectCommand } =
+      await import('@aws-sdk/client-s3');
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET');
+    const region = this.configService.get<string>('AWS_REGION') || 'us-east-1';
+    const endpoint = this.configService.get<string>('AWS_S3_ENDPOINT');
+    const client = new S3Client({
+      region,
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
+        secretAccessKey:
+          this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
+      },
+      ...(endpoint && { endpoint, forcePathStyle: true }),
+    });
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+  }
+
+  private async deleteOSS(key: string): Promise<void> {
+    const OSS = (await import('ali-oss')).default;
+    const client = new OSS({
+      region: this.configService.get('OSS_REGION')!,
+      accessKeyId: this.configService.get('OSS_ACCESS_KEY_ID')!,
+      accessKeySecret: this.configService.get('OSS_ACCESS_KEY_SECRET')!,
+      bucket: this.configService.get('OSS_BUCKET')!,
+    });
+    try {
+      await client.delete(key);
+    } catch (error) {
+      const status = (error as { status?: number; code?: string }).status;
+      const code = (error as { code?: string }).code;
+      if (status === 404 || code === 'NoSuchKey') return;
+      throw error;
+    }
+  }
+
+  private async deleteCOS(key: string): Promise<void> {
+    const COS = (await import('cos-nodejs-sdk-v5')).default;
+    const client = new COS({
+      SecretId: this.configService.get('COS_SECRET_ID'),
+      SecretKey: this.configService.get('COS_SECRET_KEY'),
+    });
+    const bucket = this.configService.get('COS_BUCKET');
+    const region = this.configService.get('COS_REGION');
+    await new Promise<void>((resolve, reject) => {
+      client.deleteObject(
+        { Bucket: bucket, Region: region, Key: key },
+        (err) => {
+          if (!err) {
+            resolve();
+            return;
+          }
+          const statusCode = (err as { statusCode?: number }).statusCode;
+          if (statusCode === 404) {
+            resolve();
+            return;
+          }
+          reject(err instanceof Error ? err : new Error(String(err)));
+        },
+      );
+    });
   }
 
   /**

@@ -63,6 +63,8 @@
     "lint:any-ratchet": "tsx scripts/check-any-ratchet.ts",
     "lint:file-size": "tsx scripts/check-file-size-ratchet.ts",
     "lint:gate-proofs": "tsx scripts/check-gate-proofs.ts",
+    "lint:e2e-runner": "tsx scripts/check-e2e-runner.ts",
+    "lint:orphan-userid": "tsx scripts/check-orphan-userid.ts",
     "lint:audit-gate": "tsx scripts/check-audit-gate.ts",
     "lint:dep-pins": "tsx scripts/check-dep-pins.ts",
     "lint:deploy-drift": "tsx scripts/check-deploy-config-drift.ts",
@@ -74,7 +76,7 @@
     "churn:report": "tsx scripts/churn-report.ts",
     "git:dashboard": "tsx scripts/git-dashboard.ts",
     "lint:dead-code": "knip",
-    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes:test && pnpm lint:routes && pnpm lint:closure && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys && pnpm lint:coverage-ratchet && pnpm lint:any-ratchet && pnpm lint:file-size && pnpm lint:gate-proofs && pnpm lint:audit-gate && pnpm lint:dep-pins && pnpm lint:deploy-drift && pnpm lint:cron-manifest && pnpm lint:seed-parity && pnpm lint:seed-freshness && pnpm lint:deletion-promise && pnpm format:check",
+    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes:test && pnpm lint:routes && pnpm lint:closure && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys && pnpm lint:coverage-ratchet && pnpm lint:any-ratchet && pnpm lint:file-size && pnpm lint:gate-proofs && pnpm lint:audit-gate && pnpm lint:dep-pins && pnpm lint:deploy-drift && pnpm lint:cron-manifest && pnpm lint:seed-parity && pnpm lint:seed-freshness && pnpm lint:deletion-promise && pnpm lint:e2e-runner && pnpm lint:orphan-userid && pnpm format:check",
     "check": "pnpm lint:all && pnpm test",
     "preflight": "pnpm --filter api db:generate && pnpm lint:all && pnpm test",
     "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test",
@@ -198,7 +200,7 @@
       "postcss": ">=8.5.18",
       "sharp": ">=0.35.0",
       "@opentelemetry/propagator-jaeger": ">=2.9.0",
-      "nanoid@>=3.0.0 <3.3.17": ">=3.3.17 <4"
+      "nanoid@>=3.0.0 <3.3.18": ">=3.3.18 <4"
     },
     "auditConfig": {
       "ignoreGhsas": [

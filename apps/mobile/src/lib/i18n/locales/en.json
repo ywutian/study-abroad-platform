@@ -1136,7 +1136,7 @@
         "REQUIRED": "Test required",
         "OPTIONAL": "Test optional",
         "BLIND": "Test blind",
-        "UNKNOWN": "Testing policy unknown"
+        "UNKNOWN": "Testing policy: not on record"
       },
       "intlAid": {
         "NEED_BLIND": "Intl aid need-blind",
@@ -1256,7 +1256,7 @@
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "logoutConfirm": "Are you sure you want to logout?",
-    "deleteAccountConfirm": "This cannot be undone. Delete your account? Sign-in is disabled and your identifying information is cleared.",
+    "deleteAccountConfirm": "This cannot be undone. Sign-in is disabled and identifying information is cleared. After 30 days your data is permanently deleted and cannot be recovered. Accounts with payment records keep the financial rows after the grace period; identity is still cleared and sign-in is disabled.",
     "featureInDev": "Feature in Development",
     "thankYou": "Thank You",
     "thankYouReview": "Thank you for your review!",
@@ -1682,7 +1682,10 @@
     "eventNotesPlaceholder": "Optional notes...",
     "deleteConfirmTitle": "Confirm Deletion",
     "deleteConfirmMessage": "Are you sure? This cannot be undone.",
-    "noTasks": "No tasks yet"
+    "noTasks": "No tasks yet",
+    "examInDays": "Test in {{count}} days",
+    "registrationClosed": "Registration closed",
+    "examDate": "Test date"
   },
   "assessment": {
     "title": "Assessment",
@@ -1860,9 +1863,9 @@
     "activeSessions": "Active Sessions",
     "activeSessionsDescription": "Manage devices where you are currently signed in",
     "logoutAllDevices": "Log out all devices",
-    "deleteAccountWarning": "Deleting your account cannot be undone: sign-in is disabled, your identifying information is cleared, and cases you submitted become private.",
+    "deleteAccountWarning": "Deleting your account cannot be undone: sign-in is disabled, identifying information is cleared, and cases you submitted become private. After 30 days your data is permanently deleted and cannot be recovered. Accounts with payment records keep the financial rows after the grace period; identity is still cleared and sign-in is disabled.",
     "deleteMyAccount": "Delete my account",
-    "deleteAccountConfirmMessage": "This cannot be undone. You will no longer be able to sign in; your name, avatar and bio are cleared, messages you sent are redacted, and cases you submitted become private and are no longer shown.",
+    "deleteAccountConfirmMessage": "This cannot be undone. You will no longer be able to sign in; your name, avatar and bio are cleared, messages you sent are redacted, and cases you submitted become private. After 30 days your data is permanently deleted and cannot be recovered. Accounts with payment records keep the financial rows after the grace period; identity is still cleared and sign-in is disabled.",
     "enterPassword": "Enter password",
     "passwordPlaceholder": "Password"
   },

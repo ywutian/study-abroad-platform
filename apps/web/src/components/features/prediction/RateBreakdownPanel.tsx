@@ -248,7 +248,7 @@ export function RateBreakdownPanel({
             })}
           </Badge>
         )}
-        {schoolMeta?.testingPolicy && schoolMeta.testingPolicy !== 'UNKNOWN' && (
+        {schoolMeta?.testingPolicy && (
           <Badge variant="secondary" className="text-xs">
             {t('rateBreakdown.testingPolicy', {
               policy: testingPolicyT(schoolMeta.testingPolicy),

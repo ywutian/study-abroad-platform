@@ -21,8 +21,37 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
-const CI_FILE = path.join(ROOT, '.github/workflows/ci.yml');
+const WORKFLOWS_DIR = path.join(ROOT, '.github/workflows');
+const CI_FILE = path.join(WORKFLOWS_DIR, 'ci.yml');
+const SCHEDULED_FILE = path.join(WORKFLOWS_DIR, 'osv-audit-scheduled.yml');
 const AUDIT_SCRIPT = path.join(ROOT, 'scripts/check-dependency-audit.ts');
+
+const isStepStart = (l: string) => /^\s*-\s+\S/.test(l);
+
+function stepBlockAt(lines: string[], idx: number): { start: number; end: number; block: string } {
+  let start = idx;
+  while (start > 0 && !isStepStart(lines[start])) start--;
+  let end = start + 1;
+  while (end < lines.length && !isStepStart(lines[end])) end++;
+  return { start, end, block: lines.slice(start, end).join('\n') };
+}
+
+function checkSoftenedStep(label: string, block: string, errors: string[]) {
+  if (/\|\|\s*true|\|\|\s*:|;\s*true\b/.test(block)) {
+    errors.push(`${label} is softened (|| true / ; true):\n${block.trim()}`);
+  }
+  if (/continue-on-error:\s*true/.test(block)) {
+    errors.push(`${label} has \`continue-on-error: true\` — the gate would never block.`);
+  }
+  if (/^\s*set\s+\+e\b/m.test(block)) {
+    errors.push(
+      `${label} disables shell error propagation (\`set +e\`) — a failure would not fail the step.`
+    );
+  }
+  if (/^\s*exit\s+0\s*$/m.test(block)) {
+    errors.push(`${label} ends with an unconditional \`exit 0\` — the step always succeeds.`);
+  }
+}
 
 function checkCiStep(errors: string[]) {
   if (!fs.existsSync(CI_FILE)) {
@@ -40,51 +69,52 @@ function checkCiStep(errors: string[]) {
     );
     return;
   }
-  // Read the WHOLE step, not the invocation line and a ±6-line guess.
-  //
-  // The line-only check passed two neutered configurations, both found by
-  // probing it on 2026-08-06:
-  //
-  //   - name: Dependency audit          - name: Dependency audit
-  //     if: false                         run: |
-  //     run: pnpm exec tsx …                set +e
-  //                                         pnpm exec tsx …
-  //                                         exit 0
-  //
-  // The first never runs; the second always exits 0. Neither carries `|| true`
-  // on the invocation line or `continue-on-error` within six lines of it, so
-  // both read as a hard gate. "Silently softened" is the exact phrase in this
-  // file's own docstring — it just could not see these two shapes.
-  const isStepStart = (l: string) => /^\s*-\s+\S/.test(l);
-  let start = auditIdx;
-  while (start > 0 && !isStepStart(lines[start])) start--;
-  let end = start + 1;
-  while (end < lines.length && !isStepStart(lines[end])) end++;
-  const stepBlock = lines.slice(start, end).join('\n');
-
-  if (/\|\|\s*true|\|\|\s*:|;\s*true\b/.test(stepBlock)) {
-    errors.push(`CI audit step is softened (|| true / ; true):\n${stepBlock.trim()}`);
-  }
-  if (/continue-on-error:\s*true/.test(stepBlock)) {
-    errors.push('CI audit step has `continue-on-error: true` — the gate would never block.');
-  }
-  if (/^\s*set\s+\+e\b/m.test(stepBlock)) {
-    errors.push(
-      'CI audit step disables shell error propagation (`set +e`) — a failure would not fail the step.'
-    );
-  }
-  if (/^\s*exit\s+0\s*$/m.test(stepBlock)) {
-    errors.push('CI audit step ends with an unconditional `exit 0` — the step always succeeds.');
-  }
-  // A security gate has no legitimate reason to be conditional. Anything that
-  // decides at runtime whether it runs is a way to turn it off without
-  // deleting it — `if: false` is only the most obvious spelling.
+  const { start, end, block } = stepBlockAt(lines, auditIdx);
+  checkSoftenedStep('CI audit step', block, errors);
   const ifLine = lines.slice(start, end).find((l) => /^\s*if:\s/.test(l));
   if (ifLine) {
     errors.push(
       `CI audit step is conditional (\`${ifLine.trim()}\`) — this gate must run on every CI invocation. ` +
         `Remove the condition, or say here why an unconditional CVE gate is wrong.`
     );
+  }
+}
+
+function checkScheduledWorkflow(errors: string[]) {
+  if (!fs.existsSync(SCHEDULED_FILE)) {
+    errors.push(
+      '.github/workflows/osv-audit-scheduled.yml is missing — lockfile-unchanged CVEs would wait for the next push.'
+    );
+    return;
+  }
+  const text = fs.readFileSync(SCHEDULED_FILE, 'utf8');
+  if (!/^\s*schedule:/m.test(text)) {
+    errors.push('osv-audit-scheduled.yml has no `schedule:` trigger.');
+  }
+  if (!/check-dependency-audit\.ts\b/.test(text)) {
+    errors.push(
+      'osv-audit-scheduled.yml does not run check-dependency-audit.ts — it is not the same gate as CI.'
+    );
+  }
+  if (/\bpnpm\s+audit\b/.test(text)) {
+    errors.push(
+      'osv-audit-scheduled.yml runs `pnpm audit`, which is broken on Node 20. Use check-dependency-audit.ts.'
+    );
+  }
+}
+
+function checkAllWorkflowAuditSteps(errors: string[]) {
+  if (!fs.existsSync(WORKFLOWS_DIR)) return;
+  for (const file of fs.readdirSync(WORKFLOWS_DIR).filter((f) => /\.ya?ml$/.test(f))) {
+    const abs = path.join(WORKFLOWS_DIR, file);
+    const lines = fs.readFileSync(abs, 'utf8').split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().startsWith('#')) continue;
+      if (!/check-dependency-audit\.ts\b|\bpnpm\s+audit\b/.test(line)) continue;
+      const { block } = stepBlockAt(lines, i);
+      checkSoftenedStep(`${file} audit step`, block, errors);
+    }
   }
 }
 
@@ -114,6 +144,8 @@ function checkAuditScript(errors: string[]) {
 function main() {
   const errors: string[] = [];
   checkCiStep(errors);
+  checkScheduledWorkflow(errors);
+  checkAllWorkflowAuditSteps(errors);
   checkAuditScript(errors);
 
   if (errors.length > 0) {
@@ -122,7 +154,9 @@ function main() {
     console.error('\nThe high-CVE gate must stay hard. See docs/SECURITY_DEPS.md.\n');
     process.exit(1);
   }
-  console.log('✅ CI dependency-audit gate is hard (fails on high-severity CVEs).');
+  console.log(
+    '✅ Dependency-audit gate is hard (CI + scheduled workflow; fails on high-severity CVEs).'
+  );
 }
 
 main();

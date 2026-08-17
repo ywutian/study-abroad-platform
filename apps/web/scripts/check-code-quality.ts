@@ -24,6 +24,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 
 const WEB_SRC = path.resolve(__dirname, '../src');
 const SHARED_TOKENS_FILE = path.resolve(__dirname, '../../../packages/shared/src/design/tokens.ts');
@@ -130,7 +131,6 @@ function getAllFiles(dir: string, ext: string[] = ['.tsx', '.ts', '.css']): stri
 }
 
 function getStagedFiles(): string[] {
-  const { execSync } = require('child_process');
   try {
     const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
       encoding: 'utf8',
@@ -810,7 +810,8 @@ function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Iss
   const content = lines.join('\n');
   // Files on the shared list hook already bake in keepPreviousData.
   if (/useListQuery|usePaginatedQuery/.test(content)) return issues;
-  if (/keepPreviousData|placeholderData/.test(content)) return issues;
+  // Do NOT early-return when keepPreviousData appears once: a file can have
+  // a second paginated query that still blanks. Check every query.
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (isCommentLine(line) || isCachePolicyIgnored(lines, i)) continue;
@@ -840,6 +841,8 @@ function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Iss
       .some((l) => /pageSize|page:\s|['"]page['"]|useInfiniteQuery/.test(l));
 
     if (churns && isList) {
+      const block = lines.slice(i, Math.min(lines.length, i + 25)).join('\n');
+      if (/keepPreviousData|placeholderData/.test(block)) continue;
       issues.push({
         file: relativePath(filePath),
         line: i + 1,
@@ -852,7 +855,6 @@ function checkListQueryNeedsKeepPrevious(filePath: string, lines: string[]): Iss
         // comment is there for the case where stale rows are genuinely wrong.
         severity: 'error',
       });
-      return issues; // one finding per file is enough to flag it
     }
   }
   return issues;

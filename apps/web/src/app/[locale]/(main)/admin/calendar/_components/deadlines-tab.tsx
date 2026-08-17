@@ -81,6 +81,7 @@ export function DeadlinesTab() {
   });
 
   const { data, isLoading } = useQuery({
+    placeholderData: keepPreviousData,
     queryKey: ['adminDeadlines', yearFilter, page],
     queryFn: () =>
       apiClient.get<{ data: SchoolDeadline[]; total: number; totalPages: number }>(

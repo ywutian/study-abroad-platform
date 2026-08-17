@@ -12,6 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 
 const WEB_SRC = path.resolve(__dirname, '../src');
 const stagedOnly = process.argv.includes('--staged');
@@ -245,7 +246,6 @@ function getAllFiles(dir: string, ext: string[] = ['.tsx']): string[] {
 }
 
 function getStagedFiles(): string[] {
-  const { execSync } = require('child_process');
   try {
     const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
       encoding: 'utf8',
@@ -536,6 +536,9 @@ function main() {
   // Exit non-zero in staged mode so pre-commit can gate new regressions.
   // Full-repo scans stay advisory to avoid blocking on pre-existing tech debt.
   if (stagedOnly && allIssues.some((i) => i.confidence === 'high')) {
+    process.exit(1);
+  }
+  if (process.argv.includes('--strict') && allIssues.length > 0) {
     process.exit(1);
   }
 }

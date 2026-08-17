@@ -354,7 +354,16 @@ export class OutcomeService {
     });
     const schoolMap = new Map(schools.map((s) => [s.id, s.name]));
 
-    return reportable.map((p) => ({
+    // G3.7: unique identity is now (profile, school, season). Copy says
+    // "school(s)", so return at most one row per school (latest prediction).
+    const seenSchools = new Set<string>();
+    const distinct = reportable.filter((p) => {
+      if (seenSchools.has(p.schoolId)) return false;
+      seenSchools.add(p.schoolId);
+      return true;
+    });
+
+    return distinct.map((p) => ({
       predictionResultId: p.id,
       schoolId: p.schoolId,
       schoolName: schoolMap.get(p.schoolId) ?? '(unknown school)',

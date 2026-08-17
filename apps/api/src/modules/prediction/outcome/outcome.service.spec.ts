@@ -376,6 +376,44 @@ describe('OutcomeService', () => {
       expect(result[1].schoolName).toBe('UCLA');
     });
 
+    it('returns one row per school when two seasons exist', async () => {
+      mockPrisma.profile.findUnique.mockResolvedValue({ id: 'prof1' });
+      mockPrisma.schoolListItem.findMany.mockResolvedValue([
+        { schoolId: 's1' },
+      ]);
+      mockPrisma.schoolDeadline.findMany.mockResolvedValue([
+        { schoolId: 's1', year: 2027 },
+        { schoolId: 's1', year: 2028 },
+      ]);
+      mockPrisma.predictionResult.findMany.mockResolvedValue([
+        {
+          id: 'p-new',
+          schoolId: 's1',
+          probability: 0.4,
+          tier: 'reach',
+          applicationRound: 'RD',
+          applicationYear: 2028,
+          createdAt: new Date('2026-08-01T00:00:00Z'),
+        },
+        {
+          id: 'p-old',
+          schoolId: 's1',
+          probability: 0.3,
+          tier: 'reach',
+          applicationRound: 'RD',
+          applicationYear: 2027,
+          createdAt: new Date('2025-08-01T00:00:00Z'),
+        },
+      ]);
+      mockPrisma.school.findMany.mockResolvedValue([
+        { id: 's1', name: 'Stanford' },
+      ]);
+
+      const result = await service.listPendingDecisions('user1');
+      expect(result).toHaveLength(1);
+      expect(result[0].predictionResultId).toBe('p-new');
+    });
+
     it('returns empty when no profile', async () => {
       mockPrisma.profile.findUnique.mockResolvedValue(null);
       const result = await service.listPendingDecisions('user1');

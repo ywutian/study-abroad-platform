@@ -19,7 +19,11 @@ import { execSync } from 'child_process';
 const ROOT = path.resolve(__dirname, '..');
 
 // Directories scanned in full-scan mode.
-const SCAN_DIRS = [path.join(ROOT, 'apps/web/src'), path.join(ROOT, 'apps/mobile/src')];
+const SCAN_DIRS = [
+  path.join(ROOT, 'apps/web/src'),
+  path.join(ROOT, 'apps/mobile/src'),
+  path.join(ROOT, 'packages/browser-extension/src'),
+];
 
 // Only text-ish source files are inspected.
 const SCAN_EXT = new Set(['.ts', '.tsx', '.js', '.jsx', '.json']);
@@ -30,6 +34,12 @@ const DEPRECATED_TERMS: Array<{ term: string; use: string }> = [
   { term: 'Feature Hall', use: 'Alumni Square' },
   { term: '锐评模式', use: '同伴反馈' },
   { term: '认证排行', use: '认证录取榜' },
+  { term: '精准录取预测', use: '录取机会估计' },
+  { term: 'Accurate Admission Predictions', use: 'Admission Chance Estimates' },
+  {
+    term: 'https://www.lumniedu.com/api/v1',
+    use: 'LUMNI_API_BASE_URL / localhost default (never ship a production API default)',
+  },
 ];
 
 interface Hit {
@@ -53,7 +63,9 @@ function collectFiles(stagedOnly: boolean): string[] {
       .filter(Boolean)
       .filter(
         (f) =>
-          (f.startsWith('apps/web/src/') || f.startsWith('apps/mobile/src/')) &&
+          (f.startsWith('apps/web/src/') ||
+            f.startsWith('apps/mobile/src/') ||
+            f.startsWith('packages/browser-extension/src/')) &&
           SCAN_EXT.has(path.extname(f))
       )
       .map((f) => path.join(ROOT, f))

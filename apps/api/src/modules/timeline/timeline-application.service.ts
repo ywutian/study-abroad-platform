@@ -589,20 +589,29 @@ export class TimelineApplicationService {
           isActive: true,
           year,
         },
-        orderBy: { eventDate: 'asc' },
+        orderBy: [
+          { registrationDeadline: { sort: 'asc', nulls: 'last' } },
+          { eventDate: 'asc' },
+        ],
       });
     }
 
     // governance: system-scope — GlobalEvent is platform-wide calendar data with no User/Profile relation
     const events = await this.prisma.globalEvent.findMany({
       where: { isActive: true },
-      orderBy: { eventDate: 'asc' },
+      orderBy: [
+        { registrationDeadline: { sort: 'asc', nulls: 'last' } },
+        { eventDate: 'asc' },
+      ],
     });
+
+    const actionDate = (event: GlobalEvent) =>
+      event.registrationDeadline ?? event.eventDate;
 
     return events
       .map((event) => withEffectiveRecurringGlobalEvent(event, now))
       .filter((event) => !isBeforeUtcDay(event.eventDate, now))
-      .sort((a, b) => a.eventDate.getTime() - b.eventDate.getTime());
+      .sort((a, b) => actionDate(a).getTime() - actionDate(b).getTime());
   }
 
   // ============ Task Methods ============

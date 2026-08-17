@@ -1,9 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UnauthorizedException } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { DashboardService } from './dashboard.service';
 import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
+import * as bcrypt from 'bcrypt';
+
+jest.mock('bcrypt', () => ({
+  compare: jest.fn(),
+}));
 
 describe('UserController', () => {
   let controller: UserController;
@@ -162,12 +168,30 @@ describe('UserController', () => {
   });
 
   describe('deleteAccount', () => {
-    it('should soft delete the user and return success message', async () => {
-      const result = await controller.deleteAccount(mockUser);
+    it('should soft delete the user after the current password matches', async () => {
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
+      const result = await controller.deleteAccount(mockUser, {
+        password: 'secret',
+      });
+
+      expect(userService.findByIdOrThrow).toHaveBeenCalledWith('user-1');
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        'secret',
+        mockFullUser.passwordHash,
+      );
       expect(userService.softDelete).toHaveBeenCalledWith('user-1');
       expect(result.success).toBe(true);
       expect(result.message).toContain('deleted');
+    });
+
+    it('should reject deletion when the current password does not match', async () => {
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        controller.deleteAccount(mockUser, { password: 'wrong' }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(userService.softDelete).not.toHaveBeenCalled();
     });
   });
 

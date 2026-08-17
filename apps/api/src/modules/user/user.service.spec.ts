@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PeerReviewService } from '../peer-review/peer-review.service';
+import { StorageService } from '../../common/storage/storage.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('UserService', () => {
@@ -30,6 +31,7 @@ describe('UserService', () => {
   const txForumPostFindMany = jest.fn().mockResolvedValue([]);
   const txPeerReviewFindMany = jest.fn().mockResolvedValue([]);
   const mockPeerReviewService = { updateUserRating: jest.fn() };
+  const mockStorage = { deleteFiles: jest.fn().mockResolvedValue(undefined) };
   const txForumPostCount = jest.fn().mockResolvedValue(0);
   const txForumCommunityUpdate = jest.fn().mockResolvedValue({});
 
@@ -50,6 +52,7 @@ describe('UserService', () => {
       providers: [
         UserService,
         { provide: PeerReviewService, useValue: mockPeerReviewService },
+        { provide: StorageService, useValue: mockStorage },
         {
           provide: PrismaService,
           useValue: {
@@ -61,6 +64,16 @@ describe('UserService', () => {
             },
             profile: {
               update: jest.fn(),
+              findUnique: jest.fn().mockResolvedValue(null),
+            },
+            verificationRequest: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            predictionOutcomeLabelRecord: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            forumPostImage: {
+              findMany: jest.fn().mockResolvedValue([]),
             },
             refreshToken: {
               deleteMany: jest.fn(),
@@ -123,6 +136,24 @@ describe('UserService', () => {
                 conversationParticipant: {
                   deleteMany: createChainableMock(),
                 },
+                memory: { deleteMany: createChainableMock() },
+                entity: { deleteMany: createChainableMock() },
+                userAIPreference: { deleteMany: createChainableMock() },
+                agentTokenUsage: { deleteMany: createChainableMock() },
+                agentQuota: { deleteMany: createChainableMock() },
+                memoryCompaction: { deleteMany: createChainableMock() },
+                agentTask: { deleteMany: createChainableMock() },
+                forumLike: { deleteMany: createChainableMock() },
+                caseSwipe: { deleteMany: createChainableMock() },
+                graphEntity: { deleteMany: createChainableMock() },
+                entityRelationship: { deleteMany: createChainableMock() },
+                applicationAnalysisRun: { deleteMany: createChainableMock() },
+                applicationAnalysisExposureRecord: {
+                  deleteMany: createChainableMock(),
+                },
+                applicationAnalysisFeedbackRecord: {
+                  deleteMany: createChainableMock(),
+                },
               };
               return callback(tx);
             }),
@@ -133,6 +164,11 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     prismaService = module.get<PrismaService>(PrismaService);
+    txPeerReviewFindMany.mockResolvedValue([]);
+    txTeamMember.findMany.mockResolvedValue([]);
+    txTeamMember.deleteMany.mockReturnValue(Promise.resolve({}));
+    txTeamMember.count.mockResolvedValue(0);
+    mockStorage.deleteFiles.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -361,6 +397,23 @@ describe('UserService', () => {
       );
 
       await expect(service.hardDelete('user-123')).resolves.toBeUndefined();
+    });
+  });
+
+  describe('hardDelete — object storage', () => {
+    it('deletes owned object keys before the account row', async () => {
+      mockStorage.deleteFiles.mockClear();
+      (
+        prismaService.verificationRequest.findMany as jest.Mock
+      ).mockResolvedValue([
+        { proofUrl: 'https://cdn.example/verification/user-123/a.pdf' },
+      ]);
+
+      await service.hardDelete('user-123');
+
+      expect(mockStorage.deleteFiles).toHaveBeenCalledWith([
+        'verification/user-123/a.pdf',
+      ]);
     });
   });
 

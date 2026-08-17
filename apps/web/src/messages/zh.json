@@ -908,7 +908,7 @@
           "number": "01",
           "tag": "AI · 选校",
           "title": "智能选校引擎",
-          "description": "结合你的档案、真实录取数据与招生偏好模型，输出冲刺、匹配、保底三档学校矩阵。"
+          "description": "结合你的档案与学校公布的录取数据，输出冲刺、匹配、保底三档学校矩阵。"
         },
         {
           "number": "02",
@@ -926,7 +926,7 @@
           "number": "04",
           "tag": "数据",
           "title": "录取概率预测",
-          "description": "用持续校准的模型给出更可信的概率判断，而不是情绪化的乐观或悲观。"
+          "description": "用可解释的规则引擎给出带区间的机会估计，而不是情绪化的乐观或悲观。"
         },
         {
           "number": "05",
@@ -3253,7 +3253,7 @@
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
       "deleteAccount": "删除账户",
-      "deleteAccountDesc": "注销后将无法登录，身份信息会被清除；30 天后数据将被永久删除",
+      "deleteAccountDesc": "注销后将无法登录，身份信息会被清除；30 天后数据将被永久删除。若账号有支付记录，宽限期后仍会保留财务所需行（身份会清、登录会关）。",
       "subscription": "订阅管理",
       "subscriptionDesc": "管理您的订阅计划"
     },
@@ -3262,9 +3262,10 @@
       "logoutTitle": "退出登录",
       "logoutDesc": "确定要退出登录吗？",
       "deleteTitle": "删除账户",
-      "deleteDesc": "此操作不可撤销。注销后您将无法登录；姓名、头像、简介等身份信息会被清除，已发送的消息会被隐去，您提交的案例将转为私密、不再对外展示。30 天后，您的数据将被永久删除，无法恢复。",
+      "deleteDesc": "此操作不可撤销。注销后您将无法登录；姓名、头像、简介等身份信息会被清除，已发送的消息会被隐去，您提交的案例将转为私密、不再对外展示。30 天后，您的数据将被永久删除，无法恢复。若账号有支付记录，宽限期后仍会保留财务所需行（身份会清、登录会关）。",
       "cancel": "取消",
-      "confirm": "确认"
+      "confirm": "确认",
+      "deletePasswordPlaceholder": "请输入当前密码以确认注销"
     },
     "toast": {
       "logoutSuccess": "已退出登录",
@@ -3743,8 +3744,8 @@
       "description": "根据您的背景获取个性化学校推荐和专业指导"
     },
     "prediction": {
-      "title": "精准录取预测",
-      "description": "利用大数据分析和机器学习预测您的录取概率"
+      "title": "录取机会估计",
+      "description": "根据学校公布数据和你的档案，给出带区间和依据的估计，不宣称固定准确率"
     },
     "start": "开始探索",
     "skip": "跳过",
@@ -4280,7 +4281,7 @@
         "REQUIRED": "必须提交标化",
         "OPTIONAL": "可选提交标化",
         "BLIND": "标化盲审",
-        "UNKNOWN": "标化政策未知"
+        "UNKNOWN": "标化要求：未收录"
       },
       "intlAid": {
         "NEED_BLIND": "国际生资助 Need-Blind",
@@ -4882,8 +4883,9 @@
     "loggedOutAll": "已从所有其他设备登出",
     "revoke": "撤销",
     "dangerZone": "危险操作",
-    "dangerZoneDesc": "注销账户不可撤销：您将无法登录，身份信息会被清除，已提交的案例将转为私密。30 天后，您的数据将被永久删除，无法恢复。",
-    "deleteAccount": "删除账户"
+    "dangerZoneDesc": "注销账户不可撤销：您将无法登录，身份信息会被清除，已提交的案例将转为私密。30 天后，您的数据将被永久删除，无法恢复。若账号有支付记录，宽限期后仍会保留财务所需行（身份会清、登录会关）。",
+    "deleteAccount": "删除账户",
+    "enterPasswordToDelete": "请输入当前密码以删除账户"
   },
   "helpCenter": {
     "title": "帮助中心",
@@ -7222,7 +7224,11 @@
       "description": "考试、竞赛、夏校、助学金等未来日期，可按需订阅到个人事件",
       "regBy": "报名截止",
       "subscribe": "订阅",
-      "subscribed": "已订阅"
+      "subscribed": "已订阅",
+      "registrationClosed": "报名已截止",
+      "examDate": "考试日",
+      "examInDays": "考试还有 {days} 天",
+      "calendarIncomplete": "有报名截止时按报名截止排列；未收录的考试不会假装完整。"
     },
     "personalEvents": {
       "title": "个人事件",

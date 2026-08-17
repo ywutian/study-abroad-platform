@@ -40,7 +40,8 @@ jobs:
           PID_LINT=$!
           pnpm --filter study-abroad-mobile exec tsc --noEmit &
           PID_TSC=$!
-          pnpm --filter study-abroad-mobile exec jest --ci --coverage --forceExit &
+          # `--runInBand` matches apps/mobile test scripts and ci.yml; keep in sync.
+          pnpm --filter study-abroad-mobile exec jest --runInBand --ci --coverage --forceExit &
           PID_TEST=$!
           wait $PID_LINT || exit 1
           wait $PID_TSC || exit 1
@@ -53,10 +54,6 @@ jobs:
       - name: Verify JS bundle
         run: npx expo export --platform web --output-dir /tmp/expo-export
         working-directory: apps/mobile
-
-      - name: Dependency audit
-        run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
-        continue-on-error: true
 
       - name: Upload Coverage
         if: always()

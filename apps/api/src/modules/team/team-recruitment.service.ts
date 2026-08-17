@@ -193,7 +193,15 @@ export class TeamRecruitmentService {
         { registrationCloseAt: { sort: 'asc', nulls: 'last' } },
       ],
     });
-    return { items: editions.map(mapCompetitionEdition) };
+    const now = Date.now();
+    const items = editions.map(mapCompetitionEdition).sort((a, b) => {
+      const aEnded =
+        a.eventEndAt != null && a.eventEndAt.getTime() < now ? 1 : 0;
+      const bEnded =
+        b.eventEndAt != null && b.eventEndAt.getTime() < now ? 1 : 0;
+      return aEnded - bEnded;
+    });
+    return { items };
   }
 
   async getMatchPoolById(poolId: string) {

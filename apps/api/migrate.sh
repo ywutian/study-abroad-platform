@@ -14,14 +14,39 @@ echo "=== Migration Complete ==="
 
 # ============================================================================
 # Data-only seed steps from prisma/seed-orchestrator.ts (committed offline
-# JSON / TS payloads). Each step is fully idempotent (upsert / skip-if-exists)
-# and fail-soft: a hiccup must not abort an otherwise-healthy code deploy —
-# the next deploy retries. Failures surface as a loud WARNING line.
+# JSON / TS payloads). Each step is fully idempotent (upsert / skip-if-exists).
+#
+# Default is fail-soft: a hiccup must not abort an otherwise-healthy code
+# deploy — the next deploy retries. Failures surface as a loud WARNING line.
+#
+# Exception — SEED_FAIL_HARD_LABELS. These are the user-visible empty-page
+# seeds (exam calendar, forum chips, Tindermatch pools, competition editions,
+# testingPolicy). A throw or a missing .js used to print WARNING and leave
+# the Cloud Run job green. They now fail the migrate job (exit 1). Do NOT
+# dump the other ~20 seeds into this list — rankings scrapers and similar
+# are still intentionally non-fatal.
 #
 # Order mirrors seed-orchestrator.ts so dev / staging / prod all behave
 # the same. `prisma/seed.ts` itself (which contains demo / destructive
 # seedTeamData) is intentionally NOT invoked here.
+#
+# Result assertions (counts, exit 42) run after every seed — see
+# prisma/check-seed-result-assertions.ts. Fail-hard on the process is not
+# enough: a seed that no-ops (unmatched schools, unknown abbreviations)
+# still exits 0.
 # ============================================================================
+
+# Space-padded so `case` can match whole labels. Keep in sync with
+# FAIL_HARD_SEED_LABELS in prisma/check-seed-result-assertions.ts
+# (that file's --self-check / default mode verifies this list).
+SEED_FAIL_HARD_LABELS=" testing-policy global-events competitions competition-data match-pools forum-communities "
+
+seed_is_fail_hard() {
+  case "$SEED_FAIL_HARD_LABELS" in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
 run_seed() {
   local label="$1"
@@ -29,9 +54,20 @@ run_seed() {
   shift 2
   echo "=== Seed: $label ==="
   if [ -f "$script" ]; then
-    node "$script" "$@" \
-      || echo "WARNING: $label seed failed — non-fatal, will retry on next deploy"
+    if node "$script" "$@"; then
+      :
+    else
+      if seed_is_fail_hard "$label"; then
+        echo "ERROR: $label seed failed — failing migrate so deploy does not go green on empty user-visible data."
+        exit 1
+      fi
+      echo "WARNING: $label seed failed — non-fatal, will retry on next deploy"
+    fi
   else
+    if seed_is_fail_hard "$label"; then
+      echo "ERROR: $script not found — $label is a fail-hard seed. Add it to the Dockerfile tsc compile list (check-seed-pipeline-parity)."
+      exit 1
+    fi
     echo "WARNING: $script not found — skipping $label"
   fi
 }
@@ -151,32 +187,21 @@ run_seed "forum-communities" ./prisma/seed-forum-communities.js
 echo "=== All Seed Steps Complete ==="
 
 # ----------------------------------------------------------------------------
-# Final sanity check: count essay-gallery-visible cases. If the essay-harvest
-# step truly inserted, this should be >= 150. If it's still in the single
-# digits (the original demo seed set), we want the migrate-job to EXIT
-# NON-ZERO so the workflow surfaces a clear failure rather than the deploy
-# silently proceeding — even though the underlying Cloud Run job stdout is
-# not readable by the deploy SA (which lacks logging.viewer).
+# Result assertions. The gallery floor used to live inline here (exit 42).
+# It is now one of several counts in prisma/check-seed-result-assertions.js
+# — GlobalEvent future dates, official ForumCommunity, match-pool entries,
+# CompetitionEdition, testingPolicy REQUIRED — same exit 42 on a miss.
+#
+# The compiled .js is produced by the Dockerfile tsc pass 2. Local runs that
+# only have the .ts (no image build) fall back to tsx.
 # ----------------------------------------------------------------------------
-echo "=== Sanity check: gallery-visible admission cases ==="
-GALLERY_COUNT=$(node -e "
-const {PrismaClient}=require('@prisma/client');
-const p=new PrismaClient();
-(async()=>{
-  const n = await p.admissionCase.count({where:{
-    visibility:{in:['PUBLIC','ANONYMOUS']},
-    essayContent:{not:null},
-    reviewStatus:{in:['AUTO_APPROVED','APPROVED']},
-  }});
-  console.log(n);
-  await p.\$disconnect();
-})().catch(e=>{console.error('count failed:',e.message);process.exit(1)});
-" 2>&1 | tail -n1)
-echo "Gallery-visible admission cases: ${GALLERY_COUNT}"
-if [ "${GALLERY_COUNT}" -lt 50 ] 2>/dev/null; then
-  echo "ERROR: gallery count ${GALLERY_COUNT} is below threshold (50)."
-  echo "       The essay-harvest seed step likely failed silently."
-  echo "       See above seed step output for the root cause."
+echo "=== Sanity check: seed result assertions ==="
+if [ -f ./prisma/check-seed-result-assertions.js ]; then
+  node ./prisma/check-seed-result-assertions.js --db
+elif [ -f ./prisma/check-seed-result-assertions.ts ]; then
+  npx tsx ./prisma/check-seed-result-assertions.ts --db
+else
+  echo "ERROR: prisma/check-seed-result-assertions.js missing from the image."
+  echo "       Add it to the Dockerfile tsc compile list."
   exit 42
 fi
-echo "✓ Gallery count OK (>= 50)."

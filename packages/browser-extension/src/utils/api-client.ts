@@ -4,8 +4,13 @@
 
 import type { Activity, Award, Essay, StorageData, UserProfile } from './types';
 
-// 从环境变量或默认值获取 API 地址
-const API_BASE_URL = 'https://www.lumniedu.com/api/v1';
+// Origin only. Keep `/api/v1/...` as a string literal so check-api-routes can
+// strip the prefix and match backend controllers. Default is local, not prod.
+const API_ORIGIN = (
+  process.env.LUMNI_API_BASE_URL ||
+  process.env.API_BASE_URL ||
+  'http://localhost:4101/api/v1'
+).replace(/\/api\/v1\/?$/, '');
 
 /**
  * 获取存储的 token
@@ -88,7 +93,7 @@ export async function fetchProfile(): Promise<UserProfile | null> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/profiles/me`, {
+    const response = await fetch(`${API_ORIGIN}/api/v1/profiles/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -123,7 +128,7 @@ export async function checkLoginStatus(): Promise<boolean> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/users/me`, {
+    const response = await fetch(`${API_ORIGIN}/api/v1/users/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

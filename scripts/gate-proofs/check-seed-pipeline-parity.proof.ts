@@ -63,4 +63,14 @@ export async function prove(): Promise<void> {
   // assertion above would catch, but say so here so the exclusion is deliberate
   // rather than incidental.
   expectClean(runGate(GATE), 'a tree whose only non-matching `run_seed` line is its definition');
+
+  await withPatchedFile(
+    MIGRATE,
+    (s) =>
+      s.replace(
+        'SEED_FAIL_HARD_LABELS=" testing-policy global-events competitions competition-data match-pools forum-communities "',
+        'SEED_FAIL_HARD_LABELS=" testing-policy "'
+      ),
+    () => expectFired(runGate(GATE), 'SEED_FAIL_HARD_LABELS does not contain')
+  );
 }

@@ -65,6 +65,7 @@ export function ChatContentTab({ pageSize, onDeleteRequest }: ChatContentTabProp
   });
 
   const { data: messagesData, isLoading: messagesLoading } = useQuery({
+    placeholderData: keepPreviousData,
     queryKey: ['adminChatMessages', selectedConvo, msgPage],
     queryFn: () =>
       apiClient.get<{ data: ChatMessage[]; total: number; totalPages: number }>(

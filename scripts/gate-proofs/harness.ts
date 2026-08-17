@@ -33,9 +33,16 @@ export interface GateRun {
  * these gates only exist as `main()` side effects, and the thing worth proving
  * is what the command does, not what an internal helper returns.
  */
-export function runGate(script: string, args: string[] = []): GateRun {
+export function runGate(
+  script: string,
+  args: string[] = [],
+  opts?: { env?: NodeJS.ProcessEnv }
+): GateRun {
+  // Root gates are `scripts/<name>.ts`. App gates pass a repo-relative path
+  // (`apps/web/scripts/check-code-quality.ts`) so this can invoke either.
+  const scriptPath = script.includes('/') ? script : path.join('scripts', script);
   try {
-    const stdout = execFileSync('npx', ['tsx', path.join('scripts', script), ...args], {
+    const stdout = execFileSync('npx', ['tsx', scriptPath, ...args], {
       cwd: ROOT,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -45,6 +52,7 @@ export function runGate(script: string, args: string[] = []): GateRun {
       // migration-safety scan is ~170KB today; 64MB means a capture problem
       // can no longer impersonate a gate problem.
       maxBuffer: 64 * 1024 * 1024,
+      env: opts?.env ? { ...process.env, ...opts.env } : process.env,
     });
     return { status: 0, stdout };
   } catch (err) {
@@ -183,6 +191,31 @@ export function firedAssertions(): number {
   return firedCount;
 }
 
+/**
+ * Printed when a proof's first `expectClean` fails because the gate is already
+ * red on the unmodified tree. `check-gate-proofs.ts` keys off this so the
+ * runner cannot report that case as "proof failed = the gate did not go red".
+ */
+export const UNMODIFIED_TREE_ALREADY_RED = '该门禁因自身原因为红，proof 无法验证种子违规';
+
+export class GateAlreadyRedError extends Error {
+  readonly what: string;
+  readonly kind: 'BASELINE_RED';
+  constructor(what: string, stdout: string) {
+    const diagnosis =
+      what === 'an unmodified tree'
+        ? `BASELINE_RED: ${UNMODIFIED_TREE_ALREADY_RED}`
+        : `Gate is red on ${what}, so this proof cannot tell you anything about the seeded violation.`;
+    super(
+      `${diagnosis}\nGate is red on ${what}, so this proof cannot tell you anything ` +
+        `about the seeded violation.\n--- output ---\n${stdout.slice(0, 800)}`
+    );
+    this.name = 'GateAlreadyRedError';
+    this.what = what;
+    this.kind = 'BASELINE_RED';
+  }
+}
+
 export function expectFired(run: GateRun, mustMention?: string): void {
   firedCount++;
   if (run.status === 0) {
@@ -215,9 +248,6 @@ export function expectFired(run: GateRun, mustMention?: string): void {
  */
 export function expectClean(run: GateRun, what = 'an unmodified tree'): void {
   if (run.status !== 0) {
-    throw new Error(
-      `Gate is red on ${what}, so this proof cannot tell you anything ` +
-        `about the seeded violation.\n--- output ---\n${run.stdout.slice(0, 800)}`
-    );
+    throw new GateAlreadyRedError(what, run.stdout);
   }
 }

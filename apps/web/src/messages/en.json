@@ -935,7 +935,7 @@
           "number": "01",
           "tag": "AI · Matching",
           "title": "School matching engine",
-          "description": "Combine profile strength, real admissions outcomes, and institutional patterns into a reach / target / safety matrix you can defend."
+          "description": "Combine your profile with published admissions data to build a reach, match, and safety school matrix."
         },
         {
           "number": "02",
@@ -953,7 +953,7 @@
           "number": "04",
           "tag": "Data",
           "title": "Admissions probability model",
-          "description": "Get calibrated probability ranges grounded in current data rather than consultant instinct or forum folklore."
+          "description": "An explainable rules engine gives a ranged chance estimate — not a mood-based guess."
         },
         {
           "number": "05",
@@ -3280,7 +3280,7 @@
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Sign-in is disabled, your identifying information is cleared, and after 30 days your data is permanently deleted",
+      "deleteAccountDesc": "Sign-in is disabled, your identifying information is cleared, and after 30 days your data is permanently deleted. Accounts with payment records keep the financial rows after the grace period; identity is still cleared and sign-in is disabled.",
       "subscription": "Subscription",
       "subscriptionDesc": "Manage your subscription plan"
     },
@@ -3289,9 +3289,10 @@
       "logoutTitle": "Logout",
       "logoutDesc": "Are you sure you want to logout?",
       "deleteTitle": "Delete Account",
-      "deleteDesc": "This cannot be undone. You will no longer be able to sign in; your name, avatar and bio are cleared, messages you sent are redacted, and cases you submitted become private and are no longer shown. After 30 days your data is permanently deleted and cannot be recovered.",
+      "deleteDesc": "This cannot be undone. You will no longer be able to sign in; your name, avatar and bio are cleared, messages you sent are redacted, and cases you submitted become private. After 30 days your data is permanently deleted and cannot be recovered. Accounts with payment records keep the financial rows after the grace period; identity is still cleared and sign-in is disabled.",
       "cancel": "Cancel",
-      "confirm": "Confirm"
+      "confirm": "Confirm",
+      "deletePasswordPlaceholder": "Enter your current password to confirm deletion"
     },
     "toast": {
       "logoutSuccess": "Logged out successfully",
@@ -3770,8 +3771,8 @@
       "description": "Get personalized school recommendations and professional guidance based on your background"
     },
     "prediction": {
-      "title": "Accurate Admission Predictions",
-      "description": "Predict your admission probability using big data analysis and machine learning"
+      "title": "Admission Chance Estimates",
+      "description": "Estimate chances from published school data and your profile, with a range and sources — no fixed accuracy claim"
     },
     "start": "Get Started",
     "skip": "Skip",
@@ -4307,7 +4308,7 @@
         "REQUIRED": "Test required",
         "OPTIONAL": "Test optional",
         "BLIND": "Test blind",
-        "UNKNOWN": "Testing policy unknown"
+        "UNKNOWN": "Testing policy: not on record"
       },
       "intlAid": {
         "NEED_BLIND": "Intl aid need-blind",
@@ -4909,8 +4910,9 @@
     "loggedOutAll": "Logged out from all other devices",
     "revoke": "Revoke",
     "dangerZone": "Danger Zone",
-    "dangerZoneDesc": "Deleting your account cannot be undone: sign-in is disabled, your identifying information is cleared, and cases you submitted become private. After 30 days your data is permanently deleted and cannot be recovered.",
-    "deleteAccount": "Delete Account"
+    "dangerZoneDesc": "Deleting your account cannot be undone: sign-in is disabled, your identifying information is cleared, and cases you submitted become private. After 30 days your data is permanently deleted and cannot be recovered. Accounts with payment records keep the financial rows after the grace period; identity is still cleared and sign-in is disabled.",
+    "deleteAccount": "Delete Account",
+    "enterPasswordToDelete": "Enter your current password to delete this account"
   },
   "helpCenter": {
     "title": "Help Center",
@@ -7249,7 +7251,11 @@
       "description": "Future tests, competitions, summer programs, and financial aid dates you can subscribe to",
       "regBy": "Register by",
       "subscribe": "Subscribe",
-      "subscribed": "Subscribed"
+      "subscribed": "Subscribed",
+      "registrationClosed": "Registration closed",
+      "examDate": "Test date",
+      "examInDays": "Test in {days} days",
+      "calendarIncomplete": "Dates are ordered by registration deadline when we have one; missing exams are not pretended complete."
     },
     "personalEvents": {
       "title": "Personal Events",

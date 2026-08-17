@@ -45,20 +45,24 @@ const fallbackLogger = new Logger('runWithCronLock');
  * Idempotent jobs (delete-where-expired, pure-overwrite recompute) don't need
  * this — running them N× is harmless. Use it only when duplication is harmful.
  *
- * A throwing job is caught and logged here rather than propagated. `@Cron`
- * handlers are fire-and-forget: nothing awaits them, so a rejection escapes as
- * an unhandledRejection instead of an error anyone reads, and under Node's
- * default that is a hard process exit — one failing weekly job taking down the
- * API replica with it. No caller wraps this in a try/catch, so catching once
- * here covers all of them.
+ * WHO SEES A THROWING JOB depends on the driver:
  *
- * The lock is deliberately NOT released on failure: releasing it would let the
- * other replicas immediately retry the same failing job N×, which is what the
- * single-flight window exists to prevent. It expires on its TTL as usual.
+ * - `timer`: `@Cron` handlers are fire-and-forget. A rejection escapes as an
+ *   unhandledRejection, and Node's default kills the process — one failing
+ *   weekly job taking down the API replica. Catch, log, return true. The lock
+ *   is NOT released: releasing it would let the other replicas immediately
+ *   retry the same failing job N×.
+ * - `http`: the caller is Cloud Scheduler via InternalCronController. A quiet
+ *   `true`/200 after a failed job is the same "nothing happened looks like
+ *   fine" this driver exists to kill. Log, release the lock, rethrow → 5xx.
+ *   Scheduler retries after `--min-backoff` (300s). That backoff is SHORTER
+ *   than several lock TTLs (account-purge 30m, essay-scraper 1h), so keeping
+ *   the lock on failure would make the retry look like healthy contention and
+ *   return 200. Fan-out is bounded by `--max-retry-attempts=1`, not by the
+ *   lock: a retry racing a still-running attempt still sees the lock held.
  *
- * @returns `true` if the job ran (whether or not it threw), `false` if it was
- * skipped. A throw means it ran, so callers logging "skipped" on `false` stay
- * correct.
+ * @returns `true` if the job ran to completion, `false` if it was skipped.
+ * Under `http`, a throwing job rejects rather than returning true.
  */
 export async function runWithCronLock(
   redis: RedisService | undefined,
@@ -106,6 +110,26 @@ export async function runWithCronLock(
       `Cron job holding lock "${lockKey}" failed: ${error instanceof Error ? error.message : String(error)}`,
       error instanceof Error ? error.stack : undefined,
     );
+    if (process.env.CRON_DRIVER === 'http') {
+      // Release so the Scheduler retry (min-backoff 300s) can actually run.
+      // Attempt-capped retries, not lock TTL, stop a failing job from fanning
+      // out; a retry that arrives while this attempt is still running still
+      // sees the lock held because we only release after the job returns.
+      if (redis) {
+        try {
+          await redis.del(lockKey);
+        } catch (releaseErr) {
+          (logger ?? fallbackLogger).warn(
+            `Failed to release cron lock "${lockKey}" after job failure: ${
+              releaseErr instanceof Error
+                ? releaseErr.message
+                : String(releaseErr)
+            }`,
+          );
+        }
+      }
+      throw error;
+    }
   }
   return true;
 }

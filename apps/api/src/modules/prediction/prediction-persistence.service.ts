@@ -10,6 +10,7 @@ import {
   LEGACY_PREDICTION_POLICY_VERSION,
 } from './prediction-policy.constants';
 import { COUNSELOR_RULE_VERSION } from './counselor/counselor-engine.service';
+import { currentSeasonPredictionUniqueWhere } from './prediction-season.util';
 
 const DEFAULT_MODEL_VERSION = 'v3-enterprise';
 
@@ -187,9 +188,7 @@ export class PredictionPersistenceService {
       const applicationSeason = resolveApplicationYear();
 
       const persistedResult = await this.prisma.predictionResult.upsert({
-        where: {
-          profileId_schoolId: { profileId, schoolId },
-        },
+        where: currentSeasonPredictionUniqueWhere(profileId, schoolId),
         update: {
           probability: result.probability,
           probabilityLow: result.probabilityLow,

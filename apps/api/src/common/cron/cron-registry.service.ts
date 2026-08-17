@@ -51,9 +51,9 @@ function deriveJobName(className: string, methodName: string): string {
  * the exact same methods over HTTP that the in-process timers drive in dev.
  *
  * `run()` deliberately does NOT catch: a throwing job must surface as a 5xx so
- * Cloud Scheduler records the failure and retries. (Locked jobs already
- * swallow their own errors inside `runWithCronLock` — that behavior is
- * unchanged in either driver.)
+ * Cloud Scheduler records the failure and retries. Under `CRON_DRIVER=http`,
+ * `runWithCronLock` rethrows a failed job for the same reason; timer mode
+ * still catches so an in-process `@Cron` cannot unhandledRejection the replica.
  */
 @Injectable()
 export class CronRegistryService implements OnModuleInit {

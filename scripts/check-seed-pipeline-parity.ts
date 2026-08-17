@@ -79,6 +79,46 @@ function dockerfileCompiledStems(): Set<string> {
   return set;
 }
 
+function checkFailHardLabels(): void {
+  const migrate = fs.readFileSync(MIGRATE_SH, 'utf8');
+  const required = [
+    'testing-policy',
+    'global-events',
+    'competitions',
+    'competition-data',
+    'match-pools',
+    'forum-communities',
+  ];
+  const errors: string[] = [];
+  if (!migrate.includes('SEED_FAIL_HARD_LABELS=')) {
+    errors.push(
+      'migrate.sh has no SEED_FAIL_HARD_LABELS — user-visible seeds can fail-soft again.'
+    );
+  }
+  for (const label of required) {
+    if (!migrate.includes(` ${label} `)) {
+      errors.push(
+        `migrate.sh SEED_FAIL_HARD_LABELS does not contain "${label}". A throw would print WARNING and leave deploy green.`
+      );
+    }
+    // A one-line `run_seed "label" … || echo WARNING` wrapping a fail-hard label.
+    const wrapped = migrate
+      .split('\n')
+      .some((l) => l.includes(`run_seed "${label}"`) && l.includes('|| echo WARNING'));
+    if (wrapped) {
+      errors.push(
+        `migrate.sh still fail-softs ${label} with \`|| echo WARNING\` on the run_seed line.`
+      );
+    }
+  }
+  if (errors.length > 0) {
+    console.error('\n❌ Seed fail-hard wiring drifted:\n');
+    for (const e of errors) console.error('   ' + e);
+    process.exit(1);
+  }
+  console.log(`✅ Fail-hard seeds stay loud: ${required.join(', ')}`);
+}
+
 function main() {
   const errors: string[] = [];
   for (const f of [MIGRATE_SH, DOCKERFILE]) {
@@ -126,6 +166,9 @@ function main() {
     );
     process.exit(1);
   }
+
+  checkFailHardLabels();
+
   console.log(
     `✅ Seed pipeline in parity: all ${seeds.length} migrate.sh seeds are compiled in the Dockerfile + present on disk.`
   );
