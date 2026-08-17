@@ -212,7 +212,7 @@
     "@eslint/js": "^9.39.5",
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
-    "@nestjs/testing": "^11.1.28",
+    "@nestjs/testing": "^11.1.29",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.15.47",
     "@swc/jest": "^0.2.39",
@@ -240,7 +240,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.67.0"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

@@ -97,10 +97,10 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.9.6",
     "ts-morph": "^27.0.2",
-    "tsx": "^4.23.1",
-    "turbo": "^2.10.8",
+    "tsx": "^4.23.12",
+    "turbo": "^2.10.9",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.67.0"
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx}": [
