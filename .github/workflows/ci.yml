@@ -1559,6 +1559,19 @@ jobs:
       # is 1740s, under this. Side effect: WebSocket connections may now live
       # 30min instead of 5 before Cloud Run recycles them (clients reconnect).
       #
+      # Uploads live on a GCS volume, not the container disk. Before this, nothing
+      # set STORAGE_TYPE (so it defaulted to 'local') and no volume was mounted —
+      # verified 2026-08-17, `spec.template.spec.volumes` was []. Every upload
+      # therefore landed on Cloud Run's ephemeral per-instance filesystem: gone on
+      # the next revision, and invisible to sibling instances in the meantime.
+      # Deleting a file was the smaller half of that problem.
+      #
+      # `STORAGE_LOCAL_PATH` covers both directions in one variable — StorageService
+      # writes there and main.ts serves it via express.static — so the 'local'
+      # provider keeps working unchanged and no code moves.
+      #
+      # The volume flags are as replace-y as --set-env-vars: dropping them from this
+      # line silently returns the service to the ephemeral disk with nothing failing.
       # Note `--set-env-vars` REPLACES the whole set: anything dropped from this
       # line reverts to unset on the next deploy.
       - name: Deploy canary (no traffic)
@@ -1578,7 +1591,9 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
+            --add-volume=name=uploads,type=cloud-storage,bucket=study-abroad-prod-2025-uploads \
+            --add-volume-mount=volume=uploads,mount-path=/mnt/uploads \
+            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest" \
             --timeout=1800 \
             --no-traffic \
