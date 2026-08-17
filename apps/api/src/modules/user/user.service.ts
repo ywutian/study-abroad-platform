@@ -9,6 +9,10 @@ import { randomBytes } from 'crypto';
 import { safeDelete } from '../../common/utils/safe-delete';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PeerReviewService } from '../peer-review/peer-review.service';
+import {
+  extractOwnedObjectKey,
+  StorageService,
+} from '../../common/storage/storage.service';
 
 @Injectable()
 export class UserService {
@@ -17,6 +21,7 @@ export class UserService {
   constructor(
     private prisma: PrismaService,
     private peerReviewService: PeerReviewService,
+    private storage: StorageService,
   ) {}
 
   /**
@@ -185,6 +190,11 @@ export class UserService {
       operation: 'hardDelete' as const,
     });
 
+    const objectKeys = await this.collectOwnedObjectKeys(id);
+    if (objectKeys.length > 0) {
+      await this.storage.deleteFiles(objectKeys);
+    }
+
     let ratingCounterparties: string[] = [];
     await this.prisma.$transaction(async (tx) => {
       await safeDelete(
@@ -284,6 +294,8 @@ export class UserService {
         ]),
       ].filter((uid) => uid !== id);
 
+      await this.deleteOrphanUserIdRows(tx, id);
+
       await tx.user.delete({ where: { id } });
     });
 
@@ -300,6 +312,126 @@ export class UserService {
     }
 
     this.logger.warn(`User ${id} hard deleted`);
+  }
+
+  /**
+   * Object keys this user owns in local/COS/S3. Collected before the
+   * transaction so a blob failure leaves the account in place for retry.
+   */
+  private async collectOwnedObjectKeys(userId: string): Promise<string[]> {
+    const keys: string[] = [];
+    const add = (ref?: string | null) => {
+      const key = extractOwnedObjectKey(ref);
+      if (key) keys.push(key);
+    };
+
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+      select: { avatarUrl: true },
+    });
+    add(profile?.avatarUrl);
+
+    const verifications = await this.prisma.verificationRequest.findMany({
+      where: { userId },
+      select: { proofUrl: true },
+    });
+    for (const row of verifications) add(row.proofUrl);
+
+    const outcomes = await this.prisma.predictionOutcomeLabelRecord.findMany({
+      where: { reportedBy: userId },
+      select: { evidenceUrl: true },
+    });
+    for (const row of outcomes) add(row.evidenceUrl);
+
+    const images = await this.prisma.forumPostImage.findMany({
+      where: { post: { authorId: userId } },
+      select: { key: true, url: true },
+    });
+    for (const image of images) {
+      if (image.key) keys.push(image.key);
+      else add(image.url);
+    }
+
+    return [...new Set(keys)];
+  }
+
+  /**
+   * Models with a bare userId (no User @relation). AuditLog / AgentAuditLog /
+   * AgentSecurityEvent are retain-allowlisted — see check-orphan-userid.ts.
+   */
+  private async deleteOrphanUserIdRows(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<void> {
+    const ctx = (entity: string) => ({
+      entity,
+      userId: id,
+      operation: 'hardDelete' as const,
+    });
+    await safeDelete(
+      tx.memory.deleteMany({ where: { userId: id } }),
+      ctx('memory'),
+    );
+    await safeDelete(
+      tx.agentConversation.deleteMany({ where: { userId: id } }),
+      ctx('agentConversation'),
+    );
+    await safeDelete(
+      tx.entity.deleteMany({ where: { userId: id } }),
+      ctx('entity'),
+    );
+    await safeDelete(
+      tx.userAIPreference.deleteMany({ where: { userId: id } }),
+      ctx('userAIPreference'),
+    );
+    await safeDelete(
+      tx.agentTokenUsage.deleteMany({ where: { userId: id } }),
+      ctx('agentTokenUsage'),
+    );
+    await safeDelete(
+      tx.agentQuota.deleteMany({ where: { userId: id } }),
+      ctx('agentQuota'),
+    );
+    await safeDelete(
+      tx.memoryCompaction.deleteMany({ where: { userId: id } }),
+      ctx('memoryCompaction'),
+    );
+    await safeDelete(
+      tx.agentTask.deleteMany({ where: { userId: id } }),
+      ctx('agentTask'),
+    );
+    await safeDelete(
+      tx.forumLike.deleteMany({ where: { userId: id } }),
+      ctx('forumLike'),
+    );
+    await safeDelete(
+      tx.caseSwipe.deleteMany({ where: { userId: id } }),
+      ctx('caseSwipe'),
+    );
+    await safeDelete(
+      tx.graphEntity.deleteMany({ where: { userId: id } }),
+      ctx('graphEntity'),
+    );
+    await safeDelete(
+      tx.entityRelationship.deleteMany({ where: { userId: id } }),
+      ctx('entityRelationship'),
+    );
+    await safeDelete(
+      tx.applicationAnalysisRun.deleteMany({ where: { userId: id } }),
+      ctx('applicationAnalysisRun'),
+    );
+    await safeDelete(
+      tx.applicationAnalysisExposureRecord.deleteMany({
+        where: { userId: id },
+      }),
+      ctx('applicationAnalysisExposureRecord'),
+    );
+    await safeDelete(
+      tx.applicationAnalysisFeedbackRecord.deleteMany({
+        where: { userId: id },
+      }),
+      ctx('applicationAnalysisFeedbackRecord'),
+    );
   }
 
   /**

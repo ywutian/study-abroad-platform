@@ -29,7 +29,7 @@ export function SchoolHeroHeader({
   const t = useTranslations();
   const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
-  const showTestingPolicy = school.testingPolicy != null && school.testingPolicy !== 'UNKNOWN';
+  const showTestingPolicy = school.testingPolicy != null;
   const [coverFailed, setCoverFailed] = useState(false);
   const campusCover = school.media?.campusCover;
   const campusCoverUrl = campusCover?.url && !coverFailed ? campusCover.url : null;

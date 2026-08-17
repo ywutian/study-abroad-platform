@@ -1,0 +1,10 @@
+{
+  "_comment": "Playwright specs that exist under e2e/ but are NOT run by any GitHub workflow. PR CI smoke is e2e/core-pages.spec.ts only (ci.yml e2e-web) — these suites are local/manual (some have package.json scripts). Listing here is an explicit non-CI declaration, not a runner. scripts/check-e2e-runner.ts fails if a spec is in neither a workflow nor this list. Do not add a spec to PR CI just to get it off this list unless the budget already exists.",
+  "specs": [
+    "e2e/admin-and-misc-pages.spec.ts",
+    "e2e/auth.spec.ts",
+    "e2e/content-social-pages.spec.ts",
+    "e2e/feature-closure.spec.ts",
+    "e2e/full-ui-surface.spec.ts"
+  ]
+}

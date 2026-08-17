@@ -235,6 +235,10 @@ function main() {
   console.log(`💡 Total: ${unusedKeys.length} potentially unused keys`);
   console.log('   Note: Some keys may be referenced dynamically (e.g., t(`status.${value}`)).');
   console.log('   Verify manually before removing.\n');
+
+  if (unusedKeys.length > 0 && process.argv.includes('--strict')) {
+    process.exit(1);
+  }
 }
 
 main();

@@ -141,6 +141,19 @@ describe('runWithCronLock', () => {
       await expect(runWithCronLock(redis, 'k', 600, job)).resolves.toBe(false);
       expect(job).not.toHaveBeenCalled();
     });
+
+    it('rethrows a failed job so the HTTP dispatcher returns 5xx', async () => {
+      const redis = {
+        tryAcquireLock: jest.fn().mockResolvedValue({ acquired: true }),
+        del: jest.fn().mockResolvedValue(1),
+      } as unknown as RedisService;
+      const job = jest.fn().mockRejectedValue(new Error('boom'));
+
+      await expect(runWithCronLock(redis, 'k', 600, job)).rejects.toThrow(
+        'boom',
+      );
+      expect(redis.del).toHaveBeenCalledWith('k');
+    });
   });
 
   it('does NOT throw on an unreachable Redis in timer mode — @Cron is fire-and-forget, a rejection would be an unhandledRejection', async () => {

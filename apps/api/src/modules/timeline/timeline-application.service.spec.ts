@@ -477,7 +477,10 @@ describe('TimelineApplicationService', () => {
 
       expect(mockPrisma.globalEvent.findMany).toHaveBeenCalledWith({
         where: { isActive: true },
-        orderBy: { eventDate: 'asc' },
+        orderBy: [
+          { registrationDeadline: { sort: 'asc', nulls: 'last' } },
+          { eventDate: 'asc' },
+        ],
       });
       expect(result.map((event) => event.id)).toEqual([
         'future',
@@ -489,6 +492,42 @@ describe('TimelineApplicationService', () => {
       );
     });
 
+    it('orders by registration deadline when that is the student action date', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.globalEvent.findMany.mockResolvedValue([
+        {
+          id: 'late-exam',
+          title: 'Late Exam',
+          category: 'TEST',
+          eventDate: new Date('2026-12-01T00:00:00Z'),
+          registrationDeadline: new Date('2026-11-01T00:00:00Z'),
+          lateDeadline: null,
+          resultDate: null,
+          year: 2026,
+          isRecurring: false,
+          isActive: true,
+        },
+        {
+          id: 'soon-reg',
+          title: 'Soon Register',
+          category: 'TEST',
+          eventDate: new Date('2026-12-15T00:00:00Z'),
+          registrationDeadline: new Date('2026-06-01T00:00:00Z'),
+          lateDeadline: null,
+          resultDate: null,
+          year: 2026,
+          isRecurring: false,
+          isActive: true,
+        },
+      ]);
+
+      const result = await service.getGlobalEvents();
+      expect(result.map((event) => event.id)).toEqual([
+        'soon-reg',
+        'late-exam',
+      ]);
+    });
+
     it('preserves explicit year filtering', async () => {
       mockPrisma.globalEvent.findMany.mockResolvedValue([]);
 
@@ -496,7 +535,10 @@ describe('TimelineApplicationService', () => {
 
       expect(mockPrisma.globalEvent.findMany).toHaveBeenCalledWith({
         where: { isActive: true, year: 2026 },
-        orderBy: { eventDate: 'asc' },
+        orderBy: [
+          { registrationDeadline: { sort: 'asc', nulls: 'last' } },
+          { eventDate: 'asc' },
+        ],
       });
     });
   });

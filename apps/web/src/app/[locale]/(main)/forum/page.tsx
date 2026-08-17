@@ -31,9 +31,9 @@ export default function ForumPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [autoLoadPaused, setAutoLoadPaused] = useState(false);
-  const [activeFeed, setActiveFeed] = useState<ForumFeed>('popular');
+  const [activeFeed, setActiveFeed] = useState<ForumFeed>('latest');
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
-  const [sortBy, setSortBy] = useState<ForumSort>('popular');
+  const [sortBy, setSortBy] = useState<ForumSort>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);

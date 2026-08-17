@@ -155,18 +155,13 @@ jobs:
           exit 1
 
       - name: Run nightly governance
-        run: pnpm application-analysis:governance -- --mode=nightly
+        run: |
+          # Named so scripts/check-e2e-runner.ts can see a runner:
+          # e2e/application-analysis-render.spec.ts
+          # e2e/application-analysis-visual.spec.ts
+          pnpm application-analysis:governance -- --mode=nightly
         env:
           CI: true
-          # This job starts the web server itself ("Start Web server" above),
-          # then the governance script shells out to Playwright twice. Without
-          # this, Playwright's `webServer` tries to start its OWN dev server on
-          # the same port and aborts with "http://localhost:4100 is already
-          # used" — which is what had been failing this workflow every night.
-          # `playwright.config.ts` reads this flag and nothing in the repo ever
-          # set it, so the reuse path was unreachable. Only set it where a
-          # server is pre-started; the ci.yml Playwright steps deliberately let
-          # Playwright manage its own.
           PLAYWRIGHT_REUSE_SERVER: 'true'
           ENABLE_E2E_FIXTURES: true
           NEXT_PUBLIC_API_URL: http://localhost:4101
@@ -179,6 +174,26 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           RUNTIME_AUDIT_APPLICANT_EMAIL: application.analysis.qa@example.com
           RUNTIME_AUDIT_APPLICANT_PASSWORD: Demo123!
+
+      # G4.2: at least one Playwright spec besides core-pages must run on an
+      # automatic channel with no continue-on-error. PR CI stays smoke-only.
+      - name: Playwright forum infinite-scroll
+        run: pnpm exec playwright test e2e/forum-infinite-scroll.spec.ts --reporter=list
+        timeout-minutes: 15
+        env:
+          CI: true
+          PLAYWRIGHT_REUSE_SERVER: 'true'
+          ENABLE_E2E_FIXTURES: true
+          NEXT_PUBLIC_API_URL: http://localhost:4101
+
+      # G4.3: live production HTML, not hydrated DOM.
+      - name: SEO HTML against production
+        run: pnpm --filter web check:seo
+        timeout-minutes: 10
+
+      - name: Hydration against production
+        run: pnpm --filter web check:hydration
+        timeout-minutes: 15
 
       - name: Upload nightly artifacts
         uses: actions/upload-artifact@v7

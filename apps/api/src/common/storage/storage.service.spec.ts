@@ -76,3 +76,18 @@ describe('StorageService — key extension', () => {
     expect(r.key).toMatch(/^verification\/u1\/[0-9a-f]{32}\.pdf$/);
   });
 });
+
+describe('StorageService — owned keys and deleteFile', () => {
+  it('extracts verification/outcome/forum keys and rejects traversal', () => {
+    const { extractOwnedObjectKey } =
+      require('./storage.service') as typeof import('./storage.service');
+    expect(
+      extractOwnedObjectKey('https://cdn.example/verification/u1/a.pdf'),
+    ).toBe('verification/u1/a.pdf');
+    expect(extractOwnedObjectKey('outcome-evidence/u1/x.png')).toBe(
+      'outcome-evidence/u1/x.png',
+    );
+    expect(extractOwnedObjectKey('https://dicebear.com/avatar.png')).toBeNull();
+    expect(extractOwnedObjectKey('verification/../etc/passwd')).toBeNull();
+  });
+});

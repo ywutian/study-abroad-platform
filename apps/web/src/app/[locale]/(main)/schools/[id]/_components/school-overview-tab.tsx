@@ -864,9 +864,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           source: getSchoolFieldSource(school, 'acceptsCoalition'),
         }
       : null,
-    isSupplementalFieldSource(getSchoolFieldSource(school, 'testingPolicy')) &&
-    school.testingPolicy &&
-    school.testingPolicy !== 'UNKNOWN'
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'testingPolicy')) && school.testingPolicy
       ? {
           label: testingPolicyT(school.testingPolicy as never),
           source: getSchoolFieldSource(school, 'testingPolicy'),

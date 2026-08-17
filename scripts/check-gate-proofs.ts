@@ -48,7 +48,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { resetAssertionCounter, firedAssertions } from './gate-proofs/harness';
+import { resetAssertionCounter, firedAssertions, GateAlreadyRedError } from './gate-proofs/harness';
 
 const ROOT = path.resolve(__dirname, '..');
 const GATE_DIR = path.join(ROOT, 'scripts');
@@ -82,6 +82,57 @@ function gateScripts(): string[] {
     .sort();
 }
 
+/**
+ * App-local gates (apps/<app>/scripts/check-*.ts). Same proof convention as root:
+ * `scripts/gate-proofs/<basename>.proof.ts`. Kept as its own function so a
+ * parallel edit to `gateScripts()` (root-only) merges cleanly.
+ *
+ * Excludes helpers and live-DB/HTTP operators — those are not lint gates.
+ */
+const APP_GATE_EXCLUDE = new Set([
+  'check-api-quality-helpers.ts',
+  'check-and-clean-cases.ts',
+  'check-data-status.ts',
+  'check-endpoints.ts',
+  // G4.3 tickets these separately; they are live-URL operators, not lint gates.
+  'check-seo-html.ts',
+  'check-hydration.ts',
+]);
+
+function appGateScripts(): string[] {
+  const appsDir = path.join(ROOT, 'apps');
+  if (!fs.existsSync(appsDir)) return [];
+  const found: string[] = [];
+  for (const app of fs.readdirSync(appsDir).sort()) {
+    const dir = path.join(appsDir, app, 'scripts');
+    if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) continue;
+    for (const f of fs.readdirSync(dir).sort()) {
+      if (!f.startsWith('check-') || !f.endsWith('.ts')) continue;
+      if (APP_GATE_EXCLUDE.has(f)) continue;
+      found.push(f);
+    }
+  }
+  return found;
+}
+
+function allGateScripts(): string[] {
+  const root = gateScripts();
+  const app = appGateScripts();
+  const seen = new Map<string, string>();
+  for (const f of root) seen.set(f, 'scripts/');
+  for (const f of app) {
+    const prior = seen.get(f);
+    if (prior) {
+      throw new Error(
+        `Gate basename collision: ${f} exists in both ${prior} and apps/*/scripts/. ` +
+          `Rename one so proofs can key off the basename.`
+      );
+    }
+    seen.set(f, 'apps/*/scripts/');
+  }
+  return [...root, ...app].sort();
+}
+
 interface Baseline {
   _comment?: string;
   [key: string]: unknown;
@@ -89,10 +140,11 @@ interface Baseline {
 }
 
 async function main(): Promise<void> {
-  const gates = gateScripts();
+  const gates = allGateScripts();
   const proven: string[] = [];
   const unproven: string[] = [];
   const broken: string[] = [];
+  const baselineRed: string[] = [];
 
   for (const gate of gates) {
     const name = gate.replace(/\.ts$/, '');
@@ -123,8 +175,24 @@ async function main(): Promise<void> {
       }
       proven.push(name);
     } catch (error) {
+      if (error instanceof GateAlreadyRedError && error.what === 'an unmodified tree') {
+        baselineRed.push(`${name}: ${error.message}`);
+        continue;
+      }
       broken.push(`${name}: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  // Baseline-red is a property of the tree, not of the proof. Do not diagnose
+  // it as "the gate did NOT go red on a seeded violation".
+  if (baselineRed.length > 0) {
+    console.error('\n❌ BASELINE_RED: a proven gate is already red on the unmodified tree.\n');
+    console.error(
+      '   Proofs cannot tell you anything about a seeded violation until the\n' +
+        '   tree is green again. This is NOT "proof failed".\n'
+    );
+    for (const b of baselineRed) console.error(`   ${b}\n`);
+    process.exit(1);
   }
 
   // A proof that fails is worse than no proof: it claims coverage that is not

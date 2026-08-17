@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
+import { resolveApplicationYear } from '@study-abroad/shared';
 
 const prisma = new PrismaClient();
 
@@ -316,11 +317,13 @@ async function ensureSchoolListAndPredictions(
       },
     });
 
+    const applicationYear = resolveApplicationYear();
     await prisma.predictionResult.upsert({
       where: {
-        profileId_schoolId: {
+        profileId_schoolId_applicationYear: {
           profileId,
           schoolId: school.id,
+          applicationYear,
         },
       },
       update: {
@@ -350,6 +353,7 @@ async function ensureSchoolListAndPredictions(
         confidenceReason:
           'Governance fixture prediction used for deterministic application-analysis runtime checks.',
         applicationRound: target.round,
+        applicationYear,
         selectivityBand: target.predictionTier.toUpperCase(),
       },
       create: {
@@ -381,6 +385,7 @@ async function ensureSchoolListAndPredictions(
         confidenceReason:
           'Governance fixture prediction used for deterministic application-analysis runtime checks.',
         applicationRound: target.round,
+        applicationYear,
         selectivityBand: target.predictionTier.toUpperCase(),
       },
     });

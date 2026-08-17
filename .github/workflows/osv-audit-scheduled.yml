@@ -1,0 +1,52 @@
+name: Dependency Audit
+
+# Scheduled scan so a quiet default branch still fails red when a HIGH/CRITICAL
+# advisory lands. Push/PR CI already runs the same script; this workflow exists
+# because main can go days without a push (and therefore without CI).
+on:
+  schedule:
+    # Daily 06:17 UTC. Change this cron to adjust cadence.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-audit
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install osv-scanner
+        run: |
+          curl -sSL "https://github.com/google/osv-scanner/releases/download/v2.4.0/osv-scanner_linux_amd64" \
+            -o /tmp/osv-scanner
+          chmod +x /tmp/osv-scanner
+          sudo mv /tmp/osv-scanner /usr/local/bin/osv-scanner
+          osv-scanner --version
+
+      - name: Dependency audit
+        run: pnpm exec tsx scripts/check-dependency-audit.ts

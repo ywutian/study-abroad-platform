@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/lib/i18n/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Search, FileText, X } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -120,6 +120,7 @@ export function EssaysTab() {
     queryKey: ['essay-gallery', queryParams],
     queryFn: () => apiClient.get<GalleryResponse>(essayAiRoutes.gallery(), { params: queryParams }),
     staleTime: STALE_TIME.MODERATE,
+    placeholderData: keepPreviousData,
   });
 
   const essays = data?.items || [];

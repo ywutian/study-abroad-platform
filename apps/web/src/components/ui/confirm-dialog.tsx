@@ -29,6 +29,8 @@ interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
   loading?: boolean;
+  extra?: React.ReactNode;
+  confirmDisabled?: boolean;
 }
 
 // 类型配置
@@ -69,6 +71,8 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   loading = false,
+  extra,
+  confirmDisabled = false,
 }: ConfirmDialogProps) {
   const t = useTranslations('ui.dialog');
   const [isLoading, setIsLoading] = useState(false);
@@ -112,6 +116,7 @@ export function ConfirmDialog({
               {description && (
                 <AlertDialogDescription className="mt-2">{description}</AlertDialogDescription>
               )}
+              {extra}
             </div>
           </div>
         </AlertDialogHeader>
@@ -125,7 +130,7 @@ export function ConfirmDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={showLoading}
+            disabled={showLoading || confirmDisabled}
             className={cn('w-full sm:w-auto', config.buttonClass)}
           >
             {showLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

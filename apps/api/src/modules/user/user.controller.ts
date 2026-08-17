@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Put, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Put,
+  Query,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -9,11 +18,14 @@ import {
 import type { Response } from 'express';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { CurrentUser } from '../../common/decorators';
+import { ThrottleSensitive } from '../../common/decorators/throttle.decorator';
 import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 import { DashboardService } from './dashboard.service';
+import { DeleteAccountDto } from './dto/delete-account.dto';
 import { UpdateUserLocaleDto } from './dto/update-user-locale.dto';
 import { UserService } from './user.service';
+import * as bcrypt from 'bcrypt';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -62,9 +74,19 @@ export class UserController {
   }
 
   @Delete('me')
+  @ThrottleSensitive()
   @ApiOperation({ summary: 'Delete current user account (soft delete)' })
   @ApiResponse({ status: 200, description: 'Account deleted successfully' })
-  async deleteAccount(@CurrentUser() user: CurrentUserPayload) {
+  @ApiResponse({ status: 401, description: 'Current password did not match' })
+  async deleteAccount(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: DeleteAccountDto,
+  ) {
+    const fullUser = await this.userService.findByIdOrThrow(user.id);
+    const ok = await bcrypt.compare(dto.password, fullUser.passwordHash);
+    if (!ok) {
+      throw new UnauthorizedException('Invalid password');
+    }
     await this.userService.softDelete(user.id);
     return {
       success: true,

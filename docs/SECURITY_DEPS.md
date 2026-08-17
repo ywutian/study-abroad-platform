@@ -25,6 +25,20 @@ one-time fix; the goal here is a consistent, enforced _process_.
   quietly edited to drop the HIGH/CRITICAL check or its exit code. It protects
   the gate, not the deps.
 
+## Lockfile-unchanged is not "no new CVE"
+
+A HIGH advisory can land against a version we already resolved. `pnpm-lock.yaml`
+does not have to change for the tree to become vulnerable. Push/PR CI only
+runs when someone pushes, and this default branch has gone days without a
+push.
+
+`.github/workflows/osv-audit-scheduled.yml` runs the **same**
+`tsx scripts/check-dependency-audit.ts` on a daily cron (`workflow_dispatch`
+as well). It must not use `continue-on-error`, `|| true`, or `pnpm audit`.
+The first cron firing is not part of merge-time DoD; the YAML + script path
+
+- hard fail is.
+
 ## A clean lockfile is not a clean image
 
 The gates above read `pnpm-lock.yaml`. CI's `Docker Build` job runs Trivy against

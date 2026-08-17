@@ -13,6 +13,7 @@ import { ProfileLoaderHelper } from './helpers/profile-loader.helper';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 import { PredictionReportingService } from '../../prediction/prediction-reporting.service';
+import { currentSeasonPredictionUniqueWhere } from '../../prediction/prediction-season.util';
 
 @Injectable()
 export class PredictionToolsService implements IToolHandlerProvider {
@@ -359,12 +360,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
     }
 
     const prediction = await this.prisma.predictionResult.findUnique({
-      where: {
-        profileId_schoolId: {
-          profileId,
-          schoolId: school.id,
-        },
-      },
+      where: currentSeasonPredictionUniqueWhere(profileId, school.id),
       include: {
         outcomeLabelRecords: {
           orderBy: { createdAt: 'desc' },

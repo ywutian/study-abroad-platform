@@ -34,9 +34,11 @@ RUN pnpm --filter api build
 # Compile every seed-orchestrator data step into plain CommonJS JS so they can
 # run in the production image with `node` (tsx is a devDependency, absent
 # from --prod). Every script listed here is invoked by apps/api/migrate.sh
-# on each Cloud Run deploy — fail-soft, idempotent. The compiled .js files
-# land next to their .ts sources; prisma/ is copied wholesale into the
-# runner stage below so they ship intact.
+# on each Cloud Run deploy. Most seeds are fail-soft; the user-visible
+# empty-page set (see SEED_FAIL_HARD_LABELS in migrate.sh) is fail-hard, and
+# prisma/check-seed-result-assertions.ts then counts the rows (exit 42).
+# The compiled .js files land next to their .ts sources; prisma/ is copied
+# wholesale into the runner stage below so they ship intact.
 #
 # Two passes: (1) prisma/seeds/**/*.ts (preserves the closure-agents/
 # and essay-harvest/ subdirectory layout under prisma/seeds/),
@@ -92,6 +94,7 @@ RUN cd apps/api && npx tsc \
     prisma/seed-competitions.ts \
     prisma/seed-match-pools.ts \
     prisma/seed-forum-communities.ts \
+    prisma/check-seed-result-assertions.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma

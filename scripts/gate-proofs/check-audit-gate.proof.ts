@@ -86,4 +86,17 @@ export async function prove(): Promise<void> {
     (s) => s.replace(/process\.exit\(1\)/g, 'process.exitCode = 0'),
     () => expectFired(runGate('check-audit-gate.ts'), 'never block')
   );
+
+  await withPatchedFile(
+    '.github/workflows/mobile-ci.yml',
+    (s) =>
+      `${s}\n      - name: Dependency audit\n        run: pnpm exec tsx scripts/check-dependency-audit.ts\n        continue-on-error: true\n`,
+    () => expectFired(runGate('check-audit-gate.ts'), 'continue-on-error')
+  );
+
+  await withPatchedFile(
+    '.github/workflows/osv-audit-scheduled.yml',
+    (s) => s.replace(/schedule:/g, 'workflow_call:'),
+    () => expectFired(runGate('check-audit-gate.ts'), 'schedule:')
+  );
 }

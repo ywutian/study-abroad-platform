@@ -261,7 +261,7 @@ function main(): void {
   console.log('─'.repeat(60));
   console.log(`总计: ${errors.length} 个错误, ${warnings.length} 个警告`);
 
-  if (errors.length > 0 && stagedOnly) {
+  if (errors.length > 0 && (stagedOnly || process.argv.includes('--strict'))) {
     console.log('\n❌ Typography 检测失败（staged files 存在 error 级问题）');
     process.exit(1);
   }

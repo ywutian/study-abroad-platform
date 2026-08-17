@@ -2685,7 +2685,7 @@ model PredictionResult {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  @@unique([profileId, schoolId]) // 每个 profile+school 只保存最新预测
+  @@unique([profileId, schoolId, applicationYear]) // 每个 profile+school+季 一条预测；换季不再覆盖旧 outcome
   @@index([profileId])
   @@index([schoolId])
   @@index([modelVersion])

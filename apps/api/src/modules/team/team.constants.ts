@@ -92,5 +92,20 @@ export function mapCompetitionEdition(e: CompetitionEditionResult) {
       minTeamSize: t.minTeamSize,
       maxTeamSize: t.maxTeamSize,
     })),
+    selfJoinable: isStudentSelfJoinable(e.competition.abbreviation),
   };
+}
+
+/** National-team olympiads: students cannot form a team on their own. */
+const NATIONAL_TEAM_ABBREVIATIONS = new Set([
+  'IMO',
+  'IPhO',
+  'IChO',
+  'IBO',
+  'IOI',
+]);
+
+export function isStudentSelfJoinable(abbreviation: string | null): boolean {
+  if (!abbreviation) return true;
+  return !NATIONAL_TEAM_ABBREVIATIONS.has(abbreviation);
 }

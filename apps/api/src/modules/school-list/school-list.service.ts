@@ -22,6 +22,7 @@ import {
   calculateTier,
 } from '../../common/utils/scoring';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { currentSeasonPredictionUniqueWhere } from '../prediction/prediction-season.util';
 import {
   SCHOOL_LIST_SCHOOL_SELECT,
   AI_RECOMMENDATION_SCHOOL_SELECT,
@@ -676,9 +677,7 @@ export class SchoolListService {
         // automatically protected without touching this file.
         // governance: parent-scoped — keyed by profileId_schoolId; profileId is derived from the authenticated user by the caller
         const existing = await this.prisma.predictionResult.findUnique({
-          where: {
-            profileId_schoolId: { profileId, schoolId: school.id },
-          },
+          where: currentSeasonPredictionUniqueWhere(profileId, school.id),
           select: { authority: true },
         });
 
@@ -686,9 +685,7 @@ export class SchoolListService {
 
         // governance: parent-scoped — keyed by profileId_schoolId; profileId is derived from the authenticated user by the caller
         await this.prisma.predictionResult.upsert({
-          where: {
-            profileId_schoolId: { profileId, schoolId: school.id },
-          },
+          where: currentSeasonPredictionUniqueWhere(profileId, school.id),
           update: {
             probability,
             tier,
@@ -696,6 +693,7 @@ export class SchoolListService {
             modelVersion: 'v1-stats',
             source: 'quick-match',
             authority: 'PREVIEW',
+            applicationYear: resolveApplicationYear(),
           },
           create: {
             profileId,
@@ -707,6 +705,7 @@ export class SchoolListService {
             modelVersion: 'v1-stats',
             source: 'quick-match',
             authority: 'PREVIEW',
+            applicationYear: resolveApplicationYear(),
           },
         });
 

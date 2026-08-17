@@ -629,6 +629,7 @@ describe('TeamRecruitmentService', () => {
   });
 
   it('lists active competition editions for a season with a provenance flag', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-08-17T12:00:00Z'));
     (prisma.competitionEdition.findMany as jest.Mock).mockResolvedValue([
       {
         id: 'ed-imo',
@@ -682,15 +683,16 @@ describe('TeamRecruitmentService', () => {
       }),
     );
     expect(result.items).toHaveLength(2);
-    // Web-verified edition (has sourceUrl) → verified true + provenance surfaced.
-    expect(result.items[0]).toMatchObject({
+    // Ended editions sink; undated synthetic stays first.
+    expect(result.items[0]).toMatchObject({ verified: false, sourceUrl: null });
+    expect(result.items[1]).toMatchObject({
       competition: expect.objectContaining({ abbreviation: 'IMO' }),
       verified: true,
       sourceUrl: 'https://imo-official.org/',
       confidence: 'high',
+      selfJoinable: false,
     });
-    // Synthetic-seed edition (no sourceMeta) → verified false, no provenance.
-    expect(result.items[1]).toMatchObject({ verified: false, sourceUrl: null });
+    expect(result.items[0].selfJoinable).toBe(true);
   });
 
   describe('guest deck anonymity', () => {

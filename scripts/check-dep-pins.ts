@@ -84,6 +84,38 @@ function resolvedVersions(name: string, lines: string[]): string[] {
  *    the file silently disagreed with itself and which pin applied depended on
  *    line order. Six keys were affected before this guard existed.
  */
+/**
+ * GHSA-2v37-7h3g-55p8 / CVE-2026-67213: nanoid 3.x is patched at 3.3.18.
+ * An override whose replacement range still includes 3.3.17 pins the
+ * vulnerability. That is how this repo spent a week "fixed" while CI stayed red.
+ */
+function checkNanoidOverride(): string[] {
+  const raw = fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8');
+  const manifest = JSON.parse(raw) as {
+    pnpm?: { overrides?: Record<string, string>; auditConfig?: { ignoreGhsas?: string[] } };
+  };
+  const errors: string[] = [];
+  const ignored = manifest.pnpm?.auditConfig?.ignoreGhsas ?? [];
+  if (ignored.includes('GHSA-2v37-7h3g-55p8')) {
+    errors.push(
+      '`auditConfig.ignoreGhsas` lists GHSA-2v37-7h3g-55p8 — that advisory must be patched, not ignored.'
+    );
+  }
+  const overrides = manifest.pnpm?.overrides ?? {};
+  const nanoidKeys = Object.entries(overrides).filter(([k]) => k.startsWith('nanoid'));
+  if (nanoidKeys.length === 0) {
+    return errors;
+  }
+  for (const [key, value] of nanoidKeys) {
+    if (/3\.3\.17/.test(key) || /3\.3\.17/.test(value)) {
+      errors.push(
+        `pnpm.overrides "${key}": "${value}" still names nanoid 3.3.17, which is inside GHSA-2v37-7h3g-55p8 (< 3.3.18). Pin to >=3.3.18 <4.`
+      );
+    }
+  }
+  return errors;
+}
+
 function checkRootManifest(): string[] {
   const errors: string[] = [];
   const manifestPath = path.join(ROOT, 'package.json');
@@ -186,6 +218,7 @@ function main(): void {
     }
   }
 
+  errors.push(...checkNanoidOverride());
   errors.push(...checkRootManifest());
 
   if (errors.length > 0) {

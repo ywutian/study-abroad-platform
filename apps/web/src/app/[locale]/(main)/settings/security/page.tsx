@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Link } from '@/lib/i18n/navigation';
 import { toast } from 'sonner';
 import {
   Key,
@@ -24,19 +23,27 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PasswordStrength, isPasswordValid } from '@/components/ui/password-strength';
 import { apiClient } from '@/lib/api';
-import { authRoutes } from '@study-abroad/shared';
+import { authRoutes, userRoutes } from '@study-abroad/shared';
+import { useRouter } from '@/lib/i18n/navigation';
+import { useAuthStore } from '@/stores/auth';
 
 export default function SecurityPage() {
   const t = useTranslations('security');
+  const tSettings = useTranslations('settings');
   const tCommon = useTranslations('common');
+  const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
   const changePasswordMutation = useMutation({
     // @cache-invalidation-allowed: security form (change-password) — toast + clears local fields; no cached list/detail
@@ -65,6 +72,19 @@ export default function SecurityPage() {
     }
     changePasswordMutation.mutate({ currentPassword, newPassword });
   };
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: (password: string) =>
+      apiClient.delete(userRoutes.me(), { body: JSON.stringify({ password }) }),
+    onSuccess: () => {
+      // @cache-invalidation-allowed: account deleted; user leaves the app
+      setDeleteDialogOpen(false);
+      setDeletePassword('');
+      toast.success(tSettings('toast.accountDeleted'));
+      logout();
+      router.push('/login');
+    },
+  });
 
   return (
     <PageContainer maxWidth="3xl">
@@ -240,16 +260,52 @@ export default function SecurityPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">{t('dangerZoneDesc')}</p>
-              <Button variant="destructive" className="gap-2" asChild>
-                <Link href="/settings">
-                  <AlertTriangle className="h-4 w-4" />
-                  {t('deleteAccount')}
-                </Link>
+              <Button
+                variant="destructive"
+                className="gap-2"
+                type="button"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <AlertTriangle className="h-4 w-4" />
+                {t('deleteAccount')}
               </Button>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setDeletePassword('');
+        }}
+        title={tSettings('dialogs.deleteTitle')}
+        description={tSettings('dialogs.deleteDesc')}
+        type="danger"
+        confirmDisabled={!deletePassword.trim() || deleteAccountMutation.isPending}
+        loading={deleteAccountMutation.isPending}
+        extra={
+          <div className="mt-4 space-y-2 text-left">
+            <Label htmlFor="security-delete-password" className="text-sm text-foreground">
+              {t('enterPasswordToDelete')}
+            </Label>
+            <Input
+              id="security-delete-password"
+              type="password"
+              autoComplete="current-password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder={tSettings('dialogs.deletePasswordPlaceholder')}
+              className="dark:bg-slate-900"
+            />
+          </div>
+        }
+        onConfirm={() => {
+          if (!deletePassword.trim()) return;
+          deleteAccountMutation.mutate(deletePassword);
+        }}
+      />
     </PageContainer>
   );
 }

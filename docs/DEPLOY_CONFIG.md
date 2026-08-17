@@ -141,3 +141,22 @@ This pass did **not** rewrite the deploy commands into a shared composite action
 blind rewrite would risk breaking prod deploys). The drift guard + single source
 close the actual recurrence — _config silently diverging_ — without that risk. A
 composite-action consolidation is a sensible, separately-verified follow-up.
+
+## Merged ≠ production
+
+This is the merged ≠ production boundary. `ci.yml` on `push` to `main`
+deploys the **GCP API canary** (`--no-traffic`, then a canary smoke, then
+traffic shift). The web app is a separate Vercel deploy. There is no
+`deploy-prod.yml`.
+
+A green merge therefore does **not** mean a student already sees the fix:
+
+- API canary can pass while production traffic still sits on the previous
+  revision.
+- Vercel web can lag or fail independently of the API job.
+- `migrate.sh` used to fail-soft user-visible seeds (calendar, forum chips,
+  match pools). A green Cloud Run job was not proof those tables had rows.
+- User-facing copy and `ACCOUNT_PURGE_ENABLED` can drift from each other
+  unless `lint:deletion-promise` is green.
+
+Do not write "landed on main, so production is fixed."

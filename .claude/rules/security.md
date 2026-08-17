@@ -87,24 +87,33 @@ should be readable in the deploy config rather than inferred from a schema.
 Note that `--set-env-vars` replaces the whole set: dropping them from that line
 silently returns both to their defaults.
 
-- **`ACCOUNT_PURGE_ENABLED` is `false`** (also the default). Not a placeholder:
-  the first enabled run purges the entire existing backlog of soft-deleted
-  accounts at once, irreversibly. While disabled the job still runs and logs
-  what it _would_ remove, so the blast radius is a log line rather than a guess:
+- **`ACCOUNT_PURGE_ENABLED` is `true` in the production canary `--set-env-vars` line**
+  (`.github/workflows/ci.yml` Deploy canary). The schema default is still
+  `false` for local/dev. Copy already promises a 30-day permanent delete plus a
+  Payment/financial-record exception. Do not flip the flag off to hide a
+  capability gap.
+
+  `hardDelete` deletes owned object keys (verification / outcome evidence /
+  forum images) **before** the DB row, then `deleteMany`s orphan `userId`
+  tables that have no `User @relation`. `AuditLog`, `AgentAuditLog`, and
+  `AgentSecurityEvent` keep a bare `userId` on purpose and are allowlisted in
+  `scripts/check-orphan-userid.ts`.
+
+  COS/S3/OSS production blob delete is still an OPEN verification (this
+  environment cannot prove a 404 on the live bucket). Until that probe is
+  green, do not tell a user "we confirmed the file is gone from COS".
 
   ```
   gcloud logging read 'resource.type=cloud_run_revision AND
     resource.labels.service_name=study-abroad-api AND
-    textPayload=~"Account purge DRY RUN"' \
+    textPayload=~"Account purge"' \
     --project=study-abroad-prod-2025 --limit=7
   ```
 
-  **Read that before enabling.** One `hardDelete` cascades 55 relations off
-  `User` — profile, vault items, cases, resumes, forum posts, messages, points,
-  team memberships — and there is no undo.
+  There is no undo after `hardDelete`. FK cascades plus the explicit orphan
+  deletes are the blast radius — not a magic "55 relations" count.
 
-- **`ACCOUNT_PURGE_GRACE_DAYS` is 30** (also the default) — what the old copy
-  promised.
+- **`ACCOUNT_PURGE_GRACE_DAYS` is 30** — what the user-facing copy promises.
 - **Capped at 200 accounts per run**; the remainder is picked up the next day.
 - **Accounts holding `Payment` rows are skipped and logged, never purged.**
   `Payment` cascades off `User`, so purging the account destroys the financial
@@ -114,20 +123,17 @@ silently returns both to their defaults.
   retention policy decision, not a bug to code around.
 - A single failing account is logged and skipped, not allowed to strand the batch.
 
-**Copy may only promise what the flag currently does.** The three strings that
-used to claim 数据将被永久删除 — `settings.items.deleteAccountDesc`,
-`settings.dialogs.deleteDesc`, `security.dangerZoneDesc` (plus the mobile
-`settings.deleteAccountConfirm`, `security.deleteAccountWarning`,
-`security.deleteAccountConfirmMessage`) — describe what the user actually
-experiences today: sign-in disabled, identifiers cleared, messages redacted,
-cases turned private. **Restore a retention period in that copy only when
-`ACCOUNT_PURGE_ENABLED=true` in production**, and state the same number as
-`ACCOUNT_PURGE_GRACE_DAYS`. A promise ahead of the flag is the exact defect this
-service was built to close.
+**Copy may only promise what the flag currently does.** Production
+`ACCOUNT_PURGE_ENABLED=true` and `ACCOUNT_PURGE_GRACE_DAYS=30`, so the
+settings/security strings may (and must) state the 30-day permanent delete
+**and** the Payment/financial-record exception. `scripts/check-deletion-promise.ts`
+fails if a locale file drops either. Do not restore a "we never really delete"
+sentence while the flag is true.
 
 `AuditLog` deliberately survives a purge: `AuditLog.userId` is a bare column
 with no relation, so it does not cascade. That is correct — an audit trail that
-disappears with its subject is not an audit trail.
+disappears with its subject is not an audit trail. The same retain-allowlist
+covers `AgentAuditLog` and `AgentSecurityEvent`.
 
 ## Dependency CVEs
 

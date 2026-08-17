@@ -1136,7 +1136,7 @@
         "REQUIRED": "必须提交标化",
         "OPTIONAL": "可选提交标化",
         "BLIND": "标化盲审",
-        "UNKNOWN": "标化政策未知"
+        "UNKNOWN": "标化要求：未收录"
       },
       "intlAid": {
         "NEED_BLIND": "国际生资助 Need-Blind",
@@ -1256,7 +1256,7 @@
     "termsOfService": "用户协议",
     "privacyPolicy": "隐私政策",
     "logoutConfirm": "确定要退出登录吗？",
-    "deleteAccountConfirm": "此操作不可撤销，确定要注销账号吗？注销后您将无法登录，身份信息会被清除。30 天后，您的数据将被永久删除，无法恢复。",
+    "deleteAccountConfirm": "此操作不可撤销，确定要注销账号吗？注销后您将无法登录，身份信息会被清除。30 天后，您的数据将被永久删除，无法恢复。若账号有支付记录，宽限期后仍会保留财务所需行（身份会清、登录会关）。",
     "featureInDev": "功能开发中",
     "thankYou": "感谢支持",
     "thankYouReview": "感谢您的好评！",
@@ -1682,7 +1682,10 @@
     "eventNotesPlaceholder": "可选备注...",
     "deleteConfirmTitle": "确认删除",
     "deleteConfirmMessage": "确定吗？此操作无法撤销。",
-    "noTasks": "暂无任务"
+    "noTasks": "暂无任务",
+    "examInDays": "考试还有 {{count}} 天",
+    "registrationClosed": "报名已截止",
+    "examDate": "考试日"
   },
   "assessment": {
     "title": "性格测评",
@@ -1860,9 +1863,9 @@
     "activeSessions": "活跃会话",
     "activeSessionsDescription": "管理当前已登录的设备",
     "logoutAllDevices": "登出所有设备",
-    "deleteAccountWarning": "注销账户不可撤销：您将无法登录，身份信息会被清除，已提交的案例将转为私密。30 天后，您的数据将被永久删除，无法恢复。",
+    "deleteAccountWarning": "注销账户不可撤销：您将无法登录，身份信息会被清除，已提交的案例将转为私密。30 天后，您的数据将被永久删除，无法恢复。若账号有支付记录，宽限期后仍会保留财务所需行（身份会清、登录会关）。",
     "deleteMyAccount": "删除我的账户",
-    "deleteAccountConfirmMessage": "此操作不可撤销。注销后您将无法登录；姓名、头像、简介等身份信息会被清除，已发送的消息会被隐去，您提交的案例将转为私密、不再对外展示。",
+    "deleteAccountConfirmMessage": "此操作不可撤销。注销后您将无法登录；姓名、头像、简介等身份信息会被清除，已发送的消息会被隐去，您提交的案例将转为私密、不再对外展示。30 天后，您的数据将被永久删除，无法恢复。若账号有支付记录，宽限期后仍会保留财务所需行（身份会清、登录会关）。",
     "enterPassword": "输入密码",
     "passwordPlaceholder": "密码"
   },

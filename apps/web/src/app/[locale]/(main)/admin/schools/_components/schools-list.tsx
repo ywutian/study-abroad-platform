@@ -154,7 +154,7 @@ export function SchoolsList({
                               {getSchoolSubName(school, locale)}
                             </div>
                           )}
-                          {school.testingPolicy && school.testingPolicy !== 'UNKNOWN' ? (
+                          {school.testingPolicy ? (
                             <Badge variant="outline" className="mt-1 text-2xs">
                               {testingPolicyT(school.testingPolicy as never)}
                             </Badge>

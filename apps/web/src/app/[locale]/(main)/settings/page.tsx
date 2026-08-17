@@ -39,6 +39,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useColorPalette } from '@/hooks/use-color-palette';
 import { apiClient } from '@/lib/api';
@@ -70,6 +72,7 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
   const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
 
   useEffect(() => {
@@ -83,10 +86,12 @@ export default function SettingsPage() {
   };
 
   const deleteAccountMutation = useMutation({
-    mutationFn: () => apiClient.delete(userRoutes.me()),
+    mutationFn: (password: string) =>
+      apiClient.delete(userRoutes.me(), { body: JSON.stringify({ password }) }),
     onSuccess: () => {
       // @cache-invalidation-allowed: onSuccess logs out and router.push('/login') — account deleted, user leaves the app; no cached list to refresh
       setDeleteDialogOpen(false);
+      setDeletePassword('');
       toast.success(t('settings.toast.accountDeleted'));
       logout();
       router.push('/login');
@@ -94,7 +99,8 @@ export default function SettingsPage() {
   });
 
   const handleDeleteAccount = () => {
-    deleteAccountMutation.mutate();
+    if (!deletePassword.trim()) return;
+    deleteAccountMutation.mutate(deletePassword);
   };
 
   const handleLanguageChange = (lang: string) => {
@@ -385,10 +391,31 @@ export default function SettingsPage() {
       {/* 删除账户对话框 */}
       <ConfirmDialog
         open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setDeletePassword('');
+        }}
         title={t('settings.dialogs.deleteTitle')}
         description={t('settings.dialogs.deleteDesc')}
         type="danger"
+        confirmDisabled={!deletePassword.trim() || deleteAccountMutation.isPending}
+        loading={deleteAccountMutation.isPending}
+        extra={
+          <div className="mt-4 space-y-2 text-left">
+            <Label htmlFor="delete-account-password" className="text-sm text-foreground">
+              {t('security.enterPasswordToDelete')}
+            </Label>
+            <Input
+              id="delete-account-password"
+              type="password"
+              autoComplete="current-password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder={t('settings.dialogs.deletePasswordPlaceholder')}
+              className="dark:bg-slate-900"
+            />
+          </div>
+        }
         onConfirm={handleDeleteAccount}
       />
     </PageContainer>

@@ -51,15 +51,6 @@ const userNames = [
   '申请焦虑症患者',
 ];
 
-// 用于生成随机浏览量和点赞数
-function randomView() {
-  return Math.floor(Math.random() * 2000) + 50;
-}
-
-function randomLike() {
-  return Math.floor(Math.random() * 100) + 5;
-}
-
 async function main() {
   console.log('📝 创建论坛示例帖子（扩展版）...\n');
 
@@ -1277,8 +1268,8 @@ Pre-Med 是长跑，选好起点很重要！`,
         isTeamPost: post.isTeamPost || false,
         teamSize: post.teamSize,
         currentSize: post.isTeamPost ? 1 : null,
-        viewCount: randomView(),
-        likeCount: randomLike(),
+        viewCount: 0,
+        likeCount: 0,
       },
     });
 
@@ -1334,7 +1325,7 @@ Pre-Med 是长跑，选好起点很重要！`,
             postId: post.id,
             authorId: commenter.id,
             content: commentText,
-            likeCount: Math.floor(Math.random() * 20),
+            likeCount: 0,
           },
         });
         commentsCreated++;
