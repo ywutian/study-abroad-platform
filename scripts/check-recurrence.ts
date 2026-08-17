@@ -70,6 +70,17 @@ interface FileStat {
 
 // ── Git plumbing ────────────────────────────────────────────
 
+/** `git rev-parse --is-shallow-repository` — 'true' when history was truncated. */
+function isShallowClone(): boolean {
+  try {
+    return (
+      execSync('git rev-parse --is-shallow-repository', { encoding: 'utf8' }).trim() === 'true'
+    );
+  } catch {
+    return false;
+  }
+}
+
 function git(cmd: string): string {
   try {
     return execSync(`git ${cmd}`, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -175,6 +186,20 @@ function main() {
   if (JSON_OUT) {
     console.log(JSON.stringify({ threshold: THRESHOLD, hotspots, assessed }, null, 2));
     process.exit(STRICT && hotspots.length > 0 ? 1 : 0);
+  }
+
+  // "No hotspots" and "no history to look at" are the same sentence unless we
+  // check. A depth-1 checkout — the GitHub Actions default — has nothing to
+  // count fixes in, so this printed the all-clear on every file in CI. Its own
+  // proof is what caught it: a seeded `--threshold=1` did not fire.
+  if (hotspots.length === 0 && isShallowClone()) {
+    console.error(
+      `\n⚠️  check-recurrence cannot see fix history: this is a SHALLOW clone.\n` +
+        `   Every file scores 0 fixes here, so the all-clear below would mean\n` +
+        `   "nothing to compare against", not "nothing recurring".\n` +
+        `   Fetch history (actions/checkout with fetch-depth: 0) to get an answer.\n`
+    );
+    process.exit(STRICT ? 1 : 0);
   }
 
   if (hotspots.length === 0) {
