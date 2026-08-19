@@ -87,6 +87,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        # Root guardrails include the gate-proof runner, and check-recurrence
+        # counts how often a file has appeared in FIX commits. A default depth-1
+        # checkout has no history to count, so it reported "no fix-hotspots" —
+        # the same answer it gives for a genuinely clean tree. Its proof caught
+        # that (seeded --threshold=1 did not fire); the gate now also says so.
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
