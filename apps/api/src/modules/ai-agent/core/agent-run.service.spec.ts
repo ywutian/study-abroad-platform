@@ -9,6 +9,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import {
   AgentRunService,
   getApprovalFingerprint,
+  isAgentRunCheckpoint,
   normalizeToolArguments,
 } from './agent-run.service';
 
@@ -33,6 +34,7 @@ describe('AgentRunService', () => {
         update: jest.fn(),
         updateMany: jest.fn(),
       },
+      agentEvaluationTrace: { upsert: jest.fn() },
     };
     prisma.$transaction = jest.fn(async (input: unknown) => {
       if (typeof input === 'function') return input(prisma);
@@ -65,6 +67,112 @@ describe('AgentRunService', () => {
       b: 2,
     });
     expect(getApprovalFingerprint(left)).toBe(getApprovalFingerprint(right));
+  });
+
+  it('validates a structured V2 checkpoint without embedding tool results', () => {
+    expect(
+      isAgentRunCheckpoint({
+        version: 2,
+        agentType: 'orchestrator',
+        locale: 'zh',
+        planningContent: '',
+        steps: [],
+        pendingStepIndex: 0,
+        successfulFingerprints: [],
+        scheduledCalls: 0,
+        supplementalRounds: 0,
+        planMs: 1,
+        executeMs: 0,
+        startedAt: now.toISOString(),
+        context: {
+          version: 1,
+          taskGoal: 'Compare schools',
+          constraints: [],
+          toolResultRefs: [],
+          approvalState: 'none',
+          unfinishedSteps: [],
+        },
+        budget: {
+          version: 1,
+          maxTokens: 24000,
+          maxToolCalls: 16,
+          maxSupplementalRounds: 2,
+          maxDurationMs: 120000,
+        },
+        usage: {
+          version: 1,
+          estimatedTokens: 100,
+          toolCalls: 0,
+          supplementalRounds: 0,
+          elapsedMs: 10,
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it('freezes a run budget and persists only redacted evaluation evidence', async () => {
+    const contextConfig = {
+      get: jest.fn((key: string, fallback?: unknown) => {
+        if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+        if (key === 'AI_AGENT_APPROVALS_V1') return 'true';
+        if (key === 'AI_AGENT_CONTEXT_V1') return 'true';
+        return fallback;
+      }),
+    } as unknown as ConfigService;
+    const sanitizer = {
+      sanitizeWithDetails: jest.fn((value: string) => ({
+        sanitized: value.replace('test@example.com', '****@****.***'),
+        detectedTypes: ['EMAIL'],
+        maskedCount: 1,
+      })),
+    };
+    const contextService = new AgentRunService(
+      prisma as unknown as PrismaService,
+      contextConfig,
+      sanitizer as any,
+    );
+    prisma.agentRun.create.mockResolvedValue({ id: 'run-1' });
+    prisma.agentRun.updateMany.mockResolvedValue({ count: 1 });
+    prisma.agentRun.findFirst.mockResolvedValue({
+      id: 'run-1',
+      agentType: 'orchestrator',
+      budget: { version: 1, maxTokens: 24000 },
+      usage: { version: 1, estimatedTokens: 100 },
+      contextSummary: { taskGoal: 'Email test@example.com' },
+      approvals: [],
+      startedAt: now,
+      completedAt: new Date(now.getTime() + 50),
+    });
+
+    await contextService.createRun({
+      userId: 'user-1',
+      conversationId: 'conversation-1',
+      agentType: 'orchestrator' as any,
+    });
+    await contextService.completeRun('user-1', 'run-1', {
+      message: 'Do not copy this response into the trace',
+      agentType: 'orchestrator' as any,
+      toolsUsed: ['notify_test@example.com'],
+    });
+
+    expect(prisma.agentRun.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          budget: expect.objectContaining({ maxTokens: 24000 }),
+        }),
+      }),
+    );
+    expect(prisma.agentEvaluationTrace.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          redactedTypes: ['EMAIL'],
+          payload: expect.not.objectContaining({ message: expect.anything() }),
+        }),
+      }),
+    );
+    expect(
+      JSON.stringify(prisma.agentEvaluationTrace.upsert.mock.calls[0][0]),
+    ).not.toContain('test@example.com');
   });
 
   it('atomically persists an approval and moves the run to WAITING_APPROVAL', async () => {
@@ -197,8 +305,8 @@ describe('AgentRunService', () => {
   });
 
   it('allows exactly one resume claimant', async () => {
-    let approvalStatus = AgentApprovalStatus.APPROVED;
-    let runStatus = AgentRunStatus.WAITING_APPROVAL;
+    let approvalStatus: AgentApprovalStatus = AgentApprovalStatus.APPROVED;
+    let runStatus: AgentRunStatus = AgentRunStatus.WAITING_APPROVAL;
     const buildRun = () => ({
       id: 'run-1',
       userId: 'user-1',
@@ -218,12 +326,12 @@ describe('AgentRunService', () => {
     );
     prisma.agentApproval.updateMany.mockImplementation(async () => {
       if (approvalStatus !== AgentApprovalStatus.APPROVED) return { count: 0 };
-      approvalStatus = AgentApprovalStatus.EXECUTING;
+      approvalStatus = 'EXECUTING';
       return { count: 1 };
     });
     prisma.agentRun.updateMany.mockImplementation(async () => {
       if (runStatus !== AgentRunStatus.WAITING_APPROVAL) return { count: 0 };
-      runStatus = AgentRunStatus.RUNNING;
+      runStatus = 'RUNNING';
       return { count: 1 };
     });
 

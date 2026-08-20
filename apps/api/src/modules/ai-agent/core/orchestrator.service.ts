@@ -13,7 +13,12 @@
  * - 新增持久化入口必须走 persistWorkflowMessages，禁止在 WorkflowEngine 中直接注入 MemoryManager
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AgentRunnerService } from './agent-runner.service';
 import { MemoryService } from './memory.service';
@@ -52,7 +57,7 @@ import { randomUUID } from 'crypto';
 import {
   AgentRunService,
   getApprovalFingerprint,
-  isAgentRunCheckpointV1,
+  isAgentRunCheckpoint,
 } from './agent-run.service';
 
 export type { StreamEvent };
@@ -591,22 +596,27 @@ export class OrchestratorService {
 
       // Backfill enterprise memory history into in-memory state so the
       // workflow engine's Plan/Solve phases see prior conversation turns.
-      if (conversationId && conversation.messages.length === 0) {
+      if (conversationId) {
         try {
-          const history = await this.memoryManager!.getConversationHistory(
-            conv.id,
-          );
-          for (const msg of history) {
-            conversation.messages.push({
-              id: msg.id,
-              role: msg.role as Message['role'],
-              content: msg.content,
-              agentType: msg.agentType as AgentType | undefined,
-              timestamp: msg.createdAt,
-            });
+          const context =
+            await this.memoryManager!.getCompressedConversationContext(conv.id);
+          if (context.summary) {
+            conversation.metadata.conversationContextSummaryV1 =
+              context.summary;
+          }
+          if (conversation.messages.length === 0) {
+            for (const msg of context.recentMessages) {
+              conversation.messages.push({
+                id: msg.id,
+                role: msg.role as Message['role'],
+                content: msg.content,
+                agentType: msg.agentType as AgentType | undefined,
+                timestamp: msg.createdAt,
+              });
+            }
           }
         } catch (err) {
-          this.logger.warn('Failed to backfill conversation history', err);
+          this.logger.warn('Failed to prepare conversation context', err);
         }
       }
 
@@ -806,7 +816,9 @@ export class OrchestratorService {
       if (event.type === 'done' && event.response) response = event.response;
       if (event.type === 'approval_required') approval = event.approval;
       if (event.type === 'error') {
-        throw new Error(event.error || 'Agent execution failed');
+        throw new InternalServerErrorException(
+          event.error || 'Agent execution failed',
+        );
       }
     }
 
@@ -820,7 +832,11 @@ export class OrchestratorService {
         data: { runId, approvalRequired: approval },
       };
     }
-    if (!response) throw new Error('Agent completed without a response');
+    if (!response) {
+      throw new InternalServerErrorException(
+        'Agent completed without a response',
+      );
+    }
 
     this.logger.log(`callAgent completed: agent=${response.agentType}`);
     return response;
@@ -1273,7 +1289,7 @@ export class OrchestratorService {
       return;
     }
 
-    if (!isAgentRunCheckpointV1(claim.run.checkpoint)) {
+    if (!isAgentRunCheckpoint(claim.run.checkpoint)) {
       await this.agentRuns.failRun(
         userId,
         runId,
@@ -1436,6 +1452,20 @@ export class OrchestratorService {
               result?.message || fullContent,
               result?.plan.steps.map((step) => ({ result: step.result })),
             ),
+            data: result
+              ? {
+                  workflow: {
+                    timing: result.timing,
+                    usage: result.usage,
+                    contextSummary: result.contextSummary,
+                    steps: result.plan.steps.map((step) => ({
+                      tool: step.toolCall.name,
+                      status: step.status,
+                      duration: step.duration,
+                    })),
+                  },
+                }
+              : undefined,
           };
           yield {
             type: 'done',
@@ -1635,7 +1665,6 @@ export class OrchestratorService {
       this.configValidator?.getValidatedConfig(agentType) ??
       AGENT_CONFIGS[agentType];
 
-    // 配置缺失时使用 FallbackService 处理
     if (!config) {
       this.logger.error(`Agent configuration missing for type: ${agentType}`, {
         availableAgents: Object.keys(AGENT_CONFIGS),
@@ -1664,7 +1693,6 @@ export class OrchestratorService {
 
     const tools = TOOLS.filter((t) => config.tools.includes(t.name));
 
-    // 使用三阶段工作流引擎（流式）
     for await (const event of this.workflowEngine.runStream(
       agentType,
       config,
@@ -1674,18 +1702,13 @@ export class OrchestratorService {
         ? { runId, approvalsEnabled: !!this.agentRuns?.isEnabled() }
         : undefined,
     )) {
-      // 将工作流事件转换为 StreamEvent
       switch (event.type) {
         case 'phase_change':
-          // Plan 阶段不通知前端（内部决策）
-          // Execute 和 Solve 阶段通知前端
           if (event.phase === WorkflowPhase.SOLVE) {
-            // Solve 阶段开始，前端可以准备接收最终内容
           }
           break;
 
         case 'plan_content':
-          // Plan 阶段的直接回复（不需要工具时）
           if (event.content) {
             yield {
               type: 'content',
@@ -1761,7 +1784,6 @@ export class OrchestratorService {
           break;
 
         case 'solve_content':
-          // Solve 阶段的流式输出 → 这是最终回复
           if (event.content) {
             yield {
               type: 'content',
@@ -1825,6 +1847,8 @@ export class OrchestratorService {
                 ? {
                     workflow: {
                       timing: result.timing,
+                      usage: result.usage,
+                      contextSummary: result.contextSummary,
                       steps: result.plan.steps.map((s) => ({
                         tool: s.toolCall.name,
                         status: s.status,

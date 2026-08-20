@@ -142,6 +142,8 @@ export class AgentRunnerService {
       data: {
         workflow: {
           timing: result.timing,
+          usage: result.usage,
+          contextSummary: result.contextSummary,
           steps: result.plan.steps.map((s) => ({
             tool: s.toolCall.name,
             status: s.status,

@@ -218,7 +218,19 @@ export interface RetrievalContext {
     conversationId?: string;
     messageCount: number;
     memoryCount: number;
+    memoryEnabled: boolean;
   };
+}
+
+export interface ConversationContextSummaryV1 {
+  version: 1;
+  summary: string;
+  keyTopics: string[];
+  decisions: string[];
+  nextSteps: string[];
+  throughMessageId: string;
+  sourceMessageCount: number;
+  updatedAt: string;
 }
 
 export interface UserPreferences {

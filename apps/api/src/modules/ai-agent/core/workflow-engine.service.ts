@@ -40,7 +40,6 @@ import {
   ToolCall,
   AgentHarnessMode,
 } from '../types';
-import { ToolExecutionResult } from './types';
 import { getLocalizedSystemPrompt } from '../config/agents.config';
 import { getToolMetadata, TOOL_READONLY } from '../config/tools.config';
 import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
@@ -48,206 +47,31 @@ import { MetricsService } from '../infrastructure/observability/metrics.service'
 import { ToolPolicyService } from './tool-policy.service';
 import {
   getApprovalFingerprint,
-  type AgentRunCheckpointV1,
+  type AgentRunBudgetV1,
 } from './agent-run.service';
+import { AgentRunBudgetTracker } from './agent-run-context';
+import type { AgentRunCheckpoint } from './agent-run-state';
+import {
+  canonicalize,
+  ExecutionPlan,
+  getPlanSystemSuffix,
+  getSolveSystemSuffix,
+  MAX_SUPPLEMENTAL_PLANNING_ROUNDS,
+  MAX_TOOL_CALLS_PER_RUN,
+  PHASE_WARN_MS,
+  PlannedStep,
+  TOOL_TIMEOUT_MS,
+  WorkflowPhase,
+  WorkflowResult,
+  WorkflowRunContext,
+  WorkflowStreamEvent,
+} from './workflow-contract';
+import {
+  buildRunCheckpoint,
+  buildWorkflowResult,
+} from './workflow-result-builder';
 
-// ==================== 工作流类型定义 ====================
-
-/** 工作流阶段 */
-export enum WorkflowPhase {
-  PLAN = 'plan',
-  EXECUTE = 'execute',
-  SOLVE = 'solve',
-  DONE = 'done',
-}
-
-/** 规划的工具调用步骤 */
-export interface PlannedStep {
-  /** 工具调用信息 */
-  toolCall: ToolCall;
-  /** 步骤状态 */
-  status: 'pending' | 'running' | 'success' | 'failed';
-  /** 执行结果 */
-  result?: ToolExecutionResult;
-  /** 错误信息 */
-  error?: string;
-  /** 执行耗时 (ms) */
-  duration?: number;
-}
-
-/** 执行计划 */
-export interface ExecutionPlan {
-  /** Plan 阶段 LLM 的分析/思考内容 */
-  planningContent: string;
-  /** 规划的步骤 */
-  steps: PlannedStep[];
-  /** 是否需要委派 */
-  delegation?: {
-    targetAgent: AgentType;
-    task: string;
-    context?: string;
-  };
-}
-
-/** 工作流执行结果 */
-export interface WorkflowResult {
-  /** 最终回复内容 */
-  message: string;
-  /** 使用的工具列表 */
-  toolsUsed: string[];
-  /** 是否需要委派 */
-  delegation?: ExecutionPlan['delegation'];
-  /** 执行计划详情（可观测性） */
-  plan: ExecutionPlan;
-  /** 各阶段耗时 */
-  timing: {
-    planMs: number;
-    executeMs: number;
-    solveMs: number;
-    totalMs: number;
-  };
-}
-
-export interface WorkflowRunContext {
-  runId: string;
-  approvalsEnabled: boolean;
-}
-
-/** 工作流流式事件 */
-export interface WorkflowStreamEvent {
-  type:
-    | 'phase_change'
-    | 'plan_content'
-    | 'tool_start'
-    | 'tool_end'
-    | 'approval_required'
-    | 'run_paused'
-    | 'run_resumed'
-    | 'solve_content'
-    | 'done'
-    | 'error';
-  phase?: WorkflowPhase;
-  content?: string;
-  tool?: string;
-  toolResult?: ToolExecutionResult;
-  toolCall?: ToolCall;
-  checkpoint?: AgentRunCheckpointV1;
-  pendingStepIndex?: number;
-  runId?: string;
-  result?: WorkflowResult;
-  error?: string;
-}
-
-// ==================== 配置 ====================
-
-const TOOL_TIMEOUT_MS = 30000;
-const MAX_SUPPLEMENTAL_PLANNING_ROUNDS = 2;
-const MAX_TOOL_CALLS_PER_RUN = 16;
-
-function canonicalize(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, nested]) => [key, canonicalize(nested)]),
-    );
-  }
-  return value;
-}
-
-function getPlanSystemSuffix(locale: string, harnessEnabled = false): string {
-  const observationNote = harnessEnabled
-    ? locale === 'en'
-      ? '\n- Tool results may be followed by a bounded supplemental planning round; never repeat an already successful call with identical arguments'
-      : '\n- 工具结果可能触发有界的补充规划；不要重复已经成功且参数完全相同的调用'
-    : '';
-
-  if (locale === 'en') {
-    return `
-
-## Workflow Instructions (Must Follow Strictly)
-You are in the **planning phase**. Your tasks are:
-1. Analyze the user's request
-2. Determine which tools need to be called to collect information or perform actions
-3. Call **all** needed tools at once (do not split into multiple rounds)
-
-Important rules:
-- Think carefully, then list all tool calls at once
-- Each tool should be called at most once
-- If no tools are needed, reply to the user directly
-- Do not explain which tools you are calling; just call them${observationNote}
-
-## Tool Selection Principles
-- The user's profile summary is provided in "Current User Info" above. Do NOT call get_profile unless you need to verify the latest data or the summary is insufficient.
-- Prefer local database tools (get_school_details, search_cases, get_deadlines, etc.)
-- Only use web_search or search_school_website when local tools clearly cannot answer (latest policies, current dates, information unlikely in the database)
-- search_schools / get_school_details: school basic info from database
-- search_school_website: school's official latest info (e.g., confirming deadline changes)
-- web_search: only for cross-school general timely information (policies, visas, trends)`;
-  }
-  return `
-
-## 工作流指令（必须严格遵守）
-你正处于 **规划阶段**。你的任务是：
-1. 分析用户的需求
-2. 判断需要调用哪些工具来收集信息或执行操作
-3. **一次性** 调用所有需要的工具（不要分多轮）
-
-重要规则：
-- 仔细思考后，一次性列出所有需要的工具调用
-- 每种工具最多调用一次
-- 如果不需要任何工具，直接回复用户即可
-- 不要在回复中解释"我要调用什么工具"，直接调用即可${observationNote}
-
-## 工具选择原则
-- 用户档案已在"当前用户信息"中提供，无需调用 get_profile，除非需要验证最新数据
-- 优先使用本地数据库工具（get_school_details, search_cases, get_deadlines 等）
-- 仅当本地工具明确不足以回答时（最新政策、当前日期、数据库不太可能有的信息），才使用 web_search 或 search_school_website
-- search_schools / get_school_details：获取学校基本信息
-- search_school_website：获取学校官方最新信息（如确认截止日期变更）
-- web_search：仅用于跨学校的通用时效性信息（政策、签证、趋势）`;
-}
-
-function getSolveSystemSuffix(locale: string): string {
-  if (locale === 'en') {
-    return `
-
-## Workflow Instructions (Must Follow Strictly)
-You are in the **summarization phase**. All tools have been executed and their results are in the conversation history.
-Your task is: Based on all tool results, generate a complete, friendly, well-organized **English** response.
-
-Important rules:
-- **Never** call any tools again
-- Generate the response directly based on existing tool results
-- If a tool returned an error, inform the user that functionality is temporarily unavailable and answer based on other tool results. Do not fabricate data that the failed tool should have returned
-- The response should be complete, organized, and not omit important information
-- For prediction explanations, only use safe public fields already returned by tools, such as sourceSummary, uncertaintyReasons, confidenceReason, roundContext, and latestOutcomeLabel. Do not invent hidden policy logic, raw traces, or shadow-model conclusions
-- If tool results contain search results (web_search or search_school_website), you **must** cite information from the search results and include source links. Search results are real-time data; use them directly. Do not say "I cannot search" or "I cannot get real-time information"`;
-  }
-  return `
-
-## 工作流指令（必须严格遵守）
-你正处于 **总结阶段**。所有工具已经执行完毕，结果已包含在对话历史中。
-你的任务是：基于所有工具返回的数据，生成一个完整、友好、有条理的中文回复。
-
-重要规则：
-- **绝对不要** 再调用任何工具
-- 直接基于已有的工具结果生成回复
-- 如果某个工具返回了 error 信息，告知用户该功能暂时不可用，并基于其他工具结果尽量回答。不要编造该工具本应返回的数据
-- 回复要完整、有条理，不要遗漏重要信息
-- 涉及预测解释时，只能使用工具已经返回的公开字段，例如 sourceSummary、uncertaintyReasons、confidenceReason、roundContext、latestOutcomeLabel。不要猜测内部 policy 逻辑、raw trace 或 shadow 模型结论
-- 如果工具结果中包含搜索结果（web_search 或 search_school_website），你**必须**引用搜索结果中的信息来回答用户问题，并附上来源链接。搜索结果就是实时数据，直接使用即可，不要说"我无法搜索"或"我无法获取实时信息"`;
-}
-
-/** 阶段耗时警告阈值 (ms) */
-const PHASE_WARN_MS: Record<string, number> = {
-  plan: 10_000,
-  execute: 30_000,
-  solve: 15_000,
-};
-
-// ==================== 工作流引擎 ====================
+export * from './workflow-contract';
 
 @Injectable()
 export class WorkflowEngineService {
@@ -263,8 +87,6 @@ export class WorkflowEngineService {
     @Optional() private toolPolicy?: ToolPolicyService,
     @Optional() private configService?: ConfigService,
   ) {}
-
-  // ==================== 公开 API ====================
 
   /**
    * Run the complete three-phase workflow (non-streaming).
@@ -355,6 +177,12 @@ export class WorkflowEngineService {
   ): AsyncGenerator<WorkflowStreamEvent> {
     const totalStart = Date.now();
     const harnessEnabled = this.isHarnessEnabled();
+    const budgetTracker =
+      harnessEnabled && this.isContextEnabled()
+        ? new AgentRunBudgetTracker(this.getRunBudget())
+        : undefined;
+    let scheduledCalls = 0;
+    let supplementalRounds = 0;
 
     // Pre-fetch enterprise memory context once for the entire workflow turn.
     // Reused by both Plan and Solve phases to avoid redundant embedding + DB queries.
@@ -376,6 +204,7 @@ export class WorkflowEngineService {
         tools,
         cachedMemoryContext,
         harnessEnabled,
+        budgetTracker,
       );
       let planMs = Date.now() - planStart;
       this.warnIfSlow(agentType, 'plan', planMs);
@@ -397,7 +226,7 @@ export class WorkflowEngineService {
 
         yield {
           type: 'done',
-          result: this.buildWorkflowResult({
+          result: buildWorkflowResult({
             message: plan.planningContent,
             plan,
             timing: {
@@ -406,6 +235,10 @@ export class WorkflowEngineService {
               solveMs: 0,
               totalMs: Date.now() - totalStart,
             },
+            budgetTracker,
+            scheduledCalls,
+            supplementalRounds,
+            conversation,
           }),
         };
         return;
@@ -415,7 +248,7 @@ export class WorkflowEngineService {
       if (plan.delegation) {
         yield {
           type: 'done',
-          result: this.buildWorkflowResult({
+          result: buildWorkflowResult({
             message: '',
             plan,
             delegation: plan.delegation,
@@ -425,6 +258,10 @@ export class WorkflowEngineService {
               solveMs: 0,
               totalMs: Date.now() - totalStart,
             },
+            budgetTracker,
+            scheduledCalls,
+            supplementalRounds,
+            conversation,
           }),
         };
         return;
@@ -443,14 +280,15 @@ export class WorkflowEngineService {
         const allowedToolNames = new Set(tools.map((tool) => tool.name));
         const mode = this.getHarnessMode();
         let currentRound = plan;
-        let supplementalRounds = 0;
-        let scheduledCalls = 0;
-
         while (
           currentRound.steps.length > 0 &&
-          scheduledCalls < MAX_TOOL_CALLS_PER_RUN
+          scheduledCalls <
+            (budgetTracker?.limits.maxToolCalls ?? MAX_TOOL_CALLS_PER_RUN)
         ) {
-          const remainingBudget = MAX_TOOL_CALLS_PER_RUN - scheduledCalls;
+          budgetTracker?.assertWithinDuration();
+          const remainingBudget =
+            (budgetTracker?.limits.maxToolCalls ?? MAX_TOOL_CALLS_PER_RUN) -
+            scheduledCalls;
           const roundSteps = currentRound.steps.slice(0, remainingBudget);
           if (roundSteps.length < currentRound.steps.length) {
             this.logger.warn(
@@ -481,7 +319,7 @@ export class WorkflowEngineService {
             if (event.type === 'approval_required' && event.toolCall) {
               const pendingStepIndex =
                 roundStartIndex + (event.pendingStepIndex ?? 0);
-              const checkpoint = this.buildRunCheckpoint({
+              const checkpoint = buildRunCheckpoint({
                 agentType,
                 locale,
                 plan: aggregatePlan,
@@ -492,6 +330,9 @@ export class WorkflowEngineService {
                 planMs,
                 executeMs: executeMs + (Date.now() - roundStart),
                 startedAt: new Date(totalStart),
+                conversation,
+                budgetTracker,
+                approvalState: 'waiting',
               });
               pauseEvent = { ...event, checkpoint, runId: runContext?.runId };
               yield pauseEvent;
@@ -512,8 +353,11 @@ export class WorkflowEngineService {
           }
 
           if (
-            scheduledCalls >= MAX_TOOL_CALLS_PER_RUN ||
-            supplementalRounds >= MAX_SUPPLEMENTAL_PLANNING_ROUNDS
+            scheduledCalls >=
+              (budgetTracker?.limits.maxToolCalls ?? MAX_TOOL_CALLS_PER_RUN) ||
+            supplementalRounds >=
+              (budgetTracker?.limits.maxSupplementalRounds ??
+                MAX_SUPPLEMENTAL_PLANNING_ROUNDS)
           ) {
             break;
           }
@@ -527,6 +371,7 @@ export class WorkflowEngineService {
             tools,
             cachedMemoryContext,
             supplementalRounds,
+            budgetTracker,
           );
           planMs += Date.now() - supplementalStart;
         }
@@ -553,6 +398,7 @@ export class WorkflowEngineService {
         config,
         conversation,
         cachedMemoryContext,
+        budgetTracker,
       )) {
         finalMessage += chunk;
         yield { type: 'solve_content', content: chunk };
@@ -573,7 +419,11 @@ export class WorkflowEngineService {
           plan,
           conversation,
           locale,
+          budgetTracker,
+          (budgetTracker?.limits.maxToolCalls ?? MAX_TOOL_CALLS_PER_RUN) -
+            scheduledCalls,
         );
+        scheduledCalls += verifyResult.toolCalls;
         verifyMs = Date.now() - verifyStart;
 
         this.metricsService?.recordCritique(verifyResult.allCorrect);
@@ -596,6 +446,7 @@ export class WorkflowEngineService {
             conversation,
             `The following facts in your response were verified against the database and found to be inaccurate. Please correct them:\n${correctionReport}`,
             cachedMemoryContext,
+            budgetTracker,
           )) {
             resolvedMessage += chunk;
             yield { type: 'solve_content', content: chunk };
@@ -613,7 +464,7 @@ export class WorkflowEngineService {
 
       yield {
         type: 'done',
-        result: this.buildWorkflowResult({
+        result: buildWorkflowResult({
           message: finalMessage,
           plan,
           timing: {
@@ -622,6 +473,10 @@ export class WorkflowEngineService {
             solveMs: solveMs + verifyMs,
             totalMs: Date.now() - totalStart,
           },
+          budgetTracker,
+          scheduledCalls,
+          supplementalRounds,
+          conversation,
         }),
       };
     } catch (error) {
@@ -640,7 +495,7 @@ export class WorkflowEngineService {
     config: AgentConfig,
     conversation: ConversationState,
     tools: ToolDefinition[],
-    checkpoint: AgentRunCheckpointV1,
+    checkpoint: AgentRunCheckpoint,
     approvedFingerprint: string,
     runContext: WorkflowRunContext,
   ): AsyncGenerator<WorkflowStreamEvent> {
@@ -657,6 +512,12 @@ export class WorkflowEngineService {
     const successfulCalls = new Set(checkpoint.successfulFingerprints);
     const allowedToolNames = new Set(tools.map((tool) => tool.name));
     const mode = this.getHarnessMode();
+    const budgetTracker =
+      checkpoint.version === 2
+        ? new AgentRunBudgetTracker(checkpoint.budget, checkpoint.usage)
+        : this.isContextEnabled()
+          ? new AgentRunBudgetTracker(this.getRunBudget())
+          : undefined;
     const totalStart = new Date(checkpoint.startedAt).getTime() || Date.now();
     let executeMs = checkpoint.executeMs;
 
@@ -668,6 +529,7 @@ export class WorkflowEngineService {
       index++
     ) {
       const step = plan.steps[index];
+      budgetTracker?.assertWithinDuration();
       const fingerprint = this.getToolCallFingerprint(step.toolCall);
       const approvalFingerprint = getApprovalFingerprint(step.toolCall);
       if (successfulCalls.has(fingerprint)) {
@@ -708,7 +570,7 @@ export class WorkflowEngineService {
       }
 
       if (decision.action === 'confirmation_required' && !isApprovedStep) {
-        const nextCheckpoint = this.buildRunCheckpoint({
+        const nextCheckpoint = buildRunCheckpoint({
           agentType,
           locale,
           plan,
@@ -719,6 +581,9 @@ export class WorkflowEngineService {
           planMs: checkpoint.planMs,
           executeMs,
           startedAt: new Date(totalStart),
+          conversation,
+          budgetTracker,
+          approvalState: 'waiting',
         });
         yield {
           type: 'approval_required',
@@ -779,6 +644,7 @@ export class WorkflowEngineService {
       config,
       conversation,
       memoryContext,
+      budgetTracker,
     )) {
       finalMessage += chunk;
       yield { type: 'solve_content', content: chunk };
@@ -786,7 +652,7 @@ export class WorkflowEngineService {
     const solveMs = Date.now() - solveStart;
     yield {
       type: 'done',
-      result: this.buildWorkflowResult({
+      result: buildWorkflowResult({
         message: finalMessage,
         plan,
         timing: {
@@ -795,6 +661,10 @@ export class WorkflowEngineService {
           solveMs,
           totalMs: Date.now() - totalStart,
         },
+        budgetTracker,
+        scheduledCalls: checkpoint.scheduledCalls,
+        supplementalRounds: checkpoint.supplementalRounds,
+        conversation,
       }),
     };
   }
@@ -833,6 +703,7 @@ export class WorkflowEngineService {
     tools: ToolDefinition[],
     memoryContext: string = '',
     harnessEnabled = false,
+    budgetTracker?: AgentRunBudgetTracker,
   ): Promise<ExecutionPlan> {
     const systemPrompt = this.buildPlanPrompt(
       config,
@@ -850,6 +721,7 @@ export class WorkflowEngineService {
       userId: conversation.userId,
       conversationId: conversation.id,
       agentType,
+      runBudget: budgetTracker,
     });
 
     return this.parsePlanResponse(response, agentType, harnessEnabled);
@@ -862,6 +734,7 @@ export class WorkflowEngineService {
     tools: ToolDefinition[],
     memoryContext: string,
     round: number,
+    budgetTracker?: AgentRunBudgetTracker,
   ): Promise<ExecutionPlan> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const instruction =
@@ -880,6 +753,7 @@ export class WorkflowEngineService {
       userId: conversation.userId,
       conversationId: conversation.id,
       agentType,
+      runBudget: budgetTracker,
     });
 
     const plan = this.parsePlanResponse(response, agentType, true);
@@ -1342,6 +1216,7 @@ export class WorkflowEngineService {
     config: AgentConfig,
     conversation: ConversationState,
     memoryContext: string = '',
+    budgetTracker?: AgentRunBudgetTracker,
   ): AsyncGenerator<string> {
     const systemPrompt = this.buildSolvePrompt(
       config,
@@ -1357,6 +1232,7 @@ export class WorkflowEngineService {
       userId: conversation.userId,
       conversationId: conversation.id,
       agentType,
+      runBudget: budgetTracker,
     };
 
     let fullContent = '';
@@ -1450,9 +1326,12 @@ export class WorkflowEngineService {
     plan: ExecutionPlan,
     conversation: ConversationState,
     locale: string,
+    budgetTracker?: AgentRunBudgetTracker,
+    remainingToolCalls = 5,
   ): Promise<{
     allCorrect: boolean;
     verified: number;
+    toolCalls: number;
     corrections: Array<{ claim: string; actual: string; tool: string }>;
   }> {
     try {
@@ -1483,6 +1362,7 @@ ${solveOutput.slice(0, 2000)}
         userId: 'system',
         agentType: `${agentType}_cove_extract`,
         providerOptions: { response_format: { type: 'json_object' } },
+        runBudget: budgetTracker,
       });
 
       const extracted = extractJsonFromLlm<{
@@ -1490,7 +1370,12 @@ ${solveOutput.slice(0, 2000)}
       }>(extractResult.content);
 
       if (!extracted?.facts?.length) {
-        return { allCorrect: true, verified: 0, corrections: [] };
+        return {
+          allCorrect: true,
+          verified: 0,
+          toolCalls: 0,
+          corrections: [],
+        };
       }
 
       // Step 2: Verify each fact against database (parallel)
@@ -1500,67 +1385,78 @@ ${solveOutput.slice(0, 2000)}
         tool: string;
       }> = [];
       let verified = 0;
+      let toolCalls = 0;
 
-      const verifications = extracted.facts.slice(0, 5).map(async (fact) => {
-        try {
-          const toolResult = await this.toolExecutor.execute(
-            {
-              id: `cove_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-              name: 'get_school_details',
-              arguments: { schoolName: fact.schoolName },
-            },
-            conversation.userId,
-            conversation.context,
-            locale,
-          );
+      const verifications = extracted.facts
+        .slice(0, Math.max(0, Math.min(5, remainingToolCalls)))
+        .map(async (fact) => {
+          try {
+            toolCalls++;
+            const toolResult = await this.toolExecutor.execute(
+              {
+                id: `cove_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                name: 'get_school_details',
+                arguments: { schoolName: fact.schoolName },
+              },
+              conversation.userId,
+              conversation.context,
+              locale,
+            );
 
-          if (!toolResult.success || !toolResult.result) return;
+            if (!toolResult.success || !toolResult.result) return;
 
-          const schoolData = toolResult.result as Record<string, unknown>;
-          const rawValue = schoolData[fact.field];
-          const actualValue =
-            typeof rawValue === 'string' || typeof rawValue === 'number'
-              ? String(rawValue)
-              : 'N/A';
+            const schoolData = toolResult.result as Record<string, unknown>;
+            const rawValue = schoolData[fact.field];
+            const actualValue =
+              typeof rawValue === 'string' || typeof rawValue === 'number'
+                ? String(rawValue)
+                : 'N/A';
 
-          // Simple mismatch check: if the claim contains a number, compare with actual
-          const claimNumbers = fact.claim.match(/[\d.]+%?/g);
-          const actualNumbers = actualValue.match(/[\d.]+%?/g);
+            // Simple mismatch check: if the claim contains a number, compare with actual
+            const claimNumbers = fact.claim.match(/[\d.]+%?/g);
+            const actualNumbers = actualValue.match(/[\d.]+%?/g);
 
-          if (claimNumbers && actualNumbers) {
-            const claimNum = parseFloat(claimNumbers[0]);
-            const actualNum = parseFloat(actualNumbers[0]);
-            if (
-              !isNaN(claimNum) &&
-              !isNaN(actualNum) &&
-              Math.abs(claimNum - actualNum) > 0.5
-            ) {
-              corrections.push({
-                claim: fact.claim,
-                actual: `${fact.field}: ${actualValue}`,
-                tool: 'get_school_details',
-              });
-              return;
+            if (claimNumbers && actualNumbers) {
+              const claimNum = parseFloat(claimNumbers[0]);
+              const actualNum = parseFloat(actualNumbers[0]);
+              if (
+                !isNaN(claimNum) &&
+                !isNaN(actualNum) &&
+                Math.abs(claimNum - actualNum) > 0.5
+              ) {
+                corrections.push({
+                  claim: fact.claim,
+                  actual: `${fact.field}: ${actualValue}`,
+                  tool: 'get_school_details',
+                });
+                return;
+              }
             }
+            verified++;
+          } catch {
+            // Verification tool failed — skip this fact (fail-open)
           }
-          verified++;
-        } catch {
-          // Verification tool failed — skip this fact (fail-open)
-        }
-      });
+        });
 
       await Promise.allSettled(verifications);
 
       return {
         allCorrect: corrections.length === 0,
         verified,
+        toolCalls,
         corrections,
       };
     } catch (error) {
+      if (this.isBudgetError(error)) throw error;
       this.logger.warn(
         `[${agentType}] CoVE failed, defaulting to pass: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return { allCorrect: true, verified: 0, corrections: [] };
+      return {
+        allCorrect: true,
+        verified: 0,
+        toolCalls: 0,
+        corrections: [],
+      };
     }
   }
 
@@ -1576,6 +1472,7 @@ ${solveOutput.slice(0, 2000)}
     conversation: ConversationState,
     critiqueFeedback: string,
     memoryContext: string = '',
+    budgetTracker?: AgentRunBudgetTracker,
   ): AsyncGenerator<string> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const basePrompt = this.buildSolvePrompt(
@@ -1598,6 +1495,7 @@ ${solveOutput.slice(0, 2000)}
       userId: conversation.userId,
       conversationId: conversation.id,
       agentType: `${agentType}_resolve`,
+      runBudget: budgetTracker,
     };
 
     let fullContent = '';
@@ -1665,71 +1563,35 @@ ${solveOutput.slice(0, 2000)}
     }
   }
 
-  /**
-   * Build a standardized {@link WorkflowResult} from workflow execution data.
-   *
-   * Deduplicates the list of successfully used tools and assembles timing,
-   * plan, and delegation information into a single result object.
-   *
-   * @param params - Result parameters including message, plan, timing, and optional delegation
-   * @returns A fully populated WorkflowResult
-   */
-  /**
-   * 构建 WorkflowResult（统一结果构建，消除重复）
-   */
-  private buildWorkflowResult(params: {
-    message: string;
-    plan: ExecutionPlan;
-    timing: WorkflowResult['timing'];
-    delegation?: ExecutionPlan['delegation'];
-  }): WorkflowResult {
-    const toolsUsed = params.plan.steps
-      .filter((s) => s.status === 'success')
-      .map((s) => s.toolCall.name);
-
-    return {
-      message: params.message,
-      toolsUsed: [...new Set(toolsUsed)],
-      delegation: params.delegation,
-      plan: params.plan,
-      timing: params.timing,
-    };
-  }
-
-  private buildRunCheckpoint(input: {
-    agentType: AgentType;
-    locale: string;
-    plan: ExecutionPlan;
-    pendingStepIndex: number;
-    successfulCalls: Set<string>;
-    scheduledCalls: number;
-    supplementalRounds: number;
-    planMs: number;
-    executeMs: number;
-    startedAt: Date;
-  }): AgentRunCheckpointV1 {
-    return {
-      version: 1,
-      agentType: input.agentType,
-      locale: input.locale,
-      planningContent: input.plan.planningContent,
-      steps: input.plan.steps.map((step) => ({
-        toolCall: step.toolCall,
-        status: step.status === 'running' ? 'pending' : step.status,
-        ...(step.error ? { error: step.error } : {}),
-      })),
-      pendingStepIndex: input.pendingStepIndex,
-      successfulFingerprints: [...input.successfulCalls],
-      scheduledCalls: input.scheduledCalls,
-      supplementalRounds: input.supplementalRounds,
-      planMs: input.planMs,
-      executeMs: input.executeMs,
-      startedAt: input.startedAt.toISOString(),
-    };
-  }
-
   private isHarnessEnabled(): boolean {
     return this.configService?.get<string>('AI_AGENT_HARNESS_V1') === 'true';
+  }
+
+  private isContextEnabled(): boolean {
+    return (
+      this.isHarnessEnabled() &&
+      this.configService?.get<string>('AI_AGENT_CONTEXT_V1') === 'true'
+    );
+  }
+
+  private getRunBudget(): AgentRunBudgetV1 {
+    return {
+      version: 1,
+      maxTokens:
+        this.configService?.get<number>('AI_AGENT_MAX_TOKENS_PER_RUN') ?? 24000,
+      maxToolCalls: MAX_TOOL_CALLS_PER_RUN,
+      maxSupplementalRounds: MAX_SUPPLEMENTAL_PLANNING_ROUNDS,
+      maxDurationMs:
+        this.configService?.get<number>('AI_AGENT_MAX_DURATION_MS') ?? 120000,
+    };
+  }
+
+  private isBudgetError(error: unknown): boolean {
+    return (
+      error instanceof Error &&
+      (error.message === 'AGENT_TOKEN_BUDGET_EXCEEDED' ||
+        error.message === 'AGENT_DURATION_BUDGET_EXCEEDED')
+    );
   }
 
   private getHarnessMode(): AgentHarnessMode {
@@ -1808,6 +1670,10 @@ ${solveOutput.slice(0, 2000)}
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
     const baseContext = this.memory.getContextSummary(conversation.context);
     const uiContext = this.getUiContextSummary(conversation, locale);
+    const conversationSummary = this.getConversationContinuitySummary(
+      conversation,
+      locale,
+    );
 
     return `${localizedPrompt}
 
@@ -1815,7 +1681,7 @@ ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
 ${baseContext}
-${uiContext}${memoryContext}${getPlanSystemSuffix(locale, harnessEnabled)}`;
+${uiContext}${conversationSummary}${memoryContext}${getPlanSystemSuffix(locale, harnessEnabled)}`;
   }
 
   /**
@@ -1835,6 +1701,10 @@ ${uiContext}${memoryContext}${getPlanSystemSuffix(locale, harnessEnabled)}`;
       locale === 'en' ? '## Current User Info' : '## 当前用户信息';
     const baseContext = this.memory.getContextSummary(conversation.context);
     const uiContext = this.getUiContextSummary(conversation, locale);
+    const conversationSummary = this.getConversationContinuitySummary(
+      conversation,
+      locale,
+    );
 
     return `${localizedPrompt}
 
@@ -1842,7 +1712,30 @@ ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
 ${baseContext}
-${uiContext}${memoryContext}${getSolveSystemSuffix(locale)}`;
+${uiContext}${conversationSummary}${memoryContext}${getSolveSystemSuffix(locale)}`;
+  }
+
+  private getConversationContinuitySummary(
+    conversation: ConversationState,
+    locale: string,
+  ): string {
+    const value = conversation.metadata?.conversationContextSummaryV1;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+    const summary = value as Record<string, unknown>;
+    if (summary.version !== 1 || typeof summary.summary !== 'string') return '';
+
+    const list = (key: string) =>
+      Array.isArray(summary[key])
+        ? (summary[key] as unknown[])
+            .filter((item): item is string => typeof item === 'string')
+            .slice(0, 10)
+            .join('; ')
+        : '';
+    const decisions = list('decisions');
+    const nextSteps = list('nextSteps');
+    const header =
+      locale === 'en' ? '\n## Conversation Continuity' : '\n## 对话连续性摘要';
+    return `${header}\n${summary.summary}${decisions ? `\n${locale === 'en' ? 'Decisions' : '已确认决定'}: ${decisions}` : ''}${nextSteps ? `\n${locale === 'en' ? 'Unfinished steps' : '未完成事项'}: ${nextSteps}` : ''}`;
   }
 
   private getUiContextSummary(
@@ -1886,6 +1779,8 @@ ${uiContext}${memoryContext}${getSolveSystemSuffix(locale)}`;
         lastUserMsg.content,
         conversation.id,
       );
+
+      if (context.meta?.memoryEnabled === false) return '';
 
       const summary = this.memoryManager.buildContextSummary(context);
       if (!summary) return '';

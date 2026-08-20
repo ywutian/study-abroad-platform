@@ -133,6 +133,15 @@ const envSchema = z.object({
     .int()
     .min(30000)
     .default(120000),
+  AI_AGENT_CONTEXT_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_MAX_TOKENS_PER_RUN: z.coerce.number().int().min(1000).default(24000),
+  AI_AGENT_MAX_DURATION_MS: z.coerce.number().int().min(10000).default(120000),
+  AI_AGENT_CONTEXT_RECENT_MESSAGES: z.coerce
+    .number()
+    .int()
+    .min(4)
+    .max(20)
+    .default(10),
 
   // --- Search Engines (Optional) ---
   GOOGLE_SEARCH_API_KEY: z.string().optional(),

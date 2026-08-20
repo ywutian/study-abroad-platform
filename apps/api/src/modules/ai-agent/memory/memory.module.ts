@@ -26,6 +26,7 @@ import { MemoryDecayService } from './memory-decay.service';
 import { MemoryConflictService } from './memory-conflict.service';
 import { MemoryCompactionService } from './memory-compaction.service';
 import { SanitizerService } from './sanitizer.service';
+import { ConversationContextService } from './conversation-context.service';
 
 @Module({
   imports: [ConfigModule, PrismaModule, RedisModule],
@@ -48,6 +49,7 @@ import { SanitizerService } from './sanitizer.service';
 
     // Security - Sensitive Data Sanitization
     SanitizerService,
+    ConversationContextService,
   ],
   exports: [
     MemoryManagerService,

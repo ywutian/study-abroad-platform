@@ -15,6 +15,7 @@ import { MemoryScorerService } from './memory-scorer.service';
 import { MemoryDecayService } from './memory-decay.service';
 import { MemoryConflictService } from './memory-conflict.service';
 import { MemoryType, EntityType } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 describe('MemoryManagerService', () => {
   let service: MemoryManagerService;
@@ -22,6 +23,7 @@ describe('MemoryManagerService', () => {
   let persistent: jest.Mocked<PersistentMemoryService>;
   let embedding: jest.Mocked<EmbeddingService>;
   let summarizer: jest.Mocked<SummarizerService>;
+  let config: jest.Mocked<ConfigService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -95,6 +97,10 @@ describe('MemoryManagerService', () => {
           },
         },
         {
+          provide: ConfigService,
+          useValue: { get: jest.fn().mockReturnValue(undefined) },
+        },
+        {
           provide: MemoryScorerService,
           useValue: {
             score: jest.fn().mockReturnValue(0.5),
@@ -125,6 +131,7 @@ describe('MemoryManagerService', () => {
     persistent = module.get(PersistentMemoryService);
     embedding = module.get(EmbeddingService);
     summarizer = module.get(SummarizerService);
+    config = module.get(ConfigService);
   });
 
   it('should be defined', () => {
@@ -308,6 +315,7 @@ describe('MemoryManagerService', () => {
       });
 
       await service.addMessage('conv_1', messageInput);
+      await new Promise((resolve) => setImmediate(resolve));
 
       // 应该调用 extractFromMessage 提取记忆
       expect(summarizer.extractFromMessage).toHaveBeenCalled();
@@ -521,6 +529,147 @@ describe('MemoryManagerService', () => {
 
       expect(stats.totalMemories).toBe(100);
       expect(stats.totalConversations).toBe(20);
+    });
+  });
+
+  describe('memory preference boundary', () => {
+    it('persists conversation messages but skips extraction when disabled', async () => {
+      persistent.addMessage.mockResolvedValue({
+        id: 'message-1',
+        conversationId: 'conversation-1',
+        role: 'user',
+        content: 'A sufficiently long user message that would be extracted',
+        createdAt: new Date(),
+      });
+      persistent.getConversation.mockResolvedValue({
+        id: 'conversation-1',
+        userId: 'user-1',
+        messageCount: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      persistent.getPreferences.mockResolvedValue({
+        communicationStyle: 'friendly',
+        responseLength: 'moderate',
+        language: 'zh-CN',
+        enableMemory: false,
+        enableSuggestions: true,
+      });
+
+      await service.addMessage('conversation-1', {
+        role: 'user',
+        content: 'A sufficiently long user message that would be extracted',
+      });
+
+      expect(persistent.addMessage).toHaveBeenCalled();
+      expect(summarizer.extractFromMessage).not.toHaveBeenCalled();
+    });
+
+    it('skips memory and entity retrieval when disabled', async () => {
+      persistent.getPreferences.mockResolvedValue({
+        communicationStyle: 'friendly',
+        responseLength: 'moderate',
+        language: 'zh-CN',
+        enableMemory: false,
+        enableSuggestions: true,
+      });
+
+      const context = await service.getRetrievalContext(
+        'user-1',
+        'current question',
+      );
+
+      expect(context.meta.memoryEnabled).toBe(false);
+      expect(context.relevantMemories).toEqual([]);
+      expect(context.entities).toEqual([]);
+      expect(persistent.searchMemories).not.toHaveBeenCalled();
+      expect(persistent.searchEntities).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('conversation context compression', () => {
+    const conversation = {
+      id: 'conversation-1',
+      userId: 'user-1',
+      messageCount: 21,
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const messages = Array.from({ length: 21 }, (_, index) => ({
+      id: `message-${index}`,
+      conversationId: 'conversation-1',
+      role: index % 2 === 0 ? 'user' : 'assistant',
+      content: `message ${index}`,
+      createdAt: new Date(index * 1000),
+    }));
+
+    it('stores a structured summary and keeps only recent messages', async () => {
+      config.get.mockImplementation((key: string) => {
+        if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+        if (key === 'AI_AGENT_CONTEXT_V1') return 'true';
+        if (key === 'AI_AGENT_CONTEXT_RECENT_MESSAGES') return 10;
+        return undefined;
+      });
+      persistent.getConversation.mockResolvedValue(conversation);
+      persistent.getMessages.mockResolvedValue(messages);
+      summarizer.shouldSummarize.mockReturnValue(true);
+      summarizer.summarizeConversation.mockResolvedValue({
+        summary: 'The user selected a school list.',
+        keyTopics: ['schools'],
+        decisions: ['Keep three target schools'],
+        nextSteps: ['Compare deadlines'],
+        extractedFacts: [],
+        extractedEntities: [],
+      });
+
+      const result =
+        await service.getCompressedConversationContext('conversation-1');
+
+      expect(result.recentMessages).toHaveLength(10);
+      expect(result.summary?.throughMessageId).toBe('message-10');
+      expect(persistent.updateConversation).toHaveBeenCalledWith(
+        'conversation-1',
+        expect.objectContaining({
+          summary: 'The user selected a school list.',
+        }),
+      );
+    });
+
+    it('retains the last valid summary when compression fails', async () => {
+      config.get.mockImplementation((key: string) =>
+        key === 'AI_AGENT_HARNESS_V1' || key === 'AI_AGENT_CONTEXT_V1'
+          ? 'true'
+          : key === 'AI_AGENT_CONTEXT_RECENT_MESSAGES'
+            ? 10
+            : undefined,
+      );
+      persistent.getConversation.mockResolvedValue({
+        ...conversation,
+        metadata: {
+          conversationContextSummaryV1: {
+            version: 1,
+            summary: 'Last valid summary',
+            keyTopics: [],
+            decisions: [],
+            nextSteps: [],
+            throughMessageId: 'message-0',
+            sourceMessageCount: 1,
+            updatedAt: new Date(0).toISOString(),
+          },
+        },
+      });
+      persistent.getMessages.mockResolvedValue(messages);
+      summarizer.shouldSummarize.mockReturnValue(true);
+      summarizer.summarizeConversation.mockRejectedValue(
+        new Error('LLM unavailable'),
+      );
+
+      const result =
+        await service.getCompressedConversationContext('conversation-1');
+
+      expect(result.summary?.summary).toBe('Last valid summary');
+      expect(persistent.updateConversation).not.toHaveBeenCalled();
     });
   });
 });

@@ -17,6 +17,7 @@ import { Message } from '../types';
 import { LLMService } from './llm.service';
 import { ResilienceService } from './resilience.service';
 import { TokenTrackerService } from './token-tracker.service';
+import { AgentRunBudgetTracker } from './agent-run-context';
 
 // 辅助函数：创建测试用 Message
 function createMessage(
@@ -107,6 +108,21 @@ describe('LLMService', () => {
 
   // === 基础调用测试 ===
   describe('call', () => {
+    it('enforces the run token budget before provider execution', async () => {
+      const runBudget = new AgentRunBudgetTracker({
+        version: 1,
+        maxTokens: 1000,
+        maxToolCalls: 16,
+        maxSupplementalRounds: 2,
+        maxDurationMs: 120000,
+      });
+
+      await expect(
+        service.call('x'.repeat(3000), [], { runBudget, maxTokens: 500 }),
+      ).rejects.toThrow('AGENT_TOKEN_BUDGET_EXCEEDED');
+      expect(mockProvider.chat).not.toHaveBeenCalled();
+    });
+
     it('should call provider with correct parameters', async () => {
       const messages: Message[] = [
         createMessage({ role: 'user', content: 'Hello' }),

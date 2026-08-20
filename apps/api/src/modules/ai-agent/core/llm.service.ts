@@ -28,6 +28,7 @@ import { ResilienceService } from './resilience.service';
 import { TokenTrackerService, TokenUsage } from './token-tracker.service';
 import { PromptGuardService } from '../security/prompt-guard.service';
 import { ToolCall } from '../types';
+import { AgentRunBudgetTracker } from './agent-run-context';
 
 export interface LLMResponse {
   content: string;
@@ -48,6 +49,7 @@ export interface LLMOptions {
   timeoutMs?: number;
   seed?: number;
   providerOptions?: Record<string, unknown>;
+  runBudget?: AgentRunBudgetTracker;
 }
 
 /**
@@ -127,6 +129,14 @@ export class LLMService {
   ): Promise<LLMResponse> {
     const model = options.model || this.defaultModel;
     const timeoutMs = options.timeoutMs || LLM_CONFIG.defaultTimeoutMs;
+    const reservation = options.runBudget?.reserveLlmCall(
+      systemPrompt,
+      messages,
+      options.maxTokens ?? 4000,
+    );
+    const effectiveOptions = reservation
+      ? { ...options, maxTokens: reservation.outputTokens }
+      : options;
 
     this.logger.log(
       `LLM call started: provider=${this.provider.providerId}, model=${model}, messages=${messages.length}, timeout=${timeoutMs}ms`,
@@ -154,7 +164,12 @@ export class LLMService {
     const callStartTime = Date.now();
 
     const executeCall = async (): Promise<LLMResponse> => {
-      const request = this.buildRequest(systemPrompt, messages, options, model);
+      const request = this.buildRequest(
+        systemPrompt,
+        messages,
+        effectiveOptions,
+        model,
+      );
       const response = await this.provider.chat(request);
       const result = this.toInternalResponse(response);
 
@@ -188,15 +203,27 @@ export class LLMService {
     };
 
     // With resilience: retry + circuit breaker + timeout
-    if (this.resilience) {
-      return this.resilience.execute('llm', executeCall, {
-        retry: LLM_CONFIG.retryConfig,
-        circuit: LLM_CONFIG.circuitConfig,
-        timeoutMs,
-      });
+    let response: LLMResponse;
+    try {
+      response = this.resilience
+        ? await this.resilience.execute('llm', executeCall, {
+            retry: LLM_CONFIG.retryConfig,
+            circuit: LLM_CONFIG.circuitConfig,
+            timeoutMs,
+          })
+        : await executeCall();
+    } catch (error) {
+      if (reservation) options.runBudget?.settleFailedLlmCall(reservation);
+      throw error;
     }
-
-    return executeCall();
+    if (reservation && options.runBudget) {
+      options.runBudget.settleLlmCall(
+        reservation,
+        response.content,
+        response.usage,
+      );
+    }
+    return response;
   }
 
   /**
@@ -211,10 +238,24 @@ export class LLMService {
     options: LLMOptions = {},
   ): AsyncGenerator<StreamChunk> {
     const model = options.model || this.defaultModel;
-    const request = this.buildRequest(systemPrompt, messages, options, model);
+    const reservation = options.runBudget?.reserveLlmCall(
+      systemPrompt,
+      messages,
+      options.maxTokens ?? 4000,
+    );
+    const request = this.buildRequest(
+      systemPrompt,
+      messages,
+      reservation
+        ? { ...options, maxTokens: reservation.outputTokens }
+        : options,
+      model,
+    );
+    let output = '';
 
     try {
       for await (const chunk of this.provider.chatStream(request)) {
+        if (chunk.type === 'content' && chunk.content) output += chunk.content;
         yield this.adaptStreamChunk(chunk);
       }
     } catch (error) {
@@ -223,6 +264,10 @@ export class LLMService {
         type: 'error',
         error: error instanceof Error ? error.message : 'Stream failed',
       };
+    } finally {
+      if (reservation && options.runBudget) {
+        options.runBudget.settleLlmCall(reservation, output);
+      }
     }
   }
 
