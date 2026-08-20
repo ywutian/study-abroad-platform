@@ -995,7 +995,7 @@ export class OrchestratorService {
             AgentType.ORCHESTRATOR,
           );
           if (runId) {
-            await this.agentRuns?.completeRun(runId, {
+            await this.agentRuns?.completeRun(userId, runId, {
               message: simpleResponse,
               agentType: AgentType.ORCHESTRATOR,
             });
@@ -1198,6 +1198,7 @@ export class OrchestratorService {
         }
         if (runId) {
           await this.agentRuns?.failRun(
+            userId,
             runId,
             'STREAM_FAILED',
             error instanceof Error ? error.message : 'Processing failed',
@@ -1269,6 +1270,7 @@ export class OrchestratorService {
       getApprovalFingerprint(pendingTool) !== claim.approval.fingerprint
     ) {
       await this.agentRuns.failRun(
+        userId,
         runId,
         'CHECKPOINT_MISMATCH',
         'Persisted tool arguments no longer match the approved action',
@@ -1290,6 +1292,7 @@ export class OrchestratorService {
       AGENT_CONFIGS[checkpoint.agentType];
     if (!config) {
       await this.agentRuns.failRun(
+        userId,
         runId,
         'CONFIG_NOT_FOUND',
         'Agent configuration is unavailable during resume',
@@ -1337,12 +1340,14 @@ export class OrchestratorService {
           ) {
             if (!event.toolResult?.success) {
               await this.agentRuns.failRun(
+                userId,
                 runId,
                 event.toolResult?.errorCode || 'APPROVED_TOOL_FAILED',
                 event.toolResult?.error || 'Approved tool execution failed',
               );
             } else {
               await this.agentRuns.markExecutionSucceeded(
+                userId,
                 runId,
                 claim.approval.id,
               );
@@ -1428,6 +1433,7 @@ export class OrchestratorService {
             );
           }
           await this.agentRuns.completeRun(
+            userId,
             runId,
             response as unknown as Record<string, unknown>,
           );
@@ -1436,6 +1442,7 @@ export class OrchestratorService {
         case 'error':
           await this.persistWorkflowMessages(conversation, watermark);
           await this.agentRuns.failRun(
+            userId,
             runId,
             'RESUME_FAILED',
             event.error || 'Resume failed',
@@ -1450,6 +1457,7 @@ export class OrchestratorService {
     await this.persistWorkflowMessages(conversation, watermark);
     if (!paused) {
       await this.agentRuns.failRun(
+        userId,
         runId,
         'RESUME_INCOMPLETE',
         'Resume ended without a terminal workflow event',
@@ -1516,6 +1524,7 @@ export class OrchestratorService {
     } catch (error) {
       if (runId) {
         await this.agentRuns?.failRun(
+          conversation.userId,
           runId,
           'STREAM_ABORTED',
           error instanceof Error ? error.message : 'Agent stream aborted',
@@ -1545,11 +1554,17 @@ export class OrchestratorService {
     if (runId && !paused) {
       if (completed) {
         await this.agentRuns?.completeRun(
+          conversation.userId,
           runId,
           finalResponse as unknown as Record<string, unknown> | undefined,
         );
       } else if (streamError) {
-        await this.agentRuns?.failRun(runId, 'WORKFLOW_FAILED', streamError);
+        await this.agentRuns?.failRun(
+          conversation.userId,
+          runId,
+          'WORKFLOW_FAILED',
+          streamError,
+        );
       }
     }
   }

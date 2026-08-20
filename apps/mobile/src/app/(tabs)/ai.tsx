@@ -21,7 +21,7 @@ import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import type { AgentApprovalRequest, AiChatMessage, StreamEvent } from '@/types';
 import { borderRadius, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
-import { AI_REQUEST_TIMEOUT_MS } from '@study-abroad/shared';
+import { AI_REQUEST_TIMEOUT_MS, API_ROUTES } from '@study-abroad/shared';
 import * as Haptics from 'expo-haptics';
 import { styles } from './ai.styles';
 
@@ -315,13 +315,13 @@ export default function AIScreen() {
     abortRef.current = controller;
     try {
       await apiClient.post(
-        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/approve`,
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/approve`,
         {},
         { retries: 0 }
       );
       setPendingApproval(null);
       for await (const raw of apiClient.stream(
-        `/ai-agent/runs/${pendingApproval.runId}/resume`,
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/resume`,
         {},
         controller.signal
       )) {
@@ -370,7 +370,7 @@ export default function AIScreen() {
     setApprovalBusy(true);
     try {
       await apiClient.post(
-        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
         {},
         { retries: 0 }
       );
@@ -386,7 +386,11 @@ export default function AIScreen() {
     if (!pendingApproval || approvalBusy) return;
     setApprovalBusy(true);
     try {
-      await apiClient.post(`/ai-agent/runs/${pendingApproval.runId}/cancel`, {}, { retries: 0 });
+      await apiClient.post(
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/cancel`,
+        {},
+        { retries: 0 }
+      );
       setPendingApproval(null);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errors.unknown'));

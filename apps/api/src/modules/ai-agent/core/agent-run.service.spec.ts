@@ -351,10 +351,10 @@ describe('AgentRunService', () => {
     prisma.agentRun.updateMany.mockResolvedValue({ count: 1 });
 
     await service.failRun(
+      'user-1',
       'run-1',
       'RESUME_STREAM_ABORTED',
       'resume crashed',
-      'user-1',
     );
 
     expect(prisma.agentApproval.updateMany).toHaveBeenCalledWith(

@@ -500,20 +500,29 @@ export class AgentRunService {
     });
   }
 
-  async markExecutionSucceeded(runId: string, approvalId: string) {
+  async markExecutionSucceeded(
+    userId: string,
+    runId: string,
+    approvalId: string,
+  ) {
     await this.prisma.agentApproval.updateMany({
       where: {
         id: approvalId,
         runId,
+        userId,
         status: AgentApprovalStatus.EXECUTING,
       },
       data: { status: AgentApprovalStatus.EXECUTED, executedAt: new Date() },
     });
   }
 
-  async completeRun(runId: string, result?: Record<string, unknown>) {
+  async completeRun(
+    userId: string,
+    runId: string,
+    result?: Record<string, unknown>,
+  ) {
     await this.prisma.agentRun.updateMany({
-      where: { id: runId, status: AgentRunStatus.RUNNING },
+      where: { id: runId, userId, status: AgentRunStatus.RUNNING },
       data: {
         status: AgentRunStatus.COMPLETED,
         checkpoint: Prisma.JsonNull,
@@ -526,16 +535,16 @@ export class AgentRunService {
   }
 
   async failRun(
+    userId: string,
     runId: string,
     errorCode: string,
     message: string,
-    userId?: string,
   ) {
     await this.prisma.$transaction([
       this.prisma.agentApproval.updateMany({
         where: {
           runId,
-          ...(userId ? { userId } : {}),
+          userId,
           status: AgentApprovalStatus.EXECUTING,
         },
         data: { status: AgentApprovalStatus.FAILED, errorCode },
@@ -543,7 +552,7 @@ export class AgentRunService {
       this.prisma.agentRun.updateMany({
         where: {
           id: runId,
-          ...(userId ? { userId } : {}),
+          userId,
           status: AgentRunStatus.RUNNING,
         },
         data: {

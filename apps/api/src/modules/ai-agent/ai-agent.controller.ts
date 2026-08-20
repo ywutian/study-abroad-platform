@@ -229,10 +229,10 @@ export class AiAgentController {
       }
     } catch (error) {
       await this.agentRuns.failRun(
+        user.id,
         runId,
         'RESUME_STREAM_ABORTED',
         error instanceof Error ? error.message : 'Resume failed',
-        user.id,
       );
       if (!disconnected) {
         res.write(

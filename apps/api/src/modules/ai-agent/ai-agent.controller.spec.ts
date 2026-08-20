@@ -208,10 +208,10 @@ describe('AiAgentController', () => {
       await controller.resumeRun(mockUser, 'run-1', mockResponse as any);
 
       expect(agentRuns.failRun).toHaveBeenCalledWith(
+        'user-1',
         'run-1',
         'RESUME_STREAM_ABORTED',
         'resume crashed',
-        'user-1',
       );
       expect(mockResponse.write).toHaveBeenCalledWith(
         expect.stringContaining('resume crashed'),

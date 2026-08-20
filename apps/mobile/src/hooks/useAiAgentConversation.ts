@@ -4,6 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import type { AgentApprovalRequest, AiChatMessage, StreamEvent } from '@/types';
 import type { AgentMode, AgentType } from '@/app/uncommon-app.types';
+import { API_ROUTES } from '@study-abroad/shared';
 
 interface ConversationOptions {
   input: string;
@@ -150,13 +151,13 @@ export function useAiAgentConversation(options: ConversationOptions) {
     setIsStreaming(true);
     try {
       await apiClient.post(
-        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/approve`,
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/approve`,
         {},
         { retries: 0 }
       );
       setPendingApproval(null);
       for await (const chunk of apiClient.stream(
-        `/ai-agent/runs/${pendingApproval.runId}/resume`,
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/resume`,
         {}
       )) {
         const event: StreamEvent = JSON.parse(chunk);
@@ -184,7 +185,7 @@ export function useAiAgentConversation(options: ConversationOptions) {
     setApprovalBusy(true);
     try {
       await apiClient.post(
-        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
         {},
         { retries: 0 }
       );
@@ -200,7 +201,11 @@ export function useAiAgentConversation(options: ConversationOptions) {
     if (!pendingApproval || approvalBusy) return;
     setApprovalBusy(true);
     try {
-      await apiClient.post(`/ai-agent/runs/${pendingApproval.runId}/cancel`, {}, { retries: 0 });
+      await apiClient.post(
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/cancel`,
+        {},
+        { retries: 0 }
+      );
       setPendingApproval(null);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errors.unknown'));
