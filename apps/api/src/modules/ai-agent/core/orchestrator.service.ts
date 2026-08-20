@@ -24,10 +24,7 @@ import { AgentRunnerService } from './agent-runner.service';
 import { MemoryService } from './memory.service';
 import { LLMService } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
-import {
-  WorkflowEngineService,
-  WorkflowPhase,
-} from './workflow-engine.service';
+import { WorkflowEngineService } from './workflow-engine.service';
 import { MemoryManagerService } from '../memory';
 import {
   ContentModerationService,
@@ -1704,8 +1701,6 @@ export class OrchestratorService {
     )) {
       switch (event.type) {
         case 'phase_change':
-          if (event.phase === WorkflowPhase.SOLVE) {
-          }
           break;
 
         case 'plan_content':
