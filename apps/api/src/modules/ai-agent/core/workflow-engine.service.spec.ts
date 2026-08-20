@@ -719,6 +719,35 @@ describe('WorkflowEngineService', () => {
       expect(doneEvent).toBeDefined();
       expect(doneEvent!.result!.message).toBe('你好！');
     });
+
+    it('does not inject long-term memory when the user disabled it', async () => {
+      memoryManager.getRetrievalContext.mockResolvedValue({
+        recentMessages: [],
+        relevantMemories: [{ content: 'private memory' }],
+        preferences: {},
+        entities: [],
+        meta: {
+          conversationId: 'conv_1',
+          messageCount: 0,
+          memoryCount: 1,
+          memoryEnabled: false,
+        },
+      } as any);
+      memoryManager.buildContextSummary.mockReturnValue('private memory');
+      llm.call.mockResolvedValue(mockLLMResponse({ content: 'safe answer' }));
+
+      await collectEvents(
+        service.runStream(
+          AgentType.ORCHESTRATOR,
+          mockConfig,
+          mockConversation,
+          [],
+        ),
+      );
+
+      expect(memoryManager.buildContextSummary).not.toHaveBeenCalled();
+      expect(llm.call.mock.calls[0][0]).not.toContain('private memory');
+    });
   });
 
   // ==================== Plan Deduplication ====================
@@ -975,6 +1004,93 @@ describe('WorkflowEngineService', () => {
       });
       expect(toolExecutor.execute).toHaveBeenCalledTimes(1);
       expect(resumedEvents.some((event) => event.type === 'done')).toBe(true);
+    });
+
+    it('emits a V2 checkpoint with frozen budgets and no raw tool results', async () => {
+      configService.get.mockImplementation(
+        (key: string, defaultValue?: unknown) => {
+          if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+          if (key === 'AI_AGENT_CONTEXT_V1') return 'true';
+          if (key === 'AI_AGENT_HARNESS_MODE') return 'action';
+          return defaultValue;
+        },
+      );
+      llm.call.mockResolvedValueOnce(
+        mockLLMResponse({
+          content: '',
+          usage: {
+            promptTokens: 20,
+            completionTokens: 10,
+            totalTokens: 30,
+            estimatedCost: 0,
+            model: 'test',
+          },
+          toolCalls: [
+            {
+              id: 'write-1',
+              name: 'update_profile',
+              arguments: { privateValue: 'must-not-enter-summary' },
+            },
+          ],
+        }),
+      );
+
+      const events = await collectEvents(
+        service.runStream(
+          AgentType.PROFILE,
+          mockConfig,
+          mockConversation,
+          TOOLS,
+          { runId: 'run-v2', approvalsEnabled: true },
+        ),
+      );
+      const checkpoint = events.find(
+        (event) => event.type === 'approval_required',
+      )?.checkpoint;
+
+      expect(checkpoint?.version).toBe(2);
+      expect(checkpoint).toEqual(
+        expect.objectContaining({
+          budget: expect.objectContaining({
+            maxToolCalls: 16,
+            maxSupplementalRounds: 2,
+          }),
+          usage: expect.objectContaining({
+            estimatedTokens: expect.any(Number),
+          }),
+          context: expect.objectContaining({ approvalState: 'waiting' }),
+        }),
+      );
+      expect((checkpoint as any).usage.estimatedTokens).toBeLessThanOrEqual(
+        (checkpoint as any).budget.maxTokens,
+      );
+      expect(JSON.stringify((checkpoint as any).context)).not.toContain(
+        'must-not-enter-summary',
+      );
+    });
+
+    it('passes a run-scoped budget through every LLM call', async () => {
+      configService.get.mockImplementation(
+        (key: string, defaultValue?: unknown) => {
+          if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+          if (key === 'AI_AGENT_CONTEXT_V1') return 'true';
+          if (key === 'AI_AGENT_MAX_TOKENS_PER_RUN') return 1000;
+          return defaultValue;
+        },
+      );
+      llm.call.mockResolvedValue(mockLLMResponse({ content: 'done' }));
+
+      const events = await collectEvents(
+        service.runStream(
+          AgentType.ORCHESTRATOR,
+          mockConfig,
+          mockConversation,
+          [],
+        ),
+      );
+
+      expect(llm.call.mock.calls[0][2]?.runBudget).toBeDefined();
+      expect(events.find((event) => event.type === 'done')).toBeDefined();
     });
   });
 

@@ -3,116 +3,42 @@ import {
   GoneException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { AgentApprovalStatus, AgentRunStatus, Prisma } from '@prisma/client';
-import { createHash } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { AgentResponse, AgentType, ToolCall } from '../types';
+import { SanitizerService } from '../memory/sanitizer.service';
+import { AgentEvaluationTraceService } from './agent-evaluation-trace.service';
+import {
+  AgentRunBudgetV1,
+  AgentRunCheckpoint,
+  AgentRunUsageV1,
+  ApprovalRequest,
+  getApprovalFingerprint,
+  isRecord,
+  normalizeToolArguments,
+  toInputJson,
+} from './agent-run-state';
 
-export interface AgentRunCheckpointV1 {
-  version: 1;
-  agentType: AgentType;
-  locale: string;
-  planningContent: string;
-  steps: Array<{
-    toolCall: ToolCall;
-    status: 'pending' | 'success' | 'failed';
-    error?: string;
-  }>;
-  pendingStepIndex: number;
-  successfulFingerprints: string[];
-  scheduledCalls: number;
-  supplementalRounds: number;
-  planMs: number;
-  executeMs: number;
-  startedAt: string;
-}
-
-export interface ApprovalRequest {
-  runId: string;
-  approvalId: string;
-  toolName: string;
-  arguments: Record<string, unknown>;
-  fingerprint: string;
-  expiresAt: string;
-  status: AgentApprovalStatus;
-}
-
-function canonicalize(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, nested]) => [key, canonicalize(nested)]),
-    );
-  }
-  return value;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function toInputJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
-
-export function isAgentRunCheckpointV1(
-  value: unknown,
-): value is AgentRunCheckpointV1 {
-  if (!isRecord(value) || value.version !== 1) return false;
-  if (
-    typeof value.agentType !== 'string' ||
-    typeof value.locale !== 'string' ||
-    typeof value.planningContent !== 'string' ||
-    !Array.isArray(value.steps) ||
-    !Array.isArray(value.successfulFingerprints) ||
-    !Number.isInteger(value.pendingStepIndex) ||
-    !Number.isInteger(value.scheduledCalls) ||
-    !Number.isInteger(value.supplementalRounds) ||
-    typeof value.planMs !== 'number' ||
-    typeof value.executeMs !== 'number' ||
-    typeof value.startedAt !== 'string'
-  ) {
-    return false;
-  }
-  if (!value.successfulFingerprints.every((item) => typeof item === 'string')) {
-    return false;
-  }
-  return value.steps.every((step) => {
-    if (!isRecord(step) || !isRecord(step.toolCall)) return false;
-    return (
-      typeof step.toolCall.id === 'string' &&
-      typeof step.toolCall.name === 'string' &&
-      isRecord(step.toolCall.arguments) &&
-      ['pending', 'success', 'failed'].includes(String(step.status))
-    );
-  });
-}
-
-export function normalizeToolArguments(
-  args: Record<string, unknown>,
-): Record<string, unknown> {
-  return canonicalize(args) as Record<string, unknown>;
-}
-
-export function getApprovalFingerprint(toolCall: ToolCall): string {
-  const canonical = JSON.stringify({
-    tool: toolCall.name,
-    arguments: normalizeToolArguments(toolCall.arguments),
-  });
-  return createHash('sha256').update(canonical).digest('hex');
-}
+export * from './agent-run-state';
 
 @Injectable()
 export class AgentRunService {
+  private readonly evaluationTrace: AgentEvaluationTraceService;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
-  ) {}
+    @Optional() sanitizer?: SanitizerService,
+    @Optional() evaluationTrace?: AgentEvaluationTraceService,
+  ) {
+    this.evaluationTrace =
+      evaluationTrace ??
+      new AgentEvaluationTraceService(prisma, config, sanitizer);
+  }
 
   isEnabled(): boolean {
     return (
@@ -126,9 +52,22 @@ export class AgentRunService {
     conversationId: string;
     agentType: AgentType;
   }) {
+    const budget = this.contextEnabled() ? this.getRunBudget() : undefined;
     return this.prisma.agentRun.create({
       data: {
         ...input,
+        ...(budget ? { budget: toInputJson(budget) } : {}),
+        ...(budget
+          ? {
+              usage: toInputJson({
+                version: 1,
+                estimatedTokens: 0,
+                toolCalls: 0,
+                supplementalRounds: 0,
+                elapsedMs: 0,
+              } satisfies AgentRunUsageV1),
+            }
+          : {}),
         expiresAt: new Date(Date.now() + this.runTtlMs()),
       },
     });
@@ -155,7 +94,7 @@ export class AgentRunService {
     runId: string;
     userId: string;
     toolCall: ToolCall;
-    checkpoint: AgentRunCheckpointV1;
+    checkpoint: AgentRunCheckpoint;
   }): Promise<ApprovalRequest> {
     const fingerprint = getApprovalFingerprint(input.toolCall);
     const existing = await this.prisma.agentApproval.findUnique({
@@ -200,6 +139,13 @@ export class AgentRunService {
           data: {
             status: AgentRunStatus.WAITING_APPROVAL,
             checkpoint: toInputJson(input.checkpoint),
+            ...(input.checkpoint.version === 2
+              ? {
+                  budget: toInputJson(input.checkpoint.budget),
+                  usage: toInputJson(input.checkpoint.usage),
+                  contextSummary: toInputJson(input.checkpoint.context),
+                }
+              : {}),
             currentApprovalId: created.id,
             expiresAt,
             version: { increment: 1 },
@@ -250,6 +196,9 @@ export class AgentRunService {
       errorCode: run.errorCode,
       errorMessage: run.errorMessage,
       expiresAt: run.expiresAt?.toISOString() ?? null,
+      budget: run.budget,
+      usage: run.usage,
+      contextSummary: run.contextSummary,
       result: run.result,
       approval: approval ? this.toApprovalRequest(approval) : undefined,
     };
@@ -378,6 +327,9 @@ export class AgentRunService {
         );
       }
     });
+    await this.evaluationTrace.persist(userId, runId, 'CANCELLED', undefined, {
+      errorCode: 'APPROVAL_REJECTED',
+    });
     return this.getRunSummary(userId, runId);
   }
 
@@ -419,6 +371,9 @@ export class AgentRunService {
         where: { id: runId, userId },
       });
       if (!existing) throw new NotFoundException('Agent run not found');
+    });
+    await this.evaluationTrace.persist(userId, runId, 'CANCELLED', undefined, {
+      errorCode: 'USER_CANCELLED',
     });
     return this.getRunSummary(userId, runId);
   }
@@ -558,17 +513,30 @@ export class AgentRunService {
   }
 
   async completeRun(userId: string, runId: string, result?: AgentResponse) {
+    const workflow = isRecord(result?.data?.workflow)
+      ? result.data.workflow
+      : undefined;
+    const usage = workflow && isRecord(workflow.usage) ? workflow.usage : null;
+    const contextSummary =
+      workflow && isRecord(workflow.contextSummary)
+        ? workflow.contextSummary
+        : null;
     await this.prisma.agentRun.updateMany({
       where: { id: runId, userId, status: AgentRunStatus.RUNNING },
       data: {
         status: AgentRunStatus.COMPLETED,
         checkpoint: Prisma.JsonNull,
         ...(result ? { result: toInputJson(result) } : {}),
+        ...(usage ? { usage: toInputJson(usage) } : {}),
+        ...(contextSummary
+          ? { contextSummary: toInputJson(contextSummary) }
+          : {}),
         currentApprovalId: null,
         completedAt: new Date(),
         version: { increment: 1 },
       },
     });
+    await this.evaluationTrace.persist(userId, runId, 'COMPLETED', result);
   }
 
   async failRun(
@@ -601,6 +569,9 @@ export class AgentRunService {
         },
       }),
     ]);
+    await this.evaluationTrace.persist(userId, runId, 'FAILED', undefined, {
+      errorCode,
+    });
   }
 
   private async expireIfNeeded(userId: string, runId: string) {
@@ -674,6 +645,26 @@ export class AgentRunService {
     return this.config.get<number>(
       'AI_AGENT_EXECUTION_LEASE_MS',
       2 * 60 * 1000,
+    );
+  }
+
+  getRunBudget(): AgentRunBudgetV1 {
+    return {
+      version: 1,
+      maxTokens: this.config.get<number>('AI_AGENT_MAX_TOKENS_PER_RUN', 24000),
+      maxToolCalls: 16,
+      maxSupplementalRounds: 2,
+      maxDurationMs: this.config.get<number>(
+        'AI_AGENT_MAX_DURATION_MS',
+        120000,
+      ),
+    };
+  }
+
+  contextEnabled(): boolean {
+    return (
+      this.config.get<string>('AI_AGENT_HARNESS_V1') === 'true' &&
+      this.config.get<string>('AI_AGENT_CONTEXT_V1') === 'true'
     );
   }
 }

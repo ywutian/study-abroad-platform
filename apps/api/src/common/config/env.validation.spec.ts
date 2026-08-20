@@ -43,6 +43,10 @@ describe('AI agent harness environment gate', () => {
     expect(result.AI_AGENT_APPROVAL_TTL_MS).toBe(900000);
     expect(result.AI_AGENT_RUN_TTL_MS).toBe(86400000);
     expect(result.AI_AGENT_EXECUTION_LEASE_MS).toBe(120000);
+    expect(result.AI_AGENT_CONTEXT_V1).toBe('false');
+    expect(result.AI_AGENT_MAX_TOKENS_PER_RUN).toBe(24000);
+    expect(result.AI_AGENT_MAX_DURATION_MS).toBe(120000);
+    expect(result.AI_AGENT_CONTEXT_RECENT_MESSAGES).toBe(10);
   });
 
   it('accepts action mode when the harness is explicitly enabled', () => {
@@ -55,6 +59,10 @@ describe('AI agent harness environment gate', () => {
       AI_AGENT_APPROVAL_TTL_MS: '60000',
       AI_AGENT_RUN_TTL_MS: '120000',
       AI_AGENT_EXECUTION_LEASE_MS: '30000',
+      AI_AGENT_CONTEXT_V1: 'true',
+      AI_AGENT_MAX_TOKENS_PER_RUN: '12000',
+      AI_AGENT_MAX_DURATION_MS: '60000',
+      AI_AGENT_CONTEXT_RECENT_MESSAGES: '8',
     });
 
     expect(result.AI_AGENT_HARNESS_V1).toBe('true');
@@ -63,6 +71,10 @@ describe('AI agent harness environment gate', () => {
     expect(result.AI_AGENT_APPROVAL_TTL_MS).toBe(60000);
     expect(result.AI_AGENT_RUN_TTL_MS).toBe(120000);
     expect(result.AI_AGENT_EXECUTION_LEASE_MS).toBe(30000);
+    expect(result.AI_AGENT_CONTEXT_V1).toBe('true');
+    expect(result.AI_AGENT_MAX_TOKENS_PER_RUN).toBe(12000);
+    expect(result.AI_AGENT_MAX_DURATION_MS).toBe(60000);
+    expect(result.AI_AGENT_CONTEXT_RECENT_MESSAGES).toBe(8);
   });
 
   it('rejects providers without a runtime implementation', () => {

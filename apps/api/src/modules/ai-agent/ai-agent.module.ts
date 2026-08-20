@@ -44,6 +44,7 @@ import { MemoryService } from './core/memory.service';
 import { ToolExecutorService } from './core/tool-executor.service';
 import { ToolPolicyService } from './core/tool-policy.service';
 import { AgentRunService } from './core/agent-run.service';
+import { AgentEvaluationTraceService } from './core/agent-evaluation-trace.service';
 import { WorkflowEngineService } from './core/workflow-engine.service';
 import { AgentRunnerService } from './core/agent-runner.service';
 import { OrchestratorService } from './core/orchestrator.service';
@@ -156,6 +157,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
 
     // Core Agent Services
     MemoryService, // Legacy (backward-compatible)
+    AgentEvaluationTraceService,
     AgentRunService,
     ToolPolicyService,
     ToolExecutorService,

@@ -16,6 +16,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 import { MemoryType, EntityType } from '@prisma/client';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
@@ -46,6 +47,8 @@ import {
   EnhancedMemoryStats,
 } from './types';
 import type { ParsedToolResult } from './tool-result.types';
+import { SanitizeLevel, SanitizerService } from './sanitizer.service';
+import { ConversationContextService } from './conversation-context.service';
 
 /**
  * Core memory management service for the enterprise-grade AI Agent memory system.
@@ -71,6 +74,9 @@ export class MemoryManagerService {
     @Optional() private scorer?: MemoryScorerService,
     @Optional() private decay?: MemoryDecayService,
     @Optional() private conflict?: MemoryConflictService,
+    @Optional() private config?: ConfigService,
+    @Optional() private sanitizer?: SanitizerService,
+    @Optional() private conversationContext?: ConversationContextService,
   ) {}
 
   // ==================== 对话管理 ====================
@@ -158,8 +164,11 @@ export class MemoryManagerService {
     // 写入缓存
     await this.cache.cacheMessage(conversationId, message);
 
-    // 异步提取记忆（用户消息）
-    if (input.role === 'user') {
+    const memoryEnabled =
+      await this.isMemoryEnabledForConversation(conversationId);
+
+    // Conversation persistence is independent from long-term memory extraction.
+    if (memoryEnabled && input.role === 'user') {
       this.extractWithRetry(() =>
         this.extractAndSaveMemory(conversationId, message),
       ).catch((err) => {
@@ -168,7 +177,7 @@ export class MemoryManagerService {
     }
 
     // 异步提取工具结果中的关键决策记忆
-    if (input.role === 'tool' && input.content) {
+    if (memoryEnabled && input.role === 'tool' && input.content) {
       this.extractWithRetry(() =>
         this.extractToolResultMemory(conversationId, message),
       ).catch((err) => {
@@ -210,6 +219,52 @@ export class MemoryManagerService {
     }
 
     return messages;
+  }
+
+  async getCompressedConversationContext(conversationId: string): Promise<{
+    summary?: import('./types').ConversationContextSummaryV1;
+    recentMessages: MessageRecord[];
+  }> {
+    const service =
+      this.conversationContext ??
+      new ConversationContextService(
+        this.cache,
+        this.persistent,
+        this.summarizer,
+        this.config as ConfigService,
+        this.sanitizer,
+      );
+    return service.getCompressedContext(conversationId);
+  }
+
+  async isMemoryEnabled(userId: string): Promise<boolean> {
+    const preferences = await this.persistent.getPreferences(userId);
+    return preferences?.enableMemory !== false;
+  }
+
+  private async isMemoryEnabledForConversation(
+    conversationId: string,
+  ): Promise<boolean> {
+    const conversation = await this.persistent.getConversation(conversationId);
+    return conversation ? this.isMemoryEnabled(conversation.userId) : false;
+  }
+
+  private contextEnabled(): boolean {
+    return (
+      this.config?.get<string>('AI_AGENT_HARNESS_V1') === 'true' &&
+      this.config?.get<string>('AI_AGENT_CONTEXT_V1') === 'true'
+    );
+  }
+
+  private sanitizeEntity(entity: EntityInput): EntityInput {
+    if (!this.contextEnabled() || !this.sanitizer) return entity;
+    return {
+      ...entity,
+      name: this.sanitizer.sanitizeForPublic(entity.name),
+      ...(entity.description
+        ? { description: this.sanitizer.sanitizeForPublic(entity.description) }
+        : {}),
+    };
   }
 
   /**
@@ -306,19 +361,33 @@ export class MemoryManagerService {
       limit: 100,
     });
 
-    if (this.summarizer.shouldSummarize(messages)) {
-      const summary = await this.summarizer.summarizeConversation(messages);
+    const conversation = await this.persistent.getConversation(conversationId);
+    const memoryEnabled = conversation
+      ? await this.isMemoryEnabled(conversation.userId)
+      : false;
 
-      const conversation =
-        await this.persistent.getConversation(conversationId);
+    if (this.summarizer.shouldSummarize(messages)) {
+      const sanitizedMessages = this.sanitizer
+        ? this.sanitizer.sanitizeMessages(messages, {
+            level: SanitizeLevel.MODERATE,
+          })
+        : messages;
+      const safeMessages = sanitizedMessages.map((message) =>
+        message.role === 'tool'
+          ? { ...message, content: `[tool result omitted; ref=${message.id}]` }
+          : message,
+      );
+      const summary = await this.summarizer.summarizeConversation(safeMessages);
+
       if (conversation) {
-        // 事务化保存：摘要 + 记忆 + 实体（要么全成功，要么全回滚）
+        // A disabled memory preference still permits conversation continuity,
+        // but never creates long-term memories or entities.
         await this.persistent.saveEndConversationData(
           conversationId,
           conversation.userId,
           summary.summary,
-          summary.extractedFacts,
-          summary.extractedEntities,
+          memoryEnabled ? summary.extractedFacts : [],
+          memoryEnabled ? summary.extractedEntities : [],
         );
       }
     }
@@ -356,6 +425,13 @@ export class MemoryManagerService {
       strategyOverride?: ConflictStrategy;
     },
   ): Promise<MemoryRecord | null> {
+    if (!(await this.isMemoryEnabled(userId))) return null;
+    if (this.contextEnabled() && this.sanitizer) {
+      input = this.sanitizer.sanitizeMemory(input, {
+        level: SanitizeLevel.MODERATE,
+      });
+    }
+
     // 1. 冲突检测
     if (this.conflict && !options?.skipConflictCheck) {
       const memoryWithUser = {
@@ -498,6 +574,8 @@ export class MemoryManagerService {
     userId: string,
     options: RecallOptions = {},
   ): Promise<MemoryRecord[]> {
+    if (!(await this.isMemoryEnabled(userId))) return [];
+
     const { query, useSemanticSearch = true, limit = 10 } = options;
 
     // 检索候选集（rerank 时取更多候选，scorer 不可用时直接取 limit）
@@ -588,26 +666,28 @@ export class MemoryManagerService {
     currentMessage: string,
     conversationId?: string,
   ): Promise<RetrievalContext> {
-    const [recentMessages, relevantMemories, preferences, entities] =
-      await Promise.all([
-        // 获取最近对话
-        conversationId
-          ? this.getConversationHistory(conversationId, 10)
-          : Promise.resolve([]),
+    const preferences = await this.persistent.getPreferences(userId);
+    const memoryEnabled = preferences.enableMemory !== false;
+    const [recentMessages, relevantMemories, entities] = await Promise.all([
+      // 获取最近对话
+      conversationId
+        ? this.getConversationHistory(conversationId, 10)
+        : Promise.resolve([]),
 
-        // 语义检索相关记忆
-        this.recall(userId, {
-          query: currentMessage,
-          useSemanticSearch: true,
-          limit: 5,
-        }),
+      // 语义检索相关记忆
+      memoryEnabled
+        ? this.recall(userId, {
+            query: currentMessage,
+            useSemanticSearch: true,
+            limit: 5,
+          })
+        : Promise.resolve([]),
 
-        // 获取用户偏好
-        this.persistent.getPreferences(userId),
-
-        // 搜索相关实体
-        this.persistent.searchEntities(userId, currentMessage, { limit: 5 }),
-      ]);
+      // 搜索相关实体
+      memoryEnabled
+        ? this.persistent.searchEntities(userId, currentMessage, { limit: 5 })
+        : Promise.resolve([]),
+    ]);
 
     return {
       recentMessages,
@@ -627,6 +707,7 @@ export class MemoryManagerService {
         conversationId,
         messageCount: recentMessages.length,
         memoryCount: relevantMemories.length,
+        memoryEnabled,
       },
     };
   }
@@ -652,7 +733,7 @@ export class MemoryManagerService {
     // 相关记忆 — getRetrievalContext retrieves 5 for scoring/availability;
     // buildContextSummary renders top 3 into system prompt to control token budget.
     // The full 5 remain in RetrievalContext for programmatic use by tools.
-    if (context.relevantMemories.length > 0) {
+    if (context.meta.memoryEnabled && context.relevantMemories.length > 0) {
       parts.push('\n## 相关记忆');
       for (const mem of context.relevantMemories.slice(0, 3)) {
         parts.push(`- [${mem.type}] ${mem.content}`);
@@ -660,7 +741,7 @@ export class MemoryManagerService {
     }
 
     // 相关实体
-    if (context.entities.length > 0) {
+    if (context.meta.memoryEnabled && context.entities.length > 0) {
       const schools = context.entities.filter((e) => e.type === 'SCHOOL');
       if (schools.length > 0) {
         parts.push(`\n关注的学校: ${schools.map((s) => s.name).join(', ')}`);
@@ -909,9 +990,16 @@ export class MemoryManagerService {
   ): Promise<void> {
     const conversation = await this.persistent.getConversation(conversationId);
     if (!conversation) return;
+    if (!(await this.isMemoryEnabled(conversation.userId))) return;
 
+    const safeMessage =
+      this.contextEnabled() && this.sanitizer
+        ? this.sanitizer.sanitizeMessages([message], {
+            level: SanitizeLevel.MODERATE,
+          })[0]
+        : message;
     const { memories, entities } =
-      await this.summarizer.extractFromMessage(message);
+      await this.summarizer.extractFromMessage(safeMessage);
 
     // Parallelize memory persistence (typically 1-3 items per message)
     // If conflict detection issues increase, revert memories to serial
@@ -929,7 +1017,7 @@ export class MemoryManagerService {
     await Promise.allSettled(
       entities.map((entity) =>
         this.persistent
-          .upsertEntity(conversation.userId, entity)
+          .upsertEntity(conversation.userId, this.sanitizeEntity(entity))
           .catch((err) => {
             this.logger.warn(
               `Failed to upsert entity (${entity.type} ${entity.name}): ${err instanceof Error ? err.message : String(err)}`,
@@ -973,6 +1061,7 @@ export class MemoryManagerService {
 
     const conversation = await this.persistent.getConversation(conversationId);
     if (!conversation) return;
+    if (!(await this.isMemoryEnabled(conversation.userId))) return;
 
     try {
       const data = JSON.parse(message.content) as ParsedToolResult;
@@ -1210,7 +1299,7 @@ export class MemoryManagerService {
       await Promise.allSettled(
         cappedEntities.map((entity) =>
           this.persistent
-            .upsertEntity(conversation.userId, entity)
+            .upsertEntity(conversation.userId, this.sanitizeEntity(entity))
             .catch((err) => {
               this.logger.warn(
                 `Failed to upsert entity (${entity.type} ${entity.name}): ${err instanceof Error ? err.message : String(err)}`,
