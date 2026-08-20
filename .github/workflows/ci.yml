@@ -1582,6 +1582,7 @@ jobs:
       # Note `--set-env-vars` REPLACES the whole set: anything dropped from this
       # line reverts to unset on the next deploy.
       - name: Deploy canary (no traffic)
+        id: deploy-canary
         if: success()
         run: |
           REGION="${{ secrets.GCP_REGION }}"
@@ -1606,6 +1607,15 @@ jobs:
             --no-traffic \
             --tag=canary \
             --quiet
+
+          REVISION=$(gcloud run services describe study-abroad-api \
+            --region="$REGION" \
+            --format='value(status.latestCreatedRevisionName)')
+          if [ -z "$REVISION" ]; then
+            echo "::error::Could not resolve the deployed Cloud Run revision"
+            exit 1
+          fi
+          echo "revision=$REVISION" >> $GITHUB_OUTPUT
 
       - name: Canary smoke test
         id: canary-smoke
@@ -1640,13 +1650,26 @@ jobs:
           echo "::error::Canary health check failed"
           exit 1
 
+      # Prove the exact no-traffic revision exposes every scheduled job before
+      # it can receive user traffic. The post-promote check below additionally
+      # verifies that the stable service URL has converged to this revision.
+      - name: Assert canary cron registry matches manifest
+        if: success()
+        run: |
+          CANARY_URL="${{ steps.canary-smoke.outputs.canary_url }}"
+          CRON_SECRET=$(gcloud secrets versions access latest --secret=cron-secret)
+          echo "::add-mask::$CRON_SECRET"
+          CRON_TARGET_URL="$CANARY_URL" CRON_SECRET="$CRON_SECRET" \
+            node scripts/ci/assert-cron-manifest.mjs
+
       - name: Promote canary to full traffic
         if: success()
         run: |
           REGION="${{ secrets.GCP_REGION }}"
+          REVISION="${{ steps.deploy-canary.outputs.revision }}"
           gcloud run services update-traffic study-abroad-api \
             --region="$REGION" \
-            --to-latest \
+            --to-revisions="$REVISION=100" \
             --quiet
 
       - name: Smoke test
@@ -1699,8 +1722,16 @@ jobs:
           URL="${{ steps.smoke.outputs.url }}"
           CRON_SECRET=$(gcloud secrets versions access latest --secret=cron-secret)
           echo "::add-mask::$CRON_SECRET"
-          CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
-            node scripts/ci/assert-cron-manifest.mjs
+          for attempt in 1 2 3 4 5 6; do
+            if CRON_TARGET_URL="$URL" CRON_SECRET="$CRON_SECRET" \
+              node scripts/ci/assert-cron-manifest.mjs; then
+              exit 0
+            fi
+            echo "Waiting for the stable Cloud Run URL to converge to the promoted revision (attempt $attempt/6)"
+            sleep 10
+          done
+          echo "::error::Live cron registry did not converge after traffic promotion"
+          exit 1
 
       # Deleting stale schedules happens ONLY after the assert passes. Rollback
       # reverts traffic, never scheduler topology — pruning earlier would leave

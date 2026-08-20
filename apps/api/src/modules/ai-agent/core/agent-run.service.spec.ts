@@ -1,5 +1,10 @@
 import { ConfigService } from '@nestjs/config';
+import { DiscoveryModule } from '@nestjs/core';
+import { Test } from '@nestjs/testing';
 import { AgentApprovalStatus, AgentRunStatus } from '@prisma/client';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { CronRegistryService } from '../../../common/cron/cron-registry.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
   AgentRunService,
@@ -398,5 +403,43 @@ describe('AgentRunService', () => {
         data: expect.objectContaining({ status: AgentRunStatus.EXPIRED }),
       }),
     );
+  });
+
+  it('registers the approval expiry job on the production HTTP cron path', async () => {
+    const config = {
+      get: jest.fn((key: string, fallback?: unknown) => {
+        if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+        if (key === 'AI_AGENT_APPROVALS_V1') return 'true';
+        return fallback;
+      }),
+    } as unknown as ConfigService;
+    const moduleRef = await Test.createTestingModule({
+      imports: [DiscoveryModule],
+      providers: [
+        CronRegistryService,
+        AgentRunService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: config },
+      ],
+    }).compile();
+    await moduleRef.init();
+
+    const jobName = 'agent-run-service-expire-stale-approvals';
+    expect(
+      moduleRef
+        .get(CronRegistryService)
+        .list()
+        .map((job) => job.name),
+    ).toContain(jobName);
+
+    const manifest = JSON.parse(
+      readFileSync(
+        join(__dirname, '../../../../../../.github/cron-jobs.json'),
+        'utf8',
+      ),
+    ) as { jobs: Array<{ name: string }> };
+    expect(manifest.jobs.map((job) => job.name)).toContain(jobName);
+
+    await moduleRef.close();
   });
 });
