@@ -13,13 +13,14 @@
  */
 
 import { Injectable, Logger, Optional, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ToolCall,
   UserContext,
   ToolExecutionResult,
   AgentType,
 } from '../types';
-import { ToolName } from '../config/tools.config';
+import { getToolMetadata, ToolName } from '../config/tools.config';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { ResilienceService } from './resilience.service';
 import {
@@ -89,6 +90,7 @@ export class ToolExecutorService implements OnModuleInit {
     // Infrastructure
     @Optional() private metrics?: MetricsService,
     @Optional() private resilience?: ResilienceService,
+    @Optional() private configService?: ConfigService,
   ) {}
 
   onModuleInit() {
@@ -163,8 +165,7 @@ export class ToolExecutorService implements OnModuleInit {
       };
 
       // Retry decision
-      const shouldRetry =
-        this.resilience && !NON_RETRYABLE_TOOLS.has(toolCall.name as ToolName);
+      const shouldRetry = this.resilience && this.isRetryable(toolCall.name);
 
       const result = shouldRetry
         ? await this.resilience!.withRetry(executeCall, TOOL_RETRY_CONFIG)
@@ -311,5 +312,13 @@ export class ToolExecutorService implements OnModuleInit {
       avgDuration: 0,
       registeredTools: this.handlers.size,
     };
+  }
+
+  private isRetryable(toolName: string): boolean {
+    if (this.configService?.get<string>('AI_AGENT_HARNESS_V1') === 'true') {
+      return getToolMetadata(toolName)?.retryable === true;
+    }
+
+    return !NON_RETRYABLE_TOOLS.has(toolName as ToolName);
   }
 }

@@ -4,7 +4,7 @@
  * 替代所有 any 使用，提供类型安全
  */
 
-import { AgentType, ToolCall } from '../types';
+import { AgentType, ToolCall, ToolPolicyDecision } from '../types';
 import { ActionButton } from '@study-abroad/shared';
 
 // ==================== LLM 相关类型 ====================
@@ -177,7 +177,10 @@ export interface ToolExecutionResult {
   success: boolean;
   result?: unknown;
   error?: string;
+  errorCode?: string;
   duration: number;
+  cached?: boolean;
+  policy?: ToolPolicyDecision;
 }
 
 /**

@@ -65,16 +65,27 @@ export default function UncommonAppScreen() {
   // ---- State ---------------------------------------------------------------
   const [input, setInput] = useState('');
   const [agentMode, setAgentMode] = useState<AgentMode>('auto');
-  const { messages, isStreaming, activeAgent, activeTool, sendMessage, resetConversation } =
-    useAiAgentConversation({
-      input,
-      setInput,
-      isAuthenticated,
-      agentMode,
-      toast,
-      t,
-      queryClient,
-    });
+  const {
+    messages,
+    isStreaming,
+    activeAgent,
+    activeTool,
+    pendingApproval,
+    approvalBusy,
+    resumeApproval,
+    rejectApproval,
+    cancelRun,
+    sendMessage,
+    resetConversation,
+  } = useAiAgentConversation({
+    input,
+    setInput,
+    isAuthenticated,
+    agentMode,
+    toast,
+    t,
+    queryClient,
+  });
 
   // ---- Queries -------------------------------------------------------------
   const { data: quota } = useQuery<QuotaData>({
@@ -766,6 +777,52 @@ export default function UncommonAppScreen() {
         },
       ]}
     >
+      {pendingApproval && (
+        <View
+          style={[
+            styles.approvalCard,
+            {
+              borderColor: colors.warning,
+              backgroundColor: withOpacity(colors.warning, 0.08),
+            },
+          ]}
+        >
+          <Text style={{ color: colors.foreground, fontWeight: fontWeight.semibold }}>
+            {t('ai.chat.approval.title')}
+          </Text>
+          <Text style={{ color: colors.foregroundMuted, marginTop: spacing.xs }}>
+            {t('ai.chat.approval.description', { tool: pendingApproval.toolName })}
+          </Text>
+          <Text
+            numberOfLines={4}
+            style={{
+              color: colors.foregroundMuted,
+              marginTop: spacing.sm,
+              fontSize: fontSize.xs,
+            }}
+          >
+            {JSON.stringify(pendingApproval.arguments, null, 2)}
+          </Text>
+          <Text
+            style={{ color: colors.foregroundMuted, marginTop: spacing.xs, fontSize: fontSize.xs }}
+          >
+            {t('ai.chat.approval.expiresAt', {
+              time: new Date(pendingApproval.expiresAt).toLocaleString(),
+            })}
+          </Text>
+          <View style={styles.approvalActions}>
+            <TouchableOpacity onPress={() => void resumeApproval()} disabled={approvalBusy}>
+              <Text style={{ color: colors.primary }}>{t('ai.chat.approval.approve')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => void rejectApproval()} disabled={approvalBusy}>
+              <Text style={{ color: colors.foreground }}>{t('ai.chat.approval.reject')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => void cancelRun()} disabled={approvalBusy}>
+              <Text style={{ color: colors.foregroundMuted }}>{t('ai.chat.approval.cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       <View
         style={[
           styles.inputWrapper,

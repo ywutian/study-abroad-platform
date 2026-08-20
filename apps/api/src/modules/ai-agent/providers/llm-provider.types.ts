@@ -1,8 +1,8 @@
 /**
  * Provider-neutral LLM types.
  *
- * These types abstract away differences between OpenAI, Anthropic, etc.
- * so that LLMService and higher layers never touch vendor-specific formats.
+ * These types keep LLMService and higher layers independent from the concrete
+ * OpenAI-compatible transport implementation.
  */
 
 // ── Messages ─────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export interface LLMToolDefinition {
 // ── Request / Response ───────────────────────────────────────
 
 export interface LLMChatRequest {
-  /** System prompt — separated because Claude uses a dedicated `system` param */
+  /** System prompt kept separate from conversation messages. */
   systemPrompt: string;
   messages: LLMMessage[];
   model: string;
@@ -77,7 +77,7 @@ export interface LLMTokenUsage {
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
-  /** Claude prompt caching read tokens */
+  /** Optional provider-side prompt cache read tokens. */
   cacheReadTokens?: number;
 }
 

@@ -455,6 +455,14 @@
       "loginPrompt": "Log in to chat with your AI counselor",
       "toolCalling": "Calling tools...",
       "quickQuestions": "Quick Questions",
+      "approval": {
+        "title": "Confirm this action",
+        "description": "The agent paused before running {{tool}}. Review the parameters before continuing.",
+        "expiresAt": "Approval expires {{time}}",
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel run"
+      },
       "suggestions": {
         "analyzeProfile": "Analyze my profile",
         "recommendSchools": "Recommend schools",

@@ -13,7 +13,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth';
 import { apiClient } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
-import { ChatMessage, StreamEvent, AgentType, AgentActionPayload } from './types';
+import {
+  ChatMessage,
+  StreamEvent,
+  AgentType,
+  AgentActionPayload,
+  AgentApprovalRequest,
+} from './types';
 import {
   useInvalidateConversations,
   useOptimisticAddConversation,
@@ -43,6 +49,8 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentAgent, setCurrentAgent] = useState<AgentType>(AgentType.ORCHESTRATOR);
   const [activeTools, setActiveTools] = useState<string[]>([]);
+  const [pendingApproval, setPendingApproval] = useState<AgentApprovalRequest | null>(null);
+  const [isApprovalBusy, setIsApprovalBusy] = useState(false);
   // conversationId state is the single source of truth; ref syncs via useEffect for closures
   const [conversationId, setConversationId] = useState<string | undefined>(externalConversationId);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -55,6 +63,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const lastUserMessageRef = useRef<string>('');
   // Reusable chunk timeout timer (avoid O(n) allocations)
   const chunkTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pausedMessageIdRef = useRef<string | null>(null);
 
   // Keep ref in sync with state (single source of truth: state)
   useEffect(() => {
@@ -165,7 +174,28 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           }
           break;
 
+        case 'approval_required':
+          if (event.approval) {
+            setPendingApproval(event.approval);
+            pausedMessageIdRef.current = messageId;
+          }
+          break;
+
+        case 'run_paused':
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === messageId ? { ...msg, isStreaming: false } : msg))
+          );
+          return { terminal: true };
+
+        case 'run_resumed':
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === messageId ? { ...msg, isStreaming: true } : msg))
+          );
+          break;
+
         case 'done':
+          setPendingApproval(null);
+          pausedMessageIdRef.current = null;
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === messageId
@@ -477,11 +507,110 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     );
   }, [setLoadingState]);
 
+  const resumePendingApproval = useCallback(async () => {
+    const approval = pendingApproval;
+    const messageId = pausedMessageIdRef.current;
+    if (!approval || !messageId || isApprovalBusy) return;
+
+    setIsApprovalBusy(true);
+    setLoadingState(true);
+    try {
+      await apiClient.post(
+        `${API_ROUTES.AI_AGENT}/runs/${approval.runId}/approvals/${approval.approvalId}/approve`
+      );
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const request = (authToken: string | null) =>
+        fetch(`${STREAM_API_URL}/api/v1/ai-agent/runs/${approval.runId}/resume`, {
+          method: 'POST',
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+          credentials: 'include',
+          signal: controller.signal,
+        });
+      let response = await request(token);
+      if (response.status === 401 && (await refreshAccessToken())) {
+        response = await request(useAuthStore.getState().accessToken);
+      }
+      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+
+      setPendingApproval(null);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let terminal = false;
+      while (!terminal) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6);
+          if (data === '[DONE]') {
+            terminal = true;
+            break;
+          }
+          try {
+            const event: StreamEvent = JSON.parse(data);
+            if (handleStreamEventRef.current(event, messageId).terminal) {
+              terminal = true;
+              break;
+            }
+          } catch {
+            // Ignore malformed keep-alive data.
+          }
+        }
+      }
+    } catch {
+      setPendingApproval({ ...approval, status: 'APPROVED' });
+      onError?.(t('approval.resumeError'));
+    } finally {
+      setIsApprovalBusy(false);
+      setLoadingState(false);
+      abortControllerRef.current = null;
+    }
+  }, [isApprovalBusy, onError, pendingApproval, refreshAccessToken, setLoadingState, t, token]);
+
+  const rejectPendingApproval = useCallback(async () => {
+    if (!pendingApproval || isApprovalBusy) return;
+    setIsApprovalBusy(true);
+    try {
+      await apiClient.post(
+        `${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
+        {}
+      );
+      setPendingApproval(null);
+      pausedMessageIdRef.current = null;
+    } catch {
+      onError?.(t('approval.rejectError'));
+    } finally {
+      setIsApprovalBusy(false);
+    }
+  }, [isApprovalBusy, onError, pendingApproval, t]);
+
+  const cancelPendingRun = useCallback(async () => {
+    if (!pendingApproval || isApprovalBusy) return;
+    setIsApprovalBusy(true);
+    try {
+      await apiClient.post(`${API_ROUTES.AI_AGENT}/runs/${pendingApproval.runId}/cancel`);
+      setPendingApproval(null);
+      pausedMessageIdRef.current = null;
+    } catch {
+      onError?.(t('approval.cancelError'));
+    } finally {
+      setIsApprovalBusy(false);
+    }
+  }, [isApprovalBusy, onError, pendingApproval, t]);
+
   /** Clear all messages locally and delete the conversation on the server. */
   const clearMessages = useCallback(async () => {
     const oldConversationId = conversationIdRef.current;
     setMessages([]);
     setConversationId(undefined);
+    setPendingApproval(null);
+    pausedMessageIdRef.current = null;
     onConversationChange?.(undefined);
 
     if (oldConversationId) {
@@ -552,6 +681,8 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     setConversationId(undefined);
     setCurrentAgent(AgentType.ORCHESTRATOR);
     setActiveTools([]);
+    setPendingApproval(null);
+    pausedMessageIdRef.current = null;
     onConversationChange?.(undefined);
   }, [onConversationChange]);
 
@@ -565,9 +696,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     isLoading,
     currentAgent,
     activeTools,
+    pendingApproval,
+    isApprovalBusy,
     conversationId,
     sendMessage,
     stopGeneration,
+    resumePendingApproval,
+    rejectPendingApproval,
+    cancelPendingRun,
     clearMessages,
     loadConversation,
     startNewConversation,

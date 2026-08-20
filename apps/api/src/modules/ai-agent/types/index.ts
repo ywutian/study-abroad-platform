@@ -231,6 +231,32 @@ export interface ToolDefinition {
   };
 }
 
+export type ToolEffect = 'read' | 'generate' | 'write' | 'external';
+export type ToolRisk = 'low' | 'medium' | 'high';
+
+/** Execution and permission metadata kept outside the model-facing schema. */
+export interface ToolMetadata {
+  effect: ToolEffect;
+  risk: ToolRisk;
+  retryable: boolean;
+  requiresConfirmation: boolean;
+  timeoutMs: number;
+}
+
+export type AgentHarnessMode = 'advisory' | 'action';
+export type ToolPolicyAction = 'allow' | 'deny' | 'confirmation_required';
+
+export interface ToolPolicyDecision {
+  action: ToolPolicyAction;
+  reasonCode:
+    | 'ALLOWED'
+    | 'UNKNOWN_TOOL_METADATA'
+    | 'TOOL_NOT_ALLOWED_FOR_AGENT'
+    | 'POLICY_SERVICE_UNAVAILABLE'
+    | 'EFFECT_NOT_ALLOWED_IN_ADVISORY'
+    | 'CONFIRMATION_REQUIRED';
+}
+
 export interface ToolParameter {
   type: 'string' | 'number' | 'boolean' | 'array' | 'object';
   description: string;
@@ -254,8 +280,10 @@ export interface ToolExecutionResult {
   success: boolean;
   result?: unknown;
   error?: string;
+  errorCode?: string;
   duration: number;
   cached?: boolean;
+  policy?: ToolPolicyDecision;
 }
 
 // ==================== 错误类型 ====================

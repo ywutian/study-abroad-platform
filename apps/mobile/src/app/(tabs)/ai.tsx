@@ -19,7 +19,7 @@ import { Segment } from '@/components/ui/Tabs';
 import { useToast } from '@/components/ui/Toast';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
-import type { AiChatMessage } from '@/types';
+import type { AgentApprovalRequest, AiChatMessage, StreamEvent } from '@/types';
 import { borderRadius, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
 import { AI_REQUEST_TIMEOUT_MS } from '@study-abroad/shared';
 import * as Haptics from 'expo-haptics';
@@ -129,6 +129,8 @@ export default function AIScreen() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [agentMode, setAgentMode] = useState<AgentMode>('auto');
+  const [pendingApproval, setPendingApproval] = useState<AgentApprovalRequest | null>(null);
+  const [approvalBusy, setApprovalBusy] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const seededPromptRef = useRef(false);
 
@@ -198,11 +200,24 @@ export default function AIScreen() {
       setMessages((prev) => [...prev, assistantMessage]);
 
       try {
+        const updateAssistant = (next: (prevContent: string) => string) => {
+          setMessages((prev) => {
+            const msgs = [...prev];
+            const last = msgs[msgs.length - 1];
+            if (last?.role === 'assistant') {
+              msgs[msgs.length - 1] = { ...last, content: next(last.content) };
+            }
+            return msgs;
+          });
+        };
+
         if (agentMode !== 'auto') {
-          // Direct agent call (non-streaming) for specific agent modes
+          // Preserve the specialist endpoint when the harness flags are off.
+          // With approvals enabled, the same endpoint returns a durable pause.
           const result = await apiClient.post<{
             message?: string;
             response?: { message?: string };
+            data?: { approvalRequired?: AgentApprovalRequest };
           }>(
             '/ai-agent/agent',
             {
@@ -211,90 +226,68 @@ export default function AIScreen() {
               conversationId: undefined,
               locale: undefined,
             },
-            // AI agent + Cloud Run cold start routinely exceeds the 15s default;
-            // no auto-retry (it would re-charge quota and hit the concurrency cap).
-            { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0 }
+            { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0, signal: controller.signal }
           );
-          const responseText =
-            result.message || result.response?.message || t('ai.chat.noResponse');
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage.role === 'assistant') {
-              newMessages[newMessages.length - 1] = {
-                ...lastMessage,
-                content: responseText,
-              };
-            }
-            return newMessages;
-          });
-        } else {
-          // Auto mode streams tokens via apiClient.stream() (expo/fetch SSE),
-          // falling back to the non-streaming endpoint if the stream fails.
-          const updateAssistant = (next: (prevContent: string) => string) => {
-            setMessages((prev) => {
-              const msgs = [...prev];
-              const last = msgs[msgs.length - 1];
-              if (last?.role === 'assistant') {
-                msgs[msgs.length - 1] = { ...last, content: next(last.content) };
-              }
-              return msgs;
-            });
-          };
-
-          let streamedAny = false;
-          try {
-            for await (const raw of apiClient.stream(
-              '/ai-agent/chat',
-              { message: text, conversationId: null, stream: true },
-              controller.signal
-            )) {
-              let event: {
-                type?: string;
-                content?: string;
-                error?: string;
-                response?: { message?: string };
-              };
-              try {
-                event = JSON.parse(raw);
-              } catch {
-                continue; // skip keep-alive / non-JSON lines
-              }
-              if (event.type === 'content' && event.content) {
-                streamedAny = true;
-                const delta = event.content;
-                updateAssistant((c) => c + delta);
-              } else if (event.type === 'done' && !streamedAny && event.response?.message) {
-                streamedAny = true;
-                const full = event.response.message;
-                updateAssistant(() => full);
-              } else if (event.type === 'error') {
-                throw new Error(event.error || t('ai.chat.noResponse'));
-              }
-            }
-          } catch (streamErr) {
-            // expo/fetch does NOT raise a named 'AbortError', so detect cancellation
-            // via the signal itself. On abort: skip the fallback entirely (don't
-            // re-charge AI quota with an un-cancellable request after the user left)
-            // — the outer catch keeps whatever partial content already streamed.
-            if (controller.signal.aborted) {
-              throw streamErr;
-            }
-            if (!streamedAny) {
-              // Stream produced nothing → non-streaming fallback (handles 401 refresh).
-              const result = await apiClient.post<{
-                message?: string;
-                response?: { message?: string };
-                data?: { message?: string };
-              }>(
-                '/ai-agent/chat',
-                { message: text, conversationId: null, stream: false },
-                { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0, signal: controller.signal }
-              );
-              updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
-            }
-            // Otherwise keep the partial content that already streamed.
+          if (result.data?.approvalRequired) {
+            setPendingApproval(result.data.approvalRequired);
           }
+          updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
+          return;
+        }
+
+        let streamedAny = false;
+        try {
+          for await (const raw of apiClient.stream(
+            '/ai-agent/chat',
+            {
+              message: text,
+              conversationId: null,
+              stream: true,
+            },
+            controller.signal
+          )) {
+            let event: StreamEvent;
+            try {
+              event = JSON.parse(raw);
+            } catch {
+              continue; // skip keep-alive / non-JSON lines
+            }
+            if (event.type === 'content' && event.content) {
+              streamedAny = true;
+              const delta = event.content;
+              updateAssistant((c) => c + delta);
+            } else if (event.type === 'done' && !streamedAny && event.response?.message) {
+              streamedAny = true;
+              const full = event.response.message;
+              updateAssistant(() => full);
+            } else if (event.type === 'approval_required' && event.approval) {
+              setPendingApproval(event.approval);
+            } else if (event.type === 'error') {
+              throw new Error(event.error || t('ai.chat.noResponse'));
+            }
+          }
+        } catch (streamErr) {
+          // expo/fetch does NOT raise a named 'AbortError', so detect cancellation
+          // via the signal itself. On abort: skip the fallback entirely (don't
+          // re-charge AI quota with an un-cancellable request after the user left)
+          // — the outer catch keeps whatever partial content already streamed.
+          if (controller.signal.aborted) {
+            throw streamErr;
+          }
+          if (!streamedAny) {
+            // Stream produced nothing → non-streaming fallback (handles 401 refresh).
+            const result = await apiClient.post<{
+              message?: string;
+              response?: { message?: string };
+              data?: { message?: string };
+            }>(
+              '/ai-agent/chat',
+              { message: text, conversationId: null, stream: false },
+              { timeout: AI_REQUEST_TIMEOUT_MS, retries: 0, signal: controller.signal }
+            );
+            updateAssistant(() => getAiResponseText(result, t('ai.chat.noResponse')));
+          }
+          // Otherwise keep the partial content that already streamed.
         }
       } catch (error) {
         if (controller.signal.aborted) {
@@ -313,6 +306,94 @@ export default function AIScreen() {
     },
     [input, isLoading, isAuthenticated, agentMode, toast, t]
   );
+
+  const resumeApproval = useCallback(async () => {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    setIsLoading(true);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      await apiClient.post(
+        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/approve`,
+        {},
+        { retries: 0 }
+      );
+      setPendingApproval(null);
+      for await (const raw of apiClient.stream(
+        `/ai-agent/runs/${pendingApproval.runId}/resume`,
+        {},
+        controller.signal
+      )) {
+        let event: StreamEvent;
+        try {
+          event = JSON.parse(raw);
+        } catch {
+          continue;
+        }
+        if (event.type === 'content' && event.content) {
+          const delta = event.content;
+          setMessages((previous) => {
+            const next = [...previous];
+            const last = next.at(-1);
+            if (last?.role === 'assistant') {
+              next[next.length - 1] = { ...last, content: last.content + delta };
+            }
+            return next;
+          });
+        } else if (event.type === 'approval_required' && event.approval) {
+          setPendingApproval(event.approval);
+        } else if (event.type === 'done' && event.response?.message) {
+          setMessages((previous) => {
+            const next = [...previous];
+            const last = next.at(-1);
+            if (last?.role === 'assistant' && !last.content) {
+              next[next.length - 1] = { ...last, content: event.response!.message };
+            }
+            return next;
+          });
+        } else if (event.type === 'error') {
+          throw new Error(event.error || t('ai.chat.noResponse'));
+        }
+      }
+    } catch (error) {
+      setPendingApproval({ ...pendingApproval, status: 'APPROVED' });
+      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+    } finally {
+      setApprovalBusy(false);
+      setIsLoading(false);
+    }
+  }, [approvalBusy, pendingApproval, t, toast]);
+
+  const rejectApproval = useCallback(async () => {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    try {
+      await apiClient.post(
+        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
+        {},
+        { retries: 0 }
+      );
+      setPendingApproval(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+    } finally {
+      setApprovalBusy(false);
+    }
+  }, [approvalBusy, pendingApproval, t, toast]);
+
+  const cancelApprovalRun = useCallback(async () => {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    try {
+      await apiClient.post(`/ai-agent/runs/${pendingApproval.runId}/cancel`, {}, { retries: 0 });
+      setPendingApproval(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+    } finally {
+      setApprovalBusy(false);
+    }
+  }, [approvalBusy, pendingApproval, t, toast]);
 
   const handleSuggestionPress = (text: string) => {
     sendMessage(text);
@@ -452,6 +533,57 @@ export default function AIScreen() {
       )}
 
       {/* Input Area */}
+      {pendingApproval && (
+        <View
+          style={[
+            styles.approvalCard,
+            {
+              borderColor: colors.warning,
+              backgroundColor: withOpacity(colors.warning, 0.08),
+            },
+          ]}
+        >
+          <Text style={{ color: colors.foreground, fontWeight: fontWeight.semibold }}>
+            {t('ai.chat.approval.title')}
+          </Text>
+          <Text style={{ color: colors.foregroundMuted, marginTop: spacing.xs }}>
+            {t('ai.chat.approval.description', { tool: pendingApproval.toolName })}
+          </Text>
+          <Text
+            numberOfLines={4}
+            style={{ color: colors.foregroundMuted, marginTop: spacing.sm, fontSize: fontSize.xs }}
+          >
+            {JSON.stringify(pendingApproval.arguments, null, 2)}
+          </Text>
+          <Text
+            style={{ color: colors.foregroundMuted, marginTop: spacing.xs, fontSize: fontSize.xs }}
+          >
+            {t('ai.chat.approval.expiresAt', {
+              time: new Date(pendingApproval.expiresAt).toLocaleString(),
+            })}
+          </Text>
+          <View style={styles.approvalActions}>
+            <TouchableOpacity
+              onPress={() => void resumeApproval()}
+              disabled={approvalBusy}
+              style={[
+                styles.sendButton,
+                { backgroundColor: colors.primary, paddingHorizontal: spacing.md },
+              ]}
+            >
+              <Text style={{ color: colors.primaryForeground }}>
+                {t('ai.chat.approval.approve')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => void rejectApproval()} disabled={approvalBusy}>
+              <Text style={{ color: colors.foreground }}>{t('ai.chat.approval.reject')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => void cancelApprovalRun()} disabled={approvalBusy}>
+              <Text style={{ color: colors.foregroundMuted }}>{t('ai.chat.approval.cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       <View
         style={[
           styles.inputContainer,

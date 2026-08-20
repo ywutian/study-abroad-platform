@@ -132,16 +132,62 @@ export interface AgentResponse {
   data?: Record<string, unknown>;
 }
 
+export type AgentRunStatus =
+  'RUNNING' | 'WAITING_APPROVAL' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'EXPIRED';
+
+export interface AgentApprovalRequest {
+  runId: string;
+  approvalId: string;
+  toolName: string;
+  arguments: Record<string, unknown>;
+  fingerprint: string;
+  expiresAt: string;
+  status:
+    | 'PENDING'
+    | 'APPROVED'
+    | 'EXECUTING'
+    | 'EXECUTED'
+    | 'REJECTED'
+    | 'CANCELLED'
+    | 'EXPIRED'
+    | 'FAILED';
+}
+
+export interface AgentRunSummary {
+  id: string;
+  conversationId: string;
+  agentType: string;
+  status: AgentRunStatus;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  expiresAt?: string | null;
+  result?: AgentResponse | null;
+  approval?: AgentApprovalRequest;
+}
+
 export interface StreamEvent {
-  type: 'start' | 'content' | 'tool_start' | 'tool_end' | 'agent_switch' | 'done' | 'error';
+  type:
+    | 'start'
+    | 'content'
+    | 'tool_start'
+    | 'tool_end'
+    | 'agent_switch'
+    | 'approval_required'
+    | 'run_paused'
+    | 'run_resumed'
+    | 'done'
+    | 'error';
   agent?: AgentType;
   conversationId?: string;
+  runId?: string;
   title?: string;
   content?: string;
   tool?: string;
   toolResult?: unknown;
   response?: AgentResponse;
   error?: string;
+  approval?: AgentApprovalRequest;
+  runStatus?: AgentRunStatus;
   memoryContext?: {
     recentMemories: number;
     relevantFacts: number;

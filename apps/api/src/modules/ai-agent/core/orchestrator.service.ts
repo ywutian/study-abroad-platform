@@ -49,6 +49,11 @@ import { MessageInput } from '../memory/types';
 import { ActionSuggestion } from './types';
 import { StreamEvent } from '@study-abroad/shared';
 import { randomUUID } from 'crypto';
+import {
+  AgentRunService,
+  getApprovalFingerprint,
+  type AgentRunCheckpointV1,
+} from './agent-run.service';
 
 export type { StreamEvent };
 
@@ -106,6 +111,7 @@ export class OrchestratorService {
     @Optional() private fallback?: FallbackService,
     @Optional() private metricsService?: MetricsService,
     @Optional() private redis?: RedisService,
+    @Optional() private agentRuns?: AgentRunService,
   ) {
     this.maxDelegationDepth = this.configService.get<number>(
       'AGENT_MAX_DELEGATION_DEPTH',
@@ -120,6 +126,20 @@ export class OrchestratorService {
         'Enterprise memory not available, using fallback MemoryService',
       );
     }
+  }
+
+  private async createRunIfEnabled(
+    userId: string,
+    conversationId: string,
+    agentType: AgentType,
+  ): Promise<string | undefined> {
+    if (!this.agentRuns?.isEnabled()) return undefined;
+    const run = await this.agentRuns.createRun({
+      userId,
+      conversationId,
+      agentType,
+    });
+    return run.id;
   }
 
   private sanitizeAgentContext(
@@ -747,18 +767,54 @@ export class OrchestratorService {
     );
 
     this.logger.log(`callAgent: conversation ready, starting agent run`);
-    const watermark = conversation.messages.length;
-    const response = await this.agentRunner.run(agentType, conversation);
-    await this.persistWorkflowMessages(conversation, watermark);
+    if (!this.agentRuns?.isEnabled()) {
+      const watermark = conversation.messages.length;
+      const legacyResponse = await this.agentRunner.run(
+        agentType,
+        conversation,
+      );
+      await this.persistWorkflowMessages(conversation, watermark);
+      const moderated = await this.persistAssistantResponse(
+        conversation,
+        legacyResponse.message,
+        legacyResponse.agentType,
+      );
+      return { ...legacyResponse, message: moderated };
+    }
 
-    const moderated = await this.persistAssistantResponse(
-      conversation,
-      response.message,
-      response.agentType,
+    const runId = await this.createRunIfEnabled(
+      userId,
+      conversation.id,
+      agentType,
     );
+    let response: AgentResponse | undefined;
+    let approval: StreamEvent['approval'];
+    for await (const event of this.collectAndPersistStream(
+      agentType,
+      conversation,
+      runId,
+    )) {
+      if (event.type === 'done' && event.response) response = event.response;
+      if (event.type === 'approval_required') approval = event.approval;
+      if (event.type === 'error') {
+        throw new Error(event.error || 'Agent execution failed');
+      }
+    }
+
+    if (approval) {
+      return {
+        message:
+          locale === 'en'
+            ? 'This action requires your confirmation before it can continue.'
+            : '此操作需要你确认后才能继续。',
+        agentType,
+        data: { runId, approvalRequired: approval },
+      };
+    }
+    if (!response) throw new Error('Agent completed without a response');
 
     this.logger.log(`callAgent completed: agent=${response.agentType}`);
-    return { ...response, message: moderated };
+    return response;
   }
 
   /**
@@ -907,11 +963,17 @@ export class OrchestratorService {
             conv,
             createMsg({ role: 'user', content: message }),
           );
+          const runId = await this.createRunIfEnabled(
+            userId,
+            conv.id,
+            AgentType.ORCHESTRATOR,
+          );
 
           yield {
             type: 'start',
             agent: AgentType.ORCHESTRATOR,
             conversationId: conv.id,
+            runId,
           };
           yield {
             type: 'content',
@@ -932,6 +994,12 @@ export class OrchestratorService {
             simpleResponse,
             AgentType.ORCHESTRATOR,
           );
+          if (runId) {
+            await this.agentRuns?.completeRun(runId, {
+              message: simpleResponse,
+              agentType: AgentType.ORCHESTRATOR,
+            });
+          }
           return;
         }
 
@@ -962,18 +1030,28 @@ export class OrchestratorService {
               title,
             );
           }
+          const runId = await this.createRunIfEnabled(
+            userId,
+            conversation.id,
+            routeResult.agent,
+          );
 
           yield {
             type: 'start',
             agent: routeResult.agent,
             conversationId: conversation.id,
+            runId,
             title: isNew
               ? message.slice(0, 50).replace(/\n/g, ' ').trim()
               : undefined,
           };
 
           // 收集流式内容并持久化 assistant 响应
-          yield* this.collectAndPersistStream(routeResult.agent, conversation);
+          yield* this.collectAndPersistStream(
+            routeResult.agent,
+            conversation,
+            runId,
+          );
           return;
         }
       }
@@ -1002,17 +1080,27 @@ export class OrchestratorService {
             const t = message.slice(0, 50).replace(/\n/g, ' ').trim();
             await this.memoryManager!.updateConversationTitle(conv.id, t);
           }
+          const runId = await this.createRunIfEnabled(
+            userId,
+            conv.id,
+            embeddingResult.agent,
+          );
 
           yield {
             type: 'start',
             agent: embeddingResult.agent,
             conversationId: conv.id,
+            runId,
             title: isNew
               ? message.slice(0, 50).replace(/\n/g, ' ').trim()
               : undefined,
           };
 
-          yield* this.collectAndPersistStream(embeddingResult.agent, conv);
+          yield* this.collectAndPersistStream(
+            embeddingResult.agent,
+            conv,
+            runId,
+          );
           return;
         }
       }
@@ -1044,6 +1132,11 @@ export class OrchestratorService {
           title,
         );
       }
+      const runId = await this.createRunIfEnabled(
+        userId,
+        conversation.id,
+        AgentType.ORCHESTRATOR,
+      );
 
       // 获取记忆上下文统计
       let memoryContext: StreamEvent['memoryContext'];
@@ -1069,6 +1162,7 @@ export class OrchestratorService {
         type: 'start',
         agent: AgentType.ORCHESTRATOR,
         conversationId: conversation.id,
+        runId,
         title,
         memoryContext,
       };
@@ -1078,6 +1172,7 @@ export class OrchestratorService {
         yield* this.collectAndPersistStream(
           AgentType.ORCHESTRATOR,
           conversation,
+          runId,
         );
       } catch (error) {
         // 错误降级
@@ -1101,9 +1196,264 @@ export class OrchestratorService {
                   : 'Processing failed',
           };
         }
+        if (runId) {
+          await this.agentRuns?.failRun(
+            runId,
+            'STREAM_FAILED',
+            error instanceof Error ? error.message : 'Processing failed',
+          );
+        }
       }
     } finally {
       await this.releaseConversationLock(lockKey);
+    }
+  }
+
+  async *resumeRunStream(
+    userId: string,
+    runId: string,
+  ): AsyncGenerator<StreamEvent> {
+    if (!this.agentRuns?.isEnabled()) {
+      yield { type: 'error', error: 'Agent approvals are disabled' };
+      return;
+    }
+
+    const claim = await this.agentRuns.claimApproved(userId, runId);
+    if (!claim.claimed) {
+      if (claim.run.status === 'COMPLETED' && claim.run.result) {
+        yield {
+          type: 'done',
+          runId,
+          runStatus: 'COMPLETED',
+          response: claim.run.result as unknown as AgentResponse,
+        };
+        return;
+      }
+      if (
+        claim.run.status === 'FAILED' ||
+        claim.run.status === 'CANCELLED' ||
+        claim.run.status === 'EXPIRED'
+      ) {
+        yield {
+          type: 'error',
+          runId,
+          runStatus: claim.run.status,
+          error:
+            claim.run.errorMessage ||
+            `Run is ${claim.run.status.toLowerCase()}`,
+        };
+        return;
+      }
+      yield {
+        type: 'run_resumed',
+        runId,
+        runStatus: claim.run.status,
+      };
+      yield {
+        type: 'error',
+        runId,
+        error:
+          claim.approval.status === 'EXECUTED'
+            ? 'Run has already consumed this approval'
+            : 'Run is already being resumed',
+      };
+      return;
+    }
+
+    const checkpoint = claim.run.checkpoint as unknown as AgentRunCheckpointV1;
+    const pendingTool =
+      checkpoint?.steps?.[checkpoint.pendingStepIndex]?.toolCall;
+    if (
+      checkpoint?.version !== 1 ||
+      !pendingTool ||
+      getApprovalFingerprint(pendingTool) !== claim.approval.fingerprint
+    ) {
+      await this.agentRuns.failRun(
+        runId,
+        'CHECKPOINT_MISMATCH',
+        'Persisted tool arguments no longer match the approved action',
+      );
+      yield { type: 'error', runId, error: 'Approval checkpoint mismatch' };
+      return;
+    }
+
+    const conversation = await this.getOrCreateConversation(
+      userId,
+      claim.run.conversationId,
+    );
+    conversation.metadata = {
+      ...(conversation.metadata || {}),
+      locale: checkpoint.locale,
+    };
+    const config =
+      this.configValidator?.getValidatedConfig(checkpoint.agentType) ??
+      AGENT_CONFIGS[checkpoint.agentType];
+    if (!config) {
+      await this.agentRuns.failRun(
+        runId,
+        'CONFIG_NOT_FOUND',
+        'Agent configuration is unavailable during resume',
+      );
+      yield { type: 'error', runId, error: 'Agent configuration unavailable' };
+      return;
+    }
+    const tools = TOOLS.filter((tool) => config.tools.includes(tool.name));
+    let watermark = conversation.messages.length;
+    let fullContent = '';
+    let paused = false;
+    let approvalExecutionRecorded = false;
+
+    for await (const event of this.workflowEngine.resumeStream(
+      config,
+      conversation,
+      tools,
+      checkpoint,
+      claim.approval.fingerprint,
+      { runId, approvalsEnabled: true },
+    )) {
+      switch (event.type) {
+        case 'run_resumed':
+          yield {
+            type: 'run_resumed',
+            runId,
+            agent: checkpoint.agentType,
+            runStatus: 'RUNNING',
+          };
+          break;
+        case 'tool_start':
+          yield {
+            type: 'tool_start',
+            runId,
+            agent: checkpoint.agentType,
+            tool: event.tool,
+          };
+          break;
+        case 'tool_end':
+          if (
+            !approvalExecutionRecorded &&
+            event.toolCall &&
+            getApprovalFingerprint(event.toolCall) ===
+              claim.approval.fingerprint
+          ) {
+            if (!event.toolResult?.success) {
+              await this.agentRuns.failRun(
+                runId,
+                event.toolResult?.errorCode || 'APPROVED_TOOL_FAILED',
+                event.toolResult?.error || 'Approved tool execution failed',
+              );
+            } else {
+              await this.agentRuns.markExecutionSucceeded(
+                runId,
+                claim.approval.id,
+              );
+            }
+            approvalExecutionRecorded = true;
+          }
+          yield {
+            type: 'tool_end',
+            runId,
+            agent: checkpoint.agentType,
+            tool: event.tool,
+            toolResult: event.toolResult,
+          };
+          break;
+        case 'approval_required': {
+          if (!event.toolCall || !event.checkpoint) break;
+          await this.persistWorkflowMessages(conversation, watermark);
+          watermark = conversation.messages.length;
+          const approval = await this.agentRuns.requestApproval({
+            runId,
+            userId,
+            toolCall: event.toolCall,
+            checkpoint: event.checkpoint,
+          });
+          yield {
+            type: 'approval_required',
+            runId,
+            agent: checkpoint.agentType,
+            approval,
+            runStatus: 'WAITING_APPROVAL',
+          };
+          break;
+        }
+        case 'run_paused':
+          paused = true;
+          yield {
+            type: 'run_paused',
+            runId,
+            agent: checkpoint.agentType,
+            runStatus: 'WAITING_APPROVAL',
+          };
+          break;
+        case 'solve_content':
+        case 'plan_content':
+          if (event.content) {
+            fullContent += event.content;
+            yield {
+              type: 'content',
+              runId,
+              agent: checkpoint.agentType,
+              content: event.content,
+            };
+          }
+          break;
+        case 'done': {
+          const result = event.result;
+          const response: AgentResponse = {
+            message: result?.message || fullContent,
+            agentType: checkpoint.agentType,
+            toolsUsed: result?.toolsUsed,
+            suggestions: this.extractSuggestions(
+              result?.message || fullContent,
+            ),
+            actions: this.generateActions(
+              result?.message || fullContent,
+              result?.plan.steps.map((step) => ({ result: step.result })),
+            ),
+          };
+          yield {
+            type: 'done',
+            runId,
+            agent: checkpoint.agentType,
+            runStatus: 'COMPLETED',
+            response,
+          };
+          await this.persistWorkflowMessages(conversation, watermark);
+          watermark = conversation.messages.length;
+          if (response.message) {
+            await this.persistAssistantResponse(
+              conversation,
+              response.message,
+              response.agentType,
+            );
+          }
+          await this.agentRuns.completeRun(
+            runId,
+            response as unknown as Record<string, unknown>,
+          );
+          return;
+        }
+        case 'error':
+          await this.persistWorkflowMessages(conversation, watermark);
+          await this.agentRuns.failRun(
+            runId,
+            'RESUME_FAILED',
+            event.error || 'Resume failed',
+          );
+          yield { type: 'error', runId, error: event.error || 'Resume failed' };
+          return;
+        case 'phase_change':
+          break;
+      }
+    }
+
+    await this.persistWorkflowMessages(conversation, watermark);
+    if (!paused) {
+      await this.agentRuns.failRun(
+        runId,
+        'RESUME_INCOMPLETE',
+        'Resume ended without a terminal workflow event',
+      );
     }
   }
 
@@ -1125,20 +1475,53 @@ export class OrchestratorService {
   private async *collectAndPersistStream(
     agentType: AgentType,
     conversation: ConversationState,
+    runId?: string,
   ): AsyncGenerator<StreamEvent> {
     let fullContent = '';
     let finalAgentType: AgentType = agentType;
-    const watermark = conversation.messages.length;
+    let watermark = conversation.messages.length;
+    let paused = false;
+    let completed = false;
+    let streamError: string | undefined;
+    let finalResponse: AgentResponse | undefined;
 
-    for await (const event of this.runAgentStream(agentType, conversation)) {
-      if (event.type === 'content' && event.content) {
-        fullContent += event.content;
+    try {
+      for await (const event of this.runAgentStream(
+        agentType,
+        conversation,
+        0,
+        runId,
+        watermark,
+      )) {
+        if (event.type === 'content' && event.content) {
+          fullContent += event.content;
+        }
+        if (event.type === 'done' && event.response) {
+          fullContent = fullContent || event.response.message || '';
+          finalAgentType = event.response.agentType || finalAgentType;
+          finalResponse = event.response;
+          completed = true;
+        }
+        if (event.type === 'approval_required') {
+          watermark = conversation.messages.length;
+        }
+        if (event.type === 'run_paused') {
+          paused = true;
+        }
+        if (event.type === 'error') {
+          streamError = event.error || 'Workflow failed';
+        }
+        yield event;
       }
-      if (event.type === 'done' && event.response) {
-        fullContent = fullContent || event.response.message || '';
-        finalAgentType = event.response.agentType || finalAgentType;
+    } catch (error) {
+      if (runId) {
+        await this.agentRuns?.failRun(
+          runId,
+          'STREAM_ABORTED',
+          error instanceof Error ? error.message : 'Agent stream aborted',
+        );
       }
-      yield event;
+      throw error;
     }
 
     // Persist tool messages generated during the workflow
@@ -1156,6 +1539,17 @@ export class OrchestratorService {
           'Failed to persist streaming assistant response',
           err,
         );
+      }
+    }
+
+    if (runId && !paused) {
+      if (completed) {
+        await this.agentRuns?.completeRun(
+          runId,
+          finalResponse as unknown as Record<string, unknown> | undefined,
+        );
+      } else if (streamError) {
+        await this.agentRuns?.failRun(runId, 'WORKFLOW_FAILED', streamError);
       }
     }
   }
@@ -1187,6 +1581,8 @@ export class OrchestratorService {
     agentType: AgentType,
     conversation: ConversationState,
     depth: number = 0,
+    runId?: string,
+    persistenceWatermark?: number,
   ): AsyncGenerator<StreamEvent> {
     const agentLocale = (conversation.metadata?.locale as string) || 'zh';
 
@@ -1242,6 +1638,9 @@ export class OrchestratorService {
       config,
       conversation,
       tools,
+      runId
+        ? { runId, approvalsEnabled: !!this.agentRuns?.isEnabled() }
+        : undefined,
     )) {
       // 将工作流事件转换为 StreamEvent
       switch (event.type) {
@@ -1281,6 +1680,54 @@ export class OrchestratorService {
           };
           break;
 
+        case 'approval_required': {
+          if (
+            !runId ||
+            !this.agentRuns ||
+            !event.toolCall ||
+            !event.checkpoint
+          ) {
+            yield { type: 'error', error: 'Approval lifecycle unavailable' };
+            return;
+          }
+          await this.persistWorkflowMessages(
+            conversation,
+            persistenceWatermark ?? conversation.messages.length,
+          );
+          const approval = await this.agentRuns.requestApproval({
+            runId,
+            userId: conversation.userId,
+            toolCall: event.toolCall,
+            checkpoint: event.checkpoint,
+          });
+          yield {
+            type: 'approval_required',
+            agent: agentType,
+            runId,
+            approval,
+            runStatus: 'WAITING_APPROVAL',
+          };
+          break;
+        }
+
+        case 'run_paused':
+          yield {
+            type: 'run_paused',
+            agent: agentType,
+            runId,
+            runStatus: 'WAITING_APPROVAL',
+          };
+          return;
+
+        case 'run_resumed':
+          yield {
+            type: 'run_resumed',
+            agent: agentType,
+            runId,
+            runStatus: 'RUNNING',
+          };
+          break;
+
         case 'solve_content':
           // Solve 阶段的流式输出 → 这是最终回复
           if (event.content) {
@@ -1316,7 +1763,13 @@ export class OrchestratorService {
             }
 
             // 递归运行目标 Agent
-            yield* this.runAgentStream(targetAgent, conversation, depth + 1);
+            yield* this.runAgentStream(
+              targetAgent,
+              conversation,
+              depth + 1,
+              runId,
+              persistenceWatermark,
+            );
             return;
           }
 

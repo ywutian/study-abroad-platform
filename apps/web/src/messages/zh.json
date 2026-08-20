@@ -1449,6 +1449,17 @@
     "welcome": "欢迎使用 AI 助手",
     "welcomeDesc": "我可以帮您分析档案、推荐学校、评估文书等。有什么可以帮您的？",
     "placeholder": "输入您的问题...",
+    "approval": {
+      "title": "确认此操作",
+      "description": "Agent 已在执行 {tool} 前暂停。请核对准确参数后再继续。",
+      "expiresAt": "审批将在 {time} 过期",
+      "approve": "批准并继续",
+      "reject": "拒绝操作",
+      "cancel": "取消运行",
+      "resumeError": "已批准的运行无法恢复，请检查状态后重试。",
+      "rejectError": "无法拒绝此操作。",
+      "cancelError": "无法取消此运行。"
+    },
     "workspace": {
       "kicker": "AI 调度台",
       "title": "留学 AI 工作台",

@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import type { TFunction } from 'i18next';
 import type { QueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
-import type { AiChatMessage, StreamEvent } from '@/types';
+import type { AgentApprovalRequest, AiChatMessage, StreamEvent } from '@/types';
 import type { AgentMode, AgentType } from '@/app/uncommon-app.types';
 
 interface ConversationOptions {
@@ -22,6 +22,8 @@ export function useAiAgentConversation(options: ConversationOptions) {
   const [conversationId, setConversationId] = useState<string>();
   const [activeAgent, setActiveAgent] = useState<string>();
   const [activeTool, setActiveTool] = useState<string>();
+  const [pendingApproval, setPendingApproval] = useState<AgentApprovalRequest | null>(null);
+  const [approvalBusy, setApprovalBusy] = useState(false);
 
   const updateAssistant = useCallback((update: (message: AiChatMessage) => void) => {
     setMessages((previous) => {
@@ -49,56 +51,69 @@ export function useAiAgentConversation(options: ConversationOptions) {
 
       try {
         const agent = directAgent || (agentMode !== 'auto' ? agentMode : undefined);
-        const endpoint = agent ? '/ai-agent/agent' : '/ai-agent/chat';
-        const body = agent
-          ? { agent, message: text, conversationId }
-          : { message: text, conversationId, stream: true };
 
         if (agent) {
           const response = await apiClient.post<{
             message: string;
             agentType: string;
             conversationId?: string;
-          }>(endpoint, body);
+            data?: { approvalRequired?: AgentApprovalRequest };
+          }>('/ai-agent/agent', {
+            agent,
+            message: text,
+            conversationId,
+          });
           if (response.conversationId) setConversationId(response.conversationId);
           setActiveAgent(response.agentType);
+          if (response.data?.approvalRequired) {
+            setPendingApproval(response.data.approvalRequired);
+          }
           updateAssistant((message) => {
             message.content = response.message;
           });
-        } else {
-          for await (const chunk of apiClient.stream(endpoint, body)) {
-            try {
-              const event: StreamEvent = JSON.parse(chunk);
-              if (event.type === 'start' || event.type === 'agent_switch') {
-                if (event.agent) setActiveAgent(event.agent);
-              } else if (event.type === 'content' && event.content) {
-                updateAssistant((message) => {
-                  message.content += event.content;
-                });
-              } else if (event.type === 'tool_start' && event.tool) {
-                setActiveTool(event.tool);
-                updateAssistant((message) => {
-                  message.toolCalls = [
-                    ...(message.toolCalls ?? []),
-                    { name: event.tool!, status: 'running' },
-                  ];
-                });
-              } else if (event.type === 'tool_end') {
-                setActiveTool(undefined);
-                updateAssistant((message) => {
-                  const call = message.toolCalls?.[message.toolCalls.length - 1];
-                  if (call) call.status = 'done';
-                });
-              } else if (event.type === 'done' && event.response?.agentType) {
-                setActiveAgent(event.response.agentType);
-              } else if (event.type === 'error') {
-                toast.error(event.error || t('errors.unknown'));
-              }
-            } catch {
+          queryClient.invalidateQueries({ queryKey: ['ai-agent', 'quota'] });
+          return;
+        }
+
+        for await (const chunk of apiClient.stream('/ai-agent/chat', {
+          message: text,
+          conversationId,
+          stream: true,
+        })) {
+          try {
+            const event: StreamEvent = JSON.parse(chunk);
+            if (event.type === 'start' || event.type === 'agent_switch') {
+              if (event.agent) setActiveAgent(event.agent);
+              if (event.conversationId) setConversationId(event.conversationId);
+            } else if (event.type === 'content' && event.content) {
               updateAssistant((message) => {
-                message.content += chunk;
+                message.content += event.content;
               });
+            } else if (event.type === 'tool_start' && event.tool) {
+              setActiveTool(event.tool);
+              updateAssistant((message) => {
+                message.toolCalls = [
+                  ...(message.toolCalls ?? []),
+                  { name: event.tool!, status: 'running' },
+                ];
+              });
+            } else if (event.type === 'tool_end') {
+              setActiveTool(undefined);
+              updateAssistant((message) => {
+                const call = message.toolCalls?.[message.toolCalls.length - 1];
+                if (call) call.status = 'done';
+              });
+            } else if (event.type === 'done' && event.response?.agentType) {
+              setActiveAgent(event.response.agentType);
+            } else if (event.type === 'approval_required' && event.approval) {
+              setPendingApproval(event.approval);
+            } else if (event.type === 'error') {
+              toast.error(event.error || t('errors.unknown'));
             }
+          } catch {
+            updateAssistant((message) => {
+              message.content += chunk;
+            });
           }
         }
         queryClient.invalidateQueries({ queryKey: ['ai-agent', 'quota'] });
@@ -129,11 +144,77 @@ export function useAiAgentConversation(options: ConversationOptions) {
     ]
   );
 
+  const resumeApproval = useCallback(async () => {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    setIsStreaming(true);
+    try {
+      await apiClient.post(
+        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/approve`,
+        {},
+        { retries: 0 }
+      );
+      setPendingApproval(null);
+      for await (const chunk of apiClient.stream(
+        `/ai-agent/runs/${pendingApproval.runId}/resume`,
+        {}
+      )) {
+        const event: StreamEvent = JSON.parse(chunk);
+        if (event.type === 'content' && event.content) {
+          updateAssistant((message) => {
+            message.content += event.content!;
+          });
+        } else if (event.type === 'approval_required' && event.approval) {
+          setPendingApproval(event.approval);
+        } else if (event.type === 'error') {
+          toast.error(event.error || t('errors.unknown'));
+        }
+      }
+    } catch (error) {
+      setPendingApproval({ ...pendingApproval, status: 'APPROVED' });
+      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+    } finally {
+      setApprovalBusy(false);
+      setIsStreaming(false);
+    }
+  }, [approvalBusy, pendingApproval, t, toast, updateAssistant]);
+
+  const rejectApproval = useCallback(async () => {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    try {
+      await apiClient.post(
+        `/ai-agent/runs/${pendingApproval.runId}/approvals/${pendingApproval.approvalId}/reject`,
+        {},
+        { retries: 0 }
+      );
+      setPendingApproval(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+    } finally {
+      setApprovalBusy(false);
+    }
+  }, [approvalBusy, pendingApproval, t, toast]);
+
+  const cancelRun = useCallback(async () => {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    try {
+      await apiClient.post(`/ai-agent/runs/${pendingApproval.runId}/cancel`, {}, { retries: 0 });
+      setPendingApproval(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('errors.unknown'));
+    } finally {
+      setApprovalBusy(false);
+    }
+  }, [approvalBusy, pendingApproval, t, toast]);
+
   const resetConversation = useCallback(() => {
     setMessages([]);
     setConversationId(undefined);
     setActiveAgent(undefined);
     setActiveTool(undefined);
+    setPendingApproval(null);
   }, []);
 
   return {
@@ -142,6 +223,11 @@ export function useAiAgentConversation(options: ConversationOptions) {
     isStreaming,
     activeAgent,
     activeTool,
+    pendingApproval,
+    approvalBusy,
+    resumeApproval,
+    rejectApproval,
+    cancelRun,
     sendMessage,
     resetConversation,
   };

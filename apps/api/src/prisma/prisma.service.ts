@@ -153,6 +153,8 @@ export class PrismaService
       this.message.deleteMany(),
       this.conversationParticipant.deleteMany(),
       this.conversation.deleteMany(),
+      this.agentApproval.deleteMany(),
+      this.agentRun.deleteMany(),
       this.block.deleteMany(),
       this.follow.deleteMany(),
       this.agentMessage.deleteMany(),

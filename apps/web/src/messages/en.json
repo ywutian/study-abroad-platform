@@ -1476,6 +1476,17 @@
     "welcome": "Welcome to AI Assistant",
     "welcomeDesc": "I can help you analyze your profile, recommend schools, evaluate essays, and more. How can I help you?",
     "placeholder": "Type your question...",
+    "approval": {
+      "title": "Confirm this action",
+      "description": "The agent is paused before running {tool}. Review the exact parameters before continuing.",
+      "expiresAt": "Approval expires {time}",
+      "approve": "Approve and continue",
+      "reject": "Reject action",
+      "cancel": "Cancel run",
+      "resumeError": "The approved run could not be resumed. Check its status and try again.",
+      "rejectError": "The action could not be rejected.",
+      "cancelError": "The run could not be cancelled."
+    },
     "workspace": {
       "kicker": "AI Command Desk",
       "title": "Study Abroad AI Workspace",

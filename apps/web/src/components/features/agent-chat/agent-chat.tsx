@@ -10,7 +10,15 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Lightbulb, RefreshCw, ChevronDown, Clock, GraduationCap } from 'lucide-react';
+import {
+  Trash2,
+  Lightbulb,
+  RefreshCw,
+  ChevronDown,
+  Clock,
+  GraduationCap,
+  ShieldAlert,
+} from 'lucide-react';
 import { useAgentChat } from './use-agent-chat';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
@@ -142,9 +150,14 @@ export function AgentChat({
     isLoading,
     currentAgent,
     activeTools,
+    pendingApproval,
+    isApprovalBusy,
     conversationId: activeConversationId,
     sendMessage,
     stopGeneration,
+    resumePendingApproval,
+    rejectPendingApproval,
+    cancelPendingRun,
     clearMessages,
     loadConversation,
     startNewConversation,
@@ -468,6 +481,61 @@ export function AgentChat({
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {pendingApproval && (
+          <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="mx-4 mb-3 rounded-xl border border-amber-500/35 bg-amber-500/5 p-4"
+            aria-live="polite"
+          >
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">{t('approval.title')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('approval.description', { tool: pendingApproval.toolName })}
+                </p>
+                <pre className="mt-3 max-h-28 overflow-auto rounded-lg bg-background/80 p-2 text-2xs leading-relaxed">
+                  {JSON.stringify(pendingApproval.arguments, null, 2).slice(0, 2000)}
+                </pre>
+                <p className="mt-2 text-2xs text-muted-foreground">
+                  {t('approval.expiresAt', {
+                    time: new Date(pendingApproval.expiresAt).toLocaleString(locale),
+                  })}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => void resumePendingApproval()}
+                    disabled={isApprovalBusy}
+                  >
+                    {t('approval.approve')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void rejectPendingApproval()}
+                    disabled={isApprovalBusy}
+                  >
+                    {t('approval.reject')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void cancelPendingRun()}
+                    disabled={isApprovalBusy}
+                  >
+                    {t('approval.cancel')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Quick Actions (when has messages) */}
       <AnimatePresence>

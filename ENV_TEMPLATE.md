@@ -44,6 +44,13 @@ CORS_ORIGINS=http://localhost:4100
 OPENAI_API_KEY=sk-your_openai_api_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
+LLM_PROVIDER=openai
+AI_AGENT_HARNESS_V1=false
+AI_AGENT_HARNESS_MODE=advisory
+AI_AGENT_APPROVALS_V1=false
+AI_AGENT_APPROVAL_TTL_MS=900000
+AI_AGENT_RUN_TTL_MS=86400000
+AI_AGENT_EXECUTION_LEASE_MS=120000
 
 # ============================================
 # College Scorecard (学校数据)
@@ -205,6 +212,13 @@ FRONTEND_URL=https://your-app.pages.dev
 OPENAI_API_KEY=sk-你的密钥
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
+LLM_PROVIDER=openai
+AI_AGENT_HARNESS_V1=false
+AI_AGENT_HARNESS_MODE=advisory
+AI_AGENT_APPROVALS_V1=false
+AI_AGENT_APPROVAL_TTL_MS=900000
+AI_AGENT_RUN_TTL_MS=86400000
+AI_AGENT_EXECUTION_LEASE_MS=120000
 
 # ============================================
 # 邮件服务 [Zod 验证: 可选，Resend 交易邮件]

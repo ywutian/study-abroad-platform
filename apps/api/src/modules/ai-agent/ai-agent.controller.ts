@@ -20,6 +20,7 @@ import {
   UseGuards,
   Logger,
   UnauthorizedException,
+  Param,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -36,8 +37,9 @@ import { AgentThrottleGuard, SkipAgentThrottle } from './guards';
 import { CurrentLocale, CurrentUser } from '../../common/decorators';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { ChatDto, DirectAgentDto } from './dto';
+import { ChatDto, DirectAgentDto, RejectAgentApprovalDto } from './dto';
 import type { SupportedLocale } from '@study-abroad/shared';
+import { AgentRunService } from './core/agent-run.service';
 
 @ApiTags('ai-agent')
 @ApiBearerAuth()
@@ -52,6 +54,7 @@ export class AiAgentController {
     private tokenTracker: TokenTrackerService,
     private rateLimiter: RateLimiterService,
     private llm: LLMService,
+    private agentRuns: AgentRunService,
   ) {}
 
   /**
@@ -92,6 +95,7 @@ export class AiAgentController {
             this.logger.debug(
               `SSE client disconnected mid-stream [user=${user.id}]`,
             );
+            if (this.agentRuns.isEnabled()) continue;
             break;
           }
           res.write(`data: ${JSON.stringify(event)}\n\n`);
@@ -111,6 +115,36 @@ export class AiAgentController {
       return;
     }
 
+    // Harness approval mode shares the exact streaming lifecycle even when the
+    // caller requests a single JSON response, so protected actions can pause.
+    if (this.agentRuns.isEnabled()) {
+      let response: unknown;
+      let approval: unknown;
+      let runId: string | undefined;
+      for await (const event of this.orchestrator.handleMessageStream(
+        user.id,
+        data.message,
+        data.conversationId,
+        locale,
+        data.context,
+        data.agentHint,
+      )) {
+        runId = event.runId || runId;
+        if (event.type === 'done') response = event.response;
+        if (event.type === 'approval_required') approval = event.approval;
+      }
+      res.json(
+        approval
+          ? {
+              message: 'This action requires confirmation.',
+              runId,
+              approvalRequired: approval,
+            }
+          : response,
+      );
+      return;
+    }
+
     // 普通请求
     const result = await this.orchestrator.handleMessage(
       user.id,
@@ -121,6 +155,97 @@ export class AiAgentController {
       data.agentHint,
     );
     res.json(result);
+  }
+
+  @Get('runs/:runId')
+  @SkipAgentThrottle()
+  @ApiOperation({ summary: 'Get an Agent run and its current approval state' })
+  getRun(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('runId') runId: string,
+  ) {
+    return this.agentRuns.getRunSummary(user.id, runId);
+  }
+
+  @Post('runs/:runId/approvals/:approvalId/approve')
+  @SkipAgentThrottle()
+  @ApiOperation({ summary: 'Approve the exact pending Agent tool call' })
+  approveRun(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('runId') runId: string,
+    @Param('approvalId') approvalId: string,
+  ) {
+    return this.agentRuns.approve(user.id, runId, approvalId);
+  }
+
+  @Post('runs/:runId/approvals/:approvalId/reject')
+  @SkipAgentThrottle()
+  @ApiOperation({ summary: 'Reject a pending Agent tool call' })
+  rejectRun(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('runId') runId: string,
+    @Param('approvalId') approvalId: string,
+    @Body() data: RejectAgentApprovalDto,
+  ) {
+    return this.agentRuns.reject(user.id, runId, approvalId, data.reason);
+  }
+
+  @Post('runs/:runId/cancel')
+  @SkipAgentThrottle()
+  @ApiOperation({ summary: 'Cancel a running or approval-waiting Agent run' })
+  cancelRun(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('runId') runId: string,
+  ) {
+    return this.agentRuns.cancel(user.id, runId);
+  }
+
+  @Post('runs/:runId/resume')
+  @SkipAgentThrottle()
+  @ApiOperation({ summary: 'Resume an approved Agent run as an SSE stream' })
+  async resumeRun(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('runId') runId: string,
+    @Res() res: Response,
+  ) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    let disconnected = false;
+    res.on('close', () => {
+      disconnected = true;
+    });
+    try {
+      for await (const event of this.orchestrator.resumeRunStream(
+        user.id,
+        runId,
+      )) {
+        // Once an approved side effect is claimed, keep consuming the workflow
+        // even if the client disconnects. Reconnects read the durable result.
+        if (!disconnected) res.write(`data: ${JSON.stringify(event)}\n\n`);
+      }
+    } catch (error) {
+      await this.agentRuns.failRun(
+        runId,
+        'RESUME_STREAM_ABORTED',
+        error instanceof Error ? error.message : 'Resume failed',
+        user.id,
+      );
+      if (!disconnected) {
+        res.write(
+          `data: ${JSON.stringify({
+            type: 'error',
+            runId,
+            error: error instanceof Error ? error.message : 'Resume failed',
+          })}\n\n`,
+        );
+      }
+    }
+    if (!disconnected) res.write('data: [DONE]\n\n');
+    res.end();
   }
 
   /**
