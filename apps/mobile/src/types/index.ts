@@ -37,6 +37,8 @@ export type {
   AiChatMessage,
   ToolCall,
   StreamEvent,
+  AgentApprovalRequest,
+  AgentRunStatus,
   ApiError,
   RankingWeights,
   PredictionFactor,

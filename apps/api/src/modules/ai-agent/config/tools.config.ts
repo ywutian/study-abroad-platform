@@ -4,7 +4,7 @@
  * 从旧架构 ai/agent/tools.registry.ts 迁移，并添加 delegate_to_agent
  */
 
-import { ToolDefinition } from '../types';
+import { ToolDefinition, ToolMetadata } from '../types';
 
 // ==================== 工具名称枚举 ====================
 
@@ -81,6 +81,203 @@ export enum ToolName {
   // 外部搜索工具
   WEB_SEARCH = 'web_search',
   SEARCH_SCHOOL_WEBSITE = 'search_school_website',
+}
+
+// ==================== 工具权限与执行元数据 ====================
+
+const toolMetadata = (
+  effect: ToolMetadata['effect'],
+  risk: ToolMetadata['risk'],
+  retryable: boolean,
+  requiresConfirmation = false,
+  timeoutMs = 30_000,
+): ToolMetadata => ({
+  effect,
+  risk,
+  retryable,
+  requiresConfirmation,
+  timeoutMs,
+});
+
+/**
+ * Exhaustive metadata registry. `satisfies Record<ToolName, ...>` makes a new
+ * tool fail compilation until its permission and execution behavior is set.
+ */
+export const TOOL_METADATA = {
+  [ToolName.DELEGATE_TO_AGENT]: toolMetadata(
+    'generate',
+    'low',
+    false,
+    false,
+    5_000,
+  ),
+  [ToolName.GET_PROFILE]: toolMetadata('read', 'low', true, false, 10_000),
+  [ToolName.UPDATE_PROFILE]: toolMetadata('write', 'high', false, true, 10_000),
+  [ToolName.SEARCH_SCHOOLS]: toolMetadata('read', 'low', true, false, 20_000),
+  [ToolName.GET_SCHOOL_DETAILS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    20_000,
+  ),
+  [ToolName.COMPARE_SCHOOLS]: toolMetadata('read', 'low', true, false, 20_000),
+  [ToolName.GET_ESSAYS]: toolMetadata('read', 'low', true, false, 15_000),
+  [ToolName.REVIEW_ESSAY]: toolMetadata('write', 'medium', false, true),
+  [ToolName.POLISH_ESSAY]: toolMetadata('write', 'medium', false, true),
+  [ToolName.GENERATE_OUTLINE]: toolMetadata('generate', 'low', false),
+  [ToolName.BRAINSTORM_IDEAS]: toolMetadata('write', 'medium', false, true),
+  [ToolName.SEARCH_ESSAY_PROMPTS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    20_000,
+  ),
+  [ToolName.RECOMMEND_SCHOOLS]: toolMetadata('write', 'medium', false, true),
+  [ToolName.ANALYZE_ADMISSION_CHANCE]: toolMetadata(
+    'write',
+    'medium',
+    false,
+    true,
+  ),
+  [ToolName.SEARCH_CASES]: toolMetadata('read', 'low', true, false, 20_000),
+  [ToolName.FIND_SIMILAR_CASES]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    20_000,
+  ),
+  [ToolName.FIND_SIMILAR_APPLICANTS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    20_000,
+  ),
+  [ToolName.GET_DEADLINES]: toolMetadata('read', 'low', true, false, 20_000),
+  [ToolName.CREATE_TIMELINE]: toolMetadata('generate', 'medium', false),
+  [ToolName.GET_PERSONAL_EVENTS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.CREATE_PERSONAL_EVENT]: toolMetadata(
+    'write',
+    'high',
+    false,
+    true,
+    15_000,
+  ),
+  [ToolName.GET_ASSESSMENT_RESULTS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.INTERPRET_ASSESSMENT]: toolMetadata('generate', 'low', false),
+  [ToolName.SUGGEST_ACTIVITIES_FROM_ASSESSMENT]: toolMetadata(
+    'generate',
+    'low',
+    false,
+  ),
+  [ToolName.SEARCH_FORUM_POSTS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.GET_POPULAR_DISCUSSIONS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.ANSWER_FORUM_QUESTION]: toolMetadata('generate', 'low', false),
+  [ToolName.EXPLAIN_CASE_RESULT]: toolMetadata('generate', 'low', false),
+  [ToolName.ANALYZE_PREDICTION_ACCURACY]: toolMetadata(
+    'generate',
+    'low',
+    false,
+  ),
+  [ToolName.COMPARE_CASE_WITH_PROFILE]: toolMetadata('generate', 'low', false),
+  [ToolName.ANALYZE_INTL_COMPETITIVENESS]: toolMetadata(
+    'generate',
+    'medium',
+    false,
+  ),
+  [ToolName.ANALYZE_PROFILE_RANKING]: toolMetadata('generate', 'medium', false),
+  [ToolName.SUGGEST_PROFILE_IMPROVEMENTS]: toolMetadata(
+    'generate',
+    'medium',
+    false,
+  ),
+  [ToolName.COMPARE_WITH_ADMITTED_PROFILES]: toolMetadata(
+    'generate',
+    'medium',
+    false,
+  ),
+  [ToolName.GET_PREDICTION_HISTORY]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.GET_PREDICTION_DASHBOARD]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.GET_SCHOOL_LIST_PREDICTIONS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.GET_PREDICTION_TRACE_SUMMARY]: toolMetadata(
+    'read',
+    'medium',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.GET_RESUME_LIST]: toolMetadata('read', 'low', true, false, 15_000),
+  [ToolName.GET_RESUME_DETAILS]: toolMetadata(
+    'read',
+    'low',
+    true,
+    false,
+    15_000,
+  ),
+  [ToolName.REVIEW_RESUME]: toolMetadata('write', 'medium', false, true),
+  [ToolName.OPTIMIZE_RESUME_BULLETS]: toolMetadata(
+    'write',
+    'medium',
+    false,
+    true,
+  ),
+  [ToolName.SUGGEST_RESUME_CONTENT]: toolMetadata(
+    'write',
+    'medium',
+    false,
+    true,
+  ),
+  [ToolName.WEB_SEARCH]: toolMetadata('external', 'low', true),
+  [ToolName.SEARCH_SCHOOL_WEBSITE]: toolMetadata('external', 'low', true),
+} satisfies Readonly<Record<ToolName, ToolMetadata>>;
+
+export function getToolMetadata(name: string): ToolMetadata | undefined {
+  return TOOL_METADATA[name as ToolName];
 }
 
 // ==================== 工具读写分类 ====================

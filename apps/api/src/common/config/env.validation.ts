@@ -121,8 +121,18 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-5.4-mini'),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
-  LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
+  LLM_PROVIDER: z.literal('openai').default('openai'),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
+  AI_AGENT_HARNESS_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_HARNESS_MODE: z.enum(['advisory', 'action']).default('advisory'),
+  AI_AGENT_APPROVALS_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_APPROVAL_TTL_MS: z.coerce.number().int().min(60000).default(900000),
+  AI_AGENT_RUN_TTL_MS: z.coerce.number().int().min(60000).default(86400000),
+  AI_AGENT_EXECUTION_LEASE_MS: z.coerce
+    .number()
+    .int()
+    .min(30000)
+    .default(120000),
 
   // --- Search Engines (Optional) ---
   GOOGLE_SEARCH_API_KEY: z.string().optional(),

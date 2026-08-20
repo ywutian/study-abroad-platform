@@ -194,6 +194,12 @@ export class AiAgentGateway
           this.logger.debug(
             `WebSocket client disconnected mid-stream [user=${client.userId}]`,
           );
+          if (
+            this.configService.get<string>('AI_AGENT_HARNESS_V1') === 'true' &&
+            this.configService.get<string>('AI_AGENT_APPROVALS_V1') === 'true'
+          ) {
+            continue;
+          }
           break;
         }
 

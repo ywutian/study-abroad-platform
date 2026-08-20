@@ -5,6 +5,7 @@ import { TokenTrackerService } from './core/token-tracker.service';
 import { RateLimiterService } from './core/rate-limiter.service';
 import { LLMService } from './core/llm.service';
 import { AgentType } from './types';
+import { AgentRunService } from './core/agent-run.service';
 
 describe('AiAgentController', () => {
   let controller: AiAgentController;
@@ -12,6 +13,7 @@ describe('AiAgentController', () => {
   let tokenTracker: TokenTrackerService;
   let rateLimiter: RateLimiterService;
   let llm: LLMService;
+  let agentRuns: AgentRunService;
 
   const mockUser = {
     id: 'user-1',
@@ -38,6 +40,7 @@ describe('AiAgentController', () => {
           useValue: {
             handleMessage: jest.fn().mockResolvedValue({ reply: 'hello' }),
             handleMessageStream: jest.fn(),
+            resumeRunStream: jest.fn(),
             callAgent: jest.fn().mockResolvedValue({ reply: 'agent response' }),
             getConversations: jest.fn().mockResolvedValue([]),
             getHistory: jest.fn().mockResolvedValue([]),
@@ -66,6 +69,18 @@ describe('AiAgentController', () => {
             getServiceStatus: jest.fn().mockResolvedValue({ isHealthy: true }),
           },
         },
+        {
+          provide: AgentRunService,
+          useValue: {
+            isEnabled: jest.fn().mockReturnValue(false),
+            getRun: jest.fn(),
+            getRunSummary: jest.fn(),
+            approve: jest.fn(),
+            reject: jest.fn(),
+            cancel: jest.fn(),
+            failRun: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -74,6 +89,7 @@ describe('AiAgentController', () => {
     tokenTracker = module.get<TokenTrackerService>(TokenTrackerService);
     rateLimiter = module.get<RateLimiterService>(RateLimiterService);
     llm = module.get<LLMService>(LLMService);
+    agentRuns = module.get<AgentRunService>(AgentRunService);
   });
 
   afterEach(() => {
@@ -179,6 +195,28 @@ describe('AiAgentController', () => {
         AgentType.ESSAY,
       );
       expect(result).toEqual({ reply: 'agent response' });
+    });
+  });
+
+  describe('POST /runs/:runId/resume', () => {
+    it('scopes unexpected resume failures to the authenticated user', async () => {
+      const events = (async function* () {
+        yield await Promise.reject(new Error('resume crashed'));
+      })();
+      (orchestrator.resumeRunStream as jest.Mock).mockReturnValue(events);
+
+      await controller.resumeRun(mockUser, 'run-1', mockResponse as any);
+
+      expect(agentRuns.failRun).toHaveBeenCalledWith(
+        'user-1',
+        'run-1',
+        'RESUME_STREAM_ABORTED',
+        'resume crashed',
+      );
+      expect(mockResponse.write).toHaveBeenCalledWith(
+        expect.stringContaining('resume crashed'),
+      );
+      expect(mockResponse.end).toHaveBeenCalled();
     });
   });
 

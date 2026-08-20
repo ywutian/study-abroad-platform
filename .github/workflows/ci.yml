@@ -1600,7 +1600,7 @@ jobs:
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
             --add-volume=name=uploads,type=cloud-storage,bucket=study-abroad-prod-2025-uploads \
             --add-volume-mount=volume=uploads,mount-path=/mnt/uploads \
-            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
+            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|LLM_PROVIDER=openai|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|AI_AGENT_HARNESS_V1=true|AI_AGENT_HARNESS_MODE=action|AI_AGENT_APPROVALS_V1=true|AI_AGENT_APPROVAL_TTL_MS=900000|AI_AGENT_RUN_TTL_MS=86400000|AI_AGENT_EXECUTION_LEASE_MS=120000|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest" \
             --timeout=1800 \
             --no-traffic \

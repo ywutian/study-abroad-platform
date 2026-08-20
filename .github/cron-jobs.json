@@ -9,6 +9,13 @@
       "sourceFile": "apps/api/src/modules/user/account-purge.service.ts"
     },
     {
+      "name": "agent-run-service-expire-stale-approvals",
+      "schedule": "*/1 * * * *",
+      "className": "AgentRunService",
+      "methodName": "expireStaleApprovals",
+      "sourceFile": "apps/api/src/modules/ai-agent/core/agent-run.service.ts"
+    },
+    {
       "name": "application-analysis-experiment-scheduler-run-hourly-rollout-monitor",
       "schedule": "17 * * * *",
       "className": "ApplicationAnalysisExperimentScheduler",

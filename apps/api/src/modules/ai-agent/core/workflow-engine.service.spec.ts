@@ -10,6 +10,7 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import {
   WorkflowEngineService,
   WorkflowPhase,
@@ -22,6 +23,9 @@ import { ResilienceService } from './resilience.service';
 import { MemoryManagerService } from '../memory/memory-manager.service';
 import { AgentType, ConversationState, AgentConfig } from '../types';
 import { LLMResponse } from './llm.service';
+import { ToolPolicyService } from './tool-policy.service';
+import { TOOLS } from '../config/tools.config';
+import { getApprovalFingerprint } from './agent-run.service';
 
 // Helper: create a minimal valid LLMResponse
 function mockLLMResponse(
@@ -50,6 +54,7 @@ describe('WorkflowEngineService', () => {
   let toolExecutor: jest.Mocked<ToolExecutorService>;
   let memory: jest.Mocked<MemoryService>;
   let memoryManager: jest.Mocked<MemoryManagerService>;
+  let configService: { get: jest.Mock };
 
   const mockConfig: AgentConfig = {
     type: AgentType.ORCHESTRATOR,
@@ -82,9 +87,14 @@ describe('WorkflowEngineService', () => {
   };
 
   beforeEach(async () => {
+    configService = {
+      get: jest.fn((_key: string, defaultValue?: unknown) => defaultValue),
+    };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkflowEngineService,
+        ToolPolicyService,
+        { provide: ConfigService, useValue: configService },
         {
           provide: LLMService,
           useValue: {
@@ -759,6 +769,212 @@ describe('WorkflowEngineService', () => {
       expect(toolStarts).toHaveLength(2);
       expect(toolStarts[0].tool).toBe('get_profile');
       expect(toolStarts[1].tool).toBe('search_schools');
+    });
+  });
+
+  // ==================== Harness v1 ====================
+
+  describe('Harness v1 bounded observation loop', () => {
+    beforeEach(() => {
+      configService.get.mockImplementation(
+        (key: string, defaultValue?: unknown) => {
+          if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+          if (key === 'AI_AGENT_HARNESS_MODE') return 'advisory';
+          return defaultValue;
+        },
+      );
+      toolExecutor.execute.mockResolvedValue({
+        success: true,
+        result: { ok: true },
+        duration: 1,
+      });
+      llm.callStream.mockReturnValue(
+        (async function* () {
+          yield { type: 'content', content: '完成' };
+          yield { type: 'done' };
+        })() as any,
+      );
+    });
+
+    it('runs at most two supplemental planning rounds and skips an identical successful call', async () => {
+      llm.call
+        .mockResolvedValueOnce(
+          mockLLMResponse({
+            content: '',
+            toolCalls: [
+              { id: 'call-1', name: 'get_profile', arguments: { b: 2, a: 1 } },
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(
+          mockLLMResponse({
+            content: '',
+            toolCalls: [
+              { id: 'call-2', name: 'get_profile', arguments: { a: 1, b: 2 } },
+              { id: 'call-3', name: 'search_schools', arguments: {} },
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(mockLLMResponse({ content: '' }));
+
+      const events = await collectEvents(
+        service.runStream(
+          AgentType.PROFILE,
+          mockConfig,
+          mockConversation,
+          TOOLS,
+        ),
+      );
+
+      expect(llm.call).toHaveBeenCalledTimes(3);
+      expect(toolExecutor.execute).toHaveBeenCalledTimes(2);
+      const result = events.find((event) => event.type === 'done')!.result!;
+      expect(result.plan.steps).toHaveLength(3);
+      expect(result.plan.steps[1].result).toEqual(
+        expect.objectContaining({
+          success: true,
+          cached: true,
+          result: {
+            skipped: true,
+            reason: 'DUPLICATE_SUCCESSFUL_CALL',
+          },
+        }),
+      );
+    });
+
+    it('caps a run at 16 scheduled tool calls', async () => {
+      llm.call.mockResolvedValueOnce(
+        mockLLMResponse({
+          content: '',
+          toolCalls: Array.from({ length: 20 }, (_, index) => ({
+            id: `call-${index}`,
+            name: 'get_school_details',
+            arguments: { schoolId: `school-${index}` },
+          })),
+        }),
+      );
+
+      const events = await collectEvents(
+        service.runStream(
+          AgentType.SCHOOL,
+          mockConfig,
+          mockConversation,
+          TOOLS,
+        ),
+      );
+
+      expect(toolExecutor.execute).toHaveBeenCalledTimes(16);
+      expect(llm.call).toHaveBeenCalledTimes(1);
+      expect(
+        events.find((event) => event.type === 'done')!.result!.plan.steps,
+      ).toHaveLength(16);
+    });
+
+    it('returns confirmation_required without executing a protected write', async () => {
+      configService.get.mockImplementation(
+        (key: string, defaultValue?: unknown) => {
+          if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+          if (key === 'AI_AGENT_HARNESS_MODE') return 'action';
+          return defaultValue;
+        },
+      );
+      llm.call
+        .mockResolvedValueOnce(
+          mockLLMResponse({
+            content: '',
+            toolCalls: [
+              {
+                id: 'write-1',
+                name: 'update_profile',
+                arguments: { field: 'targetMajor', value: 'CS' },
+              },
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(mockLLMResponse({ content: '' }));
+
+      const events = await collectEvents(
+        service.runStream(
+          AgentType.PROFILE,
+          mockConfig,
+          mockConversation,
+          TOOLS,
+        ),
+      );
+
+      expect(toolExecutor.execute).not.toHaveBeenCalled();
+      const step = events.find((event) => event.type === 'done')!.result!.plan
+        .steps[0];
+      expect(step.result?.policy).toEqual({
+        action: 'confirmation_required',
+        reasonCode: 'CONFIRMATION_REQUIRED',
+      });
+    });
+
+    it('pauses with a durable checkpoint and resumes only the approved fingerprint', async () => {
+      configService.get.mockImplementation(
+        (key: string, defaultValue?: unknown) => {
+          if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+          if (key === 'AI_AGENT_HARNESS_MODE') return 'action';
+          return defaultValue;
+        },
+      );
+      const toolCall = {
+        id: 'write-1',
+        name: 'update_profile',
+        arguments: { value: 'CS', field: 'targetMajor' },
+      };
+      llm.call.mockResolvedValueOnce(
+        mockLLMResponse({ content: '', toolCalls: [toolCall] }),
+      );
+
+      const initialEvents = await collectEvents(
+        service.runStream(
+          AgentType.PROFILE,
+          mockConfig,
+          mockConversation,
+          TOOLS,
+          { runId: 'run-1', approvalsEnabled: true },
+        ),
+      );
+
+      expect(toolExecutor.execute).not.toHaveBeenCalled();
+      expect(initialEvents.map((event) => event.type)).toContain(
+        'approval_required',
+      );
+      expect(initialEvents.at(-1)?.type).toBe('run_paused');
+      expect(initialEvents.some((event) => event.type === 'done')).toBe(false);
+      const checkpoint = initialEvents.find(
+        (event) => event.type === 'approval_required',
+      )!.checkpoint!;
+      expect(checkpoint.pendingStepIndex).toBe(0);
+      expect(checkpoint.steps[0].toolCall.arguments).toEqual({
+        value: 'CS',
+        field: 'targetMajor',
+      });
+
+      toolExecutor.execute.mockResolvedValue({
+        success: true,
+        result: { updated: true },
+        duration: 1,
+      });
+      const resumedEvents = await collectEvents(
+        service.resumeStream(
+          mockConfig,
+          mockConversation,
+          TOOLS,
+          checkpoint,
+          getApprovalFingerprint(toolCall),
+          { runId: 'run-1', approvalsEnabled: true },
+        ),
+      );
+
+      expect(resumedEvents[0]).toEqual({
+        type: 'run_resumed',
+        runId: 'run-1',
+      });
+      expect(toolExecutor.execute).toHaveBeenCalledTimes(1);
+      expect(resumedEvents.some((event) => event.type === 'done')).toBe(true);
     });
   });
 

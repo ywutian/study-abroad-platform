@@ -634,10 +634,10 @@ model User {
   // migrations/20260804230000_user_points_non_negative. Writes go through
   // IncentiveService.adjustPoints, whose WHERE is the primary guard; the
   // constraint is what keeps the invariant if a second writer appears.
-  points       Int            @default(0)
-  swipeStats   SwipeStats?
-  pointHistory PointHistory[]
-  payments     Payment[]
+  points                             Int                                 @default(0)
+  swipeStats                         SwipeStats?
+  pointHistory                       PointHistory[]
+  payments                           Payment[]
   galleryEssayAIInteractions         GalleryEssayAIInteraction[]
   galleryEssayAIInteractionFeedbacks GalleryEssayAIInteractionFeedback[]
 
@@ -691,6 +691,8 @@ model User {
   schoolRecommendations  SchoolRecommendation[]
   schoolCommunityRatings SchoolCommunityRating[]
   predictionFeedback     PredictionFeedback[]
+  agentRuns              AgentRun[]
+  agentApprovals         AgentApproval[]
 
   // Case views (案例查看记录)
   caseViews CaseView[]
@@ -1224,12 +1226,12 @@ model HighSchool {
   hsImpactEnabled Boolean @default(true) // D-grade schools do not participate in prediction scoring
 
   // === closure-v2 (2026-05): curriculum + reference data ===
-  curriculumSystem EducationSystem? // IB / AP / A_LEVEL / GAOKAO / hybrid
-  ncesId           String?          @unique // US NCES Common Core of Data ID
-  apOfferings      Int? // # of AP courses offered
-  ibOfferings      Boolean? // offers IB diploma programme
-  classSize        Int? // graduating class size (GPA percentile context)
-  schoolProfilePdfUrl       String? // college-counseling "school profile" PDF
+  curriculumSystem             EducationSystem? // IB / AP / A_LEVEL / GAOKAO / hybrid
+  ncesId                       String?          @unique // US NCES Common Core of Data ID
+  apOfferings                  Int? // # of AP courses offered
+  ibOfferings                  Boolean? // offers IB diploma programme
+  classSize                    Int? // graduating class size (GPA percentile context)
+  schoolProfilePdfUrl          String? // college-counseling "school profile" PDF
   schoolProfileExtractedFields Json? // { gradingScale, avgSat, pctTo4yr, ... }
 
   // === closure-v2: Chinese high-school specific ===
@@ -1515,13 +1517,13 @@ model School {
   // ─── M3 v2 Bayesian Engine: Hook & EC Profile Fields ──────────
   // Hook % of admitted class (from CDS C9 / school class profile / Crimson)
   // Example: legacyClassPct = 0.16 means 16% of admits are legacies
-  legacyClassPct           Decimal? @db.Decimal(5, 4)
-  athleteClassPct          Decimal? @db.Decimal(5, 4)
-  firstGenClassPct         Decimal? @db.Decimal(5, 4)
+  legacyClassPct         Decimal? @db.Decimal(5, 4)
+  athleteClassPct        Decimal? @db.Decimal(5, 4)
+  firstGenClassPct       Decimal? @db.Decimal(5, 4)
   // Per-school hook admit multiplier (admit_rate_hooked / admit_rate_overall)
   // Example: legacyAdmitMultiplier = 5.5 means legacy admit rate = 5.5× overall
-  legacyAdmitMultiplier    Decimal? @db.Decimal(5, 2)
-  athleteAdmitMultiplier   Decimal? @db.Decimal(5, 2)
+  legacyAdmitMultiplier  Decimal? @db.Decimal(5, 2)
+  athleteAdmitMultiplier Decimal? @db.Decimal(5, 2)
 
   // Activities/Awards/Research profile of admits (MEDIUM tier from Crimson etc.)
   admitsWithNationalAwardPct Decimal? @db.Decimal(5, 4)
@@ -1791,15 +1793,15 @@ model SchoolCalibration {
 // Used as the denominator in Bayesian update: P(category|admit) / P(category|apply)
 // Example metric: 'legacy_apply_rate' → 0.06 (6% of all applicants are legacies)
 model GlobalAdmitBaseline {
-  id        String   @id @default(cuid())
-  metric    String   @unique // 'legacy_apply_rate', 'athlete_apply_rate', 'firstgen_apply_rate', 'national_award_apply_rate', 'intl_apply_rate_us_top_pct'
-  value     Decimal  @db.Decimal(5, 4)
-  source    String   // citation URL or paper reference
-  cycleYear Int
-  confidenceTier String @default("LOW") // HIGH | MEDIUM | LOW
-  note      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  metric         String   @unique // 'legacy_apply_rate', 'athlete_apply_rate', 'firstgen_apply_rate', 'national_award_apply_rate', 'intl_apply_rate_us_top_pct'
+  value          Decimal  @db.Decimal(5, 4)
+  source         String // citation URL or paper reference
+  cycleYear      Int
+  confidenceTier String   @default("LOW") // HIGH | MEDIUM | LOW
+  note           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([metric])
 }
@@ -1813,25 +1815,25 @@ model GlobalAdmitBaseline {
 // The admin /admin/prediction-benchmark page reads from here and lets multiple
 // admins post review comments.
 model PredictionBenchmarkRun {
-  id           String   @id @default(cuid())
-  ranAt        DateTime @default(now())
+  id            String   @id @default(cuid())
+  ranAt         DateTime @default(now())
   // Optional human label, e.g. "post-T100-seed", "pre-v5-rollout"
-  label        String?
+  label         String?
   // M3 engine version string at run-time (e.g. git SHA + tier weights signature)
   engineVersion String?
   // Aggregated counters
-  testsPassed  Int
-  testsTotal   Int
+  testsPassed   Int
+  testsTotal    Int
   // Detailed JSON payloads — flexible to accommodate engine evolution
-  summary      Json     // { passed, total, casesAdmittedMeanProb, ... }
-  tests        Json     // [{ name, passed, details, metrics, failures }]
-  cases        Json     // [{ school, round, expected, predicted, contributions[] }]
-  notes        String?  // free-form context from the runner
+  summary       Json // { passed, total, casesAdmittedMeanProb, ... }
+  tests         Json // [{ name, passed, details, metrics, failures }]
+  cases         Json // [{ school, round, expected, predicted, contributions[] }]
+  notes         String? // free-form context from the runner
 
-  comments     PredictionBenchmarkComment[]
+  comments PredictionBenchmarkComment[]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([ranAt(sort: Desc)])
 }
@@ -1839,17 +1841,17 @@ model PredictionBenchmarkRun {
 // Co-review comment thread on a benchmark run. Free-form text; no
 // approve/reject lifecycle — the user chose "comments only".
 model PredictionBenchmarkComment {
-  id        String   @id @default(cuid())
+  id        String                 @id @default(cuid())
   runId     String
   run       PredictionBenchmarkRun @relation(fields: [runId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User     @relation("PredictionBenchmarkCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  body      String   @db.Text
+  author    User                   @relation("PredictionBenchmarkCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String                 @db.Text
   // Optional pointer to a specific test or case being commented on.
   // e.g. testId='gpa-monotonicity' or caseId='stanford-rea'. Null = top-level.
   anchor    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
 
   @@index([runId, createdAt])
   @@index([authorId])
@@ -3281,6 +3283,7 @@ model AgentConversation {
   metadata  Json?
 
   messages AgentMessage[]
+  runs     AgentRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3475,6 +3478,81 @@ model AgentConfigVersion {
 
   @@unique([configType, configKey, version])
   @@index([isActive])
+}
+
+enum AgentRunStatus {
+  RUNNING
+  WAITING_APPROVAL
+  COMPLETED
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+enum AgentApprovalStatus {
+  PENDING
+  APPROVED
+  EXECUTING
+  EXECUTED
+  REJECTED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+// Durable lifecycle for one user-initiated Agent execution.
+model AgentRun {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId    String
+  conversation      AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  agentType         String
+  status            AgentRunStatus    @default(RUNNING)
+  checkpoint        Json?
+  result            Json?
+  currentApprovalId String?
+  errorCode         String?
+  errorMessage      String?           @db.Text
+  version           Int               @default(0)
+  expiresAt         DateTime?
+  startedAt         DateTime          @default(now())
+  completedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  approvals AgentApproval[]
+
+  @@index([userId, status])
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([status, expiresAt])
+}
+
+// Approval is bound to the exact normalized tool arguments and can be claimed once.
+model AgentApproval {
+  id                 String              @id @default(cuid())
+  runId              String
+  run                AgentRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolName           String
+  arguments          Json
+  fingerprint        String
+  idempotencyKey     String              @unique
+  status             AgentApprovalStatus @default(PENDING)
+  decisionReason     String?
+  errorCode          String?
+  expiresAt          DateTime
+  decidedAt          DateTime?
+  executionStartedAt DateTime?
+  executedAt         DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([runId, fingerprint])
+  @@index([userId, status])
+  @@index([runId, status])
+  @@index([status, expiresAt])
 }
 
 // 记忆压缩记录
@@ -3827,31 +3905,31 @@ model PointHistory {
 // ============================================
 
 enum RedemptionType {
-  CONSULT_15MIN          // 顾问 15 分钟咨询
-  MEMBERSHIP_MONTHLY     // 月度会员
-  CASE_PREMIUM_UNLOCK    // 高级案例解锁
-  EXPERT_LIST_UNLOCK     // 专家清单解锁
-  PREDICTION_DEEP_DIVE   // Prediction 高级解读
+  CONSULT_15MIN // 顾问 15 分钟咨询
+  MEMBERSHIP_MONTHLY // 月度会员
+  CASE_PREMIUM_UNLOCK // 高级案例解锁
+  EXPERT_LIST_UNLOCK // 专家清单解锁
+  PREDICTION_DEEP_DIVE // Prediction 高级解读
 }
 
 enum RedemptionStatus {
-  PENDING                // 已创建，等待履约（如顾问预约链接生成）
-  FULFILLED              // 已履约
-  CANCELLED              // 用户取消或履约失败（积分退还）
+  PENDING // 已创建，等待履约（如顾问预约链接生成）
+  FULFILLED // 已履约
+  CANCELLED // 用户取消或履约失败（积分退还）
 }
 
 model PointsRedemption {
-  id            String           @id @default(cuid())
-  userId        String
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type          RedemptionType
-  pointsSpent   Int              // 实际扣除的积分（来自当时的 PointsConfig 配置）
-  status        RedemptionStatus @default(PENDING)
-  metadata      Json? // { consultationId?, subscriptionPlan?, caseId?, listId?, predictionResultId? }
-  fulfilledAt   DateTime?
-  cancelledAt   DateTime?
-  cancelReason  String?
-  createdAt     DateTime         @default(now())
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         RedemptionType
+  pointsSpent  Int // 实际扣除的积分（来自当时的 PointsConfig 配置）
+  status       RedemptionStatus @default(PENDING)
+  metadata     Json? // { consultationId?, subscriptionPlan?, caseId?, listId?, predictionResultId? }
+  fulfilledAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  createdAt    DateTime         @default(now())
 
   @@index([userId, createdAt])
   @@index([type])
@@ -4489,13 +4567,13 @@ model GalleryEssayAIInteraction {
   admissionCaseId String
   admissionCase   AdmissionCase @relation(fields: [admissionCaseId], references: [id], onDelete: Cascade)
 
-  type           String
-  status         String  @default("PENDING")
-  locale         String  @default("zh")
-  question       String? @db.Text
-  paragraphIndex Int?
-  selectedText   String? @db.Text
-  focus          String?
+  type            String
+  status          String  @default("PENDING")
+  locale          String  @default("zh")
+  question        String? @db.Text
+  paragraphIndex  Int?
+  selectedText    String? @db.Text
+  focus           String?
   clientRequestId String?
 
   userEssayId String?
@@ -4504,24 +4582,25 @@ model GalleryEssayAIInteraction {
   essayAIResultId String?
   essayAIResult   EssayAIResult? @relation("GalleryEssayAIResult", fields: [essayAIResultId], references: [id], onDelete: SetNull)
 
-  input         Json?
-  output        Json?
-  evidence      Json?
-  tokensUsed    Int     @default(0)
-  pointsAction  String?
-  pointsCharged Int?
-  pointsHistoryId String?
-  pointsHistory   PointHistory? @relation("GalleryEssayAIChargePointHistory", fields: [pointsHistoryId], references: [id], onDelete: SetNull)
+  input                Json?
+  output               Json?
+  evidence             Json?
+  tokensUsed           Int           @default(0)
+  pointsAction         String?
+  pointsCharged        Int?
+  pointsHistoryId      String?
+  pointsHistory        PointHistory? @relation("GalleryEssayAIChargePointHistory", fields: [pointsHistoryId], references: [id], onDelete: SetNull)
   refundPointHistoryId String?
   refundPointHistory   PointHistory? @relation("GalleryEssayAIRefundPointHistory", fields: [refundPointHistoryId], references: [id], onDelete: SetNull)
-  refundStatus  String?
-  errorMessage  String? @db.Text
+  refundStatus         String?
+  errorMessage         String?       @db.Text
 
   feedback GalleryEssayAIInteractionFeedback?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, admissionCaseId, type, clientRequestId])
   @@index([userId, admissionCaseId, createdAt])
   @@index([userId, type, createdAt])
   @@index([admissionCaseId, type, createdAt])
@@ -4530,7 +4609,6 @@ model GalleryEssayAIInteraction {
   @@index([essayAIResultId])
   @@index([pointsHistoryId])
   @@index([refundPointHistoryId])
-  @@unique([userId, admissionCaseId, type, clientRequestId])
 }
 
 model GalleryEssayAIInteractionFeedback {
@@ -5346,8 +5424,8 @@ model EssayDebateEvaluation {
 }
 
 enum EssayDebateRating {
-  SHARP        // Substantive, specific, would change my mind
-  USEFUL       // Reasonable but unremarkable
-  GENERIC      // Could apply to any essay; AI-slop
-  SYCOPHANTIC  // Empty agreement / mirror
+  SHARP // Substantive, specific, would change my mind
+  USEFUL // Reasonable but unremarkable
+  GENERIC // Could apply to any essay; AI-slop
+  SYCOPHANTIC // Empty agreement / mirror
 }

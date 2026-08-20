@@ -27,12 +27,17 @@ export class OpenAIProvider implements ILLMProvider {
   private readonly logger = new Logger(OpenAIProvider.name);
   private readonly apiKey: string;
   private readonly baseUrl: string;
+  private readonly requestTimeoutMs: number;
 
   constructor(private configService: ConfigService) {
     this.apiKey = this.configService.get<string>('OPENAI_API_KEY') || '';
     this.baseUrl =
       this.configService.get<string>('OPENAI_BASE_URL') ||
       'https://api.openai.com/v1';
+    this.requestTimeoutMs = this.configService.get<number>(
+      'AI_REQUEST_TIMEOUT_MS',
+      120_000,
+    );
   }
 
   supportsModel(model: string): boolean {
@@ -304,14 +309,31 @@ export class OpenAIProvider implements ILLMProvider {
       );
     }
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.requestTimeoutMs);
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      const timedOut = controller.signal.aborted;
+      throw new LLMProviderError(
+        timedOut ? 'OpenAI request timed out' : 'OpenAI network request failed',
+        LLMErrorCode.NETWORK_ERROR,
+        true,
+        undefined,
+        error instanceof Error ? { cause: error.message } : undefined,
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();

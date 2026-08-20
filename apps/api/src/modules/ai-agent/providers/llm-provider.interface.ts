@@ -1,7 +1,7 @@
 /**
  * Provider-neutral LLM interface.
  *
- * Implementations: OpenAIProvider, AnthropicProvider (future).
+ * Current implementation: OpenAIProvider (including compatible endpoints).
  */
 
 import {

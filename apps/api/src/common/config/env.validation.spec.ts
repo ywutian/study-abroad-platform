@@ -32,6 +32,50 @@ describe('payment environment retirement gate', () => {
   });
 });
 
+describe('AI agent harness environment gate', () => {
+  it('defaults to the legacy workflow and advisory mode', () => {
+    const result = validateEnv({ ...requiredConfig, NODE_ENV: 'test' });
+
+    expect(result.LLM_PROVIDER).toBe('openai');
+    expect(result.AI_AGENT_HARNESS_V1).toBe('false');
+    expect(result.AI_AGENT_HARNESS_MODE).toBe('advisory');
+    expect(result.AI_AGENT_APPROVALS_V1).toBe('false');
+    expect(result.AI_AGENT_APPROVAL_TTL_MS).toBe(900000);
+    expect(result.AI_AGENT_RUN_TTL_MS).toBe(86400000);
+    expect(result.AI_AGENT_EXECUTION_LEASE_MS).toBe(120000);
+  });
+
+  it('accepts action mode when the harness is explicitly enabled', () => {
+    const result = validateEnv({
+      ...requiredConfig,
+      NODE_ENV: 'test',
+      AI_AGENT_HARNESS_V1: 'true',
+      AI_AGENT_HARNESS_MODE: 'action',
+      AI_AGENT_APPROVALS_V1: 'true',
+      AI_AGENT_APPROVAL_TTL_MS: '60000',
+      AI_AGENT_RUN_TTL_MS: '120000',
+      AI_AGENT_EXECUTION_LEASE_MS: '30000',
+    });
+
+    expect(result.AI_AGENT_HARNESS_V1).toBe('true');
+    expect(result.AI_AGENT_HARNESS_MODE).toBe('action');
+    expect(result.AI_AGENT_APPROVALS_V1).toBe('true');
+    expect(result.AI_AGENT_APPROVAL_TTL_MS).toBe(60000);
+    expect(result.AI_AGENT_RUN_TTL_MS).toBe(120000);
+    expect(result.AI_AGENT_EXECUTION_LEASE_MS).toBe(30000);
+  });
+
+  it('rejects providers without a runtime implementation', () => {
+    expect(() =>
+      validateEnv({
+        ...requiredConfig,
+        NODE_ENV: 'test',
+        LLM_PROVIDER: 'anthropic',
+      }),
+    ).toThrow(/LLM_PROVIDER/);
+  });
+});
+
 /**
  * The whole thesis of the http cron driver is "production must not silently
  * have every scheduled job switched off". Without CRON_SECRET the dispatcher

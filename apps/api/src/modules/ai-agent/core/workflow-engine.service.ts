@@ -26,6 +26,7 @@ import {
   Logger,
   Optional,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { LLMService, LLMResponse } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
@@ -37,12 +38,18 @@ import {
   ConversationState,
   ToolDefinition,
   ToolCall,
+  AgentHarnessMode,
 } from '../types';
 import { ToolExecutionResult } from './types';
 import { getLocalizedSystemPrompt } from '../config/agents.config';
-import { TOOL_READONLY } from '../config/tools.config';
+import { getToolMetadata, TOOL_READONLY } from '../config/tools.config';
 import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
+import { ToolPolicyService } from './tool-policy.service';
+import {
+  getApprovalFingerprint,
+  type AgentRunCheckpointV1,
+} from './agent-run.service';
 
 // ==================== 工作流类型定义 ====================
 
@@ -101,6 +108,11 @@ export interface WorkflowResult {
   };
 }
 
+export interface WorkflowRunContext {
+  runId: string;
+  approvalsEnabled: boolean;
+}
+
 /** 工作流流式事件 */
 export interface WorkflowStreamEvent {
   type:
@@ -108,6 +120,9 @@ export interface WorkflowStreamEvent {
     | 'plan_content'
     | 'tool_start'
     | 'tool_end'
+    | 'approval_required'
+    | 'run_paused'
+    | 'run_resumed'
     | 'solve_content'
     | 'done'
     | 'error';
@@ -115,6 +130,10 @@ export interface WorkflowStreamEvent {
   content?: string;
   tool?: string;
   toolResult?: ToolExecutionResult;
+  toolCall?: ToolCall;
+  checkpoint?: AgentRunCheckpointV1;
+  pendingStepIndex?: number;
+  runId?: string;
   result?: WorkflowResult;
   error?: string;
 }
@@ -122,8 +141,28 @@ export interface WorkflowStreamEvent {
 // ==================== 配置 ====================
 
 const TOOL_TIMEOUT_MS = 30000;
+const MAX_SUPPLEMENTAL_PLANNING_ROUNDS = 2;
+const MAX_TOOL_CALLS_PER_RUN = 16;
 
-function getPlanSystemSuffix(locale: string): string {
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [key, canonicalize(nested)]),
+    );
+  }
+  return value;
+}
+
+function getPlanSystemSuffix(locale: string, harnessEnabled = false): string {
+  const observationNote = harnessEnabled
+    ? locale === 'en'
+      ? '\n- Tool results may be followed by a bounded supplemental planning round; never repeat an already successful call with identical arguments'
+      : '\n- 工具结果可能触发有界的补充规划；不要重复已经成功且参数完全相同的调用'
+    : '';
+
   if (locale === 'en') {
     return `
 
@@ -137,7 +176,7 @@ Important rules:
 - Think carefully, then list all tool calls at once
 - Each tool should be called at most once
 - If no tools are needed, reply to the user directly
-- Do not explain which tools you are calling; just call them
+- Do not explain which tools you are calling; just call them${observationNote}
 
 ## Tool Selection Principles
 - The user's profile summary is provided in "Current User Info" above. Do NOT call get_profile unless you need to verify the latest data or the summary is insufficient.
@@ -159,7 +198,7 @@ Important rules:
 - 仔细思考后，一次性列出所有需要的工具调用
 - 每种工具最多调用一次
 - 如果不需要任何工具，直接回复用户即可
-- 不要在回复中解释"我要调用什么工具"，直接调用即可
+- 不要在回复中解释"我要调用什么工具"，直接调用即可${observationNote}
 
 ## 工具选择原则
 - 用户档案已在"当前用户信息"中提供，无需调用 get_profile，除非需要验证最新数据
@@ -221,6 +260,8 @@ export class WorkflowEngineService {
     @Optional() private resilience?: ResilienceService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private metricsService?: MetricsService,
+    @Optional() private toolPolicy?: ToolPolicyService,
+    @Optional() private configService?: ConfigService,
   ) {}
 
   // ==================== 公开 API ====================
@@ -251,6 +292,7 @@ export class WorkflowEngineService {
     config: AgentConfig,
     conversation: ConversationState,
     tools: ToolDefinition[],
+    runContext?: WorkflowRunContext,
   ): Promise<WorkflowResult> {
     let result: WorkflowResult | undefined;
 
@@ -259,6 +301,7 @@ export class WorkflowEngineService {
       config,
       conversation,
       tools,
+      runContext,
     )) {
       if (event.type === 'done') result = event.result;
       if (event.type === 'error')
@@ -308,8 +351,10 @@ export class WorkflowEngineService {
     config: AgentConfig,
     conversation: ConversationState,
     tools: ToolDefinition[],
+    runContext?: WorkflowRunContext,
   ): AsyncGenerator<WorkflowStreamEvent> {
     const totalStart = Date.now();
+    const harnessEnabled = this.isHarnessEnabled();
 
     // Pre-fetch enterprise memory context once for the entire workflow turn.
     // Reused by both Plan and Solve phases to avoid redundant embedding + DB queries.
@@ -324,14 +369,15 @@ export class WorkflowEngineService {
       yield { type: 'phase_change', phase: WorkflowPhase.PLAN };
       const planStart = Date.now();
 
-      const plan = await this.planPhase(
+      let plan = await this.planPhase(
         agentType,
         config,
         conversation,
         tools,
         cachedMemoryContext,
+        harnessEnabled,
       );
-      const planMs = Date.now() - planStart;
+      let planMs = Date.now() - planStart;
       this.warnIfSlow(agentType, 'plan', planMs);
 
       this.logger.log(
@@ -386,12 +432,113 @@ export class WorkflowEngineService {
 
       // ---- Phase 2: EXECUTE ----
       yield { type: 'phase_change', phase: WorkflowPhase.EXECUTE };
-      const executeStart = Date.now();
+      let executeMs = 0;
 
-      for await (const event of this.executePhaseCore(plan, conversation)) {
-        yield event;
+      if (harnessEnabled) {
+        const aggregatePlan: ExecutionPlan = {
+          planningContent: plan.planningContent,
+          steps: [],
+        };
+        const successfulCalls = new Set<string>();
+        const allowedToolNames = new Set(tools.map((tool) => tool.name));
+        const mode = this.getHarnessMode();
+        let currentRound = plan;
+        let supplementalRounds = 0;
+        let scheduledCalls = 0;
+
+        while (
+          currentRound.steps.length > 0 &&
+          scheduledCalls < MAX_TOOL_CALLS_PER_RUN
+        ) {
+          const remainingBudget = MAX_TOOL_CALLS_PER_RUN - scheduledCalls;
+          const roundSteps = currentRound.steps.slice(0, remainingBudget);
+          if (roundSteps.length < currentRound.steps.length) {
+            this.logger.warn(
+              `[${agentType}] Tool budget reached; dropped ${currentRound.steps.length - roundSteps.length} planned calls`,
+            );
+          }
+
+          const executionRound: ExecutionPlan = {
+            planningContent: currentRound.planningContent,
+            steps: roundSteps,
+          };
+          aggregatePlan.steps.push(...roundSteps);
+          const roundStartIndex =
+            aggregatePlan.steps.length - roundSteps.length;
+          scheduledCalls += roundSteps.length;
+
+          const roundStart = Date.now();
+          let pauseEvent: WorkflowStreamEvent | undefined;
+          for await (const event of this.executeHarnessPhaseCore(
+            executionRound,
+            conversation,
+            agentType,
+            mode,
+            successfulCalls,
+            allowedToolNames,
+            !!runContext?.approvalsEnabled,
+          )) {
+            if (event.type === 'approval_required' && event.toolCall) {
+              const pendingStepIndex =
+                roundStartIndex + (event.pendingStepIndex ?? 0);
+              const checkpoint = this.buildRunCheckpoint({
+                agentType,
+                locale,
+                plan: aggregatePlan,
+                pendingStepIndex,
+                successfulCalls,
+                scheduledCalls,
+                supplementalRounds,
+                planMs,
+                executeMs: executeMs + (Date.now() - roundStart),
+                startedAt: new Date(totalStart),
+              });
+              pauseEvent = { ...event, checkpoint, runId: runContext?.runId };
+              yield pauseEvent;
+              break;
+            }
+            yield event;
+          }
+          executeMs += Date.now() - roundStart;
+
+          if (pauseEvent) {
+            yield {
+              type: 'run_paused',
+              toolCall: pauseEvent.toolCall,
+              checkpoint: pauseEvent.checkpoint,
+              runId: runContext?.runId,
+            };
+            return;
+          }
+
+          if (
+            scheduledCalls >= MAX_TOOL_CALLS_PER_RUN ||
+            supplementalRounds >= MAX_SUPPLEMENTAL_PLANNING_ROUNDS
+          ) {
+            break;
+          }
+
+          supplementalRounds += 1;
+          const supplementalStart = Date.now();
+          currentRound = await this.supplementalPlanPhase(
+            agentType,
+            config,
+            conversation,
+            tools,
+            cachedMemoryContext,
+            supplementalRounds,
+          );
+          planMs += Date.now() - supplementalStart;
+        }
+
+        plan = aggregatePlan;
+      } else {
+        const executeStart = Date.now();
+        for await (const event of this.executePhaseCore(plan, conversation)) {
+          yield event;
+        }
+        executeMs = Date.now() - executeStart;
       }
-      const executeMs = Date.now() - executeStart;
       this.warnIfSlow(agentType, 'execute', executeMs);
 
       this.logger.log(`[${agentType}] EXECUTE completed (${executeMs}ms)`);
@@ -488,6 +635,170 @@ export class WorkflowEngineService {
     }
   }
 
+  /** Resume a persisted plan from the exact tool call approved by the user. */
+  async *resumeStream(
+    config: AgentConfig,
+    conversation: ConversationState,
+    tools: ToolDefinition[],
+    checkpoint: AgentRunCheckpointV1,
+    approvedFingerprint: string,
+    runContext: WorkflowRunContext,
+  ): AsyncGenerator<WorkflowStreamEvent> {
+    const agentType = checkpoint.agentType;
+    const locale = checkpoint.locale || 'zh';
+    const plan: ExecutionPlan = {
+      planningContent: checkpoint.planningContent,
+      steps: checkpoint.steps.map((step) => ({
+        toolCall: step.toolCall,
+        status: step.status,
+        error: step.error,
+      })),
+    };
+    const successfulCalls = new Set(checkpoint.successfulFingerprints);
+    const allowedToolNames = new Set(tools.map((tool) => tool.name));
+    const mode = this.getHarnessMode();
+    const totalStart = new Date(checkpoint.startedAt).getTime() || Date.now();
+    let executeMs = checkpoint.executeMs;
+
+    yield { type: 'run_resumed', runId: runContext.runId };
+
+    for (
+      let index = checkpoint.pendingStepIndex;
+      index < plan.steps.length;
+      index++
+    ) {
+      const step = plan.steps[index];
+      const fingerprint = this.getToolCallFingerprint(step.toolCall);
+      const approvalFingerprint = getApprovalFingerprint(step.toolCall);
+      if (successfulCalls.has(fingerprint)) {
+        step.status = 'success';
+        step.duration = 0;
+        step.result = {
+          success: true,
+          result: { skipped: true, reason: 'DUPLICATE_SUCCESSFUL_CALL' },
+          duration: 0,
+          cached: true,
+        };
+        this.appendToolResultToMemory(step, conversation);
+        yield {
+          type: 'tool_end',
+          tool: step.toolCall.name,
+          toolResult: step.result,
+          toolCall: step.toolCall,
+        };
+        continue;
+      }
+      const decision = this.toolPolicy?.evaluate({
+        toolName: step.toolCall.name,
+        mode,
+        agentType,
+        userContext: conversation.context,
+        allowedToolNames,
+      }) ?? {
+        action: 'deny' as const,
+        reasonCode: 'POLICY_SERVICE_UNAVAILABLE' as const,
+      };
+      const isApprovedStep =
+        index === checkpoint.pendingStepIndex &&
+        approvalFingerprint === approvedFingerprint;
+
+      if (decision.action === 'deny') {
+        yield { type: 'error', error: decision.reasonCode };
+        return;
+      }
+
+      if (decision.action === 'confirmation_required' && !isApprovedStep) {
+        const nextCheckpoint = this.buildRunCheckpoint({
+          agentType,
+          locale,
+          plan,
+          pendingStepIndex: index,
+          successfulCalls,
+          scheduledCalls: checkpoint.scheduledCalls,
+          supplementalRounds: checkpoint.supplementalRounds,
+          planMs: checkpoint.planMs,
+          executeMs,
+          startedAt: new Date(totalStart),
+        });
+        yield {
+          type: 'approval_required',
+          tool: step.toolCall.name,
+          toolCall: step.toolCall,
+          checkpoint: nextCheckpoint,
+          runId: runContext.runId,
+        };
+        yield {
+          type: 'run_paused',
+          toolCall: step.toolCall,
+          checkpoint: nextCheckpoint,
+          runId: runContext.runId,
+        };
+        return;
+      }
+
+      if (isApprovedStep && decision.action !== 'confirmation_required') {
+        yield { type: 'error', error: 'APPROVAL_POLICY_CHANGED' };
+        return;
+      }
+
+      yield { type: 'tool_start', tool: step.toolCall.name };
+      const stepStart = Date.now();
+      await this.executeStepNoMemory(
+        step,
+        conversation,
+        getToolMetadata(step.toolCall.name)?.timeoutMs,
+      );
+      executeMs += Date.now() - stepStart;
+      if (step.status === 'success') successfulCalls.add(fingerprint);
+      this.appendToolResultToMemory(step, conversation);
+      yield {
+        type: 'tool_end',
+        tool: step.toolCall.name,
+        toolResult: step.result,
+        toolCall: step.toolCall,
+      };
+
+      if (isApprovedStep && step.status !== 'success') {
+        yield {
+          type: 'error',
+          error: step.error || 'APPROVED_TOOL_EXECUTION_FAILED',
+        };
+        return;
+      }
+    }
+
+    yield { type: 'phase_change', phase: WorkflowPhase.SOLVE };
+    const memoryContext = await this.getEnterpriseMemoryContext(
+      conversation,
+      locale,
+    );
+    const solveStart = Date.now();
+    let finalMessage = '';
+    for await (const chunk of this.solvePhaseCore(
+      agentType,
+      config,
+      conversation,
+      memoryContext,
+    )) {
+      finalMessage += chunk;
+      yield { type: 'solve_content', content: chunk };
+    }
+    const solveMs = Date.now() - solveStart;
+    yield {
+      type: 'done',
+      result: this.buildWorkflowResult({
+        message: finalMessage,
+        plan,
+        timing: {
+          planMs: checkpoint.planMs,
+          executeMs,
+          solveMs,
+          totalMs: Date.now() - totalStart,
+        },
+      }),
+    };
+  }
+
   // ==================== Phase 1: PLAN ====================
 
   /**
@@ -521,11 +832,13 @@ export class WorkflowEngineService {
     conversation: ConversationState,
     tools: ToolDefinition[],
     memoryContext: string = '',
+    harnessEnabled = false,
   ): Promise<ExecutionPlan> {
     const systemPrompt = this.buildPlanPrompt(
       config,
       conversation,
       memoryContext,
+      harnessEnabled,
     );
     const messages = this.memory.getRecentMessages(conversation);
 
@@ -539,7 +852,44 @@ export class WorkflowEngineService {
       agentType,
     });
 
-    return this.parsePlanResponse(response, agentType);
+    return this.parsePlanResponse(response, agentType, harnessEnabled);
+  }
+
+  private async supplementalPlanPhase(
+    agentType: AgentType,
+    config: AgentConfig,
+    conversation: ConversationState,
+    tools: ToolDefinition[],
+    memoryContext: string,
+    round: number,
+  ): Promise<ExecutionPlan> {
+    const locale = (conversation.metadata?.locale as string) || 'zh';
+    const instruction =
+      locale === 'en'
+        ? `\n\n## Supplemental Planning Round ${round}\nReview the tool results already in the conversation. Call only additional tools that are necessary. Do not repeat a successful call with identical arguments. If the available results are sufficient, return no tool calls.`
+        : `\n\n## 补充规划第 ${round} 轮\n检查对话中已有的工具结果，只调用仍然必要的补充工具。不要重复参数相同且已经成功的调用。如果现有结果已经足够，不要再调用工具。`;
+    const systemPrompt =
+      this.buildPlanPrompt(config, conversation, memoryContext, true) +
+      instruction;
+    const messages = this.memory.getRecentMessages(conversation);
+    const response = await this.llm.call(systemPrompt, messages, {
+      model: config.model,
+      temperature: config.temperature,
+      maxTokens: config.maxTokens,
+      tools: tools.filter((tool) => tool.name !== 'delegate_to_agent'),
+      userId: conversation.userId,
+      conversationId: conversation.id,
+      agentType,
+    });
+
+    const plan = this.parsePlanResponse(response, agentType, true);
+    if (plan.delegation) {
+      this.logger.warn(
+        `[${agentType}] Ignoring delegation requested during supplemental planning`,
+      );
+      return { planningContent: response.content || '', steps: [] };
+    }
+    return plan;
   }
 
   /**
@@ -561,6 +911,7 @@ export class WorkflowEngineService {
   private parsePlanResponse(
     response: LLMResponse,
     agentType: AgentType,
+    dedupeByFingerprint = false,
   ): ExecutionPlan {
     // 没有工具调用 → 直接回复
     if (!response.toolCalls?.length) {
@@ -591,16 +942,20 @@ export class WorkflowEngineService {
       };
     }
 
-    // 按工具名去重（Plan 阶段 LLM 可能返回重复的工具名）
+    // Legacy ReWOO deduplicates by tool name. Harness mode permits the same
+    // tool with different arguments and only removes identical calls.
     const seen = new Set<string>();
     const uniqueToolCalls = response.toolCalls.filter((tc) => {
-      if (seen.has(tc.name)) {
+      const dedupeKey = dedupeByFingerprint
+        ? this.getToolCallFingerprint(tc)
+        : tc.name;
+      if (seen.has(dedupeKey)) {
         this.logger.warn(
           `[${agentType}] Plan dedup: skipping duplicate ${tc.name}`,
         );
         return false;
       }
-      seen.add(tc.name);
+      seen.add(dedupeKey);
       return true;
     });
 
@@ -682,6 +1037,105 @@ export class WorkflowEngineService {
     for (const step of mutableSteps) {
       yield { type: 'tool_start', tool: step.toolCall.name };
       await this.executeStep(step, conversation);
+      yield {
+        type: 'tool_end',
+        tool: step.toolCall.name,
+        toolResult: step.result,
+      };
+    }
+  }
+
+  private async *executeHarnessPhaseCore(
+    plan: ExecutionPlan,
+    conversation: ConversationState,
+    agentType: AgentType,
+    mode: AgentHarnessMode,
+    successfulCalls: Set<string>,
+    allowedToolNames: ReadonlySet<string>,
+    approvalsEnabled: boolean,
+  ): AsyncGenerator<WorkflowStreamEvent> {
+    this.memory.addMessage(conversation, {
+      role: 'assistant',
+      content: plan.planningContent || '',
+      toolCalls: plan.steps.map((step) => step.toolCall),
+    });
+
+    for (const [stepIndex, step] of plan.steps.entries()) {
+      const fingerprint = this.getToolCallFingerprint(step.toolCall);
+
+      if (successfulCalls.has(fingerprint)) {
+        step.status = 'success';
+        step.duration = 0;
+        step.result = {
+          success: true,
+          result: { skipped: true, reason: 'DUPLICATE_SUCCESSFUL_CALL' },
+          duration: 0,
+          cached: true,
+        };
+        this.appendToolResultToMemory(step, conversation);
+        yield {
+          type: 'tool_end',
+          tool: step.toolCall.name,
+          toolResult: step.result,
+        };
+        continue;
+      }
+
+      const decision = this.toolPolicy?.evaluate({
+        toolName: step.toolCall.name,
+        mode,
+        agentType,
+        userContext: conversation.context,
+        allowedToolNames,
+      }) ?? {
+        action: 'deny' as const,
+        reasonCode: 'POLICY_SERVICE_UNAVAILABLE' as const,
+      };
+
+      if (decision.action !== 'allow') {
+        if (decision.action === 'confirmation_required' && approvalsEnabled) {
+          yield {
+            type: 'approval_required',
+            tool: step.toolCall.name,
+            toolCall: step.toolCall,
+            pendingStepIndex: stepIndex,
+          };
+          return;
+        }
+
+        yield { type: 'tool_start', tool: step.toolCall.name };
+        step.status = 'failed';
+        step.duration = 0;
+        step.error = decision.reasonCode;
+        step.result = {
+          success: false,
+          error:
+            decision.action === 'confirmation_required'
+              ? 'Tool execution requires confirmation'
+              : 'Tool execution denied by policy',
+          errorCode: decision.reasonCode,
+          duration: 0,
+          policy: decision,
+        };
+        this.appendToolResultToMemory(step, conversation);
+        yield {
+          type: 'tool_end',
+          tool: step.toolCall.name,
+          toolResult: step.result,
+        };
+        continue;
+      }
+
+      yield { type: 'tool_start', tool: step.toolCall.name };
+      await this.executeStepNoMemory(
+        step,
+        conversation,
+        getToolMetadata(step.toolCall.name)?.timeoutMs,
+      );
+      if (step.status === 'success' && !step.result?.cached) {
+        successfulCalls.add(this.getToolCallFingerprint(step.toolCall));
+      }
+      this.appendToolResultToMemory(step, conversation);
       yield {
         type: 'tool_end',
         tool: step.toolCall.name,
@@ -778,6 +1232,7 @@ export class WorkflowEngineService {
   private async executeStepNoMemory(
     step: PlannedStep,
     conversation: ConversationState,
+    timeoutMs: number = TOOL_TIMEOUT_MS,
   ): Promise<void> {
     step.status = 'running';
     const stepStart = Date.now();
@@ -796,7 +1251,7 @@ export class WorkflowEngineService {
       const result = this.resilience
         ? await this.resilience.withTimeout(
             executeWithTimeout,
-            TOOL_TIMEOUT_MS,
+            timeoutMs,
             `tool:${step.toolCall.name}`,
           )
         : await executeWithTimeout();
@@ -836,7 +1291,11 @@ export class WorkflowEngineService {
       step.status === 'success'
         ? JSON.stringify(step.result?.result)
         : JSON.stringify({
-            error: step.error || 'Tool execution failed',
+            error: step.result?.error || step.error || 'Tool execution failed',
+            ...(step.result?.errorCode && {
+              errorCode: step.result.errorCode,
+            }),
+            ...(step.result?.policy && { policy: step.result.policy }),
           });
 
     this.memory.addMessage(conversation, {
@@ -1237,6 +1696,55 @@ ${solveOutput.slice(0, 2000)}
     };
   }
 
+  private buildRunCheckpoint(input: {
+    agentType: AgentType;
+    locale: string;
+    plan: ExecutionPlan;
+    pendingStepIndex: number;
+    successfulCalls: Set<string>;
+    scheduledCalls: number;
+    supplementalRounds: number;
+    planMs: number;
+    executeMs: number;
+    startedAt: Date;
+  }): AgentRunCheckpointV1 {
+    return {
+      version: 1,
+      agentType: input.agentType,
+      locale: input.locale,
+      planningContent: input.plan.planningContent,
+      steps: input.plan.steps.map((step) => ({
+        toolCall: step.toolCall,
+        status: step.status === 'running' ? 'pending' : step.status,
+        ...(step.error ? { error: step.error } : {}),
+      })),
+      pendingStepIndex: input.pendingStepIndex,
+      successfulFingerprints: [...input.successfulCalls],
+      scheduledCalls: input.scheduledCalls,
+      supplementalRounds: input.supplementalRounds,
+      planMs: input.planMs,
+      executeMs: input.executeMs,
+      startedAt: input.startedAt.toISOString(),
+    };
+  }
+
+  private isHarnessEnabled(): boolean {
+    return this.configService?.get<string>('AI_AGENT_HARNESS_V1') === 'true';
+  }
+
+  private getHarnessMode(): AgentHarnessMode {
+    return this.configService?.get<AgentHarnessMode>(
+      'AI_AGENT_HARNESS_MODE',
+      'advisory',
+    ) === 'action'
+      ? 'action'
+      : 'advisory';
+  }
+
+  private getToolCallFingerprint(toolCall: ToolCall): string {
+    return `${toolCall.name}:${JSON.stringify(canonicalize(toolCall.arguments))}`;
+  }
+
   /**
    * Log a warning if a workflow phase exceeds its expected duration threshold.
    *
@@ -1290,6 +1798,7 @@ ${solveOutput.slice(0, 2000)}
     config: AgentConfig,
     conversation: ConversationState,
     memoryContext: string = '',
+    harnessEnabled = false,
   ): string {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const localizedPrompt = getLocalizedSystemPrompt(config, locale);
@@ -1306,7 +1815,7 @@ ${dateLabel} ${this.getCurrentDateString(locale)}
 
 ${userInfoLabel}
 ${baseContext}
-${uiContext}${memoryContext}${getPlanSystemSuffix(locale)}`;
+${uiContext}${memoryContext}${getPlanSystemSuffix(locale, harnessEnabled)}`;
   }
 
   /**

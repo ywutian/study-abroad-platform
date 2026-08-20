@@ -455,6 +455,14 @@
       "loginPrompt": "登录后即可与 AI 顾问对话",
       "toolCalling": "正在调用工具...",
       "quickQuestions": "快捷问题",
+      "approval": {
+        "title": "确认此操作",
+        "description": "Agent 已在执行 {{tool}} 前暂停，请核对参数后继续。",
+        "expiresAt": "审批将在 {{time}} 过期",
+        "approve": "批准",
+        "reject": "拒绝",
+        "cancel": "取消运行"
+      },
       "suggestions": {
         "analyzeProfile": "分析我的背景",
         "recommendSchools": "帮我选校",

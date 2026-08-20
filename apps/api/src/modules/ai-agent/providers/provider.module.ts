@@ -27,12 +27,10 @@ export class LLMProvidersModule {
           provide: LLM_PROVIDER_TOKEN,
           useFactory: (config: ConfigService, openai: OpenAIProvider) => {
             const provider = config.get<string>('LLM_PROVIDER', 'openai');
-            switch (provider) {
-              case 'openai':
-              default:
-                return openai;
-              // Future: case 'anthropic': return anthropic;
+            if (provider !== 'openai') {
+              throw new Error(`Unsupported LLM provider: ${provider}`);
             }
+            return openai;
           },
           inject: [ConfigService, OpenAIProvider],
         },

@@ -11,6 +11,7 @@ export type {
   ActionButton,
   AgentResponse,
   AgentChatContext,
+  AgentApprovalRequest,
 } from '@study-abroad/shared';
 import { AgentType } from '@study-abroad/shared';
 import type { ActionButton, AgentChatContext } from '@study-abroad/shared';
