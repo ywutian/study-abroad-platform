@@ -691,6 +691,8 @@ model User {
   schoolRecommendations  SchoolRecommendation[]
   schoolCommunityRatings SchoolCommunityRating[]
   predictionFeedback     PredictionFeedback[]
+  agentRuns              AgentRun[]
+  agentApprovals         AgentApproval[]
 
   // Case views (案例查看记录)
   caseViews CaseView[]
@@ -3502,6 +3504,7 @@ enum AgentApprovalStatus {
 model AgentRun {
   id                String            @id @default(cuid())
   userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversationId    String
   conversation      AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   agentType         String
@@ -3531,6 +3534,7 @@ model AgentApproval {
   runId              String
   run                AgentRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
   userId             String
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   toolName           String
   arguments          Json
   fingerprint        String
