@@ -52,10 +52,19 @@ import { randomUUID } from 'crypto';
 import {
   AgentRunService,
   getApprovalFingerprint,
-  type AgentRunCheckpointV1,
+  isAgentRunCheckpointV1,
 } from './agent-run.service';
 
 export type { StreamEvent };
+
+function isAgentResponse(value: unknown): value is AgentResponse {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as { message?: unknown; agentType?: unknown };
+  return (
+    typeof candidate.message === 'string' &&
+    typeof candidate.agentType === 'string'
+  );
+}
 
 // 辅助函数：创建完整 Message 对象
 function createMsg(partial: Omit<Message, 'id' | 'timestamp'>): Message {
@@ -1221,12 +1230,15 @@ export class OrchestratorService {
 
     const claim = await this.agentRuns.claimApproved(userId, runId);
     if (!claim.claimed) {
-      if (claim.run.status === 'COMPLETED' && claim.run.result) {
+      if (
+        claim.run.status === 'COMPLETED' &&
+        isAgentResponse(claim.run.result)
+      ) {
         yield {
           type: 'done',
           runId,
           runStatus: 'COMPLETED',
-          response: claim.run.result as unknown as AgentResponse,
+          response: claim.run.result,
         };
         return;
       }
@@ -1261,11 +1273,20 @@ export class OrchestratorService {
       return;
     }
 
-    const checkpoint = claim.run.checkpoint as unknown as AgentRunCheckpointV1;
+    if (!isAgentRunCheckpointV1(claim.run.checkpoint)) {
+      await this.agentRuns.failRun(
+        userId,
+        runId,
+        'CHECKPOINT_MISMATCH',
+        'Persisted Agent checkpoint is invalid',
+      );
+      yield { type: 'error', runId, error: 'Approval checkpoint mismatch' };
+      return;
+    }
+    const checkpoint = claim.run.checkpoint;
     const pendingTool =
       checkpoint?.steps?.[checkpoint.pendingStepIndex]?.toolCall;
     if (
-      checkpoint?.version !== 1 ||
       !pendingTool ||
       getApprovalFingerprint(pendingTool) !== claim.approval.fingerprint
     ) {
@@ -1432,11 +1453,7 @@ export class OrchestratorService {
               response.agentType,
             );
           }
-          await this.agentRuns.completeRun(
-            userId,
-            runId,
-            response as unknown as Record<string, unknown>,
-          );
+          await this.agentRuns.completeRun(userId, runId, response);
           return;
         }
         case 'error':
@@ -1556,7 +1573,7 @@ export class OrchestratorService {
         await this.agentRuns?.completeRun(
           conversation.userId,
           runId,
-          finalResponse as unknown as Record<string, unknown> | undefined,
+          finalResponse,
         );
       } else if (streamError) {
         await this.agentRuns?.failRun(

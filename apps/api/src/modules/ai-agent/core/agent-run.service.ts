@@ -9,7 +9,7 @@ import { createHash } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../../prisma/prisma.service';
-import type { AgentType, ToolCall } from '../types';
+import type { AgentResponse, AgentType, ToolCall } from '../types';
 
 export interface AgentRunCheckpointV1 {
   version: 1;
@@ -50,6 +50,47 @@ function canonicalize(value: unknown): unknown {
     );
   }
   return value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+export function isAgentRunCheckpointV1(
+  value: unknown,
+): value is AgentRunCheckpointV1 {
+  if (!isRecord(value) || value.version !== 1) return false;
+  if (
+    typeof value.agentType !== 'string' ||
+    typeof value.locale !== 'string' ||
+    typeof value.planningContent !== 'string' ||
+    !Array.isArray(value.steps) ||
+    !Array.isArray(value.successfulFingerprints) ||
+    !Number.isInteger(value.pendingStepIndex) ||
+    !Number.isInteger(value.scheduledCalls) ||
+    !Number.isInteger(value.supplementalRounds) ||
+    typeof value.planMs !== 'number' ||
+    typeof value.executeMs !== 'number' ||
+    typeof value.startedAt !== 'string'
+  ) {
+    return false;
+  }
+  if (!value.successfulFingerprints.every((item) => typeof item === 'string')) {
+    return false;
+  }
+  return value.steps.every((step) => {
+    if (!isRecord(step) || !isRecord(step.toolCall)) return false;
+    return (
+      typeof step.toolCall.id === 'string' &&
+      typeof step.toolCall.name === 'string' &&
+      isRecord(step.toolCall.arguments) &&
+      ['pending', 'success', 'failed'].includes(String(step.status))
+    );
+  });
 }
 
 export function normalizeToolArguments(
@@ -158,7 +199,7 @@ export class AgentRunService {
           },
           data: {
             status: AgentRunStatus.WAITING_APPROVAL,
-            checkpoint: input.checkpoint as unknown as Prisma.InputJsonValue,
+            checkpoint: toInputJson(input.checkpoint),
             currentApprovalId: created.id,
             expiresAt,
             version: { increment: 1 },
@@ -516,17 +557,13 @@ export class AgentRunService {
     });
   }
 
-  async completeRun(
-    userId: string,
-    runId: string,
-    result?: Record<string, unknown>,
-  ) {
+  async completeRun(userId: string, runId: string, result?: AgentResponse) {
     await this.prisma.agentRun.updateMany({
       where: { id: runId, userId, status: AgentRunStatus.RUNNING },
       data: {
         status: AgentRunStatus.COMPLETED,
         checkpoint: Prisma.JsonNull,
-        ...(result ? { result: result as Prisma.InputJsonValue } : {}),
+        ...(result ? { result: toInputJson(result) } : {}),
         currentApprovalId: null,
         completedAt: new Date(),
         version: { increment: 1 },
