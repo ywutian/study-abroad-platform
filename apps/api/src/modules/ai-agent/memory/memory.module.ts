@@ -27,6 +27,7 @@ import { MemoryConflictService } from './memory-conflict.service';
 import { MemoryCompactionService } from './memory-compaction.service';
 import { SanitizerService } from './sanitizer.service';
 import { ConversationContextService } from './conversation-context.service';
+import { AgentHarnessOperationsService } from '../core/agent-harness-operations.service';
 
 @Module({
   imports: [ConfigModule, PrismaModule, RedisModule],
@@ -49,12 +50,14 @@ import { ConversationContextService } from './conversation-context.service';
 
     // Security - Sensitive Data Sanitization
     SanitizerService,
+    AgentHarnessOperationsService,
     ConversationContextService,
   ],
   exports: [
     MemoryManagerService,
     UserDataService,
     SanitizerService,
+    AgentHarnessOperationsService,
     RedisCacheService,
     EmbeddingService,
     MemoryDecayService,
