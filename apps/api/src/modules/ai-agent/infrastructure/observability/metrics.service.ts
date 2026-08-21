@@ -75,6 +75,11 @@ export interface AgentMetrics {
     passed: number;
     failed: number;
   };
+
+  harness: {
+    events: Record<string, number>;
+    cleanup: Record<'runs' | 'traces', number>;
+  };
 }
 
 @Injectable()
@@ -162,6 +167,15 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  recordHarnessEvent(event: string) {
+    this.metrics.harness.events[event] =
+      (this.metrics.harness.events[event] || 0) + 1;
+  }
+
+  recordHarnessCleanup(resource: 'runs' | 'traces', count: number) {
+    this.metrics.harness.cleanup[resource] += count;
+  }
+
   // ==================== 系统指标 ====================
 
   setActiveRequests(count: number) {
@@ -235,6 +249,26 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
       lines.push(`${prefix}errors_total{type="${type}"} ${count}`);
     }
 
+    lines.push(
+      `# HELP ${prefix}harness_events_total Agent Harness lifecycle events`,
+    );
+    lines.push(`# TYPE ${prefix}harness_events_total counter`);
+    for (const [event, count] of Object.entries(this.metrics.harness.events)) {
+      lines.push(`${prefix}harness_events_total{event="${event}"} ${count}`);
+    }
+
+    lines.push(
+      `# HELP ${prefix}harness_cleanup_total Agent Harness retained records removed`,
+    );
+    lines.push(`# TYPE ${prefix}harness_cleanup_total counter`);
+    for (const [resource, count] of Object.entries(
+      this.metrics.harness.cleanup,
+    )) {
+      lines.push(
+        `${prefix}harness_cleanup_total{resource="${resource}"} ${count}`,
+      );
+    }
+
     // 系统指标
     lines.push(`# HELP ${prefix}active_requests Current active requests`);
     lines.push(`# TYPE ${prefix}active_requests gauge`);
@@ -270,6 +304,7 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
       },
       routing: { fast: 0, embedding: 0, llm: 0 },
       critiques: { total: 0, passed: 0, failed: 0 },
+      harness: { events: {}, cleanup: { runs: 0, traces: 0 } },
     };
   }
 

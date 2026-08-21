@@ -128,6 +128,18 @@ const envSchema = z.object({
   AI_AGENT_APPROVALS_V1: z.enum(['true', 'false']).default('false'),
   AI_AGENT_APPROVAL_TTL_MS: z.coerce.number().int().min(60000).default(900000),
   AI_AGENT_RUN_TTL_MS: z.coerce.number().int().min(60000).default(86400000),
+  AI_AGENT_RUN_RETENTION_DAYS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(3650)
+    .default(90),
+  AI_AGENT_TRACE_RETENTION_DAYS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(3650)
+    .default(30),
   AI_AGENT_EXECUTION_LEASE_MS: z.coerce
     .number()
     .int()

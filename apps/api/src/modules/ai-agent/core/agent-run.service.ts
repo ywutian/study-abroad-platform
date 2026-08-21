@@ -12,6 +12,8 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { AgentResponse, AgentType, ToolCall } from '../types';
 import { SanitizerService } from '../memory/sanitizer.service';
 import { AgentEvaluationTraceService } from './agent-evaluation-trace.service';
+import { MetricsService } from '../infrastructure/observability/metrics.service';
+import { AgentRunRetentionService } from './agent-run-retention.service';
 import {
   AgentRunBudgetV1,
   AgentRunCheckpoint,
@@ -28,16 +30,21 @@ export * from './agent-run-state';
 @Injectable()
 export class AgentRunService {
   private readonly evaluationTrace: AgentEvaluationTraceService;
+  private readonly retention: AgentRunRetentionService;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     @Optional() sanitizer?: SanitizerService,
     @Optional() evaluationTrace?: AgentEvaluationTraceService,
+    @Optional() private readonly metrics?: MetricsService,
+    @Optional() retention?: AgentRunRetentionService,
   ) {
     this.evaluationTrace =
       evaluationTrace ??
       new AgentEvaluationTraceService(prisma, config, sanitizer);
+    this.retention =
+      retention ?? new AgentRunRetentionService(prisma, config, metrics);
   }
 
   isEnabled(): boolean {
@@ -76,18 +83,12 @@ export class AgentRunService {
   @Cron('*/1 * * * *')
   async expireStaleApprovals(): Promise<void> {
     if (!this.isEnabled()) return;
+    await this.retention.expireStaleRuns();
+  }
 
-    const candidates = await this.prisma.agentRun.findMany({
-      where: {
-        status: AgentRunStatus.WAITING_APPROVAL,
-        expiresAt: { lte: new Date() },
-      },
-      select: { id: true, userId: true },
-      take: 100,
-    });
-    for (const candidate of candidates) {
-      await this.expireIfNeeded(candidate.userId, candidate.id);
-    }
+  @Cron('17 3 * * *')
+  async cleanupRetainedData(): Promise<void> {
+    await this.retention.cleanupRetainedData();
   }
 
   async requestApproval(input: {
@@ -174,7 +175,7 @@ export class AgentRunService {
   }
 
   async getRun(userId: string, runId: string) {
-    await this.expireIfNeeded(userId, runId);
+    await this.retention.expireIfNeeded(userId, runId);
     const run = await this.prisma.agentRun.findFirst({
       where: { id: runId, userId },
       include: {
@@ -205,7 +206,7 @@ export class AgentRunService {
   }
 
   async approve(userId: string, runId: string, approvalId: string) {
-    await this.expireIfNeeded(userId, runId);
+    await this.retention.expireIfNeeded(userId, runId);
     const approval = await this.prisma.$transaction(async (tx) => {
       const run = await tx.agentRun.findFirst({
         where: {
@@ -379,7 +380,7 @@ export class AgentRunService {
   }
 
   async claimApproved(userId: string, runId: string) {
-    await this.expireIfNeeded(userId, runId);
+    await this.retention.expireIfNeeded(userId, runId);
     return this.prisma.$transaction(async (tx) => {
       const run = await tx.agentRun.findFirst({
         where: { id: runId, userId },
@@ -572,45 +573,12 @@ export class AgentRunService {
     await this.evaluationTrace.persist(userId, runId, 'FAILED', undefined, {
       errorCode,
     });
-  }
-
-  private async expireIfNeeded(userId: string, runId: string) {
-    const now = new Date();
-    await this.prisma.$transaction(async (tx) => {
-      const run = await tx.agentRun.findFirst({
-        where: {
-          id: runId,
-          userId,
-          status: AgentRunStatus.WAITING_APPROVAL,
-          expiresAt: { lte: now },
-        },
-      });
-      if (!run) return;
-      await tx.agentApproval.updateMany({
-        where: {
-          runId,
-          status: {
-            in: [AgentApprovalStatus.PENDING, AgentApprovalStatus.APPROVED],
-          },
-        },
-        data: { status: AgentApprovalStatus.EXPIRED, decidedAt: now },
-      });
-      await tx.agentRun.updateMany({
-        where: {
-          id: runId,
-          userId,
-          status: AgentRunStatus.WAITING_APPROVAL,
-          expiresAt: { lte: now },
-        },
-        data: {
-          status: AgentRunStatus.EXPIRED,
-          errorCode: 'APPROVAL_EXPIRED',
-          errorMessage: 'Approval expired before execution',
-          completedAt: now,
-          version: { increment: 1 },
-        },
-      });
-    });
+    const budgetEvent = message.includes('AGENT_TOKEN_BUDGET_EXCEEDED')
+      ? 'token_budget_exceeded'
+      : message.includes('AGENT_DURATION_BUDGET_EXCEEDED')
+        ? 'duration_budget_exceeded'
+        : undefined;
+    if (budgetEvent) this.metrics?.recordHarnessEvent(budgetEvent);
   }
 
   private toApprovalRequest(approval: {

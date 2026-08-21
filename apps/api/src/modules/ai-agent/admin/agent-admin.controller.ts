@@ -257,17 +257,23 @@ export class AgentAdminController {
    */
   @Put('config/llm')
   @ApiOperation({ summary: 'Update LLM configuration' })
-  updateLlmConfig(@Body() dto: UpdateLlmConfigDto) {
+  updateLlmConfig(
+    @CurrentUser() admin: { id: string },
+    @Body() dto: UpdateLlmConfigDto,
+  ) {
     const current = this.configService.getSystemConfig();
 
-    return this.configService.updateSystemConfig({
-      llm: {
-        defaultModel: dto.defaultModel ?? current.llm.defaultModel,
-        fallbackModel: dto.fallbackModel ?? current.llm.fallbackModel,
-        maxRetries: dto.maxRetries ?? current.llm.maxRetries,
-        timeoutMs: dto.timeoutMs ?? current.llm.timeoutMs,
+    return this.configService.updateSystemConfigWithPersistence(
+      {
+        llm: {
+          defaultModel: dto.defaultModel ?? current.llm.defaultModel,
+          fallbackModel: dto.fallbackModel ?? current.llm.fallbackModel,
+          maxRetries: dto.maxRetries ?? current.llm.maxRetries,
+          timeoutMs: dto.timeoutMs ?? current.llm.timeoutMs,
+        },
       },
-    });
+      { createdBy: admin.id, comment: 'Admin updated LLM configuration' },
+    );
   }
 
   /**
@@ -275,21 +281,27 @@ export class AgentAdminController {
    */
   @Put('config/quota')
   @ApiOperation({ summary: 'Update token quota configuration' })
-  updateQuotaConfig(@Body() dto: UpdateQuotaDto) {
+  updateQuotaConfig(
+    @CurrentUser() admin: { id: string },
+    @Body() dto: UpdateQuotaDto,
+  ) {
     const current = this.configService.getSystemConfig();
 
-    return this.configService.updateSystemConfig({
-      quota: {
-        daily: {
-          tokens: dto.dailyTokens ?? current.quota.daily.tokens,
-          cost: dto.dailyCost ?? current.quota.daily.cost,
-        },
-        monthly: {
-          tokens: dto.monthlyTokens ?? current.quota.monthly.tokens,
-          cost: dto.monthlyCost ?? current.quota.monthly.cost,
+    return this.configService.updateSystemConfigWithPersistence(
+      {
+        quota: {
+          daily: {
+            tokens: dto.dailyTokens ?? current.quota.daily.tokens,
+            cost: dto.dailyCost ?? current.quota.daily.cost,
+          },
+          monthly: {
+            tokens: dto.monthlyTokens ?? current.quota.monthly.tokens,
+            cost: dto.monthlyCost ?? current.quota.monthly.cost,
+          },
         },
       },
-    });
+      { createdBy: admin.id, comment: 'Admin updated token quotas' },
+    );
   }
 
   /**
@@ -298,21 +310,25 @@ export class AgentAdminController {
   @Put('config/rate-limit/:type')
   @ApiOperation({ summary: 'Update rate limit configuration' })
   updateRateLimitConfig(
+    @CurrentUser() admin: { id: string },
     @Param('type') type: 'user' | 'vip',
     @Body() dto: UpdateRateLimitDto,
   ) {
     const current = this.configService.getSystemConfig();
     const currentLimit = current.rateLimit[type];
 
-    return this.configService.updateSystemConfig({
-      rateLimit: {
-        ...current.rateLimit,
-        [type]: {
-          windowMs: dto.windowMs ?? currentLimit.windowMs,
-          maxRequests: dto.maxRequests ?? currentLimit.maxRequests,
+    return this.configService.updateSystemConfigWithPersistence(
+      {
+        rateLimit: {
+          ...current.rateLimit,
+          [type]: {
+            windowMs: dto.windowMs ?? currentLimit.windowMs,
+            maxRequests: dto.maxRequests ?? currentLimit.maxRequests,
+          },
         },
       },
-    });
+      { createdBy: admin.id, comment: `Admin updated ${type} rate limit` },
+    );
   }
 
   // ==================== Agent 配置 ====================
@@ -341,10 +357,14 @@ export class AgentAdminController {
   @Put('agents/:type')
   @ApiOperation({ summary: 'Update Agent configuration' })
   updateAgent(
+    @CurrentUser() admin: { id: string },
     @Param('type') type: AgentType,
     @Body() dto: UpdateAgentConfigDto,
   ) {
-    return this.configService.updateAgentConfig(type, dto);
+    return this.configService.updateAgentConfigWithPersistence(type, dto, {
+      createdBy: admin.id,
+      comment: 'Admin updated Agent configuration',
+    });
   }
 
   /**
@@ -352,8 +372,16 @@ export class AgentAdminController {
    */
   @Put('agents/:type/toggle')
   @ApiOperation({ summary: 'Enable/disable Agent' })
-  toggleAgent(@Param('type') type: AgentType, @Body() dto: UpdateFeatureDto) {
-    return this.configService.updateAgentConfig(type, { enabled: dto.enabled });
+  toggleAgent(
+    @CurrentUser() admin: { id: string },
+    @Param('type') type: AgentType,
+    @Body() dto: UpdateFeatureDto,
+  ) {
+    return this.configService.updateAgentConfigWithPersistence(
+      type,
+      { enabled: dto.enabled },
+      { createdBy: admin.id, comment: 'Admin toggled Agent availability' },
+    );
   }
 
   // ==================== 功能开关 ====================

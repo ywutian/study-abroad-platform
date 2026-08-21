@@ -77,4 +77,48 @@ describe('AgentEvaluationTraceService', () => {
     expect(prisma.agentRun.findFirst).not.toHaveBeenCalled();
     expect(prisma.agentEvaluationTrace.upsert).not.toHaveBeenCalled();
   });
+
+  it('records and alerts when a redacted trace cannot be persisted', async () => {
+    const prisma = {
+      agentRun: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'run-1',
+          agentType: 'orchestrator',
+          approvals: [],
+          startedAt: new Date(),
+          completedAt: new Date(),
+        }),
+      },
+      agentEvaluationTrace: {
+        upsert: jest.fn().mockRejectedValue(new Error('write failed')),
+      },
+    };
+    const metrics = { recordHarnessEvent: jest.fn() };
+    const alerts = { send: jest.fn().mockResolvedValue(undefined) };
+    const service = new AgentEvaluationTraceService(
+      prisma as unknown as PrismaService,
+      {
+        get: jest.fn((key: string) =>
+          ['AI_AGENT_HARNESS_V1', 'AI_AGENT_CONTEXT_V1'].includes(key)
+            ? 'true'
+            : undefined,
+        ),
+      } as unknown as ConfigService,
+      undefined,
+      metrics as never,
+      alerts as never,
+    );
+
+    await service.persist('user-1', 'run-1', 'FAILED');
+    await Promise.resolve();
+
+    expect(metrics.recordHarnessEvent).toHaveBeenCalledWith(
+      'evaluation_trace_persist_failed',
+    );
+    expect(alerts.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        alertId: 'ai-agent-evaluation-trace-persist-failed',
+      }),
+    );
+  });
 });

@@ -9,6 +9,13 @@
       "sourceFile": "apps/api/src/modules/user/account-purge.service.ts"
     },
     {
+      "name": "agent-run-service-cleanup-retained-data",
+      "schedule": "17 3 * * *",
+      "className": "AgentRunService",
+      "methodName": "cleanupRetainedData",
+      "sourceFile": "apps/api/src/modules/ai-agent/core/agent-run.service.ts"
+    },
+    {
       "name": "agent-run-service-expire-stale-approvals",
       "schedule": "*/1 * * * *",
       "className": "AgentRunService",

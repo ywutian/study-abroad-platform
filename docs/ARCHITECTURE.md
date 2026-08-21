@@ -539,7 +539,7 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 - **Report** — Content reports with `targetType` (USER/MESSAGE/CASE/REVIEW/POST/COMMENT)
 - **AuditLog** — Action audit trail (action, resource, resourceId, metadata, ipAddress)
 
-#### AI Agent Memory System (12 models)
+#### AI Agent Memory & Harness System (15 models)
 
 - **AgentConversation** — AI conversation sessions (userId, title, summary, agentType)
 - **AgentMessage** — Messages with role, agentType, toolCalls, tokensUsed, latencyMs
@@ -551,8 +551,19 @@ Relations: Award[] (Award.competitionId -> Competition.id)
 - **AgentAuditLog** — AI-specific audit log (traceId, operation, duration)
 - **AgentSecurityEvent** — Security events (eventType, severity, resolved)
 - **AgentConfigVersion** — Versioned config storage (configType, configKey, version, isActive)
+- **AgentRun** — Durable Agent execution state with frozen budgets, usage, checkpoints, context summaries, and terminal outcomes
+- **AgentApproval** — Expiring approval bound to the exact normalized tool arguments and an idempotency key
+- **AgentEvaluationTrace** — Redacted execution evidence for offline evaluation; excludes raw prompts, tool arguments/results, credentials, and personal material
 - **MemoryCompaction** — Memory compression records (sourceIds, compressionRatio)
 - **AgentTask** — Async task queue (type, status, priority, payload, attempts)
+
+Harness execution is gated by `AI_AGENT_HARNESS_V1`; durable approvals additionally
+require `AI_AGENT_APPROVALS_V1`, and structured checkpoints, context compression,
+frozen run budgets, and evaluation traces require `AI_AGENT_CONTEXT_V1`. Runs that
+do not reach a terminal state expire after `AI_AGENT_RUN_TTL_MS`. Redacted traces
+are retained for `AI_AGENT_TRACE_RETENTION_DAYS` (30 by default), while terminal
+runs are retained for `AI_AGENT_RUN_RETENTION_DAYS` (90 by default). The scheduled
+cleanup is bounded per invocation and never deletes active or approval-waiting runs.
 
 #### Forum System (6 models)
 

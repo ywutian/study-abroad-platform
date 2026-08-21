@@ -28,6 +28,7 @@ import { StructuredLoggerService } from './logging/structured-logger.service';
 
 // Config
 import { AgentConfigService } from './config/config.service';
+import { AgentConfigPersistenceService } from './config/config-persistence.service';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AgentConfigService } from './config/config.service';
     StructuredLoggerService,
 
     // Config
+    AgentConfigPersistenceService,
     AgentConfigService,
     // Note: AlertChannelService provided globally by AgentSecurityModule
   ],

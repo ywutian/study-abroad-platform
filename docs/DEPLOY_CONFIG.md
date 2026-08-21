@@ -145,8 +145,10 @@ composite-action consolidation is a sensible, separately-verified follow-up.
 ## Merged ≠ production
 
 This is the merged ≠ production boundary. `ci.yml` on `push` to `main`
-deploys the **GCP API canary** (`--no-traffic`, then a canary smoke, then
-traffic shift). The web app is a separate Vercel deploy. There is no
+deploys a tagged **GCP API validation revision** (`--no-traffic`, then an isolated
+smoke test and Cron Registry check, then a direct atomic shift to 100%). The
+workflow step retains the historical `canary` name, but no 5%/25% user-traffic
+stage is used. The web app is a separate Vercel deploy. There is no
 `deploy-prod.yml`.
 
 A green merge therefore does **not** mean a student already sees the fix:
@@ -158,5 +160,17 @@ A green merge therefore does **not** mean a student already sees the fix:
   match pools). A green Cloud Run job was not proof those tables had rows.
 - User-facing copy and `ACCOUNT_PURGE_ENABLED` can drift from each other
   unless `lint:deletion-promise` is green.
+
+For the Agent Harness production revision, keep these non-secret values explicit
+in the Cloud Run deploy command so release drift remains reviewable:
+
+- `AI_AGENT_HARNESS_V1`, `AI_AGENT_APPROVALS_V1`, `AI_AGENT_CONTEXT_V1`
+- `AI_AGENT_MAX_TOKENS_PER_RUN`, `AI_AGENT_MAX_DURATION_MS`
+- `AI_AGENT_RUN_RETENTION_DAYS=90`
+- `AI_AGENT_TRACE_RETENTION_DAYS=30`
+
+The post-promote closure is not complete until the stable URL is healthy, the
+live Cron Registry matches the generated manifest, Cloud Scheduler is synced,
+and the previous production revision remains available for rollback.
 
 Do not write "landed on main, so production is fixed."

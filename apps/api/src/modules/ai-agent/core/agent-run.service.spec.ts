@@ -17,6 +17,10 @@ describe('AgentRunService', () => {
   const now = new Date('2026-08-20T12:00:00.000Z');
   let prisma: Record<string, any>;
   let service: AgentRunService;
+  let metrics: {
+    recordHarnessEvent: jest.Mock;
+    recordHarnessCleanup: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = {
@@ -26,6 +30,7 @@ describe('AgentRunService', () => {
         findFirst: jest.fn(),
         updateMany: jest.fn(),
         update: jest.fn(),
+        deleteMany: jest.fn(),
       },
       agentApproval: {
         create: jest.fn(),
@@ -34,7 +39,11 @@ describe('AgentRunService', () => {
         update: jest.fn(),
         updateMany: jest.fn(),
       },
-      agentEvaluationTrace: { upsert: jest.fn() },
+      agentEvaluationTrace: {
+        upsert: jest.fn(),
+        findMany: jest.fn(),
+        deleteMany: jest.fn(),
+      },
     };
     prisma.$transaction = jest.fn(async (input: unknown) => {
       if (typeof input === 'function') return input(prisma);
@@ -47,7 +56,17 @@ describe('AgentRunService', () => {
         return fallback;
       }),
     } as unknown as ConfigService;
-    service = new AgentRunService(prisma as unknown as PrismaService, config);
+    metrics = {
+      recordHarnessEvent: jest.fn(),
+      recordHarnessCleanup: jest.fn(),
+    };
+    service = new AgentRunService(
+      prisma as unknown as PrismaService,
+      config,
+      undefined,
+      undefined,
+      metrics as any,
+    );
   });
 
   it('normalizes nested arguments before producing a stable fingerprint', () => {
@@ -511,6 +530,76 @@ describe('AgentRunService', () => {
         data: expect.objectContaining({ status: AgentRunStatus.EXPIRED }),
       }),
     );
+    expect(metrics.recordHarnessEvent).toHaveBeenCalledWith('run_expired');
+  });
+
+  it('expires a stale RUNNING run without touching approval state', async () => {
+    prisma.agentRun.findMany.mockResolvedValue([
+      { id: 'run-2', userId: 'user-2' },
+    ]);
+    prisma.agentRun.findFirst.mockResolvedValue({
+      id: 'run-2',
+      status: AgentRunStatus.RUNNING,
+    });
+    prisma.agentRun.updateMany.mockResolvedValue({ count: 1 });
+
+    await service.expireStaleApprovals();
+
+    expect(prisma.agentApproval.updateMany).not.toHaveBeenCalled();
+    expect(prisma.agentRun.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: AgentRunStatus.EXPIRED,
+          errorCode: 'RUN_EXPIRED',
+        }),
+      }),
+    );
+  });
+
+  it('removes retained traces and terminal runs in bounded batches', async () => {
+    prisma.agentEvaluationTrace.findMany.mockResolvedValue([
+      { id: 'trace-1' },
+      { id: 'trace-2' },
+    ]);
+    prisma.agentEvaluationTrace.deleteMany.mockResolvedValue({ count: 2 });
+    prisma.agentRun.findMany.mockResolvedValue([{ id: 'run-old' }]);
+    prisma.agentRun.deleteMany.mockResolvedValue({ count: 1 });
+
+    await service.cleanupRetainedData();
+
+    expect(prisma.agentEvaluationTrace.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 500 }),
+    );
+    expect(prisma.agentRun.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 200 }),
+    );
+    expect(metrics.recordHarnessCleanup).toHaveBeenCalledWith('traces', 2);
+    expect(metrics.recordHarnessCleanup).toHaveBeenCalledWith('runs', 1);
+  });
+
+  it('records token and duration budget exhaustion as stable metrics', async () => {
+    prisma.agentApproval.updateMany.mockResolvedValue({ count: 0 });
+    prisma.agentRun.updateMany.mockResolvedValue({ count: 1 });
+
+    await service.failRun(
+      'user-1',
+      'run-token',
+      'WORKFLOW_FAILED',
+      'AGENT_TOKEN_BUDGET_EXCEEDED',
+    );
+    await service.failRun(
+      'user-1',
+      'run-duration',
+      'WORKFLOW_FAILED',
+      'AGENT_DURATION_BUDGET_EXCEEDED',
+    );
+
+    expect(metrics.recordHarnessEvent).toHaveBeenCalledWith(
+      'token_budget_exceeded',
+    );
+    expect(metrics.recordHarnessEvent).toHaveBeenCalledWith(
+      'duration_budget_exceeded',
+    );
   });
 
   it('registers the approval expiry job on the production HTTP cron path', async () => {
@@ -532,13 +621,12 @@ describe('AgentRunService', () => {
     }).compile();
     await moduleRef.init();
 
-    const jobName = 'agent-run-service-expire-stale-approvals';
-    expect(
-      moduleRef
-        .get(CronRegistryService)
-        .list()
-        .map((job) => job.name),
-    ).toContain(jobName);
+    const jobNames = moduleRef
+      .get(CronRegistryService)
+      .list()
+      .map((job) => job.name);
+    expect(jobNames).toContain('agent-run-service-expire-stale-approvals');
+    expect(jobNames).toContain('agent-run-service-cleanup-retained-data');
 
     const manifest = JSON.parse(
       readFileSync(
@@ -546,7 +634,12 @@ describe('AgentRunService', () => {
         'utf8',
       ),
     ) as { jobs: Array<{ name: string }> };
-    expect(manifest.jobs.map((job) => job.name)).toContain(jobName);
+    expect(manifest.jobs.map((job) => job.name)).toContain(
+      'agent-run-service-expire-stale-approvals',
+    );
+    expect(manifest.jobs.map((job) => job.name)).toContain(
+      'agent-run-service-cleanup-retained-data',
+    );
 
     await moduleRef.close();
   });
