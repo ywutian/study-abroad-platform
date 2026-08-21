@@ -565,6 +565,14 @@ are retained for `AI_AGENT_TRACE_RETENTION_DAYS` (30 by default), while terminal
 runs are retained for `AI_AGENT_RUN_RETENTION_DAYS` (90 by default). The scheduled
 cleanup is bounded per invocation and never deletes active or approval-waiting runs.
 
+Production acceptance is separately gated by `AI_AGENT_ACCEPTANCE_V1`. An
+administrator can issue a five-minute, one-shot Redis grant for a dedicated
+synthetic user. Grants can force one context-compression failure or freeze a
+stricter per-run budget; they cannot add tools, relax policy, increase budgets,
+or affect another user. Harness lifecycle evidence is aggregated in Redis UTC
+day buckets so counters survive Cloud Run instance churn without storing user
+or conversation identifiers.
+
 #### Forum System (6 models)
 
 - **ForumCategory** — Forum categories with `nameZh`, icon, color, sortOrder

@@ -717,6 +717,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
+  async getdel(key: string): Promise<string | null> {
+    return this.safeRecord(
+      'atomic',
+      key,
+      null,
+      () => this.client!.getdel(key),
+      (value) => value !== null && value !== undefined,
+    );
+  }
+
   async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
     await this.safeRecord('write', key, undefined, async () => {
       if (ttlSeconds !== undefined && ttlSeconds > 0) {

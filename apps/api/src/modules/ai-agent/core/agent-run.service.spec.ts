@@ -194,6 +194,53 @@ describe('AgentRunService', () => {
     ).not.toContain('test@example.com');
   });
 
+  it('freezes a stricter one-shot acceptance budget on the run', async () => {
+    const acceptanceBudget = {
+      version: 1 as const,
+      maxTokens: 1000,
+      maxToolCalls: 16,
+      maxSupplementalRounds: 2,
+      maxDurationMs: 10000,
+    };
+    const harnessOperations = {
+      consumeBudgetOverride: jest.fn().mockResolvedValue(acceptanceBudget),
+      recordEvent: jest.fn(),
+    };
+    const contextConfig = {
+      get: jest.fn((key: string, fallback?: unknown) => {
+        if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+        if (key === 'AI_AGENT_APPROVALS_V1') return 'true';
+        if (key === 'AI_AGENT_CONTEXT_V1') return 'true';
+        return fallback;
+      }),
+    } as unknown as ConfigService;
+    const acceptanceService = new AgentRunService(
+      prisma as unknown as PrismaService,
+      contextConfig,
+      undefined,
+      undefined,
+      metrics as any,
+      undefined,
+      harnessOperations as any,
+    );
+    prisma.agentRun.create.mockResolvedValue({ id: 'run-acceptance' });
+
+    await acceptanceService.createRun({
+      userId: 'synthetic-1',
+      conversationId: 'conversation-1',
+      agentType: 'orchestrator' as any,
+    });
+
+    expect(prisma.agentRun.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ budget: acceptanceBudget }),
+      }),
+    );
+    expect(harnessOperations.consumeBudgetOverride).toHaveBeenCalledWith(
+      'synthetic-1',
+    );
+  });
+
   it('atomically persists an approval and moves the run to WAITING_APPROVAL', async () => {
     prisma.agentApproval.findUnique.mockResolvedValue(null);
     prisma.agentRun.findFirst.mockResolvedValue({ id: 'run-1' });
@@ -359,6 +406,77 @@ describe('AgentRunService', () => {
 
     expect(first.claimed).toBe(true);
     expect(second.claimed).toBe(false);
+  });
+
+  it('returns a completed run for reconnect even after currentApprovalId is cleared', async () => {
+    prisma.agentRun.findFirst.mockImplementation(
+      async (query: { where?: { expiresAt?: unknown } }) =>
+        query.where?.expiresAt
+          ? null
+          : {
+              id: 'run-1',
+              userId: 'user-1',
+              status: AgentRunStatus.COMPLETED,
+              currentApprovalId: null,
+              result: {
+                message: 'Persisted result',
+                agentType: 'timeline',
+              },
+              approvals: [
+                {
+                  id: 'approval-1',
+                  status: AgentApprovalStatus.EXECUTED,
+                  fingerprint: 'fp',
+                  createdAt: now,
+                },
+              ],
+            },
+    );
+
+    const result = await service.claimApproved('user-1', 'run-1');
+
+    expect(result.claimed).toBe(false);
+    expect(result.run.status).toBe(AgentRunStatus.COMPLETED);
+    expect(result.approval?.status).toBe(AgentApprovalStatus.EXECUTED);
+    expect(prisma.agentApproval.updateMany).not.toHaveBeenCalled();
+    expect(prisma.agentRun.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('rejects cancellation after an approved action starts executing', async () => {
+    prisma.agentRun.findFirst.mockResolvedValue({
+      id: 'run-1',
+      userId: 'user-1',
+      status: AgentRunStatus.RUNNING,
+      currentApprovalId: 'approval-1',
+      approvals: [
+        {
+          id: 'approval-1',
+          status: AgentApprovalStatus.EXECUTING,
+        },
+      ],
+    });
+
+    await expect(service.cancel('user-1', 'run-1')).rejects.toThrow(
+      'Approved action is already executing or has executed',
+    );
+    expect(prisma.agentRun.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('does not overwrite terminal state or trace when completion loses a race', async () => {
+    prisma.agentRun.updateMany.mockResolvedValue({ count: 0 });
+    prisma.agentRun.findFirst.mockResolvedValue({
+      id: 'run-1',
+      userId: 'user-1',
+      status: AgentRunStatus.CANCELLED,
+    });
+
+    await expect(
+      service.completeRun('user-1', 'run-1', {
+        message: 'late result',
+        agentType: 'timeline' as any,
+      }),
+    ).resolves.toBe(false);
+    expect(prisma.agentEvaluationTrace.upsert).not.toHaveBeenCalled();
   });
 
   it('rejects the approval and closes the run in one transaction', async () => {

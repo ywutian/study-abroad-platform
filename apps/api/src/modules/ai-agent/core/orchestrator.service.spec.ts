@@ -16,6 +16,7 @@ import { ConfigValidatorService } from '../config/config-validator.service';
 import { MemoryManagerService } from '../memory/memory-manager.service';
 import { FastRouterService } from './fast-router.service';
 import { FallbackService } from './fallback.service';
+import { AgentRunService } from './agent-run.service';
 import {
   ContentModerationService,
   ModerationAction,
@@ -591,6 +592,63 @@ describe('OrchestratorService', () => {
       await service.clearConversation('user_1', 'conv_1');
 
       expect(memory.clearConversation).toHaveBeenCalledWith('user_1', 'conv_1');
+    });
+  });
+
+  describe('completed run reconnect', () => {
+    it('returns the persisted result without reclaiming the approval', async () => {
+      const agentRuns = {
+        isEnabled: jest.fn().mockReturnValue(true),
+        claimApproved: jest.fn().mockResolvedValue({
+          claimed: false,
+          run: {
+            status: 'COMPLETED',
+            result: { message: 'Persisted result', agentType: 'timeline' },
+          },
+          approval: { status: 'EXECUTED' },
+        }),
+      };
+      (service as any).agentRuns = agentRuns as Partial<AgentRunService>;
+
+      const events = [];
+      for await (const event of service.resumeRunStream('user_1', 'run_1')) {
+        events.push(event);
+      }
+
+      expect(events).toEqual([
+        expect.objectContaining({
+          type: 'done',
+          runId: 'run_1',
+          runStatus: 'COMPLETED',
+          response: expect.objectContaining({ message: 'Persisted result' }),
+        }),
+      ]);
+      expect(agentRuns.claimApproved).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns a stable terminal reason when the persisted result is unavailable', async () => {
+      (service as any).agentRuns = {
+        isEnabled: jest.fn().mockReturnValue(true),
+        claimApproved: jest.fn().mockResolvedValue({
+          claimed: false,
+          run: { status: 'COMPLETED', result: null },
+          approval: { status: 'EXECUTED' },
+        }),
+      } as Partial<AgentRunService>;
+
+      const events = [];
+      for await (const event of service.resumeRunStream('user_1', 'run_1')) {
+        events.push(event);
+      }
+
+      expect(events).toEqual([
+        expect.objectContaining({
+          type: 'error',
+          runId: 'run_1',
+          runStatus: 'COMPLETED',
+          error: 'COMPLETED_RESULT_UNAVAILABLE',
+        }),
+      ]);
     });
   });
 

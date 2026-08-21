@@ -70,6 +70,7 @@ import {
   buildRunCheckpoint,
   buildWorkflowResult,
 } from './workflow-result-builder';
+import { AgentRunService } from './agent-run.service';
 
 export * from './workflow-contract';
 
@@ -86,6 +87,7 @@ export class WorkflowEngineService {
     @Optional() private metricsService?: MetricsService,
     @Optional() private toolPolicy?: ToolPolicyService,
     @Optional() private configService?: ConfigService,
+    @Optional() private agentRuns?: AgentRunService,
   ) {}
 
   /**
@@ -177,9 +179,15 @@ export class WorkflowEngineService {
   ): AsyncGenerator<WorkflowStreamEvent> {
     const totalStart = Date.now();
     const harnessEnabled = this.isHarnessEnabled();
+    const persistedBudget = runContext?.runId
+      ? await this.agentRuns?.getPersistedBudget(
+          conversation.userId,
+          runContext.runId,
+        )
+      : undefined;
     const budgetTracker =
       harnessEnabled && this.isContextEnabled()
-        ? new AgentRunBudgetTracker(this.getRunBudget())
+        ? new AgentRunBudgetTracker(persistedBudget ?? this.getRunBudget())
         : undefined;
     let scheduledCalls = 0;
     let supplementalRounds = 0;

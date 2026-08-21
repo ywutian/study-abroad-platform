@@ -25,7 +25,7 @@ import { AgentType, ConversationState, AgentConfig } from '../types';
 import { LLMResponse } from './llm.service';
 import { ToolPolicyService } from './tool-policy.service';
 import { TOOLS } from '../config/tools.config';
-import { getApprovalFingerprint } from './agent-run.service';
+import { AgentRunService, getApprovalFingerprint } from './agent-run.service';
 
 // Helper: create a minimal valid LLMResponse
 function mockLLMResponse(
@@ -55,6 +55,7 @@ describe('WorkflowEngineService', () => {
   let memory: jest.Mocked<MemoryService>;
   let memoryManager: jest.Mocked<MemoryManagerService>;
   let configService: { get: jest.Mock };
+  let agentRuns: { getPersistedBudget: jest.Mock };
 
   const mockConfig: AgentConfig = {
     type: AgentType.ORCHESTRATOR,
@@ -90,10 +91,12 @@ describe('WorkflowEngineService', () => {
     configService = {
       get: jest.fn((_key: string, defaultValue?: unknown) => defaultValue),
     };
+    agentRuns = { getPersistedBudget: jest.fn().mockResolvedValue(undefined) };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkflowEngineService,
         ToolPolicyService,
+        { provide: AgentRunService, useValue: agentRuns },
         { provide: ConfigService, useValue: configService },
         {
           provide: LLMService,
@@ -143,6 +146,37 @@ describe('WorkflowEngineService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('loads the budget frozen on a durable run', async () => {
+    configService.get.mockImplementation((key: string, fallback?: unknown) =>
+      key === 'AI_AGENT_HARNESS_V1' || key === 'AI_AGENT_CONTEXT_V1'
+        ? 'true'
+        : fallback,
+    );
+    agentRuns.getPersistedBudget.mockResolvedValue({
+      version: 1,
+      maxTokens: 1000,
+      maxToolCalls: 16,
+      maxSupplementalRounds: 2,
+      maxDurationMs: 10000,
+    });
+    llm.call.mockResolvedValue(mockLLMResponse({ content: 'direct answer' }));
+
+    await collectEvents(
+      service.runStream(
+        AgentType.ORCHESTRATOR,
+        mockConfig,
+        mockConversation,
+        [],
+        { runId: 'run-1', approvalsEnabled: true },
+      ),
+    );
+
+    expect(agentRuns.getPersistedBudget).toHaveBeenCalledWith(
+      'user_1',
+      'run-1',
+    );
   });
 
   // ==================== Plan Fast Path ====================
