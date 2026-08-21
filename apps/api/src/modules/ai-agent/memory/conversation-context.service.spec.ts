@@ -16,7 +16,10 @@ describe('ConversationContextService', () => {
     updatedAt: '2026-08-20T00:00:00.000Z',
   };
 
-  function createService(summarizeConversation: jest.Mock) {
+  function createService(
+    summarizeConversation: jest.Mock,
+    alerts?: { send: jest.Mock },
+  ) {
     const messages = Array.from({ length: 22 }, (_, index) => ({
       id: `message-${index}`,
       conversationId: 'conversation-1',
@@ -55,6 +58,8 @@ describe('ConversationContextService', () => {
         persistent as unknown as PersistentMemoryService,
         summarizer as unknown as SummarizerService,
         config as unknown as ConfigService,
+        undefined,
+        alerts as never,
       ),
       persistent,
       cache,
@@ -82,8 +87,10 @@ describe('ConversationContextService', () => {
   });
 
   it('retains the last valid summary when compression fails', async () => {
+    const alerts = { send: jest.fn().mockResolvedValue(undefined) };
     const { service, persistent, cache } = createService(
       jest.fn().mockRejectedValue(new Error('LLM unavailable')),
+      alerts,
     );
 
     const result = await service.getCompressedContext('conversation-1');
@@ -91,5 +98,10 @@ describe('ConversationContextService', () => {
     expect(result.summary).toEqual(previous);
     expect(persistent.updateConversation).not.toHaveBeenCalled();
     expect(cache.cacheConversation).not.toHaveBeenCalled();
+    expect(alerts.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        alertId: 'ai-agent-context-compression-fallback',
+      }),
+    );
   });
 });

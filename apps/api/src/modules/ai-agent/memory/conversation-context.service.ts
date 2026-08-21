@@ -5,6 +5,10 @@ import { PersistentMemoryService } from './persistent-memory.service';
 import { SanitizeLevel, SanitizerService } from './sanitizer.service';
 import { SummarizerService } from './summarizer.service';
 import type { ConversationContextSummaryV1, MessageRecord } from './types';
+import {
+  AlertChannelService,
+  AlertSeverity,
+} from '../infrastructure/alerting/alert-channel.service';
 
 @Injectable()
 export class ConversationContextService {
@@ -16,6 +20,7 @@ export class ConversationContextService {
     private readonly summarizer: SummarizerService,
     private readonly config: ConfigService,
     @Optional() private readonly sanitizer?: SanitizerService,
+    @Optional() private readonly alerts?: AlertChannelService,
   ) {}
 
   async getCompressedContext(conversationId: string): Promise<{
@@ -108,8 +113,22 @@ export class ConversationContextService {
       return { summary, recentMessages: messages.slice(-recentLimit) };
     } catch (error) {
       this.logger.warn(
-        `Conversation compression failed; retaining last valid summary: ${error instanceof Error ? error.message : String(error)}`,
+        `[AI_AGENT_CONTEXT_COMPRESSION_FALLBACK] Conversation compression failed; retaining last valid summary: ${error instanceof Error ? error.message : String(error)}`,
       );
+      void this.alerts
+        ?.send({
+          alertId: 'ai-agent-context-compression-fallback',
+          title: 'AI Agent context compression fallback',
+          message:
+            'Conversation compression failed and the last valid summary was retained.',
+          severity: AlertSeverity.WARNING,
+          source: ConversationContextService.name,
+        })
+        .catch((alertError) =>
+          this.logger.warn(
+            `Failed to enqueue context compression alert: ${String(alertError)}`,
+          ),
+        );
       return {
         summary: previous,
         recentMessages: messages.slice(-recentLimit),

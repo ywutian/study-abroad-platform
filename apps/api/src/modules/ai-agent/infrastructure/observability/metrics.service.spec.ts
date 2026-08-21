@@ -44,4 +44,16 @@ describe('MetricsService', () => {
     service.recordError('timeout', 'school');
     // Should not throw
   });
+
+  it('exports Agent Harness lifecycle and cleanup counters', () => {
+    service.recordHarnessEvent('token_budget_exceeded');
+    service.recordHarnessCleanup('traces', 3);
+
+    expect(service.getPrometheusFormat()).toContain(
+      'agent_harness_events_total{event="token_budget_exceeded"} 1',
+    );
+    expect(service.getPrometheusFormat()).toContain(
+      'agent_harness_cleanup_total{resource="traces"} 3',
+    );
+  });
 });

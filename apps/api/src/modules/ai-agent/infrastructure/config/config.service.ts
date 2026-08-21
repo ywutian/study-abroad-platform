@@ -21,6 +21,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { AgentType } from '../../types';
+import { AgentConfigPersistenceService } from './config-persistence.service';
 import {
   DEFAULT_RATE_LIMITS,
   VIP_RATE_LIMITS,
@@ -115,13 +116,17 @@ export class AgentConfigService implements OnModuleInit {
 
   // A/B 测试配置
   private abTestGroups: Map<string, Map<string, unknown>> = new Map();
+  private readonly persistence: AgentConfigPersistenceService;
 
   constructor(
     private nestConfig: NestConfigService,
     private eventEmitter: EventEmitter2,
     @Optional() private prisma?: PrismaService,
+    @Optional() persistence?: AgentConfigPersistenceService,
   ) {
     this.config = this.loadDefaultConfig();
+    this.persistence =
+      persistence ?? new AgentConfigPersistenceService(this.prisma);
   }
 
   async onModuleInit() {
@@ -199,85 +204,6 @@ export class AgentConfigService implements OnModuleInit {
       this.logger.log('Loaded config from database');
     } catch (error) {
       this.logger.warn(`Failed to load config from database: ${String(error)}`);
-    }
-  }
-
-  /**
-   * 持久化 Agent 配置到数据库
-   */
-  private async persistAgentConfig(
-    agentType: AgentType,
-    config: AgentConfig,
-    options?: { createdBy?: string; comment?: string },
-  ): Promise<void> {
-    if (!this.prisma) return;
-
-    try {
-      const newVersion = parseInt(config.version);
-
-      await this.prisma.$transaction(async (tx) => {
-        // 将旧版本设为非活跃
-        await tx.agentConfigVersion.updateMany({
-          where: { configType: 'agent', configKey: agentType, isActive: true },
-          data: { isActive: false },
-        });
-
-        // 创建新版本
-        await tx.agentConfigVersion.create({
-          data: {
-            configType: 'agent',
-            configKey: agentType,
-            version: newVersion,
-            value: config as unknown as Prisma.JsonObject,
-            isActive: true,
-            createdBy: options?.createdBy,
-            comment: options?.comment,
-          },
-        });
-      });
-
-      this.logger.log(`Persisted agent config: ${agentType} v${newVersion}`);
-    } catch (error) {
-      this.logger.error(`Failed to persist agent config: ${String(error)}`);
-    }
-  }
-
-  /**
-   * 持久化系统配置到数据库
-   */
-  private async persistSystemConfig(
-    config: SystemConfig,
-    options?: { createdBy?: string; comment?: string },
-  ): Promise<void> {
-    if (!this.prisma) return;
-
-    try {
-      const newVersion = this.configVersion;
-
-      await this.prisma.$transaction(async (tx) => {
-        // 将旧版本设为非活跃
-        await tx.agentConfigVersion.updateMany({
-          where: { configType: 'system', configKey: 'main', isActive: true },
-          data: { isActive: false },
-        });
-
-        // 创建新版本
-        await tx.agentConfigVersion.create({
-          data: {
-            configType: 'system',
-            configKey: 'main',
-            version: newVersion,
-            value: config as unknown as Prisma.JsonObject,
-            isActive: true,
-            createdBy: options?.createdBy,
-            comment: options?.comment,
-          },
-        });
-      });
-
-      this.logger.log(`Persisted system config v${newVersion}`);
-    } catch (error) {
-      this.logger.error(`Failed to persist system config: ${String(error)}`);
     }
   }
 
@@ -438,9 +364,24 @@ export class AgentConfigService implements OnModuleInit {
     updates: Partial<AgentConfig>,
     options?: { createdBy?: string; comment?: string },
   ): Promise<AgentConfig> {
-    const updated = this.updateAgentConfig(agentType, updates);
-    await this.persistAgentConfig(agentType, updated, options);
-    return updated;
+    const current = this.config.agents[agentType];
+    if (!current) {
+      throw new InternalServerErrorException(`Agent ${agentType} not found`);
+    }
+    const persisted = await this.persistence.persistAgentConfig(
+      agentType,
+      current,
+      updates,
+      options,
+    );
+    this.config.agents[agentType] = persisted;
+    this.config.updatedAt = new Date();
+    this.configVersion++;
+    this.eventEmitter.emit(AGENT_CONFIG_UPDATED_EVENT, {
+      agentType,
+      config: persisted,
+    });
+    return persisted;
   }
 
   updateToolConfig(toolName: string, updates: Partial<ToolConfig>): ToolConfig {
@@ -483,9 +424,16 @@ export class AgentConfigService implements OnModuleInit {
     updates: Partial<SystemConfig>,
     options?: { createdBy?: string; comment?: string },
   ): Promise<SystemConfig> {
-    const updated = this.updateSystemConfig(updates);
-    await this.persistSystemConfig(updated, options);
-    return updated;
+    const persisted = await this.persistence.persistSystemConfig(
+      this.config.system,
+      updates,
+      options,
+    );
+    this.config.system = persisted;
+    this.config.updatedAt = new Date();
+    this.configVersion++;
+    this.eventEmitter.emit(CONFIG_UPDATED_EVENT, { system: persisted });
+    return persisted;
   }
 
   // ==================== A/B 测试 ====================

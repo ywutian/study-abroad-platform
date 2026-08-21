@@ -5,6 +5,11 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { AgentResponse } from '../types';
 import { SanitizeLevel, SanitizerService } from '../memory/sanitizer.service';
 import { isRecord, toInputJson } from './agent-run-state';
+import { MetricsService } from '../infrastructure/observability/metrics.service';
+import {
+  AlertChannelService,
+  AlertSeverity,
+} from '../infrastructure/alerting/alert-channel.service';
 
 @Injectable()
 export class AgentEvaluationTraceService {
@@ -14,6 +19,8 @@ export class AgentEvaluationTraceService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     @Optional() private readonly sanitizer?: SanitizerService,
+    @Optional() private readonly metrics?: MetricsService,
+    @Optional() private readonly alerts?: AlertChannelService,
   ) {}
 
   async persist(
@@ -109,10 +116,25 @@ export class AgentEvaluationTraceService {
           redactedTypes: sanitized?.detectedTypes ?? [],
         },
       });
+      this.metrics?.recordHarnessEvent('evaluation_trace_persisted');
     } catch (error) {
+      this.metrics?.recordHarnessEvent('evaluation_trace_persist_failed');
       this.logger.warn(
         `Failed to persist redacted evaluation trace for run ${runId}: ${error instanceof Error ? error.message : String(error)}`,
       );
+      void this.alerts
+        ?.send({
+          alertId: 'ai-agent-evaluation-trace-persist-failed',
+          title: 'AI Agent evaluation trace persistence failed',
+          message: 'A redacted Agent evaluation trace could not be persisted.',
+          severity: AlertSeverity.WARNING,
+          source: AgentEvaluationTraceService.name,
+        })
+        .catch((alertError) =>
+          this.logger.warn(
+            `Failed to enqueue evaluation trace alert: ${String(alertError)}`,
+          ),
+        );
     }
   }
 

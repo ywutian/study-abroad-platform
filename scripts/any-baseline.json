@@ -3,7 +3,7 @@
   "apps/api": {
     "explicitAny": 562,
     "tsSuppress": 0,
-    "doubleCast": 87
+    "doubleCast": 85
   },
   "apps/web": {
     "explicitAny": 79,
