@@ -24,3 +24,24 @@ export interface JsonRecord {
   type?: string;
   user?: JsonRecord;
 }
+
+export async function runUntilMetricObserved(options: {
+  baseline: number;
+  maxAttempts: number;
+  runAttempt: (attempt: number) => Promise<void>;
+  readMetric: () => Promise<number>;
+}): Promise<{ attempts: number; metricAfter: number; observed: boolean }> {
+  let metricAfter = options.baseline;
+  for (let attempt = 1; attempt <= options.maxAttempts; attempt++) {
+    await options.runAttempt(attempt);
+    metricAfter = await options.readMetric();
+    if (metricAfter - options.baseline === 1) {
+      return { attempts: attempt, metricAfter, observed: true };
+    }
+  }
+  return {
+    attempts: options.maxAttempts,
+    metricAfter,
+    observed: false,
+  };
+}

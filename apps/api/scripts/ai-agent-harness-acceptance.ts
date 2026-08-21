@@ -1,5 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { JsonRecord } from './ai-agent-harness-acceptance-support';
+import {
+  JsonRecord,
+  runUntilMetricObserved,
+} from './ai-agent-harness-acceptance-support';
 
 const args = new Set(process.argv.slice(2));
 if (!args.has('--production')) {
@@ -268,23 +271,34 @@ async function main(): Promise<void> {
 
   const fallbackBefore = await evidenceTotals();
   await createGrant('context_compression_failure');
-  // Five completed turns add ten messages; the sixth request observes them.
-  for (let index = 0; index < 6; index++) {
-    await streamChat(index % 2 === 0 ? 'Hello' : 'Thanks', conversationId);
-    await sleep(200);
-  }
+  // Stop on the request that consumes the grant; later requests may perform a
+  // valid compression and would no longer measure the failure-time fallback.
+  const fallbackProbe = await runUntilMetricObserved({
+    baseline: fallbackBefore.context_compression_fallback ?? 0,
+    maxAttempts: 6,
+    runAttempt: async (attempt) => {
+      await streamChat(attempt % 2 === 1 ? 'Hello' : 'Thanks', conversationId);
+      await sleep(200);
+    },
+    readMetric: async () => {
+      const totals = await evidenceTotals();
+      return totals.context_compression_fallback ?? 0;
+    },
+  });
   const afterFallback = await request(
     `/ai-agent/user-data/conversations/${encodeURIComponent(conversationId)}`,
   );
-  const fallbackAfter = await evidenceTotals();
   const retainedHash =
     typeof afterFallback.payload?.summary === 'string'
       ? fingerprint(afterFallback.payload.summary)
       : '';
   const fallbackDelta =
-    (fallbackAfter.context_compression_fallback ?? 0) -
+    fallbackProbe.metricAfter -
     (fallbackBefore.context_compression_fallback ?? 0);
-  const fallbackPass = summaryHash === retainedHash && fallbackDelta === 1;
+  const fallbackPass =
+    fallbackProbe.observed &&
+    summaryHash === retainedHash &&
+    fallbackDelta === 1;
   emit({
     scenario: 'context_compression_fallback',
     http: afterFallback.status,
@@ -293,7 +307,8 @@ async function main(): Promise<void> {
     retainedSummaryHash: retainedHash,
     metric: 'context_compression_fallback',
     metricBefore: fallbackBefore.context_compression_fallback ?? 0,
-    metricAfter: fallbackAfter.context_compression_fallback ?? 0,
+    metricAfter: fallbackProbe.metricAfter,
+    attempts: fallbackProbe.attempts,
     pass: fallbackPass,
     reasonCode: fallbackPass
       ? 'LAST_VALID_SUMMARY_RETAINED'
