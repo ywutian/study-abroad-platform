@@ -268,7 +268,8 @@ async function main(): Promise<void> {
 
   const fallbackBefore = await evidenceTotals();
   await createGrant('context_compression_failure');
-  for (let index = 0; index < 5; index++) {
+  // Five completed turns add ten messages; the sixth request observes them.
+  for (let index = 0; index < 6; index++) {
     await streamChat(index % 2 === 0 ? 'Hello' : 'Thanks', conversationId);
     await sleep(200);
   }
