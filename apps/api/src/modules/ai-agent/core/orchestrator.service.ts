@@ -1255,6 +1255,15 @@ export class OrchestratorService {
         };
         return;
       }
+      if (claim.run.status === 'COMPLETED') {
+        yield {
+          type: 'error',
+          runId,
+          runStatus: 'COMPLETED',
+          error: 'COMPLETED_RESULT_UNAVAILABLE',
+        };
+        return;
+      }
       if (
         claim.run.status === 'FAILED' ||
         claim.run.status === 'CANCELLED' ||
@@ -1267,6 +1276,15 @@ export class OrchestratorService {
           error:
             claim.run.errorMessage ||
             `Run is ${claim.run.status.toLowerCase()}`,
+        };
+        return;
+      }
+      if (!claim.approval) {
+        yield {
+          type: 'error',
+          runId,
+          runStatus: claim.run.status,
+          error: 'APPROVAL_STATE_UNAVAILABLE',
         };
         return;
       }

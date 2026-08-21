@@ -14,13 +14,27 @@ import { SanitizerService } from '../memory/sanitizer.service';
 import { AgentEvaluationTraceService } from './agent-evaluation-trace.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { AgentRunRetentionService } from './agent-run-retention.service';
+import { AgentHarnessOperationsService } from './agent-harness-operations.service';
+import {
+  completeAgentRun,
+  failAgentRun,
+  markApprovalExecutionSucceeded,
+} from './agent-run-terminal';
+import {
+  approvalTtlMs,
+  executionLeaseMs,
+  formatApprovalRequest,
+  getConfiguredRunBudget,
+  isRunContextEnabled,
+  readPersistedRunBudget,
+  runTtlMs,
+} from './agent-run-settings';
 import {
   AgentRunBudgetV1,
   AgentRunCheckpoint,
   AgentRunUsageV1,
   ApprovalRequest,
   getApprovalFingerprint,
-  isRecord,
   normalizeToolArguments,
   toInputJson,
 } from './agent-run-state';
@@ -39,6 +53,8 @@ export class AgentRunService {
     @Optional() evaluationTrace?: AgentEvaluationTraceService,
     @Optional() private readonly metrics?: MetricsService,
     @Optional() retention?: AgentRunRetentionService,
+    @Optional()
+    private readonly harnessOperations?: AgentHarnessOperationsService,
   ) {
     this.evaluationTrace =
       evaluationTrace ??
@@ -59,7 +75,11 @@ export class AgentRunService {
     conversationId: string;
     agentType: AgentType;
   }) {
-    const budget = this.contextEnabled() ? this.getRunBudget() : undefined;
+    const acceptanceBudget =
+      await this.harnessOperations?.consumeBudgetOverride(input.userId);
+    const budget = isRunContextEnabled(this.config)
+      ? (acceptanceBudget ?? getConfiguredRunBudget(this.config))
+      : undefined;
     return this.prisma.agentRun.create({
       data: {
         ...input,
@@ -75,7 +95,7 @@ export class AgentRunService {
               } satisfies AgentRunUsageV1),
             }
           : {}),
-        expiresAt: new Date(Date.now() + this.runTtlMs()),
+        expiresAt: new Date(Date.now() + runTtlMs(this.config)),
       },
     });
   }
@@ -103,9 +123,9 @@ export class AgentRunService {
         runId_fingerprint: { runId: input.runId, fingerprint },
       },
     });
-    if (existing) return this.toApprovalRequest(existing);
+    if (existing) return formatApprovalRequest(existing);
 
-    const expiresAt = new Date(Date.now() + this.approvalTtlMs());
+    const expiresAt = new Date(Date.now() + approvalTtlMs(this.config));
     try {
       const approval = await this.prisma.$transaction(async (tx) => {
         const run = await tx.agentRun.findFirst({
@@ -157,7 +177,8 @@ export class AgentRunService {
         }
         return created;
       });
-      return this.toApprovalRequest(approval);
+      void this.harnessOperations?.recordEvent('approval_required');
+      return formatApprovalRequest(approval);
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -168,7 +189,7 @@ export class AgentRunService {
             runId_fingerprint: { runId: input.runId, fingerprint },
           },
         });
-        if (duplicate) return this.toApprovalRequest(duplicate);
+        if (duplicate) return formatApprovalRequest(duplicate);
       }
       throw error;
     }
@@ -201,7 +222,7 @@ export class AgentRunService {
       usage: run.usage,
       contextSummary: run.contextSummary,
       result: run.result,
-      approval: approval ? this.toApprovalRequest(approval) : undefined,
+      approval: approval ? formatApprovalRequest(approval) : undefined,
     };
   }
 
@@ -274,7 +295,7 @@ export class AgentRunService {
       }
       throw new ConflictException(`Approval is ${latest.status.toLowerCase()}`);
     });
-    return this.toApprovalRequest(approval);
+    return formatApprovalRequest(approval);
   }
 
   async reject(
@@ -336,6 +357,25 @@ export class AgentRunService {
 
   async cancel(userId: string, runId: string) {
     await this.prisma.$transaction(async (tx) => {
+      const current = await tx.agentRun.findFirst({
+        where: { id: runId, userId },
+        include: { approvals: true },
+      });
+      if (!current) throw new NotFoundException('Agent run not found');
+
+      const activeApproval = current.approvals.find(
+        (approval) => approval.id === current.currentApprovalId,
+      );
+      if (
+        current.status === AgentRunStatus.RUNNING &&
+        (activeApproval?.status === AgentApprovalStatus.EXECUTING ||
+          activeApproval?.status === AgentApprovalStatus.EXECUTED)
+      ) {
+        throw new ConflictException(
+          'Approved action is already executing or has executed',
+        );
+      }
+
       const updated = await tx.agentRun.updateMany({
         where: {
           id: runId,
@@ -368,14 +408,11 @@ export class AgentRunService {
         });
         return;
       }
-      const existing = await tx.agentRun.findFirst({
-        where: { id: runId, userId },
-      });
-      if (!existing) throw new NotFoundException('Agent run not found');
     });
     await this.evaluationTrace.persist(userId, runId, 'CANCELLED', undefined, {
       errorCode: 'USER_CANCELLED',
     });
+    void this.harnessOperations?.recordEvent('run_cancelled');
     return this.getRunSummary(userId, runId);
   }
 
@@ -384,9 +421,23 @@ export class AgentRunService {
     return this.prisma.$transaction(async (tx) => {
       const run = await tx.agentRun.findFirst({
         where: { id: runId, userId },
-        include: { approvals: true },
+        include: { approvals: { orderBy: { createdAt: 'desc' } } },
       });
       if (!run) throw new NotFoundException('Agent run not found');
+
+      if (
+        run.status === AgentRunStatus.COMPLETED ||
+        run.status === AgentRunStatus.FAILED ||
+        run.status === AgentRunStatus.CANCELLED ||
+        run.status === AgentRunStatus.EXPIRED
+      ) {
+        return {
+          run,
+          approval: run.approvals[0],
+          claimed: false as const,
+        };
+      }
+
       const approval = run.approvals.find(
         (item) => item.id === run.currentApprovalId,
       );
@@ -399,7 +450,8 @@ export class AgentRunService {
         if (
           approval.status === AgentApprovalStatus.EXECUTING &&
           approval.executionStartedAt &&
-          approval.executionStartedAt.getTime() + this.executionLeaseMs() <=
+          approval.executionStartedAt.getTime() +
+            executionLeaseMs(this.config) <=
             Date.now()
         ) {
           const failedApproval = await tx.agentApproval.updateMany({
@@ -502,42 +554,16 @@ export class AgentRunService {
     runId: string,
     approvalId: string,
   ) {
-    await this.prisma.agentApproval.updateMany({
-      where: {
-        id: approvalId,
-        runId,
-        userId,
-        status: AgentApprovalStatus.EXECUTING,
-      },
-      data: { status: AgentApprovalStatus.EXECUTED, executedAt: new Date() },
-    });
+    return markApprovalExecutionSucceeded(
+      this.terminalDependencies(),
+      userId,
+      runId,
+      approvalId,
+    );
   }
 
   async completeRun(userId: string, runId: string, result?: AgentResponse) {
-    const workflow = isRecord(result?.data?.workflow)
-      ? result.data.workflow
-      : undefined;
-    const usage = workflow && isRecord(workflow.usage) ? workflow.usage : null;
-    const contextSummary =
-      workflow && isRecord(workflow.contextSummary)
-        ? workflow.contextSummary
-        : null;
-    await this.prisma.agentRun.updateMany({
-      where: { id: runId, userId, status: AgentRunStatus.RUNNING },
-      data: {
-        status: AgentRunStatus.COMPLETED,
-        checkpoint: Prisma.JsonNull,
-        ...(result ? { result: toInputJson(result) } : {}),
-        ...(usage ? { usage: toInputJson(usage) } : {}),
-        ...(contextSummary
-          ? { contextSummary: toInputJson(contextSummary) }
-          : {}),
-        currentApprovalId: null,
-        completedAt: new Date(),
-        version: { increment: 1 },
-      },
-    });
-    await this.evaluationTrace.persist(userId, runId, 'COMPLETED', result);
+    return completeAgentRun(this.terminalDependencies(), userId, runId, result);
   }
 
   async failRun(
@@ -546,93 +572,28 @@ export class AgentRunService {
     errorCode: string,
     message: string,
   ) {
-    await this.prisma.$transaction([
-      this.prisma.agentApproval.updateMany({
-        where: {
-          runId,
-          userId,
-          status: AgentApprovalStatus.EXECUTING,
-        },
-        data: { status: AgentApprovalStatus.FAILED, errorCode },
-      }),
-      this.prisma.agentRun.updateMany({
-        where: {
-          id: runId,
-          userId,
-          status: AgentRunStatus.RUNNING,
-        },
-        data: {
-          status: AgentRunStatus.FAILED,
-          errorCode,
-          errorMessage: message.slice(0, 2000),
-          completedAt: new Date(),
-          version: { increment: 1 },
-        },
-      }),
-    ]);
-    await this.evaluationTrace.persist(userId, runId, 'FAILED', undefined, {
+    return failAgentRun(
+      this.terminalDependencies(),
+      userId,
+      runId,
       errorCode,
-    });
-    const budgetEvent = message.includes('AGENT_TOKEN_BUDGET_EXCEEDED')
-      ? 'token_budget_exceeded'
-      : message.includes('AGENT_DURATION_BUDGET_EXCEEDED')
-        ? 'duration_budget_exceeded'
-        : undefined;
-    if (budgetEvent) this.metrics?.recordHarnessEvent(budgetEvent);
-  }
-
-  private toApprovalRequest(approval: {
-    id: string;
-    runId: string;
-    toolName: string;
-    arguments: Prisma.JsonValue;
-    fingerprint: string;
-    expiresAt: Date;
-    status: AgentApprovalStatus;
-  }): ApprovalRequest {
-    return {
-      runId: approval.runId,
-      approvalId: approval.id,
-      toolName: approval.toolName,
-      arguments: approval.arguments as Record<string, unknown>,
-      fingerprint: approval.fingerprint,
-      expiresAt: approval.expiresAt.toISOString(),
-      status: approval.status,
-    };
-  }
-
-  private approvalTtlMs(): number {
-    return this.config.get<number>('AI_AGENT_APPROVAL_TTL_MS', 15 * 60 * 1000);
-  }
-
-  private runTtlMs(): number {
-    return this.config.get<number>('AI_AGENT_RUN_TTL_MS', 24 * 60 * 60 * 1000);
-  }
-
-  private executionLeaseMs(): number {
-    return this.config.get<number>(
-      'AI_AGENT_EXECUTION_LEASE_MS',
-      2 * 60 * 1000,
+      message,
     );
   }
 
-  getRunBudget(): AgentRunBudgetV1 {
+  private terminalDependencies() {
     return {
-      version: 1,
-      maxTokens: this.config.get<number>('AI_AGENT_MAX_TOKENS_PER_RUN', 24000),
-      maxToolCalls: 16,
-      maxSupplementalRounds: 2,
-      maxDurationMs: this.config.get<number>(
-        'AI_AGENT_MAX_DURATION_MS',
-        120000,
-      ),
+      prisma: this.prisma,
+      evaluationTrace: this.evaluationTrace,
+      metrics: this.metrics,
+      harnessOperations: this.harnessOperations,
     };
   }
 
-  contextEnabled(): boolean {
-    return (
-      this.config.get<string>('AI_AGENT_HARNESS_V1') === 'true' &&
-      this.config.get<string>('AI_AGENT_CONTEXT_V1') === 'true'
-    );
+  async getPersistedBudget(
+    userId: string,
+    runId: string,
+  ): Promise<AgentRunBudgetV1 | undefined> {
+    return readPersistedRunBudget(this.prisma, userId, runId);
   }
 }

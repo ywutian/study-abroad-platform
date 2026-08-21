@@ -19,6 +19,10 @@ describe('ConversationContextService', () => {
   function createService(
     summarizeConversation: jest.Mock,
     alerts?: { send: jest.Mock },
+    harnessOperations?: {
+      consumeContextCompressionFailure: jest.Mock;
+      recordEvent: jest.Mock;
+    },
   ) {
     const messages = Array.from({ length: 22 }, (_, index) => ({
       id: `message-${index}`,
@@ -60,6 +64,7 @@ describe('ConversationContextService', () => {
         config as unknown as ConfigService,
         undefined,
         alerts as never,
+        harnessOperations as never,
       ),
       persistent,
       cache,
@@ -102,6 +107,29 @@ describe('ConversationContextService', () => {
       expect.objectContaining({
         alertId: 'ai-agent-context-compression-fallback',
       }),
+    );
+  });
+
+  it('consumes a one-shot synthetic failure without calling the summarizer', async () => {
+    const alerts = { send: jest.fn().mockResolvedValue(undefined) };
+    const harnessOperations = {
+      consumeContextCompressionFailure: jest.fn().mockResolvedValue(true),
+      recordEvent: jest.fn().mockResolvedValue(undefined),
+    };
+    const summarize = jest.fn();
+    const { service, persistent } = createService(
+      summarize,
+      alerts,
+      harnessOperations,
+    );
+
+    const result = await service.getCompressedContext('conversation-1');
+
+    expect(result.summary).toEqual(previous);
+    expect(summarize).not.toHaveBeenCalled();
+    expect(persistent.updateConversation).not.toHaveBeenCalled();
+    expect(harnessOperations.recordEvent).toHaveBeenCalledWith(
+      'context_compression_fallback',
     );
   });
 });

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AgentApprovalStatus, AgentRunStatus } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
+import { AgentHarnessOperationsService } from './agent-harness-operations.service';
 
 @Injectable()
 export class AgentRunRetentionService {
@@ -10,6 +11,8 @@ export class AgentRunRetentionService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     @Optional() private readonly metrics?: MetricsService,
+    @Optional()
+    private readonly harnessOperations?: AgentHarnessOperationsService,
   ) {}
 
   async expireIfNeeded(userId: string, runId: string): Promise<void> {
@@ -60,7 +63,10 @@ export class AgentRunRetentionService {
       });
       return updated.count === 1;
     });
-    if (expired) this.metrics?.recordHarnessEvent('run_expired');
+    if (expired) {
+      this.metrics?.recordHarnessEvent('run_expired');
+      void this.harnessOperations?.recordEvent('run_expired');
+    }
   }
 
   async expireStaleRuns(): Promise<void> {
@@ -101,6 +107,7 @@ export class AgentRunRetentionService {
         where: { id: { in: traceIds.map(({ id }) => id) } },
       });
       this.metrics?.recordHarnessCleanup('traces', deleted.count);
+      void this.harnessOperations?.recordEvent('trace_cleanup', deleted.count);
     }
 
     // governance: system-scope — retention cleanup is restricted to terminal runs older than the configured cutoff
@@ -126,6 +133,7 @@ export class AgentRunRetentionService {
         where: { id: { in: runIds.map(({ id }) => id) } },
       });
       this.metrics?.recordHarnessCleanup('runs', deleted.count);
+      void this.harnessOperations?.recordEvent('run_cleanup', deleted.count);
     }
   }
 

@@ -1,4 +1,9 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Optional,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisCacheService } from './redis-cache.service';
 import { PersistentMemoryService } from './persistent-memory.service';
@@ -9,6 +14,7 @@ import {
   AlertChannelService,
   AlertSeverity,
 } from '../infrastructure/alerting/alert-channel.service';
+import { AgentHarnessOperationsService } from '../core/agent-harness-operations.service';
 
 @Injectable()
 export class ConversationContextService {
@@ -21,6 +27,8 @@ export class ConversationContextService {
     private readonly config: ConfigService,
     @Optional() private readonly sanitizer?: SanitizerService,
     @Optional() private readonly alerts?: AlertChannelService,
+    @Optional()
+    private readonly harnessOperations?: AgentHarnessOperationsService,
   ) {}
 
   async getCompressedContext(conversationId: string): Promise<{
@@ -68,6 +76,15 @@ export class ConversationContextService {
     }
 
     try {
+      if (
+        await this.harnessOperations?.consumeContextCompressionFailure(
+          conversation.userId,
+        )
+      ) {
+        throw new ServiceUnavailableException(
+          'SYNTHETIC_CONTEXT_COMPRESSION_FAILURE',
+        );
+      }
       const sanitized = this.sanitizer
         ? this.sanitizer.sanitizeMessages(sourceMessages, {
             level: SanitizeLevel.MODERATE,
@@ -129,6 +146,7 @@ export class ConversationContextService {
             `Failed to enqueue context compression alert: ${String(alertError)}`,
           ),
         );
+      await this.harnessOperations?.recordEvent('context_compression_fallback');
       return {
         summary: previous,
         recentMessages: messages.slice(-recentLimit),

@@ -165,6 +165,9 @@ For the Agent Harness production revision, keep these non-secret values explicit
 in the Cloud Run deploy command so release drift remains reviewable:
 
 - `AI_AGENT_HARNESS_V1`, `AI_AGENT_APPROVALS_V1`, `AI_AGENT_CONTEXT_V1`
+- `AI_AGENT_ACCEPTANCE_V1=true` enables admin-issued, one-shot synthetic
+  acceptance grants; grants remain user-scoped, expire after five minutes, and
+  can only inject failure or reduce a run budget.
 - `AI_AGENT_MAX_TOKENS_PER_RUN`, `AI_AGENT_MAX_DURATION_MS`
 - `AI_AGENT_RUN_RETENTION_DAYS=90`
 - `AI_AGENT_TRACE_RETENTION_DAYS=30`
