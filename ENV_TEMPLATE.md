@@ -293,9 +293,10 @@ TASK_QUEUE_CONCURRENCY=5
 # Slack Webhook URL (可选)
 ALERT_SLACK_WEBHOOK=
 
-# 邮件告警
+# 邮件告警。只有同时配置 RESEND_API_KEY 才会成为真实投递通道；
+# 没有 provider 凭据时服务会明确报告 email unavailable，仍安全持久化到 Redis。
 ALERT_EMAIL_ENABLED=false
-ALERT_EMAIL_RECIPIENTS=admin@example.com
+ALERT_EMAIL_RECIPIENTS=
 
 # 企业微信/钉钉 (可选)
 ALERT_WECHAT_WEBHOOK=
@@ -305,6 +306,10 @@ ALERT_DINGTALK_WEBHOOK=
 ALERT_AGGREGATION_WINDOW=60
 # 每分钟最大告警数
 ALERT_MAX_PER_MINUTE=30
+# 外部投递：由 HTTP Cron 每分钟处理，失败指数退避并留下脱敏投递记录。
+ALERT_DELIVERY_MAX_ATTEMPTS=5
+ALERT_DELIVERY_RETRY_SECONDS=60
+ALERT_DELIVERY_BATCH_SIZE=50
 
 # ============================================
 # AI Agent 可观测性

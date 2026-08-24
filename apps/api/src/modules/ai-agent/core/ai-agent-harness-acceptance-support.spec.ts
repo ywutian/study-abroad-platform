@@ -1,6 +1,9 @@
 import {
+  parseAcceptanceSse,
+  pollTerminalAgentRun,
   requestApprovalWithRetry,
   runUntilMetricObserved,
+  verifyAndAcknowledgeHarnessAlert,
 } from '../../../../scripts/ai-agent-harness-acceptance-support';
 
 describe('AI Agent harness acceptance support', () => {
@@ -74,5 +77,89 @@ describe('AI Agent harness acceptance support', () => {
     });
     expect(runAttempt).toHaveBeenCalledTimes(2);
     expect(readRun).toHaveBeenCalledTimes(2);
+  });
+
+  it('parses valid SSE records and drops terminal or malformed lines', () => {
+    expect(
+      parseAcceptanceSse(
+        'data: {"type":"start","runId":"run-1"}\n' +
+          'data: not-json\n' +
+          'data: [DONE]\n',
+      ),
+    ).toEqual([{ type: 'start', runId: 'run-1' }]);
+  });
+
+  it('proves durable alert persistence, acknowledges it, and confirms removal', async () => {
+    let active = true;
+    const request = jest.fn(
+      async (
+        path: string,
+        options?: {
+          method?: string;
+          body?: unknown;
+          auth?: 'admin' | 'synthetic' | 'none';
+        },
+      ) => {
+        if (path.endsWith('/delivery')) {
+          return {
+            ok: true,
+            status: 200,
+            payload: [{ channel: 'redis_queue', status: 'persisted' }],
+          };
+        }
+        if (path.endsWith('/acknowledge') && options?.method === 'POST') {
+          active = false;
+          return { ok: true, status: 200, payload: { acknowledged: true } };
+        }
+        return {
+          ok: true,
+          status: 200,
+          payload: active
+            ? [
+                {
+                  alertId: 'alert-0123456789abcdef01234567',
+                  source: 'conversationcontextservice',
+                },
+              ]
+            : [],
+        };
+      },
+    );
+
+    await expect(
+      verifyAndAcknowledgeHarnessAlert({
+        request,
+        source: 'conversationcontextservice',
+        acknowledgementNote: 'Synthetic test acknowledgement',
+      }),
+    ).resolves.toEqual({
+      persisted: true,
+      acknowledged: true,
+      unacknowledgedAlertId: '',
+    });
+    expect(request).toHaveBeenCalledWith(
+      expect.stringMatching(/\/acknowledge$/),
+      expect.objectContaining({ method: 'POST', auth: 'admin' }),
+    );
+  });
+
+  it('waits for and returns a terminal run without re-executing it', async () => {
+    const request = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        payload: { id: 'run-1', status: 'RUNNING' },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        payload: { id: 'run-1', status: 'COMPLETED' },
+      });
+
+    await expect(
+      pollTerminalAgentRun({ request, runId: 'run-1' }),
+    ).resolves.toEqual({ id: 'run-1', status: 'COMPLETED' });
+    expect(request).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,0 +1,85 @@
+name: Cloud SQL restore drill (plan only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prepare_plan:
+        description: 'Prepare a read-only restore plan from the latest backup (no restore is executed)'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  restore-plan:
+    name: Prepare isolated restore plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Write disabled plan
+        if: inputs.prepare_plan != true
+        run: |
+          mkdir -p restore-drill
+          node - <<'NODE'
+          const fs = require('node:fs');
+          fs.writeFileSync('restore-drill/plan.json', JSON.stringify({
+            schemaVersion: 'cloud-sql-restore-plan-v1',
+            status: 'DISABLED_BY_DEFAULT',
+            restoreExecuted: false,
+            reasonCode: 'EXPLICIT_READ_ONLY_PLAN_REQUIRED'
+          }, null, 2) + '\n');
+          NODE
+
+      - name: Authenticate to GCP for read-only inspection
+        if: inputs.prepare_plan == true
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: github-actions-deploy@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        if: inputs.prepare_plan == true
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Verify backup/PITR and prepare non-production restore plan
+        if: inputs.prepare_plan == true
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_CLOUDSQL_INSTANCE: ${{ secrets.GCP_CLOUDSQL_INSTANCE }}
+        run: |
+          mkdir -p restore-drill
+          node scripts/ci/verify-cloud-sql-backup-pitr.mjs \
+            --instance "$GCP_CLOUDSQL_INSTANCE" \
+            --project "$GCP_PROJECT_ID" \
+            --output restore-drill/cloud-sql-backup-pitr.json
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const evidence = JSON.parse(fs.readFileSync('restore-drill/cloud-sql-backup-pitr.json', 'utf8'));
+          fs.writeFileSync('restore-drill/plan.json', JSON.stringify({
+            schemaVersion: 'cloud-sql-restore-plan-v1',
+            status: evidence.pass === true ? 'READY_FOR_EXTERNAL_AUTHORIZATION' : 'BLOCKED_BACKUP_PITR_CHECK',
+            restoreExecuted: false,
+            sourceInstance: evidence.instance,
+            sourceBackup: evidence.backup.latest,
+            requiredTarget: 'A separately named non-production Cloud SQL clone/instance',
+            prohibitedActions: ['restore production in place', 'delete production data', 'change production traffic'],
+            nextStep: 'An authorized operator must create an isolated target and run the provider restore procedure outside this workflow.'
+          }, null, 2) + '\n');
+          NODE
+
+      - name: Upload restore drill evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cloud-sql-restore-plan-${{ github.run_id }}
+          path: restore-drill/
+          if-no-files-found: error
+          retention-days: 90

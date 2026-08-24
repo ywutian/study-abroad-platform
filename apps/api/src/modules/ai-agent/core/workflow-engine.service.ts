@@ -21,6 +21,7 @@
  */
 
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -74,14 +75,21 @@ import { AgentRunService } from './agent-run.service';
 
 export * from './workflow-contract';
 
+export type WorkflowLlmClient = Pick<LLMService, 'call' | 'callStream'>;
+export type WorkflowToolExecutor = Pick<ToolExecutorService, 'execute'>;
+export type WorkflowMemory = Pick<
+  MemoryService,
+  'addMessage' | 'getRecentMessages' | 'getContextSummary'
+>;
+
 @Injectable()
 export class WorkflowEngineService {
   private readonly logger = new Logger(WorkflowEngineService.name);
 
   constructor(
-    private llm: LLMService,
-    private toolExecutor: ToolExecutorService,
-    private memory: MemoryService,
+    @Inject(LLMService) private llm: WorkflowLlmClient,
+    @Inject(ToolExecutorService) private toolExecutor: WorkflowToolExecutor,
+    @Inject(MemoryService) private memory: WorkflowMemory,
     @Optional() private resilience?: ResilienceService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private metricsService?: MetricsService,

@@ -98,6 +98,12 @@ export class AgentHarnessAdminController {
     }));
   }
 
+  @Get('alerts/status')
+  @ApiOperation({ summary: 'Get durable Harness alert delivery status' })
+  getAlertStatus() {
+    return this.alerts.getStats();
+  }
+
   @Get('alerts/:alertId/delivery')
   @ApiOperation({ summary: 'Get Harness alert delivery status' })
   getAlertDelivery(@Param('alertId') alertId: string) {

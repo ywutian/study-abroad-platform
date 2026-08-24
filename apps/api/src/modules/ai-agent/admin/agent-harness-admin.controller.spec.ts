@@ -35,6 +35,12 @@ describe('AgentHarnessAdminController', () => {
           error: 'must not leave the controller',
         },
       ]),
+      getStats: jest.fn().mockResolvedValue({
+        pendingAlerts: 1,
+        activeAlerts: 2,
+        configuredChannels: ['redis_queue'],
+        unavailableChannels: [],
+      }),
       acknowledgeAlert: jest.fn().mockResolvedValue(undefined),
     };
     const controller = new AgentHarnessAdminController(
@@ -64,6 +70,17 @@ describe('AgentHarnessAdminController', () => {
       scenario: 'budget_exhaustion',
       maxTokens: 1000,
       maxDurationMs: 10000,
+    });
+  });
+
+  it('exposes durable alert-channel readiness without message content', async () => {
+    const { controller } = createController();
+
+    await expect(controller.getAlertStatus()).resolves.toEqual({
+      pendingAlerts: 1,
+      activeAlerts: 2,
+      configuredChannels: ['redis_queue'],
+      unavailableChannels: [],
     });
   });
 

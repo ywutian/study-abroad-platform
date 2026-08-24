@@ -30,6 +30,13 @@
       "sourceFile": "apps/api/src/modules/ai-agent/skills/agent-skill-evolution.service.ts"
     },
     {
+      "name": "alert-channel-service-deliver-pending-alerts",
+      "schedule": "* * * * *",
+      "className": "AlertChannelService",
+      "methodName": "deliverPendingAlerts",
+      "sourceFile": "apps/api/src/modules/ai-agent/infrastructure/alerting/alert-channel.service.ts"
+    },
+    {
       "name": "application-analysis-experiment-scheduler-run-hourly-rollout-monitor",
       "schedule": "17 * * * *",
       "className": "ApplicationAnalysisExperimentScheduler",

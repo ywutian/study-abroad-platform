@@ -54,6 +54,7 @@
     "prediction:audit": "tsx scripts/prediction-system-audit.ts",
     "application-analysis:governance": "tsx scripts/application-analysis-governance.ts",
     "harness:acceptance": "pnpm --filter api harness:acceptance --",
+    "harness:benchmark": "pnpm --filter api harness:benchmark --",
     "school-facts:verify": "pnpm --filter api verify:school-facts",
     "system:accuracy-audit": "tsx scripts/audit/run-system-accuracy-audit.ts",
     "lint:drift": "tsx scripts/check-drift.ts",

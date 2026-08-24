@@ -9590,6 +9590,32 @@
         "output": "Output",
         "noData": "No preview available",
         "showing": "Showing {from}-{to} of {total}"
+      },
+      "harness": {
+        "title": "Agent Harness and Skills",
+        "harness": "Harness",
+        "evolution": "Skills evolution",
+        "autoPublish": "Automatic publish",
+        "alertChannels": "Durable alert channels",
+        "unavailableChannels": "Unavailable",
+        "refresh": "Refresh",
+        "runEvolution": "Run bounded evolution",
+        "completedRuns": "Completed runs",
+        "failedRuns": "Failed runs",
+        "approvalsExecuted": "Approvals executed",
+        "pendingSignals": "Pending signals",
+        "deployments": "Active Skill deployments",
+        "activeVersion": "Active version",
+        "rollback": "Rollback",
+        "rollbackConfirm": "Roll back {agent} to its previous immutable Skill version?",
+        "rollbackComplete": "Skill rollback completed",
+        "activeAlerts": "Active Harness alerts",
+        "noAlerts": "No unacknowledged Harness alerts",
+        "acknowledge": "Acknowledge",
+        "alertAcknowledged": "Alert acknowledged",
+        "loading": "Loading...",
+        "operationFailed": "Operation failed",
+        "evolutionResult": "Evolution complete: {signals} signals, {candidates} candidates, {published} published, {rolledBack} rolled back"
       }
     },
     "aiAgent": {

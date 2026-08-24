@@ -62,6 +62,7 @@ export async function verifyDeclarativeSkills({
     skillStatus.ok &&
     skillStatus.payload?.enabled === true &&
     skillStatus.payload?.evolutionEnabled === true &&
+    skillStatus.payload?.autoPublishEnabled === true &&
     deployments.length === 6 &&
     deployments.every(
       (deployment: JsonRecord) =>
@@ -76,6 +77,7 @@ export async function verifyDeclarativeSkills({
     scenario: 'declarative_skills_boundary',
     http: skillStatus.status,
     deploymentCount: deployments.length,
+    autoPublishEnabled: skillStatus.payload?.autoPublishEnabled === true,
     safeCandidateAccepted: safeValidation.ok,
     permissionExpansionRejected: unsafeValidation.status === 400,
     legacyCredentialRejected: legacyCredential.status === 401,
