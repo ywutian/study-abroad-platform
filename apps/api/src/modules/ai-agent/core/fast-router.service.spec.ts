@@ -28,6 +28,14 @@ describe('FastRouterService', () => {
     expect(result.shouldUseLLM).toBe(true);
   });
 
+  it('should deterministically route an explicit timeline deadline action', () => {
+    const result = service.route(
+      'For my application timeline, add this deadline date now.',
+    );
+    expect(result.agent).toBe('timeline');
+    expect(result.shouldUseLLM).toBe(false);
+  });
+
   it('should extract intent keywords', () => {
     const keywords = service.extractIntentKeywords('帮我选校和润色文书');
     expect(keywords.length).toBeGreaterThan(0);

@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import {
   fingerprint,
   JsonRecord,
+  requestApprovalWithRetry,
   requiredEnv,
   runUntilMetricObserved,
   sleep,
@@ -312,18 +313,17 @@ async function main(): Promise<void> {
       : 'COMPRESSION_FALLBACK_FAILED',
   });
 
-  const approval = await request('/ai-agent/chat', {
-    method: 'POST',
-    body: {
-      message: `Create one personal event titled exactly "${eventTitle}" in category OTHER. Do not create anything else.`,
-      stream: false,
-      locale: 'en',
-      agentHint: 'timeline',
-    },
+  const approvalRequest = await requestApprovalWithRetry({
+    maxAttempts: 3,
+    runAttempt: () =>
+      streamChat(
+        `For my application timeline, add this deadline date now. Use the create_personal_event tool to create exactly one personal event titled "${eventTitle}" in category OTHER with eventDate "2030-10-01T09:00:00.000Z". This is an action request. Do not call get_personal_events, do not ask a follow-up question, and do not create anything else.`,
+        undefined,
+        'timeline',
+      ),
+    readRun: async (id) => (await request(`/ai-agent/runs/${id}`)).payload,
   });
-  const pending = approval.payload?.approvalRequired;
-  const rawRunId: unknown = approval.payload?.runId;
-  const runId = typeof rawRunId === 'string' ? rawRunId : '';
+  const { pending, runId } = approvalRequest;
   if (!pending?.approvalId || !runId) throw new Error('approval_not_requested');
   const approved = await request(
     `/ai-agent/runs/${runId}/approvals/${pending.approvalId}/approve`,
@@ -374,6 +374,7 @@ async function main(): Promise<void> {
     runStatus: approvalRun.status,
     approvalStatus: approvalRun.approval?.status,
     approvalFingerprint: String(pending.fingerprint).slice(0, 16),
+    requestAttempts: approvalRequest.attempts,
     sideEffectCount: matches.length,
     pass: approvalPass,
     reasonCode: approvalPass
