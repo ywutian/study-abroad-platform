@@ -44,6 +44,9 @@ describe('AI agent harness environment gate', () => {
     expect(result.AI_AGENT_RUN_TTL_MS).toBe(86400000);
     expect(result.AI_AGENT_EXECUTION_LEASE_MS).toBe(120000);
     expect(result.AI_AGENT_CONTEXT_V1).toBe('false');
+    expect(result.AI_AGENT_SKILLS_V1).toBe('false');
+    expect(result.AI_AGENT_SKILLS_EVOLUTION_V1).toBe('false');
+    expect(result.AI_AGENT_SKILLS_AUTO_PUBLISH_V1).toBe('false');
     expect(result.AI_AGENT_MAX_TOKENS_PER_RUN).toBe(24000);
     expect(result.AI_AGENT_MAX_DURATION_MS).toBe(120000);
     expect(result.AI_AGENT_CONTEXT_RECENT_MESSAGES).toBe(10);
@@ -60,6 +63,9 @@ describe('AI agent harness environment gate', () => {
       AI_AGENT_RUN_TTL_MS: '120000',
       AI_AGENT_EXECUTION_LEASE_MS: '30000',
       AI_AGENT_CONTEXT_V1: 'true',
+      AI_AGENT_SKILLS_V1: 'true',
+      AI_AGENT_SKILLS_EVOLUTION_V1: 'true',
+      AI_AGENT_SKILLS_AUTO_PUBLISH_V1: 'true',
       AI_AGENT_MAX_TOKENS_PER_RUN: '12000',
       AI_AGENT_MAX_DURATION_MS: '60000',
       AI_AGENT_CONTEXT_RECENT_MESSAGES: '8',
@@ -72,6 +78,9 @@ describe('AI agent harness environment gate', () => {
     expect(result.AI_AGENT_RUN_TTL_MS).toBe(120000);
     expect(result.AI_AGENT_EXECUTION_LEASE_MS).toBe(30000);
     expect(result.AI_AGENT_CONTEXT_V1).toBe('true');
+    expect(result.AI_AGENT_SKILLS_V1).toBe('true');
+    expect(result.AI_AGENT_SKILLS_EVOLUTION_V1).toBe('true');
+    expect(result.AI_AGENT_SKILLS_AUTO_PUBLISH_V1).toBe('true');
     expect(result.AI_AGENT_MAX_TOKENS_PER_RUN).toBe(12000);
     expect(result.AI_AGENT_MAX_DURATION_MS).toBe(60000);
     expect(result.AI_AGENT_CONTEXT_RECENT_MESSAGES).toBe(8);
@@ -85,6 +94,42 @@ describe('AI agent harness environment gate', () => {
         LLM_PROVIDER: 'anthropic',
       }),
     ).toThrow(/LLM_PROVIDER/);
+  });
+
+  it('refuses evolution or auto-publish when their parent feature is disabled', () => {
+    const production = {
+      ...requiredConfig,
+      NODE_ENV: 'production',
+      VAULT_ENCRYPTION_KEY: 'vault-key-at-least-32-characters-long',
+      CORS_ORIGINS: 'https://app.example.com',
+      FRONTEND_URL: 'https://app.example.com',
+    };
+    expect(() =>
+      validateEnv({
+        ...production,
+        AI_AGENT_SKILLS_EVOLUTION_V1: 'true',
+      }),
+    ).toThrow(/EVOLUTION_V1 requires AI_AGENT_SKILLS_V1/);
+    expect(() =>
+      validateEnv({
+        ...production,
+        AI_AGENT_SKILLS_V1: 'true',
+        AI_AGENT_SKILLS_AUTO_PUBLISH_V1: 'true',
+      }),
+    ).toThrow(/AUTO_PUBLISH_V1 requires AI_AGENT_SKILLS_EVOLUTION_V1/);
+  });
+
+  it('requires a managed production administrator for acceptance operations', () => {
+    expect(() =>
+      validateEnv({
+        ...requiredConfig,
+        NODE_ENV: 'production',
+        VAULT_ENCRYPTION_KEY: 'vault-key-at-least-32-characters-long',
+        CORS_ORIGINS: 'https://app.example.com',
+        FRONTEND_URL: 'https://app.example.com',
+        AI_AGENT_ACCEPTANCE_V1: 'true',
+      }),
+    ).toThrow(/managed ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD/);
   });
 });
 

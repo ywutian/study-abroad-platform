@@ -38,6 +38,7 @@ export class AgentEvaluationTraceService {
         select: {
           id: true,
           agentType: true,
+          skillVersionId: true,
           budget: true,
           usage: true,
           contextSummary: true,
@@ -80,6 +81,7 @@ export class AgentEvaluationTraceService {
         runId: run.id,
         harnessVersion: 1,
         contextVersion: 1,
+        skillVersionId: run.skillVersionId,
         outcome,
         budget: run.budget,
         usage: run.usage,
@@ -106,12 +108,14 @@ export class AgentEvaluationTraceService {
         create: {
           runId,
           agentType: run.agentType,
+          skillVersionId: run.skillVersionId,
           outcome,
           payload: safePayload,
           redactedTypes: sanitized?.detectedTypes ?? [],
         },
         update: {
           outcome,
+          skillVersionId: run.skillVersionId,
           payload: safePayload,
           redactedTypes: sanitized?.detectedTypes ?? [],
         },

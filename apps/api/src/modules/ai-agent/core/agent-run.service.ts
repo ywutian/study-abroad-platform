@@ -15,6 +15,8 @@ import { AgentEvaluationTraceService } from './agent-evaluation-trace.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { AgentRunRetentionService } from './agent-run-retention.service';
 import { AgentHarnessOperationsService } from './agent-harness-operations.service';
+import { AgentSkillService } from '../skills/agent-skill.service';
+import { formatAgentRunSummary } from './agent-run-summary';
 import {
   completeAgentRun,
   failAgentRun,
@@ -55,6 +57,7 @@ export class AgentRunService {
     @Optional() retention?: AgentRunRetentionService,
     @Optional()
     private readonly harnessOperations?: AgentHarnessOperationsService,
+    @Optional() private readonly skills?: AgentSkillService,
   ) {
     this.evaluationTrace =
       evaluationTrace ??
@@ -75,6 +78,9 @@ export class AgentRunService {
     conversationId: string;
     agentType: AgentType;
   }) {
+    const skillVersionId = await this.skills?.getActiveVersionId(
+      input.agentType,
+    );
     const acceptanceBudget =
       await this.harnessOperations?.consumeBudgetOverride(input.userId);
     const budget = isRunContextEnabled(this.config)
@@ -83,6 +89,7 @@ export class AgentRunService {
     return this.prisma.agentRun.create({
       data: {
         ...input,
+        ...(skillVersionId ? { skillVersionId } : {}),
         ...(budget ? { budget: toInputJson(budget) } : {}),
         ...(budget
           ? {
@@ -209,21 +216,7 @@ export class AgentRunService {
 
   async getRunSummary(userId: string, runId: string) {
     const run = await this.getRun(userId, runId);
-    const approval = run.approvals[0];
-    return {
-      id: run.id,
-      conversationId: run.conversationId,
-      agentType: run.agentType,
-      status: run.status,
-      errorCode: run.errorCode,
-      errorMessage: run.errorMessage,
-      expiresAt: run.expiresAt?.toISOString() ?? null,
-      budget: run.budget,
-      usage: run.usage,
-      contextSummary: run.contextSummary,
-      result: run.result,
-      approval: approval ? formatApprovalRequest(approval) : undefined,
-    };
+    return formatAgentRunSummary(run);
   }
 
   async approve(userId: string, runId: string, approvalId: string) {

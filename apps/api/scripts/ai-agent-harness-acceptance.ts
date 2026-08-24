@@ -1,18 +1,26 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import {
+  fingerprint,
   JsonRecord,
+  requiredEnv,
   runUntilMetricObserved,
+  sleep,
+  unwrapAcceptancePayload,
 } from './ai-agent-harness-acceptance-support';
+import {
+  verifyDeclarativeSkills,
+  verifySkillVersionPin,
+} from './ai-agent-skills-acceptance-support';
 
 const args = new Set(process.argv.slice(2));
 if (!args.has('--production')) {
   throw new Error('Refusing to run without --production');
 }
 
-const apiBase = required('HARNESS_API_BASE').replace(/\/$/, '');
-const adminEmail = required('HARNESS_ADMIN_EMAIL');
-const adminPassword = required('HARNESS_ADMIN_PASSWORD');
-const expectedRevision = required('HARNESS_EXPECTED_REVISION');
+const apiBase = requiredEnv('HARNESS_API_BASE').replace(/\/$/, '');
+const adminEmail = requiredEnv('HARNESS_ADMIN_EMAIL');
+const adminPassword = requiredEnv('HARNESS_ADMIN_PASSWORD');
+const expectedRevision = requiredEnv('HARNESS_EXPECTED_REVISION');
 const stamp = new Date()
   .toISOString()
   .replace(/[-:.TZ]/g, '')
@@ -25,28 +33,8 @@ let token = '';
 let userId = '';
 let conversationId = '';
 let eventId = '';
-
-function required(name: string): string {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error(`Missing ${name}`);
-  return value;
-}
-
-function unwrap(payload: unknown): JsonRecord | null {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return null;
-  }
-  const record = payload as JsonRecord;
-  return record.data && typeof record.data === 'object' ? record.data : record;
-}
-
-function fingerprint(value: unknown): string {
-  return createHash('sha256').update(String(value)).digest('hex').slice(0, 16);
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+let skillsPass = false;
+let skillPinPass = false;
 
 async function request(
   path: string,
@@ -78,7 +66,11 @@ async function request(
   } catch {
     payload = null;
   }
-  return { ok: response.ok, status: response.status, payload: unwrap(payload) };
+  return {
+    ok: response.ok,
+    status: response.status,
+    payload: unwrapAcceptancePayload(payload),
+  };
 }
 
 function parseSse(text: string): JsonRecord[] {
@@ -182,6 +174,8 @@ async function main(): Promise<void> {
   }
   adminToken = admin.payload.accessToken;
 
+  skillsPass = await verifyDeclarativeSkills({ request, emit });
+
   const registration = await request('/auth/register', {
     method: 'POST',
     auth: 'none',
@@ -213,6 +207,8 @@ async function main(): Promise<void> {
   );
   const memoryStart = memoryRun.events.find((event) => event.type === 'start');
   const memoryDone = memoryRun.events.find((event) => event.type === 'done');
+  const memoryRunId =
+    typeof memoryStart?.runId === 'string' ? memoryStart.runId : '';
   const startedConversationId = memoryStart?.conversationId;
   if (!startedConversationId) throw new Error('conversation_contract_missing');
   conversationId = startedConversationId;
@@ -230,6 +226,7 @@ async function main(): Promise<void> {
     Array.isArray(memoryContext.entities) &&
     memoryContext.entities.length === 0 &&
     Boolean(memoryDone && conversationId);
+  skillPinPass = await verifySkillVersionPin({ request, emit }, memoryRunId);
   emit({
     scenario: 'memory_disabled',
     http: memoryRun.status,
@@ -424,6 +421,8 @@ async function main(): Promise<void> {
   });
 
   if (
+    !skillsPass ||
+    !skillPinPass ||
     !memoryPass ||
     !compressionPass ||
     !fallbackPass ||

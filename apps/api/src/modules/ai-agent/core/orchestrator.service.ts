@@ -36,8 +36,6 @@ import { FallbackService } from './fallback.service';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
-import { ConfigValidatorService } from '../config/config-validator.service';
-import { AGENT_CONFIGS } from '../config/agents.config';
 import { TOOLS } from '../config/tools.config';
 import {
   AgentChatContext,
@@ -56,6 +54,7 @@ import {
   getApprovalFingerprint,
   isAgentRunCheckpoint,
 } from './agent-run.service';
+import { AgentRuntimeConfigService } from '../skills/agent-runtime-config.service';
 
 export type { StreamEvent };
 
@@ -115,7 +114,7 @@ export class OrchestratorService {
     private workflowEngine: WorkflowEngineService,
     private configService: ConfigService,
     private contentModeration: ContentModerationService,
-    @Optional() private configValidator?: ConfigValidatorService,
+    private runtimeConfigs: AgentRuntimeConfigService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private fastRouter?: FastRouterService,
     @Optional() private embeddingRouter?: EmbeddingRouterService,
@@ -1339,9 +1338,10 @@ export class OrchestratorService {
       ...(conversation.metadata || {}),
       locale: checkpoint.locale,
     };
-    const config =
-      this.configValidator?.getValidatedConfig(checkpoint.agentType) ??
-      AGENT_CONFIGS[checkpoint.agentType];
+    const config = await this.runtimeConfigs.resolve(
+      checkpoint.agentType,
+      runId,
+    );
     if (!config) {
       await this.agentRuns.failRun(
         userId,
@@ -1676,13 +1676,10 @@ export class OrchestratorService {
     }
 
     // 企业级：使用 ConfigValidator 获取验证后的配置
-    const config =
-      this.configValidator?.getValidatedConfig(agentType) ??
-      AGENT_CONFIGS[agentType];
+    const config = await this.runtimeConfigs.resolve(agentType, runId);
 
     if (!config) {
       this.logger.error(`Agent configuration missing for type: ${agentType}`, {
-        availableAgents: Object.keys(AGENT_CONFIGS),
         requestedAgent: agentType,
       });
 

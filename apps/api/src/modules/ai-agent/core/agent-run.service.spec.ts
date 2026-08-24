@@ -241,6 +241,42 @@ describe('AgentRunService', () => {
     );
   });
 
+  it('pins the active Skill version when a run starts', async () => {
+    const skills = {
+      getActiveVersionId: jest.fn().mockResolvedValue('skill-school-v3'),
+    };
+    const pinnedService = new AgentRunService(
+      prisma as unknown as PrismaService,
+      {
+        get: jest.fn((key: string, fallback?: unknown) => {
+          if (key === 'AI_AGENT_HARNESS_V1') return 'true';
+          if (key === 'AI_AGENT_APPROVALS_V1') return 'true';
+          return fallback;
+        }),
+      } as unknown as ConfigService,
+      undefined,
+      undefined,
+      metrics as any,
+      undefined,
+      undefined,
+      skills as any,
+    );
+    prisma.agentRun.create.mockResolvedValue({ id: 'run-pinned' });
+
+    await pinnedService.createRun({
+      userId: 'user-1',
+      conversationId: 'conversation-1',
+      agentType: 'school' as any,
+    });
+
+    expect(skills.getActiveVersionId).toHaveBeenCalledWith('school');
+    expect(prisma.agentRun.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ skillVersionId: 'skill-school-v3' }),
+      }),
+    );
+  });
+
   it('atomically persists an approval and moves the run to WAITING_APPROVAL', async () => {
     prisma.agentApproval.findUnique.mockResolvedValue(null);
     prisma.agentRun.findFirst.mockResolvedValue({ id: 'run-1' });
