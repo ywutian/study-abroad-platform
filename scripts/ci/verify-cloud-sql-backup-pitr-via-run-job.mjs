@@ -4,7 +4,8 @@ import { normalizeCloudSqlInstanceReference } from './verify-cloud-sql-backup-pi
 
 const RESOURCE_NAME_PATTERN = /^[a-z][a-z0-9-]{0,61}[a-z0-9]$|^[a-z]$/;
 const REGION_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)+$/;
-const SERVICE_ACCOUNT_PATTERN = /^[a-z0-9-]+@[a-z0-9.-]+\.iam\.gserviceaccount\.com$/;
+const SERVICE_ACCOUNT_PATTERN = /^[a-z0-9-]+@(?:[a-z0-9.-]+\.iam|developer)\.gserviceaccount\.com$/;
+const PROJECT_NUMBER_PATTERN = /^\d{6,20}$/;
 const CLOUD_SDK_IMAGE =
   'gcr.io/google.com/cloudsdktool/google-cloud-cli:568.0.0-stable@sha256:bfd990926dc584ef463e5ebb1d2960a0c6e8b96e089ecfad12b84935f0bc8f6d';
 
@@ -13,6 +14,16 @@ function runGcloud(args, options = {}) {
     encoding: 'utf8',
     stdio: options.inherit ? 'inherit' : ['ignore', 'pipe', 'pipe'],
   });
+}
+
+export function resolveRuntimeServiceAccount(explicitServiceAccount, projectNumber) {
+  const normalizedExplicitServiceAccount = explicitServiceAccount.trim();
+  if (normalizedExplicitServiceAccount) return normalizedExplicitServiceAccount;
+  const normalizedProjectNumber = projectNumber.trim();
+  if (!PROJECT_NUMBER_PATTERN.test(normalizedProjectNumber)) {
+    throw new Error('invalid_cloud_run_project_number');
+  }
+  return `${normalizedProjectNumber}-compute@developer.gserviceaccount.com`;
 }
 
 export function buildCloudSqlRuntimeCheckScript() {
@@ -117,7 +128,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (!args.instance || !args.project || !args.region || !args.service) {
       throw new Error('missing_cloud_sql_runtime_check_argument');
     }
-    const runtimeServiceAccount = runGcloud([
+    const explicitRuntimeServiceAccount = runGcloud([
       'run',
       'services',
       'describe',
@@ -126,6 +137,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       `--region=${args.region}`,
       '--format=value(spec.template.spec.serviceAccountName)',
     ]).trim();
+    const projectNumber = explicitRuntimeServiceAccount
+      ? ''
+      : runGcloud(['projects', 'describe', args.project, '--format=value(projectNumber)']).trim();
+    const runtimeServiceAccount = resolveRuntimeServiceAccount(
+      explicitRuntimeServiceAccount,
+      projectNumber
+    );
     const plan = buildCloudSqlRunJobPlan({
       project: args.project,
       region: args.region,
