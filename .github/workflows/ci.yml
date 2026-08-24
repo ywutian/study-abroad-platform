@@ -1490,12 +1490,26 @@ jobs:
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_CLOUDSQL_INSTANCE: ${{ secrets.GCP_CLOUDSQL_INSTANCE }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
           mkdir -p /tmp/harness-release-evidence
-          node scripts/ci/verify-cloud-sql-backup-pitr.mjs \
-            --instance "$GCP_CLOUDSQL_INSTANCE" \
-            --project "$GCP_PROJECT_ID" \
-            --output /tmp/harness-release-evidence/cloud-sql-backup-pitr.json
+          EVIDENCE=/tmp/harness-release-evidence/cloud-sql-backup-pitr.json
+          if ! node scripts/ci/verify-cloud-sql-backup-pitr.mjs \
+              --instance "$GCP_CLOUDSQL_INSTANCE" \
+              --project "$GCP_PROJECT_ID" \
+              --output "$EVIDENCE"; then
+            node -e '
+              const fs = require("node:fs");
+              const evidence = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+              if (JSON.stringify(evidence.reasonCodes) !== JSON.stringify(["gcloud_read_only_check_failed"])) process.exit(1);
+            ' "$EVIDENCE"
+            node scripts/ci/verify-cloud-sql-backup-pitr-via-run-job.mjs \
+              --instance "$GCP_CLOUDSQL_INSTANCE" \
+              --project "$GCP_PROJECT_ID" \
+              --region "$GCP_REGION" \
+              --service study-abroad-api \
+              --output "$EVIDENCE"
+          fi
 
       - name: Upload Cloud SQL backup/PITR evidence
         if: always()
