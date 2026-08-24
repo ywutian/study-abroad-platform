@@ -1416,20 +1416,18 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Ensure production administrator bootstrap secret
+      - name: Validate production administrator password hash
         env:
-          ADMIN_BOOTSTRAP_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}
+          ADMIN_BOOTSTRAP_PASSWORD_HASH_B64: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD_HASH_B64 }}
         run: |
-          if [ -z "$ADMIN_BOOTSTRAP_PASSWORD" ]; then
-            echo "::error::ADMIN_BOOTSTRAP_PASSWORD repository secret is required"
+          if [ -z "$ADMIN_BOOTSTRAP_PASSWORD_HASH_B64" ]; then
+            echo "::error::ADMIN_BOOTSTRAP_PASSWORD_HASH_B64 repository secret is required"
             exit 1
           fi
-          if ! gcloud secrets describe admin-bootstrap-password --quiet >/dev/null 2>&1; then
-            printf '%s' "$ADMIN_BOOTSTRAP_PASSWORD" | gcloud secrets create admin-bootstrap-password \
-              --data-file=- \
-              --replication-policy=automatic \
-              --quiet
-          fi
+          ADMIN_HASH="$ADMIN_BOOTSTRAP_PASSWORD_HASH_B64" node -e '
+            const hash = Buffer.from(process.env.ADMIN_HASH, "base64").toString("utf8");
+            if (!/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(hash)) process.exit(1);
+          '
 
       - name: Configure Docker for Artifact Registry
         run: |
@@ -1616,8 +1614,8 @@ jobs:
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
             --add-volume=name=uploads,type=cloud-storage,bucket=study-abroad-prod-2025-uploads \
             --add-volume-mount=volume=uploads,mount-path=/mnt/uploads \
-            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|LLM_PROVIDER=openai|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|AI_AGENT_HARNESS_V1=true|AI_AGENT_HARNESS_MODE=action|AI_AGENT_APPROVALS_V1=true|AI_AGENT_APPROVAL_TTL_MS=900000|AI_AGENT_RUN_TTL_MS=86400000|AI_AGENT_RUN_RETENTION_DAYS=90|AI_AGENT_TRACE_RETENTION_DAYS=30|AI_AGENT_EXECUTION_LEASE_MS=120000|AI_AGENT_CONTEXT_V1=true|AI_AGENT_ACCEPTANCE_V1=true|AI_AGENT_SKILLS_V1=true|AI_AGENT_SKILLS_EVOLUTION_V1=true|AI_AGENT_SKILLS_AUTO_PUBLISH_V1=true|AI_AGENT_MAX_TOKENS_PER_RUN=24000|AI_AGENT_MAX_DURATION_MS=120000|AI_AGENT_CONTEXT_RECENT_MESSAGES=10|ADMIN_BOOTSTRAP_EMAIL=admin@example.com|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
-            --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest,ADMIN_BOOTSTRAP_PASSWORD=admin-bootstrap-password:latest" \
+            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|LLM_PROVIDER=openai|OPENAI_MODEL=deepseek-v4-pro|OPENAI_BASE_URL=https://xh.v1api.cc/v1|AI_AGENT_HARNESS_V1=true|AI_AGENT_HARNESS_MODE=action|AI_AGENT_APPROVALS_V1=true|AI_AGENT_APPROVAL_TTL_MS=900000|AI_AGENT_RUN_TTL_MS=86400000|AI_AGENT_RUN_RETENTION_DAYS=90|AI_AGENT_TRACE_RETENTION_DAYS=30|AI_AGENT_EXECUTION_LEASE_MS=120000|AI_AGENT_CONTEXT_V1=true|AI_AGENT_ACCEPTANCE_V1=true|AI_AGENT_SKILLS_V1=true|AI_AGENT_SKILLS_EVOLUTION_V1=true|AI_AGENT_SKILLS_AUTO_PUBLISH_V1=true|AI_AGENT_MAX_TOKENS_PER_RUN=24000|AI_AGENT_MAX_DURATION_MS=120000|AI_AGENT_CONTEXT_RECENT_MESSAGES=10|ADMIN_BOOTSTRAP_EMAIL=admin@example.com|ADMIN_BOOTSTRAP_PASSWORD_HASH_B64=${{ secrets.ADMIN_BOOTSTRAP_PASSWORD_HASH_B64 }}|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
+            --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest" \
             --timeout=1800 \
             --no-traffic \
             --tag=canary \

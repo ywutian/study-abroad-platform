@@ -117,7 +117,7 @@ const envSchema = z.object({
   // --- Frontend URL (for email links) ---
   FRONTEND_URL: z.string().url().optional(),
   ADMIN_BOOTSTRAP_EMAIL: z.string().email().optional(),
-  ADMIN_BOOTSTRAP_PASSWORD: z.string().min(32).optional(),
+  ADMIN_BOOTSTRAP_PASSWORD_HASH_B64: z.string().min(80).max(120).optional(),
 
   // --- AI / LLM (Optional) ---
   OPENAI_API_KEY: z.string().optional(),
@@ -314,10 +314,10 @@ export function validateEnv(
     if (
       result.data.AI_AGENT_ACCEPTANCE_V1 === 'true' &&
       (!result.data.ADMIN_BOOTSTRAP_EMAIL ||
-        !result.data.ADMIN_BOOTSTRAP_PASSWORD)
+        !result.data.ADMIN_BOOTSTRAP_PASSWORD_HASH_B64)
     ) {
       throw new Error(
-        'FATAL: production Agent acceptance requires managed ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD.',
+        'FATAL: production Agent acceptance requires managed ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD_HASH_B64.',
       );
     }
     if (
