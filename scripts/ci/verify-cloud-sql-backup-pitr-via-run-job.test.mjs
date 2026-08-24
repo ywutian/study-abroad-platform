@@ -3,8 +3,17 @@ import test from 'node:test';
 import {
   buildCloudSqlRunJobPlan,
   buildCloudSqlRuntimeCheckScript,
+  reasonCodeForRuntimeExitCode,
   resolveRuntimeServiceAccount,
 } from './verify-cloud-sql-backup-pitr-via-run-job.mjs';
+
+test('maps runtime task exit codes to stable sanitized reasons', () => {
+  assert.equal(reasonCodeForRuntimeExitCode(20), 'cloud_sql_metadata_unavailable');
+  assert.equal(reasonCodeForRuntimeExitCode(32), 'point_in_time_recovery_disabled');
+  assert.equal(reasonCodeForRuntimeExitCode(36), 'latest_backup_too_old');
+  assert.equal(reasonCodeForRuntimeExitCode(127), 'cloud_run_read_only_check_failed');
+  assert.equal(reasonCodeForRuntimeExitCode(undefined), 'cloud_run_read_only_check_failed');
+});
 
 test('uses an explicit production service identity when one is configured', () => {
   assert.equal(
@@ -39,6 +48,7 @@ test('builds a bounded read-only Cloud Run Job using the production service iden
     )
   );
   assert.ok(plan.executeArgs.includes('--wait'));
+  assert.ok(plan.taskResultArgs('check-123').includes('--execution=check-123'));
 });
 
 test('runtime check enforces state, backup, PITR, success, and a 36 hour freshness window', () => {
@@ -48,6 +58,8 @@ test('runtime check enforces state, backup, PITR, success, and a 36 hour freshne
   assert.match(script, /pitr_enabled.*true/s);
   assert.match(script, /latest_status.*SUCCESSFUL/s);
   assert.match(script, /age_seconds.*129600/s);
+  assert.match(script, /exit 20/);
+  assert.match(script, /exit 36/);
   assert.doesNotMatch(script, /delete|restore|update|patch/i);
 });
 
