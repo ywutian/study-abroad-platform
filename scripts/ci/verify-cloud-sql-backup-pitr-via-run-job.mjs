@@ -46,8 +46,9 @@ export function buildCloudSqlRuntimeCheckScript() {
 state="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(state)' 2>/dev/null)" || exit 20
 backup_enabled="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(settings.backupConfiguration.enabled)' 2>/dev/null)" || exit 20
 pitr_enabled="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(settings.backupConfiguration.pointInTimeRecoveryEnabled)' 2>/dev/null)" || exit 20
-latest="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(status,endTime,startTime)' 2>/dev/null)" || exit 21
-IFS=$'\\t' read -r latest_status latest_end latest_start <<< "$latest"
+latest_status="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(status)' 2>/dev/null)" || exit 21
+latest_end="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(endTime)' 2>/dev/null)" || exit 21
+latest_start="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(startTime)' 2>/dev/null)" || exit 21
 latest_time="$latest_end"
 test -n "$latest_time" || latest_time="$latest_start"
 test "$state" = RUNNABLE || exit 30

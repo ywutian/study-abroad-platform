@@ -64,6 +64,7 @@ test('runtime check enforces state, backup, PITR, success, and a 36 hour freshne
   assert.match(script, /age_seconds.*129600/s);
   assert.match(script, /exit 20/);
   assert.match(script, /exit 36/);
+  assert.doesNotMatch(script, /,/, 'gcloud --args treats commas as argument separators');
   assert.doesNotMatch(script, /delete|restore|update|patch/i);
 });
 
