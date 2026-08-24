@@ -361,6 +361,10 @@ jobs:
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: pnpm exec tsx scripts/eval/run-eval.ts --mode=fixtures --verbose
 
+      - name: Build shared package for Harness benchmark
+        if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        run: pnpm --filter @study-abroad/shared build
+
       - name: Run legacy ReWOO vs Harness benchmark gate
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: |
