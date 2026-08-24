@@ -129,7 +129,9 @@ describe('AI agent harness environment gate', () => {
         FRONTEND_URL: 'https://app.example.com',
         AI_AGENT_ACCEPTANCE_V1: 'true',
       }),
-    ).toThrow(/managed ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD/);
+    ).toThrow(
+      /managed ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD_HASH_B64/,
+    );
   });
 });
 

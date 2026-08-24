@@ -92,4 +92,4 @@ AI_AGENT_SKILLS_AUTO_PUBLISH_V1
 - 新 Agent Run 持久化了固定 Skill 版本
 - 所有合成账号、事件、会话、记忆和 Trace 均完成清理
 
-生产管理员密码由 Secret Manager 注入。首次发布前需配置 GitHub Actions Secret `ADMIN_BOOTSTRAP_PASSWORD`；部署流水线只在 GCP Secret Manager 缺少 `admin-bootstrap-password` 时通过标准输入创建，已有 Secret 不会被覆盖。启动服务会把指定管理员账号与托管密码对账：一致时无操作，不一致时轮换并同时撤销该账号的 Refresh Token；密钥不会进入仓库或日志。
+生产管理员明文密码只保存在 GitHub Actions Secret `ADMIN_BOOTSTRAP_PASSWORD`，Cloud Run 只接收对应 bcrypt 哈希的 Base64 形式 `ADMIN_BOOTSTRAP_PASSWORD_HASH_B64`。启动服务会把指定管理员账号与该固定哈希对账：一致时无操作，不一致时轮换并同时撤销该账号的 Refresh Token。Cloud Run、仓库和日志中均不存在可直接登录的密码；生产验收从受控 CI Secret 注入明文。

@@ -6,6 +6,7 @@ import { AdminBootstrapService } from './admin-bootstrap.service';
 describe('AdminBootstrapService', () => {
   it('reconciles a different credential and revokes refresh tokens', async () => {
     const existingHash = await bcrypt.hash('different-existing-password', 4);
+    const managedHash = await bcrypt.hash('m'.repeat(40), 4);
     const prisma: Record<string, any> = {
       user: {
         findUnique: jest.fn().mockResolvedValue({
@@ -25,7 +26,8 @@ describe('AdminBootstrapService', () => {
         get: jest.fn((key: string) => {
           if (key === 'NODE_ENV') return 'production';
           if (key === 'ADMIN_BOOTSTRAP_EMAIL') return 'admin@example.com';
-          if (key === 'ADMIN_BOOTSTRAP_PASSWORD') return 'm'.repeat(40);
+          if (key === 'ADMIN_BOOTSTRAP_PASSWORD_HASH_B64')
+            return Buffer.from(managedHash).toString('base64');
           return undefined;
         }),
       } as unknown as ConfigService,
@@ -35,7 +37,7 @@ describe('AdminBootstrapService', () => {
 
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'admin-1' },
-      data: { passwordHash: expect.any(String) },
+      data: { passwordHash: managedHash },
     });
     expect(prisma.refreshToken.deleteMany).toHaveBeenCalledWith({
       where: { userId: 'admin-1' },
@@ -68,7 +70,8 @@ describe('AdminBootstrapService', () => {
         get: jest.fn((key: string) => {
           if (key === 'NODE_ENV') return 'production';
           if (key === 'ADMIN_BOOTSTRAP_EMAIL') return 'admin@example.com';
-          if (key === 'ADMIN_BOOTSTRAP_PASSWORD') return managedPassword;
+          if (key === 'ADMIN_BOOTSTRAP_PASSWORD_HASH_B64')
+            return Buffer.from(passwordHash).toString('base64');
           return undefined;
         }),
       } as unknown as ConfigService,
@@ -76,5 +79,22 @@ describe('AdminBootstrapService', () => {
 
     await service.onModuleInit();
     expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when the managed value is not a bcrypt hash', async () => {
+    const service = new AdminBootstrapService(
+      {} as PrismaService,
+      {
+        get: jest.fn((key: string) => {
+          if (key === 'NODE_ENV') return 'production';
+          if (key === 'ADMIN_BOOTSTRAP_EMAIL') return 'admin@example.com';
+          if (key === 'ADMIN_BOOTSTRAP_PASSWORD_HASH_B64')
+            return Buffer.from('not-a-password-hash').toString('base64');
+          return undefined;
+        }),
+      } as unknown as ConfigService,
+    );
+
+    await expect(service.onModuleInit()).rejects.toThrow(/not a bcrypt hash/);
   });
 });
