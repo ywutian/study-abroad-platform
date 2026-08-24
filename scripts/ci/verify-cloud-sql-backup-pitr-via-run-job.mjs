@@ -6,6 +6,17 @@ const RESOURCE_NAME_PATTERN = /^[a-z][a-z0-9-]{0,61}[a-z0-9]$|^[a-z]$/;
 const REGION_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)+$/;
 const SERVICE_ACCOUNT_PATTERN = /^[a-z0-9-]+@(?:[a-z0-9.-]+\.iam|developer)\.gserviceaccount\.com$/;
 const PROJECT_NUMBER_PATTERN = /^\d{6,20}$/;
+const RUNTIME_EXIT_REASONS = new Map([
+  [20, 'cloud_sql_metadata_unavailable'],
+  [21, 'cloud_sql_backups_unavailable'],
+  [30, 'instance_not_runnable'],
+  [31, 'automated_backup_disabled'],
+  [32, 'point_in_time_recovery_disabled'],
+  [33, 'latest_backup_not_successful'],
+  [34, 'latest_backup_timestamp_missing'],
+  [35, 'latest_backup_timestamp_in_future'],
+  [36, 'latest_backup_too_old'],
+]);
 const CLOUD_SDK_IMAGE =
   'gcr.io/google.com/cloudsdktool/google-cloud-cli:568.0.0-stable@sha256:bfd990926dc584ef463e5ebb1d2960a0c6e8b96e089ecfad12b84935f0bc8f6d';
 
@@ -26,25 +37,47 @@ export function resolveRuntimeServiceAccount(explicitServiceAccount, projectNumb
   return `${normalizedProjectNumber}-compute@developer.gserviceaccount.com`;
 }
 
+export function reasonCodeForRuntimeExitCode(exitCode) {
+  return RUNTIME_EXIT_REASONS.get(Number(exitCode)) ?? 'cloud_run_read_only_check_failed';
+}
+
+export function findRuntimeTaskExitCode(value) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const exitCode = findRuntimeTaskExitCode(item);
+      if (exitCode !== undefined) return exitCode;
+    }
+    return undefined;
+  }
+  if (!value || typeof value !== 'object') return undefined;
+  for (const [key, item] of Object.entries(value)) {
+    if (key === 'exitCode' && Number.isFinite(Number(item))) return Number(item);
+    const exitCode = findRuntimeTaskExitCode(item);
+    if (exitCode !== undefined) return exitCode;
+  }
+  return undefined;
+}
+
 export function buildCloudSqlRuntimeCheckScript() {
   return `set -euo pipefail
-state="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(state)')"
-backup_enabled="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(settings.backupConfiguration.enabled)')"
-pitr_enabled="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(settings.backupConfiguration.pointInTimeRecoveryEnabled)')"
-latest="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(status,endTime,startTime)')"
-IFS=$'\\t' read -r latest_status latest_end latest_start <<< "$latest"
+state="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(state)' 2>/dev/null)" || exit 20
+backup_enabled="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(settings.backupConfiguration.enabled)' 2>/dev/null)" || exit 20
+pitr_enabled="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(settings.backupConfiguration.pointInTimeRecoveryEnabled)' 2>/dev/null)" || exit 20
+latest_status="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(status)' 2>/dev/null)" || exit 21
+latest_end="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(endTime)' 2>/dev/null)" || exit 21
+latest_start="$(gcloud sql backups list --instance="$INSTANCE_ID" --project="$PROJECT_ID" --limit=1 --sort-by='~endTime' --format='value(startTime)' 2>/dev/null)" || exit 21
 latest_time="$latest_end"
 test -n "$latest_time" || latest_time="$latest_start"
-test "$state" = RUNNABLE
-test "$backup_enabled" = True -o "$backup_enabled" = true
-test "$pitr_enabled" = True -o "$pitr_enabled" = true
-test "$latest_status" = SUCCESSFUL -o "$latest_status" = COMPLETED
-test -n "$latest_time"
+test "$state" = RUNNABLE || exit 30
+test "$backup_enabled" = True -o "$backup_enabled" = true || exit 31
+test "$pitr_enabled" = True -o "$pitr_enabled" = true || exit 32
+test "$latest_status" = SUCCESSFUL -o "$latest_status" = COMPLETED || exit 33
+test -n "$latest_time" || exit 34
 now_epoch="$(date -u +%s)"
-latest_epoch="$(date -u -d "$latest_time" +%s)"
+latest_epoch="$(date -u -d "$latest_time" +%s)" || exit 34
 age_seconds="$((now_epoch-latest_epoch))"
-test "$age_seconds" -ge -300
-test "$age_seconds" -le 129600
+test "$age_seconds" -ge -300 || exit 35
+test "$age_seconds" -le 129600 || exit 36
 printf 'CLOUD_SQL_BACKUP_CHECK_V1 pass=true\\n'`;
 }
 
@@ -96,6 +129,19 @@ export function buildCloudSqlRunJobPlan({ project, region, instance, runtimeServ
       '--sort-by=~metadata.creationTimestamp',
       '--format=value(metadata.name)',
     ],
+    taskResultArgs(execution) {
+      return [
+        'run',
+        'jobs',
+        'executions',
+        'tasks',
+        'list',
+        `--execution=${execution}`,
+        `--project=${project}`,
+        `--region=${region}`,
+        '--format=json',
+      ];
+    },
   };
 }
 
@@ -153,9 +199,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
     normalizedInstance = plan.normalizedInstance;
     runGcloud(plan.deployArgs, { inherit: true });
-    runGcloud(plan.executeArgs, { inherit: true });
+    let executionFailure;
+    try {
+      runGcloud(plan.executeArgs, { inherit: true });
+    } catch (error) {
+      executionFailure = error;
+    }
     const execution = runGcloud(plan.latestExecutionArgs).trim().split('\n')[0];
     if (!execution) throw new Error('cloud_run_execution_not_found');
+    if (executionFailure) {
+      const exitCode = findRuntimeTaskExitCode(
+        JSON.parse(runGcloud(plan.taskResultArgs(execution)))
+      );
+      throw new Error(reasonCodeForRuntimeExitCode(exitCode));
+    }
     const evidence = {
       schemaVersion: 'cloud-sql-backup-pitr-v1',
       checkedAt: new Date().toISOString(),
@@ -176,6 +233,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     fs.writeFileSync(output, `${JSON.stringify(evidence)}\n`, { encoding: 'utf8', mode: 0o600 });
     console.log(`Cloud SQL backup/PITR runtime verification passed via ${job}`);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'unknown_error';
+    const reasonCode = new Set([
+      ...RUNTIME_EXIT_REASONS.values(),
+      'cloud_run_read_only_check_failed',
+    ]).has(errorMessage)
+      ? errorMessage
+      : 'cloud_run_read_only_check_failed';
     fs.writeFileSync(
       output,
       `${JSON.stringify({
@@ -183,13 +247,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         checkedAt: new Date().toISOString(),
         instance: { name: normalizedInstance ?? 'invalid', project: args.project ?? 'invalid' },
         pass: false,
-        reasonCodes: ['cloud_run_read_only_check_failed'],
+        reasonCodes: [reasonCode],
       })}\n`,
       { encoding: 'utf8', mode: 0o600 }
     );
-    console.error(
-      `::error::Cloud SQL runtime verification failed: ${error instanceof Error ? error.message : 'unknown_error'}`
-    );
+    console.error(`::error::Cloud SQL runtime verification failed: ${reasonCode}`);
     process.exit(1);
   }
 }
