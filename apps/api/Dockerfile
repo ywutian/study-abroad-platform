@@ -133,11 +133,22 @@ RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
 # entry could never actually fire while engines.node is pinned to 20.x.
 #
 # npm 11 requires Node ^20.17.0; this base is 20.19.x. If that ever stops
-# holding, this line fails at build time rather than at deploy time.
+# holding, this line fails at build time rather than at deploy time. Pin npm so
+# rebuilding the same commit is deterministic. npm 11.19.0 still bundles
+# tar 7.5.19 (CVE-2026-73566); replace that nested runtime dependency with the
+# patched 7.5.22 release instead of suppressing the image scanner finding.
 #
 # npm itself must stay: migrate.sh runs `npx prisma migrate deploy` as a Cloud
 # Run Job from this image.
-RUN npm install -g npm@11
+RUN npm install -g npm@11.19.0 && \
+    mkdir -p /tmp/npm-tar && \
+    npm pack tar@7.5.22 --pack-destination /tmp/npm-tar >/dev/null && \
+    rm -rf /usr/local/lib/node_modules/npm/node_modules/tar && \
+    mkdir -p /usr/local/lib/node_modules/npm/node_modules/tar && \
+    tar -xzf /tmp/npm-tar/tar-7.5.22.tgz \
+      -C /usr/local/lib/node_modules/npm/node_modules/tar \
+      --strip-components=1 && \
+    rm -rf /tmp/npm-tar
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
