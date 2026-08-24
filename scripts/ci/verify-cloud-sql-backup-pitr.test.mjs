@@ -2,8 +2,38 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   evaluateCloudSqlEvidence,
+  normalizeCloudSqlInstanceReference,
   normalizeCloudSqlEvidence,
 } from './verify-cloud-sql-backup-pitr.mjs';
+
+test('accepts either an instance id or its project-qualified connection name', () => {
+  assert.equal(
+    normalizeCloudSqlInstanceReference('study-abroad-db', 'study-abroad-prod-2025'),
+    'study-abroad-db'
+  );
+  assert.equal(
+    normalizeCloudSqlInstanceReference(
+      'study-abroad-prod-2025:us-central1:study-abroad-db',
+      'study-abroad-prod-2025'
+    ),
+    'study-abroad-db'
+  );
+});
+
+test('rejects malformed or cross-project Cloud SQL connection names', () => {
+  assert.throws(
+    () =>
+      normalizeCloudSqlInstanceReference(
+        'different-project:us-central1:study-abroad-db',
+        'study-abroad-prod-2025'
+      ),
+    /invalid_cloud_sql_instance_reference/
+  );
+  assert.throws(
+    () => normalizeCloudSqlInstanceReference('project:region:instance:extra', 'project'),
+    /invalid_cloud_sql_instance_reference/
+  );
+});
 
 test('normalizes only auditable Cloud SQL backup/PITR fields', () => {
   const recent = new Date(Date.now() - 60 * 60 * 1000).toISOString();
