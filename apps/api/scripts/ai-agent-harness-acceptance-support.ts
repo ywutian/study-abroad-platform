@@ -62,6 +62,45 @@ export async function runUntilMetricObserved(options: {
   };
 }
 
+export async function requestApprovalWithRetry(options: {
+  maxAttempts: number;
+  runAttempt: () => Promise<{ status: number; events: JsonRecord[] }>;
+  readRun: (runId: string) => Promise<JsonRecord | null>;
+}): Promise<{
+  pending?: JsonRecord;
+  runId: string;
+  lastRun: JsonRecord | null;
+  http: number;
+  attempts: number;
+}> {
+  let pending: JsonRecord | undefined;
+  let runId = '';
+  let lastRun: JsonRecord | null = null;
+  let http = 0;
+  let attempts = 0;
+  for (let attempt = 1; attempt <= options.maxAttempts; attempt++) {
+    attempts = attempt;
+    const probe = await options.runAttempt();
+    http = probe.status;
+    const start = probe.events.find((event) => event.type === 'start');
+    const approvalEvent = probe.events.find(
+      (event) => event.type === 'approval_required',
+    );
+    runId = typeof start?.runId === 'string' ? start.runId : '';
+    if (
+      approvalEvent?.approval &&
+      typeof approvalEvent.approval === 'object' &&
+      !Array.isArray(approvalEvent.approval)
+    ) {
+      pending = approvalEvent.approval;
+    }
+    if (runId) lastRun = await options.readRun(runId);
+    if (pending?.approvalId && runId) break;
+    await sleep(250);
+  }
+  return { pending, runId, lastRun, http, attempts };
+}
+
 export function fingerprint(value: unknown): string {
   return createHash('sha256').update(String(value)).digest('hex').slice(0, 16);
 }
