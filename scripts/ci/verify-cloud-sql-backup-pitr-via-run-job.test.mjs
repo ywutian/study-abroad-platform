@@ -3,7 +3,23 @@ import test from 'node:test';
 import {
   buildCloudSqlRunJobPlan,
   buildCloudSqlRuntimeCheckScript,
+  resolveRuntimeServiceAccount,
 } from './verify-cloud-sql-backup-pitr-via-run-job.mjs';
+
+test('uses an explicit production service identity when one is configured', () => {
+  assert.equal(
+    resolveRuntimeServiceAccount('runtime@study-abroad-prod-2025.iam.gserviceaccount.com', ''),
+    'runtime@study-abroad-prod-2025.iam.gserviceaccount.com'
+  );
+});
+
+test('resolves the Cloud Run default Compute identity when the service omits one', () => {
+  assert.equal(
+    resolveRuntimeServiceAccount('', '123456789012'),
+    '123456789012-compute@developer.gserviceaccount.com'
+  );
+  assert.throws(() => resolveRuntimeServiceAccount('', 'unsafe-project-number'));
+});
 
 test('builds a bounded read-only Cloud Run Job using the production service identity', () => {
   const plan = buildCloudSqlRunJobPlan({
