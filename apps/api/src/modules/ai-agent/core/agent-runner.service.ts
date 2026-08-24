@@ -26,6 +26,7 @@ import {
   ToolDefinition,
 } from '../types';
 import { ActionSuggestion } from './types';
+import { AgentSkillService } from '../skills/agent-skill.service';
 
 @Injectable()
 export class AgentRunnerService {
@@ -35,6 +36,7 @@ export class AgentRunnerService {
     private workflow: WorkflowEngineService,
     private memory: MemoryService,
     @Optional() private configValidator?: ConfigValidatorService,
+    @Optional() private skills?: AgentSkillService,
   ) {}
 
   /**
@@ -46,9 +48,12 @@ export class AgentRunnerService {
     agentType: AgentType,
     conversation: ConversationState,
   ): Promise<AgentResponse> {
-    const config =
+    const baseConfig =
       this.configValidator?.getValidatedConfig(agentType) ??
       AGENT_CONFIGS[agentType];
+    const config = this.skills
+      ? (await this.skills.resolveForRun(agentType)).config
+      : baseConfig;
 
     // 配置缺失时返回降级响应
     if (!config) {

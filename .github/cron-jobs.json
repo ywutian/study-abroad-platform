@@ -23,6 +23,13 @@
       "sourceFile": "apps/api/src/modules/ai-agent/core/agent-run.service.ts"
     },
     {
+      "name": "agent-skill-evolution",
+      "schedule": "23 4 * * *",
+      "className": "AgentSkillEvolutionService",
+      "methodName": "runCycle",
+      "sourceFile": "apps/api/src/modules/ai-agent/skills/agent-skill-evolution.service.ts"
+    },
+    {
       "name": "application-analysis-experiment-scheduler-run-hourly-rollout-monitor",
       "schedule": "17 * * * *",
       "className": "ApplicationAnalysisExperimentScheduler",

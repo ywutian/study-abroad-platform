@@ -22,6 +22,8 @@ import {
   ModerationAction,
 } from '../security/content-moderation.service';
 import { AgentType } from '../types';
+import { AgentRuntimeConfigService } from '../skills/agent-runtime-config.service';
+import { AGENT_CONFIGS } from '../config/agents.config';
 
 describe('OrchestratorService', () => {
   let service: OrchestratorService;
@@ -84,6 +86,14 @@ describe('OrchestratorService', () => {
           provide: ConfigValidatorService,
           useValue: {
             validate: jest.fn().mockReturnValue(true),
+          },
+        },
+        {
+          provide: AgentRuntimeConfigService,
+          useValue: {
+            resolve: jest.fn((agentType: AgentType) =>
+              Promise.resolve(AGENT_CONFIGS[agentType]),
+            ),
           },
         },
         {

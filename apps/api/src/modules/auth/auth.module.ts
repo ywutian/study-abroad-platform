@@ -14,6 +14,7 @@ import { McpApiKeyService } from './mcp-api-key.service';
 import { McpApiKeyController } from './mcp-api-key.controller';
 import { UserModule } from '../user/user.module';
 import { AuditLogModule } from '../../common/services/audit-log.module';
+import { AdminBootstrapService } from './admin-bootstrap.service';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AuditLogModule } from '../../common/services/audit-log.module';
     BruteForceService,
     EmailEnumerationGuardService,
     McpApiKeyService,
+    AdminBootstrapService,
   ],
   exports: [AuthService, JwtModule, SessionManager, McpApiKeyService],
 })

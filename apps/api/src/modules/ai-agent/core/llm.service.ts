@@ -173,8 +173,10 @@ export class LLMService {
       const response = await this.provider.chat(request);
       const result = this.toInternalResponse(response);
 
-      // Token tracking + LLM call tracing (input/output stored in metadata JSONB)
-      if (this.tokenTracker && options.userId && response.usage) {
+      // Usage belongs to the provider response even when the caller deliberately
+      // omits a userId (for example, synthetic offline evaluations). Persistence
+      // remains user-scoped, but callers can still enforce cost gates.
+      if (response.usage) {
         const usage: TokenUsage = {
           promptTokens: response.usage.promptTokens,
           completionTokens: response.usage.completionTokens,
@@ -188,15 +190,17 @@ export class LLMService {
         };
         result.usage = usage;
 
-        await this.tokenTracker.trackUsage(options.userId, usage, {
-          conversationId: options.conversationId,
-          agentType: options.agentType as AgentType | undefined,
-          inputPreview: systemPrompt.slice(0, 500),
-          outputPreview: result.content.slice(0, 1000),
-          latencyMs: Date.now() - callStartTime,
-          finishReason: result.finishReason,
-          messageCount: messages.length,
-        });
+        if (this.tokenTracker && options.userId) {
+          await this.tokenTracker.trackUsage(options.userId, usage, {
+            conversationId: options.conversationId,
+            agentType: options.agentType as AgentType | undefined,
+            inputPreview: systemPrompt.slice(0, 500),
+            outputPreview: result.content.slice(0, 1000),
+            latencyMs: Date.now() - callStartTime,
+            finishReason: result.finishReason,
+            messageCount: messages.length,
+          });
+        }
       }
 
       return result;

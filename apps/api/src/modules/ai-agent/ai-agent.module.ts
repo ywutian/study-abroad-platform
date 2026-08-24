@@ -92,7 +92,13 @@ import { AgentThrottleGuard } from './guards';
 import { AiAgentController } from './ai-agent.controller';
 import { AgentAdminController } from './admin/agent-admin.controller';
 import { AgentHarnessAdminController } from './admin/agent-harness-admin.controller';
+import { AgentSkillsAdminController } from './admin/agent-skills-admin.controller';
 import { UserDataController } from './user-data.controller';
+import { AgentSkillPolicyService } from './skills/agent-skill-policy.service';
+import { AgentSkillService } from './skills/agent-skill.service';
+import { AgentSkillEvaluationService } from './skills/agent-skill-evaluation.service';
+import { AgentSkillEvolutionService } from './skills/agent-skill-evolution.service';
+import { AgentRuntimeConfigService } from './skills/agent-runtime-config.service';
 
 // Middleware
 import {
@@ -128,6 +134,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     AiAgentController,
     AgentAdminController,
     AgentHarnessAdminController,
+    AgentSkillsAdminController,
     UserDataController,
   ],
   providers: [
@@ -165,6 +172,11 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     // Core Agent Services
     MemoryService, // Legacy (backward-compatible)
     AgentEvaluationTraceService,
+    AgentSkillPolicyService,
+    AgentSkillService,
+    AgentSkillEvaluationService,
+    AgentSkillEvolutionService,
+    AgentRuntimeConfigService,
     AgentRunRetentionService,
     AgentRunService,
     ToolPolicyService,

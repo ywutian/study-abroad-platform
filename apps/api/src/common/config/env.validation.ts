@@ -116,6 +116,8 @@ const envSchema = z.object({
 
   // --- Frontend URL (for email links) ---
   FRONTEND_URL: z.string().url().optional(),
+  ADMIN_BOOTSTRAP_EMAIL: z.string().email().optional(),
+  ADMIN_BOOTSTRAP_PASSWORD: z.string().min(32).optional(),
 
   // --- AI / LLM (Optional) ---
   OPENAI_API_KEY: z.string().optional(),
@@ -147,6 +149,9 @@ const envSchema = z.object({
     .default(120000),
   AI_AGENT_CONTEXT_V1: z.enum(['true', 'false']).default('false'),
   AI_AGENT_ACCEPTANCE_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_SKILLS_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_SKILLS_EVOLUTION_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_SKILLS_AUTO_PUBLISH_V1: z.enum(['true', 'false']).default('false'),
   AI_AGENT_MAX_TOKENS_PER_RUN: z.coerce.number().int().min(1000).default(24000),
   AI_AGENT_MAX_DURATION_MS: z.coerce.number().int().min(10000).default(120000),
   AI_AGENT_CONTEXT_RECENT_MESSAGES: z.coerce
@@ -306,6 +311,31 @@ export function validateEnv(
 
   // Production checks — errors for security-critical, warnings for recommended
   if (result.data.NODE_ENV === 'production') {
+    if (
+      result.data.AI_AGENT_ACCEPTANCE_V1 === 'true' &&
+      (!result.data.ADMIN_BOOTSTRAP_EMAIL ||
+        !result.data.ADMIN_BOOTSTRAP_PASSWORD)
+    ) {
+      throw new Error(
+        'FATAL: production Agent acceptance requires managed ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD.',
+      );
+    }
+    if (
+      result.data.AI_AGENT_SKILLS_EVOLUTION_V1 === 'true' &&
+      result.data.AI_AGENT_SKILLS_V1 !== 'true'
+    ) {
+      throw new Error(
+        'FATAL: AI_AGENT_SKILLS_EVOLUTION_V1 requires AI_AGENT_SKILLS_V1=true.',
+      );
+    }
+    if (
+      result.data.AI_AGENT_SKILLS_AUTO_PUBLISH_V1 === 'true' &&
+      result.data.AI_AGENT_SKILLS_EVOLUTION_V1 !== 'true'
+    ) {
+      throw new Error(
+        'FATAL: AI_AGENT_SKILLS_AUTO_PUBLISH_V1 requires AI_AGENT_SKILLS_EVOLUTION_V1=true.',
+      );
+    }
     if (
       result.data.PAYMENTS_ENABLED !== 'false' ||
       result.data.PAYMENT_PROVIDER !== 'none'

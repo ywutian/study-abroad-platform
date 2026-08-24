@@ -25,6 +25,7 @@ import { applyInStateRates } from './seed-instate-rate-2026-05-31';
 import { applyTestingPolicies } from './seed-testing-policy-2026-07-25';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
+import { seedAdmin } from './seeds/seed-admin';
 
 const prisma = new PrismaClient();
 
@@ -2032,29 +2033,7 @@ export async function main() {
     );
   }
 
-  // Create admin user
-  const adminUserExists = await prisma.user.findUnique({
-    where: { email: 'admin@example.com' },
-  });
-
-  if (!adminUserExists) {
-    console.log('👑 Creating admin user...');
-    const bcrypt = await import('bcrypt');
-    const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
-
-    await prisma.user.create({
-      data: {
-        email: 'admin@example.com',
-        passwordHash: adminPasswordHash,
-        emailVerified: true,
-        role: 'SUPER_ADMIN',
-        locale: 'zh',
-      },
-    });
-    console.log(
-      '✅ Admin user created (email: admin@example.com, password: Admin123!)',
-    );
-  }
+  await seedAdmin(prisma);
 
   // ========== Chat Test Users & Data ==========
   await seedChatTestData();

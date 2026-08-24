@@ -3466,18 +3466,60 @@ model AgentSecurityEvent {
 
 // 配置版本
 model AgentConfigVersion {
-  id         String   @id @default(cuid())
-  configType String
-  configKey  String
-  version    Int
-  value      Json
-  isActive   Boolean  @default(false)
-  createdBy  String?
-  comment    String?
-  createdAt  DateTime @default(now())
+  id              String   @id @default(cuid())
+  configType      String
+  configKey       String
+  version         Int
+  value           Json
+  isActive        Boolean  @default(false)
+  schemaVersion   Int      @default(1)
+  parentVersionId String?
+  contentHash     String?
+  source          String   @default("ADMIN")
+  changeReason    String?  @db.Text
+  createdBy       String?
+  comment         String?
+  createdAt       DateTime @default(now())
+
+  parentVersion             AgentConfigVersion?    @relation("AgentConfigVersionParent", fields: [parentVersionId], references: [id], onDelete: SetNull)
+  childVersions             AgentConfigVersion[]   @relation("AgentConfigVersionParent")
+  skillRuns                 AgentRun[]             @relation("AgentRunSkillVersion")
+  evaluationTraces          AgentEvaluationTrace[] @relation("AgentTraceSkillVersion")
+  baselineSkillEvaluations  AgentSkillEvaluation[] @relation("BaselineSkillVersion")
+  candidateSkillEvaluations AgentSkillEvaluation[] @relation("CandidateSkillVersion")
+  activeDeployments         AgentSkillDeployment[] @relation("ActiveSkillVersion")
+  previousDeployments       AgentSkillDeployment[] @relation("PreviousSkillVersion")
+  skillSignals              AgentSkillSignal[]     @relation("CandidateSignalSkillVersion")
+  skillAudits               AgentSkillAudit[]      @relation("AuditSkillVersion")
 
   @@unique([configType, configKey, version])
+  @@unique([configType, configKey, contentHash])
   @@index([isActive])
+  @@index([configType, configKey, createdAt(sort: Desc)])
+}
+
+enum AgentSkillEvaluationStage {
+  OFFLINE
+  PRODUCTION
+}
+
+enum AgentSkillEvaluationStatus {
+  RUNNING
+  PASSED
+  FAILED
+}
+
+enum AgentSkillDeploymentStatus {
+  ACTIVE
+  ROLLED_BACK
+  DISABLED
+}
+
+enum AgentSkillSignalStatus {
+  PENDING
+  CANDIDATE_CREATED
+  CLOSED
+  PAUSED
 }
 
 enum AgentRunStatus {
@@ -3502,13 +3544,15 @@ enum AgentApprovalStatus {
 
 // Durable lifecycle for one user-initiated Agent execution.
 model AgentRun {
-  id                String            @id @default(cuid())
+  id                String              @id @default(cuid())
   userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversationId    String
-  conversation      AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation      AgentConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   agentType         String
-  status            AgentRunStatus    @default(RUNNING)
+  skillVersionId    String?
+  skillVersion      AgentConfigVersion? @relation("AgentRunSkillVersion", fields: [skillVersionId], references: [id], onDelete: SetNull)
+  status            AgentRunStatus      @default(RUNNING)
   checkpoint        Json?
   budget            Json?
   usage             Json?
@@ -3516,13 +3560,13 @@ model AgentRun {
   result            Json?
   currentApprovalId String?
   errorCode         String?
-  errorMessage      String?           @db.Text
-  version           Int               @default(0)
+  errorMessage      String?             @db.Text
+  version           Int                 @default(0)
   expiresAt         DateTime?
-  startedAt         DateTime          @default(now())
+  startedAt         DateTime            @default(now())
   completedAt       DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   approvals       AgentApproval[]
   evaluationTrace AgentEvaluationTrace?
@@ -3530,24 +3574,101 @@ model AgentRun {
   @@index([userId, status])
   @@index([conversationId, createdAt(sort: Desc)])
   @@index([status, expiresAt])
+  @@index([skillVersionId])
 }
 
 // Redacted, structured evidence used for offline evaluation and future Skill improvement.
 // Raw prompts, tool arguments/results, credentials, and personal materials are never stored here.
 model AgentEvaluationTrace {
-  id            String   @id @default(cuid())
-  runId         String   @unique
-  run           AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
-  traceVersion  Int      @default(1)
-  agentType     String
-  outcome       String
-  payload       Json
-  redactedTypes String[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String              @id @default(cuid())
+  runId          String              @unique
+  run            AgentRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  traceVersion   Int                 @default(1)
+  agentType      String
+  skillVersionId String?
+  skillVersion   AgentConfigVersion? @relation("AgentTraceSkillVersion", fields: [skillVersionId], references: [id], onDelete: SetNull)
+  outcome        String
+  payload        Json
+  redactedTypes  String[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   @@index([agentType, outcome])
+  @@index([skillVersionId, createdAt])
   @@index([createdAt])
+}
+
+// Versioned evaluation evidence for a declarative Skill candidate.
+model AgentSkillEvaluation {
+  id                 String                     @id @default(cuid())
+  agentType          String
+  baselineVersionId  String
+  candidateVersionId String
+  baselineVersion    AgentConfigVersion         @relation("BaselineSkillVersion", fields: [baselineVersionId], references: [id], onDelete: Restrict)
+  candidateVersion   AgentConfigVersion         @relation("CandidateSkillVersion", fields: [candidateVersionId], references: [id], onDelete: Restrict)
+  datasetVersion     String
+  stage              AgentSkillEvaluationStage  @default(OFFLINE)
+  status             AgentSkillEvaluationStatus @default(RUNNING)
+  metrics            Json
+  hardFailures       String[]
+  passed             Boolean                    @default(false)
+  startedAt          DateTime                   @default(now())
+  completedAt        DateTime?
+  createdAt          DateTime                   @default(now())
+
+  @@index([candidateVersionId, stage, createdAt(sort: Desc)])
+  @@index([agentType, status, createdAt(sort: Desc)])
+}
+
+// One atomic active pointer per Agent type. There is no traffic percentage:
+// publish means 100%, and previousVersionId is the immediate rollback target.
+model AgentSkillDeployment {
+  id                String                     @id @default(cuid())
+  agentType         String                     @unique
+  activeVersionId   String
+  previousVersionId String?
+  activeVersion     AgentConfigVersion         @relation("ActiveSkillVersion", fields: [activeVersionId], references: [id], onDelete: Restrict)
+  previousVersion   AgentConfigVersion?        @relation("PreviousSkillVersion", fields: [previousVersionId], references: [id], onDelete: SetNull)
+  status            AgentSkillDeploymentStatus @default(ACTIVE)
+  activatedAt       DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+
+  @@index([activeVersionId])
+}
+
+// Redacted, clustered feedback. Payload is constrained to counters/reason codes;
+// prompts, tool arguments, results and user material are forbidden.
+model AgentSkillSignal {
+  id                 String                 @id @default(cuid())
+  agentType          String
+  clusterKey         String
+  signalType         String
+  occurrenceCount    Int                    @default(1)
+  payload            Json
+  status             AgentSkillSignalStatus @default(PENDING)
+  candidateVersionId String?
+  candidateVersion   AgentConfigVersion?    @relation("CandidateSignalSkillVersion", fields: [candidateVersionId], references: [id], onDelete: SetNull)
+  lastObservedAt     DateTime               @default(now())
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  @@unique([agentType, clusterKey])
+  @@index([status, occurrenceCount, lastObservedAt])
+}
+
+model AgentSkillAudit {
+  id        String              @id @default(cuid())
+  agentType String
+  action    String
+  versionId String?
+  version   AgentConfigVersion? @relation("AuditSkillVersion", fields: [versionId], references: [id], onDelete: SetNull)
+  actor     String
+  reason    String?             @db.Text
+  metadata  Json?
+  createdAt DateTime            @default(now())
+
+  @@index([agentType, createdAt(sort: Desc)])
+  @@index([versionId])
 }
 
 // Approval is bound to the exact normalized tool arguments and can be claimed once.

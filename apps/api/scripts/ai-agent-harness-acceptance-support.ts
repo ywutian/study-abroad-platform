@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 export interface JsonRecord {
   [key: string]: unknown;
   accessToken?: string;
@@ -25,6 +27,20 @@ export interface JsonRecord {
   user?: JsonRecord;
 }
 
+export function requiredEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) throw new Error(`Missing ${name}`);
+  return value;
+}
+
+export function unwrapAcceptancePayload(payload: unknown): JsonRecord | null {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return null;
+  }
+  const record = payload as JsonRecord;
+  return record.data && typeof record.data === 'object' ? record.data : record;
+}
+
 export async function runUntilMetricObserved(options: {
   baseline: number;
   maxAttempts: number;
@@ -44,4 +60,12 @@ export async function runUntilMetricObserved(options: {
     metricAfter,
     observed: false,
   };
+}
+
+export function fingerprint(value: unknown): string {
+  return createHash('sha256').update(String(value)).digest('hex').slice(0, 16);
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
