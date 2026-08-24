@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { extractCanaryUrl } from './cloud-run-canary-url.mjs';
+import {
+  extractCanaryUrl,
+  extractFullTrafficRevision,
+} from './cloud-run-canary-url.mjs';
 import { evaluateDeployHealth } from './validate-deploy-health.mjs';
 
 test('extracts Cloud Run canary URL from tagged traffic', () => {
@@ -20,6 +23,22 @@ test('returns empty string when canary URL is missing', () => {
   const url = extractCanaryUrl({ status: { traffic: [{ percent: 100 }] } });
 
   assert.equal(url, '');
+});
+
+test('extracts only the revision receiving exactly 100% traffic', () => {
+  const service = {
+    status: {
+      traffic: [
+        { revisionName: 'api-old', percent: 0, tag: 'canary' },
+        { revisionName: 'api-live', percent: 100 },
+      ],
+    },
+  };
+  assert.equal(extractFullTrafficRevision(service), 'api-live');
+  assert.equal(
+    extractFullTrafficRevision({ status: { traffic: [{ percent: 100 }] } }),
+    ''
+  );
 });
 
 test('passes deploy health when only Redis is degraded', () => {

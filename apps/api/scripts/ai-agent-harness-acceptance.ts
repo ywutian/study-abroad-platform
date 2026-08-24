@@ -2,11 +2,14 @@ import { randomBytes } from 'node:crypto';
 import {
   fingerprint,
   JsonRecord,
+  parseAcceptanceSse,
+  pollTerminalAgentRun,
   requestApprovalWithRetry,
   requiredEnv,
   runUntilMetricObserved,
   sleep,
   unwrapAcceptancePayload,
+  verifyAndAcknowledgeHarnessAlert,
 } from './ai-agent-harness-acceptance-support';
 import {
   verifyDeclarativeSkills,
@@ -34,6 +37,7 @@ let token = '';
 let userId = '';
 let conversationId = '';
 let eventId = '';
+let fallbackAlertId = '';
 let skillsPass = false;
 let skillPinPass = false;
 
@@ -74,22 +78,6 @@ async function request(
   };
 }
 
-function parseSse(text: string): JsonRecord[] {
-  return text
-    .split('\n')
-    .filter((line) => line.startsWith('data: '))
-    .map((line) => line.slice(6))
-    .filter((value) => value !== '[DONE]')
-    .map((value) => {
-      try {
-        return JSON.parse(value) as JsonRecord;
-      } catch {
-        return null;
-      }
-    })
-    .filter((value): value is JsonRecord => value !== null);
-}
-
 async function streamChat(
   message: string,
   existingConversationId?: string,
@@ -111,7 +99,10 @@ async function streamChat(
       stream: true,
     }),
   });
-  return { status: response.status, events: parseSse(await response.text()) };
+  return {
+    status: response.status,
+    events: parseAcceptanceSse(await response.text()),
+  };
 }
 
 async function evidenceTotals(): Promise<Record<string, number>> {
@@ -134,22 +125,6 @@ function emit(record: JsonRecord): void {
       ...record,
     })}\n`,
   );
-}
-
-async function pollRun(runId: string): Promise<JsonRecord> {
-  for (let attempt = 0; attempt < 60; attempt++) {
-    const response = await request(`/ai-agent/runs/${runId}`);
-    if (
-      response.ok &&
-      ['COMPLETED', 'FAILED', 'CANCELLED', 'EXPIRED'].includes(
-        String(response.payload?.status ?? ''),
-      )
-    ) {
-      return { ...(response.payload as JsonRecord) };
-    }
-    await sleep(1000);
-  }
-  throw new Error('run_terminal_timeout');
 }
 
 async function createGrant(
@@ -293,10 +268,18 @@ async function main(): Promise<void> {
   const fallbackDelta =
     fallbackProbe.metricAfter -
     (fallbackBefore.context_compression_fallback ?? 0);
+  const fallbackAlert = await verifyAndAcknowledgeHarnessAlert({
+    request,
+    source: 'conversationcontextservice',
+    acknowledgementNote: 'Synthetic production acceptance alert acknowledged',
+  });
+  fallbackAlertId = fallbackAlert.unacknowledgedAlertId;
   const fallbackPass =
     fallbackProbe.observed &&
     summaryHash === retainedHash &&
-    fallbackDelta === 1;
+    fallbackDelta === 1 &&
+    fallbackAlert.persisted &&
+    fallbackAlert.acknowledged;
   emit({
     scenario: 'context_compression_fallback',
     http: afterFallback.status,
@@ -307,6 +290,8 @@ async function main(): Promise<void> {
     metricBefore: fallbackBefore.context_compression_fallback ?? 0,
     metricAfter: fallbackProbe.metricAfter,
     attempts: fallbackProbe.attempts,
+    alertPersisted: fallbackAlert.persisted,
+    alertAcknowledged: fallbackAlert.acknowledged,
     pass: fallbackPass,
     reasonCode: fallbackPass
       ? 'LAST_VALID_SUMMARY_RETAINED'
@@ -349,12 +334,12 @@ async function main(): Promise<void> {
     }
   }
   abort.abort();
-  const approvalRun = await pollRun(runId);
+  const approvalRun = await pollTerminalAgentRun({ request, runId });
   const reconnect = await fetch(`${apiBase}/ai-agent/runs/${runId}/resume`, {
     method: 'POST',
     headers: { authorization: `Bearer ${token}` },
   });
-  const reconnectEvents = parseSse(await reconnect.text());
+  const reconnectEvents = parseAcceptanceSse(await reconnect.text());
   const events = await request('/timelines/personal-events');
   const matches = Array.isArray(events.payload)
     ? events.payload.filter((item: JsonRecord) => item.title === eventTitle)
@@ -398,7 +383,7 @@ async function main(): Promise<void> {
   const budgetRunId =
     typeof budgetStart?.runId === 'string' ? budgetStart.runId : '';
   if (!budgetRunId) throw new Error('budget_run_missing');
-  const budgetRun = await pollRun(budgetRunId);
+  const budgetRun = await pollTerminalAgentRun({ request, runId: budgetRunId });
   const budgetAfter = await evidenceTotals();
   const tokenDelta =
     (budgetAfter.token_budget_exceeded ?? 0) -
@@ -441,6 +426,17 @@ async function cleanup(): Promise<void> {
     accountSoftDeleted: false,
   };
   try {
+    if (adminToken && fallbackAlertId) {
+      await request(
+        `/admin/ai-agent/harness/alerts/${encodeURIComponent(fallbackAlertId)}/acknowledge`,
+        {
+          method: 'POST',
+          auth: 'admin',
+          body: { notes: 'Synthetic acceptance cleanup' },
+        },
+      );
+      fallbackAlertId = '';
+    }
     if (token && eventId) {
       result.eventDeleted = (
         await request(

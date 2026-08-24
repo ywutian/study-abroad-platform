@@ -199,6 +199,9 @@ jobs:
       - name: Governance check (blocking)
         run: pnpm lint:integration --domain=governance
 
+      - name: CI release-script tests
+        run: node --test scripts/ci/*.test.mjs
+
       - name: Root guardrails (coverage / any / file-size / gate-proof ratchets, audit gate, deploy drift, seed parity)
         run: |
           pnpm lint:coverage-ratchet
@@ -357,6 +360,25 @@ jobs:
       - name: Run AI Eval (Fixtures)
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: pnpm exec tsx scripts/eval/run-eval.ts --mode=fixtures --verbose
+
+      - name: Build shared package for Harness benchmark
+        if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        run: pnpm --filter @study-abroad/shared build
+
+      - name: Run legacy ReWOO vs Harness benchmark gate
+        if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        run: |
+          mkdir -p /tmp/ai-agent-benchmark
+          pnpm harness:benchmark --output /tmp/ai-agent-benchmark/report.json
+
+      - name: Upload sanitized Harness benchmark report
+        if: always() && (needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push')
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-agent-harness-benchmark-${{ github.sha }}
+          path: /tmp/ai-agent-benchmark/report.json
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Run API tests
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
@@ -1404,6 +1426,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Setup pnpm for post-deploy acceptance
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js for post-deploy acceptance
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install post-deploy acceptance dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v3
         with:
@@ -1429,16 +1463,52 @@ jobs:
             if (!/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(hash)) process.exit(1);
           '
 
-      - name: Configure Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
-
       - name: Save previous revision for rollback
         id: prev
         run: |
           REGION="${{ secrets.GCP_REGION }}"
-          PREV=$(gcloud run revisions list --service=study-abroad-api --region=$REGION --format='value(REVISION)' --limit=1 2>/dev/null || echo "")
+          PREV=$(gcloud run services describe study-abroad-api \
+            --region="$REGION" --format=json 2>/dev/null | \
+            node scripts/ci/cloud-run-canary-url.mjs \
+              --full-traffic-revision 2>/dev/null || true)
+          if [ -z "$PREV" ]; then
+            echo "::error::Could not identify the live 100% revision for rollback"
+            exit 1
+          fi
           echo "revision=$PREV" >> $GITHUB_OUTPUT
+
+      - name: Initialize sanitized release evidence
+        run: |
+          mkdir -p /tmp/harness-release-evidence
+          node -e 'const fs=require("node:fs"); fs.writeFileSync("/tmp/harness-release-evidence/harness-acceptance.json", JSON.stringify({schemaVersion:"ai-agent-harness-acceptance-v1", revision:"", records:[], pass:false, reasonCodes:["HARNESS_ACCEPTANCE_NOT_REACHED"]})+"\\n")'
+
+      # Read-only release prerequisite. This never creates, restores, or
+      # deletes a backup; it records only Cloud SQL configuration and backup
+      # timestamps in a sanitized artifact.
+      - name: Verify Cloud SQL backup and PITR (read-only)
+        id: cloud-sql-backup
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_CLOUDSQL_INSTANCE: ${{ secrets.GCP_CLOUDSQL_INSTANCE }}
+        run: |
+          mkdir -p /tmp/harness-release-evidence
+          node scripts/ci/verify-cloud-sql-backup-pitr.mjs \
+            --instance "$GCP_CLOUDSQL_INSTANCE" \
+            --project "$GCP_PROJECT_ID" \
+            --output /tmp/harness-release-evidence/cloud-sql-backup-pitr.json
+
+      - name: Upload Cloud SQL backup/PITR evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cloud-sql-backup-pitr-${{ github.sha }}
+          path: /tmp/harness-release-evidence/cloud-sql-backup-pitr.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
 
       - name: Build and push image
         run: |
@@ -1746,6 +1816,55 @@ jobs:
           echo "::error::Live cron registry did not converge after traffic promotion"
           exit 1
 
+      # Post-100% production acceptance is the final application gate. The
+      # runner uses a disposable synthetic account and emits only allowlisted
+      # evidence. The validator rejects any new field before an artifact is
+      # uploaded, so prompts, tool payloads, tokens, and personal data cannot
+      # enter the release record.
+      - name: Run Harness production acceptance after 100% promotion
+        id: harness-acceptance
+        if: success()
+        env:
+          HARNESS_API_BASE: ${{ steps.smoke.outputs.url }}/api/v1
+          HARNESS_ADMIN_EMAIL: admin@example.com
+          HARNESS_ADMIN_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}
+          HARNESS_EXPECTED_REVISION: ${{ steps.deploy-canary.outputs.revision }}
+        run: |
+          mkdir -p /tmp/harness-release-evidence
+          if [ -z "$HARNESS_ADMIN_PASSWORD" ]; then
+            echo "::error::ADMIN_BOOTSTRAP_PASSWORD repository secret is required for post-deploy acceptance"
+            node -e 'const fs=require("node:fs"); fs.writeFileSync("/tmp/harness-release-evidence/harness-acceptance.json", JSON.stringify({schemaVersion:"ai-agent-harness-acceptance-v1", revision:process.env.HARNESS_EXPECTED_REVISION, records:[], pass:false, reasonCodes:["ADMIN_BOOTSTRAP_PASSWORD_MISSING"]})+"\\n")'
+            exit 1
+          fi
+          echo "::add-mask::$HARNESS_ADMIN_PASSWORD"
+          set +e
+          pnpm harness:acceptance --production \
+            > /tmp/harness-release-evidence/runner.jsonl \
+            2> /tmp/harness-release-evidence/runner.stderr
+          RUNNER_STATUS=$?
+          set -e
+          set +e
+          HARNESS_EVIDENCE_INPUT=/tmp/harness-release-evidence/runner.jsonl \
+            HARNESS_EVIDENCE_OUTPUT=/tmp/harness-release-evidence/harness-acceptance.json \
+            HARNESS_EXPECTED_REVISION="${HARNESS_EXPECTED_REVISION}" \
+            node scripts/ci/validate-harness-acceptance-evidence.mjs
+          VALIDATOR_STATUS=$?
+          set -e
+          if [ "$RUNNER_STATUS" -ne 0 ]; then
+            echo "::error::Harness production runner failed (status ${RUNNER_STATUS})"
+            exit "$RUNNER_STATUS"
+          fi
+          exit "$VALIDATOR_STATUS"
+
+      - name: Upload sanitized Harness acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-agent-harness-acceptance-${{ github.sha }}
+          path: /tmp/harness-release-evidence/harness-acceptance.json
+          if-no-files-found: error
+          retention-days: 90
+
       # Deleting stale schedules happens ONLY after the assert passes. Rollback
       # reverts traffic, never scheduler topology — pruning earlier would leave
       # a failed deploy's rolled-back revision missing schedules it still needs.
@@ -1790,4 +1909,30 @@ jobs:
           gcloud run services update-traffic study-abroad-api \
             --region="$REGION" \
             --to-revisions="$PREV=100" \
-            --quiet || echo "Rollback failed — manual intervention required"
+            --quiet
+
+          URL=$(gcloud run services describe study-abroad-api \
+            --region="$REGION" --format='value(status.url)')
+          for i in 1 2 3 4 5; do
+            RESPONSE=$(curl -s "$URL/health" --max-time 15 || echo '{}')
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
+              "$URL/health" --max-time 15 || true)
+            STATUS="${STATUS:-000}"
+            if printf '%s' "$RESPONSE" | node scripts/ci/validate-deploy-health.mjs \
+              --http-status "$STATUS" --label "Rollback"; then
+              LIVE_REVISION=$(gcloud run services describe study-abroad-api \
+                --region="$REGION" --format=json | \
+                node scripts/ci/cloud-run-canary-url.mjs \
+                  --full-traffic-revision)
+              if [ "$LIVE_REVISION" != "$PREV" ]; then
+                echo "::error::Rollback traffic points to an unexpected revision"
+                exit 1
+              fi
+              echo "::notice::Rollback completed and previous revision is healthy"
+              exit 0
+            fi
+            echo "Waiting for rollback health convergence (attempt $i/5)"
+            sleep 5
+          done
+          echo "::error::Rollback traffic update completed but health verification failed"
+          exit 1

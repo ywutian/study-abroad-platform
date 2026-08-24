@@ -24,19 +24,39 @@ describe('AgentSkillService', () => {
         update: jest.fn(),
       },
       agentSkillEvaluation: { findFirst: jest.fn() },
-      agentSkillAudit: { create: jest.fn() },
+      agentSkillSignal: { findMany: jest.fn() },
+      agentSkillAudit: { create: jest.fn(), findMany: jest.fn() },
     };
     prisma.$transaction = jest.fn((callback) => callback(prisma));
     service = new AgentSkillService(
       prisma as unknown as PrismaService,
       {
         get: jest.fn((key: string) =>
-          ['AI_AGENT_SKILLS_V1', 'AI_AGENT_SKILLS_EVOLUTION_V1'].includes(key)
+          [
+            'AI_AGENT_SKILLS_V1',
+            'AI_AGENT_SKILLS_EVOLUTION_V1',
+            'AI_AGENT_SKILLS_AUTO_PUBLISH_V1',
+          ].includes(key)
             ? 'true'
             : undefined,
         ),
       } as unknown as ConfigService,
       policy,
+    );
+  });
+
+  it('exposes the complete protected publication flag chain', async () => {
+    prisma.agentSkillDeployment.findMany = jest.fn().mockResolvedValue([]);
+    prisma.agentSkillEvaluation.findMany = jest.fn().mockResolvedValue([]);
+    prisma.agentSkillSignal.findMany = jest.fn().mockResolvedValue([]);
+    prisma.agentSkillAudit.findMany = jest.fn().mockResolvedValue([]);
+
+    await expect(service.getStatus()).resolves.toEqual(
+      expect.objectContaining({
+        enabled: true,
+        evolutionEnabled: true,
+        autoPublishEnabled: true,
+      }),
     );
   });
 

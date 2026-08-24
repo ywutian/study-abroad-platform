@@ -86,6 +86,42 @@ a run). Instead, schedules arrive **as requests**:
   this project until the jobs have actually produced attempts, and the API
   rejects a policy referencing it. Revisit once metrics exist.
 
+### AI Agent Harness alerts
+
+`AlertChannelService` is durable by default: it stores only an opaque alert
+fingerprint, severity, trusted source label, occurrence count and timestamps in
+Redis before a delivery is attempted. It never stores or forwards the original
+alert title/message, tool arguments, trace ids, user ids or metadata. Cloud
+Scheduler invokes `alert-channel-service-deliver-pending-alerts` every minute;
+that job aggregates across instances, retries failed external delivery with
+exponential backoff, records sanitized delivery status, and leaves an alert
+active until an administrator acknowledges it.
+
+Redis is the durable source of truth for the admin API/acceptance evidence. The
+scheduled `AI Agent Harness alert monitor` GitHub Actions workflow checks that
+queue every 15 minutes through the sanitized admin endpoint and fails while an
+alert remains active, using the repository's existing protected administrator
+credential. GitHub therefore supplies the default human notification path
+without adding another webhook secret. The workflow logs severity counts only,
+never alert ids, messages, tool arguments or user data. Production acceptance
+proves the matching alert is persisted, then acknowledges its synthetic alert
+so the monitor returns to green.
+
+For a lower-latency or independent human notification path, configure exactly
+one protected external channel in the deploy secret store:
+
+- `ALERT_SLACK_WEBHOOK`, `ALERT_WECHAT_WEBHOOK`, `ALERT_DINGTALK_WEBHOOK`, or
+  `ALERT_PAGERDUTY_ROUTING_KEY`; or
+- `ALERT_EMAIL_ENABLED=true`, non-empty `ALERT_EMAIL_RECIPIENTS`, and
+  `RESEND_API_KEY`.
+
+An email configuration without `RESEND_API_KEY` is explicitly reported as
+`email` unavailable and is **not** counted as delivered; do not use a placeholder
+address such as `admin@example.com`. The admin Harness alert endpoint exposes
+configured/unavailable channels, active opaque alerts, and their sanitized
+delivery log. Acknowledgement removes the alert from both active and delivery
+indexes; the database audit log retains the authorised actor/optional note.
+
 One-time GCP setup (already-applied steps are idempotent):
 
 ```bash

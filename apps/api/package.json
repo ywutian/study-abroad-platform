@@ -23,6 +23,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "harness:acceptance": "tsx scripts/ai-agent-harness-acceptance.ts",
+    "harness:benchmark": "tsx scripts/ai-agent-harness-benchmark.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

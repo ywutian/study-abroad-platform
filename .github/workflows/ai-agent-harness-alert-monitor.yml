@@ -1,0 +1,37 @@
+name: AI Agent Harness alert monitor
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-agent-harness-alert-monitor
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    name: Notify on unacknowledged Harness alerts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # A failing scheduled workflow is the zero-additional-secret external
+      # notification channel. Logs contain only severity counts; the operator
+      # inspects and acknowledges details in the authenticated Admin UI.
+      - name: Query sanitized active alerts
+        env:
+          HARNESS_API_BASE: https://study-abroad-api-kfazdxtptq-uc.a.run.app/api/v1
+          HARNESS_ADMIN_EMAIL: admin@example.com
+          HARNESS_ADMIN_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}
+        run: |
+          if [ -z "$HARNESS_ADMIN_PASSWORD" ]; then
+            echo "::error::ADMIN_BOOTSTRAP_PASSWORD is required"
+            exit 1
+          fi
+          echo "::add-mask::$HARNESS_ADMIN_PASSWORD"
+          node scripts/ci/check-ai-agent-harness-alerts.mjs

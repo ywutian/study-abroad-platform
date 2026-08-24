@@ -95,6 +95,11 @@ export const REDIS_TTL = {
   COMPACTION_LOCK: 10 * MINUTE,
   /** Memory decay distributed lock. */
   DECAY_LOCK: 10 * MINUTE,
+  /**
+   * Durable AI Agent alert delivery lock. The HTTP cron runs once per minute;
+   * this stays below the next tick while covering a slow external webhook.
+   */
+  ALERT_DELIVERY_CRON_LOCK: 50,
   /** Deadline-reminder cron single-flight lock (multi-instance safety). */
   DEADLINE_CRON_LOCK: 10 * MINUTE,
   /** Outcome decision-day reminder cron single-flight lock. */
@@ -136,6 +141,8 @@ export const REDIS_TTL = {
   // ── 1 minute ──────────────────────────────────────────────
   /** Feature-flag evaluation cache. */
   FEATURE_FLAG: 1 * MINUTE,
+  /** Cross-instance AI Agent alert ingress rate window. */
+  ALERT_RATE_LIMIT: 2 * MINUTE,
   /** Per-conversation orchestration lock. */
   CONVERSATION_LOCK: 1 * MINUTE,
   /** In-process L1 school cache mirror. */

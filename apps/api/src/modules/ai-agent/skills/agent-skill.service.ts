@@ -49,6 +49,13 @@ export class AgentSkillService implements OnModuleInit {
     );
   }
 
+  isAutoPublishEnabled(): boolean {
+    return (
+      this.isEvolutionEnabled() &&
+      this.config.get<string>('AI_AGENT_SKILLS_AUTO_PUBLISH_V1') === 'true'
+    );
+  }
+
   // governance: system-scope — deployment pointers are global Agent configuration.
   async getActiveVersionId(agentType: AgentType): Promise<string | undefined> {
     if (!this.isEnabled()) return undefined;
@@ -380,6 +387,7 @@ export class AgentSkillService implements OnModuleInit {
     return {
       enabled: this.isEnabled(),
       evolutionEnabled: this.isEvolutionEnabled(),
+      autoPublishEnabled: this.isAutoPublishEnabled(),
       deployments,
       evaluations,
       signals,

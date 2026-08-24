@@ -9563,6 +9563,32 @@
         "output": "输出",
         "noData": "无预览数据",
         "showing": "显示 {from}-{to}，共 {total} 条"
+      },
+      "harness": {
+        "title": "Agent Harness 与 Skills",
+        "harness": "Harness",
+        "evolution": "Skills 自进化",
+        "autoPublish": "自动发布",
+        "alertChannels": "持久告警通道",
+        "unavailableChannels": "不可用",
+        "refresh": "刷新",
+        "runEvolution": "运行受约束进化",
+        "completedRuns": "已完成运行",
+        "failedRuns": "失败运行",
+        "approvalsExecuted": "已执行审批",
+        "pendingSignals": "待处理信号",
+        "deployments": "当前 Skill 部署",
+        "activeVersion": "活动版本",
+        "rollback": "回滚",
+        "rollbackConfirm": "确认将 {agent} 回滚到上一个不可变 Skill 版本吗？",
+        "rollbackComplete": "Skill 回滚完成",
+        "activeAlerts": "未确认 Harness 告警",
+        "noAlerts": "当前没有未确认的 Harness 告警",
+        "acknowledge": "确认处理",
+        "alertAcknowledged": "告警已确认",
+        "loading": "加载中...",
+        "operationFailed": "操作失败",
+        "evolutionResult": "进化完成：{signals} 个信号，{candidates} 个候选，发布 {published} 个，回滚 {rolledBack} 个"
       }
     },
     "aiAgent": {

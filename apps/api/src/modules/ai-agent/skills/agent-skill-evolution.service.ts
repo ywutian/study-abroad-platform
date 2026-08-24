@@ -91,10 +91,7 @@ export class AgentSkillEvolutionService {
         );
         continue;
       }
-      if (
-        evaluation.passed &&
-        process.env.AI_AGENT_SKILLS_AUTO_PUBLISH_V1 === 'true'
-      ) {
+      if (evaluation.passed && this.skills.isAutoPublishEnabled()) {
         await this.skills.publish(
           signal.agentType as AgentType,
           candidate.id,
@@ -114,7 +111,22 @@ export class AgentSkillEvolutionService {
         );
       }
     }
-    return { signalsCollected, candidatesCreated, published, rolledBack };
+    const result = {
+      signalsCollected,
+      candidatesCreated,
+      published,
+      rolledBack,
+    };
+    await this.prisma.agentSkillAudit.create({
+      data: {
+        agentType: 'system',
+        action: 'EVOLUTION_CYCLE_COMPLETED',
+        actor: 'AUTO_EVOLUTION',
+        reason: 'Bounded declarative Skill evolution cycle completed',
+        metadata: result,
+      },
+    });
+    return result;
   }
 
   // governance: batch-operation — consumes only redacted Evaluation Trace evidence.
