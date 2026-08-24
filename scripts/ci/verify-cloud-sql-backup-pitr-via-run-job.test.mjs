@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   buildCloudSqlRunJobPlan,
   buildCloudSqlRuntimeCheckScript,
+  findRuntimeTaskExitCode,
   reasonCodeForRuntimeExitCode,
   resolveRuntimeServiceAccount,
 } from './verify-cloud-sql-backup-pitr-via-run-job.mjs';
@@ -14,6 +15,15 @@ test('maps runtime task exit codes to stable sanitized reasons', () => {
   assert.equal(reasonCodeForRuntimeExitCode(36), 'latest_backup_too_old');
   assert.equal(reasonCodeForRuntimeExitCode(127), 'cloud_run_read_only_check_failed');
   assert.equal(reasonCodeForRuntimeExitCode(undefined), 'cloud_run_read_only_check_failed');
+});
+
+test('finds a task exit code across current and legacy gcloud JSON shapes', () => {
+  assert.equal(findRuntimeTaskExitCode([{ lastAttemptResult: { exitCode: 20 } }]), 20);
+  assert.equal(
+    findRuntimeTaskExitCode([{ status: { containers: [{ terminated: { exitCode: '32' } }] } }]),
+    32
+  );
+  assert.equal(findRuntimeTaskExitCode([{ status: { conditions: [] } }]), undefined);
 });
 
 test('uses an explicit production service identity when one is configured', () => {
@@ -49,10 +59,8 @@ test('builds a bounded read-only Cloud Run Job using the production service iden
     )
   );
   assert.ok(plan.executeArgs.includes('--wait'));
-  assert.ok(plan.taskExitCodeArgs('check-123').includes('--execution=check-123'));
-  assert.ok(
-    plan.taskExitCodeArgs('check-123').includes('--format=value(lastAttemptResult.exitCode)')
-  );
+  assert.ok(plan.taskResultArgs('check-123').includes('--execution=check-123'));
+  assert.ok(plan.taskResultArgs('check-123').includes('--format=json'));
 });
 
 test('runtime check enforces state, backup, PITR, success, and a 36 hour freshness window', () => {

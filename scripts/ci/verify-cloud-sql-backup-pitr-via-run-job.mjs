@@ -41,6 +41,23 @@ export function reasonCodeForRuntimeExitCode(exitCode) {
   return RUNTIME_EXIT_REASONS.get(Number(exitCode)) ?? 'cloud_run_read_only_check_failed';
 }
 
+export function findRuntimeTaskExitCode(value) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const exitCode = findRuntimeTaskExitCode(item);
+      if (exitCode !== undefined) return exitCode;
+    }
+    return undefined;
+  }
+  if (!value || typeof value !== 'object') return undefined;
+  for (const [key, item] of Object.entries(value)) {
+    if (key === 'exitCode' && Number.isFinite(Number(item))) return Number(item);
+    const exitCode = findRuntimeTaskExitCode(item);
+    if (exitCode !== undefined) return exitCode;
+  }
+  return undefined;
+}
+
 export function buildCloudSqlRuntimeCheckScript() {
   return `set -euo pipefail
 state="$(gcloud sql instances describe "$INSTANCE_ID" --project="$PROJECT_ID" --format='value(state)' 2>/dev/null)" || exit 20
@@ -112,7 +129,7 @@ export function buildCloudSqlRunJobPlan({ project, region, instance, runtimeServ
       '--sort-by=~metadata.creationTimestamp',
       '--format=value(metadata.name)',
     ],
-    taskExitCodeArgs(execution) {
+    taskResultArgs(execution) {
       return [
         'run',
         'jobs',
@@ -122,7 +139,7 @@ export function buildCloudSqlRunJobPlan({ project, region, instance, runtimeServ
         `--execution=${execution}`,
         `--project=${project}`,
         `--region=${region}`,
-        '--format=value(lastAttemptResult.exitCode)',
+        '--format=json',
       ];
     },
   };
@@ -191,7 +208,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const execution = runGcloud(plan.latestExecutionArgs).trim().split('\n')[0];
     if (!execution) throw new Error('cloud_run_execution_not_found');
     if (executionFailure) {
-      const exitCode = runGcloud(plan.taskExitCodeArgs(execution)).trim().split('\n')[0];
+      const exitCode = findRuntimeTaskExitCode(
+        JSON.parse(runGcloud(plan.taskResultArgs(execution)))
+      );
       throw new Error(reasonCodeForRuntimeExitCode(exitCode));
     }
     const evidence = {
