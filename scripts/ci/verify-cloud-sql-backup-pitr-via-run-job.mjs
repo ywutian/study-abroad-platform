@@ -38,7 +38,7 @@ export function resolveRuntimeServiceAccount(explicitServiceAccount, projectNumb
 }
 
 export function reasonCodeForRuntimeExitCode(exitCode) {
-  return RUNTIME_EXIT_REASONS.get(exitCode) ?? 'cloud_run_read_only_check_failed';
+  return RUNTIME_EXIT_REASONS.get(Number(exitCode)) ?? 'cloud_run_read_only_check_failed';
 }
 
 export function buildCloudSqlRuntimeCheckScript() {
@@ -111,7 +111,7 @@ export function buildCloudSqlRunJobPlan({ project, region, instance, runtimeServ
       '--sort-by=~metadata.creationTimestamp',
       '--format=value(metadata.name)',
     ],
-    taskResultArgs(execution) {
+    taskExitCodeArgs(execution) {
       return [
         'run',
         'jobs',
@@ -121,7 +121,7 @@ export function buildCloudSqlRunJobPlan({ project, region, instance, runtimeServ
         `--execution=${execution}`,
         `--project=${project}`,
         `--region=${region}`,
-        '--format=json',
+        '--format=value(lastAttemptResult.exitCode)',
       ];
     },
   };
@@ -190,8 +190,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const execution = runGcloud(plan.latestExecutionArgs).trim().split('\n')[0];
     if (!execution) throw new Error('cloud_run_execution_not_found');
     if (executionFailure) {
-      const tasks = JSON.parse(runGcloud(plan.taskResultArgs(execution)));
-      const exitCode = tasks[0]?.lastAttemptResult?.exitCode;
+      const exitCode = runGcloud(plan.taskExitCodeArgs(execution)).trim().split('\n')[0];
       throw new Error(reasonCodeForRuntimeExitCode(exitCode));
     }
     const evidence = {

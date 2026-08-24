@@ -9,6 +9,7 @@ import {
 
 test('maps runtime task exit codes to stable sanitized reasons', () => {
   assert.equal(reasonCodeForRuntimeExitCode(20), 'cloud_sql_metadata_unavailable');
+  assert.equal(reasonCodeForRuntimeExitCode('20'), 'cloud_sql_metadata_unavailable');
   assert.equal(reasonCodeForRuntimeExitCode(32), 'point_in_time_recovery_disabled');
   assert.equal(reasonCodeForRuntimeExitCode(36), 'latest_backup_too_old');
   assert.equal(reasonCodeForRuntimeExitCode(127), 'cloud_run_read_only_check_failed');
@@ -48,7 +49,10 @@ test('builds a bounded read-only Cloud Run Job using the production service iden
     )
   );
   assert.ok(plan.executeArgs.includes('--wait'));
-  assert.ok(plan.taskResultArgs('check-123').includes('--execution=check-123'));
+  assert.ok(plan.taskExitCodeArgs('check-123').includes('--execution=check-123'));
+  assert.ok(
+    plan.taskExitCodeArgs('check-123').includes('--format=value(lastAttemptResult.exitCode)')
+  );
 });
 
 test('runtime check enforces state, backup, PITR, success, and a 36 hour freshness window', () => {
