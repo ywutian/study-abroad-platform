@@ -10,6 +10,25 @@ function runGcloud(args) {
   );
 }
 
+const CLOUD_SQL_INSTANCE_ID_PATTERN = /^[a-z][a-z0-9-]{0,96}[a-z0-9]$|^[a-z]$/;
+const CLOUD_SQL_LOCATION_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)+$/;
+
+export function normalizeCloudSqlInstanceReference(value, expectedProject) {
+  const parts = value.trim().split(':');
+  if (parts.length === 1 && CLOUD_SQL_INSTANCE_ID_PATTERN.test(parts[0])) {
+    return parts[0];
+  }
+  if (
+    parts.length === 3 &&
+    parts[0] === expectedProject &&
+    CLOUD_SQL_LOCATION_PATTERN.test(parts[1]) &&
+    CLOUD_SQL_INSTANCE_ID_PATTERN.test(parts[2])
+  ) {
+    return parts[2];
+  }
+  throw new Error('invalid_cloud_sql_instance_reference');
+}
+
 export function normalizeCloudSqlEvidence({ instance, project, description, backups }) {
   const settings = description?.settings ?? {};
   const backup = settings.backupConfiguration ?? {};
@@ -100,24 +119,26 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error('Missing --instance/--project or GCP_CLOUDSQL_INSTANCE/GCP_PROJECT_ID');
     process.exit(2);
   }
+  let normalizedInstance = null;
   try {
+    normalizedInstance = normalizeCloudSqlInstanceReference(instance, project);
     const description = runGcloud([
       'sql',
       'instances',
       'describe',
-      instance,
+      normalizedInstance,
       `--project=${project}`,
     ]);
     const backups = runGcloud([
       'sql',
       'backups',
       'list',
-      `--instance=${instance}`,
+      `--instance=${normalizedInstance}`,
       `--project=${project}`,
       '--limit=5',
     ]);
     const evidence = normalizeCloudSqlEvidence({
-      instance,
+      instance: normalizedInstance,
       project,
       description,
       backups,
@@ -139,7 +160,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       `${JSON.stringify({
         schemaVersion: 'cloud-sql-backup-pitr-v1',
         checkedAt: new Date().toISOString(),
-        instance: { name: instance, project },
+        instance: { name: normalizedInstance ?? 'invalid', project },
         pass: false,
         reasonCodes: ['gcloud_read_only_check_failed'],
       })}\n`,
