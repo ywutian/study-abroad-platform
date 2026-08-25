@@ -101,20 +101,24 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 修改代码前，**先读对应文档**：
 
-| 代码路径匹配                                      | 必读文档                                                    |
-| ------------------------------------------------- | ----------------------------------------------------------- |
-| 编辑 `apps/api/src/modules/*/`                    | 自动加载该模块 `BRIEF.md`（懒加载）                         |
-| 编辑 `apps/web/src/components/features/*/`        | 自动加载该 feature `BRIEF.md`                               |
-| 编辑 `apps/api/` 任意文件                         | 自动加载 `apps/api/CLAUDE.md` + `.claude/rules/backend.md`  |
-| 编辑 `apps/web/` 任意文件                         | 自动加载 `apps/web/CLAUDE.md` + `.claude/rules/frontend.md` |
-| `modules/prediction/`                             | `docs/PREDICTION_SYSTEM.md`                                 |
-| `modules/ai-agent/`                               | `.claude/rules/ai-system.md`                                |
-| `modules/auth/`, guards/                          | `.claude/rules/security.md` + `docs/adr/0010-*.md`          |
-| `prisma/schema.prisma`                            | `apps/api/CLAUDE.md` Schema Change Rules                    |
-| 留学业务逻辑 (school, prediction, recommendation) | `docs/DATA_SOURCES.md`                                      |
-| 缓存/Redis (`common/redis/`, `lib/query/`)        | `docs/CACHING_ARCHITECTURE.md`                              |
-| 部署/运维                                         | `docs/DEPLOYMENT_STRATEGY.md` + `docs/RUNBOOK.md`           |
-| 部署配置 (`.github/workflows/*` GCP)              | `docs/DEPLOY_CONFIG.md` (single source + drift guard)       |
+| 代码路径匹配                                        | 必读文档                                                                          |
+| --------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 编辑 `apps/api/src/modules/*/`                      | 自动加载该模块 `BRIEF.md`（懒加载）                                               |
+| 编辑 `apps/web/src/components/features/*/`          | 自动加载该 feature `BRIEF.md`                                                     |
+| 编辑 `apps/api/` 任意文件                           | 自动加载 `apps/api/CLAUDE.md` + `.claude/rules/backend.md`                        |
+| 编辑 `apps/web/` 任意文件                           | 自动加载 `apps/web/CLAUDE.md` + `.claude/rules/frontend.md`                       |
+| `modules/prediction/`                               | `docs/PREDICTION_SYSTEM.md`                                                       |
+| `modules/ai-agent/`                                 | `.claude/rules/ai-system.md`                                                      |
+| `modules/ai-agent/core/`, `modules/ai-agent/tools/` | `docs/architecture/ai-system.md` + `docs/runbooks/ai-agent-harness-acceptance.md` |
+| `modules/ai-agent/skills/`                          | `docs/AI_AGENT_SKILLS_EVOLUTION.md`                                               |
+| `modules/auth/`, guards/                            | `.claude/rules/security.md` + `docs/adr/0010-*.md`                                |
+| `prisma/schema.prisma`                              | `apps/api/CLAUDE.md` Schema Change Rules                                          |
+| 留学业务逻辑 (school, prediction, recommendation)   | `docs/DATA_SOURCES.md`                                                            |
+| 缓存/Redis (`common/redis/`, `lib/query/`)          | `docs/CACHING_ARCHITECTURE.md`                                                    |
+| 部署/运维                                           | `docs/DEPLOYMENT_STRATEGY.md` + `docs/RUNBOOK.md`                                 |
+| 部署配置 (`.github/workflows/*` GCP)                | `docs/DEPLOY_CONFIG.md` (single source + drift guard)                             |
+| AI Agent Harness 发布/验收                          | `docs/runbooks/ai-agent-harness-acceptance.md`                                    |
+| Cloud SQL 恢复                                      | `docs/runbooks/cloud-sql-restore-drill.md`                                        |
 
 ## Hooks (自动强制执行)
 

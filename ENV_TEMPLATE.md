@@ -1,5 +1,7 @@
 # 环境变量配置指南
 
+**最后更新：2026-08-24**
+
 > **注意**：标注 `[Zod 验证]` 的变量在应用启动时由 Zod schema 校验，格式不正确会导致启动失败。
 
 ## 本地开发 (apps/api/.env)
@@ -45,12 +47,25 @@ OPENAI_API_KEY=sk-your_openai_api_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
 LLM_PROVIDER=openai
+# Harness core. All flags default off for local compatibility.
 AI_AGENT_HARNESS_V1=false
 AI_AGENT_HARNESS_MODE=advisory
 AI_AGENT_APPROVALS_V1=false
 AI_AGENT_APPROVAL_TTL_MS=900000
 AI_AGENT_RUN_TTL_MS=86400000
+AI_AGENT_RUN_RETENTION_DAYS=90
+AI_AGENT_TRACE_RETENTION_DAYS=30
 AI_AGENT_EXECUTION_LEASE_MS=120000
+AI_AGENT_CONTEXT_V1=false
+AI_AGENT_CONTEXT_RECENT_MESSAGES=10
+AI_AGENT_ACCEPTANCE_V1=false
+AI_AGENT_MAX_TOKENS_PER_RUN=24000
+AI_AGENT_MAX_DURATION_MS=120000
+# Declarative Skills. Dependencies are enforced by startup validation:
+# AUTO_PUBLISH requires EVOLUTION, and EVOLUTION requires SKILLS.
+AI_AGENT_SKILLS_V1=false
+AI_AGENT_SKILLS_EVOLUTION_V1=false
+AI_AGENT_SKILLS_AUTO_PUBLISH_V1=false
 
 # ============================================
 # College Scorecard (学校数据)
@@ -213,12 +228,24 @@ OPENAI_API_KEY=sk-你的密钥
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
 LLM_PROVIDER=openai
+# Harness core. Enable production values only through reviewed deploy config.
 AI_AGENT_HARNESS_V1=false
 AI_AGENT_HARNESS_MODE=advisory
 AI_AGENT_APPROVALS_V1=false
 AI_AGENT_APPROVAL_TTL_MS=900000
 AI_AGENT_RUN_TTL_MS=86400000
+AI_AGENT_RUN_RETENTION_DAYS=90
+AI_AGENT_TRACE_RETENTION_DAYS=30
 AI_AGENT_EXECUTION_LEASE_MS=120000
+AI_AGENT_CONTEXT_V1=false
+AI_AGENT_CONTEXT_RECENT_MESSAGES=10
+AI_AGENT_ACCEPTANCE_V1=false
+AI_AGENT_MAX_TOKENS_PER_RUN=24000
+AI_AGENT_MAX_DURATION_MS=120000
+# AUTO_PUBLISH requires EVOLUTION, and EVOLUTION requires SKILLS.
+AI_AGENT_SKILLS_V1=false
+AI_AGENT_SKILLS_EVOLUTION_V1=false
+AI_AGENT_SKILLS_AUTO_PUBLISH_V1=false
 
 # ============================================
 # 邮件服务 [Zod 验证: 可选，Resend 交易邮件]

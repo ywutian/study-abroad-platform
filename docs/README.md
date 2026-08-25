@@ -2,6 +2,8 @@
 
 > 留学申请平台文档中心 — 按角色和 arc42 架构分类
 
+**最后更新：2026-08-24**
+
 ---
 
 ## 按角色快速入口
@@ -68,19 +70,26 @@
 
 ### arc42 S8: 横切关注点 — AI 系统
 
-| 文档                                                             | 说明                    |
-| ---------------------------------------------------------------- | ----------------------- |
-| [ARCHITECTURE.md](ARCHITECTURE.md)                               | AI Agent 与系统架构设计 |
-| [AI_AGENT_MEMORY_SYSTEM_SPEC.md](AI_AGENT_MEMORY_SYSTEM_SPEC.md) | AI Agent 记忆系统规范   |
+| 文档                                                             | 说明                                                        |
+| ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| [AI System Architecture](architecture/ai-system.md)              | AI Agent、Harness、工具权限、Run 与声明式 Skills 架构事实源 |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                               | 平台总体架构中的 AI Agent 视图                              |
+| [AI_AGENT_MEMORY_SYSTEM_SPEC.md](AI_AGENT_MEMORY_SYSTEM_SPEC.md) | AI Agent 记忆系统规范                                       |
+| [AI_AGENT_SKILLS_EVOLUTION.md](AI_AGENT_SKILLS_EVOLUTION.md)     | 声明式 Skills、评测、直接发布和自动回滚边界                 |
+| [AI_AGENT_EVALUATION_RUBRIC.md](AI_AGENT_EVALUATION_RUBRIC.md)   | AI Agent 功能与输出评估 Rubric                              |
 
 ### arc42 S9: 运维与部署
 
-| 文档                                                      | 说明                               |
-| --------------------------------------------------------- | ---------------------------------- |
-| [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md)                | 部署指南 (GCP Cloud Run)           |
-| [RUNBOOK.md](RUNBOOK.md)                                  | 运维排障手册                       |
-| [积分系统开放 Runbook](runbooks/points-economy-launch.md) | 积分系统双闸门开放、验证与回滚流程 |
-| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                     | 环境变量说明                       |
+| 文档                                                                                             | 说明                                   |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md)                                                       | 部署指南 (GCP Cloud Run)               |
+| [DEPLOY_CONFIG.md](DEPLOY_CONFIG.md)                                                             | 部署配置事实源和防漂移门禁             |
+| [RUNBOOK.md](RUNBOOK.md)                                                                         | 运维排障手册                           |
+| [AI Agent Harness production acceptance](runbooks/ai-agent-harness-acceptance.md)                | 合成生产验收、脱敏证据、告警与回滚闭环 |
+| [Cloud SQL restore drill](runbooks/cloud-sql-restore-drill.md)                                   | 只读恢复准备与经授权的隔离恢复流程     |
+| [AI Agent Harness production closure](reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) | 2026-08-24 首次生产上线不可变证据      |
+| [积分系统开放 Runbook](runbooks/points-economy-launch.md)                                        | 积分系统双闸门开放、验证与回滚流程     |
+| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                                                            | 环境变量说明                           |
 
 ### arc42 S10-11: 质量与风险
 
@@ -135,6 +144,7 @@
 
 | 日期       | 变更                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-08-24 | AI Agent Harness 上线闭环：索引架构、声明式 Skills、自进化、生产验收、Cloud SQL 恢复 Runbook 与不可变生产报告                                                                                                                                                                                          |
 | 2026-06-27 | 新增 [REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md](REGRESSION_PREVENTION_AND_DEVELOPMENT_GUIDE.md) — 基于最近 90 天 Git 历史、churn 指标和现有门禁，整理企业级防回归与日常开发执行流程                                                                                                              |
 | 2026-05-20 | 新增 PROJECT_TECHNICAL_OVERVIEW、PROJECT_FORECAST_2026、PROJECT_EXPECTED_OUTCOMES_2026 三份规划文档                                                                                                                                                                                                    |
 | 2026-05-20 | 新增 [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md) — 整合项目梳理、技术难点、MMFM/Claude Code/Codex 与线上 AI 区分、PDF 栈与量化指标                                                                                                                                                  |

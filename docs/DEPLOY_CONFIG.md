@@ -1,5 +1,7 @@
 # Deploy Configuration
 
+**Last updated:** 2026-08-24
+
 GCP Cloud Run deploy config got fixed 10+ times — VPC connector, Cloud SQL,
 secrets, Cloud Run flags — across **five** workflows that each inline the same
 constants, including an explicit _"sync deploy config between CI and manual
@@ -200,16 +202,35 @@ A green merge therefore does **not** mean a student already sees the fix:
 For the Agent Harness production revision, keep these non-secret values explicit
 in the Cloud Run deploy command so release drift remains reviewable:
 
-- `AI_AGENT_HARNESS_V1`, `AI_AGENT_APPROVALS_V1`, `AI_AGENT_CONTEXT_V1`
+- `AI_AGENT_HARNESS_V1`, `AI_AGENT_HARNESS_MODE`,
+  `AI_AGENT_APPROVALS_V1`, `AI_AGENT_CONTEXT_V1`
 - `AI_AGENT_ACCEPTANCE_V1=true` enables admin-issued, one-shot synthetic
   acceptance grants; grants remain user-scoped, expire after five minutes, and
   can only inject failure or reduce a run budget.
 - `AI_AGENT_MAX_TOKENS_PER_RUN`, `AI_AGENT_MAX_DURATION_MS`
+- `AI_AGENT_APPROVAL_TTL_MS`, `AI_AGENT_RUN_TTL_MS`,
+  `AI_AGENT_EXECUTION_LEASE_MS`, `AI_AGENT_CONTEXT_RECENT_MESSAGES`
 - `AI_AGENT_RUN_RETENTION_DAYS=90`
 - `AI_AGENT_TRACE_RETENTION_DAYS=30`
+- `AI_AGENT_SKILLS_V1`, `AI_AGENT_SKILLS_EVOLUTION_V1`, and
+  `AI_AGENT_SKILLS_AUTO_PUBLISH_V1`; startup validation enforces this dependency
+  order and every flag defaults off outside reviewed deployment config.
+
+`lint:ai-agent-env-docs` compares the validated `AI_AGENT_*` schema with both
+`ENV_TEMPLATE.md` and the production Cloud Run deploy command. Adding or
+removing a Harness setting without updating all three locations fails locally,
+in pre-push, and in CI.
+
+`lint:ai-agent-doc-facts` independently derives the Agent and ToolName counts
+from source, checks ToolName/ToolMetadata exhaustiveness, and fails if the module
+BRIEF or AI architecture keeps a stale count.
 
 The post-promote closure is not complete until the stable URL is healthy, the
 live Cron Registry matches the generated manifest, Cloud Scheduler is synced,
-and the previous production revision remains available for rollback.
+the Cloud SQL read-only backup/PITR gate passes, the sanitized Harness artifact
+validates, the independent alert monitor is clear, and the previous production
+revision remains available for rollback. CI invokes the production acceptance
+runner through direct Node/tsx, not a nested package-manager command, so JSONL
+evidence cannot be polluted by lifecycle output.
 
 Do not write "landed on main, so production is fixed."

@@ -210,6 +210,8 @@ jobs:
           pnpm lint:gate-proofs
           pnpm lint:audit-gate
           pnpm lint:deploy-drift
+          pnpm lint:ai-agent-env-docs
+          pnpm lint:ai-agent-doc-facts
           pnpm lint:seed-parity
           # Dated reference data (exam calendar, competition schedule) that has
           # stopped covering the planning horizon. migrate.sh converges the DB to
