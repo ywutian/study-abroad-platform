@@ -382,6 +382,21 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      - name: Run AI Agent semantic corpus and grader calibration gate
+        if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
+        run: |
+          mkdir -p /tmp/ai-agent-semantic-eval
+          pnpm harness:semantic-eval --output /tmp/ai-agent-semantic-eval/report.json
+
+      - name: Upload sanitized AI Agent semantic evaluation report
+        if: always() && (needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push')
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-agent-semantic-eval-${{ github.sha }}
+          path: /tmp/ai-agent-semantic-eval/report.json
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Run API tests
         if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
         run: pnpm --filter api exec jest --coverage --forceExit
