@@ -196,7 +196,7 @@ describe('SummarizerService', () => {
       expect(result.extractedEntities[0].type).toBe(EntityType.SCHOOL);
     });
 
-    it('should return empty summary when summary is not a string', async () => {
+    it('should use deterministic fallback when summary is not a string', async () => {
       mockLLMService.chatSimple.mockResolvedValue(
         JSON.stringify({
           summary: 123, // wrong type
@@ -214,8 +214,25 @@ describe('SummarizerService', () => {
         },
       ]);
 
-      expect(result.summary).toBe('');
+      expect(result.summary).toContain('1 条消息');
       expect(result.keyTopics).toEqual([]);
+    });
+
+    it('should use deterministic fallback when the LLM response is not JSON', async () => {
+      mockLLMService.chatSimple.mockResolvedValue('not-json');
+
+      const result = await service.summarizeConversation([
+        {
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          role: 'user',
+          content: '帮我看看学校和文书',
+          createdAt: new Date(),
+        },
+      ]);
+
+      expect(result.summary).toContain('1 条消息');
+      expect(result.summary).toContain('学校、文书');
     });
 
     it('should degrade non-array fields to empty arrays', async () => {
