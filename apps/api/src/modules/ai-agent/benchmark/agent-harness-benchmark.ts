@@ -1,9 +1,10 @@
 import type { ConfigService } from '@nestjs/config';
-import { TOOL_METADATA, TOOLS } from '../config/tools.config';
+import { TOOLS } from '../config/tools.config';
 import type { LLMOptions, LLMResponse, StreamChunk } from '../core/llm.service';
 import { ToolPolicyService } from '../core/tool-policy.service';
 import { canonicalize } from '../core/workflow-contract';
 import { WorkflowEngineService } from '../core/workflow-engine.service';
+import type { ToolExecutionResult } from '../core/types';
 import type {
   AgentConfig,
   ConversationState,
@@ -11,15 +12,20 @@ import type {
   ToolCall,
 } from '../types';
 import { AGENT_HARNESS_BENCHMARK_FIXTURES as FIXTURES } from './agent-harness-benchmark.fixtures';
+import { getAgentHarnessBenchmarkCoverage } from './agent-harness-benchmark.dataset';
+import {
+  aggregateBenchmarkMode,
+  evaluateBenchmarkGate,
+} from './agent-harness-benchmark.metrics';
 import type {
   AgentHarnessBenchmarkCaseResult,
-  AgentHarnessBenchmarkModeResult,
   AgentHarnessBenchmarkReport,
   BenchmarkFixture,
   BenchmarkMode,
   DeterministicResponse,
 } from './agent-harness-benchmark.types';
 import {
+  BENCHMARK_RUNS_PER_FIXTURE,
   DATASET_VERSION,
   MAX_TOOL_CALLS_PER_CASE,
 } from './agent-harness-benchmark.types';
@@ -39,6 +45,7 @@ interface RecordedUsage {
 interface ExecutionRecord {
   fingerprint: string;
   modeledLatencyMs: number;
+  success: boolean;
 }
 
 function fingerprint(call: ToolCall): string {
@@ -50,6 +57,10 @@ class DeterministicLlm {
   private supplementalIndex = 0;
 
   constructor(private readonly fixture: BenchmarkFixture) {}
+
+  get supplementalRounds(): number {
+    return this.supplementalIndex;
+  }
 
   call(
     systemPrompt: string,
@@ -111,21 +122,44 @@ class DeterministicLlm {
 class DeterministicTools {
   readonly executions: ExecutionRecord[] = [];
 
-  execute(call: ToolCall): Promise<{
-    success: true;
-    result: { synthetic: true };
-    duration: number;
-  }> {
+  private readonly remainingFailures: Map<string, number>;
+
+  constructor(fixture: BenchmarkFixture) {
+    this.remainingFailures = new Map(
+      (fixture.failurePlan ?? []).map((item) => [
+        fingerprint(item.call),
+        item.failures,
+      ]),
+    );
+  }
+
+  execute(call: ToolCall): Promise<ToolExecutionResult> {
     const modeledLatencyMs = 4;
+    const callFingerprint = fingerprint(call);
+    const remainingFailures = this.remainingFailures.get(callFingerprint) ?? 0;
+    const success = remainingFailures === 0;
+    if (!success) {
+      this.remainingFailures.set(callFingerprint, remainingFailures - 1);
+    }
     this.executions.push({
-      fingerprint: fingerprint(call),
+      fingerprint: callFingerprint,
       modeledLatencyMs,
+      success,
     });
-    return Promise.resolve({
-      success: true as const,
-      result: { synthetic: true as const },
-      duration: modeledLatencyMs,
-    });
+    return Promise.resolve(
+      success
+        ? {
+            success: true,
+            result: { synthetic: true },
+            duration: modeledLatencyMs,
+          }
+        : {
+            success: false,
+            error: 'SYNTHETIC_RECOVERABLE_TOOL_FAILURE',
+            errorCode: 'SYNTHETIC_RECOVERABLE_TOOL_FAILURE',
+            duration: modeledLatencyMs,
+          },
+    );
   }
 }
 
@@ -157,6 +191,12 @@ function createConversation(fixture: BenchmarkFixture): ConversationState {
     id: `synthetic-conversation-${fixture.id}`,
     userId: 'synthetic-benchmark-user',
     messages: [
+      ...fixture.contextMessages.map((message, index) => ({
+        id: `synthetic-context-${fixture.id}-${index + 1}`,
+        role: message.role,
+        content: message.content,
+        timestamp: new Date(index),
+      })),
       {
         id: `synthetic-input-${fixture.id}`,
         role: 'user',
@@ -165,7 +205,7 @@ function createConversation(fixture: BenchmarkFixture): ConversationState {
       },
     ],
     context: { userId: 'synthetic-benchmark-user' },
-    metadata: { locale: 'en' },
+    metadata: { locale: fixture.locale },
     createdAt: new Date(0),
     updatedAt: new Date(0),
   };
@@ -178,13 +218,14 @@ function createConfig(fixture: BenchmarkFixture): AgentConfig {
       (item) => item.toolCalls?.map((call) => call.name) ?? [],
     ),
   ]);
+  const authorizedNames = fixture.authorizedToolNames ?? [...names];
   return {
     type: fixture.agentType,
     name: 'Deterministic Benchmark Agent',
     description: 'Offline synthetic benchmark agent',
     systemPrompt: 'Use only the deterministic synthetic benchmark input.',
     systemPromptEn: 'Use only the deterministic synthetic benchmark input.',
-    tools: [...names],
+    tools: [...authorizedNames],
     canDelegate: [],
     model: 'deterministic-offline',
     temperature: 0,
@@ -232,23 +273,13 @@ function duplicateCount(values: string[]): number {
   );
 }
 
-function percentile95(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((left, right) => left - right);
-  return sorted[Math.ceil(sorted.length * 0.95) - 1];
-}
-
-function rate(numerator: number, denominator: number): number {
-  if (denominator === 0) return 1;
-  return Number((numerator / denominator).toFixed(4));
-}
-
 async function runFixture(
   fixture: BenchmarkFixture,
   mode: BenchmarkMode,
+  repetition: number,
 ): Promise<AgentHarnessBenchmarkCaseResult> {
   const llm = new DeterministicLlm(fixture);
-  const tools = new DeterministicTools();
+  const tools = new DeterministicTools(fixture);
   const memory = new DeterministicMemory();
   const config = {
     get: <T>(key: string, fallback?: T): T | undefined => {
@@ -292,13 +323,21 @@ async function runFixture(
   );
   const observedLatencyMs = Date.now() - startedAt;
   const actual = tools.executions.map((record) => record.fingerprint);
+  const successful = tools.executions
+    .filter((record) => record.success)
+    .map((record) => record.fingerprint);
+  const failed = tools.executions
+    .filter((record) => !record.success)
+    .map((record) => record.fingerprint);
   const expectedAllowed = fixture.expectedAllowed.map(fingerprint);
   const expectedRefused = fixture.expectedRefused.map(fingerprint);
+  const expectedFailures = fixture.expectedFailures.map(fingerprint);
   const refused = result.plan.steps
     .filter((step) => step.result?.policy?.action !== undefined)
     .map((step) => fingerprint(step.toolCall));
   const allowedScore = multisetScore(expectedAllowed, actual);
   const refusalScore = multisetScore(expectedRefused, refused);
+  const failureScore = multisetScore(expectedFailures, failed);
   const promptTokens = llm.usage.reduce(
     (sum, item) => sum + item.promptTokens,
     0,
@@ -316,28 +355,48 @@ async function runFixture(
       (step.result.result as { reason?: string } | undefined)?.reason ===
         'DUPLICATE_SUCCESSFUL_CALL',
   ).length;
-  const answerProduced = result.message.trim().length > 0;
+  const delegationProduced = result.delegation !== undefined;
+  const answerProduced = result.message.trim().length > 0 || delegationProduced;
+  const delegationCorrect = fixture.expectDelegation
+    ? delegationProduced
+    : !delegationProduced;
+  const supplementalRoundsCorrect =
+    mode !== 'harness_v1' ||
+    llm.supplementalRounds === fixture.expectedSupplementalRounds;
   const passed =
     answerProduced &&
+    delegationCorrect &&
+    supplementalRoundsCorrect &&
     allowedScore.unexpected === 0 &&
     allowedScore.missed === 0 &&
     refusalScore.correct === expectedRefused.length &&
     refusalScore.unexpected === 0 &&
     refusalScore.missed === 0 &&
+    failureScore.correct === expectedFailures.length &&
+    failureScore.unexpected === 0 &&
+    failureScore.missed === 0 &&
     actual.length <= MAX_TOOL_CALLS_PER_CASE;
 
   return {
-    caseId: fixture.id,
+    caseId: `${fixture.id}#${repetition}`,
+    fixtureId: fixture.id,
+    category: fixture.category,
+    agentType: fixture.agentType,
+    locale: fixture.locale,
+    repetition,
     passed,
     answerProduced,
+    delegationProduced,
     executedToolCalls: actual.length,
+    failedToolCalls: failed.length,
     correctToolCalls: allowedScore.correct,
     unexpectedToolCalls: allowedScore.unexpected,
     missedToolCalls: allowedScore.missed,
     expectedRefusals: expectedRefused.length,
     correctRefusals: refusalScore.correct,
-    duplicateExecutions: duplicateCount(actual),
+    duplicateExecutions: duplicateCount(successful),
     duplicateCallsPrevented,
+    supplementalRounds: llm.supplementalRounds,
     promptTokens,
     completionTokens,
     totalTokens: promptTokens + completionTokens,
@@ -346,76 +405,9 @@ async function runFixture(
   };
 }
 
-function aggregateMode(
-  mode: BenchmarkMode,
-  cases: AgentHarnessBenchmarkCaseResult[],
-): AgentHarnessBenchmarkModeResult {
-  const sum = (select: (item: AgentHarnessBenchmarkCaseResult) => number) =>
-    cases.reduce((total, item) => total + select(item), 0);
-  const correct = sum((item) => item.correctToolCalls);
-  const unexpected = sum((item) => item.unexpectedToolCalls);
-  const missed = sum((item) => item.missedToolCalls);
-  const precision = rate(correct, correct + unexpected);
-  const recall = rate(correct, correct + missed);
-  return {
-    mode,
-    caseCount: cases.length,
-    passedCases: cases.filter((item) => item.passed).length,
-    taskSuccessRate: rate(
-      cases.filter((item) => item.passed).length,
-      cases.length,
-    ),
-    toolPrecision: precision,
-    toolRecall: recall,
-    toolF1:
-      precision + recall === 0
-        ? 0
-        : Number(((2 * precision * recall) / (precision + recall)).toFixed(4)),
-    refusalAccuracy: rate(
-      sum((item) => item.correctRefusals),
-      sum((item) => item.expectedRefusals),
-    ),
-    duplicateExecutions: sum((item) => item.duplicateExecutions),
-    duplicateCallsPrevented: sum((item) => item.duplicateCallsPrevented),
-    promptTokens: sum((item) => item.promptTokens),
-    completionTokens: sum((item) => item.completionTokens),
-    totalTokens: sum((item) => item.totalTokens),
-    observedLatencyMs: sum((item) => item.observedLatencyMs),
-    observedP95LatencyMs: percentile95(
-      cases.map((item) => item.observedLatencyMs),
-    ),
-    modeledLatencyMs: sum((item) => item.modeledLatencyMs),
-    modeledP95LatencyMs: percentile95(
-      cases.map((item) => item.modeledLatencyMs),
-    ),
-    maxExecutedToolCallsPerCase: Math.max(
-      0,
-      ...cases.map((item) => item.executedToolCalls),
-    ),
-    cases,
-  };
-}
-
-function evaluateGate(
-  legacy: AgentHarnessBenchmarkModeResult,
-  harness: AgentHarnessBenchmarkModeResult,
-): string[] {
-  const failures: string[] = [];
-  if (harness.taskSuccessRate !== 1)
-    failures.push('HARNESS_TASK_SUCCESS_BELOW_100_PERCENT');
-  if (harness.toolPrecision !== 1)
-    failures.push('HARNESS_TOOL_PRECISION_BELOW_100_PERCENT');
-  if (harness.toolRecall !== 1)
-    failures.push('HARNESS_TOOL_RECALL_BELOW_100_PERCENT');
-  if (harness.refusalAccuracy !== 1)
-    failures.push('HARNESS_REFUSAL_ACCURACY_BELOW_100_PERCENT');
-  if (harness.duplicateExecutions !== 0)
-    failures.push('HARNESS_DUPLICATE_EXECUTION_DETECTED');
-  if (harness.maxExecutedToolCallsPerCase > MAX_TOOL_CALLS_PER_CASE)
-    failures.push('HARNESS_TOOL_BUDGET_EXCEEDED');
-  if (harness.taskSuccessRate <= legacy.taskSuccessRate)
-    failures.push('HARNESS_DID_NOT_IMPROVE_TASK_SUCCESS');
-  return failures;
+function deltaRatio(current: number, baseline: number): number {
+  if (baseline === 0) return current === 0 ? 0 : 1;
+  return Number(((current - baseline) / baseline).toFixed(4));
 }
 
 /** Run both modes on an identical, frozen, fully synthetic dataset. */
@@ -423,17 +415,24 @@ export async function runAgentHarnessBenchmark(): Promise<AgentHarnessBenchmarkR
   const legacyCases: AgentHarnessBenchmarkCaseResult[] = [];
   const harnessCases: AgentHarnessBenchmarkCaseResult[] = [];
   for (const fixture of FIXTURES) {
-    legacyCases.push(await runFixture(fixture, 'legacy_rewoo'));
-    harnessCases.push(await runFixture(fixture, 'harness_v1'));
+    for (
+      let repetition = 1;
+      repetition <= BENCHMARK_RUNS_PER_FIXTURE;
+      repetition++
+    ) {
+      legacyCases.push(await runFixture(fixture, 'legacy_rewoo', repetition));
+      harnessCases.push(await runFixture(fixture, 'harness_v1', repetition));
+    }
   }
-  const legacy = aggregateMode('legacy_rewoo', legacyCases);
-  const harness = aggregateMode('harness_v1', harnessCases);
-  const failures = evaluateGate(legacy, harness);
+  const legacy = aggregateBenchmarkMode('legacy_rewoo', legacyCases);
+  const harness = aggregateBenchmarkMode('harness_v1', harnessCases);
+  const failures = evaluateBenchmarkGate(legacy, harness);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     datasetVersion: DATASET_VERSION,
     execution: 'deterministic_offline',
     sensitiveDataIncluded: false,
+    coverage: getAgentHarnessBenchmarkCoverage(),
     legacy,
     harness,
     comparison: {
@@ -452,7 +451,15 @@ export async function runAgentHarnessBenchmark(): Promise<AgentHarnessBenchmarkR
       duplicateExecutionsDelta:
         harness.duplicateExecutions - legacy.duplicateExecutions,
       totalTokensDelta: harness.totalTokens - legacy.totalTokens,
+      totalTokensDeltaRatio: deltaRatio(
+        harness.totalTokens,
+        legacy.totalTokens,
+      ),
       modeledLatencyMsDelta: harness.modeledLatencyMs - legacy.modeledLatencyMs,
+      modeledLatencyMsDeltaRatio: deltaRatio(
+        harness.modeledLatencyMs,
+        legacy.modeledLatencyMs,
+      ),
     },
     gate: { passed: failures.length === 0, failures },
   };
@@ -468,26 +475,7 @@ export function assertAgentHarnessBenchmark(
   }
 }
 
-/** Exposed only to prove metadata coverage in tests without serializing it. */
-export function getAgentHarnessBenchmarkFixtureCount(): number {
-  return FIXTURES.length;
-}
-
-/** Compile-time/runtime guard against silently benchmarking unclassified tools. */
-export function validateAgentHarnessBenchmarkFixtures(): string[] {
-  const missing = new Set<string>();
-  for (const fixture of FIXTURES) {
-    for (const call of [
-      ...(fixture.initial.toolCalls ?? []),
-      ...fixture.supplemental.flatMap((item) => item.toolCalls ?? []),
-    ]) {
-      if (
-        call.name !== 'unregistered_synthetic_tool' &&
-        !(call.name in TOOL_METADATA)
-      ) {
-        missing.add(call.name);
-      }
-    }
-  }
-  return [...missing].sort();
-}
+export {
+  getAgentHarnessBenchmarkFixtureCount,
+  validateAgentHarnessBenchmarkFixtures,
+} from './agent-harness-benchmark.dataset';
