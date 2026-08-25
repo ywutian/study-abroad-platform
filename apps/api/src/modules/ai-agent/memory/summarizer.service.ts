@@ -59,7 +59,14 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
         { temperature: 0.3, maxTokens: 1500 },
       );
 
-      return this.parseSummaryResponse(content);
+      const parsed = this.parseSummaryResponse(content);
+      if (!parsed.summary.trim()) {
+        this.logger.warn(
+          'LLM summary returned an invalid or empty structure; using deterministic fallback',
+        );
+        return this.fallbackSummary(messages);
+      }
+      return parsed;
     } catch (error) {
       this.logger.error('Failed to generate summary', error);
       return this.fallbackSummary(messages);

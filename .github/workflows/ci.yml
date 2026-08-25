@@ -1852,11 +1852,10 @@ jobs:
           fi
           echo "::add-mask::$HARNESS_ADMIN_PASSWORD"
           set +e
-          # Invoke the API script directly. The root package script launches a
-          # nested pnpm command whose lifecycle banners are written to stdout;
-          # redirecting that stream as JSONL makes otherwise valid acceptance
-          # evidence fail closed as line_N_not_json.
-          pnpm --filter api exec tsx scripts/ai-agent-harness-acceptance.ts --production \
+          # Invoke Node directly. Any pnpm wrapper may append lifecycle/error
+          # messages to stdout when the runner exits non-zero, corrupting the
+          # strict JSONL evidence precisely when a scenario fails.
+          node --import tsx apps/api/scripts/ai-agent-harness-acceptance.ts --production \
             > /tmp/harness-release-evidence/runner.jsonl \
             2> /tmp/harness-release-evidence/runner.stderr
           RUNNER_STATUS=$?
