@@ -1,6 +1,13 @@
 ---
-description: "AI system architecture, LLM patterns, and governance rules"
-globs: ["apps/api/src/modules/ai-agent/**", "apps/api/src/modules/ai/**", "apps/api/src/modules/prediction/**", "apps/api/src/modules/essay/**", "apps/api/src/modules/recommendation/**"]
+description: 'AI system architecture, LLM patterns, and governance rules'
+globs:
+  [
+    'apps/api/src/modules/ai-agent/**',
+    'apps/api/src/modules/ai/**',
+    'apps/api/src/modules/prediction/**',
+    'apps/api/src/modules/essay/**',
+    'apps/api/src/modules/recommendation/**',
+  ]
 ---
 
 # AI System Rules
@@ -11,11 +18,11 @@ All LLM calls go through `ILLMProvider` interface (`ai-agent/providers/`). `LLMP
 
 ### Unified LLM Service
 
-| Method | Use case | Input | Output |
-|--------|----------|-------|--------|
-| `chatSimple(messages, options)` | One-shot domain AI | `ChatSimpleMessage[]` | `string` |
-| `call(systemPrompt, messages, options)` | Agent loop (tools) | `Message[]` + `LLMOptions` | `LLMResponse` |
-| `callStream(systemPrompt, messages, options)` | Streaming agent | `Message[]` + `LLMOptions` | `AsyncGenerator<StreamChunk>` |
+| Method                                        | Use case           | Input                      | Output                        |
+| --------------------------------------------- | ------------------ | -------------------------- | ----------------------------- |
+| `chatSimple(messages, options)`               | One-shot domain AI | `ChatSimpleMessage[]`      | `string`                      |
+| `call(systemPrompt, messages, options)`       | Agent loop (tools) | `Message[]` + `LLMOptions` | `LLMResponse`                 |
+| `callStream(systemPrompt, messages, options)` | Streaming agent    | `Message[]` + `LLMOptions` | `AsyncGenerator<StreamChunk>` |
 
 ## JSON Extraction (MANDATORY)
 
@@ -65,19 +72,45 @@ Each AI module has `*.prompts.ts` exporting: `buildXxxSystemPrompt(locale, ...co
 
 Enterprise memory: Redis (hot) + PostgreSQL (cold) + pgvector (semantic search).
 
+## Agent Harness invariants
+
+- Harness extends the existing ReWOO path; do not introduce a second Agent,
+  tool, conversation, memory, or provider stack.
+- `ToolName` and `TOOL_METADATA` are exhaustive. Unknown tools, missing
+  metadata, and policy exceptions fail closed.
+- Advisory mode permits only `read` and `generate`. A confirmation-required
+  tool cannot execute before an approval bound to Run, user, tool, normalized
+  arguments, and expiry.
+- The successful-call fingerprint is tool name + normalized argument JSON. It
+  must remain at-most-once across replan, retry, approval, reconnect, and resume.
+- A Run freezes budgets and `skillVersionId` when created. Publishing or
+  rollback affects only later Runs; a completed resume returns persisted output.
+- Summary failure retains the last valid summary. `enableMemory=false` disables
+  extraction, recall, entity lookup, and prompt injection together.
+- Evaluation traces and acceptance artifacts are allowlisted and redacted;
+  never persist raw prompts, tool arguments/results, credentials, or user files.
+- Declarative Skills can only narrow tools and change instructions, sanitized
+  examples, hints, output rules, and workflow templates. They cannot add code,
+  tools, providers, credentials, budgets, or central policy.
+- The only implemented provider is OpenAI-compatible `openai`; do not add a
+  configuration value without a working provider implementation and contracts.
+
+Read `docs/architecture/ai-system.md` for the runtime model and
+`docs/AI_AGENT_SKILLS_EVOLUTION.md` before changing Skills or evolution.
+
 ## Security
 
 `@Global() AgentSecurityModule`: PromptGuardService (injection detection), ContentModerationService, AuditService.
 
 ## Architecture Governance (5 Rules)
 
-| Rule | ID | Severity | Catches |
-|------|-----|----------|---------|
-| G1 | `optional-security` | error | `@Optional()` on security services |
-| G2 | `nl-endpoint-coverage` | error | NL endpoint missing security middleware |
-| G3 | `config-consistency` | error | Direct `AGENT_CONFIGS[...]` read outside validator |
-| G4 | `user-data-isolation` | warning | Prisma query missing `userId` filter |
-| G5 | `dead-provider` | warning | Unused provider in `ai-agent.module.ts` |
+| Rule | ID                     | Severity | Catches                                            |
+| ---- | ---------------------- | -------- | -------------------------------------------------- |
+| G1   | `optional-security`    | error    | `@Optional()` on security services                 |
+| G2   | `nl-endpoint-coverage` | error    | NL endpoint missing security middleware            |
+| G3   | `config-consistency`   | error    | Direct `AGENT_CONFIGS[...]` read outside validator |
+| G4   | `user-data-isolation`  | warning  | Prisma query missing `userId` filter               |
+| G5   | `dead-provider`        | warning  | Unused provider in `ai-agent.module.ts`            |
 
 Adding NL endpoints: 1) Add to `AgentSecurityMiddleware.forRoutes()`, 2) Add to `nl-endpoints.json`, 3) Run governance check.
 

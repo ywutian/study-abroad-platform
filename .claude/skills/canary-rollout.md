@@ -13,7 +13,10 @@ After a feature passes gate evaluation, this is what ops does next. Locks in the
 - New ML model deployed in shadow → ready for canary traffic
 - Backend behavior change behind a feature flag — anything where rolling back means "set percentage back to 0" not "revert PR"
 
-Do NOT use for: hotfixes (no flag, ship straight to 100%), config-only changes, internal admin tooling.
+Do NOT use for: hotfixes (no flag, ship straight to 100%), config-only changes,
+internal admin tooling, or the AI Agent Harness/declarative Skills. Harness
+releases use a no-traffic Cloud Run validation revision followed by an atomic
+100% switch and retained-revision rollback; they do not use 5%/25% user traffic.
 
 ## The 4-stage ladder
 
@@ -31,18 +34,21 @@ Each stage has its own promotion gate. Failing a gate **does not** auto-rollback
 **Promotion criteria**: gate PASS in decision memo, PR merged to main, prod deploy green, on-call ack.
 
 **ADMIN action**: flip the flag in the admin UI:
+
 ```
 Feature: essay_debate_enabled (or feature name)
 Rules JSON: { "percentage": 5 }
 ```
 
 **Monitor for 48h**:
+
 - Sentry: any new errors in the feature's modules → annotate
 - Server warn logs specific to the feature (e.g., `[sycophancy-2.0]`, `[template-fatigue]`, `[hedge-sycophancy]` for essay-debate)
 - Real-user complaint rate (qualitative — gather from `#user-feedback` channel)
 - Latency p95 / p99 for the new endpoint(s)
 
 **Promotion gate** (Day 2):
+
 - [ ] 0 prod-impacting errors attributable to this feature
 - [ ] Server warn-log rate stable or declining
 - [ ] Real-user complaint count = 0 (or < 1 per 100 actions)
@@ -55,11 +61,13 @@ Rules JSON: { "percentage": 5 }
 **ADMIN action**: update flag percentage to 25.
 
 **Monitor for 72h**: same as Stage 1 + add:
+
 - Sample 10 random real-user sessions from logs; manually check feature output quality
 - Compare lumni-vs-control ratio in production vs eval (if instrumented)
 - DB query plan changes (if feature added new queries)
 
 **Promotion gate** (Day 5):
+
 - [ ] Stage-1 criteria still met
 - [ ] Manual quality sample: ≥ 80% rated "good or above" by ops reviewer
 - [ ] DB load p95 within +30% of pre-flag baseline
@@ -71,11 +79,13 @@ Rules JSON: { "percentage": 5 }
 **ADMIN action**: update flag percentage to 100.
 
 **Monitor for 7 days**: same as Stage 2 + add:
+
 - Cost per turn / per request (LLM call cost on AI features)
 - Cache hit rate if feature uses Redis
 - A/B comparison if rule has `userIds` exclusion list for control group
 
 **Promotion gate** (Day 14):
+
 - [ ] Stage-2 criteria still met for 7 consecutive days
 - [ ] Cost per turn within projected envelope
 - [ ] Cache hit rate ≥ target (e.g., 80%+ for cached LLM analysis)
@@ -85,6 +95,7 @@ Rules JSON: { "percentage": 5 }
 **Promotion criteria**: Stage-3 stable for 7 days.
 
 **Engineering action** (PR):
+
 - Remove the flag check from code: `if (await featureFlag.isEnabled(...))` → unconditional code path
 - Remove flag definition from admin seed data (or mark `archived: true`)
 - Delete dead code paths the flag was gating off
@@ -96,15 +107,15 @@ This is a cleanup PR, not a rollout PR — same author as feature, fast review.
 
 Set on call → revert percentage to **0** immediately when:
 
-| Trigger | Threshold | Action |
-|---|---|---|
-| Sentry error rate spike attributable to feature | > 10 events / 5 min | 0% + investigate |
-| Real-user SYCOPHANTIC / quality complaint rate | > 5% in any 24h | 0% + reopen prompt iteration |
-| Latency p99 > 2× baseline | sustained 15 min | 0% + perf-loop |
-| DB connection pool saturation | > 90% sustained 5 min | 0% + index review |
-| Cost spike | > 3× projected | 0% + cache audit |
+| Trigger                                         | Threshold             | Action                       |
+| ----------------------------------------------- | --------------------- | ---------------------------- |
+| Sentry error rate spike attributable to feature | > 10 events / 5 min   | 0% + investigate             |
+| Real-user SYCOPHANTIC / quality complaint rate  | > 5% in any 24h       | 0% + reopen prompt iteration |
+| Latency p99 > 2× baseline                       | sustained 15 min      | 0% + perf-loop               |
+| DB connection pool saturation                   | > 90% sustained 5 min | 0% + index review            |
+| Cost spike                                      | > 3× projected        | 0% + cache audit             |
 
-**Rollback ≠ failure**. Rolling back to 0% is the *cheap* path back to safety; staying at 25% with degradation is the expensive path.
+**Rollback ≠ failure**. Rolling back to 0% is the _cheap_ path back to safety; staying at 25% with degradation is the expensive path.
 
 ## Required infrastructure
 

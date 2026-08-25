@@ -1,9 +1,9 @@
 # AI System Architecture
 
-> 企业级多 Agent LLM 编排系统 — ReWOO 三阶段执行 + 3 级路由 + 3 层安全 + 3 级记忆。
+> 企业级多 Agent LLM 编排系统 — 在现有 ReWOO 上增加受预算约束的 Harness、集中式工具权限、可恢复 Run、上下文压缩与声明式 Skills。
 
 **源码位置**: `apps/api/src/modules/ai-agent/`
-**最后更新**: 2026-04-12 (from 3 parallel Explore agent verification)
+**最后更新**: 2026-08-24
 
 ---
 
@@ -11,11 +11,11 @@
 
 - [§1 System Map (17 子目录)](#1-system-map)
 - [§2 6 个 Agent](#2-6-个-agent)
-- [§3 13 Tool Services (~163 tools)](#3-13-tool-services)
+- [§3 13 Tool Services / 45 tools](#3-13-tool-services--45-tools)
 - [§4 Memory System (3-tier)](#4-memory-system)
 - [§5 3-Level Routing](#5-3-level-routing)
 - [§6 3-Layer Security](#6-3-layer-security)
-- [§7 ReWOO Execution](#7-rewoo-execution)
+- [§7 ReWOO + Harness Execution](#7-rewoo--harness-execution)
 - [§8 LLM Providers](#8-llm-providers)
 - [§9 Resilience + Observability](#9-resilience--observability)
 - [§10 Full Call Chain](#10-full-call-chain)
@@ -31,8 +31,9 @@
 ```
 ai-agent/
 ├── admin/                       # agent-admin.controller.ts (AI 管理端点)
+├── benchmark/                   # Harness 固定合成评测与旧路径对比
 ├── config/                      # agents.config.ts, tools.config.ts, validators
-├── core/                        # 11 core services (orchestrator, runner, routers, llm, executor)
+├── core/                        # orchestrator, runner, workflow, ToolPolicy, AgentRun, evidence
 ├── dto/                         # 请求/响应 DTO
 ├── guards/                      # AgentThrottleGuard
 ├── infrastructure/              # 28 文件 (alerting/config/context/logging/memory/observability/storage)
@@ -43,6 +44,7 @@ ai-agent/
 ├── queue/                       # task-queue.service
 ├── security/                    # PromptGuard, ContentModeration, Audit
 ├── services/                    # 跨域 helper
+├── skills/                      # 声明式 Skill 版本、评测、发布、回滚、自进化
 ├── tools/                       # 13 domain tool services
 ├── types/                       # TypeScript 类型
 ├── ai-agent.controller.ts       # POST /ai-agent/chat/stream (SSE) + 直调
@@ -67,19 +69,19 @@ ai-agent/
 
 | ID           | 中文名     | Model       | Temp | Max Tokens | 工具数 | 特殊能力                                                |
 | ------------ | ---------- | ----------- | ---- | ---------- | ------ | ------------------------------------------------------- |
-| ORCHESTRATOR | 留学助手   | gpt-4o-mini | 0.3  | 2000       | **11** | canDelegate: [ESSAY, SCHOOL, PROFILE, TIMELINE, RESUME] |
+| ORCHESTRATOR | 留学助手   | gpt-4o-mini | 0.3  | 2000       | **12** | canDelegate: [ESSAY, SCHOOL, PROFILE, TIMELINE, RESUME] |
 | ESSAY        | 文书专家   | gpt-4o-mini | 0.7  | 4000       | 7      | canDelegate: [ORCHESTRATOR]                             |
-| SCHOOL       | 选校专家   | gpt-4o-mini | 0.5  | 4000       | 15     | **enableReflection: true** (gpt-4o-mini 自我校验)       |
+| SCHOOL       | 选校专家   | gpt-4o-mini | 0.5  | 4000       | 14     | **enableReflection: true** (gpt-4o-mini 自我校验)       |
 | PROFILE      | 档案分析师 | gpt-4o-mini | 0.5  | 3000       | 6      | canDelegate: [ORCHESTRATOR]                             |
 | TIMELINE     | 规划顾问   | gpt-4o-mini | 0.5  | 3000       | 7      | canDelegate: [ORCHESTRATOR]                             |
 | RESUME       | 简历专家   | gpt-4o-mini | 0.4  | 4000       | 6      | canDelegate: [ORCHESTRATOR]                             |
 
-**ORCHESTRATOR 的 11 个工具**:
+**ORCHESTRATOR 的 12 个工具**:
 
 1. `delegate_to_agent` — 分发到其他 5 个 agent
 2. `search_forum_posts` / `get_popular_discussions` / `answer_forum_question` — 论坛操作
-3. `explain_case_result` / `analyze_prediction_accuracy` / `compare_case_with_profile` — 案例分析
-4. `analyze_intl_competitiveness` / `analyze_profile_ranking` / `suggest_profile_improvements` — 档案评估
+3. `explain_case_result` / `analyze_prediction_accuracy` / `compare_case_with_profile` / `analyze_intl_competitiveness` — 案例分析
+4. `analyze_profile_ranking` / `suggest_profile_improvements` / `compare_with_admitted_profiles` — 档案评估
 5. `web_search` — 外部搜索
 
 **路由分发规则**:
@@ -90,33 +92,37 @@ ai-agent/
 
 ---
 
-## 3. 13 Tool Services (~163 Tools)
+## 3. 13 Tool Services / 45 Tools
 
-**工具总数**: ~163 分布在 13 个 domain tool service
+`ToolExecutorService` 从 13 个 provider 注册 44 个 handler，另有 1 个内建的
+`delegate_to_agent`，合计与 `config/tools.config.ts` 的 45 个 `ToolName` 对齐。
+`TOOL_METADATA` 必须保持 45/45 穷尽。新增 ToolName 如果没有同时声明 effect、
+risk、retryable、requiresConfirmation 和 timeoutMs，会在编译或测试阶段失败。
 
-| Service                     | 工具数 | 代表工具                                                                                            |
-| --------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
-| `timeline-tools`            | **35** | get_deadlines, create_timeline, personal_events CRUD, subscribe_global_event                        |
-| `ranking-tools`             | **29** | analyze_profile_ranking, ranking_by_dimension, compare_rankings                                     |
-| `case-tools`                | **23** | search_cases, find_similar_applicants, compare_with_admitted, explain_case_result                   |
-| `essay-tools`               | **15** | review_essay, polish_essay, brainstorm_ideas, generate_outline, continue_writing, rewrite_paragraph |
-| `prediction-tools`          | **13** | analyze_admission_chance, get_prediction_history, get_prediction_dashboard, get_trace_summary       |
-| `assessment-tools`          | **12** | get_assessment_results, interpret_assessment, suggest_activities_from_assessment                    |
-| `orchestrator-tools` (内联) | **11** | (见 §2)                                                                                             |
-| `profile-tools`             | **9**  | get_profile, update_profile, find_similar_applicants, +6                                            |
-| `school-tools`              | **8**  | search_schools, get_school_details, compare_schools, recommend_schools                              |
-| `recommendation-tools`      | **7**  | recommend_schools (reach/match/safety), preflight                                                   |
-| `resume-tools`              | **6**  | get_resume_list, review_resume, optimize_resume_bullets, suggest_resume_content                     |
-| `forum-tools`               | **5**  | search_forum_posts, get_popular_discussions, answer_forum_question                                  |
-| `similarity-tools`          | **4**  | find_similar_cases, find_similar_applicants                                                         |
-| `search-tools`              | **3**  | web_search, search_school_website                                                                   |
+| Service                    | 工具数 | 注册工具                                                        |
+| -------------------------- | -----: | --------------------------------------------------------------- |
+| `assessment-tools`         |      3 | assessment result / interpretation / activity suggestions       |
+| `case-tools`               |      6 | case search, similarity, result and competitiveness analysis    |
+| `essay-tools`              |      6 | essay read, review, polish, outline, brainstorm, prompt search  |
+| `forum-tools`              |      3 | search, popular discussions, answer generation                  |
+| `prediction-tools`         |      4 | history, dashboard, school-list predictions, safe trace summary |
+| `profile-tools`            |      2 | profile read and confirmed update                               |
+| `ranking-tools`            |      3 | ranking, improvements, admitted-profile comparison              |
+| `recommendation-tools`     |      2 | school recommendation and admission analysis                    |
+| `resume-tools`             |      5 | list, detail, review, bullet optimization, content suggestions  |
+| `school-tools`             |      3 | school search, details, comparison                              |
+| `search-tools`             |      2 | web search and school-site search                               |
+| `similarity-tools`         |      1 | similar applicants                                              |
+| `timeline-tools`           |      4 | deadlines, timeline, personal-event read/write                  |
+| `delegate_to_agent` (内建) |      1 | Orchestrator 委派                                               |
 
 ### 工具注册机制
 
 ```typescript
 // ToolExecutorService.onModuleInit()
-// 从 13 个 domain tool service 收集所有 @ToolHandler() 标记的方法
-// → 构建统一 registry: Map<toolName, handler>
+// 从 13 个 IToolHandlerProvider.getHandlers() 收集 handler
+// → 构建统一 registry: Map<toolName, ToolHandler>
+// delegate_to_agent 由 ToolExecutorService 单独处理
 ```
 
 ### 工具执行策略
@@ -268,11 +274,13 @@ ai-agent/
 
 ---
 
-## 7. ReWOO Execution
+## 7. ReWOO + Harness Execution
 
-**三阶段工作流** (ReWOO = Reasoning Without Observation pattern)
+**兼容的三阶段工作流**（ReWOO = Reasoning Without Observation pattern）
 
-由 `WorkflowEngineService` 实现，相比传统 ReAct 模式**减少 67% LLM 调用**。
+由 `WorkflowEngineService` 实现。Feature Flag 关闭时保持原 ReWOO 行为；
+`AI_AGENT_HARNESS_V1=true` 时仍沿用 Plan → Execute → Solve，但允许最多两轮
+“观察工具结果 → 补充规划”，并对权限、重复调用和总预算做机械限制。
 
 ```
 ┌────────────────────────────┐
@@ -289,12 +297,19 @@ ai-agent/
 ┌────────────────────────────┐
 │ Phase 2: EXECUTE (不调 LLM)│
 │                            │
-│ 只读工具: 并行执行          │
-│ 可变工具: 顺序执行          │
+│ ToolPolicy 逐项判定         │
+│ allow / deny / confirmation│
 │                            │
-│ Timeout: 30s/tool           │
-│ Retry:   2 次 (指数退避)    │
-│ Circuit: Redis 状态          │
+│ 指纹: tool + normalized args│
+│ Run 上限: 16 次工具执行      │
+└────────────────────────────┘
+              ↓
+┌────────────────────────────┐
+│ Optional: OBSERVE / REPLAN │
+│                            │
+│ 仅在结果不足时补充规划       │
+│ 最多 2 轮；共享原 Run 预算   │
+│ 已成功的相同指纹不会重跑     │
 └────────────────────────────┘
               ↓
 ┌────────────────────────────┐
@@ -311,14 +326,65 @@ ai-agent/
 └────────────────────────────┘
 ```
 
-### ReWOO vs ReAct 对比
+### Tool Policy 与审批
 
-| 维度         | ReAct (传统)            | ReWOO (本项目)        |
-| ------------ | ----------------------- | --------------------- |
-| LLM 调用次数 | O(N) — 每个工具都调一次 | **2** — PLAN + SOLVE  |
-| 延迟         | ~5-15s                  | ~3-5s                 |
-| Token 成本   | 高 (重复 context)       | 低 (context 只发一次) |
-| 并行性       | 无 (顺序推理)           | 只读工具可并行        |
+工具元数据是权限事实源：
+
+```typescript
+type ToolMetadata = {
+  effect: 'read' | 'generate' | 'write' | 'external';
+  risk: 'low' | 'medium' | 'high';
+  retryable: boolean;
+  requiresConfirmation: boolean;
+  timeoutMs: number;
+};
+```
+
+- `advisory` 只允许 `read` 与 `generate`。
+- `action` 可以提出 write/external 操作，但要求确认的工具先返回
+  `confirmation_required`，不能提前产生副作用。
+- 未知工具、缺失元数据和策略异常统一 fail closed。
+- 审批绑定 Run、用户、工具、规范化参数和过期时间；参数变化必须重新审批。
+- 数据库唯一约束、执行 lease 和原子状态转换保证恢复后最多执行一次。
+
+### Agent Run 与上下文边界
+
+`AgentRun` 状态为 `RUNNING | WAITING_APPROVAL | COMPLETED | FAILED |
+CANCELLED | EXPIRED`。Run 创建时冻结 token、工具次数、补充规划次数、总耗时
+以及 `skillVersionId`。完成态再次 resume 只返回持久化结果，不重新执行工具。
+
+以下数据用途不可混用：
+
+| 数据                 | 用途               | 禁止事项                                 |
+| -------------------- | ------------------ | ---------------------------------------- |
+| Run Checkpoint       | 恢复未完成执行     | 不能作为长期用户事实                     |
+| Conversation Summary | 保持当前对话连续性 | 失败时不能覆盖最后有效摘要               |
+| Long-term Memory     | 跨会话稳定事实     | Memory 关闭时禁止抽取、召回与注入        |
+| Evaluation Trace     | 脱敏评测和改进证据 | 不保存正文、工具参数、密钥或完整个人材料 |
+
+### 声明式 Skills
+
+每个 Agent 的 Skill 使用不可变 `AgentConfigVersion`。运行时只允许改变补充指令、
+脱敏示例、工具提示、已授权工具子集、输出规则和工作流模板。候选工具必须满足：
+
+```text
+candidateTools ⊆ parentTools ∩ agentAllowedTools
+```
+
+评测通过后 `AgentSkillDeployment.activeVersionId` 在事务中直接切换到新版本，
+同时保留 `previousVersionId`。发布或回滚不影响已经启动并固定版本的 Run。
+具体门禁见 `docs/AI_AGENT_SKILLS_EVOLUTION.md`。
+
+### Legacy ReWOO 与 Harness 的成本边界
+
+| 维度     | Legacy ReWOO    | Harness v1                         |
+| -------- | --------------- | ---------------------------------- |
+| 规划     | 单次 PLAN       | PLAN + 最多 2 次补充规划           |
+| 工具上限 | 旧路径行为      | 每 Run 最多执行 16 次              |
+| 重复控制 | 无跨轮成功指纹  | tool + normalized args 去重        |
+| 权限     | 分散在执行层    | 集中 ToolPolicy，异常默认拒绝      |
+| 恢复     | 会话级          | 持久化 Run、审批、checkpoint、终态 |
+| 代价     | 较低 token/延迟 | 允许为恢复与治理增加有界成本       |
 
 ---
 
@@ -326,14 +392,15 @@ ai-agent/
 
 **接口**: `ILLMProvider` → 唯一实现: `OpenAIProvider`
 
-### 生产环境 2 个模型
+### 生产模型配置
 
 | Model           | 用途                           | 上下文 |
 | --------------- | ------------------------------ | ------ |
 | **gpt-4o-mini** | 所有 6 个 agent 的**主力模型** | 128k   |
 | **gpt-4o**      | 高容量变体 (需要强推理时切换)  | 128k   |
 
-**兼容性**: OpenAIProvider 通过 `base URL` 配置可兼容:
+`LLM_PROVIDER` 只接受当前已经实现的 `openai`。不配置 Anthropic，也不允许
+“配置可选但运行时无实现”的 provider 值。`OpenAIProvider` 通过 base URL 可连接：
 
 - Azure OpenAI
 - DeepSeek (deepseek-chat, deepseek-reasoner)
@@ -409,13 +476,19 @@ OrchestratorService.chatStream()
        ↓ (选定 agent)
 AgentRunnerService.run(selectedAgent)
   │
-  └─ WorkflowEngineService.runStream()
+  ├─ AgentSkillService.resolveForRun()  ← 固定 skillVersionId
+  └─ WorkflowEngineService.runStream()  ← 创建/恢复 AgentRun
        │
        ├─ [Phase 1 PLAN] LLMService.call(system + user + memory_context)
        │    ↓
-       ├─ [Phase 2 EXECUTE] ToolExecutorService.dispatch(planned_tools)
-       │    ├─ 只读工具并行 (Promise.all)
-       │    └─ 可变工具顺序
+       ├─ [Policy] ToolPolicyService.evaluate(tool metadata + mode)
+       │    ├─ deny → 稳定原因码
+       │    └─ confirmation_required → checkpoint + WAITING_APPROVAL
+       │    ↓
+       ├─ [Phase 2 EXECUTE] ToolExecutorService.dispatch(allowed tools)
+       │    └─ fingerprint / lease / timeout / at-most-once
+       │    ↓
+       ├─ [Optional] observe + supplemental plan (≤ 2 rounds)
        │    ↓
        └─ [Phase 3 SOLVE] LLMService.callStream(system + user + tool_results)
             ↓
@@ -425,6 +498,7 @@ SSE StreamEvent → Client
   │
   └─ (异步，并行)
      ├─ MemoryManagerService.store(conversation)   ← 写入 Redis + PG + pgvector
+     ├─ AgentEvaluationTraceService.store()        ← 仅脱敏结构化证据
      ├─ MetricsService.record()                    ← Prometheus
      └─ [Security L3] AuditService.log()           ← AgentAuditLog
 ```
@@ -440,6 +514,9 @@ SSE StreamEvent → Client
 | `agent_switch` | 切换到其他 Agent | `{ fromAgent, toAgent, reason }`   |
 | `done`         | 完成             | `{ response, memoryContext }`      |
 | `error`        | 错误             | `{ error, code }`                  |
+
+Harness 还会发出 `approval_required`、`run_paused` 与 `run_resumed`。客户端重连
+必须以持久化 Run 状态为准，而不是假设先前的 SSE 事件已经完整送达。
 
 ---
 
@@ -497,6 +574,11 @@ SSE StreamEvent → Client
   3. 运行 `check-integration.ts --only=governance-nl-endpoint-coverage`
 - **@Optional() 禁用**: 不能对 `AgentSecurityModule` 的服务使用 `@Optional()` (ADR-0011)
 - **Shared types**: `AgentType`, `StreamEvent`, `ActionButton`, `Message`, `ToolCall` 必须在 `packages/shared/src/types/ai-agent.ts` 定义
+- **工具权限**: ToolName 与 ToolMetadata 必须穷尽一致；策略异常和未知工具默认拒绝
+- **副作用**: 未审批工具不得执行；完成态 resume 不得重新产生副作用
+- **Skill 权限**: 候选只能缩小工具集合，不得修改代码、Provider、预算或中央策略
+- **上下文**: 压缩失败必须保留最后有效摘要；Memory 关闭必须同时禁止抽取、召回和注入
+- **生产验收**: 只使用合成账号和脱敏证据；清理失败等同验收失败
 
 ### 架构治理规则 (自动化检查)
 
@@ -521,6 +603,9 @@ SSE StreamEvent → Client
 ## 关联文档
 
 - [AI_AGENT_MEMORY_SYSTEM_SPEC.md](../AI_AGENT_MEMORY_SYSTEM_SPEC.md) — 记忆系统完整规格 (2,865 行)
+- [AI_AGENT_SKILLS_EVOLUTION.md](../AI_AGENT_SKILLS_EVOLUTION.md) — 声明式 Skills 与受约束自进化
+- [AI Agent Harness production acceptance](../runbooks/ai-agent-harness-acceptance.md) — 生产验收与证据边界
+- [AI Agent Harness production closure](../reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) — 2026-08-24 上线证据
 - [ADR-0003: ai-agent-workflow-engine-architecture](../adr/0003-ai-agent-workflow-engine-architecture.md) — ReWOO 决策
 - [ADR-0011: optional-injection-policy](../adr/0011-optional-injection-policy.md) — @Optional() 禁用决策
 - [ADR-0012: memory-tier-metadata-only](../adr/0012-memory-tier-metadata-only.md) — 记忆分层策略
@@ -529,4 +614,4 @@ SSE StreamEvent → Client
 
 ---
 
-<!-- 生成基于 3 个并行 Explore agent 验证，最后更新 2026-04-12 -->
+<!-- 2026-08-24 对照生产 Harness、声明式 Skills、验收和恢复实现更新 -->
