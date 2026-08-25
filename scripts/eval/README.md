@@ -2,11 +2,11 @@
 
 ## 三层评测策略
 
-| 层级     | 命令                                           | 测什么                            | 成本     | CI     |
-| -------- | ---------------------------------------------- | --------------------------------- | -------- | ------ |
-| **MVP1** | `--mode=fixtures`                              | JSON 合规 + 字段完整性 + 路由断言 | 零       | 可集成 |
-| **MVP2** | Jest mock (见 workflow-engine.service.spec.ts) | Plan 解析 / 路由准确率            | 零       | 已集成 |
-| **MVP3** | `--mode=live --sample=10`                      | 端到端路由 + 回复质量             | ~$0.5/次 | 手动   |
+| 层级     | 命令                                           | 测什么                            | 成本   | CI     |
+| -------- | ---------------------------------------------- | --------------------------------- | ------ | ------ |
+| **MVP1** | `--mode=fixtures`                              | JSON 合规 + 字段完整性 + 路由断言 | 零     | 可集成 |
+| **MVP2** | Jest mock (见 workflow-engine.service.spec.ts) | Plan 解析 / 路由准确率            | 零     | 已集成 |
+| **MVP3** | `--mode=live --sample=10`                      | 占位入口，尚未接生产模型          | 不适用 | 否     |
 
 ## 使用方法
 
@@ -14,11 +14,16 @@
 # MVP1: 纯规则检查（不调模型，CI 可用）
 npx tsx scripts/eval/run-eval.ts --mode=fixtures --verbose
 
-# MVP3: 真模型小样本（需要 LLM API，手动触发）
+# MVP3: 当前仍为占位逻辑，不得作为真模型质量证据
 npx tsx scripts/eval/run-eval.ts --mode=live --sample=5
 ```
 
 结果保存在 `scripts/eval/results/` 目录。
+
+> 该旧框架只用于开发期 fixture 审计，不上传包含 `rawOutput` 的结果。新的
+> 240 条自然语言语义评测、脱敏报告与 CI 校准门禁使用
+> `pnpm harness:semantic-eval`；证据边界见
+> `docs/reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md`。
 
 ## 数据集
 

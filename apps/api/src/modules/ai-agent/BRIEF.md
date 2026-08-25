@@ -23,6 +23,9 @@ evaluation evidence.
 - `skills/` — immutable declarative Skill versions, evaluation, publishing, and rollback
 - `benchmark/` — deterministic legacy-versus-Harness gate: 120 synthetic
   fixtures × 3 repetitions, six categories, 6 Agents, 2 locales, and 45/45 Tools
+- `semantic-eval/` — 48 synthetic language scenario families × 5 variants,
+  fixed five-axis rubric, reviewed-packet ingestion, negative-control
+  calibration, and sanitized reports
 - `config/agents.config.ts` / `config/tools.config.ts` — 6 Agent configs and 45/45 tool metadata entries
 
 ## Data Model
@@ -78,6 +81,7 @@ workflow and checked for documentation drift.
 - Memory boundaries: `docs/AI_AGENT_MEMORY_SYSTEM_SPEC.md`
 - Declarative Skills: `docs/AI_AGENT_SKILLS_EVOLUTION.md`
 - Production acceptance: `docs/runbooks/ai-agent-harness-acceptance.md`
+- Semantic evaluation: `docs/reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md`
 - Deploy invariants: `docs/DEPLOY_CONFIG.md`
 
 ## Gotchas

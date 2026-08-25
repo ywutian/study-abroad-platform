@@ -83,8 +83,9 @@ CI runs the same command before API tests and stores the sanitized artifact for
 ## Remaining evidence gap
 
 This closes deterministic architecture coverage, not model-quality coverage.
-The next independent layer should use a versioned, expert-reviewed admissions
-task set with expected rubrics and repeated OpenAI-compatible model runs. It
-must keep real application material out of fixtures and report confidence
-intervals, factuality, answer usefulness, token cost, and latency separately
-from this deterministic gate.
+The versioned 240-case semantic corpus and grader calibration now exist in
+[`AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md`](./AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md).
+Its Codex-authored reference remains calibration evidence. A production-quality
+claim still requires repeated deployed OpenAI-compatible Agent outputs and an
+independent blind review, with factuality, usefulness, tokens, cost, and
+latency reported separately from this deterministic gate.

@@ -89,6 +89,7 @@
 | [Cloud SQL restore drill](runbooks/cloud-sql-restore-drill.md)                                   | 只读恢复准备与经授权的隔离恢复流程                 |
 | [AI Agent Harness production closure](reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) | 2026-08-24 首次生产上线不可变证据                  |
 | [AI Agent Harness evaluation v2](reports/AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md)           | 120 fixture × 3 次的确定性架构评测、成本与证据边界 |
+| [AI Agent semantic evaluation v1](reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md)         | 240 条均衡语义语料、610 个反例校准与脱敏评分门禁   |
 | [积分系统开放 Runbook](runbooks/points-economy-launch.md)                                        | 积分系统双闸门开放、验证与回滚流程                 |
 | [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                                                            | 环境变量说明                                       |
 

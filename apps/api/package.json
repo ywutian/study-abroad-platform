@@ -24,6 +24,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "harness:acceptance": "tsx scripts/ai-agent-harness-acceptance.ts",
     "harness:benchmark": "tsx scripts/ai-agent-harness-benchmark.ts",
+    "harness:semantic-eval": "tsx scripts/ai-agent-semantic-eval.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

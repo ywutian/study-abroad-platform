@@ -216,3 +216,20 @@
 - 输出摘要
 - 至少一句对 5 个维度的总体判断
 - 失败时附关键错误态截图或响应摘录
+
+## 7. 自动语义评测层
+
+`agent-semantic-eval-v1-240` 将上述人工旅程原则固定为 48 个合成场景族和
+240 条中英文变体，按以下五轴 0–4 分评分：
+
+1. factuality
+2. instruction following
+3. relevance and completeness
+4. safety and privacy
+5. actionability and tone
+
+生产结果必须由部署中的 Agent 生成，并由未看到候选身份的 Codex 或人工专家
+独立评分；Codex 自己生成并自审的 reference 只用于评分器校准，不得写成生产质量
+结论。CI 报告只保留哈希、聚合分数和稳定原因码，原始 prompt、回答、工具参数与
+评审备注不得上传或提交。执行命令和当前证据见
+`reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md`。
