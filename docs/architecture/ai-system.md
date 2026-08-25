@@ -386,6 +386,14 @@ candidateTools ⊆ parentTools ∩ agentAllowedTools
 | 恢复     | 会话级          | 持久化 Run、审批、checkpoint、终态 |
 | 代价     | 较低 token/延迟 | 允许为恢复与治理增加有界成本       |
 
+当前 `agent-harness-comparison-v2` 离线门禁包含 120 个唯一合成 fixture，
+每个重复 3 次，即每种模式 360 次执行；覆盖 6 个 Agent、2 种语言和 45/45
+生产工具元数据。Harness 在该确定性集合中为 360/360，Legacy ReWOO 为
+150/360。模拟 token 增加约 39.7%，模拟延迟增加约 53.1%，主要来自工具执行后的
+观察与补充规划。它是架构回归和成本信号，不代表真实模型或用户质量。
+完整方法、指标与局限见
+[`AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md`](../reports/AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md)。
+
 ---
 
 ## 8. LLM Providers

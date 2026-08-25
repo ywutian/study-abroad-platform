@@ -80,16 +80,17 @@
 
 ### arc42 S9: 运维与部署
 
-| 文档                                                                                             | 说明                                   |
-| ------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md)                                                       | 部署指南 (GCP Cloud Run)               |
-| [DEPLOY_CONFIG.md](DEPLOY_CONFIG.md)                                                             | 部署配置事实源和防漂移门禁             |
-| [RUNBOOK.md](RUNBOOK.md)                                                                         | 运维排障手册                           |
-| [AI Agent Harness production acceptance](runbooks/ai-agent-harness-acceptance.md)                | 合成生产验收、脱敏证据、告警与回滚闭环 |
-| [Cloud SQL restore drill](runbooks/cloud-sql-restore-drill.md)                                   | 只读恢复准备与经授权的隔离恢复流程     |
-| [AI Agent Harness production closure](reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) | 2026-08-24 首次生产上线不可变证据      |
-| [积分系统开放 Runbook](runbooks/points-economy-launch.md)                                        | 积分系统双闸门开放、验证与回滚流程     |
-| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                                                            | 环境变量说明                           |
+| 文档                                                                                             | 说明                                               |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| [DEPLOY_GCP_STEPS.md](DEPLOY_GCP_STEPS.md)                                                       | 部署指南 (GCP Cloud Run)                           |
+| [DEPLOY_CONFIG.md](DEPLOY_CONFIG.md)                                                             | 部署配置事实源和防漂移门禁                         |
+| [RUNBOOK.md](RUNBOOK.md)                                                                         | 运维排障手册                                       |
+| [AI Agent Harness production acceptance](runbooks/ai-agent-harness-acceptance.md)                | 合成生产验收、脱敏证据、告警与回滚闭环             |
+| [Cloud SQL restore drill](runbooks/cloud-sql-restore-drill.md)                                   | 只读恢复准备与经授权的隔离恢复流程                 |
+| [AI Agent Harness production closure](reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) | 2026-08-24 首次生产上线不可变证据                  |
+| [AI Agent Harness evaluation v2](reports/AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md)           | 120 fixture × 3 次的确定性架构评测、成本与证据边界 |
+| [积分系统开放 Runbook](runbooks/points-economy-launch.md)                                        | 积分系统双闸门开放、验证与回滚流程                 |
+| [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                                                            | 环境变量说明                                       |
 
 ### arc42 S10-11: 质量与风险
 

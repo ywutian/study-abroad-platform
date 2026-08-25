@@ -21,7 +21,8 @@ evaluation evidence.
 - `core/agent-evaluation-trace.service.ts` — redacted evaluation trace persistence
 - `memory/conversation-context.service.ts` — structured compression and last-valid-summary fallback
 - `skills/` — immutable declarative Skill versions, evaluation, publishing, and rollback
-- `benchmark/` — deterministic legacy-versus-Harness architecture benchmark
+- `benchmark/` — deterministic legacy-versus-Harness gate: 120 synthetic
+  fixtures × 3 repetitions, six categories, 6 Agents, 2 locales, and 45/45 Tools
 - `config/agents.config.ts` / `config/tools.config.ts` — 6 Agent configs and 45/45 tool metadata entries
 
 ## Data Model

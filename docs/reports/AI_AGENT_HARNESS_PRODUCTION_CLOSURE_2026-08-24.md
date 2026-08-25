@@ -100,6 +100,11 @@ supplemental planning, permission-aware refusal, unknown-tool fail-closed
 behavior, distinct-argument calls, a 16-call budget, and cross-round duplicate
 prevention.
 
+This table remains the immutable benchmark captured for the first production
+closure. The expanded current regression dataset and its separate cost signal
+are documented in
+[`AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md`](AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md).
+
 ## Verification inventory
 
 - Complete AI Agent suite: 75 suites / 667 tests.
