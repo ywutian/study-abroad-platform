@@ -294,7 +294,15 @@ describe('OrchestratorService', () => {
       );
       expect(events).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ type: 'start', agent: AgentType.RESUME }),
+          expect.objectContaining({
+            type: 'start',
+            agent: AgentType.RESUME,
+            memoryContext: {
+              recentMemories: 0,
+              relevantFacts: 0,
+              entities: [],
+            },
+          }),
           expect.objectContaining({ type: 'done', agent: AgentType.RESUME }),
         ]),
       );
