@@ -304,7 +304,20 @@ export class ConfigValidatorService implements OnModuleInit {
       return null;
     }
 
-    return config;
+    const runtimeModel = this.configService.get<string>('OPENAI_MODEL')?.trim();
+    if (!runtimeModel) return config;
+
+    // Agent configs define a safe development fallback, while production's
+    // OpenAI-compatible gateway and model are selected together through the
+    // environment. Keeping the Agent model hard-coded would make domain LLM
+    // calls use OPENAI_MODEL while Agent runs silently target another model on
+    // the same gateway. Return a copy so the immutable source configuration is
+    // never mutated and declarative Skills still cannot change the model.
+    return {
+      ...config,
+      model: runtimeModel,
+      ...(config.reflectionModel ? { reflectionModel: runtimeModel } : {}),
+    };
   }
 
   /**

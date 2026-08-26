@@ -37,7 +37,7 @@
 | ORM               | Prisma                         | 5.x     |
 | Database          | PostgreSQL + pgvector          | 16      |
 | Cache             | Redis                          | 7       |
-| AI                | OpenAI API (gpt-4o-mini)       | —       |
+| AI                | OpenAI-compatible API          | —       |
 | Embeddings        | text-embedding-3-small (1536d) | —       |
 | State Management  | Zustand + React Query          | —       |
 | UI Framework      | Tailwind CSS + shadcn/ui       | —       |
@@ -74,8 +74,8 @@
                                  │
                                  ▼
                         ┌─────────────────┐
-                        │   OpenAI API     │
-                        │  gpt-4o-mini     │
+                        │ OpenAI-compatible│
+                        │  OPENAI_MODEL    │
                         └─────────────────┘
 ```
 
@@ -1137,7 +1137,7 @@ PLAN → EXECUTE → SOLVE
 ### 8.3 LLM Configuration
 
 - Provider: OpenAI (configurable base URL)
-- Default model: `gpt-4o-mini`
+- Runtime model: `OPENAI_MODEL` (shared by domain LLM calls, all Agent Loops, and reflection; code fallback is `gpt-4o-mini`)
 - Embedding model: `text-embedding-3-small` (1536 dimensions)
 - Token counting: `js-tiktoken` (o200k_base for GPT-4o series)
 - Cost tracking: Per-model pricing (gpt-4o-mini: $0.00015/1K input, $0.0006/1K output)
