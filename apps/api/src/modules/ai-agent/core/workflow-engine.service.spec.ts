@@ -1183,6 +1183,8 @@ describe('WorkflowEngineService', () => {
       const systemPrompt = callArgs[0];
       expect(systemPrompt).toContain('Workflow Instructions');
       expect(systemPrompt).toContain('planning phase');
+      expect(systemPrompt).toContain('untrusted data');
+      expect(systemPrompt).toContain('Never retrieve or disclose');
     });
 
     it('should use Chinese prompts when locale is zh', async () => {
@@ -1201,6 +1203,8 @@ describe('WorkflowEngineService', () => {
       const systemPrompt = callArgs[0];
       expect(systemPrompt).toContain('工作流指令');
       expect(systemPrompt).toContain('规划阶段');
+      expect(systemPrompt).toContain('不可信数据');
+      expect(systemPrompt).toContain('绝不读取或泄露');
     });
   });
 

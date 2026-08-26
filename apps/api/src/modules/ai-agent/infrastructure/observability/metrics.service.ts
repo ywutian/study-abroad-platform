@@ -64,6 +64,7 @@ export interface AgentMetrics {
 
   // 路由指标
   routing: {
+    hint: number;
     fast: number;
     embedding: number;
     llm: number;
@@ -152,7 +153,7 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
 
   // ==================== 路由指标 ====================
 
-  recordRoutingDecision(layer: 'fast' | 'embedding' | 'llm') {
+  recordRoutingDecision(layer: 'hint' | 'fast' | 'embedding' | 'llm') {
     this.metrics.routing[layer]++;
   }
 
@@ -302,7 +303,7 @@ export class MetricsService implements OnModuleInit, OnModuleDestroy {
         rateLimitHits: 0,
         quotaExceeded: 0,
       },
-      routing: { fast: 0, embedding: 0, llm: 0 },
+      routing: { hint: 0, fast: 0, embedding: 0, llm: 0 },
       critiques: { total: 0, passed: 0, failed: 0 },
       harness: { events: {}, cleanup: { runs: 0, traces: 0 } },
     };

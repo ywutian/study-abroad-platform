@@ -322,22 +322,6 @@ export class OrchestratorService {
   }
 
   /**
-   * Process a user message through the multi-agent orchestration pipeline (non-streaming).
-   *
-   * Execution flow:
-   * 1. Fast-route check (keyword-based, bypasses LLM if confident)
-   * 2. Orchestrator agent determines intent and may delegate to specialist agents
-   * 3. Delegation loop runs up to `maxDelegationDepth` times
-   * 4. Final assistant response is persisted to enterprise memory
-   *
-   * @param userId - Authenticated user ID
-   * @param message - Raw user message text
-   * @param conversationId - Optional existing conversation ID; a new conversation is created if omitted
-   * @param locale - Response locale ('zh' | 'en'), defaults to 'zh'
-   * @returns The agent's response including message text, agent type, and optional suggestions/actions
-   * @throws {Error} Re-thrown if no FallbackService is available and an internal error occurs
-   */
-  /**
    * 处理用户消息（统一入口）
    *
    * 自动选择记忆系统：优先使用企业级 MemoryManagerService
@@ -363,6 +347,19 @@ export class OrchestratorService {
     }
 
     try {
+      if (agentHint) {
+        this.metricsService?.recordRoutingDecision('hint');
+        return await this.callAgent(
+          userId,
+          agentHint,
+          message,
+          conversationId,
+          locale,
+          context,
+          agentHint,
+        );
+      }
+
       // 1. 快速路由检查 (减少 LLM 调用)
       if (this.fastRouter) {
         // 简单问答直接回复
@@ -716,19 +713,6 @@ export class OrchestratorService {
   }
 
   /**
-   * Invoke a specific agent type directly, bypassing the orchestrator's routing logic.
-   *
-   * Useful for scenarios where the caller already knows which specialist agent
-   * should handle the request (e.g., UI-driven agent selection).
-   *
-   * @param userId - Authenticated user ID
-   * @param agentType - The specific agent to invoke
-   * @param message - Raw user message text
-   * @param conversationId - Optional existing conversation ID
-   * @param locale - Response locale ('zh' | 'en'), defaults to 'zh'
-   * @returns The agent's response
-   */
-  /**
    * 直接调用特定 Agent
    */
   async callAgent(
@@ -817,17 +801,6 @@ export class OrchestratorService {
   }
 
   /**
-   * Retrieve the message history for a conversation.
-   *
-   * Prefers enterprise memory (MemoryManagerService) when available;
-   * falls back to in-memory MemoryService otherwise. Only user and
-   * assistant messages are returned (system messages are filtered out).
-   *
-   * @param userId - Owner of the conversation
-   * @param conversationId - Optional conversation ID; if omitted, uses the user's default conversation
-   * @returns Array of message objects with role, content, agentType, and timestamp
-   */
-  /**
    * 获取对话历史
    */
   async getHistory(userId: string, conversationId?: string) {
@@ -871,12 +844,6 @@ export class OrchestratorService {
   }
 
   /**
-   * Clear a conversation from both in-memory and enterprise storage.
-   *
-   * @param userId - Owner of the conversation
-   * @param conversationId - Optional conversation ID to clear; clears the default conversation if omitted
-   */
-  /**
    * 清除对话
    */
   async clearConversation(userId: string, conversationId?: string) {
@@ -892,37 +859,12 @@ export class OrchestratorService {
   }
 
   /**
-   * Refresh the user's context data (profile, preferences, etc.) from the database.
-   *
-   * @param userId - The user whose context should be refreshed
-   * @returns Updated user context
-   */
-  /**
    * 刷新用户上下文
    */
   async refreshContext(userId: string) {
     return this.memory.refreshUserContext(userId);
   }
 
-  /**
-   * Process a user message with streaming output via an async generator.
-   *
-   * Yields a sequence of {@link StreamEvent} objects:
-   * - `start`  : conversation metadata (ID, title, memory context)
-   * - `content` : incremental text chunks
-   * - `tool_start` / `tool_end` : tool execution lifecycle events
-   * - `agent_switch` : delegation to another agent
-   * - `done`   : final aggregated response
-   * - `error`  : error information (with optional fallback)
-   *
-   * The method mirrors `handleMessage` but uses streaming for real-time UX.
-   *
-   * @param userId - Authenticated user ID
-   * @param message - Raw user message text
-   * @param conversationId - Optional existing conversation ID
-   * @param locale - Response locale ('zh' | 'en'), defaults to 'zh'
-   * @returns An async generator of StreamEvent objects
-   */
   /**
    * 流式处理用户消息
    *
@@ -949,6 +891,49 @@ export class OrchestratorService {
     }
 
     try {
+      if (agentHint) {
+        this.metricsService?.recordRoutingDecision('hint');
+        const conversation = await this.getOrCreateConversation(
+          userId,
+          conversationId,
+        );
+        await this.applyConversationContext(
+          conversation,
+          locale,
+          context,
+          agentHint,
+        );
+        await this.addMessage(
+          conversation,
+          createMsg({ role: 'user', content: message }),
+        );
+
+        const isNew = !conversationId;
+        if (isNew && this.useEnterpriseMemory) {
+          const title = message.slice(0, 50).replace(/\n/g, ' ').trim();
+          await this.memoryManager!.updateConversationTitle(
+            conversation.id,
+            title,
+          );
+        }
+        const runId = await this.createRunIfEnabled(
+          userId,
+          conversation.id,
+          agentHint,
+        );
+        yield {
+          type: 'start',
+          agent: agentHint,
+          conversationId: conversation.id,
+          runId,
+          title: isNew
+            ? message.slice(0, 50).replace(/\n/g, ' ').trim()
+            : undefined,
+        };
+        yield* this.collectAndPersistStream(agentHint, conversation, runId);
+        return;
+      }
+
       // 1. 快速路由 (减少 LLM 调用)
       if (this.fastRouter) {
         const simpleResponse = this.fastRouter.getSimpleResponse(message);

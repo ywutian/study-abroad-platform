@@ -29,6 +29,7 @@ describe('OrchestratorService', () => {
   let agentRunner: jest.Mocked<AgentRunnerService>;
   let memory: jest.Mocked<MemoryService>;
   let _llm: jest.Mocked<LLMService>;
+  let workflowEngine: jest.Mocked<WorkflowEngineService>;
   let fastRouter: jest.Mocked<FastRouterService>;
   let memoryManager: jest.Mocked<MemoryManagerService>;
   let outputSafety: { review: jest.Mock };
@@ -151,6 +152,7 @@ describe('OrchestratorService', () => {
     agentRunner = module.get(AgentRunnerService);
     memory = module.get(MemoryService);
     _llm = module.get(LLMService);
+    workflowEngine = module.get(WorkflowEngineService);
     fastRouter = module.get(FastRouterService);
     memoryManager = module.get(MemoryManagerService);
     outputSafety = module.get(AssistantOutputSafetyService);
@@ -229,6 +231,74 @@ describe('OrchestratorService', () => {
         expect.any(Object),
       );
     });
+
+    it('honors an explicit agent hint before heuristic routing', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('heuristic response');
+      agentRunner.run.mockResolvedValue({
+        message: 'essay response',
+        agentType: AgentType.ESSAY,
+      });
+
+      const result = await service.handleMessage(
+        'user_1',
+        'review this draft',
+        undefined,
+        'en',
+        undefined,
+        AgentType.ESSAY,
+      );
+
+      expect(fastRouter.getSimpleResponse).not.toHaveBeenCalled();
+      expect(fastRouter.route).not.toHaveBeenCalled();
+      expect(agentRunner.run).toHaveBeenCalledWith(
+        AgentType.ESSAY,
+        expect.any(Object),
+      );
+      expect(result.agentType).toBe(AgentType.ESSAY);
+    });
+
+    it('honors an explicit agent hint for streaming requests', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('heuristic response');
+      workflowEngine.runStream.mockImplementation(async function* () {
+        yield {
+          type: 'done',
+          result: {
+            message: 'resume response',
+            toolsUsed: ['review_resume'],
+            plan: { planningContent: '', steps: [] },
+            timing: { planMs: 1, executeMs: 1, solveMs: 1, totalMs: 3 },
+          },
+        };
+      });
+
+      const events = [];
+      for await (const event of service.handleMessageStream(
+        'user_1',
+        'review my resume',
+        undefined,
+        'en',
+        undefined,
+        AgentType.RESUME,
+      )) {
+        events.push(event);
+      }
+
+      expect(fastRouter.getSimpleResponse).not.toHaveBeenCalled();
+      expect(fastRouter.route).not.toHaveBeenCalled();
+      expect(workflowEngine.runStream).toHaveBeenCalledWith(
+        AgentType.RESUME,
+        expect.any(Object),
+        expect.any(Object),
+        expect.any(Array),
+        undefined,
+      );
+      expect(events).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ type: 'start', agent: AgentType.RESUME }),
+          expect.objectContaining({ type: 'done', agent: AgentType.RESUME }),
+        ]),
+      );
+    });
   });
 
   describe('Message Persistence', () => {
@@ -238,6 +308,10 @@ describe('OrchestratorService', () => {
 
     it('should persist prediction UI context metadata and memory summary', async () => {
       fastRouter.getSimpleResponse.mockReturnValue('好的，我来分析这批预测。');
+      agentRunner.run.mockResolvedValue({
+        message: '学校分析',
+        agentType: AgentType.SCHOOL,
+      });
 
       const context = {
         type: 'prediction-results' as const,
@@ -284,6 +358,10 @@ describe('OrchestratorService', () => {
 
     it('should persist selected-schools context metadata for follow-up turns', async () => {
       fastRouter.getSimpleResponse.mockReturnValue('我来比较这几所学校。');
+      agentRunner.run.mockResolvedValue({
+        message: '学校比较',
+        agentType: AgentType.SCHOOL,
+      });
 
       const context = {
         type: 'selected-schools' as const,
