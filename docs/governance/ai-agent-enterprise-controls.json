@@ -101,13 +101,14 @@
       "evidence": [
         "docs/AI_AGENT_EVALUATION_RUBRIC.md",
         "docs/reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md",
+        "docs/reports/AI_AGENT_PRODUCTION_SEMANTIC_EVALUATION_2026-08-26.md",
         "docs/runbooks/ai-agent-semantic-production-evaluation.md",
         "apps/api/src/modules/ai-agent/semantic-eval/agent-semantic-blind-review.ts"
       ],
       "verification": "A full production_agent submission reports independentReviewRate=1 and passes all gates.",
       "failureAction": "Do not make a production-quality claim; keep failures as regression cases.",
       "reviewCadence": "Before customer launch and after model/config changes",
-      "nextAction": "Capture the frozen v2 corpus from the deployed Agent and complete a separate blind review."
+      "nextAction": "Fix missing SSE terminal-event handling and the measured semantic failure clusters, then repeat the full three-run identity-blinded production evaluation."
     },
     {
       "id": "REL-01",

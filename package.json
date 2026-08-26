@@ -54,6 +54,7 @@
     "prediction:audit": "tsx scripts/prediction-system-audit.ts",
     "application-analysis:governance": "tsx scripts/application-analysis-governance.ts",
     "harness:acceptance": "pnpm --filter api harness:acceptance --",
+    "core-ai:acceptance": "pnpm --filter api core-ai:acceptance --",
     "harness:benchmark": "pnpm --filter api harness:benchmark --",
     "harness:semantic-eval": "pnpm --filter api harness:semantic-eval --",
     "harness:semantic-capture": "pnpm --filter api harness:semantic-capture --",

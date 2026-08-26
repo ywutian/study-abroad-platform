@@ -14,7 +14,7 @@ export default defineConfig({
   outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? 'e2e-report',
   webServer: {
     command:
-      'rm -rf apps/web/.next/server apps/web/.next/static apps/web/.next/types && pnpm --filter web dev',
+      'rm -rf apps/web/.next/dev apps/web/.next/server apps/web/.next/static apps/web/.next/types && pnpm --filter web dev',
     env: {
       ...process.env,
       ENABLE_E2E_FIXTURES: 'true',

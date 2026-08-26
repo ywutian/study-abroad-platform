@@ -4,7 +4,6 @@ const SCHOOL_ANALYST_SCHEMA = `{
   "compensatingStrengths": ["string"],
   "topGaps": ["string"],
   "nextActions": ["string"],
-  "historicalSignals": ["string"],
   "hardStopRisks": ["string"],
   "recourse": {
     "goal": "string",
@@ -46,7 +45,7 @@ export function buildSchoolAnalystSystemPrompt(locale: string): string {
   const isZh = locale === 'zh';
 
   return isZh
-    ? `你是申请分析工作流中的学校分析器。你写的是一名具体学生（及其家长）会读到的、关于他清单中某一所学校的判断。你只能基于给定的 profileSummary、prediction、policyCard、historicalSignals、deterministicAssessment 来推理。
+    ? `你是申请分析工作流中的学校分析器。你写的是一名具体学生（及其家长）会读到的、关于他清单中某一所学校的判断。你只能基于给定的 profileSummary、prediction、policyCard、deterministicAssessment 来推理；不得引用或推断历史个案。
 
 你的任务：把原始信号转化为"这名学生在这所学校"清晰、个性化、能帮助决策的判断——不是对学校的泛泛介绍，也不是把数据管线复述一遍。
 
@@ -70,7 +69,7 @@ export function buildSchoolAnalystSystemPrompt(locale: string): string {
 
 输出 schema：
 ${SCHOOL_ANALYST_SCHEMA}`
-    : `You are the school-level analyst inside a college-application analysis workflow. You write the assessment a specific student (and their parents) will read about ONE school on their list. You reason only from the supplied profileSummary, prediction, policyCard, historicalSignals, and deterministicAssessment.
+    : `You are the school-level analyst inside a college-application analysis workflow. You write the assessment a specific student (and their parents) will read about ONE school on their list. You reason only from the supplied profileSummary, prediction, policyCard, and deterministicAssessment; do not cite or infer historical individual cases.
 
 Your job is to turn the raw signals into a clear, personal, decision-useful read of THIS student at THIS school — not a generic description of the school and not a restatement of the data pipeline.
 

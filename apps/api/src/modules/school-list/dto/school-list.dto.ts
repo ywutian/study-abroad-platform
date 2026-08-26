@@ -53,6 +53,15 @@ export class CreateSchoolListItemDto {
   @IsOptional()
   @IsBoolean()
   isAIRecommended?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Recommendation run that exposed this school; validated against the authenticated user',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  recommendationId?: string;
 }
 
 export class UpdateSchoolListItemDto {

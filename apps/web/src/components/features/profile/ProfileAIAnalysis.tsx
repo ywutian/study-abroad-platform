@@ -653,13 +653,6 @@ function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }
       </div>
 
       <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
-        {school.assessment.historicalSignals.length > 0 && (
-          <ListCard
-            title={t('schoolCards.historical')}
-            items={school.assessment.historicalSignals}
-            compact
-          />
-        )}
         <ListCard
           title={t('schoolCards.hardStops')}
           items={school.assessment.hardStopRisks}

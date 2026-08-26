@@ -21,30 +21,6 @@ export interface SchoolMeta {
   weakFields?: Record<string, string>;
 }
 
-export interface CohortStats {
-  count: number;
-  gpaMedian?: number;
-  gpaP25?: number;
-  gpaP75?: number;
-  satMedian?: number;
-  satP25?: number;
-  satP75?: number;
-  topTags?: string[];
-}
-
-export interface CaseComparison {
-  schoolId: string;
-  totalCases: number;
-  admitted: CohortStats;
-  rejected: CohortStats;
-  waitlisted?: CohortStats;
-  nationalitySubset?: {
-    nationality: string;
-    admitted: CohortStats;
-    rejected: CohortStats;
-  };
-}
-
 export interface RecommendedSchool {
   schoolId?: string;
   schoolName: string;
@@ -56,7 +32,6 @@ export interface RecommendedSchool {
   concerns?: string[];
   dataPoints?: string[];
   schoolMeta?: SchoolMeta;
-  caseComparison?: CaseComparison;
 }
 
 export interface RecommendationAnalysis {
@@ -89,5 +64,24 @@ export interface RecommendationPreflight {
     gpa?: number;
     testCount: number;
     activityCount: number;
+  };
+}
+
+export interface RecommendationOutcomeMetrics {
+  scope: 'recommendation' | 'user';
+  recommendationId?: string;
+  sampleSize: number;
+  insufficientSample: boolean;
+  counts: {
+    impressions: number;
+    added: number;
+    removed: number;
+    retained: number;
+    applied: number;
+  };
+  rates: {
+    addRate: number | null;
+    retentionRate: number | null;
+    applicationConversionRate: number | null;
   };
 }

@@ -16,6 +16,15 @@ const OUTPUT_FILE = path.resolve(
   __dirname,
   '../../../packages/shared/src/fixtures/application-analysis-render.data.ts',
 );
+const OUTPUT_DIR = path.dirname(OUTPUT_FILE);
+
+function fixtureModuleName(caseId: string) {
+  return `application-analysis-render.data.${caseId.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+}
+
+function fixtureExportName(index: number) {
+  return `applicationAnalysisRenderFixture${String(index + 1).padStart(2, '0')}`;
+}
 
 // Same for every case on purpose: only the first 8 characters reach the DOM,
 // and they must render at a constant width. See the assignment below.
@@ -104,7 +113,6 @@ async function main() {
     {} as never,
     {} as never,
     {} as never,
-    {} as never,
     llmService,
     {} as never,
   );
@@ -153,15 +161,44 @@ async function main() {
     });
   }
 
+  // Keep each generated source file below the repository's 500-line limit.
+  // A single monolithic fixture literal had grown beyond 1,800 lines and made
+  // every contract refresh increase the shared-package file-size debt. One
+  // module per case keeps review diffs local and lets the ratchet do its job.
+  const fixtureModules = fixtures.map((fixture, index) => ({
+    fixture,
+    exportName: fixtureExportName(index),
+    moduleName: fixtureModuleName(fixture.caseId),
+  }));
+  await Promise.all(
+    fixtureModules.map(({ fixture, exportName, moduleName }) =>
+      writeFile(
+        path.join(OUTPUT_DIR, `${moduleName}.ts`),
+        [
+          "import type { ApplicationAnalysisRenderFixture } from '../types/application-analysis-render';",
+          '',
+          `export const ${exportName}: ApplicationAnalysisRenderFixture = ${JSON.stringify(fixture, null, 2)};`,
+          '',
+        ].join('\n'),
+        'utf8',
+      ),
+    ),
+  );
+
   const fileContents = [
     "import type { ApplicationAnalysisRenderFixture } from '../types/application-analysis-render';",
+    ...fixtureModules.map(
+      ({ exportName, moduleName }) =>
+        `import { ${exportName} } from './${moduleName}';`,
+    ),
     '',
-    'export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixture[] = ',
-    `${JSON.stringify(fixtures, null, 2)};`,
+    'export const applicationAnalysisRenderFixtureData: ApplicationAnalysisRenderFixture[] = [',
+    ...fixtureModules.map(({ exportName }) => `  ${exportName},`),
+    '];',
     '',
   ].join('\n');
 
-  await writeFile(`${OUTPUT_FILE}`, fileContents, 'utf8');
+  await writeFile(OUTPUT_FILE, fileContents, 'utf8');
   console.log(
     JSON.stringify(
       {

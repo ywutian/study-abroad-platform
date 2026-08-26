@@ -14,6 +14,7 @@ import {
   schoolListRoutes,
   type RecommendationResult,
   type RecommendationPreflight,
+  type RecommendationOutcomeMetrics,
 } from '@study-abroad/shared';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
@@ -27,6 +28,7 @@ export const recommendationKeys = {
   history: () => [...recommendationKeys.all, 'history'] as const,
   detail: (id: string) => [...recommendationKeys.all, 'detail', id] as const,
   preflight: () => [...recommendationKeys.all, 'preflight'] as const,
+  metrics: (id?: string) => [...recommendationKeys.all, 'metrics', id ?? 'aggregate'] as const,
 };
 
 // ============================================
@@ -84,6 +86,34 @@ export function useRecommendationHistory(enabled: boolean) {
   });
 }
 
+/** 可归因推荐效果；低于服务端最小样本时只展示计数。 */
+export function useRecommendationMetrics(id?: string, enabled = true) {
+  return useQuery<RecommendationOutcomeMetrics>({
+    queryKey: recommendationKeys.metrics(id),
+    queryFn: () =>
+      apiClient.get(id ? recommendationRoutes.detailMetrics(id) : recommendationRoutes.metrics()),
+    enabled,
+    staleTime: STALE_TIME.MODERATE,
+  });
+}
+
+/** 用户明确进入申请流程后记录，不从“加入清单”推断。 */
+export function useRecordRecommendationApplied() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, schoolId }: { id: string; schoolId: string }) =>
+      apiClient.post<{ recorded: true }>(recommendationRoutes.applied(id, schoolId)),
+    onSuccess: (_result, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: recommendationKeys.metrics(variables.id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: recommendationKeys.metrics(),
+      });
+    },
+  });
+}
+
 /** 删除推荐记录 */
 export function useDeleteRecommendation() {
   const queryClient = useQueryClient();
@@ -106,6 +136,7 @@ export function useAddToSchoolList() {
       tier: string;
       round?: string;
       isAIRecommended?: boolean;
+      recommendationId?: string;
     }) =>
       apiClient.post(schoolListRoutes.list(), {
         ...dto,

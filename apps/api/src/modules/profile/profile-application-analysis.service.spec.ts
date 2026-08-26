@@ -3,7 +3,6 @@ import { ProfileApplicationAnalysisService } from './profile-application-analysi
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { PredictionService } from '../prediction/prediction.service';
-import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
 import { ProfileApplicationAnalysisV2Service } from './profile-application-analysis-v2.service';
@@ -36,10 +35,6 @@ describe('ProfileApplicationAnalysisService', () => {
 
   const mockPredictionService = {
     predictForApplicationAnalysis: jest.fn(),
-  };
-
-  const mockHistoricalService = {
-    getCaseComparison: jest.fn(),
   };
 
   const mockLlmService = {
@@ -188,7 +183,6 @@ describe('ProfileApplicationAnalysisService', () => {
         dataPoints: 0,
       },
     });
-    mockHistoricalService.getCaseComparison.mockResolvedValue(null);
     mockLlmService.chatSimpleGuarded.mockResolvedValue(
       JSON.stringify({
         summary:
@@ -253,10 +247,6 @@ describe('ProfileApplicationAnalysisService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: RedisService, useValue: mockRedis },
         { provide: PredictionService, useValue: mockPredictionService },
-        {
-          provide: PredictionHistoricalService,
-          useValue: mockHistoricalService,
-        },
         { provide: LLMService, useValue: mockLlmService },
         {
           provide: ApplicationAnalysisWorkflowService,
@@ -427,6 +417,10 @@ describe('ProfileApplicationAnalysisService', () => {
       mockPredictionService.predictForApplicationAnalysis,
     ).toHaveBeenCalledWith('profile-1', ['school-1'], 'en');
     expect(result.meta?.state).toBe('ready');
+    expect(result.targetSchoolInsights?.[0]?.historicalSignals).toEqual([]);
+    expect(result.targetSchoolInsights?.[0]?.historicalSignals).not.toContain(
+      'Historical data is thin, so the case signal is limited.',
+    );
     expect(
       result.targetSchoolInsights?.[0].predictionSnapshot?.roundContext,
     ).toBe('ED');

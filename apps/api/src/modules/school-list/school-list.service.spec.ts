@@ -3,32 +3,18 @@ import { SchoolListService } from './school-list.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { TimelineService } from '../timeline/timeline.service';
+import { PredictionService } from '../prediction/prediction.service';
 import {
   NotFoundException,
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import * as scoring from '../../common/utils/scoring';
-
-// Mock scoring utils
-jest.mock('../../common/utils/scoring', () => ({
-  extractProfileMetrics: jest.fn().mockReturnValue({
-    gpa: 3.8,
-    sat: 1500,
-    toefl: 110,
-    activityCount: 5,
-    awardCount: 2,
-  }),
-  calculateOverallScore: jest.fn().mockReturnValue(75),
-  calculateProbability: jest.fn().mockReturnValue(0.5),
-  calculateTier: jest.fn().mockReturnValue('match'),
-}));
-
 describe('SchoolListService', () => {
   let service: SchoolListService;
   let prisma: PrismaService;
   let cacheInvalidation: CacheInvalidationService;
   let timelineService: TimelineService;
+  let predictionService: PredictionService;
 
   const mockSchool = {
     id: 'school-1',
@@ -91,6 +77,15 @@ describe('SchoolListService', () => {
             schoolDeadline: {
               findMany: jest.fn().mockResolvedValue([]),
             },
+            schoolRecommendation: {
+              findFirst: jest.fn(),
+            },
+            schoolRecommendationEvent: {
+              upsert: jest.fn().mockResolvedValue({}),
+            },
+            $transaction: jest.fn((operations: Promise<unknown>[]) =>
+              Promise.all(operations),
+            ),
           },
         },
         {
@@ -107,6 +102,15 @@ describe('SchoolListService', () => {
               .mockResolvedValue({ created: [], failed: [] }),
           },
         },
+        {
+          provide: PredictionService,
+          useValue: {
+            previewForUser: jest.fn().mockResolvedValue({
+              results: [],
+              dataCompleteness: 0,
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -116,6 +120,7 @@ describe('SchoolListService', () => {
       CacheInvalidationService,
     );
     timelineService = module.get<TimelineService>(TimelineService);
+    predictionService = module.get<PredictionService>(PredictionService);
   });
 
   afterEach(() => {
@@ -354,6 +359,55 @@ describe('SchoolListService', () => {
       );
     });
 
+    it('binds an owned recommendation and records ADDED atomically', async () => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolRecommendation.findFirst as jest.Mock).mockResolvedValue({
+        id: 'rec-1',
+        recommendations: [{ schoolId: 'school-1' }],
+      });
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+        isAIRecommended: true,
+        sourceRecommendationId: 'rec-1',
+      });
+
+      await service.addSchool('user-1', {
+        schoolId: 'school-1',
+        recommendationId: 'rec-1',
+      });
+
+      expect(prisma.schoolListItem.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            sourceRecommendationId: 'rec-1',
+            isAIRecommended: true,
+            recommendationEvents: {
+              connectOrCreate: expect.objectContaining({
+                create: expect.objectContaining({ eventType: 'ADDED' }),
+              }),
+            },
+          }),
+        }),
+      );
+    });
+
+    it('rejects a foreign or mismatched recommendation source', async () => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolRecommendation.findFirst as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.addSchool('user-1', {
+          schoolId: 'school-1',
+          recommendationId: 'foreign-rec',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.schoolListItem.create).not.toHaveBeenCalled();
+    });
+
     it('should throw ConflictException if school already in list', async () => {
       (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
       (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(
@@ -479,6 +533,33 @@ describe('SchoolListService', () => {
         NotFoundException,
       );
     });
+
+    it('records REMOVED and deletes the recommendation-sourced item atomically', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+        sourceRecommendationId: 'rec-1',
+      });
+      (prisma.schoolListItem.delete as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+      });
+
+      await service.removeItem('user-1', 'item-1');
+
+      expect(prisma.schoolRecommendationEvent.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            recommendationId: 'rec-1',
+            schoolId: 'school-1',
+            eventType: 'REMOVED',
+          }),
+        }),
+      );
+      expect(prisma.schoolListItem.delete).toHaveBeenCalled();
+      expect(prisma.$transaction).toHaveBeenCalledWith([
+        expect.any(Promise),
+        expect.any(Promise),
+      ]);
+    });
   });
 
   describe('getAIRecommendations', () => {
@@ -501,21 +582,27 @@ describe('SchoolListService', () => {
         })),
       );
 
-      // Return mixed tiers so all categories get filled
-      (scoring.calculateTier as jest.Mock)
-        .mockReturnValueOnce('reach')
-        .mockReturnValueOnce('match')
-        .mockReturnValueOnce('safety')
-        .mockReturnValueOnce('reach')
-        .mockReturnValueOnce('match')
-        .mockReturnValueOnce('safety')
-        .mockReturnValue('match');
+      (predictionService.previewForUser as jest.Mock).mockResolvedValue({
+        results: Array.from({ length: 20 }, (_, index) => ({
+          schoolId: `school-${index}`,
+          probability: index % 3 === 0 ? 0.1 : index % 3 === 1 ? 0.45 : 0.8,
+          tier:
+            index % 3 === 0 ? 'reach' : index % 3 === 1 ? 'match' : 'safety',
+          confidence: 'medium',
+          source: 'prediction',
+        })),
+        dataCompleteness: 1,
+      });
 
       const result = await service.getAIRecommendations('user-1');
 
       expect(result).toHaveProperty('safety');
       expect(result).toHaveProperty('target');
       expect(result).toHaveProperty('reach');
+      expect(predictionService.previewForUser).toHaveBeenCalledWith(
+        'user-1',
+        expect.arrayContaining(['school-0', 'school-19']),
+      );
     });
 
     it('should throw BadRequestException if profile not found', async () => {
@@ -635,80 +722,16 @@ describe('SchoolListService', () => {
     });
   });
 
-  describe('syncQuickMatchToPrediction authority invariant', () => {
-    const quickMatchSchool = {
-      id: 'school-1',
-      acceptanceRate: 10,
-      satAvg: 1500,
-      sat25: 1450,
-      sat75: 1550,
-      actAvg: 33,
-      act25: 32,
-      act75: 34,
-      usNewsRank: 10,
-    };
-
-    const profileMetrics = {
-      gpa: 3.8,
-      sat: 1500,
-      toefl: 110,
-      activityCount: 5,
-      awardCount: 2,
-    };
-
-    it('writes authority=PREVIEW and never writes PredictionSnapshot', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue(null);
-
-      await (service as any).syncQuickMatchToPrediction(
-        'profile-1',
-        [quickMatchSchool],
-        profileMetrics,
-      );
-
-      expect(prisma.predictionResult.upsert).toHaveBeenCalledTimes(1);
-      const upsertArg = (prisma.predictionResult.upsert as jest.Mock).mock
-        .calls[0][0];
-      expect(upsertArg.create.authority).toBe('PREVIEW');
-      expect(upsertArg.update.authority).toBe('PREVIEW');
-      expect(upsertArg.create.source).toBe('quick-match');
-      expect(upsertArg.create.modelVersion).toBe('v1-stats');
-
-      // Critical: PREVIEW must never pollute the snapshot time-series that
-      // distillation + reporting + UI trend read from.
-      expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
-    });
-
-    it('does not overwrite existing AUTHORITATIVE PredictionResult', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
-        authority: 'AUTHORITATIVE',
+  describe('counselor preview authority', () => {
+    it('does not persist quick-match PredictionResult rows', async () => {
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'profile-1',
       });
+      (prisma.school.findMany as jest.Mock).mockResolvedValue([]);
 
-      await (service as any).syncQuickMatchToPrediction(
-        'profile-1',
-        [quickMatchSchool],
-        profileMetrics,
-      );
+      await service.getAIRecommendations('user-1');
 
       expect(prisma.predictionResult.upsert).not.toHaveBeenCalled();
-      expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
-    });
-
-    it('overwrites existing PREVIEW (quick-match) with fresh PREVIEW', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
-        authority: 'PREVIEW',
-      });
-
-      await (service as any).syncQuickMatchToPrediction(
-        'profile-1',
-        [quickMatchSchool],
-        profileMetrics,
-      );
-
-      // PREVIEW -> PREVIEW is allowed (refresh quick-match estimates).
-      expect(prisma.predictionResult.upsert).toHaveBeenCalledTimes(1);
-      const upsertArg = (prisma.predictionResult.upsert as jest.Mock).mock
-        .calls[0][0];
-      expect(upsertArg.update.authority).toBe('PREVIEW');
       expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
     });
   });

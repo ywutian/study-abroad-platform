@@ -27,6 +27,13 @@ describe('RecommendationController', () => {
             checkPreflight: jest.fn().mockResolvedValue({ canGenerate: true }),
             getRecommendationHistory: jest.fn().mockResolvedValue([]),
             getRecommendationById: jest.fn().mockResolvedValue({ id: 'rec-1' }),
+            getRecommendationMetrics: jest.fn().mockResolvedValue({
+              scope: 'recommendation',
+              recommendationId: 'rec-1',
+              sampleSize: 0,
+              insufficientSample: true,
+            }),
+            recordApplied: jest.fn().mockResolvedValue({ recorded: true }),
             deleteRecommendation: jest.fn().mockResolvedValue(undefined),
           },
         },
@@ -83,6 +90,43 @@ describe('RecommendationController', () => {
         'rec-1',
       );
       expect(result).toEqual({ id: 'rec-1' });
+    });
+  });
+
+  describe('outcome metrics', () => {
+    it('delegates metrics and application confirmation with the authenticated user', async () => {
+      await expect(controller.getMetrics(mockUser, 'rec-1')).resolves.toEqual({
+        scope: 'recommendation',
+        recommendationId: 'rec-1',
+        sampleSize: 0,
+        insufficientSample: true,
+      });
+      await expect(
+        controller.recordApplied(mockUser, 'rec-1', 'school-1'),
+      ).resolves.toEqual({ recorded: true });
+
+      expect(service.getRecommendationMetrics).toHaveBeenCalledWith(
+        'user-1',
+        'rec-1',
+      );
+      expect(service.recordApplied).toHaveBeenCalledWith(
+        'user-1',
+        'rec-1',
+        'school-1',
+      );
+    });
+
+    it('delegates aggregate metrics without a recommendation id', async () => {
+      (service.getRecommendationMetrics as jest.Mock).mockResolvedValueOnce({
+        scope: 'user',
+        sampleSize: 40,
+        insufficientSample: false,
+      });
+
+      await expect(controller.getAggregateMetrics(mockUser)).resolves.toEqual(
+        expect.objectContaining({ scope: 'user', sampleSize: 40 }),
+      );
+      expect(service.getRecommendationMetrics).toHaveBeenCalledWith('user-1');
     });
   });
 

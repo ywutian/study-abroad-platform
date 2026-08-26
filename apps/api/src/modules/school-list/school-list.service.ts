@@ -16,14 +16,6 @@ import {
   TierSource,
 } from './dto/school-list.dto';
 import {
-  extractProfileMetrics,
-  calculateOverallScore,
-  calculateProbability,
-  calculateTier,
-} from '../../common/utils/scoring';
-import { clampPercentRate } from '../../common/utils/percent.util';
-import { currentSeasonPredictionUniqueWhere } from '../prediction/prediction-season.util';
-import {
   SCHOOL_LIST_SCHOOL_SELECT,
   AI_RECOMMENDATION_SCHOOL_SELECT,
   mapSchoolForList,
@@ -33,6 +25,7 @@ import {
 } from './school-list.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { TimelineService } from '../timeline/timeline.service';
+import { PredictionService } from '../prediction/prediction.service';
 
 const SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE = {
   isActive: true,
@@ -48,6 +41,7 @@ export class SchoolListService {
     private prisma: PrismaService,
     private cacheInvalidation: CacheInvalidationService,
     private timelineService: TimelineService,
+    private predictionService: PredictionService,
   ) {}
 
   /**
@@ -361,6 +355,25 @@ export class SchoolListService {
       });
     }
 
+    const sourceRecommendation = dto.recommendationId
+      ? await this.prisma.schoolRecommendation.findFirst({
+          where: { id: dto.recommendationId, userId },
+          select: { id: true, recommendations: true },
+        })
+      : null;
+    if (
+      dto.recommendationId &&
+      (!sourceRecommendation ||
+        !recommendationContainsSchool(
+          sourceRecommendation.recommendations,
+          dto.schoolId,
+        ))
+    ) {
+      throw new BadRequestException(
+        'Recommendation does not belong to this user or does not contain this school',
+      );
+    }
+
     // Validate round: binding exclusivity + availability
     if (dto.round) {
       await this.validateRound(userId, dto.schoolId, dto.round);
@@ -377,7 +390,32 @@ export class SchoolListService {
         tierSource: dto.tier ? TierSource.MANUAL : TierSource.PREDICTED,
         round: dto.round,
         notes: dto.notes,
-        isAIRecommended: dto.isAIRecommended ?? false,
+        isAIRecommended: sourceRecommendation
+          ? true
+          : (dto.isAIRecommended ?? false),
+        sourceRecommendationId: sourceRecommendation?.id,
+        ...(sourceRecommendation
+          ? {
+              recommendationEvents: {
+                connectOrCreate: {
+                  where: {
+                    recommendationId_schoolId_eventType: {
+                      recommendationId: sourceRecommendation.id,
+                      schoolId: dto.schoolId,
+                      eventType: 'ADDED',
+                    },
+                  },
+                  create: {
+                    recommendationId: sourceRecommendation.id,
+                    userId,
+                    schoolId: dto.schoolId,
+                    eventType: 'ADDED',
+                    metadata: { source: 'school-list-add' },
+                  },
+                },
+              },
+            }
+          : {}),
       },
       include: {
         school: { select: SCHOOL_LIST_SCHOOL_SELECT },
@@ -509,9 +547,36 @@ export class SchoolListService {
       throw new NotFoundException('School list item not found');
     }
 
-    await this.prisma.schoolListItem.delete({
-      where: { id: itemId },
-    });
+    if (item.sourceRecommendationId) {
+      const removedEvent = this.prisma.schoolRecommendationEvent.upsert({
+        where: {
+          recommendationId_schoolId_eventType: {
+            recommendationId: item.sourceRecommendationId,
+            schoolId: item.schoolId,
+            eventType: 'REMOVED',
+          },
+        },
+        create: {
+          recommendationId: item.sourceRecommendationId,
+          userId,
+          schoolId: item.schoolId,
+          schoolListItemId: item.id,
+          eventType: 'REMOVED',
+          metadata: { source: 'school-list-remove' },
+        },
+        update: {
+          schoolListItemId: item.id,
+        },
+      });
+      const deleteItem = this.prisma.schoolListItem.delete({
+        where: { id: itemId },
+      });
+      await this.prisma.$transaction([removedEvent, deleteItem]);
+    } else {
+      await this.prisma.schoolListItem.delete({
+        where: { id: itemId },
+      });
+    }
 
     await this.cacheInvalidation.onProfileChange(userId);
   }
@@ -538,9 +603,6 @@ export class SchoolListService {
       );
     }
 
-    // 使用统一评分提取 ProfileMetrics
-    const profileMetrics = extractProfileMetrics(profile);
-
     // Get schools
     const schools = await this.prisma.school.findMany({
       where: {
@@ -551,38 +613,28 @@ export class SchoolListService {
       select: AI_RECOMMENDATION_SCHOOL_SELECT,
     });
 
-    // 使用统一评分系统分类学校
+    const preview = await this.predictionService.previewForUser(
+      userId,
+      schools.map((school) => school.id),
+    );
+    const predictionMap = new Map(
+      preview.results.map((prediction) => [prediction.schoolId, prediction]),
+    );
+
+    // The counselor preview is the same fact source used by /predictions.
+    // This surface only selects a balanced set from those authoritative tiers.
     const safety: any[] = [];
     const target: any[] = [];
     const reach: any[] = [];
 
     for (const school of schools) {
-      const schoolMetrics = {
-        acceptanceRate:
-          school.acceptanceRate != null
-            ? clampPercentRate(school.acceptanceRate)
-            : undefined,
-        satAvg: school.satAvg ?? undefined,
-        sat25: school.sat25 ?? undefined,
-        sat75: school.sat75 ?? undefined,
-        actAvg: school.actAvg ?? undefined,
-        act25: school.act25 ?? undefined,
-        act75: school.act75 ?? undefined,
-        usNewsRank: school.usNewsRank ?? undefined,
-        graduationRate:
-          school.graduationRate != null
-            ? Number(school.graduationRate)
-            : undefined,
-      };
-
-      const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
-      const probability = calculateProbability(overallScore, schoolMetrics);
-      const tier = calculateTier(probability, schoolMetrics);
+      const prediction = predictionMap.get(school.id);
+      if (!prediction?.tier) continue;
 
       const tierEnum =
-        tier === 'safety'
+        prediction.tier === 'safety'
           ? SchoolTier.SAFETY
-          : tier === 'match'
+          : prediction.tier === 'match'
             ? SchoolTier.TARGET
             : SchoolTier.REACH;
 
@@ -591,12 +643,20 @@ export class SchoolListService {
         schoolId: school.id,
         school: mapSchoolForList(school),
         tier: tierEnum,
-        // AI recommendations are tier suggestions derived from the quick-match
-        // estimate — a predicted tier, not a manual choice.
+        // AI recommendations use the same Counselor Engine preview as the
+        // prediction surface — a predicted tier, not a manual choice.
         tierSource: TierSource.PREDICTED,
         predictedTier: tierEnum,
         tierIsEstimated: false,
         isAIRecommended: true,
+        prediction: {
+          probability: prediction.probability,
+          tier: prediction.tier,
+          confidence: prediction.confidence,
+          source: prediction.source,
+          authority: 'PREVIEW' as const,
+          updatedAt: new Date(),
+        },
         createdAt: new Date(),
       };
 
@@ -613,113 +673,22 @@ export class SchoolListService {
       }
     }
 
-    // Bridge: write quick-match estimates to PredictionResult as PREVIEW authority.
-    // Never writes PredictionSnapshot — snapshots are the time-series of real
-    // served predictions used by distillation / reporting / trend UI.
-    this.syncQuickMatchToPrediction(profile.id, schools, profileMetrics).catch(
-      (err) => {
-        this.logger.warn('Failed to sync quick-match to predictions', err);
-      },
-    );
-
     return { safety, target, reach };
   }
+}
 
-  /**
-   * Bridge: sync quick-match estimates to PredictionResult with authority=PREVIEW.
-   * Invariant (enforced at line ~594 + in check-integration): PREVIEW must never
-   * overwrite AUTHORITATIVE. No PredictionSnapshot writes — preview belongs only
-   * on PredictionResult (the school-list UI column source).
-   */
-  private async syncQuickMatchToPrediction(
-    profileId: string,
-    schools: Array<{
-      id: string;
-      acceptanceRate: any;
-      satAvg: number | null;
-      sat25: number | null;
-      sat75: number | null;
-      actAvg: number | null;
-      act25: number | null;
-      act75: number | null;
-      usNewsRank: number | null;
-      graduationRate?: any;
-    }>,
-    profileMetrics: ReturnType<typeof extractProfileMetrics>,
-  ): Promise<void> {
-    for (const school of schools) {
-      const schoolMetrics = {
-        acceptanceRate:
-          school.acceptanceRate != null
-            ? clampPercentRate(school.acceptanceRate)
-            : undefined,
-        satAvg: school.satAvg ?? undefined,
-        sat25: school.sat25 ?? undefined,
-        sat75: school.sat75 ?? undefined,
-        actAvg: school.actAvg ?? undefined,
-        act25: school.act25 ?? undefined,
-        act75: school.act75 ?? undefined,
-        usNewsRank: school.usNewsRank ?? undefined,
-        graduationRate:
-          school.graduationRate != null
-            ? Number(school.graduationRate)
-            : undefined,
-      };
-
-      const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
-      const probability = calculateProbability(overallScore, schoolMetrics);
-      const tier = calculateTier(probability, schoolMetrics);
-
-      try {
-        // Authority invariant: PREVIEW must never overwrite AUTHORITATIVE.
-        // This replaces the legacy modelVersion allowlist so that every
-        // future authoritative model (Scorecard, v4, ML champion, etc.) is
-        // automatically protected without touching this file.
-        // governance: parent-scoped — keyed by profileId_schoolId; profileId is derived from the authenticated user by the caller
-        const existing = await this.prisma.predictionResult.findUnique({
-          where: currentSeasonPredictionUniqueWhere(profileId, school.id),
-          select: { authority: true },
-        });
-
-        if (existing && existing.authority === 'AUTHORITATIVE') continue;
-
-        // governance: parent-scoped — keyed by profileId_schoolId; profileId is derived from the authenticated user by the caller
-        await this.prisma.predictionResult.upsert({
-          where: currentSeasonPredictionUniqueWhere(profileId, school.id),
-          update: {
-            probability,
-            tier,
-            confidence: 'low',
-            modelVersion: 'v1-stats',
-            source: 'quick-match',
-            authority: 'PREVIEW',
-            applicationYear: resolveApplicationYear(),
-          },
-          create: {
-            profileId,
-            schoolId: school.id,
-            probability,
-            tier,
-            confidence: 'low',
-            factors: [] as any,
-            modelVersion: 'v1-stats',
-            source: 'quick-match',
-            authority: 'PREVIEW',
-            applicationYear: resolveApplicationYear(),
-          },
-        });
-
-        // Intentionally NOT writing PredictionSnapshot here: snapshots are the
-        // time-series of real served predictions (read by the Chinese-cohort
-        // distillation teacher, reporting, UI trend graph). Preview estimates
-        // are only for the school-list UI column and will be superseded when
-        // the user triggers a full predict.
-      } catch (error) {
-        this.logger.warn(
-          `Failed to sync quick-match for school ${school.id}`,
-          error,
-        );
-      }
-    }
-  }
+function recommendationContainsSchool(
+  value: unknown,
+  schoolId: string,
+): boolean {
+  return (
+    Array.isArray(value) &&
+    value.some(
+      (entry) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        'schoolId' in entry &&
+        entry.schoolId === schoolId,
+    )
+  );
 }

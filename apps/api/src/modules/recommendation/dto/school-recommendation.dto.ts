@@ -171,48 +171,6 @@ export class RecommendedSchoolDto {
     description: 'Whether the school has a Why School essay prompt',
   })
   hasWhySchool?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Admitted vs rejected case comparison data',
-  })
-  caseComparison?: {
-    schoolId: string;
-    totalCases: number;
-    admitted: CohortStatsDto;
-    rejected: CohortStatsDto;
-    waitlisted?: CohortStatsDto;
-    nationalitySubset?: {
-      nationality: string;
-      admitted: CohortStatsDto;
-      rejected: CohortStatsDto;
-    };
-  };
-}
-
-export class CohortStatsDto {
-  @ApiProperty()
-  count: number;
-
-  @ApiPropertyOptional()
-  gpaMedian?: number;
-
-  @ApiPropertyOptional()
-  gpaP25?: number;
-
-  @ApiPropertyOptional()
-  gpaP75?: number;
-
-  @ApiPropertyOptional()
-  satMedian?: number;
-
-  @ApiPropertyOptional()
-  satP25?: number;
-
-  @ApiPropertyOptional()
-  satP75?: number;
-
-  @ApiPropertyOptional({ type: [String] })
-  topTags?: string[];
 }
 
 export class RecommendationAnalysisDto {

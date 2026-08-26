@@ -20,12 +20,12 @@
   "_apps_web_src_note_agent_approvals_2026_08_20": "16089 → 16293 (+204). The existing oversized Agent chat component and hook gain the user-visible approval pause/resume lifecycle, run identifiers, and SSE reconciliation needed to close high-risk actions safely. The behavior shares the existing chat state rather than introducing a second frontend Agent system. A follow-up should extract the approval card and run-event reducer into focused files under 500 lines.",
   "_apps_mobile_src_note_agent_approvals_2026_08_20": "2600 → 2793 (+193). The existing mobile Agent surfaces gain the same approval/run state model as Web, including ownership-bound approve, reject, cancel, and resume handling. A follow-up should extract the approval controls and run-state presentation from ai.tsx and uncommon-app.tsx; doing that in the release fix would add avoidable cross-platform regression risk.",
   "_apps_api_src_note_agent_output_safety_2026_08_25": "45758 → 45722 (−36). Output moderation, fail-closed fallback, durable evidence and alert delivery moved from the already oversized orchestrator.service.ts into assistant-output-safety.service.ts. The request path keeps one mandatory safety dependency while the security behavior now has focused tests in a file below the 500-line limit.",
-  "apps/api/src": 45722,
-  "apps/api/scripts": 41383,
+  "apps/api/src": 45503,
+  "apps/api/scripts": 41382,
   "apps/api/prisma": 12080,
-  "apps/web/src": 16293,
+  "apps/web/src": 16286,
   "apps/mobile/src": 2793,
-  "packages/shared": 6702,
+  "packages/shared": 5364,
   "packages/browser-extension": 0,
   "scripts": 10799
 }

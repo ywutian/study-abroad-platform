@@ -250,7 +250,7 @@ const baseAnalysis: AIAnalysisResult = {
         compensatingStrengths: ['Academic baseline clears the first screen.'],
         topGaps: ['Leadership signal still needs sharper differentiation.'],
         nextActions: ['Turn one flagship activity into a measurable story.'],
-        historicalSignals: ['Historical sample is thin, so the case signal is limited.'],
+        historicalSignals: [],
         hardStopRisks: ['International aid need narrows the margin.'],
       },
       recourse: {
@@ -271,7 +271,7 @@ const baseAnalysis: AIAnalysisResult = {
         probabilityLow: 0.2,
         probabilityHigh: 0.36,
         intervalLabel: 'balanced',
-        reasons: ['Historical coverage is thin for this school.'],
+        reasons: ['Official policy coverage is incomplete for this school.'],
       },
       evidenceIds: ['evidence-1'],
       unknowns: [],

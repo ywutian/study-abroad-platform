@@ -211,6 +211,11 @@ export const recommendationRoutes = {
   generate: () => API_ROUTES.RECOMMENDATIONS,
   history: () => `${API_ROUTES.RECOMMENDATIONS}/history`,
   preflight: () => `${API_ROUTES.RECOMMENDATIONS}/preflight`,
+  metrics: () => `${API_ROUTES.RECOMMENDATIONS}/metrics`,
+  detail: (id: string) => `${API_ROUTES.RECOMMENDATIONS}/${id}`,
+  detailMetrics: (id: string) => `${API_ROUTES.RECOMMENDATIONS}/${id}/metrics`,
+  applied: (id: string, schoolId: string) =>
+    `${API_ROUTES.RECOMMENDATIONS}/${id}/schools/${schoolId}/applied`,
 };
 
 // Phase 2 V1 — essay debate (user argues back against AI feedback).

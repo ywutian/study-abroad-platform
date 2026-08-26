@@ -333,6 +333,7 @@ export interface TargetSchoolInsight {
   compensatingStrengths: string[];
   topGaps: string[];
   nextActions: string[];
+  /** @deprecated Compatibility-only. New analyses always return [] and clients must not render it. */
   historicalSignals: string[];
   hardStopRisks?: string[];
   recourseGuidance?: RecourseGuidance;
@@ -381,6 +382,7 @@ export interface ApplicationAnalysisAssessment {
   compensatingStrengths: string[];
   topGaps: string[];
   nextActions: string[];
+  /** @deprecated Compatibility-only. New analyses always return [] and clients must not render it. */
   historicalSignals: string[];
   hardStopRisks: string[];
 }
