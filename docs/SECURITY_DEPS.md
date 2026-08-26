@@ -148,7 +148,8 @@ dedicated PR, or apply a scoped override as a stopgap and open a follow-up.
 
 ## Production image provenance
 
-The production workflow reads the pushed Artifact Registry image digest,
+The production workflow captures the content digest returned by the SHA-tagged
+Docker registry push (without requiring Container Analysis read permission),
 generates a keyless GitHub build-provenance attestation, and immediately verifies
 the repository, signer workflow, source commit, and digest. Database migrations
 and Cloud Run deployment then use `IMAGE@sha256:...`, never the mutable short-SHA

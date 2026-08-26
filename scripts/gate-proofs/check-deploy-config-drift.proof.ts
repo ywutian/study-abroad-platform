@@ -19,4 +19,10 @@ export async function prove(): Promise<void> {
     (s) => s.replace('gh attestation verify', 'gh attestation inspect'),
     () => expectFired(runGate('check-deploy-config-drift.ts'), 'verify signed provenance')
   );
+
+  await withPatchedFile(
+    '.github/workflows/ci.yml',
+    (s) => s.replace('PUSH_OUTPUT=$(docker push', 'PUSH_OUTPUT=$(docker image ls'),
+    () => expectFired(runGate('check-deploy-config-drift.ts'), 'capture the immutable digest')
+  );
 }
