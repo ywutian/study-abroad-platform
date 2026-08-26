@@ -77,7 +77,11 @@ function main() {
   const provenanceRequirements: Array<[RegExp, string]> = [
     [/attestations:\s*write/, 'grant attestations: write'],
     [/uses:\s*actions\/attest@[a-f0-9]{40}/, 'pin and invoke actions/attest'],
-    [/gcloud artifacts docker images describe/, 'read the pushed Artifact Registry digest'],
+    [
+      /PUSH_OUTPUT=\$\(docker push "\$\{IMAGE\}:\$\{SHA\}" 2>&1\)/,
+      'capture the immutable digest returned by the SHA-tagged registry push',
+    ],
+    [/digest: \(sha256:\[a-f0-9\]\{64\}\)/, 'validate and extract the pushed sha256 digest'],
     [/gh attestation verify/, 'verify signed provenance before deployment'],
     [/--source-digest\s+"\$GITHUB_SHA"/, 'bind provenance to the source commit'],
     [/--signer-workflow/, 'bind provenance to the production workflow'],

@@ -227,7 +227,9 @@ in pre-push, and in CI.
 from source, checks ToolName/ToolMetadata exhaustiveness, and fails if the module
 BRIEF or AI architecture keeps a stale count.
 
-The production image is promoted by Artifact Registry digest. CI creates a
+The production image is promoted by Artifact Registry digest. CI captures that
+digest from the successful SHA-tagged Docker push, so digest pinning does not
+depend on the broader Container Analysis API permission. CI then creates a
 keyless GitHub SLSA provenance attestation after push, verifies its repository,
 signer workflow, source commit and digest, and only then runs migrations and
 `gcloud run deploy` with `IMAGE@sha256:...`. The short-SHA and `latest` tags are

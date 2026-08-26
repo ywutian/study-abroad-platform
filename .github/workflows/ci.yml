@@ -1551,12 +1551,14 @@ jobs:
           SHA="${GITHUB_SHA::7}"
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/study-abroad/api"
           docker build -f apps/api/Dockerfile -t "${IMAGE}:${SHA}" -t "${IMAGE}:latest" .
-          docker push "${IMAGE}:${SHA}"
+          PUSH_OUTPUT=$(docker push "${IMAGE}:${SHA}" 2>&1)
+          printf '%s\n' "$PUSH_OUTPUT"
           docker push "${IMAGE}:latest"
-          DIGEST=$(gcloud artifacts docker images describe "${IMAGE}:${SHA}" \
-            --format='value(image_summary.digest)')
+          DIGEST=$(printf '%s\n' "$PUSH_OUTPUT" \
+            | sed -nE 's/^.*digest: (sha256:[a-f0-9]{64}) size:.*$/\1/p' \
+            | tail -n 1)
           if ! printf '%s' "$DIGEST" | grep -Eq '^sha256:[a-f0-9]{64}$'; then
-            echo "::error::Artifact Registry did not return a valid sha256 digest"
+            echo "::error::Docker push did not return a valid sha256 digest"
             exit 1
           fi
           echo "IMAGE_NAME=${IMAGE}" >> "$GITHUB_ENV"
