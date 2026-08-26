@@ -45,6 +45,7 @@ pnpm lint:dep-pins || exit 1
 pnpm lint:deploy-drift || exit 1
 pnpm lint:ai-agent-env-docs || exit 1
 pnpm lint:ai-agent-doc-facts || exit 1
+pnpm lint:ai-agent-enterprise-controls || exit 1
 pnpm lint:seed-parity || exit 1
 # A @Cron missing from .github/cron-jobs.json never runs in production
 # (CRON_DRIVER=http) while running fine locally — catch it before the push.

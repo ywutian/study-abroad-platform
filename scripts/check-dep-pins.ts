@@ -151,6 +151,35 @@ function checkRootManifest(): string[] {
   return errors;
 }
 
+/**
+ * GitHub Action release tags are movable references. Production workflows pin
+ * third-party actions to immutable 40-character commit SHAs and keep the human
+ * release label in a YAML comment for Dependabot/reviewer context.
+ */
+function checkWorkflowActionPins(): string[] {
+  const workflows = path.join(ROOT, '.github', 'workflows');
+  if (!fs.existsSync(workflows)) return [];
+  const errors: string[] = [];
+  for (const file of fs.readdirSync(workflows)) {
+    if (!/\.ya?ml$/.test(file)) continue;
+    const source = fs.readFileSync(path.join(workflows, file), 'utf8');
+    for (const [index, line] of source.split('\n').entries()) {
+      const match = line.match(/^\s*(?:-\s*)?uses:\s*([^\s#]+)(?:\s+#.*)?$/);
+      if (!match || match[1].startsWith('./') || match[1].startsWith('docker://')) {
+        continue;
+      }
+      const separator = match[1].lastIndexOf('@');
+      const ref = separator >= 0 ? match[1].slice(separator + 1) : '';
+      if (!/^[a-f0-9]{40}$/.test(ref)) {
+        errors.push(
+          `${file}:${index + 1} action must use an immutable 40-character commit SHA: ${match[1]}`
+        );
+      }
+    }
+  }
+  return errors;
+}
+
 /** Raw-text scan: JSON.parse collapses duplicates, so the object can't reveal them. */
 function duplicateOverrideKeys(raw: string): Array<[string, number]> {
   const anchor = raw.indexOf('"overrides"');
@@ -220,6 +249,7 @@ function main(): void {
 
   errors.push(...checkNanoidOverride());
   errors.push(...checkRootManifest());
+  errors.push(...checkWorkflowActionPins());
 
   if (errors.length > 0) {
     console.error('\n❌ Contested-dependency pin check failed:\n');
@@ -232,7 +262,7 @@ function main(): void {
   const summary = Object.keys(PINS)
     .map((n) => `${n} {${PINS[n].allowedMajors.join(',')}}`)
     .join(', ');
-  console.log(`✅ Contested-dependency pins hold: ${summary}`);
+  console.log(`✅ Dependency and GitHub Action pins hold: ${summary}`);
 }
 
 main();

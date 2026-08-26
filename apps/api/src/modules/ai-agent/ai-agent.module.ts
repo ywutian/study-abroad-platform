@@ -49,6 +49,7 @@ import { AgentEvaluationTraceService } from './core/agent-evaluation-trace.servi
 import { WorkflowEngineService } from './core/workflow-engine.service';
 import { AgentRunnerService } from './core/agent-runner.service';
 import { OrchestratorService } from './core/orchestrator.service';
+import { AssistantOutputSafetyService } from './core/assistant-output-safety.service';
 
 // Resilience services (not globally provided)
 import { RateLimiterService } from './core/rate-limiter.service';
@@ -183,6 +184,7 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     ToolExecutorService,
     WorkflowEngineService,
     AgentRunnerService,
+    AssistantOutputSafetyService,
     OrchestratorService,
 
     // Web Search

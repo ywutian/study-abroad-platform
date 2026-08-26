@@ -46,8 +46,8 @@ jobs:
       extension: ${{ steps.filter.outputs.extension }}
       any_app: ${{ steps.filter.outputs.api == 'true' || steps.filter.outputs.web == 'true' || steps.filter.outputs.mobile == 'true' || steps.filter.outputs.shared == 'true' }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: dorny/paths-filter@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
         id: filter
         with:
           filters: |
@@ -86,7 +86,7 @@ jobs:
     if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         # Root guardrails include the gate-proof runner, and check-recurrence
         # counts how often a file has appeared in FIX commits. A default depth-1
         # checkout has no history to count, so it reported "no fix-hotspots" —
@@ -96,10 +96,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -108,7 +108,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: rharkor/caching-for-turbo@v2.5.1
+        uses: rharkor/caching-for-turbo@2238fae6eb9a9936f92356f54cb3660200d105e7 # v2.5.1
 
       # 这一步不能省：下面的 lint 是 `pnpm --filter api lint`（直接调，不走 turbo），
       # 所以 turbo.json 里给 lint 声明的 `dependsOn: ["db:generate"]` 覆盖不到这里。
@@ -212,6 +212,7 @@ jobs:
           pnpm lint:deploy-drift
           pnpm lint:ai-agent-env-docs
           pnpm lint:ai-agent-doc-facts
+          pnpm lint:ai-agent-enterprise-controls
           pnpm lint:seed-parity
           # Dated reference data (exam calendar, competition schedule) that has
           # stopped covering the planning horizon. migrate.sh converges the DB to
@@ -291,13 +292,13 @@ jobs:
     if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -306,7 +307,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: rharkor/caching-for-turbo@v2.5.1
+        uses: rharkor/caching-for-turbo@2238fae6eb9a9936f92356f54cb3660200d105e7 # v2.5.1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -339,13 +340,13 @@ jobs:
     if: needs.detect-changes.outputs.any_app == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -354,7 +355,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: rharkor/caching-for-turbo@v2.5.1
+        uses: rharkor/caching-for-turbo@2238fae6eb9a9936f92356f54cb3660200d105e7 # v2.5.1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -375,7 +376,7 @@ jobs:
 
       - name: Upload sanitized Harness benchmark report
         if: always() && (needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push')
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ai-agent-harness-benchmark-${{ github.sha }}
           path: /tmp/ai-agent-benchmark/report.json
@@ -390,7 +391,7 @@ jobs:
 
       - name: Upload sanitized AI Agent semantic evaluation report
         if: always() && (needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push')
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ai-agent-semantic-eval-${{ github.sha }}
           path: /tmp/ai-agent-semantic-eval/report.json
@@ -403,7 +404,7 @@ jobs:
 
       - name: Upload API coverage
         if: needs.detect-changes.outputs.api == 'true' || github.event_name == 'push'
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/api/coverage/lcov.info
@@ -444,13 +445,13 @@ jobs:
     if: needs.detect-changes.outputs.extension == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -499,13 +500,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -571,13 +572,13 @@ jobs:
     if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.ci == 'true' || github.event_name == 'push'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -600,7 +601,7 @@ jobs:
           CI: true
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: failure()
         with:
           name: playwright-report
@@ -638,13 +639,13 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -767,7 +768,7 @@ jobs:
         run: pnpm lint:release-runtime -- --environment=local --max-age-hours=2
 
       - name: Upload release runtime evidence
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: release-runtime-evidence
@@ -805,13 +806,13 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -886,7 +887,7 @@ jobs:
           JWT_REFRESH_EXPIRES_IN: 7d
 
       - name: Upload governance artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: application-analysis-governance
@@ -926,13 +927,13 @@ jobs:
           --health-retries 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -1059,7 +1060,7 @@ jobs:
 
       - name: Upload prediction launch reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: prediction-launch-reports
           path: |
@@ -1105,7 +1106,7 @@ jobs:
 
       - name: Upload counselor gold case report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: counselor-gold-case-report
           path: apps/api/gold-cases/counselor/reports/
@@ -1123,7 +1124,7 @@ jobs:
 
       - name: Upload counselor calibration spec report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: counselor-calibration-spec-report
           path: apps/api/gold-cases/counselor-calibration/reports/
@@ -1145,7 +1146,7 @@ jobs:
 
       - name: Upload prediction gate API log
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: prediction-gate-api-log
           path: /tmp/prediction-gate-api.log
@@ -1165,7 +1166,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -1202,7 +1203,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -1236,7 +1237,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Run Semgrep
         run: |
@@ -1254,7 +1255,7 @@ jobs:
 
       - name: Upload SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
         continue-on-error: true
         with:
           sarif_file: semgrep.sarif
@@ -1268,10 +1269,10 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # master 2026-08-25
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -1288,13 +1289,13 @@ jobs:
     needs: [lint, typecheck, test]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -1303,7 +1304,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Setup Turbo Cache
-        uses: rharkor/caching-for-turbo@v2.5.1
+        uses: rharkor/caching-for-turbo@2238fae6eb9a9936f92356f54cb3660200d105e7 # v2.5.1
 
       - name: Generate Prisma Client
         run: pnpm --filter api exec prisma generate
@@ -1329,14 +1330,14 @@ jobs:
         run: pnpm --filter study-abroad-mobile exec tsc --noEmit
 
       - name: Upload API build
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: api-build
           path: apps/api/dist
           retention-days: 7
 
       - name: Upload Web build
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: web-build
           path: apps/web/.next
@@ -1355,20 +1356,20 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
 
       - name: Login to Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push API
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: .
           file: apps/api/Dockerfile
@@ -1385,7 +1386,7 @@ jobs:
           cache-to: type=gha,mode=max,ignore-error=true
 
       - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # master 2026-08-25
         with:
           image-ref: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
           severity: CRITICAL,HIGH
@@ -1401,13 +1402,13 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -1424,7 +1425,7 @@ jobs:
         run: pnpm sbom:verify
 
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: sbom-cyclonedx
           path: sbom/bom.json
@@ -1439,15 +1440,16 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      attestations: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup pnpm for post-deploy acceptance
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
       - name: Setup Node.js for post-deploy acceptance
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -1456,14 +1458,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: github-actions-deploy@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
@@ -1530,7 +1532,7 @@ jobs:
 
       - name: Upload Cloud SQL backup/PITR evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: cloud-sql-backup-pitr-${{ github.sha }}
           path: /tmp/harness-release-evidence/cloud-sql-backup-pitr.json
@@ -1542,6 +1544,7 @@ jobs:
           gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
 
       - name: Build and push image
+        id: production-image
         run: |
           REGION="${{ secrets.GCP_REGION }}"
           PROJECT="${{ secrets.GCP_PROJECT_ID }}"
@@ -1550,16 +1553,39 @@ jobs:
           docker build -f apps/api/Dockerfile -t "${IMAGE}:${SHA}" -t "${IMAGE}:latest" .
           docker push "${IMAGE}:${SHA}"
           docker push "${IMAGE}:latest"
-          echo "IMAGE=${IMAGE}:${SHA}" >> $GITHUB_ENV
+          DIGEST=$(gcloud artifacts docker images describe "${IMAGE}:${SHA}" \
+            --format='value(image_summary.digest)')
+          if ! printf '%s' "$DIGEST" | grep -Eq '^sha256:[a-f0-9]{64}$'; then
+            echo "::error::Artifact Registry did not return a valid sha256 digest"
+            exit 1
+          fi
+          echo "IMAGE_NAME=${IMAGE}" >> "$GITHUB_ENV"
+          echo "IMAGE_DIGEST=${DIGEST}" >> "$GITHUB_ENV"
+          echo "IMAGE_REF=${IMAGE}@${DIGEST}" >> "$GITHUB_ENV"
+          echo "name=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate signed production image provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-name: ${{ steps.production-image.outputs.name }}
+          subject-digest: ${{ steps.production-image.outputs.digest }}
+
+      - name: Verify production image provenance before deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify "oci://${IMAGE_REF}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --source-digest "$GITHUB_SHA" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/ci.yml"
 
       - name: Run database migrations
         run: |
           REGION="${{ secrets.GCP_REGION }}"
-          SHA="${GITHUB_SHA::7}"
-          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/study-abroad/api:${SHA}"
 
           JOB_ARGS=(
-            --image="$IMAGE"
+            --image="$IMAGE_REF"
             --region="$REGION"
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector
             --vpc-egress=private-ranges-only
@@ -1700,10 +1726,8 @@ jobs:
         if: success()
         run: |
           REGION="${{ secrets.GCP_REGION }}"
-          SHA="${GITHUB_SHA::7}"
-          IMAGE="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/study-abroad/api:${SHA}"
           gcloud run deploy study-abroad-api \
-            --image="$IMAGE" \
+            --image="$IMAGE_REF" \
             --region="$REGION" \
             --platform=managed \
             --max-instances=3 \
@@ -1892,7 +1916,7 @@ jobs:
 
       - name: Upload sanitized Harness acceptance evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ai-agent-harness-acceptance-${{ github.sha }}
           path: /tmp/harness-release-evidence/harness-acceptance.json

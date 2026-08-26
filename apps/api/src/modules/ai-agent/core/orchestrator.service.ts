@@ -26,10 +26,6 @@ import { LLMService } from './llm.service';
 import { ToolExecutorService } from './tool-executor.service';
 import { WorkflowEngineService } from './workflow-engine.service';
 import { MemoryManagerService } from '../memory';
-import {
-  ContentModerationService,
-  ModerationAction,
-} from '../security/content-moderation.service';
 import { FastRouterService } from './fast-router.service';
 import { EmbeddingRouterService } from './embedding-router.service';
 import { FallbackService } from './fallback.service';
@@ -55,6 +51,7 @@ import {
   isAgentRunCheckpoint,
 } from './agent-run.service';
 import { AgentRuntimeConfigService } from '../skills/agent-runtime-config.service';
+import { AssistantOutputSafetyService } from './assistant-output-safety.service';
 
 export type { StreamEvent };
 
@@ -113,7 +110,7 @@ export class OrchestratorService {
     private toolExecutor: ToolExecutorService,
     private workflowEngine: WorkflowEngineService,
     private configService: ConfigService,
-    private contentModeration: ContentModerationService,
+    private outputSafety: AssistantOutputSafetyService,
     private runtimeConfigs: AgentRuntimeConfigService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private fastRouter?: FastRouterService,
@@ -664,30 +661,11 @@ export class OrchestratorService {
   ): Promise<string> {
     if (!content) return content;
 
-    // Output moderation: sanitize or block before persisting
-    try {
-      const modResult = await this.contentModeration.moderate(content, {
-        context: 'output',
-        sanitize: true,
-      });
-      if (
-        modResult.action === ModerationAction.SANITIZE &&
-        modResult.sanitizedContent
-      ) {
-        content = modResult.sanitizedContent;
-      } else if (modResult.action === ModerationAction.BLOCK) {
-        this.logger.warn(
-          `Output blocked by content moderation: ${modResult.details.map((d) => d.type).join(', ')}`,
-        );
-        content =
-          conversation.metadata?.locale === 'en'
-            ? 'I apologize, but I cannot provide that response.'
-            : '抱歉，我无法提供该回复。';
-      }
-    } catch (err) {
-      this.logger.warn('Output moderation check failed', err);
-      // Fail-open: persist original content if moderation errors
-    }
+    content = await this.outputSafety.review(
+      content,
+      conversation.metadata?.locale,
+      agentType,
+    );
 
     await this.addMessage(
       conversation,

@@ -17,13 +17,11 @@ import { MemoryManagerService } from '../memory/memory-manager.service';
 import { FastRouterService } from './fast-router.service';
 import { FallbackService } from './fallback.service';
 import { AgentRunService } from './agent-run.service';
-import {
-  ContentModerationService,
-  ModerationAction,
-} from '../security/content-moderation.service';
 import { AgentType } from '../types';
 import { AgentRuntimeConfigService } from '../skills/agent-runtime-config.service';
 import { AGENT_CONFIGS } from '../config/agents.config';
+import { MetricsService } from '../infrastructure/observability/metrics.service';
+import { AssistantOutputSafetyService } from './assistant-output-safety.service';
 
 describe('OrchestratorService', () => {
   let service: OrchestratorService;
@@ -33,6 +31,7 @@ describe('OrchestratorService', () => {
   let _llm: jest.Mocked<LLMService>;
   let fastRouter: jest.Mocked<FastRouterService>;
   let memoryManager: jest.Mocked<MemoryManagerService>;
+  let outputSafety: { review: jest.Mock };
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -132,17 +131,17 @@ describe('OrchestratorService', () => {
           },
         },
         {
-          provide: ContentModerationService,
+          provide: AssistantOutputSafetyService,
           useValue: {
-            moderate: jest.fn().mockResolvedValue({
-              safe: true,
-              flagged: false,
-              categories: [],
-              severity: 'NONE',
-              action: ModerationAction.ALLOW,
-              sanitizedContent: undefined,
-              details: [],
-            }),
+            review: jest.fn((content: string) => Promise.resolve(content)),
+          },
+        },
+        {
+          provide: MetricsService,
+          useValue: {
+            recordRoutingDecision: jest.fn(),
+            recordError: jest.fn(),
+            recordHarnessEvent: jest.fn(),
           },
         },
       ],
@@ -154,6 +153,7 @@ describe('OrchestratorService', () => {
     _llm = module.get(LLMService);
     fastRouter = module.get(FastRouterService);
     memoryManager = module.get(MemoryManagerService);
+    outputSafety = module.get(AssistantOutputSafetyService);
   });
 
   it('should be defined', () => {
@@ -662,67 +662,34 @@ describe('OrchestratorService', () => {
     });
   });
 
-  describe('Output Content Moderation', () => {
-    let contentModeration: { moderate: jest.Mock };
-
+  describe('Output safety boundary', () => {
     beforeEach(() => {
       setupConversationMocks();
-      contentModeration = module.get(ContentModerationService);
     });
 
-    it('should sanitize assistant response when moderation returns SANITIZE', async () => {
-      fastRouter.getSimpleResponse.mockReturnValue('some sensitive content');
-      contentModeration.moderate.mockResolvedValue({
-        action: ModerationAction.SANITIZE,
-        sanitizedContent: 'sanitized content',
-        details: [{ type: 'pii' }],
-      });
+    it('persists and returns only the output safety service result', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('unreviewed content');
+      outputSafety.review.mockResolvedValue('reviewed content');
 
       const result = await service.handleMessage('user_1', '你好');
 
-      expect(result.message).toBe('sanitized content');
+      expect(outputSafety.review).toHaveBeenCalledWith(
+        'unreviewed content',
+        'zh',
+        AgentType.ORCHESTRATOR,
+      );
+      expect(result.message).toBe('reviewed content');
       expect(memoryManager.addMessage).toHaveBeenCalledWith(
         'conv_1',
         expect.objectContaining({
           role: 'assistant',
-          content: 'sanitized content',
+          content: 'reviewed content',
         }),
       );
-    });
-
-    it('should replace assistant response with safe fallback when moderation blocks', async () => {
-      fastRouter.getSimpleResponse.mockReturnValue('harmful content');
-      contentModeration.moderate.mockResolvedValue({
-        action: ModerationAction.BLOCK,
-        details: [{ type: 'harmful' }],
-      });
-
-      const result = await service.handleMessage('user_1', '你好');
-
-      expect(result.message).toBe('抱歉，我无法提供该回复。');
-    });
-
-    it('should pass through when moderation allows', async () => {
-      fastRouter.getSimpleResponse.mockReturnValue('safe content');
-      contentModeration.moderate.mockResolvedValue({
-        action: ModerationAction.ALLOW,
-        details: [],
-      });
-
-      const result = await service.handleMessage('user_1', '你好');
-
-      expect(result.message).toBe('safe content');
-    });
-
-    it('should fail-open when moderation throws', async () => {
-      fastRouter.getSimpleResponse.mockReturnValue('content');
-      contentModeration.moderate.mockRejectedValue(
-        new Error('moderation down'),
+      expect(memoryManager.addMessage).not.toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({ content: 'unreviewed content' }),
       );
-
-      const result = await service.handleMessage('user_1', '你好');
-
-      expect(result.message).toBe('content');
     });
   });
 });

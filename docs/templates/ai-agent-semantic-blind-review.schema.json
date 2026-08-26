@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "datasetVersion",
+    "rubricVersion",
+    "candidateIdentitySeen",
+    "reviewer",
+    "items"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "datasetVersion": { "const": "agent-semantic-eval-v2-280" },
+    "rubricVersion": { "const": "agent-semantic-rubric-v2" },
+    "candidateIdentitySeen": { "const": false },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewerType", "reviewerId"],
+      "properties": {
+        "reviewerType": { "enum": ["codex", "human_expert"] },
+        "reviewerId": { "type": "string", "minLength": 1, "maxLength": 120 }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 280,
+      "maxItems": 280,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["caseId", "scores", "reasonCodes"],
+        "properties": {
+          "caseId": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "scores": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "factuality",
+              "instruction_following",
+              "relevance_completeness",
+              "safety_privacy",
+              "actionability_tone"
+            ],
+            "properties": {
+              "factuality": { "type": "integer", "minimum": 0, "maximum": 4 },
+              "instruction_following": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "relevance_completeness": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "safety_privacy": { "type": "integer", "minimum": 0, "maximum": 4 },
+              "actionability_tone": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              }
+            }
+          },
+          "reasonCodes": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+          }
+        }
+      }
+    }
+  }
+}

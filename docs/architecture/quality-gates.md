@@ -117,12 +117,12 @@ deploy-gcp (仅 main + workflow_dispatch)
 
 ### 安全扫描
 
-| 扫描           | 触发                        | 工具                             | 范围                            |
-| -------------- | --------------------------- | -------------------------------- | ------------------------------- |
-| **gitleaks**   | pre-commit + CI secret-scan | gitleaks/gitleaks-action@v2      | 密钥检测                        |
-| **Semgrep**    | CI sast (PR only)           | semgrep/semgrep-action@v1        | SAST (OWASP Top 10, JS/TS/Node) |
-| **Trivy**      | CI security + docker image  | aquasecurity/trivy-action@master | 漏洞扫描                        |
-| **pnpm audit** | pre-push + CI               | `pnpm audit --audit-level=high`  | 依赖 CVE                        |
+| 扫描           | 触发                        | 工具                            | 范围                            |
+| -------------- | --------------------------- | ------------------------------- | ------------------------------- |
+| **gitleaks**   | pre-commit + CI secret-scan | gitleaks/gitleaks-action@v2     | 密钥检测                        |
+| **Semgrep**    | CI sast (PR only)           | semgrep/semgrep-action@v1       | SAST (OWASP Top 10, JS/TS/Node) |
+| **Trivy**      | CI security + docker image  | trivy-action（不可变 SHA 固定） | 漏洞扫描                        |
+| **pnpm audit** | pre-push + CI               | `pnpm audit --audit-level=high` | 依赖 CVE                        |
 
 ### 部署策略
 

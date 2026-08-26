@@ -43,7 +43,7 @@ ai-agent/
 ├── providers/                   # OpenAIProvider, ILLMProvider interface
 ├── queue/                       # task-queue.service
 ├── security/                    # PromptGuard, ContentModeration, Audit
-├── semantic-eval/               # 240 条语义语料、Rubric、盲审包评分与脱敏报告
+├── semantic-eval/               # 280 条语义语料、OWASP 风险矩阵、Rubric 与脱敏报告
 ├── services/                    # 跨域 helper
 ├── skills/                      # 声明式 Skill 版本、评测、发布、回滚、自进化
 ├── tools/                       # 13 domain tool services
@@ -395,12 +395,13 @@ candidateTools ⊆ parentTools ∩ agentAllowedTools
 完整方法、指标与局限见
 [`AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md`](../reports/AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md)。
 
-独立的 `agent-semantic-eval-v1-240` 层包含 48 个合成场景族、每族 5 种表达，
-8 类各 30 条，并用 610 个缺输出、缺工具、越权工具、隐私泄露和缺关键概念
-反例校准规则评分器。当前 Codex reference 的 100% 只证明语料/评分器闭环，
+独立的 `agent-semantic-eval-v2-280` 层包含 56 个合成场景族、每族 5 种表达，
+8 类各 35 条；其中 100 条为 adversarial case，显式覆盖 OWASP Agentic Top 10。
+评分器使用 735 个缺输出、缺工具、越权工具、隐私泄露和缺关键概念反例校准。
+当前 Codex reference 的 100% 只证明语料/评分器闭环，
 不代表生产模型质量；只有线上 Agent 生成且独立评审的完整 submission 才能作为
 生产语义证据。详见
-[`AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md`](../reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md)。
+[`AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md`](../reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md)。
 
 ---
 
@@ -622,7 +623,8 @@ Harness 还会发出 `approval_required`、`run_paused` 与 `run_resumed`。客�
 - [AI_AGENT_SKILLS_EVOLUTION.md](../AI_AGENT_SKILLS_EVOLUTION.md) — 声明式 Skills 与受约束自进化
 - [AI Agent Harness production acceptance](../runbooks/ai-agent-harness-acceptance.md) — 生产验收与证据边界
 - [AI Agent Harness production closure](../reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) — 2026-08-24 上线证据
-- [AI Agent semantic evaluation v1](../reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md) — 240 条语义语料、校准和证据边界
+- [AI Agent semantic evaluation v2](../reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md) — 280 条语义语料、OWASP Agentic Top 10、校准和证据边界
+- [AI Agent semantic evaluation v1](../reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md) — 不可变历史基线
 - [ADR-0003: ai-agent-workflow-engine-architecture](../adr/0003-ai-agent-workflow-engine-architecture.md) — ReWOO 决策
 - [ADR-0011: optional-injection-policy](../adr/0011-optional-injection-policy.md) — @Optional() 禁用决策
 - [ADR-0012: memory-tier-metadata-only](../adr/0012-memory-tier-metadata-only.md) — 记忆分层策略

@@ -3,6 +3,7 @@ import { runGate, withPatchedFile, expectClean, expectFired } from './harness';
 const PKG = 'package.json';
 const LOCK = 'pnpm-lock.yaml';
 const GATE = 'check-dep-pins.ts';
+const WORKFLOW = '.github/workflows/ci.yml';
 
 /**
  * Proof for `check-dep-pins.ts`.
@@ -66,5 +67,14 @@ export async function prove(): Promise<void> {
         '"js-yaml@^3": ">=3.15.1 <4",\n      "js-yaml@^3": ">=3.0.0 <4",'
       ),
     () => expectFired(runGate(GATE), 'times.')
+  );
+
+  // 4. A movable GitHub Action tag. Upstream tags and branches can be
+  // retargeted without a repository diff; only an exact commit makes the
+  // workflow dependency reproducible for a frozen source revision.
+  await withPatchedFile(
+    WORKFLOW,
+    (s) => s.replace(/actions\/checkout@[a-f0-9]{40} # v7/, 'actions/checkout@v7'),
+    () => expectFired(runGate(GATE), 'immutable 40-character commit SHA')
   );
 }

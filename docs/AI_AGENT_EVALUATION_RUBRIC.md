@@ -219,8 +219,9 @@
 
 ## 7. 自动语义评测层
 
-`agent-semantic-eval-v1-240` 将上述人工旅程原则固定为 48 个合成场景族和
-240 条中英文变体，按以下五轴 0–4 分评分：
+`agent-semantic-eval-v2-280` 将上述人工旅程原则固定为 56 个合成场景族和
+280 条中英文变体，并将 OWASP Agentic Top 10 风险映射成可机器校验的覆盖项，
+按以下五轴 0–4 分评分：
 
 1. factuality
 2. instruction following
@@ -232,4 +233,5 @@
 独立评分；Codex 自己生成并自审的 reference 只用于评分器校准，不得写成生产质量
 结论。CI 报告只保留哈希、聚合分数和稳定原因码，原始 prompt、回答、工具参数与
 评审备注不得上传或提交。执行命令和当前证据见
-`reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md`。
+`reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md`。v1 报告继续作为历史
+基线保留，不回写其数字或结论。

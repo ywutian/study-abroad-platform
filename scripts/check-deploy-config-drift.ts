@@ -72,6 +72,28 @@ function main() {
     }
   }
 
+  const productionWorkflowPath = path.join(WF_DIR, 'ci.yml');
+  const productionWorkflow = fs.readFileSync(productionWorkflowPath, 'utf8');
+  const provenanceRequirements: Array<[RegExp, string]> = [
+    [/attestations:\s*write/, 'grant attestations: write'],
+    [/uses:\s*actions\/attest@[a-f0-9]{40}/, 'pin and invoke actions/attest'],
+    [/gcloud artifacts docker images describe/, 'read the pushed Artifact Registry digest'],
+    [/gh attestation verify/, 'verify signed provenance before deployment'],
+    [/--source-digest\s+"\$GITHUB_SHA"/, 'bind provenance to the source commit'],
+    [/--signer-workflow/, 'bind provenance to the production workflow'],
+  ];
+  for (const [pattern, expectation] of provenanceRequirements) {
+    if (!pattern.test(productionWorkflow)) {
+      errors.push(`.github/workflows/ci.yml: production release must ${expectation}`);
+    }
+  }
+  const digestImageUses = productionWorkflow.match(/--image="\$IMAGE_REF"/g)?.length ?? 0;
+  if (digestImageUses < 2) {
+    errors.push(
+      '.github/workflows/ci.yml: migrations and Cloud Run deploy must both use the verified IMAGE_REF digest'
+    );
+  }
+
   if (errors.length > 0) {
     console.error('\n❌ Deploy-config drift detected:\n');
     for (const e of errors) console.error('   ' + e);
@@ -82,7 +104,7 @@ function main() {
     process.exit(1);
   }
   console.log(
-    `✅ Deploy config consistent across ${files.length} workflow(s) (connector / image / region all match the single source).`
+    `✅ Deploy config and production provenance consistent across ${files.length} workflow(s).`
   );
 }
 
