@@ -149,6 +149,31 @@ export class OrchestratorService {
     return run.id;
   }
 
+  private async getStreamMemoryContext(
+    userId: string,
+    message: string,
+    conversationId: string,
+  ): Promise<NonNullable<StreamEvent['memoryContext']>> {
+    const empty = { recentMemories: 0, relevantFacts: 0, entities: [] };
+    if (!this.memoryManager) return empty;
+    try {
+      const ctx = await this.memoryManager.getRetrievalContext(
+        userId,
+        message,
+        conversationId,
+      );
+      return {
+        recentMemories: ctx.relevantMemories.length,
+        relevantFacts: ctx.relevantMemories.filter((m) => m.type === 'FACT')
+          .length,
+        entities: ctx.entities.map((entity) => entity.name),
+      };
+    } catch (err) {
+      this.logger.warn('Failed to retrieve memory context', err);
+      return empty;
+    }
+  }
+
   private sanitizeAgentContext(
     context?: AgentChatContext,
   ): AgentChatContext | undefined {
@@ -921,6 +946,11 @@ export class OrchestratorService {
           conversation.id,
           agentHint,
         );
+        const memoryContext = await this.getStreamMemoryContext(
+          userId,
+          message,
+          conversation.id,
+        );
         yield {
           type: 'start',
           agent: agentHint,
@@ -929,6 +959,7 @@ export class OrchestratorService {
           title: isNew
             ? message.slice(0, 50).replace(/\n/g, ' ').trim()
             : undefined,
+          memoryContext,
         };
         yield* this.collectAndPersistStream(agentHint, conversation, runId);
         return;
@@ -1122,25 +1153,11 @@ export class OrchestratorService {
         AgentType.ORCHESTRATOR,
       );
 
-      // 获取记忆上下文统计
-      let memoryContext: StreamEvent['memoryContext'];
-      if (this.memoryManager) {
-        try {
-          const ctx = await this.memoryManager.getRetrievalContext(
-            userId,
-            message,
-            conversation.id,
-          );
-          memoryContext = {
-            recentMemories: ctx.relevantMemories.length,
-            relevantFacts: ctx.relevantMemories.filter((m) => m.type === 'FACT')
-              .length,
-            entities: ctx.entities.map((e) => e.name),
-          };
-        } catch (err) {
-          this.logger.warn('Failed to retrieve memory context', err);
-        }
-      }
+      const memoryContext = await this.getStreamMemoryContext(
+        userId,
+        message,
+        conversation.id,
+      );
 
       yield {
         type: 'start',
