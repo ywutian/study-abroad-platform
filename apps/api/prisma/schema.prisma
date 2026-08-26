@@ -4708,7 +4708,7 @@ model SchoolRecommendationEvent {
   metadata         Json?
   createdAt        DateTime                      @default(now())
 
-  @@unique([recommendationId, schoolId, eventType])
+  @@unique([recommendationId, schoolId, eventType], map: "SchoolRecEvent_recommendation_school_type_key")
   @@index([userId, eventType, createdAt])
   @@index([schoolId, eventType, createdAt])
   @@index([schoolListItemId])

@@ -23,7 +23,7 @@ CREATE TABLE "SchoolRecommendationEvent" (
 CREATE INDEX "SchoolListItem_sourceRecommendationId_idx" ON "SchoolListItem"("sourceRecommendationId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SchoolRecommendationEvent_recommendationId_schoolId_eventType_key" ON "SchoolRecommendationEvent"("recommendationId", "schoolId", "eventType");
+CREATE UNIQUE INDEX "SchoolRecEvent_recommendation_school_type_key" ON "SchoolRecommendationEvent"("recommendationId", "schoolId", "eventType");
 
 -- CreateIndex
 CREATE INDEX "SchoolRecommendationEvent_userId_eventType_createdAt_idx" ON "SchoolRecommendationEvent"("userId", "eventType", "createdAt");
