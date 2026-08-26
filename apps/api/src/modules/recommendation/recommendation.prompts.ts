@@ -66,7 +66,7 @@ export function buildRecommendationSystemPrompt(
 
 重要约束：必须根据目标专业与活动方向推荐，不得推荐与申请者背景明显不符的学校。例如：商科/经济背景不推艺术类院校，纯文科背景不推纯理工院校，STEM/商科背景不推纯艺术类学校。专业与活动方向明显错配的学校必须排除。
 
-estimatedProbability 要求：你的录取概率估计应基于学生的 GPA、标化成绩与学校的录取率、SAT 中位数等数据的客观对比。不要凭感觉给出概率，而应参照数据合理推导。系统会使用统计模型校准你的估计值。
+tier 和 estimatedProbability 仅用于组织候选清单，系统不会把它们作为录取事实。最终档位和概率由统一的 Counselor Engine 根据官方学校数据计算并覆盖。不要引用或推断历史个案。
 
 返回严格的 JSON 格式：
 {
@@ -123,7 +123,7 @@ Evaluation dimensions:
 
 Critical constraint: Recommend only schools that match the student's target major and activity focus. Do NOT recommend schools that are a clear mismatch (e.g. do not recommend art schools for business/economics profiles; do not recommend pure STEM schools for humanities-only profiles; do not recommend pure art schools for STEM/business profiles). Exclude any school that would be an obvious major/activity mismatch.
 
-estimatedProbability requirement: Your probability estimates should be grounded in objective comparison of the student's GPA and test scores against each school's acceptance rate and SAT midpoints. Do not guess probabilities — derive them from data. The system will calibrate your estimates using a statistical model.
+tier and estimatedProbability are candidate-list organization hints, not admission facts. The unified Counselor Engine will calculate and overwrite final tiers and probabilities from official school data. Do not cite or infer historical individual cases.
 
 Return strict JSON:
 {
@@ -310,14 +310,14 @@ export function buildRecommendationUserPrompt(
       parts.push(`申请者国籍: ${nationalityContext.nationality}`);
       if (nationalityContext.isInternational) {
         parts.push(
-          `请考虑该校对${nationalityContext.nationality}学生的友好度、国际生比例和历史录取情况`,
+          `请只依据学校公开的国际生政策、国际生比例和对${nationalityContext.nationality}申请者适用的官方要求评估匹配度；不要推断或引用历史个案`,
         );
       }
     } else {
       parts.push(`Applicant Nationality: ${nationalityContext.nationality}`);
       if (nationalityContext.isInternational) {
         parts.push(
-          `Consider each school's friendliness toward ${nationalityContext.nationality} students, international student percentage, and historical admission patterns for this nationality`,
+          `Assess fit only from published international-student policies, international enrollment, and official requirements applicable to ${nationalityContext.nationality} applicants; do not infer or cite historical individual cases`,
         );
       }
     }

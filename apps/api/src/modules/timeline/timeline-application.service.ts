@@ -26,6 +26,7 @@ import {
   UpdateTaskDto,
   TaskResponseDto,
   GenerateTimelineDto,
+  TimelineStatus,
 } from './dto';
 
 const DEFAULT_TASKS = [
@@ -104,7 +105,6 @@ export class TimelineApplicationService {
       },
       include: { tasks: true },
     });
-
     return this.mapTimelineToResponse(timeline);
   }
 
@@ -505,7 +505,7 @@ export class TimelineApplicationService {
     }
     this.assertTimelineMutable(timeline);
 
-    const updated = await this.prisma.applicationTimeline.update({
+    const timelineUpdate = this.prisma.applicationTimeline.update({
       where: { id },
       data: {
         status: dto.status as ApplicationStatus,
@@ -517,6 +517,39 @@ export class TimelineApplicationService {
       include: { tasks: true },
     });
 
+    if (dto.status !== TimelineStatus.SUBMITTED) {
+      return this.mapTimelineToResponse(await timelineUpdate);
+    }
+
+    const sourceItem = await this.prisma.schoolListItem.findUnique({
+      where: { userId_schoolId: { userId, schoolId: timeline.schoolId } },
+      select: { id: true, sourceRecommendationId: true },
+    });
+    if (!sourceItem?.sourceRecommendationId) {
+      return this.mapTimelineToResponse(await timelineUpdate);
+    }
+
+    const [updated] = await this.prisma.$transaction([
+      timelineUpdate,
+      this.prisma.schoolRecommendationEvent.upsert({
+        where: {
+          recommendationId_schoolId_eventType: {
+            recommendationId: sourceItem.sourceRecommendationId,
+            schoolId: timeline.schoolId,
+            eventType: 'APPLIED',
+          },
+        },
+        create: {
+          recommendationId: sourceItem.sourceRecommendationId,
+          userId,
+          schoolId: timeline.schoolId,
+          schoolListItemId: sourceItem.id,
+          eventType: 'APPLIED',
+          metadata: { source: 'application-submitted' },
+        },
+        update: { schoolListItemId: sourceItem.id },
+      }),
+    ]);
     return this.mapTimelineToResponse(updated);
   }
 

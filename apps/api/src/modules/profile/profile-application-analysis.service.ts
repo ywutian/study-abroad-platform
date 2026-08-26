@@ -5,10 +5,6 @@ import { RedisService } from '../../common/redis/redis.service';
 import { REDIS_TTL } from '../../common/redis/redis-ttl.constants';
 import { PredictionService } from '../prediction/prediction.service';
 import { resolveEffectiveTier } from '../school-list/school-list.constants';
-import {
-  CaseComparisonResult,
-  PredictionHistoricalService,
-} from '../prediction/prediction-historical.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
@@ -147,7 +143,6 @@ interface AnalysisSynthesisResponse {
     compensatingStrengths?: string[];
     topGaps?: string[];
     nextActions?: string[];
-    historicalSignals?: string[];
     hardStopRisks?: string[];
   }>;
   actionPlan?: AnalysisActionPlan;
@@ -167,7 +162,6 @@ export class ProfileApplicationAnalysisService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly predictionService: PredictionService,
-    private readonly predictionHistoricalService: PredictionHistoricalService,
     private readonly llmService: LLMService,
     private readonly applicationAnalysisWorkflowService: ApplicationAnalysisWorkflowService,
     private readonly profileApplicationAnalysisV2Service: ProfileApplicationAnalysisV2Service,
@@ -354,19 +348,6 @@ export class ProfileApplicationAnalysisService {
     const predictionMap = new Map(
       predictions.map((prediction) => [prediction.schoolId, prediction]),
     );
-    const historyResults = await Promise.all(
-      focusSchools.map(async (item) => ({
-        schoolId: item.schoolId,
-        comparison: await this.predictionHistoricalService.getCaseComparison(
-          item.schoolId,
-          profile.nationality ?? undefined,
-        ),
-      })),
-    );
-    const historyMap = new Map(
-      historyResults.map((entry) => [entry.schoolId, entry.comparison]),
-    );
-
     const dataQuality = resolveDataQuality(profile, schoolListItems.length);
     const state = this.resolveAnalysisState(
       profile,
@@ -393,7 +374,6 @@ export class ProfileApplicationAnalysisService {
             buildTargetSchoolInsight(
               item,
               predictionMap.get(item.schoolId),
-              historyMap.get(item.schoolId) ?? null,
               profile,
               locale,
               evidenceMap.get(item.schoolId),
@@ -462,7 +442,6 @@ export class ProfileApplicationAnalysisService {
                 compensatingStrengths: item.compensatingStrengths,
                 topGaps: item.topGaps,
                 nextActions: item.nextActions,
-                historicalSignals: item.historicalSignals,
                 hardStopRisks: item.hardStopRisks,
               })),
             },
@@ -1294,7 +1273,6 @@ function resolvePortfolioBalance(
 function buildTargetSchoolInsight(
   item: LoadedSchoolListItem,
   prediction: LoadedPrediction | undefined,
-  comparison: CaseComparisonResult | null,
   profile: LoadedProfile,
   locale: string,
   evidence?: SchoolEvidenceByDimension,
@@ -1310,7 +1288,6 @@ function buildTargetSchoolInsight(
     (factor) => factor.impact === 'negative',
   );
 
-  const historicalSignals = buildHistoricalSignals(comparison, locale);
   const policyContext = buildSchoolPolicyContext(item, profile, evidence);
   const hardStopRisks = buildHardStopRisks(
     item,
@@ -1370,45 +1347,11 @@ function buildTargetSchoolInsight(
               : 'You still need clearer school-specific gap evidence.',
           ],
     nextActions: buildSchoolNextActions(item, prediction, suggestions, locale),
-    historicalSignals,
+    // Compatibility-only response field. Application analysis deliberately
+    // has no admission-Case input or fallback path.
+    historicalSignals: [],
     hardStopRisks,
   };
-}
-
-function buildHistoricalSignals(
-  comparison: CaseComparisonResult | null,
-  locale: string,
-): string[] {
-  const isZh = locale === 'zh';
-  if (!comparison) {
-    // No sufficient historical sample → emit no signals (the UI hides the whole
-    // section) instead of surfacing a "not enough cases" caveat.
-    return [];
-  }
-
-  const signals: string[] = [];
-  if (comparison.admitted.gpaMedian != null) {
-    signals.push(
-      isZh
-        ? `历史录取样本 GPA 中位数约为 ${comparison.admitted.gpaMedian.toFixed(2)}。`
-        : `The admitted-case median GPA is about ${comparison.admitted.gpaMedian.toFixed(2)}.`,
-    );
-  }
-  if (comparison.admitted.satMedian != null) {
-    signals.push(
-      isZh
-        ? `历史录取样本 SAT 中位数约为 ${comparison.admitted.satMedian}。`
-        : `The admitted-case median SAT is about ${comparison.admitted.satMedian}.`,
-    );
-  }
-  if (comparison.nationalitySubset?.nationality) {
-    signals.push(
-      isZh
-        ? `已纳入 ${comparison.nationalitySubset.nationality} 申请者子样本做对照。`
-        : `A nationality-specific subset for ${comparison.nationalitySubset.nationality} is available.`,
-    );
-  }
-  return signals.slice(0, 3);
 }
 
 function buildSchoolPolicyContext(
@@ -1820,8 +1763,8 @@ function buildSummary(
   }
 
   return isZh
-    ? `本次分析已覆盖 ${focusSchoolCount} 所重点学校，并结合档案证据、预测结果和历史案例给出申请策略判断。`
-    : `This analysis covers ${focusSchoolCount} focus schools and combines profile evidence, prediction output, and historical cases into a strategy view.`;
+    ? `本次分析已覆盖 ${focusSchoolCount} 所重点学校，并结合档案证据、正式预测和学校政策给出申请策略判断。`
+    : `This analysis covers ${focusSchoolCount} focus schools and combines profile evidence, authoritative predictions, and school policy into a strategy view.`;
 }
 
 function mergeRecommendations(
@@ -1904,10 +1847,7 @@ function mergeTargetSchoolInsights(
         ...safeStrings(llm.nextActions),
         ...item.nextActions,
       ]).slice(0, 4),
-      historicalSignals: dedupeStrings([
-        ...safeStrings(llm.historicalSignals),
-        ...item.historicalSignals,
-      ]).slice(0, 4),
+      historicalSignals: item.historicalSignals,
       hardStopRisks: dedupeStrings([
         ...safeStrings(llm.hardStopRisks),
         ...(item.hardStopRisks ?? []),
@@ -1967,7 +1907,6 @@ function validateSynthesis(
             ).slice(0, 4),
             topGaps: safeStrings(item.topGaps).slice(0, 4),
             nextActions: safeStrings(item.nextActions).slice(0, 4),
-            historicalSignals: safeStrings(item.historicalSignals).slice(0, 4),
             hardStopRisks: safeStrings(item.hardStopRisks).slice(0, 4),
           }))
       : undefined,
@@ -2559,19 +2498,11 @@ function buildStrategyUncertainty(
       : school.policyContext?.policySourceQuality === 'DERIVED'
         ? 0.02
         : 0;
-  const historicalPenalty = school.historicalSignals.some((signal) =>
-    /thin|不足|weak/i.test(signal),
-  )
-    ? 0.03
-    : 0;
   const hardStopPenalty = Math.min(
     (school.hardStopRisks?.length ?? 0) * 0.015,
     0.05,
   );
-  const spread = Math.min(
-    widthDelta + policyPenalty + historicalPenalty + hardStopPenalty,
-    0.22,
-  );
+  const spread = Math.min(widthDelta + policyPenalty + hardStopPenalty, 0.22);
 
   const reasons = [
     school.predictionSnapshot?.confidenceReason,
@@ -2579,11 +2510,6 @@ function buildStrategyUncertainty(
       ? isZh
         ? '这所学校的政策证据仍然不足，所以策略区间会更宽。'
         : 'School-policy evidence is still thin for this school, so the strategy interval is wider.'
-      : null,
-    school.historicalSignals.some((signal) => /thin|不足|weak/i.test(signal))
-      ? isZh
-        ? '历史案例样本偏薄，导致学校级参考区间更保守。'
-        : 'Historical case coverage is thin, so the school-level interval stays more conservative.'
       : null,
     school.round &&
     school.predictionSnapshot?.roundContext &&

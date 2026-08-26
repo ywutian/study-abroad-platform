@@ -4165,10 +4165,10 @@
   },
   "applicationAnalysis": {
     "title": "Strategy Advisor",
-    "subtitle": "Application strategy built from your profile, the Chance Engine, school policy, and historical evidence",
+    "subtitle": "Application strategy built from your profile, unified admission predictions, and official school policy",
     "loading": {
       "title": "Analyzing your application",
-      "description": "Building a school-aware strategy view from profile, predictions, and historical evidence."
+      "description": "Building a school-aware strategy view from your profile, unified predictions, and official school policy."
     },
     "error": {
       "title": "Analysis failed",

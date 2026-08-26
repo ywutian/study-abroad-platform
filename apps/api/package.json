@@ -23,6 +23,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "harness:acceptance": "tsx scripts/ai-agent-harness-acceptance.ts",
+    "core-ai:acceptance": "tsx scripts/core-ai-alignment-acceptance.ts",
     "harness:benchmark": "tsx scripts/ai-agent-harness-benchmark.ts",
     "harness:semantic-eval": "tsx scripts/ai-agent-semantic-eval.ts",
     "harness:semantic-capture": "tsx scripts/ai-agent-semantic-production-capture.ts",

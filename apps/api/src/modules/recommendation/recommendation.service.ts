@@ -23,15 +23,9 @@ import {
 } from './dto';
 import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
-import {
-  extractProfileMetrics,
-  extractSchoolMetrics,
-  calculateOverallScore,
-  calculateProbability,
-} from '../../common/utils/scoring';
+import { PredictionService } from '../prediction/prediction.service';
 import {
   RECOMMENDATION_SCHOOL_SELECT,
-  getRecommendationMetricValue,
   mapSourcedSchoolMeta,
   type RecommendationSchoolResult,
 } from './recommendation.constants';
@@ -42,7 +36,7 @@ import {
   type RecommendationPromptProfile,
 } from './recommendation.prompts';
 import { detectInternationalStatus } from '@study-abroad/shared/scoring';
-import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
+import type { RecommendationOutcomeMetrics } from '@study-abroad/shared';
 import {
   isJsonRecord,
   normalizeAnalysis,
@@ -50,13 +44,6 @@ import {
   normalizeSummerPrograms,
   readStoredAnalysis,
 } from './recommendation-response-normalizers';
-
-/**
- * How many of the user's target schools get historical case context injected
- * into the recommendation prompt. Each one costs a `getCaseComparison` call,
- * cached per school+nationality, so this bounds both prompt size and latency.
- */
-const HISTORICAL_CONTEXT_SCHOOL_LIMIT = 5;
 
 const SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE = {
   isActive: true,
@@ -73,8 +60,8 @@ export class RecommendationService {
     private llmService: LLMService,
     private pointsService: PointsService,
     private redis: RedisService,
+    private predictionService: PredictionService,
     @Optional() private memoryManager?: MemoryManagerService,
-    @Optional() private historicalService?: PredictionHistoricalService,
   ) {}
 
   /**
@@ -193,12 +180,9 @@ export class RecommendationService {
     //
     // `isInternational` is not a Profile column and never was; it was read
     // through an untyped cast, came back `undefined` on every call, and the
-    // prompt builder's branch on it therefore never fired. What that branch
-    // adds is the instruction to weigh "each school's friendliness toward
-    // {nationality} students, international student percentage, and historical
-    // admission patterns for this nationality" — so the recommendation prompt
-    // has never once asked for that, on a platform whose applicants are
-    // overwhelmingly international.
+    // prompt builder's branch on it therefore never fired. The branch adds
+    // international-student context based only on published school policies
+    // and official requirements, without historical individual cases.
     //
     // Derived the same way the prediction path derives it, from the same five
     // Profile columns, so the two features agree about who is international.
@@ -215,171 +199,13 @@ export class RecommendationService {
         }
       : undefined;
 
-    let userPrompt = buildRecommendationUserPrompt(
+    const userPrompt = buildRecommendationUserPrompt(
       profile,
       dto,
       locale,
       assessmentData,
       nationalityContext,
     );
-
-    // Inject historical case comparison data for evidence-based recommendations
-    const comparisonCache: Record<
-      string,
-      import('../prediction/prediction-historical.service').CaseComparisonResult
-    > = {};
-    if (this.historicalService) {
-      const historicalLines: string[] = [];
-      // The user's target schools. This block was written against
-      // `profile.targetSchools`, a field `Profile` has never had — so it read
-      // `undefined` on every call, never ran, and the whole
-      // "evidence-based recommendation from historical cases" path was inert
-      // from the day it was written. Everything downstream of it was built and
-      // waiting: CaseComparisonSummary.tsx, the `recommendation.caseComparison`
-      // strings in both locales, `CaseComparison` in packages/shared, the DTO
-      // field, and the conditional render in ResultsView — a component that had
-      // never rendered because its data never arrived.
-      //
-      // Target schools live on SchoolListItem. Reading them there is also
-      // cheaper than the shape this was written for: the original had a name
-      // string and did a `contains` lookup per school to resolve an id, which
-      // could also match the wrong school; the relation hands over the id.
-      const targetSchools = await this.prisma.schoolListItem.findMany({
-        where: { userId },
-        select: { school: { select: { id: true, name: true } } },
-        orderBy: { createdAt: 'asc' },
-        // Same cap the original `.slice(0, 5)` intended. Each school costs one
-        // getCaseComparison, which is Redis-cached per school+nationality.
-        take: HISTORICAL_CONTEXT_SCHOOL_LIMIT,
-      });
-      if (targetSchools.length) {
-        for (const { school } of targetSchools) {
-          try {
-            // Use structured case comparison (admitted vs rejected)
-            const comparison = await this.historicalService.getCaseComparison(
-              school.id,
-              nationalityContext?.nationality,
-            );
-
-            if (comparison) {
-              comparisonCache[school.id] = comparison;
-              const parts = [`### ${school.name}`];
-              const { admitted, rejected } = comparison;
-              parts.push(
-                `- Cases: ${comparison.totalCases} total (${admitted.count} admitted, ${rejected.count} rejected${comparison.waitlisted ? `, ${comparison.waitlisted.count} waitlisted` : ''})`,
-              );
-              parts.push(
-                `- Platform admit rate: ${((admitted.count / comparison.totalCases) * 100).toFixed(1)}%`,
-              );
-
-              // Admitted cohort profile
-              const admittedParts: string[] = [];
-              if (admitted.gpaMedian != null) {
-                admittedParts.push(
-                  `GPA ${admitted.gpaMedian}${admitted.gpaP25 != null ? ` (${admitted.gpaP25}-${admitted.gpaP75})` : ''}`,
-                );
-              }
-              if (admitted.satMedian != null) {
-                admittedParts.push(
-                  `SAT ${admitted.satMedian}${admitted.satP25 != null ? ` (${admitted.satP25}-${admitted.satP75})` : ''}`,
-                );
-              }
-              if (admittedParts.length) {
-                parts.push(`- Admitted profile: ${admittedParts.join(', ')}`);
-              }
-
-              // Rejected cohort profile
-              const rejectedParts: string[] = [];
-              if (rejected.gpaMedian != null) {
-                rejectedParts.push(
-                  `GPA ${rejected.gpaMedian}${rejected.gpaP25 != null ? ` (${rejected.gpaP25}-${rejected.gpaP75})` : ''}`,
-                );
-              }
-              if (rejected.satMedian != null) {
-                rejectedParts.push(
-                  `SAT ${rejected.satMedian}${rejected.satP25 != null ? ` (${rejected.satP25}-${rejected.satP75})` : ''}`,
-                );
-              }
-              if (rejectedParts.length) {
-                parts.push(`- Rejected profile: ${rejectedParts.join(', ')}`);
-              }
-
-              // Common traits
-              if (admitted.topTags?.length) {
-                parts.push(
-                  `- Admitted common traits: ${admitted.topTags.join(', ')}`,
-                );
-              }
-              if (rejected.topTags?.length) {
-                parts.push(
-                  `- Rejected common traits: ${rejected.topTags.join(', ')}`,
-                );
-              }
-
-              // Nationality subset
-              if (comparison.nationalitySubset) {
-                const ns = comparison.nationalitySubset;
-                const natParts = [`- ${ns.nationality} applicants:`];
-                if (ns.admitted.count > 0 || ns.rejected.count > 0) {
-                  natParts.push(
-                    `${ns.admitted.count} admitted, ${ns.rejected.count} rejected`,
-                  );
-                }
-                if (ns.admitted.gpaMedian != null) {
-                  natParts.push(`admitted GPA ${ns.admitted.gpaMedian}+`);
-                }
-                if (ns.admitted.satMedian != null) {
-                  natParts.push(`admitted SAT ${ns.admitted.satMedian}+`);
-                }
-                parts.push(natParts.join(' '));
-              }
-
-              if (parts.length > 1) historicalLines.push(parts.join('\n'));
-            } else {
-              // Fall back to basic stats when comparison data is insufficient
-              const natStats = nationalityContext?.nationality
-                ? await this.historicalService.getNationalityStats(
-                    school.id,
-                    nationalityContext.nationality,
-                  )
-                : null;
-              const dist = await this.historicalService.getSchoolDistribution(
-                school.id,
-              );
-              const parts = [`### ${school.name}`];
-              if (dist) {
-                const satMedian = dist.satValues.length
-                  ? dist.satValues.sort((a, b) => a - b)[
-                      Math.floor(dist.satValues.length / 2)
-                    ]
-                  : null;
-                if (satMedian)
-                  parts.push(`- Admitted SAT median: ${satMedian}`);
-              }
-              if (natStats && natStats.totalCases >= 3) {
-                parts.push(
-                  `- ${natStats.nationality} admit rate: ${natStats.admitRate.toFixed(1)}% (${natStats.admittedCases}/${natStats.totalCases})`,
-                );
-              }
-              if (parts.length > 1) historicalLines.push(parts.join('\n'));
-            }
-          } catch {
-            // Skip school if query fails
-          }
-        }
-      }
-      if (historicalLines.length > 0) {
-        const header =
-          locale === 'zh'
-            ? '\n\n## 历史录取数据（来自平台已验证案例，供参考）\n'
-            : '\n\n## Historical Admission Data (from verified platform cases, for reference)\n';
-        const footer =
-          locale === 'zh'
-            ? '\n\n使用以上数据时请：1. 对比录取者与拒绝者的 GPA/标化/活动差异 2. 在 reasons 中引用录取者画像的对比 3. 在 concerns 中指出与拒绝者画像的相似之处 4. 有国籍数据时按国籍分析\n历史数据仅供参考，不代表未来录取标准。'
-            : '\n\nWhen using this data: 1. Compare admitted vs rejected GPA/test scores/activity differences 2. In reasons[], cite how the student compares to admitted cohort 3. In concerns[], note where the student resembles rejected cohort 4. Segment by nationality when data is available\nHistorical data is for reference only.';
-        userPrompt += header + historicalLines.join('\n\n') + footer;
-      }
-    }
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
@@ -418,22 +244,27 @@ export class RecommendationService {
       const tokenUsed = this.estimateTokens(userPrompt + result);
 
       // Fuzzy-match schools in the database
-      const recommendations = await this.matchSchoolIds(
+      let recommendations = await this.matchSchoolIds(
         normalizedRecommendations,
       );
 
-      // Anchor LLM probability estimates using statistical model to prevent large deviations
-      await this.anchorProbabilities(profile, recommendations);
+      // Admission probability and tier have exactly one fact source. The LLM
+      // proposes candidates and prose, but the counselor preview owns the
+      // numeric/tier contract. Unknown, ambiguous, duplicate, or unscored
+      // schools are removed instead of leaking invented values to users.
+      recommendations = await this.applyCounselorPredictions(
+        userId,
+        recommendations,
+        locale,
+      );
+      if (recommendations.length === 0) {
+        throw new InternalServerErrorException(
+          'No uniquely matched schools with counselor predictions',
+        );
+      }
 
       // Enrich with essay prompt data
       await this.enrichWithEssayData(recommendations);
-
-      // Attach case comparison data to matched schools
-      for (const rec of recommendations) {
-        if (rec.schoolId && comparisonCache[rec.schoolId]) {
-          rec.caseComparison = comparisonCache[rec.schoolId];
-        }
-      }
 
       // Save results
       const savedRecommendation = await this.prisma.schoolRecommendation.create(
@@ -456,6 +287,23 @@ export class RecommendationService {
             },
             summary,
             tokenUsed,
+            events: {
+              create: recommendations.flatMap((recommendation, position) =>
+                recommendation.schoolId
+                  ? [
+                      {
+                        userId,
+                        schoolId: recommendation.schoolId,
+                        eventType: 'IMPRESSION' as const,
+                        position,
+                        metadata: {
+                          probabilitySource: 'counselor-preview',
+                        },
+                      },
+                    ]
+                  : [],
+              ),
+            },
           },
         },
       );
@@ -566,6 +414,105 @@ export class RecommendationService {
     };
   }
 
+  async getRecommendationMetrics(
+    userId: string,
+    recommendationId?: string,
+  ): Promise<RecommendationOutcomeMetrics> {
+    if (recommendationId) {
+      const recommendation = await this.prisma.schoolRecommendation.findFirst({
+        where: { id: recommendationId, userId },
+        select: { id: true },
+      });
+      if (!recommendation) {
+        throw new NotFoundException(ERR.NOT_FOUND.recommendation());
+      }
+    }
+
+    const eventWhere = recommendationId
+      ? { recommendationId, userId }
+      : { userId };
+    const retainedWhere = recommendationId
+      ? { userId, sourceRecommendationId: recommendationId }
+      : { userId, sourceRecommendationId: { not: null } };
+
+    const [grouped, retainedCount] = await Promise.all([
+      this.prisma.schoolRecommendationEvent.groupBy({
+        by: ['eventType'],
+        where: eventWhere,
+        _count: { _all: true },
+      }),
+      this.prisma.schoolListItem.count({
+        where: retainedWhere,
+      }),
+    ]);
+    const counts = new Map(
+      grouped.map((entry) => [entry.eventType, entry._count._all]),
+    );
+    const impressions = counts.get('IMPRESSION') ?? 0;
+    const added = counts.get('ADDED') ?? 0;
+    const removed = counts.get('REMOVED') ?? 0;
+    const applied = counts.get('APPLIED') ?? 0;
+    const insufficientSample = impressions < 30;
+
+    return {
+      scope: recommendationId ? 'recommendation' : 'user',
+      ...(recommendationId ? { recommendationId } : {}),
+      sampleSize: impressions,
+      insufficientSample,
+      counts: {
+        impressions,
+        added,
+        removed,
+        retained: retainedCount,
+        applied,
+      },
+      rates: {
+        addRate:
+          !insufficientSample && impressions > 0 ? added / impressions : null,
+        retentionRate:
+          !insufficientSample && added > 0 ? retainedCount / added : null,
+        applicationConversionRate:
+          !insufficientSample && impressions > 0 ? applied / impressions : null,
+      },
+    };
+  }
+
+  async recordApplied(
+    userId: string,
+    recommendationId: string,
+    schoolId: string,
+  ) {
+    const recommendation = await this.prisma.schoolRecommendation.findFirst({
+      where: { id: recommendationId, userId },
+      select: { recommendations: true },
+    });
+    if (
+      !recommendation ||
+      !recommendationContainsSchool(recommendation.recommendations, schoolId)
+    ) {
+      throw new NotFoundException(ERR.NOT_FOUND.recommendation());
+    }
+
+    await this.prisma.schoolRecommendationEvent.upsert({
+      where: {
+        recommendationId_schoolId_eventType: {
+          recommendationId,
+          schoolId,
+          eventType: 'APPLIED',
+        },
+      },
+      create: {
+        recommendationId,
+        userId,
+        schoolId,
+        eventType: 'APPLIED',
+        metadata: { source: 'user-confirmed' },
+      },
+      update: {},
+    });
+    return { recorded: true };
+  }
+
   // ============ Helper Methods ============
 
   private createProfileSnapshot(
@@ -624,93 +571,48 @@ export class RecommendationService {
     });
   }
 
-  /**
-   * Anchor LLM-generated estimatedProbability to the stats model baseline.
-   * Clamps each recommendation's probability within ±15pp of the statistical
-   * estimate so that rates converge with the Prediction module's output.
-   */
-  private async anchorProbabilities(
-    profile: RecommendationPromptProfile,
+  private async applyCounselorPredictions(
+    userId: string,
     recommendations: RecommendedSchoolDto[],
-  ): Promise<void> {
-    const matchedIds = recommendations
-      .filter((r) => r.schoolId)
-      .map((r) => r.schoolId!);
-    if (matchedIds.length === 0) return;
-
-    // governance: system-scope — School / EssayPrompt lookups — published institution data used to score a recommendation, no User relation
-    const schools = await this.prisma.school.findMany({
-      where: { id: { in: matchedIds } },
-      select: {
-        id: true,
-        acceptanceRate: true,
-        usNewsRank: true,
-        satAvg: true,
-        sat25: true,
-        sat75: true,
-        actAvg: true,
-        act25: true,
-        act75: true,
-        graduationRate: true,
-        retentionRate: true,
-        percentNeedMet: true,
-        metadata: true,
-        updatedAt: true,
-      },
-    });
-
-    const schoolMap = new Map(schools.map((s) => [s.id, s]));
-    const profileMetrics = extractProfileMetrics({
-      gpa: profile.gpa,
-      gpaScale: profile.gpaScale,
-      testScores: profile.testScores,
-      activities: profile.activities?.map((activity) => ({
-        category: activity.category,
-        role: activity.role ?? undefined,
-        hoursPerWeek: activity.hoursPerWeek,
-        weeksPerYear: activity.weeksPerYear,
-      })),
-      awards: profile.awards?.map((award) => ({
-        level: award.level,
-        competition: award.competition,
-      })),
-    });
-    const MAX_DEVIATION = 0.15;
-
-    for (const rec of recommendations) {
-      if (!rec.schoolId) continue;
-      const school = schoolMap.get(rec.schoolId);
-      if (!school) continue;
-
-      const schoolMetrics = extractSchoolMetrics({
-        acceptanceRate: getRecommendationMetricValue(school, 'acceptanceRate'),
-        usNewsRank: school.usNewsRank ?? undefined,
-        satAvg: getRecommendationMetricValue(school, 'satAvg'),
-        sat25: getRecommendationMetricValue(school, 'sat25'),
-        sat75: getRecommendationMetricValue(school, 'sat75'),
-        actAvg: getRecommendationMetricValue(school, 'actAvg'),
-        act25: getRecommendationMetricValue(school, 'act25'),
-        act75: getRecommendationMetricValue(school, 'act75'),
-        graduationRate: getRecommendationMetricValue(school, 'graduationRate'),
-      });
-
-      const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
-      const statsProb = calculateProbability(overallScore, schoolMetrics);
-
-      const llmProb = rec.estimatedProbability / 100;
-      const anchored = Math.max(
-        0,
-        Math.min(
-          1,
-          Math.max(
-            statsProb - MAX_DEVIATION,
-            Math.min(statsProb + MAX_DEVIATION, llmProb),
-          ),
-        ),
-      );
-
-      rec.estimatedProbability = Math.round(anchored * 100);
+    locale: string,
+  ): Promise<RecommendedSchoolDto[]> {
+    const unique = new Map<string, RecommendedSchoolDto>();
+    for (const recommendation of recommendations) {
+      if (recommendation.schoolId && !unique.has(recommendation.schoolId)) {
+        unique.set(recommendation.schoolId, recommendation);
+      }
     }
+    if (unique.size === 0) return [];
+
+    const preview = await this.predictionService.previewForUser(
+      userId,
+      [...unique.keys()],
+      {},
+      locale,
+    );
+    const predictions = new Map(
+      preview.results.map((result) => [result.schoolId, result]),
+    );
+
+    return [...unique.entries()].flatMap(([schoolId, recommendation]) => {
+      const prediction = predictions.get(schoolId);
+      if (
+        !prediction ||
+        prediction.probability == null ||
+        (prediction.tier !== 'reach' &&
+          prediction.tier !== 'match' &&
+          prediction.tier !== 'safety')
+      ) {
+        return [];
+      }
+      return [
+        {
+          ...recommendation,
+          tier: prediction.tier,
+          estimatedProbability: Math.round(prediction.probability * 100),
+        },
+      ];
+    });
   }
 
   /**
@@ -762,6 +664,7 @@ export class RecommendationService {
   ) {
     let best: (typeof candidates)[0] | undefined;
     let bestScore = 0;
+    let bestScoreCount = 0;
     const lower = name.toLowerCase();
 
     for (const s of candidates) {
@@ -781,10 +684,13 @@ export class RecommendationService {
       if (score > bestScore) {
         best = s;
         bestScore = score;
+        bestScoreCount = 1;
+      } else if (score > 0 && score === bestScore) {
+        bestScoreCount += 1;
       }
     }
 
-    return bestScore >= 60 ? best : undefined;
+    return bestScore >= 60 && bestScoreCount === 1 ? best : undefined;
   }
 
   private estimateTokens(text: string): number {
@@ -941,4 +847,20 @@ export class RecommendationService {
       },
     });
   }
+}
+
+function recommendationContainsSchool(
+  value: unknown,
+  schoolId: string,
+): boolean {
+  return (
+    Array.isArray(value) &&
+    value.some(
+      (entry) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        'schoolId' in entry &&
+        entry.schoolId === schoolId,
+    )
+  );
 }

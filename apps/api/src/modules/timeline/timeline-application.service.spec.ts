@@ -35,6 +35,13 @@ describe('TimelineApplicationService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    schoolListItem: {
+      findUnique: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+    schoolRecommendationEvent: {
+      upsert: jest.fn().mockResolvedValue({}),
+    },
     applicationTask: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -48,10 +55,18 @@ describe('TimelineApplicationService', () => {
     essayPrompt: {
       findMany: jest.fn().mockResolvedValue([]),
     },
-    $transaction: jest.fn(),
+    $transaction: jest.fn((operations: Promise<unknown>[]) =>
+      Promise.all(operations),
+    ),
   };
 
   beforeEach(async () => {
+    mockPrisma.schoolListItem.findUnique.mockResolvedValue(null);
+    mockPrisma.schoolListItem.findMany.mockResolvedValue([]);
+    mockPrisma.schoolRecommendationEvent.upsert.mockResolvedValue({});
+    mockPrisma.$transaction.mockImplementation(
+      (operations: Promise<unknown>[]) => Promise.all(operations),
+    );
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TimelineApplicationService,
@@ -92,6 +107,30 @@ describe('TimelineApplicationService', () => {
       expect(mockPrisma.applicationTimeline.create).toHaveBeenCalled();
     });
 
+    it('does not count an auto-created planning timeline as an application', async () => {
+      mockPrisma.school.findUnique.mockResolvedValue({
+        id: 'school-1',
+        name: 'MIT',
+        nameZh: '麻省理工',
+      });
+      mockPrisma.applicationTimeline.findUnique.mockResolvedValue(null);
+      mockPrisma.schoolListItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        sourceRecommendationId: 'rec-1',
+      });
+      mockPrisma.applicationTimeline.create.mockResolvedValue(mockTimeline);
+
+      await service.createTimeline('user-1', {
+        schoolId: 'school-1',
+        round: 'RD',
+      } as any);
+
+      expect(
+        mockPrisma.schoolRecommendationEvent.upsert,
+      ).not.toHaveBeenCalled();
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
     it('should throw NotFoundException when school not found', async () => {
       mockPrisma.school.findUnique.mockResolvedValue(null);
 
@@ -116,6 +155,57 @@ describe('TimelineApplicationService', () => {
           round: 'RD',
         } as any),
       ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('updateTimeline', () => {
+    it('records APPLIED atomically only when an attributed timeline is submitted', async () => {
+      mockPrisma.applicationTimeline.findFirst.mockResolvedValue(mockTimeline);
+      mockPrisma.applicationTimeline.update.mockResolvedValue({
+        ...mockTimeline,
+        status: 'SUBMITTED',
+      });
+      mockPrisma.schoolListItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        sourceRecommendationId: 'rec-1',
+      });
+
+      const result = await service.updateTimeline('user-1', 'tl-1', {
+        status: 'SUBMITTED',
+      } as any);
+
+      expect(result.status).toBe('SUBMITTED');
+      expect(mockPrisma.schoolRecommendationEvent.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            recommendationId: 'rec-1',
+            schoolId: 'school-1',
+            eventType: 'APPLIED',
+            metadata: { source: 'application-submitted' },
+          }),
+        }),
+      );
+      expect(mockPrisma.$transaction).toHaveBeenCalledWith([
+        expect.any(Promise),
+        expect.any(Promise),
+      ]);
+    });
+
+    it('does not record APPLIED while an attributed timeline is only in progress', async () => {
+      mockPrisma.applicationTimeline.findFirst.mockResolvedValue(mockTimeline);
+      mockPrisma.applicationTimeline.update.mockResolvedValue({
+        ...mockTimeline,
+        status: 'IN_PROGRESS',
+      });
+
+      await service.updateTimeline('user-1', 'tl-1', {
+        status: 'IN_PROGRESS',
+      } as any);
+
+      expect(mockPrisma.schoolListItem.findUnique).not.toHaveBeenCalled();
+      expect(
+        mockPrisma.schoolRecommendationEvent.upsert,
+      ).not.toHaveBeenCalled();
     });
   });
 

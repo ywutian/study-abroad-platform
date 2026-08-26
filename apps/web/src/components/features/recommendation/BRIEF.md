@@ -2,13 +2,10 @@
 
 ## Purpose
 
-AI recommendation result display components.
-
-## Key Files
-
-- `CaseComparisonSummary.tsx` — Expandable summary of admitted vs rejected cohort stats for a school recommendation
+AI recommendation result display components. Admission probability and tier are rendered from the Counselor Engine contract; historical individual Case comparisons are not part of this feature.
 
 ## Patterns
 
-- Imports `CaseComparison`, `CohortStats` types from `@study-abroad/shared`
-- Collapsible by default — expands to show detailed nationality subset breakdown
+- Components consume `RecommendedSchool` from `@study-abroad/shared`.
+- Do not add historical individual Case comparisons to recommendation cards.
+- Recommendation-origin actions carry recommendationId so backend metrics remain attributable.

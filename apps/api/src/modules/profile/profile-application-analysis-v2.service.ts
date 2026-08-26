@@ -17,10 +17,6 @@ import {
   RecourseGuidance,
   StrategyUncertainty,
 } from '../ai/ai.types';
-import {
-  CaseComparisonResult,
-  PredictionHistoricalService,
-} from '../prediction/prediction-historical.service';
 import { PredictionService } from '../prediction/prediction.service';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
 import {
@@ -198,7 +194,8 @@ export interface AnalysisSnapshot {
   focusSchools: LoadedSchoolListItem[];
   predictions: LoadedPrediction[];
   approvedEvidence: ApprovedPolicyEvidence[];
-  historyBySchool: Record<string, CaseComparisonResult | null>;
+  /** @deprecated Accepted only so stored/gold snapshots remain replayable. */
+  historyBySchool?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -215,7 +212,6 @@ export class ProfileApplicationAnalysisV2Service {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
     private readonly predictionService: PredictionService,
-    private readonly predictionHistoricalService: PredictionHistoricalService,
     private readonly llmService: LLMService,
     private readonly applicationAnalysisWorkflowService: ApplicationAnalysisWorkflowService,
   ) {}
@@ -742,7 +738,6 @@ export class ProfileApplicationAnalysisV2Service {
       const deterministic = buildDeterministicSchoolResult(
         policyEntry.item,
         predictionMap.get(policyEntry.schoolId),
-        snapshot.historyBySchool[policyEntry.schoolId] ?? null,
         analysisProfile,
         policyEntry.policyCard,
         snapshot.locale,
@@ -1246,7 +1241,7 @@ export class ProfileApplicationAnalysisV2Service {
       }
     }
 
-    const [predictions, approvedEvidence, historyResults] = await Promise.all([
+    const [predictions, approvedEvidence] = await Promise.all([
       profile
         ? this.loadPredictions(
             profile.id,
@@ -1256,18 +1251,6 @@ export class ProfileApplicationAnalysisV2Service {
       this.applicationAnalysisWorkflowService.listApprovedEvidenceBySchool(
         focusSchools.map((item) => item.schoolId),
       ),
-      profile
-        ? Promise.all(
-            focusSchools.map(async (item) => ({
-              schoolId: item.schoolId,
-              comparison:
-                await this.predictionHistoricalService.getCaseComparison(
-                  item.schoolId,
-                  profile.nationality ?? undefined,
-                ),
-            })),
-          )
-        : Promise.resolve([]),
     ]);
 
     return {
@@ -1280,9 +1263,6 @@ export class ProfileApplicationAnalysisV2Service {
       focusSchools,
       predictions,
       approvedEvidence,
-      historyBySchool: Object.fromEntries(
-        historyResults.map((entry) => [entry.schoolId, entry.comparison]),
-      ),
     };
   }
 
@@ -1734,10 +1714,7 @@ export function normalizeSchoolAnalysis(
         ensureStringArray(parsed.nextActions),
         deterministic.assessment.nextActions,
       ),
-      historicalSignals: mergeStringLists(
-        ensureStringArray(parsed.historicalSignals),
-        deterministic.assessment.historicalSignals,
-      ),
+      historicalSignals: deterministic.assessment.historicalSignals,
       hardStopRisks: mergeStringLists(
         ensureStringArray(parsed.hardStopRisks),
         deterministic.assessment.hardStopRisks,

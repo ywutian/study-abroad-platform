@@ -12,7 +12,6 @@ const SYNTHESIS_SCHEMA = `{
       "compensatingStrengths": ["string"],
       "topGaps": ["string"],
       "nextActions": ["string"],
-      "historicalSignals": ["string"],
       "hardStopRisks": ["string"]
     }
   ],
@@ -38,7 +37,7 @@ export function buildApplicationAnalysisSystemPrompt(locale: string): string {
 
 强制规则：
 1. 概率、学校难度、round 信息只能来自输入 evidence。
-2. 不得把历史均值或品牌名气当作“命运判断”。
+2. 不得引用或推断历史个案，也不得把品牌名气当作“命运判断”。
 3. 不得把国籍、助学金、first-gen、legacy 变成价值判断；这些只可作为申请约束与策略背景。
 4. 每条学校级判断都必须基于给定 evidence；证据不足时明确写 unknown 或提醒先补数据。
 5. 建议必须具体、分阶段、可执行，避免空泛鼓励。
@@ -50,7 +49,7 @@ ${SYNTHESIS_SCHEMA}`
 
 Hard rules:
 1. Probability, school difficulty, and round context must come only from the supplied evidence.
-2. Do not treat historical averages or brand prestige as destiny.
+2. Do not cite or infer historical individual cases, and do not treat brand prestige as destiny.
 3. Nationality, aid status, first-gen, and legacy are context constraints, not value judgments.
 4. Every school-level claim must be grounded in provided evidence. If evidence is insufficient, say unknown or ask for missing inputs.
 5. Recommendations must be concrete, phased, and actionable. Avoid generic encouragement.

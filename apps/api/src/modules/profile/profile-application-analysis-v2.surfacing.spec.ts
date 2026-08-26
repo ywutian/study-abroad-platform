@@ -67,6 +67,12 @@ describe('normalizeSchoolAnalysis — LLM surfaces over the deterministic floor'
     );
     // evidence is still gated to the allowed set
     expect(r.assessment.summary.length).toBeGreaterThan(0);
+    // Historical individual cases are outside the product methodology. Even a
+    // model-supplied signal must not cross the normalization boundary.
+    expect(r.assessment.historicalSignals).toEqual([]);
+    expect(r.assessment.historicalSignals).not.toContain(
+      richLlmSchool.historicalSignals[0],
+    );
   });
 
   it('falls back to the floor when the LLM is sparse/empty (degradation safety net)', () => {

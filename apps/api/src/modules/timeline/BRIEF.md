@@ -18,6 +18,7 @@ Application timeline management with per-school deadline tracking, task manageme
 - `PersonalEvent` — User-created events with deadline, eventDate, status, category
 - `PersonalTask` — Tasks within a personal event
 - `GlobalEvent` — Platform-wide events (exams, competitions, scholarships)
+- `SchoolRecommendationEvent` — When an attributed timeline transitions to SUBMITTED, APPLIED is recorded in the same transaction
 
 ## Dependencies
 
@@ -26,6 +27,7 @@ PrismaService | AI/LLM: No
 ## Business Rules
 
 - `generateTimelines` batch-creates timelines for multiple schools with auto-generated tasks
+- Timeline submission automatically closes recommendation attribution when the SchoolListItem has a sourceRecommendationId; auto-created planning timelines do not count as applications
 - Overview counts the current/future application cycle, not archived history
 - Global events can be subscribed to personal timeline
 - Personal events have statuses: NOT_STARTED, IN_PROGRESS, COMPLETED, CANCELLED

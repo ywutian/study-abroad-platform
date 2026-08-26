@@ -24,7 +24,6 @@ import type {
   SchoolIntlAidPolicy,
   SchoolRoundContext,
 } from '../ai/ai.types';
-import type { CaseComparisonResult } from '../prediction/prediction-historical.service';
 import { resolveEffectiveTier } from '../school-list/school-list.constants';
 
 export const MAX_FOCUS_SCHOOLS = 5;
@@ -442,7 +441,6 @@ export function buildPolicyCard(
 export function buildDeterministicSchoolResult(
   item: LoadedSchoolListItem,
   prediction: LoadedPrediction | undefined,
-  comparison: CaseComparisonResult | null,
   profile: LoadedProfile,
   policyCard: ApplicationAnalysisPolicyCard,
   locale: string,
@@ -457,7 +455,6 @@ export function buildDeterministicSchoolResult(
   const strengths = buildCompensatingStrengths(prediction, profile, locale);
   const topGaps = buildTopGaps(prediction, locale);
   const nextActions = buildNextActions(item, prediction, locale);
-  const historicalSignals = buildHistoricalSignals(comparison, locale);
   const hardStopRisks = buildHardStopRisks(
     item,
     prediction,
@@ -503,7 +500,9 @@ export function buildDeterministicSchoolResult(
       compensatingStrengths: strengths,
       topGaps,
       nextActions,
-      historicalSignals,
+      // Compatibility-only response field. Application analysis deliberately
+      // has no admission-Case input or fallback path.
+      historicalSignals: [],
       hardStopRisks,
     },
     evidenceIds,
@@ -1153,42 +1152,6 @@ function buildNextActions(
     );
   }
   return dedupeStrings(actions).slice(0, 4);
-}
-
-function buildHistoricalSignals(
-  comparison: CaseComparisonResult | null,
-  locale: string,
-): string[] {
-  const isZh = locale === 'zh';
-  if (!comparison) {
-    // No sufficient historical sample → emit no signals (the UI hides the whole
-    // section) instead of surfacing a "not enough cases" caveat.
-    return [];
-  }
-
-  const signals: string[] = [];
-  if (comparison.admitted.gpaMedian != null) {
-    signals.push(
-      isZh
-        ? `历史录取样本 GPA 中位数约为 ${comparison.admitted.gpaMedian.toFixed(2)}。`
-        : `The admitted-case median GPA is about ${comparison.admitted.gpaMedian.toFixed(2)}.`,
-    );
-  }
-  if (comparison.admitted.satMedian != null) {
-    signals.push(
-      isZh
-        ? `历史录取样本 SAT 中位数约为 ${comparison.admitted.satMedian}。`
-        : `The admitted-case median SAT is about ${comparison.admitted.satMedian}.`,
-    );
-  }
-  if (comparison.nationalitySubset?.nationality) {
-    signals.push(
-      isZh
-        ? `已纳入 ${comparison.nationalitySubset.nationality} 申请者子样本做对照。`
-        : `A nationality-specific subset for ${comparison.nationalitySubset.nationality} is available.`,
-    );
-  }
-  return signals.slice(0, 3);
 }
 
 function buildHardStopRisks(

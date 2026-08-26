@@ -11,7 +11,6 @@ import { useAddToSchoolList } from '@/hooks/use-recommendation';
 import type { RecommendationResult, RecommendedSchool } from '@study-abroad/shared';
 import { formatAcceptanceRate } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
-import { CaseComparisonSummary } from '@/components/features/recommendation/CaseComparisonSummary';
 
 const TIER_COLORS = {
   reach: 'bg-red-500/10 text-red-600 dark:text-red-400',
@@ -35,7 +34,11 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
   const handleAdd = (school: RecommendedSchool) => {
     if (!school.schoolId) return;
     addToList.mutate(
-      { schoolId: school.schoolId, tier: school.tier },
+      {
+        schoolId: school.schoolId,
+        tier: school.tier,
+        recommendationId: result.id,
+      },
       {
         onSuccess: () => toast.success(t('addedToList')),
       }
@@ -148,9 +151,6 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                       </span>
                     ))}
                   </div>
-                )}
-                {school.caseComparison && (
-                  <CaseComparisonSummary comparison={school.caseComparison} />
                 )}
               </CardContent>
             </Card>

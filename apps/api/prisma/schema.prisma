@@ -688,11 +688,12 @@ model User {
   mcpApiKeys McpApiKey[]
 
   // Recommendations (选校推荐)
-  schoolRecommendations  SchoolRecommendation[]
-  schoolCommunityRatings SchoolCommunityRating[]
-  predictionFeedback     PredictionFeedback[]
-  agentRuns              AgentRun[]
-  agentApprovals         AgentApproval[]
+  schoolRecommendations      SchoolRecommendation[]
+  schoolRecommendationEvents SchoolRecommendationEvent[]
+  schoolCommunityRatings     SchoolCommunityRating[]
+  predictionFeedback         PredictionFeedback[]
+  agentRuns                  AgentRun[]
+  agentApprovals             AgentApproval[]
 
   // Case views (案例查看记录)
   caseViews CaseView[]
@@ -1574,6 +1575,7 @@ model School {
   competitorPredictions             CompetitorPrediction[]
   staticTeacherSnapshots            StaticTeacherSnapshot[]
   distillationSchoolDailyAggregates DistillationSchoolDailyAggregate[]
+  recommendationEvents              SchoolRecommendationEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2598,13 +2600,16 @@ model SchoolListItem {
   schoolId String
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
-  tier            SchoolTier @default(TARGET)
+  tier                   SchoolTier                  @default(TARGET)
   // PREDICTED: `tier` is a placeholder; the effective tier is read live from
   // the latest PredictionResult. MANUAL: the user set `tier` explicitly and it wins.
-  tierSource      TierSource @default(PREDICTED)
-  notes           String?    @db.Text
-  round           String? // ED, EA, RD, etc.
-  isAIRecommended Boolean    @default(false)
+  tierSource             TierSource                  @default(PREDICTED)
+  notes                  String?                     @db.Text
+  round                  String? // ED, EA, RD, etc.
+  isAIRecommended        Boolean                     @default(false)
+  sourceRecommendationId String?
+  sourceRecommendation   SchoolRecommendation?       @relation(fields: [sourceRecommendationId], references: [id], onDelete: SetNull)
+  recommendationEvents   SchoolRecommendationEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2613,6 +2618,7 @@ model SchoolListItem {
   @@index([userId])
   @@index([tier])
   @@index([userId, tier])
+  @@index([sourceRecommendationId])
 }
 
 // ============================================
@@ -4660,22 +4666,52 @@ model SystemSetting {
 // School Recommendation (选校推荐)
 // ============================================
 
+enum SchoolRecommendationEventType {
+  IMPRESSION
+  ADDED
+  REMOVED
+  APPLIED
+}
+
 model SchoolRecommendation {
-  id              String  @id @default(cuid())
+  id              String                      @id @default(cuid())
   userId          String
-  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   profileSnapshot Json
   preferences     Json
   recommendations Json
   analysis        Json
-  summary         String? @db.Text
-  tokenUsed       Int     @default(0)
+  summary         String?                     @db.Text
+  tokenUsed       Int                         @default(0)
+  schoolListItems SchoolListItem[]
+  events          SchoolRecommendationEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([createdAt])
+}
+
+model SchoolRecommendationEvent {
+  id               String                        @id @default(cuid())
+  recommendationId String
+  recommendation   SchoolRecommendation          @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId         String
+  school           School                        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolListItemId String?
+  schoolListItem   SchoolListItem?               @relation(fields: [schoolListItemId], references: [id], onDelete: SetNull)
+  eventType        SchoolRecommendationEventType
+  position         Int?
+  metadata         Json?
+  createdAt        DateTime                      @default(now())
+
+  @@unique([recommendationId, schoolId, eventType])
+  @@index([userId, eventType, createdAt])
+  @@index([schoolId, eventType, createdAt])
+  @@index([schoolListItemId])
 }
 
 // ============================================
