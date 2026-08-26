@@ -122,7 +122,7 @@ Canonical structured application-analysis endpoint for web and mobile clients.
 
 Behavior:
 
-- Reads full profile context, school-list context, prediction snapshots, and historical comparison signals.
+- Reads full profile context, school-list context, current Counselor prediction snapshots, and source-backed school-policy evidence. It does not query Admission Case history.
 - Uses `SchoolListItem` as the canonical target-school source.
 - May refresh stale predictions for up to 5 focus schools before synthesis when profile or school-list evidence is newer than the stored prediction.
 - Keeps prediction as the single source of probability and school difficulty; the LLM layer synthesizes strategy only.
@@ -141,7 +141,7 @@ Response shape additions:
 - `meta.experimentalVersions[]`: currently enabled applicant-facing experiment summaries for `RECOURSE | UNCERTAINTY | FAIRNESS`
 - `profileContext`: applicant type, testing strategy, major direction, geography/high-school context
 - `portfolioAnalysis`: school-list balance, risk boundaries, missing rounds, missing prediction coverage
-- `targetSchoolInsights[]`: school-specific prediction snapshot, difficulty reasons, compensating strengths, top gaps, next actions, historical signals, hard-stop risks, `policyContext`
+- `targetSchoolInsights[]`: school-specific prediction snapshot, difficulty reasons, compensating strengths, top gaps, next actions, hard-stop risks, `policyContext`; deprecated `historicalSignals` is always an empty compatibility array and clients do not render it
 - `targetSchoolInsights[].policyContext`: `testingPolicy`, `intlAidPolicy`, `roundContext`, `policySourceQuality`
 - `targetSchoolInsights[].recourseGuidance`: capability-gated school-aware next moves with `goal`, `recommendedChanges[]`, `estimatedDirection`, `constraints`, `whyNotGuaranteed`
 - `targetSchoolInsights[].strategyUncertainty`: capability-gated strategy interval with `probabilityLow`, `probabilityHigh`, `intervalLabel`, `reasons[]`
@@ -234,6 +234,23 @@ Capability-gated runtime behavior:
 | PUT    | `/school-lists/:id`          | Required | Update list item          |
 | DELETE | `/school-lists/:id`          | Required | Remove from list          |
 | GET    | `/school-lists/ai-recommend` | Required | AI school recommendations |
+
+`POST /school-lists` accepts an optional `recommendationId`. When present, it must belong to the current user and contain the requested `schoolId`; the item and `ADDED` attribution event are created atomically.
+
+### Recommendations (`/recommendations`)
+
+| Method | Path                                             | Auth     | Description                                                 |
+| ------ | ------------------------------------------------ | -------- | ----------------------------------------------------------- |
+| POST   | `/recommendations`                               | Required | Generate school candidates; Counselor owns probability/tier |
+| GET    | `/recommendations/preflight`                     | Required | Check profile and points readiness                          |
+| GET    | `/recommendations/history`                       | Required | Get recommendation history                                  |
+| GET    | `/recommendations/metrics`                       | Required | Get user-level counts and low-sample-safe rates             |
+| GET    | `/recommendations/:id/metrics`                   | Required | Get one recommendation's outcome metrics                    |
+| POST   | `/recommendations/:id/schools/:schoolId/applied` | Required | Idempotently confirm an application                         |
+| GET    | `/recommendations/:id`                           | Required | Get one recommendation                                      |
+| DELETE | `/recommendations/:id`                           | Required | Delete one recommendation                                   |
+
+The OpenAI-compatible model proposes candidates and explanations only. The API rejects schools that cannot be uniquely matched or scored, then overwrites every probability and tier with `PredictionService.previewForUser`. Generation records `IMPRESSION`; attributed School List changes record `ADDED`/`REMOVED`; a timeline must reach `SUBMITTED` (or the explicit endpoint must be called) before `APPLIED` is recorded. Metrics always return counts and return `null` rates with `insufficientSample=true` below 30 school impressions.
 
 ## 7. Admission Cases (`/cases`)
 
@@ -562,7 +579,7 @@ Reviews, rankings, lists, swipe, verified ranking — 35+ endpoints. Includes:
 | Module         | Path                   | Endpoints | Description                                                                                                          |
 | -------------- | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
 | Assessment     | `/assessment`          | 4         | MBTI/Holland personality tests                                                                                       |
-| Recommendation | `/recommendation`      | 5         | AI school recommendations (25 pts)                                                                                   |
+| Recommendation | `/recommendations`     | 8         | Case-independent AI school recommendations and attributable outcome metrics (25 pts)                                 |
 | Timeline       | `/timelines`           | 21        | Cycle-aware application timelines; responses include Fall-entry `applicationYear` and archived records are read-only |
 | Swipe          | `/hall/swipe`          | 4         | Case prediction game (via Hall controller)                                                                           |
 | Notification   | `/notifications`       | 6         | Push notifications                                                                                                   |

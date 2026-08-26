@@ -226,7 +226,7 @@
 | FR-003, NFR-003        | `recommendation.service.ts`、`school-list.service.ts`、PredictionModule wiring                       | LLM 仅提出候选与文案；推荐概率/档位和 School List AI 分类统一调用 Counselor preview；preview 无结果时失败，不使用 LLM/旧公式兜底                      | 无                                                                 |
 | FR-005–FR-007          | Prisma schema/migration、recommendation/school-list/timeline services/controllers、Shared/Web routes | 原子记录 IMPRESSION/ADDED/REMOVED；仅时间线转为 SUBMITTED 或用户明确确认才幂等记录 APPLIED；提供用户级与单推荐指标，少于 30 个学校曝光时 rate 为 null | 无真实流量，当前只能验证采集与计算正确性，不能宣称业务命中率       |
 | NFR-001, NFR-002       | additive migration、可选 DTO 字段、事件 metadata 白名单                                              | 旧客户端不传 recommendationId 仍可用；事件不保存 Prompt、Case、用户材料或 Provider 凭据                                                               | 无                                                                 |
-| NFR-004                | 单元/模块/浏览器/跨端/全仓门禁、`core-ai-alignment-acceptance.ts`                                    | 全仓测试、类型、格式、路由、治理和数据库迁移验证通过；生产 Runner 只输出脱敏计数、单向用户哈希和稳定原因码，并在 finally 中清理合成账户               | Linux 视觉基线由 PR CI 最终确认                                    |
+| NFR-004                | 单元/模块/浏览器/跨端/全仓门禁、`core-ai-alignment-acceptance.ts`                                    | 全仓测试、类型、格式、路由、治理和数据库迁移验证通过；生产 Runner 只输出脱敏计数、单向用户哈希和稳定原因码，并在 finally 中清理合成账户               | Linux 视觉基线已使用 PR CI 产出的 actual artifact 更新             |
 
 <!-- section:verification -->
 
@@ -250,7 +250,7 @@
 - 生产验收合同：`pnpm core-ai:acceptance --production` 强制绑定预期 Revision，串行验证真实 Provider 推荐、Counselor 覆盖、低样本抑制、ADDED/RETAINED/APPLIED 归因、无 Case 申请分析和账户清理；未带 `--production` 时拒绝运行。
 - 质量债务净改善：API 超大文件 overage -219 行、Shared -1338 行；显式 `any` -3，均锁入 only-down baseline。
 - 清理结果：macOS 临时视觉快照已删除；临时迁移数据库将在提交前删除；未使用真实用户数据。
-- 剩余风险：生产真实 Provider、迁移、Linux 视觉基线和合成账户清理需在合并部署后验证；无真实用户流量，因此不宣称采纳率或录取准确率。
+- 剩余风险：生产真实 Provider、生产迁移和合成账户清理需在合并部署后验证；Linux 视觉基线已从 PR CI actual artifact 更新；无真实用户流量，因此不宣称采纳率或录取准确率。
 
 <!-- section:release-decision -->
 

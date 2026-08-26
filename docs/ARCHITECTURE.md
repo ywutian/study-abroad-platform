@@ -1,6 +1,6 @@
 # Study Abroad Platform — Architecture Document
 
-> Last updated: 2026-03-10
+> Last updated: 2026-08-26
 > Status: Living document — update on every architectural change
 
 ---
@@ -625,9 +625,10 @@ or conversation identifiers.
 - **EssayPromptAudit** — Essay prompt audit trail (essayPromptId, changes, changedBy)
 - **SystemSetting** — System configuration (key: String PK, value, description, category)
 
-#### Recommendation & Views (2 models)
+#### Recommendation & Views (3 models)
 
 - **SchoolRecommendation** — AI school recommendation results (userId, profileSnapshot, preferences, recommendations, analysis, summary, tokenUsed)
+- **SchoolRecommendationEvent** — Idempotent school-level recommendation attribution (`IMPRESSION`, `ADDED`, `REMOVED`, `APPLIED`), keyed by recommendation + school + event type. Events retain only entity IDs, position, an allowlisted metadata object, and timestamps.
 - **CaseView** — Case view tracking (userId, caseId; `@@unique([userId, caseId])`)
 
 #### Vault (1 model)
@@ -695,7 +696,7 @@ All routes prefixed with `/api/v1/`. Health endpoints excluded.
 Runtime chain:
 
 1. `ProfileController` delegates directly to `ProfileApplicationAnalysisService`.
-2. The service loads the full profile, `SchoolListItem` records, current prediction snapshots, and historical case-comparison signals.
+2. The service loads the full profile, `SchoolListItem` records, current Counselor prediction snapshots, and source-backed school-policy evidence. Admission Case history is not read by this flow.
 3. It selects at most 5 focus schools using this order:
    - schools with explicit round first
    - then `REACH` → `TARGET` → `SAFETY`
@@ -712,7 +713,7 @@ Guardrails:
 
 - `SchoolListItem` is the single source of target-school truth.
 - Prediction is the single source of probability/tier truth.
-- Historical evidence is contextual support, not a destiny score.
+- Admission Case history is not a prediction or application-analysis input. Deprecated `historicalSignals` response arrays remain empty for stored-contract compatibility and are not rendered by clients.
 - The frontend must consume the structured contract and must not parse markdown or free-form text for profile analysis.
 - School testing / aid / round policy must be rendered from `targetSchoolInsights[].policyContext`; clients must not re-derive school policy ad hoc.
 - applicant runtime never consumes `DRAFT / CANDIDATE / SHADOW` application-analysis policies. Only `ACTIVE` is user-visible.
@@ -801,6 +802,23 @@ Runtime rules:
 | PUT    | /:id          | Yes  | Update list item   |
 | DELETE | /:id          | Yes  | Remove from list   |
 | GET    | /ai-recommend | Yes  | AI recommendations |
+
+When `POST /school-lists` receives an optional `recommendationId`, the service verifies that the recommendation belongs to the authenticated user and contains the selected school. It then creates the list item and its `ADDED` attribution event in one transaction.
+
+#### Recommendations (`/recommendations`)
+
+| Method | Path                           | Auth | Description                                                 |
+| ------ | ------------------------------ | ---- | ----------------------------------------------------------- |
+| POST   | /                              | Yes  | Generate candidates; Counselor owns probability and tier    |
+| GET    | /preflight                     | Yes  | Check profile/points readiness                              |
+| GET    | /history                       | Yes  | Get recommendation history                                  |
+| GET    | /metrics                       | Yes  | Get user-level attribution counts and low-sample-safe rates |
+| GET    | /:id/metrics                   | Yes  | Get one recommendation's attribution metrics                |
+| POST   | /:id/schools/:schoolId/applied | Yes  | Idempotent explicit application confirmation                |
+| GET    | /:id                           | Yes  | Get one recommendation                                      |
+| DELETE | /:id                           | Yes  | Delete one recommendation                                   |
+
+The LLM proposes candidate schools and prose only. Unknown, ambiguous, duplicate, or unscored schools are rejected. `PredictionService.previewForUser` is the sole probability/tier source. Recommendation creation records `IMPRESSION`; School List changes record `ADDED`/`REMOVED`; only a timeline transition to `SUBMITTED` or explicit confirmation records `APPLIED`.
 
 #### Hall (`/hall`)
 
