@@ -43,12 +43,27 @@ describe('AgentHarnessAdminController', () => {
       }),
       acknowledgeAlert: jest.fn().mockResolvedValue(undefined),
     };
+    const semanticSyntheticAccounts = {
+      cleanup: jest.fn().mockResolvedValue({
+        cleaned: true,
+        userHash: 'abc123',
+        refreshTokensRevoked: 1,
+        cleared: { memories: 0, conversations: 1, entities: 0 },
+      }),
+    };
     const controller = new AgentHarnessAdminController(
       harnessOperations as any,
       alerts as any,
       prisma as any,
+      semanticSyntheticAccounts as any,
     );
-    return { controller, prisma, harnessOperations, alerts };
+    return {
+      controller,
+      prisma,
+      harnessOperations,
+      alerts,
+      semanticSyntheticAccounts,
+    };
   };
 
   it('binds a one-shot grant to the authenticated admin and target user', async () => {
@@ -70,6 +85,24 @@ describe('AgentHarnessAdminController', () => {
       scenario: 'budget_exhaustion',
       maxTokens: 1000,
       maxDurationMs: 10000,
+    });
+  });
+
+  it('delegates synthetic cleanup with the authenticated admin identity', async () => {
+    const { controller, semanticSyntheticAccounts } = createController();
+
+    await controller.cleanupSemanticSyntheticAccount(
+      { id: 'admin-1' },
+      {
+        targetUserId: 'synthetic-1',
+        expectedEmail: 'agent-semantic-20260825010101-r1-s1@example.invalid',
+      },
+    );
+
+    expect(semanticSyntheticAccounts.cleanup).toHaveBeenCalledWith({
+      adminId: 'admin-1',
+      targetUserId: 'synthetic-1',
+      expectedEmail: 'agent-semantic-20260825010101-r1-s1@example.invalid',
     });
   });
 

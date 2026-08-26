@@ -17,6 +17,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { AgentHarnessOperationsService } from '../core/agent-harness-operations.service';
 import type { HarnessAcceptanceScenario } from '../core/agent-harness-operations.service';
 import { AlertChannelService } from '../infrastructure/alerting/alert-channel.service';
+import { AgentSemanticSyntheticAccountService } from './agent-semantic-synthetic-account.service';
 
 class CreateHarnessAcceptanceGrantDto {
   @IsString()
@@ -45,6 +46,16 @@ class AcknowledgeHarnessAlertDto {
   notes?: string;
 }
 
+class CleanupSemanticSyntheticAccountDto {
+  @IsString()
+  @MaxLength(200)
+  targetUserId: string;
+
+  @IsString()
+  @MaxLength(320)
+  expectedEmail: string;
+}
+
 @ApiTags('ai-agent-harness-admin')
 @ApiBearerAuth()
 @ThrottleRelaxed()
@@ -56,6 +67,7 @@ export class AgentHarnessAdminController {
     private readonly harnessOperations: AgentHarnessOperationsService,
     private readonly alerts: AlertChannelService,
     private readonly prisma: PrismaService,
+    private readonly semanticSyntheticAccounts: AgentSemanticSyntheticAccountService,
   ) {}
 
   @Post('acceptance-grants')
@@ -81,6 +93,21 @@ export class AgentHarnessAdminController {
   })
   getEvidence(@Query('days') days = 7) {
     return this.harnessOperations.getEvidence(Number(days) || 7);
+  }
+
+  @Post('semantic-synthetic-cleanup')
+  @ApiOperation({
+    summary: 'Clean one strictly scoped semantic-evaluation synthetic account',
+  })
+  cleanupSemanticSyntheticAccount(
+    @CurrentUser() admin: { id: string },
+    @Body() body: CleanupSemanticSyntheticAccountDto,
+  ) {
+    return this.semanticSyntheticAccounts.cleanup({
+      adminId: admin.id,
+      targetUserId: body.targetUserId,
+      expectedEmail: body.expectedEmail,
+    });
   }
 
   @Get('alerts')

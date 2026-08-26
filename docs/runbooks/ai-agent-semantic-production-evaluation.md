@@ -41,6 +41,16 @@ wait
 - `cleanupFailed=false`
 - `pass=true`
 
+Runner 在注册后取得仅存于进程内存的轮换 Refresh Token；Access Token 过期时自动刷新并
+重试原请求，清理路径也使用同一机制。Token 不进入 capture、summary、日志或仓库。
+`refreshCount` 只记录数值，用于证明长测确实跨越并恢复了令牌过期边界。
+
+若进程异常退出导致自助清理无法完成，管理员只能调用 Harness 下严格限域的
+`POST /admin/ai-agent/harness/semantic-synthetic-cleanup`。请求必须同时提供数据库 User ID
+与完全匹配 `agent-semantic-<14位时间>-r<1..10>-s<1..99>@example.invalid` 的邮箱；服务端
+再次核对数据库记录、撤销 Refresh Token、清理 AI 数据、匿名化账号并写脱敏审计。任何
+普通邮箱、错配 ID、关闭验收开关或竞态变化均默认拒绝。
+
 不要在终端打印 capture 文件。
 
 ## 2. 生成去身份盲审包

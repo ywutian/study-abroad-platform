@@ -57,16 +57,23 @@ const stamp = new Date()
   .replace(/[-:.TZ]/g, '')
   .slice(0, 14);
 let token = '';
+let refreshToken = '';
 let userId = '';
 let password = '';
 let accountCount = 0;
 let cleanupCount = 0;
 let cleanupFailed = false;
+let refreshCount = 0;
 const items: SemanticCaptureItem[] = [];
 
-async function request(
+async function rawRequest(
   path: string,
-  options: { method?: string; body?: unknown } = {},
+  options: {
+    method?: string;
+    body?: unknown;
+    authenticated?: boolean;
+    headers?: Record<string, string>;
+  } = {},
 ) {
   const response = await fetch(`${apiBase}${path}`, {
     method: options.method ?? 'GET',
@@ -74,7 +81,10 @@ async function request(
       ...(options.body === undefined
         ? {}
         : { 'content-type': 'application/json' }),
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      ...(options.authenticated !== false && token
+        ? { authorization: `Bearer ${token}` }
+        : {}),
+      ...options.headers,
     },
     ...(options.body === undefined
       ? {}
@@ -92,6 +102,47 @@ async function request(
     status: response.status,
     payload: unwrapAcceptancePayload(payload),
   };
+}
+
+async function refreshSyntheticSession(): Promise<boolean> {
+  if (!refreshToken) return false;
+  const refreshed = await rawRequest('/auth/refresh', {
+    method: 'POST',
+    authenticated: false,
+    headers: { 'x-client-type': 'mobile' },
+    body: { refreshToken },
+  });
+  if (
+    !refreshed.ok ||
+    typeof refreshed.payload?.accessToken !== 'string' ||
+    typeof refreshed.payload?.refreshToken !== 'string'
+  ) {
+    return false;
+  }
+  token = refreshed.payload.accessToken;
+  refreshToken = refreshed.payload.refreshToken;
+  refreshCount += 1;
+  return true;
+}
+
+async function request(
+  path: string,
+  options: {
+    method?: string;
+    body?: unknown;
+    authenticated?: boolean;
+    headers?: Record<string, string>;
+  } = {},
+) {
+  const response = await rawRequest(path, options);
+  if (
+    response.status === 401 &&
+    options.authenticated !== false &&
+    (await refreshSyntheticSession())
+  ) {
+    return rawRequest(path, options);
+  }
+  return response;
 }
 
 async function writeCapture(complete: boolean): Promise<void> {
@@ -137,6 +188,21 @@ async function createSyntheticAccount(): Promise<void> {
   }
   token = String(registration.payload.accessToken);
   userId = String(registration.payload.user.id);
+  const login = await rawRequest('/auth/login', {
+    method: 'POST',
+    authenticated: false,
+    headers: { 'x-client-type': 'mobile' },
+    body: { email, password },
+  });
+  if (
+    !login.ok ||
+    typeof login.payload?.accessToken !== 'string' ||
+    typeof login.payload?.refreshToken !== 'string'
+  ) {
+    throw new Error(`semantic_login_${login.status}`);
+  }
+  token = login.payload.accessToken;
+  refreshToken = login.payload.refreshToken;
 }
 
 async function retireSyntheticAccount(): Promise<void> {
@@ -150,6 +216,7 @@ async function retireSyntheticAccount(): Promise<void> {
   cleanupCount += 1;
   cleanupFailed ||= !aiDataCleared || !accountSoftDeleted;
   token = '';
+  refreshToken = '';
   userId = '';
   password = '';
   if (!aiDataCleared || !accountSoftDeleted) {
@@ -175,6 +242,12 @@ async function captureCase(index: number): Promise<void> {
       }),
     });
     const text = await response.text();
+    if (response.status === 401 && attempt < 4) {
+      if (!(await refreshSyntheticSession())) {
+        throw new Error(`capture_refresh_failed_case_${index + 1}`);
+      }
+      continue;
+    }
     if (response.status === 429 && attempt < 4) {
       const retryAfter = Math.max(
         Number(response.headers.get('retry-after') ?? 60),
@@ -246,6 +319,7 @@ async function cleanup(): Promise<void> {
       accountCount,
       cleanupCount,
       cleanupFailed,
+      refreshCount,
       pass:
         items.length === AGENT_SEMANTIC_EVAL_CASES.length &&
         cleanupCount === accountCount &&
