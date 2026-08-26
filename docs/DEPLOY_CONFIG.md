@@ -17,6 +17,7 @@ workflow"_. The shared values kept drifting because nothing tied them together.
 | `artifactRegistry`                   | `study-abroad/api`                              | every `…-docker.pkg.dev/$PROJECT/<here>` image     |
 | `regionSecret`                       | `GCP_REGION`                                    | every `--region` (via `${{ secrets.GCP_REGION }}`) |
 | `projectSecret`                      | `GCP_PROJECT_ID`                                | project id                                         |
+| `llm.provider` / `model` / `baseUrl` | `openai` / `gpt-4o-mini` / official OpenAI API  | production and staging Agent/domain LLM calls      |
 | `services.prod` / `services.staging` | `study-abroad-api` / `study-abroad-api-staging` | `gcloud run deploy` target                         |
 
 Deploy workflows (`ci.yml`, `deploy-staging.yml`, `preview.yml`,
@@ -31,6 +32,9 @@ inline value matches the canonical source, so they can no longer diverge.
 - the VPC connector name matches `vpcConnector`,
 - the Artifact Registry image matches `artifactRegistry`,
 - the region comes from `${{ secrets.GCP_REGION }}` — **never a hardcoded region**.
+- production and staging use the canonical Provider, model, and Base URL as an
+  atomic set, so the shared `openai-api-key` secret cannot be paired with a
+  different third-party gateway by deploy drift.
 - the production image digest is attested and verified against the source commit
   and signer workflow before both migration and Cloud Run deployment.
 

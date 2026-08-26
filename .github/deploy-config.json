@@ -4,6 +4,11 @@
   "artifactRegistry": "study-abroad/api",
   "regionSecret": "GCP_REGION",
   "projectSecret": "GCP_PROJECT_ID",
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "baseUrl": "https://api.openai.com/v1"
+  },
   "services": {
     "prod": "study-abroad-api",
     "staging": "study-abroad-api-staging"

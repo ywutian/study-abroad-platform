@@ -25,4 +25,10 @@ export async function prove(): Promise<void> {
     (s) => s.replace('PUSH_OUTPUT=$(docker push', 'PUSH_OUTPUT=$(docker image ls'),
     () => expectFired(runGate('check-deploy-config-drift.ts'), 'capture the immutable digest')
   );
+
+  await withPatchedFile(
+    '.github/workflows/ci.yml',
+    (s) => s.replace('https://api.openai.com/v1', 'https://other-provider.example/v1'),
+    () => expectFired(runGate('check-deploy-config-drift.ts'), 'canonical LLM setting')
+  );
 }

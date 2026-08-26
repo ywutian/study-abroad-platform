@@ -28,6 +28,11 @@ const CONFIG = JSON.parse(
   artifactRegistry: string;
   regionSecret: string;
   projectSecret: string;
+  llm: {
+    provider: string;
+    model: string;
+    baseUrl: string;
+  };
 };
 
 // Hardcoded GCP region literals that should come from the secret instead.
@@ -69,6 +74,32 @@ function main() {
       errors.push(
         `${rel}: hardcoded region in "${hr[0].trim()}" — use \${{ secrets.${CONFIG.regionSecret} }}`
       );
+    }
+  }
+
+  // Production and staging share one Provider credential. Keep provider,
+  // endpoint, and model atomic so a key for one service cannot silently be
+  // mounted against another OpenAI-compatible gateway.
+  for (const workflowName of ['ci.yml', 'deploy-staging.yml']) {
+    const workflowPath = path.join(WF_DIR, workflowName);
+    const text = fs.readFileSync(workflowPath, 'utf8');
+    const expected = [
+      `LLM_PROVIDER=${CONFIG.llm.provider}`,
+      `OPENAI_MODEL=${CONFIG.llm.model}`,
+      `OPENAI_BASE_URL=${CONFIG.llm.baseUrl}`,
+    ];
+    for (const setting of expected) {
+      if (!text.includes(setting)) {
+        errors.push(`${workflowName}: missing canonical LLM setting "${setting}"`);
+      }
+    }
+    for (const key of ['LLM_PROVIDER', 'OPENAI_MODEL', 'OPENAI_BASE_URL']) {
+      const values = [...text.matchAll(new RegExp(`${key}=([^|,\\s"]+)`, 'g'))].map(
+        (match) => match[1]
+      );
+      if (new Set(values).size > 1) {
+        errors.push(`${workflowName}: ${key} has conflicting deploy values`);
+      }
     }
   }
 
