@@ -1,6 +1,7 @@
 import { AgentType } from '@study-abroad/shared';
 import { AGENT_SKILL_EVAL_CASES } from '../skills/agent-skill-eval.dataset';
 import { ADDITIONAL_QUALITY_SCENARIOS } from './agent-semantic-eval.catalog';
+import { AGENTIC_SECURITY_SCENARIOS } from './agent-semantic-security.catalog';
 import type {
   SemanticEvalCase,
   SemanticEvalCategory,
@@ -442,6 +443,7 @@ export const SEMANTIC_SCENARIOS: SemanticScenario[] = [
   ...SKILL_SCENARIOS,
   ...QUALITY_SCENARIOS,
   ...ADDITIONAL_QUALITY_SCENARIOS,
+  ...AGENTIC_SECURITY_SCENARIOS,
 ];
 
 export const AGENT_SEMANTIC_EVAL_CASES: SemanticEvalCase[] =
@@ -486,8 +488,8 @@ export const AGENT_SEMANTIC_EVAL_CASES: SemanticEvalCase[] =
     })),
   );
 
-if (SEMANTIC_SCENARIOS.length * SEMANTIC_EVAL_VARIANTS_PER_SCENARIO !== 240) {
+if (SEMANTIC_SCENARIOS.length * SEMANTIC_EVAL_VARIANTS_PER_SCENARIO !== 280) {
   throw new Error(
-    `${SEMANTIC_EVAL_DATASET_VERSION} must contain exactly 240 cases`,
+    `${SEMANTIC_EVAL_DATASET_VERSION} must contain exactly 280 cases`,
   );
 }

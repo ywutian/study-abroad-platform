@@ -65,7 +65,14 @@ This ADR records the decision and its invariants so it stops recurring. See also
    Pre-push runs `pnpm install --frozen-lockfile` (Step 0) so a drifted lockfile
    fails _before_ the push, the same way CI and Vercel fail.
 
-5. **No blanket `pnpm dedupe`.** The lockfile currently has ~30 dedup-able
+5. **GitHub Actions use immutable commits.** Every external `uses:` reference
+   is pinned to a 40-character commit SHA; the release label remains as a YAML
+   comment for review context. `pnpm lint:dep-pins` scans every workflow and
+   rejects branches, tags, and floating refs such as `master`. Dependabot may
+   propose SHA updates, but a release workflow never changes upstream code
+   without a repository commit and review.
+
+6. **No blanket `pnpm dedupe`.** The lockfile currently has ~30 dedup-able
    transitive duplicates. Running `pnpm dedupe` to "clean" them is itself a large,
    risky resolution change — precisely the kind of broad dependency churn that
    causes "passes CI, fails on Vercel." We guard the _contested_ packages
@@ -81,6 +88,8 @@ This ADR records the decision and its invariants so it stops recurring. See also
 - **Positive** — local == CI == Vercel == Docker on Node 20 and on lockfile
   state. The "passes locally, fails on Vercel" class is closed at the pre-push
   boundary.
+- **Positive** — third-party workflow code is immutable for a given repository
+  commit, including image scanners and deployment authentication actions.
 - **Neutral** — a legitimate version change now requires editing
   `scripts/check-dep-pins.ts` _and_ this ADR in the same PR. That friction is the
   point: version changes become explicit and reviewed.
@@ -92,6 +101,8 @@ This ADR records the decision and its invariants so it stops recurring. See also
 
 - `pnpm lint:dep-pins` passes on the intended state (`zod {3,4}`) and was
   proven to fail when the expected major set is violated (negative test, 2026-06-21).
+- The same command rejects every external workflow action whose ref is not an
+  exact 40-character commit SHA (added 2026-08-25).
 - `pnpm install --frozen-lockfile` passes on the committed lockfile.
 - `engines.node` change is warn-only (`.npmrc` has no `engine-strict`), so it
   cannot block installs on a contributor's machine — it only steers Vercel/CI.

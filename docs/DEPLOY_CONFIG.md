@@ -31,6 +31,8 @@ inline value matches the canonical source, so they can no longer diverge.
 - the VPC connector name matches `vpcConnector`,
 - the Artifact Registry image matches `artifactRegistry`,
 - the region comes from `${{ secrets.GCP_REGION }}` — **never a hardcoded region**.
+- the production image digest is attested and verified against the source commit
+  and signer workflow before both migration and Cloud Run deployment.
 
 Read-only over the YAML — zero deploy risk, runs locally.
 
@@ -224,6 +226,12 @@ in pre-push, and in CI.
 `lint:ai-agent-doc-facts` independently derives the Agent and ToolName counts
 from source, checks ToolName/ToolMetadata exhaustiveness, and fails if the module
 BRIEF or AI architecture keeps a stale count.
+
+The production image is promoted by Artifact Registry digest. CI creates a
+keyless GitHub SLSA provenance attestation after push, verifies its repository,
+signer workflow, source commit and digest, and only then runs migrations and
+`gcloud run deploy` with `IMAGE@sha256:...`. The short-SHA and `latest` tags are
+discovery aliases, not deployment identities.
 
 The post-promote closure is not complete until the stable URL is healthy, the
 live Cron Registry matches the generated manifest, Cloud Scheduler is synced,

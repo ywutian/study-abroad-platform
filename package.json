@@ -56,6 +56,8 @@
     "harness:acceptance": "pnpm --filter api harness:acceptance --",
     "harness:benchmark": "pnpm --filter api harness:benchmark --",
     "harness:semantic-eval": "pnpm --filter api harness:semantic-eval --",
+    "harness:semantic-capture": "pnpm --filter api harness:semantic-capture --",
+    "harness:semantic-review-packet": "pnpm --filter api harness:semantic-review-packet --",
     "school-facts:verify": "pnpm --filter api verify:school-facts",
     "system:accuracy-audit": "tsx scripts/audit/run-system-accuracy-audit.ts",
     "lint:drift": "tsx scripts/check-drift.ts",
@@ -73,6 +75,7 @@
     "lint:deploy-drift": "tsx scripts/check-deploy-config-drift.ts",
     "lint:ai-agent-env-docs": "node scripts/check-ai-agent-env-docs.mjs",
     "lint:ai-agent-doc-facts": "node scripts/check-ai-agent-doc-facts.mjs",
+    "lint:ai-agent-enterprise-controls": "node scripts/check-ai-agent-enterprise-controls.mjs",
     "lint:cron-manifest": "tsx scripts/check-cron-manifest.ts",
     "lint:seed-parity": "tsx scripts/check-seed-pipeline-parity.ts",
     "lint:seed-freshness": "tsx scripts/check-seed-data-freshness.ts",
@@ -81,7 +84,7 @@
     "churn:report": "tsx scripts/churn-report.ts",
     "git:dashboard": "tsx scripts/git-dashboard.ts",
     "lint:dead-code": "knip",
-    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes:test && pnpm lint:routes && pnpm lint:closure && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys && pnpm lint:coverage-ratchet && pnpm lint:any-ratchet && pnpm lint:file-size && pnpm lint:gate-proofs && pnpm lint:audit-gate && pnpm lint:dep-pins && pnpm lint:deploy-drift && pnpm lint:ai-agent-env-docs && pnpm lint:ai-agent-doc-facts && pnpm lint:cron-manifest && pnpm lint:seed-parity && pnpm lint:seed-freshness && pnpm lint:deletion-promise && pnpm lint:e2e-runner && pnpm lint:orphan-userid && pnpm format:check",
+    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes:test && pnpm lint:routes && pnpm lint:closure && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys && pnpm lint:coverage-ratchet && pnpm lint:any-ratchet && pnpm lint:file-size && pnpm lint:gate-proofs && pnpm lint:audit-gate && pnpm lint:dep-pins && pnpm lint:deploy-drift && pnpm lint:ai-agent-env-docs && pnpm lint:ai-agent-doc-facts && pnpm lint:ai-agent-enterprise-controls && pnpm lint:cron-manifest && pnpm lint:seed-parity && pnpm lint:seed-freshness && pnpm lint:deletion-promise && pnpm lint:e2e-runner && pnpm lint:orphan-userid && pnpm format:check",
     "check": "pnpm lint:all && pnpm test",
     "preflight": "pnpm --filter api db:generate && pnpm lint:all && pnpm test",
     "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test",
@@ -205,6 +208,7 @@
       "postcss": ">=8.5.18",
       "sharp": ">=0.35.0",
       "@opentelemetry/propagator-jaeger": ">=2.9.0",
+      "urllib@<=2.44.0": "2.44.1",
       "nanoid@>=3.0.0 <3.3.18": ">=3.3.18 <4"
     },
     "auditConfig": {

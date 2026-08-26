@@ -13,4 +13,10 @@ export async function prove(): Promise<void> {
     (s) => s.replace('study-abroad-connector', 'some-other-connector'),
     () => expectFired(runGate('check-deploy-config-drift.ts'))
   );
+
+  await withPatchedFile(
+    '.github/workflows/ci.yml',
+    (s) => s.replace('gh attestation verify', 'gh attestation inspect'),
+    () => expectFired(runGate('check-deploy-config-drift.ts'), 'verify signed provenance')
+  );
 }

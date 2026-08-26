@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-08-25",
+  "controls": [
+    {
+      "id": "GOV-01",
+      "framework": "NIST AI RMF Govern/Map; ISO/IEC 42001",
+      "control": "AI system scope, authority boundary, risks and accountable roles are versioned.",
+      "ownerRole": "Product and AI owner",
+      "status": "documented",
+      "customerLaunchBlocker": false,
+      "evidence": ["docs/AI_AGENT_ENTERPRISE_STANDARD.md", "docs/architecture/ai-system.md"],
+      "verification": "Run pnpm lint:ai-agent-enterprise-controls and review the risk register quarterly.",
+      "failureAction": "Block permission expansion and open an architecture decision before release.",
+      "reviewCadence": "Quarterly and before any new tool/provider/permission",
+      "nextAction": "Assign named organizational owners when the first employee or external operator is added."
+    },
+    {
+      "id": "SEC-01",
+      "framework": "OWASP Agentic Top 10",
+      "control": "Unknown tools and policy failures deny by default; writes require scoped approval.",
+      "ownerRole": "AI platform owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "apps/api/src/modules/ai-agent/core/tool-policy.service.ts",
+        "apps/api/src/modules/ai-agent/core/tool-policy.service.spec.ts"
+      ],
+      "verification": "Unit and production synthetic approval recovery tests pass.",
+      "failureAction": "Disable AI_AGENT_HARNESS_V1 or roll back the Cloud Run revision.",
+      "reviewCadence": "Every release"
+    },
+    {
+      "id": "SEC-02",
+      "framework": "NIST AI 600-1; OWASP improper output handling",
+      "control": "Output moderation failure replaces unverified output, emits durable evidence and a critical alert.",
+      "ownerRole": "AI platform owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "apps/api/src/modules/ai-agent/core/assistant-output-safety.service.ts",
+        "apps/api/src/modules/ai-agent/core/assistant-output-safety.service.spec.ts",
+        "apps/api/src/modules/ai-agent/core/orchestrator.service.ts"
+      ],
+      "verification": "Inject moderation failure and assert raw output is neither persisted nor returned.",
+      "failureAction": "Roll back and keep the safe response path enabled.",
+      "reviewCadence": "Every release"
+    },
+    {
+      "id": "SEC-03",
+      "framework": "OWASP Agentic Top 10",
+      "control": "Every named Agentic Top 10 risk has frozen adversarial regression cases.",
+      "ownerRole": "AI evaluation owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "apps/api/src/modules/ai-agent/semantic-eval/agent-semantic-security.catalog.ts",
+        "docs/reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md"
+      ],
+      "verification": "Semantic dataset validation requires at least five cases per risk and all negative controls reject.",
+      "failureAction": "Fail CI and do not publish the affected Agent configuration.",
+      "reviewCadence": "Every release and after every stable failure cluster"
+    },
+    {
+      "id": "PRV-01",
+      "framework": "NIST AI RMF privacy-enhanced; data minimization",
+      "control": "Evaluation and production acceptance use synthetic data and persist only hashed or aggregate evidence.",
+      "ownerRole": "Privacy and AI owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "docs/runbooks/ai-agent-harness-acceptance.md",
+        "apps/api/src/modules/ai-agent/semantic-eval/agent-semantic-eval.ts"
+      ],
+      "verification": "Secret scan passes and sanitized reports contain no prompt, response, tool arguments or reviewer notes.",
+      "failureAction": "Delete the artifact, rotate exposed credentials and open a privacy incident.",
+      "reviewCadence": "Every evidence capture"
+    },
+    {
+      "id": "EVA-01",
+      "framework": "NIST AI RMF Measure; OpenAI evaluation guidance",
+      "control": "Frozen typical, edge and adversarial corpus has deterministic hard gates and calibrated negative controls.",
+      "ownerRole": "AI evaluation owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "apps/api/src/modules/ai-agent/semantic-eval/agent-semantic-eval.ts",
+        "docs/reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md"
+      ],
+      "verification": "pnpm harness:semantic-eval passes the frozen version and reports 735/735 rejected negative controls.",
+      "failureAction": "Fail CI and investigate the dataset, grader or changed behavior.",
+      "reviewCadence": "Every release"
+    },
+    {
+      "id": "EVA-02",
+      "framework": "NIST AI RMF Measure/Manage",
+      "control": "Deployed-model outputs are identity-blinded and independently reviewed before production quality claims.",
+      "ownerRole": "AI evaluation owner",
+      "status": "evidence_pending",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "docs/AI_AGENT_EVALUATION_RUBRIC.md",
+        "docs/reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md",
+        "docs/runbooks/ai-agent-semantic-production-evaluation.md",
+        "apps/api/src/modules/ai-agent/semantic-eval/agent-semantic-blind-review.ts"
+      ],
+      "verification": "A full production_agent submission reports independentReviewRate=1 and passes all gates.",
+      "failureAction": "Do not make a production-quality claim; keep failures as regression cases.",
+      "reviewCadence": "Before customer launch and after model/config changes",
+      "nextAction": "Capture the frozen v2 corpus from the deployed Agent and complete a separate blind review."
+    },
+    {
+      "id": "REL-01",
+      "framework": "Google Cloud reliability pillar",
+      "control": "AI availability, latency, error, safety and budget objectives have indicators, alerts and rollback actions.",
+      "ownerRole": "Platform reliability owner",
+      "status": "documented",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "docs/runbooks/ai-agent-slo-incident-response.md",
+        "apps/api/src/modules/ai-agent/infrastructure/observability/metrics.service.ts"
+      ],
+      "verification": "Review the rolling 28-day scorecard and exercise one alert acknowledgement each release.",
+      "failureAction": "Stop releases on exhausted error budget; disable Harness or roll back when a hard safety SLI fails.",
+      "reviewCadence": "Weekly and every release",
+      "nextAction": "Collect 28 days of real traffic before converting provisional objectives into contractual SLOs."
+    },
+    {
+      "id": "REL-02",
+      "framework": "Google Cloud reliability pillar",
+      "control": "Backups and point-in-time recovery are verified by an isolated restore drill with measured RPO/RTO.",
+      "ownerRole": "Platform reliability owner",
+      "status": "external_action_required",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "docs/runbooks/cloud-sql-restore-drill.md",
+        ".github/workflows/cloud-sql-restore-drill.yml"
+      ],
+      "verification": "Authorized workflow run restores to an isolated target, validates data and deletes the target.",
+      "failureAction": "Block customer launch and repair backup/PITR configuration before retest.",
+      "reviewCadence": "Quarterly and after database topology changes",
+      "nextAction": "Run the destructive-capable restore workflow only after explicit target-specific authorization."
+    },
+    {
+      "id": "SUP-01",
+      "framework": "OpenSSF Scorecard pinned dependencies",
+      "control": "Every external GitHub Action is pinned to an immutable commit SHA.",
+      "ownerRole": "Platform security owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        "scripts/check-dep-pins.ts",
+        ".github/workflows/ci.yml",
+        "docs/adr/0021-dependency-version-pinning.md"
+      ],
+      "verification": "pnpm lint:dep-pins rejects any floating external Action reference.",
+      "failureAction": "Fail CI and pin the reviewed upstream commit.",
+      "reviewCadence": "Every dependency update"
+    },
+    {
+      "id": "SUP-02",
+      "framework": "SLSA v1.2; CycloneDX",
+      "control": "The production artifact has an SBOM; signed build provenance is verified before deployment.",
+      "ownerRole": "Platform security owner",
+      "status": "enforced",
+      "customerLaunchBlocker": true,
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "scripts/check-dep-pins.ts",
+        "docs/SECURITY_DEPS.md"
+      ],
+      "verification": "Verify image digest, provenance signature, builder identity and expected source commit before Cloud Run deploy.",
+      "failureAction": "Do not deploy an unsigned or mismatched image.",
+      "reviewCadence": "Every production release"
+    },
+    {
+      "id": "IAM-01",
+      "framework": "Google Cloud least privilege",
+      "control": "Runtime and deployment identities are separate and runtime has only required resource permissions.",
+      "ownerRole": "Cloud security owner",
+      "status": "external_action_required",
+      "customerLaunchBlocker": true,
+      "evidence": ["docs/DEPLOY_CONFIG.md", ".github/workflows/ci.yml"],
+      "verification": "Cloud Run describes a dedicated runtime service account and deployment preflight verifies it.",
+      "failureAction": "Block customer launch until runtime identity and IAM policy are corrected.",
+      "reviewCadence": "Quarterly and after permission changes",
+      "nextAction": "Create/approve a dedicated runtime service account and explicitly configure Cloud Run to use it."
+    },
+    {
+      "id": "INC-01",
+      "framework": "NIST AI RMF Manage; Google Cloud reliability learning",
+      "control": "AI safety and reliability incidents have severity, containment, evidence, recovery and regression closure.",
+      "ownerRole": "Incident commander",
+      "status": "documented",
+      "customerLaunchBlocker": false,
+      "evidence": [
+        "docs/runbooks/ai-agent-slo-incident-response.md",
+        "docs/runbooks/ai-agent-harness-acceptance.md"
+      ],
+      "verification": "Run a tabletop exercise and verify alert acknowledgement, rollback and regression-case creation.",
+      "failureAction": "Keep the incident open until owner, timeline, root cause, corrective test and recurrence guard exist.",
+      "reviewCadence": "Twice yearly and after every SEV-1/SEV-2",
+      "nextAction": "Complete the first tabletop exercise before customer launch."
+    }
+  ]
+}

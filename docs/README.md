@@ -70,13 +70,14 @@
 
 ### arc42 S8: 横切关注点 — AI 系统
 
-| 文档                                                             | 说明                                                        |
-| ---------------------------------------------------------------- | ----------------------------------------------------------- |
-| [AI System Architecture](architecture/ai-system.md)              | AI Agent、Harness、工具权限、Run 与声明式 Skills 架构事实源 |
-| [ARCHITECTURE.md](ARCHITECTURE.md)                               | 平台总体架构中的 AI Agent 视图                              |
-| [AI_AGENT_MEMORY_SYSTEM_SPEC.md](AI_AGENT_MEMORY_SYSTEM_SPEC.md) | AI Agent 记忆系统规范                                       |
-| [AI_AGENT_SKILLS_EVOLUTION.md](AI_AGENT_SKILLS_EVOLUTION.md)     | 声明式 Skills、评测、直接发布和自动回滚边界                 |
-| [AI_AGENT_EVALUATION_RUBRIC.md](AI_AGENT_EVALUATION_RUBRIC.md)   | AI Agent 功能与输出评估 Rubric                              |
+| 文档                                                               | 说明                                                        |
+| ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| [AI System Architecture](architecture/ai-system.md)                | AI Agent、Harness、工具权限、Run 与声明式 Skills 架构事实源 |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                                 | 平台总体架构中的 AI Agent 视图                              |
+| [AI_AGENT_MEMORY_SYSTEM_SPEC.md](AI_AGENT_MEMORY_SYSTEM_SPEC.md)   | AI Agent 记忆系统规范                                       |
+| [AI_AGENT_SKILLS_EVOLUTION.md](AI_AGENT_SKILLS_EVOLUTION.md)       | 声明式 Skills、评测、直接发布和自动回滚边界                 |
+| [AI_AGENT_EVALUATION_RUBRIC.md](AI_AGENT_EVALUATION_RUBRIC.md)     | AI Agent 功能与输出评估 Rubric                              |
+| [AI_AGENT_ENTERPRISE_STANDARD.md](AI_AGENT_ENTERPRISE_STANDARD.md) | AI 治理控制、证据状态与客户上线阻断项                       |
 
 ### arc42 S9: 运维与部署
 
@@ -87,9 +88,12 @@
 | [RUNBOOK.md](RUNBOOK.md)                                                                         | 运维排障手册                                       |
 | [AI Agent Harness production acceptance](runbooks/ai-agent-harness-acceptance.md)                | 合成生产验收、脱敏证据、告警与回滚闭环             |
 | [Cloud SQL restore drill](runbooks/cloud-sql-restore-drill.md)                                   | 只读恢复准备与经授权的隔离恢复流程                 |
+| [AI Agent SLO and incident response](runbooks/ai-agent-slo-incident-response.md)                 | 临时 SLO、安全硬门禁、事故与发布回滚闭环           |
+| [AI Agent production semantic evaluation](runbooks/ai-agent-semantic-production-evaluation.md)   | 生产合成采样、候选盲化、独立 Codex 评审与清理闭环  |
 | [AI Agent Harness production closure](reports/AI_AGENT_HARNESS_PRODUCTION_CLOSURE_2026-08-24.md) | 2026-08-24 首次生产上线不可变证据                  |
 | [AI Agent Harness evaluation v2](reports/AI_AGENT_HARNESS_EVALUATION_V2_2026-08-24.md)           | 120 fixture × 3 次的确定性架构评测、成本与证据边界 |
-| [AI Agent semantic evaluation v1](reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md)         | 240 条均衡语义语料、610 个反例校准与脱敏评分门禁   |
+| [AI Agent semantic evaluation v2](reports/AI_AGENT_SEMANTIC_EVALUATION_V2_2026-08-25.md)         | 280 条语义语料、OWASP Top 10、735 个反例与脱敏门禁 |
+| [AI Agent semantic evaluation v1](reports/AI_AGENT_SEMANTIC_EVALUATION_V1_2026-08-24.md)         | 不可变历史基线                                     |
 | [积分系统开放 Runbook](runbooks/points-economy-launch.md)                                        | 积分系统双闸门开放、验证与回滚流程                 |
 | [ENV_TEMPLATE.md](../ENV_TEMPLATE.md)                                                            | 环境变量说明                                       |
 

@@ -78,6 +78,10 @@ before reaching for an ignore entry.
    (requires `osv-scanner` on PATH — `brew install osv-scanner` locally).
 4. Add a brief comment on the override if the reason isn't obvious.
 
+Current runtime floor includes `urllib@<=2.44.0 → 2.44.1` for
+`GHSA-hq3h-g68c-hp78`; `ali-oss` is the transitive consumer. The patched release
+stops credential-bearing request headers from crossing origins on redirects.
+
 ## When an override genuinely can't be applied (`auditConfig.ignoreGhsas`)
 
 Last resort, **not** a substitute for an override. Only when ALL of:
@@ -127,6 +131,9 @@ for contested packages is recorded in
   fails the guard with an actionable message.
 - To change a pin: edit `scripts/check-dep-pins.ts` **and** ADR-0021 in the same
   PR. The lockfile is downstream of a recorded decision, not the source of truth.
+- Every external GitHub Action is also fixed to an immutable 40-character commit
+  SHA. Floating tags and branches fail the same gate; the readable release label
+  is kept in a YAML comment beside the SHA.
 
 Do **not** "clean up" the lockfile with a blanket `pnpm dedupe` — it's a large,
 risky resolution change (the "passes CI, fails on Vercel" class). Guard the
@@ -138,6 +145,17 @@ contested packages, not the whole tree.
 bumps are intentionally ignored** (they need manual migration). When a high CVE
 only has a fix in a major version, handle it manually: upgrade + migrate in a
 dedicated PR, or apply a scoped override as a stopgap and open a follow-up.
+
+## Production image provenance
+
+The production workflow reads the pushed Artifact Registry image digest,
+generates a keyless GitHub build-provenance attestation, and immediately verifies
+the repository, signer workflow, source commit, and digest. Database migrations
+and Cloud Run deployment then use `IMAGE@sha256:...`, never the mutable short-SHA
+or `latest` tag. A missing or mismatched attestation fails before a new Revision
+is created. This complements the CycloneDX SBOM and Trivy image scan: the SBOM
+describes contents, while signed provenance binds the deployed bytes to the
+reviewed source and workflow.
 
 ## Moderate / low
 

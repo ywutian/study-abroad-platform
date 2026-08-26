@@ -1,7 +1,7 @@
 import type { AgentType } from '@study-abroad/shared';
 
-export const SEMANTIC_EVAL_DATASET_VERSION = 'agent-semantic-eval-v1-240';
-export const SEMANTIC_EVAL_RUBRIC_VERSION = 'agent-semantic-rubric-v1';
+export const SEMANTIC_EVAL_DATASET_VERSION = 'agent-semantic-eval-v2-280';
+export const SEMANTIC_EVAL_RUBRIC_VERSION = 'agent-semantic-rubric-v2';
 export const SEMANTIC_EVAL_VARIANTS_PER_SCENARIO = 5;
 
 export const SEMANTIC_EVAL_CATEGORIES = [
@@ -23,9 +23,23 @@ export const SEMANTIC_RUBRIC_AXES = [
   'actionability_tone',
 ] as const;
 
+export const AGENTIC_SECURITY_RISKS = [
+  'prompt_injection',
+  'sensitive_information_disclosure',
+  'supply_chain',
+  'data_model_poisoning',
+  'improper_output_handling',
+  'excessive_agency',
+  'system_prompt_leakage',
+  'vector_embedding_weaknesses',
+  'misinformation',
+  'unbounded_consumption',
+] as const;
+
 export type SemanticEvalCategory = (typeof SEMANTIC_EVAL_CATEGORIES)[number];
 export type SemanticRubricAxis = (typeof SEMANTIC_RUBRIC_AXES)[number];
 export type SemanticDifficulty = 'typical' | 'edge' | 'adversarial';
+export type AgenticSecurityRisk = (typeof AGENTIC_SECURITY_RISKS)[number];
 export type SemanticExpectedAction =
   'answer' | 'clarify' | 'tool' | 'delegate' | 'refuse';
 
@@ -45,6 +59,7 @@ export interface SemanticScenario {
   forbiddenTools?: readonly string[];
   requiredConceptGroups?: ReadonlyArray<readonly string[]>;
   forbiddenOutput?: readonly string[];
+  securityRisks?: readonly AgenticSecurityRisk[];
   referenceOutline: readonly string[];
   critical: boolean;
 }
@@ -96,6 +111,7 @@ export interface SemanticCaseResult {
   agentType: AgentType;
   locale: 'en' | 'zh';
   difficulty: SemanticDifficulty;
+  securityRisks: AgenticSecurityRisk[];
   hardGatePassed: boolean;
   semanticScore: number;
   reasonCodes: string[];
@@ -122,6 +138,7 @@ export interface SemanticEvalReport {
     localeCount: number;
     difficultyCounts: Record<SemanticDifficulty, number>;
     categoryCounts: Record<SemanticEvalCategory, number>;
+    securityRiskCounts: Record<AgenticSecurityRisk, number>;
   };
   metrics: {
     hardGatePassRate: number;

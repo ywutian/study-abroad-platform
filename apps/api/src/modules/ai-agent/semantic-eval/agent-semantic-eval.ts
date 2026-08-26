@@ -6,6 +6,7 @@ import {
 } from './agent-semantic-eval.dataset';
 import type {
   SemanticCaseResult,
+  AgenticSecurityRisk,
   SemanticDifficulty,
   SemanticEvalCase,
   SemanticEvalCategory,
@@ -14,6 +15,7 @@ import type {
   SemanticSubmissionItem,
 } from './agent-semantic-eval.types';
 import {
+  AGENTIC_SECURITY_RISKS,
   SEMANTIC_EVAL_CATEGORIES,
   SEMANTIC_EVAL_DATASET_VERSION,
   SEMANTIC_EVAL_RUBRIC_VERSION,
@@ -46,6 +48,12 @@ function emptyDifficultyRecord(): Record<SemanticDifficulty, number> {
   return { typical: 0, edge: 0, adversarial: 0 };
 }
 
+function emptySecurityRiskRecord(): Record<AgenticSecurityRisk, number> {
+  return Object.fromEntries(
+    AGENTIC_SECURITY_RISKS.map((risk) => [risk, 0]),
+  ) as Record<AgenticSecurityRisk, number>;
+}
+
 export function validateSemanticEvalDataset(): string[] {
   const failures: string[] = [];
   const ids = new Set<string>();
@@ -54,6 +62,7 @@ export function validateSemanticEvalDataset(): string[] {
   const locales = new Set<'en' | 'zh'>();
   const categories = new Set<SemanticEvalCategory>();
   const difficulties = new Set<SemanticDifficulty>();
+  const securityRiskCounts = emptySecurityRiskRecord();
 
   for (const item of AGENT_SEMANTIC_EVAL_CASES) {
     if (ids.has(item.id)) failures.push(`DUPLICATE_CASE_ID:${item.id}`);
@@ -63,6 +72,7 @@ export function validateSemanticEvalDataset(): string[] {
     locales.add(item.locale);
     categories.add(item.category);
     difficulties.add(item.difficulty);
+    for (const risk of item.securityRisks ?? []) securityRiskCounts[risk] += 1;
     const weight = Object.values(item.rubricWeights).reduce(
       (sum, value) => sum + value,
       0,
@@ -74,16 +84,19 @@ export function validateSemanticEvalDataset(): string[] {
       failures.push(`INVALID_PROVENANCE:${item.id}`);
     }
   }
-  if (AGENT_SEMANTIC_EVAL_CASES.length !== 240)
-    failures.push('CASE_COUNT_NOT_240');
-  if (SEMANTIC_SCENARIOS.length !== 48 || scenarios.size !== 48)
-    failures.push('SCENARIO_COUNT_NOT_48');
+  if (AGENT_SEMANTIC_EVAL_CASES.length !== 280)
+    failures.push('CASE_COUNT_NOT_280');
+  if (SEMANTIC_SCENARIOS.length !== 56 || scenarios.size !== 56)
+    failures.push('SCENARIO_COUNT_NOT_56');
   if (agents.size !== Object.values(AgentType).length)
     failures.push('AGENT_COVERAGE_INCOMPLETE');
   if (locales.size !== 2) failures.push('LOCALE_COVERAGE_INCOMPLETE');
   if (categories.size !== SEMANTIC_EVAL_CATEGORIES.length)
     failures.push('CATEGORY_COVERAGE_INCOMPLETE');
   if (difficulties.size !== 3) failures.push('DIFFICULTY_COVERAGE_INCOMPLETE');
+  for (const [risk, count] of Object.entries(securityRiskCounts)) {
+    if (count < 5) failures.push(`SECURITY_RISK_COVERAGE_BELOW_5:${risk}`);
+  }
   return failures;
 }
 
@@ -187,6 +200,7 @@ export function evaluateSemanticSubmission(
       agentType: evalCase.agentType,
       locale: evalCase.locale,
       difficulty: evalCase.difficulty,
+      securityRisks: [...(evalCase.securityRisks ?? [])],
       hardGatePassed: reasonCodes.length === 0,
       semanticScore: semanticScore(evalCase, item),
       reasonCodes: [
@@ -208,10 +222,12 @@ export function evaluateSemanticSubmission(
     {} as Record<SemanticEvalCategory, number[]>,
   );
   const difficultyCounts = emptyDifficultyRecord();
+  const securityRiskCounts = emptySecurityRiskRecord();
   for (const result of results) {
     categoryCounts[result.category] += 1;
     categoryValues[result.category].push(result.semanticScore);
     difficultyCounts[result.difficulty] += 1;
+    for (const risk of result.securityRisks) securityRiskCounts[risk] += 1;
   }
   const categoryScores = Object.fromEntries(
     SEMANTIC_EVAL_CATEGORIES.map((category) => [
@@ -275,6 +291,7 @@ export function evaluateSemanticSubmission(
         .size,
       difficultyCounts,
       categoryCounts,
+      securityRiskCounts,
     },
     metrics: {
       hardGatePassRate,

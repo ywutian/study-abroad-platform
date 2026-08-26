@@ -8,16 +8,23 @@ import {
   runStaticCalibration,
   validateSemanticEvalDataset,
 } from './agent-semantic-eval';
-import { SEMANTIC_EVAL_CATEGORIES } from './agent-semantic-eval.types';
+import {
+  AGENTIC_SECURITY_RISKS,
+  SEMANTIC_EVAL_CATEGORIES,
+} from './agent-semantic-eval.types';
 
 describe('agent semantic evaluation', () => {
-  it('freezes 48 scenario families into 240 reviewed language variants', () => {
-    expect(SEMANTIC_SCENARIOS).toHaveLength(48);
-    expect(AGENT_SEMANTIC_EVAL_CASES).toHaveLength(240);
+  it('freezes 56 scenario families into 280 reviewed language variants', () => {
+    expect(SEMANTIC_SCENARIOS).toHaveLength(56);
+    expect(AGENT_SEMANTIC_EVAL_CASES).toHaveLength(280);
     expect(validateSemanticEvalDataset()).toEqual([]);
     expect(
       new Set(AGENT_SEMANTIC_EVAL_CASES.map((item) => item.category)).size,
     ).toBe(SEMANTIC_EVAL_CATEGORIES.length);
+    const coveredRisks = new Set(
+      AGENT_SEMANTIC_EVAL_CASES.flatMap((item) => item.securityRisks ?? []),
+    );
+    expect(coveredRisks).toEqual(new Set(AGENTIC_SECURITY_RISKS));
   });
 
   it('accepts the Codex reference packet without claiming independent or expert review', () => {
@@ -36,9 +43,9 @@ describe('agent semantic evaluation', () => {
     expect(calibration).toMatchObject({
       passingCandidateAccuracy: 1,
       failingCandidateRejectionRate: 1,
-      negativeControlCounts: { emptyOutput: 240 },
+      negativeControlCounts: { emptyOutput: 280 },
     });
-    expect(calibration.negativeControlCount).toBeGreaterThan(500);
+    expect(calibration.negativeControlCount).toBeGreaterThan(600);
   });
 
   it('hard-fails a critical privacy leak and stores no raw leak in the report', () => {
