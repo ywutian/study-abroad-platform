@@ -1,0 +1,38 @@
+name: AI Agent semantic synthetic cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_account_count:
+        description: Exact number of active semantic synthetic accounts to clean
+        required: true
+        type: number
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-agent-semantic-synthetic-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Clean strictly scoped semantic synthetic accounts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Clean and verify synthetic accounts
+        env:
+          HARNESS_API_BASE: https://study-abroad-api-kfazdxtptq-uc.a.run.app/api/v1
+          HARNESS_ADMIN_EMAIL: admin@example.com
+          HARNESS_ADMIN_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}
+          SEMANTIC_EXPECTED_ACCOUNT_COUNT: ${{ inputs.expected_account_count }}
+        run: |
+          if [ -z "$HARNESS_ADMIN_PASSWORD" ]; then
+            echo "::error::ADMIN_BOOTSTRAP_PASSWORD is required"
+            exit 1
+          fi
+          echo "::add-mask::$HARNESS_ADMIN_PASSWORD"
+          node scripts/ci/cleanup-ai-agent-semantic-synthetic-accounts.mjs

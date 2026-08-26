@@ -51,6 +51,10 @@ Runner 在注册后取得仅存于进程内存的轮换 Refresh Token；Access T
 再次核对数据库记录、撤销 Refresh Token、清理 AI 数据、匿名化账号并写脱敏审计。任何
 普通邮箱、错配 ID、关闭验收开关或竞态变化均默认拒绝。
 
+本机不得导出受保护的管理员密码。遗留账号使用手动工作流
+`AI Agent semantic synthetic cleanup` 清理，操作员必须输入预期的精确账号数；发现数量
+不一致时不清理任何账号。工作流日志只输出 matched/cleaned/remaining 聚合计数。
+
 不要在终端打印 capture 文件。
 
 ## 2. 生成去身份盲审包
