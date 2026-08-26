@@ -19,20 +19,25 @@ const AGENT_TYPES = [
 
 const WRITE_TOOL_NAMES = [
   ToolName.UPDATE_PROFILE,
-  ToolName.REVIEW_ESSAY,
-  ToolName.POLISH_ESSAY,
-  ToolName.BRAINSTORM_IDEAS,
-  ToolName.RECOMMEND_SCHOOLS,
-  ToolName.ANALYZE_ADMISSION_CHANCE,
   ToolName.CREATE_PERSONAL_EVENT,
-  ToolName.REVIEW_RESUME,
-  ToolName.OPTIMIZE_RESUME_BULLETS,
-  ToolName.SUGGEST_RESUME_CONTENT,
 ] as const;
 
 const EXTERNAL_TOOL_NAMES = [
   ToolName.WEB_SEARCH,
   ToolName.SEARCH_SCHOOL_WEBSITE,
+] as const;
+
+const AGENT_SCOPE_TOOL_NAMES = [
+  ToolName.GET_RESUME_DETAILS,
+  ToolName.REVIEW_RESUME,
+  ToolName.OPTIMIZE_RESUME_BULLETS,
+  ToolName.SUGGEST_RESUME_CONTENT,
+  ToolName.GET_ESSAYS,
+  ToolName.REVIEW_ESSAY,
+  ToolName.RECOMMEND_SCHOOLS,
+  ToolName.ANALYZE_ADMISSION_CHANCE,
+  ToolName.GET_PROFILE,
+  ToolName.SEARCH_CASES,
 ] as const;
 
 const SAFE_TOOL_NAMES = BENCHMARK_PRODUCTION_TOOL_NAMES.filter(
@@ -314,9 +319,11 @@ function permissionFixture(index: number): BenchmarkFixture {
     );
     harnessMode = 'advisory';
   } else if (index < 14) {
+    const scopeIndex =
+      index - WRITE_TOOL_NAMES.length - EXTERNAL_TOOL_NAMES.length;
     call = toolCall(
       `permission-agent-scope-${index + 1}`,
-      SAFE_TOOL_NAMES[index % SAFE_TOOL_NAMES.length],
+      AGENT_SCOPE_TOOL_NAMES[scopeIndex % AGENT_SCOPE_TOOL_NAMES.length],
       index + 400,
     );
     authorizedToolNames = [];

@@ -31,7 +31,13 @@ describe('ToolPolicyService', () => {
   });
 
   it('allows read and generate tools in advisory mode', () => {
-    for (const toolName of [ToolName.GET_PROFILE, ToolName.GENERATE_OUTLINE]) {
+    for (const toolName of [
+      ToolName.GET_PROFILE,
+      ToolName.GENERATE_OUTLINE,
+      ToolName.REVIEW_ESSAY,
+      ToolName.RECOMMEND_SCHOOLS,
+      ToolName.REVIEW_RESUME,
+    ]) {
       expect(
         service.evaluate({
           toolName,
@@ -45,11 +51,7 @@ describe('ToolPolicyService', () => {
   });
 
   it('denies write and external effects in advisory mode', () => {
-    for (const toolName of [
-      ToolName.UPDATE_PROFILE,
-      ToolName.REVIEW_ESSAY,
-      ToolName.WEB_SEARCH,
-    ]) {
+    for (const toolName of [ToolName.UPDATE_PROFILE, ToolName.WEB_SEARCH]) {
       expect(
         service.evaluate({
           toolName,

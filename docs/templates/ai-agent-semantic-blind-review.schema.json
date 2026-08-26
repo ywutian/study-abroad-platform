@@ -11,10 +11,16 @@
     "items"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "datasetVersion": { "const": "agent-semantic-eval-v2-280" },
-    "rubricVersion": { "const": "agent-semantic-rubric-v2" },
-    "candidateIdentitySeen": { "const": false },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "datasetVersion": {
+      "type": "string",
+      "const": "agent-semantic-eval-v2-280"
+    },
+    "rubricVersion": {
+      "type": "string",
+      "const": "agent-semantic-rubric-v2"
+    },
+    "candidateIdentitySeen": { "type": "boolean", "const": false },
     "reviewer": {
       "type": "object",
       "additionalProperties": false,

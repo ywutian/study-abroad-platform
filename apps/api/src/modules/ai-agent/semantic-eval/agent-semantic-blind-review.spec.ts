@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { AGENT_SEMANTIC_EVAL_CASES } from './agent-semantic-eval.dataset';
 import {
   createBlindPacket,
@@ -57,6 +59,33 @@ function review(): SemanticBlindReview {
 }
 
 describe('semantic blind review', () => {
+  it('keeps every const in the Codex output schema explicitly typed', () => {
+    const schema = JSON.parse(
+      readFileSync(
+        resolve(
+          __dirname,
+          '../../../../../../docs/templates/ai-agent-semantic-blind-review.schema.json',
+        ),
+        'utf8',
+      ),
+    ) as unknown;
+    const untypedConstPaths: string[] = [];
+    const visit = (value: unknown, path: string): void => {
+      if (!value || typeof value !== 'object') return;
+      if (!Array.isArray(value)) {
+        const node = value as Record<string, unknown>;
+        if ('const' in node && !('type' in node)) untypedConstPaths.push(path);
+        for (const [key, child] of Object.entries(node)) {
+          visit(child, `${path}.${key}`);
+        }
+        return;
+      }
+      value.forEach((child, index) => visit(child, `${path}[${index}]`));
+    };
+    visit(schema, '$');
+    expect(untypedConstPaths).toEqual([]);
+  });
+
   it('removes candidate identity, revision, latency and run metadata', () => {
     const packet = createBlindPacket(capture());
     expect(packet.candidateIdentityIncluded).toBe(false);
