@@ -5,6 +5,7 @@ import { AGENT_SEMANTIC_EVAL_CASES } from '../src/modules/ai-agent/semantic-eval
 import {
   assertPrivateTemporaryCapturePath,
   renderProductionCaseInput,
+  summarizeExpectedInputRejection,
   summarizeProductionEvents,
   type SemanticCaptureEvent,
   type SemanticCaptureItem,
@@ -181,6 +182,17 @@ async function captureCase(index: number): Promise<void> {
       );
       await sleep(retryAfter * 1000 + 250);
       continue;
+    }
+    const expectedRejection = summarizeExpectedInputRejection({
+      evalCase,
+      repetition,
+      latencyMs: Date.now() - started,
+      httpStatus: response.status,
+    });
+    if (expectedRejection) {
+      items.push(expectedRejection);
+      await writeCapture(false);
+      return;
     }
     if (!response.ok)
       throw new Error(`capture_http_${response.status}_case_${index + 1}`);
