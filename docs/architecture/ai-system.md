@@ -68,14 +68,14 @@ ai-agent/
 
 **定义源**: `config/agents.config.ts`
 
-| ID           | 中文名     | Model       | Temp | Max Tokens | 工具数 | 特殊能力                                                |
-| ------------ | ---------- | ----------- | ---- | ---------- | ------ | ------------------------------------------------------- |
-| ORCHESTRATOR | 留学助手   | gpt-4o-mini | 0.3  | 2000       | **12** | canDelegate: [ESSAY, SCHOOL, PROFILE, TIMELINE, RESUME] |
-| ESSAY        | 文书专家   | gpt-4o-mini | 0.7  | 4000       | 7      | canDelegate: [ORCHESTRATOR]                             |
-| SCHOOL       | 选校专家   | gpt-4o-mini | 0.5  | 4000       | 14     | **enableReflection: true** (gpt-4o-mini 自我校验)       |
-| PROFILE      | 档案分析师 | gpt-4o-mini | 0.5  | 3000       | 6      | canDelegate: [ORCHESTRATOR]                             |
-| TIMELINE     | 规划顾问   | gpt-4o-mini | 0.5  | 3000       | 7      | canDelegate: [ORCHESTRATOR]                             |
-| RESUME       | 简历专家   | gpt-4o-mini | 0.4  | 4000       | 6      | canDelegate: [ORCHESTRATOR]                             |
+| ID           | 中文名     | Model          | Temp | Max Tokens | 工具数 | 特殊能力                                                |
+| ------------ | ---------- | -------------- | ---- | ---------- | ------ | ------------------------------------------------------- |
+| ORCHESTRATOR | 留学助手   | `OPENAI_MODEL` | 0.3  | 2000       | **12** | canDelegate: [ESSAY, SCHOOL, PROFILE, TIMELINE, RESUME] |
+| ESSAY        | 文书专家   | `OPENAI_MODEL` | 0.7  | 4000       | 7      | canDelegate: [ORCHESTRATOR]                             |
+| SCHOOL       | 选校专家   | `OPENAI_MODEL` | 0.5  | 4000       | 14     | **enableReflection: true**（同一配置模型执行校验）      |
+| PROFILE      | 档案分析师 | `OPENAI_MODEL` | 0.5  | 3000       | 6      | canDelegate: [ORCHESTRATOR]                             |
+| TIMELINE     | 规划顾问   | `OPENAI_MODEL` | 0.5  | 3000       | 7      | canDelegate: [ORCHESTRATOR]                             |
+| RESUME       | 简历专家   | `OPENAI_MODEL` | 0.4  | 4000       | 6      | canDelegate: [ORCHESTRATOR]                             |
 
 **ORCHESTRATOR 的 12 个工具**:
 
@@ -411,12 +411,14 @@ candidateTools ⊆ parentTools ∩ agentAllowedTools
 
 ### 生产模型配置
 
-| Model           | 用途                           | 上下文 |
-| --------------- | ------------------------------ | ------ |
-| **gpt-4o-mini** | 所有 6 个 agent 的**主力模型** | 128k   |
-| **gpt-4o**      | 高容量变体 (需要强推理时切换)  | 128k   |
+| Model              | 用途                                                     | 上下文         |
+| ------------------ | -------------------------------------------------------- | -------------- |
+| **`OPENAI_MODEL`** | 所有 6 个 Agent、反思步骤和领域 LLM 调用的统一运行时模型 | 取决于所选模型 |
+| **gpt-4o-mini**    | 未配置环境变量时的代码级开发回退                         | 128k           |
 
-`LLM_PROVIDER` 只接受当前已经实现的 `openai`。不配置 Anthropic，也不允许
+`LLM_PROVIDER` 只接受当前已经实现的 `openai`。`OPENAI_MODEL` 同时覆盖 Agent
+配置中的开发回退值，避免领域调用与 Agent Loop 在同一网关上静默使用不同模型。
+不配置 Anthropic，也不允许
 “配置可选但运行时无实现”的 provider 值。`OpenAIProvider` 通过 base URL 可连接：
 
 - Azure OpenAI
