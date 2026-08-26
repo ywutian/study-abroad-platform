@@ -75,7 +75,6 @@ export class AgentSecurityMiddleware implements NestMiddleware {
           guardResult.sanitizedInput !== message
         ) {
           req.body.message = guardResult.sanitizedInput;
-          req.body._originalMessage = message;
         }
       }
 
