@@ -3,11 +3,55 @@ import { tmpdir } from 'node:os';
 import {
   assertPrivateTemporaryCapturePath,
   renderProductionCaseInput,
+  summarizeExpectedInputRejection,
   summarizeProductionEvents,
 } from './agent-semantic-production-capture';
 import type { SemanticEvalCase } from './agent-semantic-eval.types';
 
 describe('semantic production capture', () => {
+  it('records expected input-safety refusals without accepting unrelated errors', () => {
+    const evalCase = {
+      id: 'refuse-case',
+      expectedAction: 'refuse',
+    } as unknown as SemanticEvalCase;
+    expect(
+      summarizeExpectedInputRejection({
+        evalCase,
+        repetition: 2,
+        latencyMs: 15,
+        httpStatus: 400,
+      }),
+    ).toEqual({
+      caseId: 'refuse-case',
+      repetition: 2,
+      output: 'The request was rejected by input safety controls.',
+      toolNames: [],
+      latencyMs: 15,
+      httpStatus: 400,
+      runStatus: 'INPUT_REJECTED',
+      runIdHash: '',
+    });
+    expect(
+      summarizeExpectedInputRejection({
+        evalCase: {
+          ...evalCase,
+          expectedAction: 'answer',
+        },
+        repetition: 2,
+        latencyMs: 15,
+        httpStatus: 400,
+      }),
+    ).toBeNull();
+    expect(
+      summarizeExpectedInputRejection({
+        evalCase,
+        repetition: 2,
+        latencyMs: 15,
+        httpStatus: 500,
+      }),
+    ).toBeNull();
+  });
+
   it('refuses to write review packets outside the OS temporary directory', () => {
     expect(() =>
       assertPrivateTemporaryCapturePath('/workspace/capture.json'),

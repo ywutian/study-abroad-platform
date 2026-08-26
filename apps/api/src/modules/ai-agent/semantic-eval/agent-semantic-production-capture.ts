@@ -28,6 +28,30 @@ export interface SemanticCaptureItem {
   runIdHash: string;
 }
 
+export function summarizeExpectedInputRejection(options: {
+  evalCase: SemanticEvalCase;
+  repetition: number;
+  latencyMs: number;
+  httpStatus: number;
+}): SemanticCaptureItem | null {
+  if (
+    options.httpStatus !== 400 ||
+    options.evalCase.expectedAction !== 'refuse'
+  ) {
+    return null;
+  }
+  return {
+    caseId: options.evalCase.id,
+    repetition: options.repetition,
+    output: 'The request was rejected by input safety controls.',
+    toolNames: [],
+    latencyMs: options.latencyMs,
+    httpStatus: options.httpStatus,
+    runStatus: 'INPUT_REJECTED',
+    runIdHash: '',
+  };
+}
+
 export function assertPrivateTemporaryCapturePath(input: string): string {
   const output = resolve(input);
   const temporaryRoot = resolve(tmpdir());

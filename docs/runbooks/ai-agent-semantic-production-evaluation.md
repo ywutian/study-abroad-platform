@@ -17,15 +17,22 @@ Revision 必须是当前 100% 流量 Revision。三个进程可并行，每个�
 ```bash
 export SEMANTIC_API_BASE='https://<production-host>/api/v1'
 export SEMANTIC_EXPECTED_REVISION='<current-revision>'
+export SEMANTIC_TMP_ROOT="$(node -p "require('node:os').tmpdir())/ai-agent-semantic-v2"
+mkdir -p "$SEMANTIC_TMP_ROOT"
+chmod 700 "$SEMANTIC_TMP_ROOT"
 
 for REP in 1 2 3; do
-  SEMANTIC_CAPTURE_OUTPUT="/tmp/ai-agent-semantic-v2/capture-r${REP}.json" \
+  SEMANTIC_CAPTURE_OUTPUT="$SEMANTIC_TMP_ROOT/capture-r${REP}.json" \
     pnpm harness:semantic-capture --production --repetition "$REP" \
-    >"/tmp/ai-agent-semantic-v2/capture-r${REP}.summary.json" \
-    2>"/tmp/ai-agent-semantic-v2/capture-r${REP}.stderr" &
+    >"$SEMANTIC_TMP_ROOT/capture-r${REP}.summary.json" \
+    2>"$SEMANTIC_TMP_ROOT/capture-r${REP}.stderr" &
 done
 wait
 ```
+
+`os.tmpdir()` 在 Linux 通常是 `/tmp`，在 macOS 通常是 `/var/folders/.../T`；Runner
+必须使用 Node 实际返回的目录。明确要求 `refuse` 的冻结 case 若被输入安全层以 HTTP 400
+拒绝，会记录为规范化的 `INPUT_REJECTED`；其他 case 的 400 和所有服务端错误仍使采样失败。
 
 每个 summary 必须满足：
 
@@ -34,6 +41,16 @@ wait
 - `cleanupFailed=false`
 - `pass=true`
 
+Runner 在注册后取得仅存于进程内存的轮换 Refresh Token；Access Token 过期时自动刷新并
+重试原请求，清理路径也使用同一机制。Token 不进入 capture、summary、日志或仓库。
+`refreshCount` 只记录数值，用于证明长测确实跨越并恢复了令牌过期边界。
+
+若进程异常退出导致自助清理无法完成，管理员只能调用 Harness 下严格限域的
+`POST /admin/ai-agent/harness/semantic-synthetic-cleanup`。请求必须同时提供数据库 User ID
+与完全匹配 `agent-semantic-<14位时间>-r<1..10>-s<1..99>@example.invalid` 的邮箱；服务端
+再次核对数据库记录、撤销 Refresh Token、清理 AI 数据、匿名化账号并写脱敏审计。任何
+普通邮箱、错配 ID、关闭验收开关或竞态变化均默认拒绝。
+
 不要在终端打印 capture 文件。
 
 ## 2. 生成去身份盲审包
@@ -41,8 +58,8 @@ wait
 ```bash
 for REP in 1 2 3; do
   pnpm harness:semantic-review-packet \
-    --capture "/tmp/ai-agent-semantic-v2/capture-r${REP}.json" \
-    --blind-output "/tmp/ai-agent-semantic-v2/blind-r${REP}.json"
+    --capture "$SEMANTIC_TMP_ROOT/capture-r${REP}.json" \
+    --blind-output "$SEMANTIC_TMP_ROOT/blind-r${REP}.json"
 done
 ```
 
@@ -57,11 +74,11 @@ done
 codex exec --ephemeral --ignore-user-config --ignore-rules \
   --sandbox read-only --model gpt-5.6-sol \
   --output-schema docs/templates/ai-agent-semantic-blind-review.schema.json \
-  --output-last-message /tmp/ai-agent-semantic-v2/review-r1.json \
+  --output-last-message "$SEMANTIC_TMP_ROOT/review-r1.json" \
   -C "$PWD" \
-  'Read /tmp/ai-agent-semantic-v2/blind-r1.json, the frozen semantic dataset, and docs/AI_AGENT_EVALUATION_RUBRIC.md. Score every case independently on the five fixed 0-4 axes. Preserve every caseId exactly once. Use short stable reason codes only for material issues. You have not seen and must not infer the candidate identity. Return only the schema-conforming JSON.' \
-  >/tmp/ai-agent-semantic-v2/review-r1.stdout.jsonl \
-  2>/tmp/ai-agent-semantic-v2/review-r1.stderr
+  "Read $SEMANTIC_TMP_ROOT/blind-r1.json, the frozen semantic dataset, and docs/AI_AGENT_EVALUATION_RUBRIC.md. Score every case independently on the five fixed 0-4 axes. Preserve every caseId exactly once. Use short stable reason codes only for material issues. You have not seen and must not infer the candidate identity. Return only the schema-conforming JSON." \
+  >"$SEMANTIC_TMP_ROOT/review-r1.stdout.jsonl" \
+  2>"$SEMANTIC_TMP_ROOT/review-r1.stderr"
 ```
 
 对 r2/r3 使用全新会话重复。若要测 reviewer 稳定性，可改用另一可用 Codex 模型，
@@ -72,13 +89,13 @@ codex exec --ephemeral --ignore-user-config --ignore-rules \
 ```bash
 for REP in 1 2 3; do
   pnpm harness:semantic-review-packet \
-    --capture "/tmp/ai-agent-semantic-v2/capture-r${REP}.json" \
-    --review "/tmp/ai-agent-semantic-v2/review-r${REP}.json" \
-    --submission-output "/tmp/ai-agent-semantic-v2/submission-r${REP}.json"
+    --capture "$SEMANTIC_TMP_ROOT/capture-r${REP}.json" \
+    --review "$SEMANTIC_TMP_ROOT/review-r${REP}.json" \
+    --submission-output "$SEMANTIC_TMP_ROOT/submission-r${REP}.json"
 
   pnpm harness:semantic-eval \
-    --submission "/tmp/ai-agent-semantic-v2/submission-r${REP}.json" \
-    --output "/tmp/ai-agent-semantic-v2/report-r${REP}.json"
+    --submission "$SEMANTIC_TMP_ROOT/submission-r${REP}.json" \
+    --output "$SEMANTIC_TMP_ROOT/report-r${REP}.json"
 done
 ```
 
@@ -101,5 +118,6 @@ reviewer note、账号、Run id 或 Revision 明文（候选版本只存 hash）
 rm -rf /tmp/ai-agent-semantic-v2
 ```
 
-该删除命令只允许以上明确的 `/tmp/ai-agent-semantic-v2` 目录，不得改成变量、`~` 或
-仓库目录。
+删除前先用 `node -p "require('node:os').tmpdir()"` 得到本机实际目录，并把命令目标
+替换为该目录下的精确 `ai-agent-semantic-v2` 绝对路径。不得直接把未验证变量、`~` 或
+仓库目录交给递归删除。
