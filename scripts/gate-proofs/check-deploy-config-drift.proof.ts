@@ -41,4 +41,10 @@ export async function prove(): Promise<void> {
       () => expectFired(runGate('check-deploy-config-drift.ts'), 'isolated chat/embedding')
     );
   }
+  await withPatchedFile(
+    '.github/workflows/ci.yml',
+    (s) =>
+      s.replace('needs: [build, e2e, security, docker, sbom]', 'needs: [build, e2e, security]'),
+    () => expectFired(runGate('check-deploy-config-drift.ts'), 'production image policy failed')
+  );
 }

@@ -5,7 +5,8 @@ FROM node:20-alpine AS builder
 
 # Install pnpm and openssl (upgrade the base libs to stay off the Trivy HIGH CVE list)
 RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
-RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
+RUN apk add --no-cache --upgrade \
+    'openssl>=3.5.8-r0' 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0'
 
 WORKDIR /app
 
@@ -115,10 +116,11 @@ RUN cp -r /app/packages/shared/dist /prod/node_modules/@study-abroad/shared/dist
 FROM node:20-alpine AS runner
 
 # Install openssl for Prisma — `--upgrade` bumps the base image's already-installed
-# libcrypto3/libssl3/openssl past Trivy HIGH CVEs (e.g. CVE-2026-45447, fixed 3.5.7-r0).
+# libcrypto3/libssl3/openssl past CVE-2026-14456 (fixed 3.5.8-r0).
 # A plain `apk add openssl` leaves the vulnerable base packages in place; this is the
 # image that ships + gets scanned, so it must carry the patched libs.
-RUN apk add --no-cache --upgrade openssl libcrypto3 libssl3
+RUN apk add --no-cache --upgrade \
+    'openssl>=3.5.8-r0' 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0'
 
 # Upgrade the base image's own bundled npm, for the same reason as the apk line
 # above: it ships in the scanned image. node:20-alpine bundles npm 10, whose

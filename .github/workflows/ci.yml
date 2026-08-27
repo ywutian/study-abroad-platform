@@ -1379,7 +1379,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: [build, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy == true && inputs.inspect_release != true)
     permissions:
       contents: read
       packages: write
@@ -1428,7 +1428,7 @@ jobs:
     name: SBOM Generation
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy == true && inputs.inspect_release != true)
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -1464,7 +1464,7 @@ jobs:
   deploy-gcp:
     name: Deploy to GCP
     runs-on: ubuntu-latest
-    needs: [build, e2e, security]
+    needs: [build, e2e, security, docker, sbom]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy == true && inputs.inspect_release != true)
     permissions:
       contents: read
@@ -1610,6 +1610,17 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --source-digest "$GITHUB_SHA" \
             --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/ci.yml"
+
+      # The GHCR gate is required above, but this independently built Artifact
+      # Registry digest is the one that will execute migrations and serve traffic.
+      - name: Scan production image digest before migrations
+        uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # master 2026-08-25
+        with:
+          image-ref: ${{ steps.production-image.outputs.name }}@${{ steps.production-image.outputs.digest }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+          trivyignores: '.trivyignore'
 
       - name: Run database migrations
         run: |

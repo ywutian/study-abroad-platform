@@ -59,3 +59,24 @@ SSE，不在遇错后静默改变传输或换模型。此前共享申请分析�
 
 最终commit、CI、目标Revision、生产验收和回滚记录在实际完成后补齐。
 未提交本地评测JSON、凭据或用户目录；没有更改现有Embedding服务代码。
+
+## 首次发布阻断与修复
+
+PR #633 CI `33093731391` 全绿，合并为
+`0982c5de53fa33ffbcc77645b4234796e5f9b527`。main CI `33095225453`
+镜像扫描发现 CVE-2026-14456：三个OpenSSL系统包仍为3.5.7-r0，
+Trivy报告3个HIGH、0个CRITICAL。没有添加忽略项或重跑掩盖失败。
+
+原流水线GCP任务没有依赖Docker扫描，因此扫描失败时迁移已开始；主动取消CI，
+生产仍00992-zin100%，无新Revision。云迁移`study-abroad-migrate-pc2b2`
+于2026-08-27 17:11:40Z自行成功结束，没有数据库恢复操作。
+
+FR-008修复两阶段包下限为3.5.8-r0，部署依赖Docker/SBOM，并在迁移前扫描
+实际Artifact Registry不可变摘要。main和手动发布使用相同资格条件。
+本机linux/amd64容器实际确认三个包均3.5.8-r0；CI辅助65项通过，含16项
+发布策略测试。首次两个负例误替换了其他扫描步骤，限定测试意图后修正；
+这不是生产修复失败或漏洞扫描通过的证据。完整新镜像扫描仍需新CI确认。
+
+修复依据：[OpenSSL发布说明](https://mirror.openssl-library.org/news/openssl-3.5-notes/)、
+[Alpine x86_64包](https://pkgs.alpinelinux.org/package/v3.23/main/x86_64/openssl)。
+上游严重度与Trivy不同，不降低现有发布门槛。

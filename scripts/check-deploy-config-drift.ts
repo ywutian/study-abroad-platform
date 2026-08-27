@@ -18,6 +18,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { spawnSync } from 'child_process';
 
 const ROOT = path.resolve(__dirname, '..');
 const WF_DIR = path.join(ROOT, '.github/workflows');
@@ -152,6 +153,17 @@ function main() {
     errors.push(
       '.github/workflows/ci.yml: migrations and Cloud Run deploy must both use the verified IMAGE_REF digest'
     );
+  }
+
+  const imagePolicy = spawnSync(
+    process.execPath,
+    [path.join(ROOT, 'scripts/ci/production-image-policy.mjs')],
+    {
+      encoding: 'utf8',
+    }
+  );
+  if (imagePolicy.status !== 0) {
+    errors.push(`production image policy failed: ${imagePolicy.stderr.trim()}`);
   }
 
   if (errors.length > 0) {
