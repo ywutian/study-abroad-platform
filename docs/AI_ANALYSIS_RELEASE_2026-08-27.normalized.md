@@ -134,13 +134,19 @@
 
 ## 18. 实施结果
 
-[DECISION] NOT RUN — 实施前记录，后续按FR逐项补充。
+[CODE] FR-001–003：已实现shared-v1、同源严格Schema、逐校证据绑定及usage分摊。补充固定2校一波的调度，避免真实持久化耗时不同把请求拆散；一波只发一次Provider请求。旧路径不变。
+
+[CODE] FR-005：现有CI增加0流量完整Harness验收和只读inspection；inspection模式强制排除部署，即使deploy输入保持默认true也不会部署。URL只输出已知公开Provider地址，其它地址不输出路径。
 
 <!-- section:verification -->
 
 ## 19. 验证证据
 
 [RUNTIME] 历史生产失败证据 `/tmp/harness-release-audit.HkmkWp/harness-acceptance.json`。本轮代码测试NOT RUN；本轮无云变更或合成账号写入。剩余风险见16节。
+
+[RUNTIME] 本地阶段性证据：71定向、399 Shared、42 CI脚本通过；首次TypeScript发现响应finishReason类型不一致，修正后通过。新增持久化延迟回归先失败（预期4次、实际5次调用），固定波次后8项集成通过。初始缺少SchoolCard mock的失败另存，不混作产品缺陷。
+
+[RUNTIME] 三个实现快照各8个真实工作流：候选均4/4完整、单段对照均2/4，五校对照均预算失败。先前矩阵在32/288完成后因持久化调度缺陷主动中断；32条已完成记录保留，不宣称矩阵通过；中断时在途请求用量未知，不宣称退费或零用量。后续必须绑定修复后源版本重新验收。
 
 <!-- section:release-decision -->
 

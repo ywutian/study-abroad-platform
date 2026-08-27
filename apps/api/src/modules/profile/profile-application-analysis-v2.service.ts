@@ -69,11 +69,10 @@ const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
 const PREDICTION_CONTEXT_STALE_AFTER_MS = 1000 * 60 * 60 * 24 * 30;
 
 import {
-  SCHOOL_ANALYST_CONCURRENCY,
   SCHOOL_ANALYST_TIMEOUT_MS,
   PORTFOLIO_SYNTHESIZER_TIMEOUT_MS,
   APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS,
-  mapWithConcurrency,
+  mapAnalysisSchools,
   normalizeUsage,
 } from './profile-application-analysis-runtime';
 export {
@@ -894,13 +893,7 @@ export class ProfileApplicationAnalysisV2Service {
     };
 
     const perSchoolResults = await withPortfolioReserve(routingBudget, () =>
-      mapWithConcurrency(
-        policyCards,
-        usesCompactAnalysis(routingBudget, 'analysis.school')
-          ? Math.min(2, SCHOOL_ANALYST_CONCURRENCY)
-          : SCHOOL_ANALYST_CONCURRENCY,
-        analyzeSchool,
-      ),
+      mapAnalysisSchools(policyCards, routingBudget, analyzeSchool),
     );
     for (const result of perSchoolResults) {
       schoolResults.push(result.school);

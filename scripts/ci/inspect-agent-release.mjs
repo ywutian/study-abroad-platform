@@ -13,7 +13,12 @@ export function describeRevision(revision) {
   try {
     const url = new URL(env.OPENAI_BASE_URL);
     if (!url.username && !url.password && !url.search && !url.hash && url.protocol === 'https:')
-      endpoint = url.origin + url.pathname;
+      endpoint = [
+        'https://api.openai.com/v1',
+        'https://claude-relay.liziqiao.com/openai/v1',
+      ].includes(url.origin + url.pathname)
+        ? url.origin + url.pathname
+        : 'other_https_endpoint';
   } catch {
     /* Unknown configuration remains unknown. */
   }

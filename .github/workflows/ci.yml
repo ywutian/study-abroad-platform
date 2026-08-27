@@ -40,7 +40,7 @@ env:
 jobs:
   release-inspection:
     name: Inspect production release (read-only)
-    if: github.event_name == 'workflow_dispatch' && inputs.inspect_release == true && inputs.deploy == false
+    if: github.event_name == 'workflow_dispatch' && inputs.inspect_release == true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -1465,7 +1465,7 @@ jobs:
     name: Deploy to GCP
     runs-on: ubuntu-latest
     needs: [build, e2e, security]
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy == true)
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.deploy == true && inputs.inspect_release != true)
     permissions:
       contents: read
       id-token: write

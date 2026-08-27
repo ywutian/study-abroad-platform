@@ -33,7 +33,11 @@ describe('shared school analysis real service integration', () => {
   afterEach(() => {
     global.fetch = originalFetch;
   });
-  function setup(failFirst = false, maxTokens = 24000) {
+  function setup(
+    failFirst = false,
+    maxTokens = 24000,
+    delayedPersistence = false,
+  ) {
     const config = new ConfigService({
       LLM_PROVIDER: 'openai',
       OPENAI_API_KEY: 'synthetic',
@@ -53,8 +57,38 @@ describe('shared school analysis real service integration', () => {
       undefined,
       router,
     );
+    const prisma = {
+      applicationAnalysisSchoolCard: {
+        create: jest.fn().mockResolvedValue({}),
+      },
+      applicationAnalysisRun: {
+        create: jest.fn().mockResolvedValue({ id: 'SYN_RUN' }),
+        update: jest.fn().mockResolvedValue({}),
+      },
+      applicationAnalysisStepRun: {
+        create: jest.fn(
+          async ({
+            data,
+          }: {
+            data: { stepName: string; latencyMs: number };
+          }) => {
+            if (
+              delayedPersistence &&
+              data.stepName.startsWith('school_analyst:')
+            )
+              await new Promise((resolve) =>
+                setTimeout(resolve, data.stepName.endsWith('_1') ? 35 : 1),
+              );
+            return {
+              id: `SYN_STEP_${data.stepName}`,
+              latencyMs: data.latencyMs,
+            };
+          },
+        ),
+      },
+    };
     const service = new ProfileApplicationAnalysisV2Service(
-      {} as never,
+      prisma as never,
       {} as never,
       {} as never,
       llm,
@@ -102,7 +136,7 @@ describe('shared school analysis real service integration', () => {
       );
     });
     global.fetch = fetchMock as typeof fetch;
-    return { service, fetchMock };
+    return { service, fetchMock, prisma };
   }
   it.each([1, 2, 3, 5])(
     'completes %i schools preserving order, probabilities and per-school evidence within 24k',
@@ -142,6 +176,32 @@ describe('shared school analysis real service integration', () => {
     expect(
       result.schools.every((s) => s.prediction?.probability === 0.18),
     ).toBe(true);
+  });
+  it('keeps exactly 2/2/1 groups with persisted steps completing at different times', async () => {
+    const { service, fetchMock, prisma } = setup(false, 24000, true);
+    const result = await service['generateFromSnapshot'](
+      syntheticAnalysisSnapshot(5),
+      { mode: 'live', persistRun: true, debug: true },
+    );
+    expect(result.status).toBe('fresh');
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(prisma.applicationAnalysisRun.update).toHaveBeenCalled();
+    const sharedInputs = fetchMock.mock.calls
+      .map(([, init]) => JSON.parse(String(init.body)))
+      .filter(
+        (body) =>
+          body.response_format.json_schema.name === 'analysis_school_shared',
+      )
+      .map((body) =>
+        JSON.parse(body.messages[1].content).schools.map(
+          (school: { schoolId: string }) => school.schoolId,
+        ),
+      );
+    expect(sharedInputs).toEqual([
+      ['SYN_SCHOOL_0', 'SYN_SCHOOL_1'],
+      ['SYN_SCHOOL_2', 'SYN_SCHOOL_3'],
+      ['SYN_SCHOOL_4'],
+    ]);
   });
   it('fails closed before HTTP for insufficient shared budget', async () => {
     const { service, fetchMock } = setup(false, 1);

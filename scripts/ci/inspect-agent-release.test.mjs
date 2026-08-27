@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import {
   describeRevision,
   inspectAgentRelease,
@@ -66,4 +67,17 @@ test('inspection uses only describe/logging read, never secrets access or writes
       (args) => args.includes('describe') || (args[0] === 'logging' && args[1] === 'read')
     )
   );
+});
+test('inspection overrides the deploy default and unknown endpoint paths are not emitted', () => {
+  const workflow = readFileSync(new URL('../../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /inputs.deploy == true && inputs.inspect_release != true/);
+  const output = describeRevision({
+    spec: {
+      containers: [
+        { env: [{ name: 'OPENAI_BASE_URL', value: 'https://example.invalid/private-value' }] },
+      ],
+    },
+  });
+  assert.equal(output.endpoint, 'other_https_endpoint');
+  assert.doesNotMatch(JSON.stringify(output), /private-value/);
 });

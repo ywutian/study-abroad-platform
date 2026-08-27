@@ -3,6 +3,7 @@ import { routingFixture } from '../ai-agent/routing/model-routing.fixtures';
 import { routingHash } from '../ai-agent/routing/model-routing.policy';
 import { SharedSchoolAnalysis, allocateUsage } from './analysis-shared';
 import { parseSharedSchools } from './analysis-shared.contract';
+import { mapWithConcurrency } from './profile-application-analysis-runtime';
 import { segmentExamples as ex } from './analysis-segments.fixtures';
 
 const inputs = ['a', 'b'].map((schoolId) => ({
@@ -64,6 +65,30 @@ function setup() {
 }
 
 describe('shared school request boundary', () => {
+  it('reproduces persistence-induced singleton calls, then prevents them with fixed waves', async () => {
+    const counts: number[] = [];
+    for (const fixedWaves of [false, true]) {
+      const { shared, options, call } = setup();
+      const schools = ['a', 'b', 'c', 'd', 'e'].map((schoolId) => ({
+        ...inputs[0],
+        schoolId,
+        allowedEvidenceIds: [`e-${schoolId}`],
+      }));
+      await mapWithConcurrency(
+        schools,
+        2,
+        async (school) => {
+          await shared.call(school, options);
+          await new Promise((resolve) =>
+            setTimeout(resolve, school.schoolId === 'b' ? 60 : 1),
+          );
+        },
+        fixedWaves,
+      );
+      counts.push(call.mock.calls.length);
+    }
+    expect(counts).toEqual([4, 3]);
+  });
   it('coalesces two schools with one common context, strict schema and one usage allocation', async () => {
     const { shared, options, call } = setup();
     const results = await Promise.all(
