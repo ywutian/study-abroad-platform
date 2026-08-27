@@ -4,7 +4,8 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { formatPrismaQueryLog } from './prisma-query-log';
 
 @Injectable()
 export class PrismaService
@@ -51,15 +52,13 @@ export class PrismaService
 
   async onModuleInit() {
     // Query performance monitoring middleware
-    this.$on('query' as never, (event: any) => {
-      const duration = event.duration as number;
+    this.$on('query' as never, (event: Prisma.QueryEvent) => {
+      const duration = event.duration;
 
       if (duration > this.slowQueryThresholdMs) {
-        this.logger.warn(
-          `[SLOW QUERY] ${duration}ms | ${event.query} | params: ${event.params}`,
-        );
+        this.logger.warn(formatPrismaQueryLog(event, true));
       } else if (process.env.NODE_ENV === 'development' && duration > 50) {
-        this.logger.debug(`[QUERY] ${duration}ms | ${event.query}`);
+        this.logger.debug(formatPrismaQueryLog(event, false));
       }
     });
 

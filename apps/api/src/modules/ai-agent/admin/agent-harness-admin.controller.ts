@@ -18,6 +18,17 @@ import { AgentHarnessOperationsService } from '../core/agent-harness-operations.
 import type { HarnessAcceptanceScenario } from '../core/agent-harness-operations.service';
 import { AlertChannelService } from '../infrastructure/alerting/alert-channel.service';
 import { AgentSemanticSyntheticAccountService } from './agent-semantic-synthetic-account.service';
+import { EmbeddingAcceptanceService } from '../memory/embedding-acceptance.service';
+
+class EmbeddingAcceptanceDto {
+  @IsString()
+  @MaxLength(200)
+  targetUserId: string;
+
+  @IsString()
+  @MaxLength(200)
+  isolationUserId: string;
+}
 
 class CreateHarnessAcceptanceGrantDto {
   @IsString()
@@ -68,7 +79,23 @@ export class AgentHarnessAdminController {
     private readonly alerts: AlertChannelService,
     private readonly prisma: PrismaService,
     private readonly semanticSyntheticAccounts: AgentSemanticSyntheticAccountService,
+    private readonly embeddingAcceptance: EmbeddingAcceptanceService,
   ) {}
+
+  @Post('embedding-acceptance')
+  @ApiOperation({
+    summary: 'Verify embeddings with bounded synthetic memory fixtures',
+  })
+  verifyEmbedding(
+    @CurrentUser() admin: { id: string },
+    @Body() body: EmbeddingAcceptanceDto,
+  ) {
+    return this.embeddingAcceptance.run(
+      admin.id,
+      body.targetUserId,
+      body.isolationUserId,
+    );
+  }
 
   @Post('acceptance-grants')
   @ApiOperation({

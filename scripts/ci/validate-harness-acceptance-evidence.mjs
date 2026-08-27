@@ -39,6 +39,17 @@ const SAFE_FIELDS = new Set([
   'reason',
   'pass',
   'reasonCode',
+  'singleVector',
+  'batchVectors',
+  'cacheConsistent',
+  'vectorStored',
+  'semanticRecall',
+  'semanticOrdering',
+  'userIsolation',
+  'fallbackStored',
+  'fallbackRecall',
+  'fixtureCleanup',
+  'isolationAccountCleaned',
 ]);
 
 const REQUIRED_SCENARIOS = [
@@ -50,6 +61,7 @@ const REQUIRED_SCENARIOS = [
   'approval_disconnect_recovery',
   'budget_exhaustion',
   'cleanup',
+  'embedding_memory',
 ];
 
 function parseArgs(argv) {
@@ -107,6 +119,24 @@ export function validateHarnessEvidence({ text, expectedRevision }) {
     }
   }
   for (const record of records) {
+    if (
+      record.scenario === 'embedding_memory' &&
+      [
+        'singleVector',
+        'batchVectors',
+        'cacheConsistent',
+        'vectorStored',
+        'semanticRecall',
+        'semanticOrdering',
+        'userIsolation',
+        'fallbackStored',
+        'fallbackRecall',
+        'fixtureCleanup',
+        'isolationAccountCleaned',
+      ].some((key) => record[key] !== true)
+    ) {
+      errors.push('scenario_embedding_memory_incomplete');
+    }
     if (
       REQUIRED_SCENARIOS.includes(record.scenario) &&
       record.scenario !== 'setup' &&

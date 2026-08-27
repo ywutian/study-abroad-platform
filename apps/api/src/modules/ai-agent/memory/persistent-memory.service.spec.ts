@@ -8,6 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PersistentMemoryService } from './persistent-memory.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EmbeddingService } from './embedding.service';
+import { Prisma } from '@prisma/client';
 
 describe('PersistentMemoryService', () => {
   let service: PersistentMemoryService;
@@ -15,6 +16,7 @@ describe('PersistentMemoryService', () => {
     agentMessage: { findMany: jest.Mock };
     agentConversation: { findUnique: jest.Mock };
     $queryRawUnsafe: jest.Mock;
+    $queryRaw: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -22,6 +24,7 @@ describe('PersistentMemoryService', () => {
       agentMessage: { findMany: jest.fn().mockResolvedValue([]) },
       agentConversation: { findUnique: jest.fn() },
       $queryRawUnsafe: jest.fn().mockResolvedValue([]),
+      $queryRaw: jest.fn().mockResolvedValue([{}]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -31,7 +34,7 @@ describe('PersistentMemoryService', () => {
         {
           provide: EmbeddingService,
           useValue: {
-            embed: jest.fn(),
+            embed: jest.fn().mockResolvedValue([]),
             embedBatch: jest.fn(),
           },
         },
@@ -44,6 +47,32 @@ describe('PersistentMemoryService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  it.each([
+    [2, 1],
+    [-1, 0],
+    [0.4, 0.4],
+    [undefined, undefined],
+  ])(
+    'preserves fallback normalization for importance %s',
+    async (input, expected) => {
+      await service.updateMemory('synthetic-memory', {
+        content: 'Synthetic replacement',
+        importance: input,
+        category: '',
+      });
+      const query = prisma.$queryRaw.mock.calls[0][0] as Prisma.Sql;
+      expect(query.values).toEqual([
+        'Synthetic replacement',
+        expected,
+        null,
+        undefined,
+        null,
+        'synthetic-memory',
+      ]);
+      expect(query.sql).toContain('embedding = ?::vector');
+    },
+  );
 
   describe('getMessages', () => {
     const now = new Date('2026-03-26T12:00:00Z');

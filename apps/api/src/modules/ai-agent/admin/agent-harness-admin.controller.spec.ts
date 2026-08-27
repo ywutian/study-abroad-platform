@@ -1,6 +1,30 @@
 import { AgentHarnessAdminController } from './agent-harness-admin.controller';
+import { EmbeddingAcceptanceService } from '../memory/embedding-acceptance.service';
+import { Permission } from '../../../common/constants/permissions';
+import { Role } from '@prisma/client';
 
 describe('AgentHarnessAdminController', () => {
+  it('requires admin and AI_CONFIG and delegates only synthetic IDs', async () => {
+    expect(Reflect.getMetadata('roles', AgentHarnessAdminController)).toContain(
+      Role.ADMIN,
+    );
+    expect(
+      Reflect.getMetadata('required_permission', AgentHarnessAdminController),
+    ).toContain(Permission.AI_CONFIG);
+    const run = jest.fn().mockResolvedValue({ pass: true });
+    const controller = new AgentHarnessAdminController(
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      { run } as unknown as EmbeddingAcceptanceService,
+    );
+    await controller.verifyEmbedding(
+      { id: 'admin' },
+      { targetUserId: 'a', isolationUserId: 'b' },
+    );
+    expect(run).toHaveBeenCalledWith('admin', 'a', 'b');
+  });
   const createController = () => {
     const prisma = {
       auditLog: { create: jest.fn().mockResolvedValue({ id: 'audit-1' }) },
@@ -56,6 +80,7 @@ describe('AgentHarnessAdminController', () => {
       alerts as any,
       prisma as any,
       semanticSyntheticAccounts as any,
+      { run: jest.fn() } as never,
     );
     return {
       controller,

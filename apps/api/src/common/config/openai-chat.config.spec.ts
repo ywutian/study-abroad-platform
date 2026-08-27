@@ -130,11 +130,17 @@ describe('dedicated chat boundary', () => {
     expect(JSON.stringify(init)).not.toContain('synthetic-embedding');
   });
   it('leaves actual embedding HTTP requests on the old key, endpoint and model', async () => {
-    const mock = jest
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ data: [{ embedding: [1, 0] }] })),
-      );
+    const vector = Array.from({ length: 1536 }, (_, index) =>
+      index === 0 ? 1 : 0,
+    );
+    const mock = jest.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          model: 'text-embedding-3-small',
+          data: [{ index: 0, embedding: vector }],
+        }),
+      ),
+    );
     global.fetch = mock;
     const embedding = new EmbeddingService(
       {
@@ -143,7 +149,7 @@ describe('dedicated chat boundary', () => {
       } as unknown as RedisService,
       config(dedicated),
     );
-    expect(await embedding.embed('synthetic fixture')).toEqual([1, 0]);
+    expect(await embedding.embed('synthetic fixture')).toEqual(vector);
     expect(mock.mock.calls[0][0]).toBe(
       'https://embedding.example/v1/embeddings',
     );

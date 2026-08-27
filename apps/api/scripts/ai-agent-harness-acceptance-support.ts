@@ -1,4 +1,16 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+
+export function createSyntheticHarnessIdentity(offsetMs = 0) {
+  const stamp = new Date(Date.now() + offsetMs)
+    .toISOString()
+    .replace(/[-:.TZ]/g, '')
+    .slice(0, 14);
+  return {
+    syntheticEmail: `agent-harness-${stamp}@example.invalid`,
+    syntheticPassword: `Harness9!${randomBytes(8).toString('hex')}`,
+    eventTitle: `Harness synthetic event ${stamp}`,
+  };
+}
 
 export interface JsonRecord {
   [key: string]: unknown;

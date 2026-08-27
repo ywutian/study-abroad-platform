@@ -17,6 +17,7 @@ import { RedisModule } from '../../../common/redis/redis.module';
 
 import { RedisCacheService } from './redis-cache.service';
 import { EmbeddingService } from './embedding.service';
+import { EmbeddingAcceptanceService } from './embedding-acceptance.service';
 import { PersistentMemoryService } from './persistent-memory.service';
 import { SummarizerService } from './summarizer.service';
 import { MemoryManagerService } from './memory-manager.service';
@@ -33,6 +34,7 @@ import { AgentHarnessOperationsService } from '../core/agent-harness-operations.
   imports: [ConfigModule, PrismaModule, RedisModule],
   providers: [
     // Core
+    EmbeddingAcceptanceService,
     RedisCacheService,
     EmbeddingService,
     PersistentMemoryService,
@@ -54,6 +56,7 @@ import { AgentHarnessOperationsService } from '../core/agent-harness-operations.
     ConversationContextService,
   ],
   exports: [
+    EmbeddingAcceptanceService,
     MemoryManagerService,
     UserDataService,
     SanitizerService,
