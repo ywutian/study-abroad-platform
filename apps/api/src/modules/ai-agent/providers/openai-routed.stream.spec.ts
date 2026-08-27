@@ -258,6 +258,86 @@ describe('Routed OpenAI transport', () => {
     await jest.advanceTimersByTimeAsync(11);
     await assertion;
   });
+  it.each(['fetch', 'read', 'cancel'])(
+    'settles when %s never resolves even after transport abort',
+    async (phase) => {
+      jest.useFakeTimers();
+      const never = () => new Promise<never>(() => undefined);
+      if (phase === 'fetch') fetchMock.mockImplementation(never);
+      else {
+        const bytes = new TextEncoder().encode(
+          events()
+            .map(
+              (item) =>
+                `data: ${typeof item === 'string' ? item : JSON.stringify(item)}\n\n`,
+            )
+            .join(''),
+        );
+        fetchMock.mockResolvedValue(
+          new Response(
+            new ReadableStream({
+              start(controller) {
+                if (phase === 'cancel') controller.enqueue(bytes);
+              },
+              cancel: never,
+            }),
+          ),
+        );
+      }
+      let settled = false;
+      let errorCode: unknown;
+      const pending = provider.chat({ ...request, timeoutMs: 10 }).then(
+        () => {
+          settled = true;
+        },
+        (error: unknown) => {
+          settled = true;
+          errorCode =
+            error instanceof Error && 'code' in error
+              ? error.code
+              : 'UNEXPECTED';
+        },
+      );
+      await jest.advanceTimersByTimeAsync(20);
+      expect(settled).toBe(true);
+      await pending;
+      expect(errorCode).toBe(
+        phase === 'cancel' ? undefined : LLMErrorCode.NETWORK_ERROR,
+      );
+      expect(jest.getTimerCount()).toBe(0);
+    },
+  );
+  it('preserves authentication errors when response-body cancellation hangs', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        new ReadableStream({
+          cancel: () => new Promise<never>(() => undefined),
+        }),
+        { status: 401 },
+      ),
+    );
+    await expect(provider.chat(request)).rejects.toMatchObject({
+      code: LLMErrorCode.AUTHENTICATION,
+      retryable: false,
+    });
+  });
+  it('rejects late success even if the timer callback has not run yet', async () => {
+    jest.useFakeTimers();
+    let resolveFetch!: (value: Response) => void;
+    fetchMock.mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        }),
+    );
+    const assertion = expect(
+      provider.chat({ ...request, timeoutMs: 10 }),
+    ).rejects.toMatchObject({ code: LLMErrorCode.NETWORK_ERROR });
+    jest.setSystemTime(Date.now() + 100);
+    resolveFetch(response(events()));
+    await assertion;
+    expect(jest.getTimerCount()).toBe(0);
+  });
   it('does not change legacy non-streaming transport when routing is off', async () => {
     fetchMock.mockResolvedValue(
       new Response(

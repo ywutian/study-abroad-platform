@@ -14,6 +14,37 @@ export function routedError(
 ): LLMProviderError {
   return new LLMProviderError(`Routed OpenAI ${code}`, code, retryable);
 }
+
+/** Abort is best-effort at the transport layer; don't rely on it settling I/O. */
+async function beforeDeadline<T>(
+  operation: () => Promise<T>,
+  signal: AbortSignal,
+  deadline: number,
+): Promise<T> {
+  const expired = () => routedError(LLMErrorCode.NETWORK_ERROR, true);
+  if (signal.aborted || Date.now() >= deadline) throw expired();
+  let abort!: () => void;
+  const cancelled = new Promise<never>((_resolve, reject) => {
+    abort = () => reject(expired());
+    signal.addEventListener('abort', abort, { once: true });
+  });
+  try {
+    const result = await Promise.race([operation(), cancelled]);
+    if (signal.aborted || Date.now() >= deadline) throw expired();
+    return result;
+  } finally {
+    signal.removeEventListener('abort', abort);
+  }
+}
+
+function cancelBody(body: { cancel(): Promise<unknown> } | null | undefined) {
+  // Cleanup must never keep a completed/failed run waiting on a broken peer.
+  try {
+    void body?.cancel().catch(() => undefined);
+  } catch {
+    // AbortController remains the independent transport cleanup mechanism.
+  }
+}
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw routedError();
@@ -176,6 +207,7 @@ export async function* streamRoutedOpenAI(input: {
   request: LLMChatRequest;
 }): AsyncGenerator<LLMStreamChunk> {
   const controller = new AbortController();
+  const deadline = Date.now() + input.timeoutMs;
   const timer = setTimeout(() => controller.abort(), input.timeoutMs);
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
@@ -190,22 +222,27 @@ export async function* streamRoutedOpenAI(input: {
       throw routedError(LLMErrorCode.INVALID_REQUEST);
     if (!input.apiKey.trim()) throw routedError(LLMErrorCode.AUTHENTICATION);
     url.pathname = url.pathname.replace(/\/$/, '') + '/chat/completions';
-    const response = await fetch(url, {
-      method: 'POST',
-      redirect: 'error',
-      signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${input.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...input.body,
-        stream: true,
-        stream_options: { include_usage: true },
-      }),
-    });
+    const response = await beforeDeadline(
+      () =>
+        fetch(url, {
+          method: 'POST',
+          redirect: 'error',
+          signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${input.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...input.body,
+            stream: true,
+            stream_options: { include_usage: true },
+          }),
+        }),
+      controller.signal,
+      deadline,
+    );
     if (!response.ok) {
-      await response.body?.cancel().catch(() => undefined);
+      cancelBody(response.body);
       const status = response.status;
       const code =
         status === 401 || status === 403
@@ -231,7 +268,11 @@ export async function* streamRoutedOpenAI(input: {
     let buffer = '',
       bytes = 0;
     while (true) {
-      const next = await reader.read();
+      const next = await beforeDeadline(
+        () => reader!.read(),
+        controller.signal,
+        deadline,
+      );
       if (next.done) {
         buffer += decode();
         break;
@@ -256,7 +297,7 @@ export async function* streamRoutedOpenAI(input: {
     clearTimeout(timer);
     controller.abort();
     if (reader) {
-      await reader.cancel().catch(() => undefined);
+      cancelBody(reader);
       reader.releaseLock();
     }
   }

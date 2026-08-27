@@ -167,7 +167,9 @@ export async function callApplicationAnalysis(
         : buildPortfolioSystemPrompt(locale),
       [
         {
-          id: school ? `school-${input.schoolId}` : 'portfolio-synthesizer',
+          id: school
+            ? `school-${typeof input.schoolId === 'string' ? input.schoolId : 'unknown'}`
+            : 'portfolio-synthesizer',
           role: 'user',
           timestamp: new Date(),
           content: school

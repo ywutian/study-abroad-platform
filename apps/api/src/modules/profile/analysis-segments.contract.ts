@@ -142,11 +142,10 @@ export function mergeAnalysisSegments(
   assessment: Record<string, unknown>,
   actions: Record<string, unknown>,
 ): Record<string, unknown> {
+  const values = (value: unknown): unknown[] =>
+    Array.isArray(value) ? value : [];
   const unique = (key: string) => [
-    ...new Set([
-      ...(Array.isArray(assessment[key]) ? assessment[key] : []),
-      ...(Array.isArray(actions[key]) ? actions[key] : []),
-    ]),
+    ...new Set<unknown>([...values(assessment[key]), ...values(actions[key])]),
   ];
   return {
     ...assessment,

@@ -33,7 +33,7 @@ const verbose = process.argv.includes('--verbose');
 // Fast-push: skip the slow test suite locally and let CI run it. The pre-push
 // hook passes this so `git push` stays fast; tests still gate the PR in CI.
 const noTest = process.argv.includes('--no-test');
-// Optional local watchdog override (120000..900000 ms); never applies in CI.
+// Optional local watchdog override (120000..3600000 ms); never applies in CI.
 const checkTimeoutMs = verificationTimeoutMs();
 
 type App = 'api' | 'web' | 'mobile' | 'shared';

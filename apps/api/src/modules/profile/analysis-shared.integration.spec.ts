@@ -187,7 +187,11 @@ describe('shared school analysis real service integration', () => {
     expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(prisma.applicationAnalysisRun.update).toHaveBeenCalled();
     const sharedInputs = fetchMock.mock.calls
-      .map(([, init]) => JSON.parse(String(init.body)))
+      .map(([, init]) => {
+        if (typeof init.body !== 'string')
+          throw new Error('Expected JSON body');
+        return JSON.parse(init.body);
+      })
       .filter(
         (body) =>
           body.response_format.json_schema.name === 'analysis_school_shared',

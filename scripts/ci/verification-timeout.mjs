@@ -7,8 +7,8 @@ export function verificationTimeoutMs(env = process.env) {
   if (raw === undefined) return defaultMs;
   if (!/^\d+$/.test(raw)) throw new Error('VERIFY_GATE_TIMEOUT_MS must be an integer');
   const value = Number(raw);
-  if (!Number.isSafeInteger(value) || value < defaultMs || value > 900_000) {
-    throw new Error('VERIFY_GATE_TIMEOUT_MS must be between 120000 and 900000');
+  if (!Number.isSafeInteger(value) || value < defaultMs || value > 3_600_000) {
+    throw new Error('VERIFY_GATE_TIMEOUT_MS must be between 120000 and 3600000');
   }
   return value;
 }
