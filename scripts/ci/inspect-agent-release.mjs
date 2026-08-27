@@ -1,5 +1,18 @@
 import { spawnSync } from 'node:child_process';
 
+// Nest stdout errors may be ingested with DEFAULT severity. Keep the service
+// restriction outside this OR group and select explicit failures, not all LLM logs.
+const providerFailureMarkers = ['OpenAI API error', 'LLM stream failed', 'Authentication failed:'];
+const providerErrorLogQuery =
+  'resource.type="cloud_run_revision" AND resource.labels.service_name="study-abroad-api" AND (' +
+  [
+    'severity>=ERROR',
+    ...['textPayload', 'jsonPayload.message'].flatMap((field) =>
+      providerFailureMarkers.map((marker) => `${field}:${JSON.stringify(marker)}`)
+    ),
+  ].join(' OR ') +
+  ')';
+
 const safeId = (value) =>
   typeof value === 'string' && /^[a-zA-Z0-9_.-]{1,160}$/.test(value) ? value : null;
 export function describeRevision(revision) {
@@ -88,13 +101,7 @@ export function inspectAgentRelease({ project, region, run = spawnSync }) {
     logInspection = 'PASS';
   try {
     providerErrors = summarizeErrors(
-      get([
-        'logging',
-        'read',
-        'resource.type="cloud_run_revision" AND resource.labels.service_name="study-abroad-api" AND severity>=ERROR',
-        '--freshness=24h',
-        '--limit=200',
-      ])
+      get(['logging', 'read', providerErrorLogQuery, '--freshness=24h', '--limit=200'])
     );
   } catch {
     logInspection = 'BLOCKED_READ_PERMISSION_OR_REQUEST';

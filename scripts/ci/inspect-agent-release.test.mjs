@@ -81,3 +81,42 @@ test('inspection overrides the deploy default and unknown endpoint paths are not
   assert.equal(output.endpoint, 'other_https_endpoint');
   assert.doesNotMatch(JSON.stringify(output), /private-value/);
 });
+
+test('inspection finds DEFAULT-severity Nest provider failures without broadening service scope', () => {
+  let query;
+  const result = inspectAgentRelease({
+    project: 'synthetic',
+    region: 'us-central1',
+    run: (_bin, args) => {
+      if (args[0] !== 'logging') return { status: 0, stdout: '{"status":{}}' };
+      query = args[2];
+      const coversDefault =
+        query.includes('textPayload:"OpenAI API error"') &&
+        query.includes('jsonPayload.message:"LLM stream failed"');
+      return {
+        status: 0,
+        stdout: JSON.stringify(
+          coversDefault
+            ? [
+                { severity: 'DEFAULT', textPayload: 'OpenAI API error 401: private-value' },
+                {
+                  severity: 'DEFAULT',
+                  jsonPayload: {
+                    message: 'LLM stream failed: Authentication failed: 401 private-value',
+                  },
+                },
+              ]
+            : []
+        ),
+      };
+    },
+  });
+  assert.equal(result.logInspection, 'PASS');
+  assert.deepEqual(result.providerErrors, { AUTHENTICATION: 2 });
+  assert.match(
+    query,
+    /^resource.type="cloud_run_revision" AND resource.labels.service_name="study-abroad-api" AND \(severity>=ERROR OR /
+  );
+  assert.ok(query.endsWith(')'));
+  assert.doesNotMatch(JSON.stringify(result), /private-value/);
+});

@@ -116,7 +116,7 @@
 
 ## 16. 决策与假设
 
-[REQUESTER] 最新授权覆盖此前“不部署”，不覆盖凭据/IAM变更。[UNRESOLVED] 本机GCP重新认证及生产Provider失败根因阻塞发布，不阻塞本地改造；Owner 用户认证/Codex排查。[DECISION] 不伪造完成、跳CI或把旧成功证据当新版本验证。
+[REQUESTER] 最新授权覆盖此前“不部署”，不覆盖凭据/IAM变更。[RUNTIME] 2026-08-27 15:48 UTC用户重新认证后，GCP描述与日志读取均恢复，无需新增IAM。失败版本01003-por有7条直接上游OpenAI HTTP 401日志及7条传播错误；这些日志severity为DEFAULT，原ERROR-only查询漏报。两版本引用同一凭据，Secret元数据没有部署后新增版本；没有读取密钥值，不能推断密钥归属。[UNRESOLVED] 生产聊天凭据/接口选择仍需用户确认；候选真实矩阵失败仍阻塞默认启用。[DECISION] 不伪造完成、跳CI或把旧成功证据当新版本验证。
 
 <!-- section:implementation-plan -->
 
@@ -130,6 +130,8 @@
 
 [DECISION] CI新增显式只读inspection入口，使用既有部署身份检查活动/最新Revision和错误类别；不访问Secret值、不改IAM。发布前在0流量版本运行完整Harness验收，仍保留100%后的原验收和回滚，不跳原门禁。
 
+[DECISION] 续轮仅修复FR-005的只读日志发现：保留ERROR查询，同时匹配文本/结构化消息中的确定Provider错误标记，以覆盖Nest DEFAULT日志。输出仍仅错误分类与计数；回归必须证明DEFAULT 401不漏报、过滤条件保持服务范围且不输出错误正文。该修复不改变模型调用、凭据或发布阈值。生产凭据确认前不开展新的OpenAI API调用。
+
 <!-- section:implementation-summary -->
 
 ## 18. 实施结果
@@ -141,6 +143,8 @@
 [CODE] 本机并发工作使pre-push的类型/Lint/集成检查触发原120秒watchdog。新增仅本地的 `VERIFY_GATE_TIMEOUT_MS`（120000–3600000）参数；默认和CI仍120000，检查项目/断言不变，不涉及产品运行预算。非法/无限值拒绝，单元测试覆盖。600秒和900秒尝试均保留失败证据，后者Lint输出0错误但进程仍超时，不能据此算通过。
 
 [CODE] 真实矩阵出现网络等待超出deadline；补充fetch/read/cancel不响应取消的三条回归（均先红后绿）。路由传输对连接与读取独立竞争截止信号，检查实际截止时间，清理不再等待底层取消完成；旧非路由传输不变。不声称这已证明历史网络故障的唯一原因，也不承诺在操作系统暂停时JS计时器能实时运行。
+
+[CODE] FR-005续轮修复：`inspect-agent-release.mjs`保留服务范围，将Cloud Logging ERROR条件与确定Provider失败文本/结构化消息标记组成括号内OR，覆盖DEFAULT级别Nest日志，不扩大成全部LLM消息。未改API模型调用或任何Secret。
 
 <!-- section:verification -->
 
@@ -154,10 +158,12 @@
 
 [RUNTIME] 固定波次版本的矩阵 `/tmp/analysis-compact.pdXKFe` 在88/288时停止：共享候选44条中41条完整，3条网络失败，未通过完整门禁。其中两个等待超过100秒；第三个在约30秒请求截止时失败。记录没有重试或删除；停止时在途用量未知。三条取消挂起回归先失败；修复后含迟到成功、401清理、共享分组与路由预算的5 suites/112 tests通过，TypeScript通过。新源版本须重新跑真实小批，不能复旧判为该矩阵通过。
 
+[RUNTIME] 2026-08-27续轮：新增DEFAULT日志发现回归先红（漏计2条合成认证错误）后绿；inspection/pre-promote/watchdog共15项通过。修复后15:53 UTC只读查询成功发现错误分类；按Revision核对01003-por有7条直接OpenAI HTTP 401，00992-zin近24小时有5条直接上游403。仅记录状态码与计数，不输出或保存错误正文/密钥。旧版本仍承接100%，本轮没有生产变更。此前0ae25487的CI 33066959105已全绿，但不覆盖本轮尚未推送的日志修复。
+
 <!-- section:release-decision -->
 
 ## 20. 发布结论
 
 [RUNTIME] 实现源提交 `e71d62cabb88c553f63a2aebd4faf9e83fb07583`，PR #633。同源先导候选4/4完整；扩展矩阵在160/288停止，共享79/80完整，出现一条坏JSON、正常stop标记的真实失败。校验正确拒绝、未重试或删除失败；默认启用门禁FAIL。详见[共享分析报告](reports/AI_ANALYSIS_SHARED_2026-08-27.md)。
 
-[DECISION] AC-001–003工程回归PASS；AC-004真实完整矩阵FAIL/未完成（不可默认开启）；AC-005生产BLOCKED。本轮实现已提交，最终CI和新增回归结果另行绑定，不冒充合并或上线。Owner用户/云管理员恢复认证或明确授权日志读取；Owner Codex随后排查Provider并重新验证。未创建生产测试数据，无待清理生产账号；原始评测留本地、不提交。结构校验PASS不代表发布PASS。
+[DECISION] AC-001–003工程回归PASS；AC-004真实完整矩阵FAIL/未完成（不可默认开启）；AC-005生产BLOCKED。Google认证已恢复，日志漏报已本地修复验证；Owner用户确认生产聊天接口/专用凭据方案，Owner Codex随后实施经授权配置、验证模型和发布。不得把HTTP 401/403猜测为特定密钥归属或自动更换Secret。未创建生产测试数据，无待清理生产账号；原始评测留本地、不提交。结构校验PASS不代表发布PASS。
