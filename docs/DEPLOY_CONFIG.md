@@ -326,6 +326,15 @@ signer workflow, source commit and digest, and only then runs migrations and
 `gcloud run deploy` with `IMAGE@sha256:...`. The short-SHA and `latest` tags are
 discovery aliases, not deployment identities.
 
+Production deployment depends on both the Docker vulnerability scan and SBOM
+jobs succeeding, for main pushes and authorized manual deployment alike. Read-only
+inspection never enables those release jobs. Before migrations, CI additionally
+scans the exact attested Artifact Registry digest with the same pinned Trivy
+action, HIGH/CRITICAL threshold, exit-code 1 and reviewed ignore file. A successful
+GHCR scan alone cannot authorize a separately built deployment image. Both Docker
+stages require OpenSSL/libcrypto3/libssl3 >=3.5.8-r0; a missing fixed package fails
+the build. The deploy-drift gate and negative tests enforce this release policy.
+
 The post-promote closure is not complete until the stable URL is healthy, the
 live Cron Registry matches the generated manifest, Cloud Scheduler is synced,
 the Cloud SQL read-only backup/PITR gate passes, the sanitized Harness artifact
