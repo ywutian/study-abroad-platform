@@ -4,7 +4,7 @@
 
 ## 1. 变更身份
 
-- Change ID: AI-ANALYSIS-RELEASE-20260827；Owner Codex；状态 Intake Ready。
+- Change ID: AI-ANALYSIS-RELEASE-20260827；Owner Codex；状态实现完成、验证有失败、发布BLOCKED。
 - [REQUESTER] 本任务最新授权：查阅资料、完善、测试、自己部署上线。
 - [CODE] 来源：`AI_ANALYSIS_COMPACT.normalized.md`；保留原实现及负面评测记录，不改写历史结论。起始 HEAD `17fb7132fd1fc43bb41bbebd5a1a232a7715b65c`，叠加前轮未提交路由/Provider/compact 工作。
 
@@ -146,7 +146,7 @@
 
 ## 19. 验证证据
 
-[RUNTIME] 历史生产失败证据 `/tmp/harness-release-audit.HkmkWp/harness-acceptance.json`。本轮代码测试NOT RUN；本轮无云变更或合成账号写入。剩余风险见16节。
+[RUNTIME] 历史生产失败证据 `/tmp/harness-release-audit.HkmkWp/harness-acceptance.json`。本轮有只读云核查，无生产变更或合成账号写入。2026-08-27 10:41 UTC，CI 33064063846确认00992-zin承接100%流量，最新01003-por未承接流量；日志读取返回BLOCKED_READ_PERMISSION_OR_REQUEST，不能从空计数推断无错误。剩余风险见16节。
 
 [RUNTIME] 本地阶段性证据：71定向、399 Shared、42 CI脚本通过；首次TypeScript发现响应finishReason类型不一致，修正后通过。新增持久化延迟回归先失败（预期4次、实际5次调用），固定波次后8项集成通过。初始缺少SchoolCard mock的失败另存，不混作产品缺陷。
 
@@ -158,4 +158,6 @@
 
 ## 20. 发布结论
 
-[DECISION] 实施NOT RUN；合并NOT CLAIMED；生产BLOCKED（前置条件未确认）。Owner Codex继续在授权范围内完善和验证；不得据文档结构通过宣称上线。
+[RUNTIME] 实现源提交 `e71d62cabb88c553f63a2aebd4faf9e83fb07583`，PR #633。同源先导候选4/4完整；扩展矩阵在160/288停止，共享79/80完整，出现一条坏JSON、正常stop标记的真实失败。校验正确拒绝、未重试或删除失败；默认启用门禁FAIL。详见[共享分析报告](reports/AI_ANALYSIS_SHARED_2026-08-27.md)。
+
+[DECISION] AC-001–003工程回归PASS；AC-004真实完整矩阵FAIL/未完成（不可默认开启）；AC-005生产BLOCKED。本轮实现已提交，最终CI和新增回归结果另行绑定，不冒充合并或上线。Owner用户/云管理员恢复认证或明确授权日志读取；Owner Codex随后排查Provider并重新验证。未创建生产测试数据，无待清理生产账号；原始评测留本地、不提交。结构校验PASS不代表发布PASS。

@@ -52,8 +52,8 @@
 
 ## 证据与复现
 
-- [脱敏证据](AI_ANALYSIS_COMPACT_2026-08-27.evidence.json)：初始与最终源哈希、全部真实运行摘要、探针结果及模拟manifest。
-- [最终验证摘要](AI_ANALYSIS_COMPACT_2026-08-27.verification.json)：最终源哈希、回归数量、静态检查和发布门禁状态。
+- 本地脱敏证据 `AI_ANALYSIS_COMPACT_2026-08-27.evidence.json`：初始与最终源哈希、全部真实运行摘要、探针结果及模拟manifest。
+- 本地验证摘要 `AI_ANALYSIS_COMPACT_2026-08-27.verification.json`：最终源哈希、回归数量、静态检查和发布门禁状态。上述评测文件不提交仓库，名称仅用于定位本地证据，不是仓库下载链接。
 - [需求与闭环](../AI_ANALYSIS_COMPACT.normalized.md)：FR/AC映射、验证与剩余限制。
 - Runner：`apps/api/scripts/ai-compact-analysis-eval.ts`；默认只输出manifest，`--mock`不访问网络。
 - `--live --pilot`是有上限小批；`--contract-only`只做四个Schema探针。真实输入凭据通过隐藏stdin传入，不写.env或证据。

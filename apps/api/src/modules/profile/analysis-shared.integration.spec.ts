@@ -34,7 +34,7 @@ describe('shared school analysis real service integration', () => {
     global.fetch = originalFetch;
   });
   function setup(
-    failFirst = false,
+    failFirst: boolean | 'malformed' = false,
     maxTokens = 24000,
     delayedPersistence = false,
   ) {
@@ -131,8 +131,13 @@ describe('shared school analysis real service integration', () => {
                   evidenceIds: input.allowedEvidenceIds,
                 }
               : { ...ex.portfolioAssessment, ...ex.portfolioActions };
+      // Synthetic reproduction of a live Relay failure: stop is not proof of valid JSON.
+      const content =
+        failFirst === 'malformed' && n === 1
+          ? '{"schools":[{"schoolId":"SYN_SCHOOL_0","analysis":{}},{"}\n}  }\n]}'
+          : JSON.stringify(value);
       return new Response(
-        `data: ${JSON.stringify({ model: body.model, choices: [{ index: 0, delta: { content: JSON.stringify(value) }, finish_reason: 'stop' }], usage: { prompt_tokens: 3600, completion_tokens: 800, total_tokens: 4400 } })}\n\ndata: [DONE]\n\n`,
+        `data: ${JSON.stringify({ model: body.model, choices: [{ index: 0, delta: { content }, finish_reason: 'stop' }], usage: { prompt_tokens: 3600, completion_tokens: 800, total_tokens: 4400 } })}\n\ndata: [DONE]\n\n`,
       );
     });
     global.fetch = fetchMock as typeof fetch;
@@ -162,21 +167,28 @@ describe('shared school analysis real service integration', () => {
       ).toBe(true);
     },
   );
-  it('degrades only the failing pair, preserves later valid schools and never retries the pair', async () => {
-    const { service, fetchMock } = setup(true);
-    const result = await service['generateFromSnapshot'](
-      syntheticAnalysisSnapshot(5),
-      { mode: 'live', persistRun: false, debug: true },
-    );
-    expect(result.status).toBe('degraded');
-    expect(fetchMock).toHaveBeenCalledTimes(4);
-    expect(result.schools[2].assessment.summary).toBe(
-      ex.schoolAssessment.summary,
-    );
-    expect(
-      result.schools.every((s) => s.prediction?.probability === 0.18),
-    ).toBe(true);
-  });
+  it.each([true, 'malformed'] as const)(
+    'degrades only the failing pair (%s), preserves later valid schools and never retries the pair',
+    async (failure) => {
+      const { service, fetchMock } = setup(failure);
+      const result = await service['generateFromSnapshot'](
+        syntheticAnalysisSnapshot(5),
+        { mode: 'live', persistRun: false, debug: true },
+      );
+      expect(result.status).toBe('degraded');
+      expect(fetchMock).toHaveBeenCalledTimes(4);
+      expect(result.debug?.validationErrors).toEqual([
+        'MODEL_ROUTING_OUTPUT_INVALID',
+        'MODEL_ROUTING_OUTPUT_INVALID',
+      ]);
+      expect(result.schools[2].assessment.summary).toBe(
+        ex.schoolAssessment.summary,
+      );
+      expect(
+        result.schools.every((s) => s.prediction?.probability === 0.18),
+      ).toBe(true);
+    },
+  );
   it('keeps exactly 2/2/1 groups with persisted steps completing at different times', async () => {
     const { service, fetchMock, prisma } = setup(false, 24000, true);
     const result = await service['generateFromSnapshot'](

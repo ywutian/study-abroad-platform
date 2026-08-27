@@ -66,12 +66,12 @@ Luna未通过的是保守的空输出规则：为明确虚构或一般问题保�
 
 最终逐包回归 **5,589项通过**：API334 suites/4,398 tests、Web435、Mobile346、Shared399、Extension11。API/Web/Mobile类型检查、路由/接口一致性、API quality、file-size、any-ratchet与格式检查通过；ESLint零错误、3项非阻断类型警告。本轮新文件secret扫描无泄露。全目录扫描的两项既有安全测试样例告警与并行回归超时均保留在闭环文档，不作“所有命令首次全绿”的声称。
 
-- [首轮证据](AI_SEGMENTED_ANALYSIS_2026-08-26.initial-evidence.json)：逐运行检查、错误码、型号、usage、耗时与响应哈希。
-- [条件候选证据](AI_SEGMENTED_ANALYSIS_2026-08-26.candidate-evidence.json)：源文件/策略哈希和24次全部结果。
-- [记忆证据](AI_SEGMENTED_ANALYSIS_2026-08-26.memory-evidence.json)：夹具、两次预算manifest和60次结果。
-- [混合档位补测](AI_SEGMENTED_ANALYSIS_2026-08-26.mixed-evidence.json)：最终默认策略与两次结果。
+- 本地首轮证据 `AI_SEGMENTED_ANALYSIS_2026-08-26.initial-evidence.json`：逐运行检查、错误码、型号、usage、耗时与响应哈希。
+- 本地条件候选证据 `AI_SEGMENTED_ANALYSIS_2026-08-26.candidate-evidence.json`：源文件/策略哈希和24次全部结果。
+- 本地记忆证据 `AI_SEGMENTED_ANALYSIS_2026-08-26.memory-evidence.json`：夹具、两次预算manifest和60次结果。
+- 本地混合档位补测 `AI_SEGMENTED_ANALYSIS_2026-08-26.mixed-evidence.json`：最终默认策略与两次结果。
 - [需求及回归闭环](../AI_SEGMENTED_ANALYSIS.normalized.md)：功能、验收、测试失败历史、最终验证与交付决定。
-- [最终验证摘要](AI_SEGMENTED_ANALYSIS_2026-08-26.verification.json)：逐包测试计数、文档验收结果和交付源文件哈希。
+- 本地验证摘要 `AI_SEGMENTED_ANALYSIS_2026-08-26.verification.json`：逐包测试计数、文档验收结果和交付源文件哈希。以上评测文件不提交仓库，名称仅用于定位本地证据，不是仓库下载链接。
 
 原合成输出保存在临时目录`/tmp/segmented-analysis.dl6TyD`、`/tmp/segmented-analysis.Ogk18B`、`/tmp/segmented-analysis.r9TFcP`；仓库证据不包含请求凭据、真实用户材料或完整会话。临时目录可能被系统清理，不作为永久原文归档。
 

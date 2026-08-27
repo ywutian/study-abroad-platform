@@ -38,7 +38,7 @@
 | 规划 | 已有成功搜索检查点                               | 使用已有结果，不重复搜索或写入               |
 | 记忆 | 最新纠正与检索注入                               | 采用 25k / CS，不采用旧事实或伪造秘密        |
 
-合成输入及系统提示词保存于 [fixtures](AI_MODEL_SELECTION_SCREEN_2026-08-26.fixtures.json)。不存在真实申请材料、个人记忆或账号凭据。
+合成输入及系统提示词保存于本地 `AI_MODEL_SELECTION_SCREEN_2026-08-26.fixtures.json`，不提交仓库。不存在真实申请材料、个人记忆或账号凭据。
 
 ## 结果
 
@@ -127,7 +127,7 @@ Codex 主代理另做了定性抽查，并非独立裁判或人工招生专家�
 - 冻结用例源 SHA-256：`eaa5b02db6f2d55924dd1384ef9b6b145392eafd2364a353227cb585c02119d3`。
 - 业务系统提示词源 SHA-256：`5d46968935d64cba07075efe5066a37d98fc56908bead10bb888f6a7825cbad1`。
 - 完整原始合成响应 ledger SHA-256：`380ec0f736fddf609d09abc7f43f63bca99a61f8cb77cdb3adc5bb5e1d7d8cbc`。
-- [逐次脱敏证据](AI_MODEL_SELECTION_SCREEN_2026-08-26.evidence.json) 包含 144 个唯一调用组合、原始/复核分、错误码、耗时、报告 usage、响应内容哈希、冻结 manifest 和完成记录。
+- 本地逐次脱敏证据 `AI_MODEL_SELECTION_SCREEN_2026-08-26.evidence.json` 包含 144 个唯一调用组合、原始/复核分、错误码、耗时、报告 usage、响应内容哈希、冻结 manifest 和完成记录；该评测文件不提交仓库，名称不是仓库下载链接。
 - 原始合成响应、原始评分器、运行与复核脚本留在本机 `/tmp/agent-model-comparison.ht2TKg`；临时文件可能被系统清理，不承诺永久保留。
 - 持久化报告和逐次脱敏指标不包含凭据、完整响应、用户资料、会话或工具参数；合成 fixtures 单独保存供复测。
 - 没有修改生产环境、账号、数据库、Feature Flag、模型配置或应用代码；没有部署、提交或推送；用户未跟踪目录保持原样。
