@@ -125,7 +125,6 @@ export class EmbeddingAcceptanceService {
           this.embedding.cosineSimilarity(queryVector, batch[0]);
       const recalled = await this.memory.searchMemories(targetUserId, query, {
         limit: 20,
-        minSimilarity: 0,
       });
       result.semanticRecall =
         result.vectorStored &&
@@ -134,7 +133,7 @@ export class EmbeddingAcceptanceService {
       const isolated = await this.memory.searchMemories(
         isolationUserId,
         query,
-        { limit: 20, minSimilarity: 0 },
+        { limit: 20 },
       );
       result.userIsolation =
         recalled.length > 0 &&

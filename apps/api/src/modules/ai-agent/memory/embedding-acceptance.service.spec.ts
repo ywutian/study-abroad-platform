@@ -93,9 +93,21 @@ describe('Embedding synthetic acceptance', () => {
     expect(prisma.memory.deleteMany).not.toHaveBeenCalled();
   });
   it('checks storage, semantic recall, both isolation paths and scoped cleanup', async () => {
-    const { service, prisma } = create();
+    const { service, prisma, memory } = create();
     const result = await service.run('admin', 'a', 'b');
     expect(Object.values(result).every((value) => value === true)).toBe(true);
+    expect(memory.searchMemories).toHaveBeenNthCalledWith(
+      1,
+      'a',
+      expect.any(String),
+      { limit: 20 },
+    );
+    expect(memory.searchMemories).toHaveBeenNthCalledWith(
+      2,
+      'b',
+      expect.any(String),
+      { limit: 20 },
+    );
     expect(prisma.memory.deleteMany).toHaveBeenCalledWith({
       where: {
         userId: { in: ['a', 'b'] },

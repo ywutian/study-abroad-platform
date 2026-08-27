@@ -58,6 +58,11 @@ injection to preserve the type-safety ratchet. Neither gate was weakened.
 
 ## Release criteria
 
+An additional real-provider probe measured positive cosine 0.4763 versus negative
+0.1661; the positive vector component was 0.3334, above the product's default
+combined-score threshold 0.3. Production acceptance uses that default threshold,
+without lowering it for synthetic fixtures.
+
 Use existing CI only: all checks → no-traffic revision → strict acceptance →
 100% traffic → strict acceptance again → independent alert monitor → health,
 Cron/Scheduler, backup/PITR, and retained rollback revision.
