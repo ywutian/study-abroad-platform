@@ -7,7 +7,16 @@
   "llm": {
     "provider": "openai",
     "model": "gpt-4o-mini",
-    "baseUrl": "https://api.openai.com/v1"
+    "baseUrl": "https://api.openai.com/v1",
+    "productionEmbeddingBaseUrl": "https://xh.v1api.cc/v1",
+    "productionChat": {
+      "model": "gpt-5.4",
+      "baseUrl": "https://claude-relay.liziqiao.com/openai/v1",
+      "secret": "openai-chat-api-key",
+      "secretVersion": 1,
+      "transport": "sse",
+      "reasoningEffort": "none"
+    }
   },
   "services": {
     "prod": "study-abroad-api",

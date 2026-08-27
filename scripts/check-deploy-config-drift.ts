@@ -32,6 +32,15 @@ const CONFIG = JSON.parse(
     provider: string;
     model: string;
     baseUrl: string;
+    productionEmbeddingBaseUrl: string;
+    productionChat: {
+      model: string;
+      baseUrl: string;
+      secret: string;
+      secretVersion: number;
+      transport: string;
+      reasoningEffort: string;
+    };
   };
 };
 
@@ -77,16 +86,15 @@ function main() {
     }
   }
 
-  // Production and staging share one Provider credential. Keep provider,
-  // endpoint, and model atomic so a key for one service cannot silently be
-  // mounted against another OpenAI-compatible gateway.
+  // Keep legacy settings explicit; production preserves its existing embedding
+  // endpoint while chat is bound separately below. Staging is unchanged.
   for (const workflowName of ['ci.yml', 'deploy-staging.yml']) {
     const workflowPath = path.join(WF_DIR, workflowName);
     const text = fs.readFileSync(workflowPath, 'utf8');
     const expected = [
       `LLM_PROVIDER=${CONFIG.llm.provider}`,
       `OPENAI_MODEL=${CONFIG.llm.model}`,
-      `OPENAI_BASE_URL=${CONFIG.llm.baseUrl}`,
+      `OPENAI_BASE_URL=${workflowName === 'ci.yml' ? CONFIG.llm.productionEmbeddingBaseUrl : CONFIG.llm.baseUrl}`,
     ];
     for (const setting of expected) {
       if (!text.includes(setting)) {
@@ -105,6 +113,23 @@ function main() {
 
   const productionWorkflowPath = path.join(WF_DIR, 'ci.yml');
   const productionWorkflow = fs.readFileSync(productionWorkflowPath, 'utf8');
+  const chat = CONFIG.llm.productionChat;
+  for (const setting of [
+    `OPENAI_CHAT_MODEL=${chat.model}`,
+    `OPENAI_CHAT_BASE_URL=${chat.baseUrl}`,
+    `OPENAI_CHAT_TRANSPORT=${chat.transport}`,
+    `OPENAI_CHAT_REASONING_EFFORT=${chat.reasoningEffort}`,
+    `OPENAI_CHAT_API_KEY=${chat.secret}:${chat.secretVersion}`,
+    'OPENAI_API_KEY=openai-api-key:latest',
+  ]) {
+    // Require an exact env/secret token, not a prefix or a commented declaration.
+    const lines = productionWorkflow
+      .split('\n')
+      .filter((line) => /^\s*--set-(env-vars|secrets)=/.test(line));
+    if (!lines.some((line) => line.split(/[|,"]/).includes(setting))) {
+      errors.push(`ci.yml: missing canonical isolated chat/embedding setting "${setting}"`);
+    }
+  }
   const provenanceRequirements: Array<[RegExp, string]> = [
     [/attestations:\s*write/, 'grant attestations: write'],
     [/uses:\s*actions\/attest@[a-f0-9]{40}/, 'pin and invoke actions/attest'],

@@ -3,7 +3,11 @@ export function configuredRuntimeModel(
   get: (key: string) => string | undefined,
 ): string | undefined {
   const key =
-    get('LLM_PROVIDER') === 'anthropic' ? 'ANTHROPIC_MODEL' : 'OPENAI_MODEL';
+    get('LLM_PROVIDER') === 'anthropic'
+      ? 'ANTHROPIC_MODEL'
+      : get('OPENAI_CHAT_MODEL') !== undefined
+        ? 'OPENAI_CHAT_MODEL'
+        : 'OPENAI_MODEL';
   return get(key)?.trim() || undefined;
 }
 

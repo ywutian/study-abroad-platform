@@ -39,6 +39,30 @@ test('upstream error payloads become only fixed categories and counts', () => {
   ]);
   assert.deepEqual(output, { AUTHENTICATION: 1, QUOTA: 1 });
 });
+test('inspection describes the effective dedicated chat model and binding', () => {
+  const result = describeRevision({
+    spec: {
+      containers: [
+        {
+          env: [
+            { name: 'OPENAI_MODEL', value: 'gpt-4o-mini' },
+            { name: 'OPENAI_BASE_URL', value: 'https://api.openai.com/v1' },
+            { name: 'OPENAI_CHAT_MODEL', value: 'gpt-5.4' },
+            { name: 'OPENAI_CHAT_BASE_URL', value: 'https://claude-relay.liziqiao.com/openai/v1' },
+            {
+              name: 'OPENAI_CHAT_API_KEY',
+              valueFrom: { secretKeyRef: { name: 'private-reference' } },
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.equal(result.model, 'gpt-5.4');
+  assert.equal(result.endpoint, 'https://claude-relay.liziqiao.com/openai/v1');
+  assert.equal(result.providerSecretBound, true);
+  assert.doesNotMatch(JSON.stringify(result), /private-reference/);
+});
 test('inspection uses only describe/logging read, never secrets access or writes', () => {
   const commands = [];
   const result = inspectAgentRelease({

@@ -24,7 +24,7 @@ export function describeRevision(revision) {
   );
   let endpoint = null;
   try {
-    const url = new URL(env.OPENAI_BASE_URL);
+    const url = new URL(env.OPENAI_CHAT_BASE_URL ?? env.OPENAI_BASE_URL);
     if (!url.username && !url.password && !url.search && !url.hash && url.protocol === 'https:')
       endpoint = [
         'https://api.openai.com/v1',
@@ -38,14 +38,16 @@ export function describeRevision(revision) {
   return {
     revision: safeId(revision?.metadata?.name),
     provider: safeId(env.LLM_PROVIDER),
-    model: safeId(env.OPENAI_MODEL),
+    model: safeId(env.OPENAI_CHAT_MODEL ?? env.OPENAI_MODEL),
     endpoint,
     harness: env.AI_AGENT_HARNESS_V1 === 'true',
     routing: env.AI_AGENT_MODEL_ROUTING_V1 === 'true',
     context: env.AI_AGENT_CONTEXT_V1 === 'true',
     approvals: env.AI_AGENT_APPROVALS_V1 === 'true',
     providerSecretBound: (container.env ?? []).some(
-      (item) => item.name === 'OPENAI_API_KEY' && !!item.valueFrom?.secretKeyRef
+      (item) =>
+        item.name === (env.OPENAI_CHAT_BASE_URL ? 'OPENAI_CHAT_API_KEY' : 'OPENAI_API_KEY') &&
+        !!item.valueFrom?.secretKeyRef
     ),
     ready:
       revision?.status?.conditions?.some((c) => c.type === 'Ready' && c.status === 'True') === true,

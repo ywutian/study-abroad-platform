@@ -11,14 +11,16 @@ workflow"_. The shared values kept drifting because nothing tied them together.
 
 `.github/deploy-config.json` declares the canonical shared constants:
 
-| Key                                  | Value                                           | Used by                                            |
-| ------------------------------------ | ----------------------------------------------- | -------------------------------------------------- |
-| `vpcConnector`                       | `study-abroad-connector`                        | every `--vpc-connector` flag                       |
-| `artifactRegistry`                   | `study-abroad/api`                              | every `…-docker.pkg.dev/$PROJECT/<here>` image     |
-| `regionSecret`                       | `GCP_REGION`                                    | every `--region` (via `${{ secrets.GCP_REGION }}`) |
-| `projectSecret`                      | `GCP_PROJECT_ID`                                | project id                                         |
-| `llm.provider` / `model` / `baseUrl` | `openai` / `gpt-4o-mini` / official OpenAI API  | production and staging Agent/domain LLM calls      |
-| `services.prod` / `services.staging` | `study-abroad-api` / `study-abroad-api-staging` | `gcloud run deploy` target                         |
+| Key                                  | Value                                             | Used by                                            |
+| ------------------------------------ | ------------------------------------------------- | -------------------------------------------------- |
+| `vpcConnector`                       | `study-abroad-connector`                          | every `--vpc-connector` flag                       |
+| `artifactRegistry`                   | `study-abroad/api`                                | every `…-docker.pkg.dev/$PROJECT/<here>` image     |
+| `regionSecret`                       | `GCP_REGION`                                      | every `--region` (via `${{ secrets.GCP_REGION }}`) |
+| `projectSecret`                      | `GCP_PROJECT_ID`                                  | project id                                         |
+| `llm.provider` / `model` / `baseUrl` | `openai` / `gpt-4o-mini` / official OpenAI API    | staging and legacy fallback                        |
+| `llm.productionChat`                 | GPT-5.4 / approved Relay / dedicated secret / SSE | production chat and domain LLM calls               |
+| `llm.productionEmbeddingBaseUrl`     | existing production endpoint                      | preserve production embedding configuration        |
+| `services.prod` / `services.staging` | `study-abroad-api` / `study-abroad-api-staging`   | `gcloud run deploy` target                         |
 
 Deploy workflows (`ci.yml`, `deploy-staging.yml`, `preview.yml`,
 `preview-cleanup.yml`, `school-media-backfill.yml`) still inline these values in
@@ -32,9 +34,9 @@ inline value matches the canonical source, so they can no longer diverge.
 - the VPC connector name matches `vpcConnector`,
 - the Artifact Registry image matches `artifactRegistry`,
 - the region comes from `${{ secrets.GCP_REGION }}` — **never a hardcoded region**.
-- production and staging use the canonical Provider, model, and Base URL as an
-  atomic set, so the shared `openai-api-key` secret cannot be paired with a
-  different third-party gateway by deploy drift.
+- production chat uses its dedicated canonical endpoint/model/transport/secret as
+  an atomic set; staging retains its original configuration. Production embedding
+  retains the active revision's endpoint and original `openai-api-key` binding.
 - the production image digest is attested and verified against the source commit
   and signer workflow before both migration and Cloud Run deployment.
 
@@ -233,6 +235,32 @@ in pre-push, and in CI.
 `lint:ai-agent-doc-facts` independently derives the Agent and ToolName counts
 from source, checks ToolName/ToolMetadata exhaustiveness, and fails if the module
 BRIEF or AI architecture keeps a stale count.
+
+### Dedicated OpenAI-compatible chat
+
+The approved production chat configuration uses `OPENAI_CHAT_API_KEY`,
+`OPENAI_CHAT_BASE_URL`, and `OPENAI_CHAT_MODEL` together. Partial or unsafe URL
+configuration fails startup; it never falls back to an embedding key for a chat
+endpoint. Omitting all dedicated settings preserves the old path.
+`OPENAI_CHAT_TRANSPORT=sse` reuses the existing strict stream parser for both
+ordinary and streaming callers; no second Provider is registered. The configured
+`OPENAI_CHAT_REASONING_EFFORT=none` applies to non-routed calls only; routed calls
+retain their frozen policy. Native Claude and task routing remain off.
+
+Production uses Secret Manager `openai-chat-api-key:1`; it does not overwrite
+`openai-api-key:latest`. The original active revision 00992-zin uses
+`https://xh.v1api.cc/v1` for Embedding. This release preserves that address,
+`text-embedding-3-small`, and its existing key; preserving them is not a claim
+that the embedding provider is healthy. Moderation continues using its old key
+and endpoint. Staging/preview are not switched to Relay.
+
+The synthetic live contract entry point is
+`node --import tsx apps/api/scripts/ai-chat-contract-probe.ts --live` with dedicated
+settings injected by a protected environment. It checks ordinary responses,
+streaming, strict JSON output and inert tool calls, prints only verdicts/usage/
+duration, and never executes a business tool. Production acceptance remains
+mandatory before and after promotion. Shared analysis is still disabled until
+its independent quality gate passes.
 
 ### Native Claude (implemented, not enabled in production)
 

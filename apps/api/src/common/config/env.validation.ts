@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Logger } from '@nestjs/common';
+import { resolveOpenAIChatConfig } from './openai-chat.config';
 import { configuredRoutingSnapshot } from '../../modules/ai-agent/routing/model-routing.policy';
 
 /**
@@ -122,6 +123,11 @@ const envSchema = z.object({
 
   // --- AI / LLM (Optional) ---
   OPENAI_API_KEY: z.string().optional(),
+  OPENAI_CHAT_API_KEY: z.string().optional(),
+  OPENAI_CHAT_BASE_URL: z.string().optional(),
+  OPENAI_CHAT_MODEL: z.string().optional(),
+  OPENAI_CHAT_TRANSPORT: z.enum(['json', 'sse']).optional(),
+  OPENAI_CHAT_REASONING_EFFORT: z.enum(['none']).optional(),
   OPENAI_MODEL: z.string().default('gpt-5.4-mini'),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
   LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
@@ -332,6 +338,10 @@ export function validateEnv(
     throw new Error(errorMessage);
   }
 
+  resolveOpenAIChatConfig(
+    (key) => result.data[key as keyof typeof result.data] as string | undefined,
+  );
+
   if (
     result.data.LLM_PROVIDER === 'anthropic' &&
     (result.data.AI_AGENT_NATIVE_CLAUDE_V1 !== 'true' ||
@@ -429,7 +439,8 @@ export function validateEnv(
     // Recommended but non-fatal
     if (!result.data.OPENAI_API_KEY) {
       logger.warn(
-        result.data.LLM_PROVIDER === 'anthropic'
+        result.data.LLM_PROVIDER === 'anthropic' ||
+          result.data.OPENAI_CHAT_API_KEY
           ? 'OPENAI_API_KEY is not set — OpenAI embeddings and OpenAI-only jobs remain unavailable'
           : 'OPENAI_API_KEY is not set — AI chat, essay review, and recommendation features disabled',
       );

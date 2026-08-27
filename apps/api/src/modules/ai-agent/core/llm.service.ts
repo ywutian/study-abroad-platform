@@ -318,10 +318,12 @@ export class LLMService {
       model,
     );
     let output = '';
+    let reportedUsage: { totalTokens: number } | undefined;
 
     try {
       for await (const chunk of this.provider.chatStream(request)) {
         if (chunk.type === 'content' && chunk.content) output += chunk.content;
+        if (chunk.type === 'done' && chunk.usage) reportedUsage = chunk.usage;
         yield adaptStreamChunk(chunk);
       }
     } catch (error) {
@@ -332,7 +334,7 @@ export class LLMService {
       };
     } finally {
       if (reservation && options.runBudget) {
-        options.runBudget.settleLlmCall(reservation, output);
+        options.runBudget.settleLlmCall(reservation, output, reportedUsage);
       }
     }
   }

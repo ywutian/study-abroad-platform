@@ -46,6 +46,14 @@ CORS_ORIGINS=http://localhost:4100
 OPENAI_API_KEY=sk-your_openai_api_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
+
+# Optional dedicated chat configuration. Set key/base/model together or omit all.
+# Existing OPENAI_* remain the embedding/moderation configuration.
+# OPENAI_CHAT_API_KEY is supplied only from a managed secret, never committed.
+# OPENAI_CHAT_BASE_URL=https://your-approved-chat-provider.example/v1
+# OPENAI_CHAT_MODEL=gpt-5.4
+# OPENAI_CHAT_TRANSPORT=sse
+# OPENAI_CHAT_REASONING_EFFORT=none
 LLM_PROVIDER=openai
 # Harness core. All flags default off for local compatibility.
 AI_AGENT_NATIVE_CLAUDE_V1=false
@@ -234,6 +242,14 @@ FRONTEND_URL=https://your-app.pages.dev
 OPENAI_API_KEY=sk-你的密钥
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
+
+# 聊天专用配置：API_KEY/BASE_URL/MODEL必须一起配置；省略则兼容原路径。
+# 原OPENAI_*仍供Embedding/Moderation使用，不要改成聊天Relay地址。
+# OPENAI_CHAT_API_KEY仅从受保护Secret注入，禁止提交。
+# OPENAI_CHAT_BASE_URL=https://your-approved-chat-provider.example/v1
+# OPENAI_CHAT_MODEL=gpt-5.4
+# OPENAI_CHAT_TRANSPORT=sse
+# OPENAI_CHAT_REASONING_EFFORT=none
 LLM_PROVIDER=openai
 # Harness core. Enable production values only through reviewed deploy config.
 AI_AGENT_NATIVE_CLAUDE_V1=false
