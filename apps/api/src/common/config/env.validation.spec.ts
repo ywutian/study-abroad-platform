@@ -37,6 +37,7 @@ describe('AI agent harness environment gate', () => {
     const result = validateEnv({ ...requiredConfig, NODE_ENV: 'test' });
 
     expect(result.LLM_PROVIDER).toBe('openai');
+    expect(result.AI_AGENT_NATIVE_CLAUDE_V1).toBe('false');
     expect(result.AI_AGENT_HARNESS_V1).toBe('false');
     expect(result.AI_AGENT_HARNESS_MODE).toBe('advisory');
     expect(result.AI_AGENT_APPROVALS_V1).toBe('false');
@@ -86,7 +87,7 @@ describe('AI agent harness environment gate', () => {
     expect(result.AI_AGENT_CONTEXT_RECENT_MESSAGES).toBe(8);
   });
 
-  it('rejects providers without a runtime implementation', () => {
+  it('rejects native Claude without an explicit complete opt-in', () => {
     expect(() =>
       validateEnv({
         ...requiredConfig,
@@ -94,6 +95,34 @@ describe('AI agent harness environment gate', () => {
         LLM_PROVIDER: 'anthropic',
       }),
     ).toThrow(/LLM_PROVIDER/);
+  });
+
+  it('accepts the explicitly configured native provider', () => {
+    const result = validateEnv({
+      ...requiredConfig,
+      NODE_ENV: 'test',
+      LLM_PROVIDER: 'anthropic',
+      AI_AGENT_NATIVE_CLAUDE_V1: 'true',
+      ANTHROPIC_API_KEY: 'synthetic',
+      ANTHROPIC_MODEL: 'claude-sonnet-5',
+      ANTHROPIC_BASE_URL: 'https://relay.example/api/v1',
+    });
+    expect(result.LLM_PROVIDER).toBe('anthropic');
+    expect(result.ANTHROPIC_MODEL).toBe('claude-sonnet-5');
+  });
+
+  it.each([
+    'http://relay.example',
+    'https://user:secret@relay.example',
+    'https://relay.example?key=value',
+  ])('rejects unsafe native base URL', (url) => {
+    expect(() =>
+      validateEnv({
+        ...requiredConfig,
+        NODE_ENV: 'test',
+        ANTHROPIC_BASE_URL: url,
+      }),
+    ).toThrow(/ANTHROPIC_BASE_URL/);
   });
 
   it('refuses evolution or auto-publish when their parent feature is disabled', () => {

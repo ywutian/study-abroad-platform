@@ -34,7 +34,7 @@ import {
 } from './essay-debate.prompts';
 
 /**
- * Phase 2 V1 PR2 — real Claude integration + 6 context classes.
+ * Real unified LLM integration + 6 context classes.
  *
  * What this service does:
  *  1. Daily cap + per-user cap (Redis, PR1).
@@ -48,7 +48,7 @@ import {
  *     integrity" metric the Day 7 decision gate measures).
  *  6. Persist user + AI turn, charge AI_ESSAY_DEBATE_TURN, return.
  *
- * If Claude fails (5xx, parse-error, schema-violation) we decrement the
+ * If the provider fails (5xx, parse-error, schema-violation) we decrement the
  * user's daily-cap counter so they don't burn a turn on a backend error.
  *
  * Red-team rule baked in here: the AI turn shape has NO `concedes` field
@@ -210,11 +210,9 @@ export class EssayDebateService {
         ],
         {
           temperature: 0.3,
+          taskType: 'essay.debate',
           maxTokens: 800,
           userId,
-          providerOptions: {
-            model: process.env.ANTHROPIC_MODEL || undefined,
-          },
         },
       );
     } catch (err) {

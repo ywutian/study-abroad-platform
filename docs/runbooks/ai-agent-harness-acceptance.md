@@ -39,6 +39,7 @@ synthetic account and synthetic content.
 build and migrate
   → deploy revision with --no-traffic
   → health and Cron checks against tagged revision
+  → full synthetic Harness acceptance and strict evidence validation on tagged revision
   → direct atomic traffic switch to 100%
   → stable-URL health and Cron checks
   → production Harness acceptance
@@ -49,6 +50,11 @@ build and migrate
 Any failed post-promotion check triggers the workflow rollback path. Scheduler
 topology is synchronized only after the live registry is proven, and stale jobs
 are pruned after the new service is accepted.
+
+An isolated-revision acceptance failure blocks promotion. The pre-promotion runner
+uses the same protected administrator secret and a fresh disposable synthetic
+account, and uploads a separate sanitized `ai-agent-harness-pre-promote-<commit>`
+artifact. It does not replace the required post-promotion run against the stable URL.
 
 ## Automated runner
 

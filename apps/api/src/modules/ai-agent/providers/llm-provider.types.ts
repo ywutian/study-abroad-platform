@@ -42,6 +42,12 @@ export interface LLMChatRequest {
   model: string;
   temperature?: number;
   maxTokens?: number;
+  /** Transport deadline; bounded by the provider's server-side timeout. */
+  timeoutMs?: number;
+  /** Strict opt-in task routing contract; legacy transport remains unchanged. */
+  routed?: boolean;
+  /** Set by the trusted task policy, not arbitrary providerOptions. */
+  reasoningEffort?: 'none' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
   tools?: LLMToolDefinition[];
   toolChoice?: 'auto' | 'none' | 'required' | { name: string };
   /** Provider-specific options (JSON mode, thinking, etc.) */
@@ -49,6 +55,7 @@ export interface LLMChatRequest {
 }
 
 export interface LLMChatResponse {
+  model?: string;
   content: string;
   toolCalls?: LLMToolCall[];
   finishReason: 'stop' | 'tool_calls' | 'length' | 'content_filter';
@@ -58,6 +65,8 @@ export interface LLMChatResponse {
 // ── Streaming ────────────────────────────────────────────────
 
 export interface LLMStreamChunk {
+  model?: string;
+  finishReason?: LLMChatResponse['finishReason'];
   type:
     | 'content'
     | 'tool_call_start'
@@ -91,6 +100,8 @@ export enum LLMErrorCode {
   SERVER_ERROR = 'SERVER_ERROR',
   NETWORK_ERROR = 'NETWORK_ERROR',
   INVALID_REQUEST = 'INVALID_REQUEST',
+  MODEL_MISMATCH = 'MODEL_MISMATCH',
+  INVALID_RESPONSE = 'INVALID_RESPONSE',
 }
 
 export class LLMProviderError extends Error {

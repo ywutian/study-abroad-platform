@@ -3,6 +3,10 @@ import { AgentApprovalStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { AgentRunBudgetV1, ApprovalRequest } from './agent-run-state';
 import { isRecord } from './agent-run-state';
+import {
+  configuredRoutingSnapshot,
+  parseRoutingSnapshot,
+} from '../routing/model-routing.policy';
 
 export function approvalTtlMs(config: ConfigService): number {
   return config.get<number>('AI_AGENT_APPROVAL_TTL_MS', 15 * 60 * 1000);
@@ -19,12 +23,14 @@ export function executionLeaseMs(config: ConfigService): number {
 export function getConfiguredRunBudget(
   config: ConfigService,
 ): AgentRunBudgetV1 {
+  const routing = configuredRoutingSnapshot((key) => config.get(key));
   return {
     version: 1,
     maxTokens: config.get<number>('AI_AGENT_MAX_TOKENS_PER_RUN', 24000),
     maxToolCalls: 16,
     maxSupplementalRounds: 2,
     maxDurationMs: config.get<number>('AI_AGENT_MAX_DURATION_MS', 120000),
+    ...(routing ? { routing } : {}),
   };
 }
 
@@ -61,6 +67,9 @@ export async function readPersistedRunBudget(
     maxToolCalls: budget.maxToolCalls,
     maxSupplementalRounds: budget.maxSupplementalRounds,
     maxDurationMs: budget.maxDurationMs,
+    ...(budget.routing !== undefined
+      ? { routing: parseRoutingSnapshot(budget.routing) }
+      : {}),
   };
 }
 

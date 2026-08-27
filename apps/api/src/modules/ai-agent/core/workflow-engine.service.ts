@@ -29,6 +29,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LLMService, LLMResponse } from './llm.service';
+import {
+  parseVerificationFacts,
+  verifySchoolFacts,
+} from './workflow-verification';
 import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
 import { ResilienceService } from './resilience.service';
@@ -51,6 +55,7 @@ import {
   type AgentRunBudgetV1,
 } from './agent-run.service';
 import { AgentRunBudgetTracker } from './agent-run-context';
+import { getConfiguredRunBudget } from './agent-run-settings';
 import type { AgentRunCheckpoint } from './agent-run-state';
 import {
   canonicalize,
@@ -442,9 +447,14 @@ export class WorkflowEngineService {
         scheduledCalls += verifyResult.toolCalls;
         verifyMs = Date.now() - verifyStart;
 
-        this.metricsService?.recordCritique(verifyResult.allCorrect);
+        if (
+          verifyResult.status === 'verified' ||
+          verifyResult.status === 'conflict'
+        ) {
+          this.metricsService?.recordCritique(verifyResult.allCorrect);
+        }
 
-        if (!verifyResult.allCorrect) {
+        if (verifyResult.corrections.length > 0) {
           this.logger.log(
             `[${agentType}] CoVE found ${verifyResult.corrections.length} inaccuracies (${verifyMs}ms), re-solving`,
           );
@@ -471,10 +481,18 @@ export class WorkflowEngineService {
           if (resolvedMessage) {
             finalMessage = resolvedMessage;
           }
-        } else {
+        } else if (verifyResult.allCorrect) {
           this.logger.debug(
             `[${agentType}] CoVE passed — ${verifyResult.verified} facts verified (${verifyMs}ms)`,
           );
+        }
+        if (verifyResult.unverified > 0) {
+          const notice =
+            locale === 'en'
+              ? '\n\nSome factual claims could not be independently checked. Confirm school policies, costs and deadlines with official sources before acting.'
+              : '\n\n部分事实尚未完成独立核验。采取行动前，请向学校官方确认政策、费用和截止日期。';
+          finalMessage += notice;
+          yield { type: 'solve_content', content: notice };
         }
       }
 
@@ -532,7 +550,10 @@ export class WorkflowEngineService {
       checkpoint.version === 2
         ? new AgentRunBudgetTracker(checkpoint.budget, checkpoint.usage)
         : this.isContextEnabled()
-          ? new AgentRunBudgetTracker(this.getRunBudget())
+          ? new AgentRunBudgetTracker({
+              ...this.getRunBudget(),
+              routing: undefined,
+            })
           : undefined;
     const totalStart = new Date(checkpoint.startedAt).getTime() || Date.now();
     let executeMs = checkpoint.executeMs;
@@ -730,6 +751,7 @@ export class WorkflowEngineService {
     const messages = this.memory.getRecentMessages(conversation);
 
     const response = await this.llm.call(systemPrompt, messages, {
+      taskType: 'agent.plan',
       model: config.model,
       temperature: config.temperature,
       maxTokens: config.maxTokens,
@@ -762,6 +784,7 @@ export class WorkflowEngineService {
       instruction;
     const messages = this.memory.getRecentMessages(conversation);
     const response = await this.llm.call(systemPrompt, messages, {
+      taskType: 'agent.replan',
       model: config.model,
       temperature: config.temperature,
       maxTokens: config.maxTokens,
@@ -1241,6 +1264,7 @@ export class WorkflowEngineService {
     );
     const messages = this.memory.getRecentMessages(conversation);
     const llmOpts = {
+      taskType: 'agent.solve' as const,
       model: config.model,
       temperature: config.temperature,
       maxTokens: config.maxTokens,
@@ -1259,6 +1283,8 @@ export class WorkflowEngineService {
       messages,
       llmOpts,
     )) {
+      if (chunk.type === 'error' && budgetTracker?.limits.routing)
+        throw new InternalServerErrorException('MODEL_ROUTING_STREAM_FAILED');
       if (chunk.type === 'content' && chunk.content) {
         fullContent += chunk.content;
         yield chunk.content;
@@ -1333,7 +1359,7 @@ export class WorkflowEngineService {
    * Hard limits:
    * - Max 5 verification questions (cost control)
    * - Only verifiable facts (skip subjective claims)
-   * - Fail-open: if verification itself fails, assume correct
+   * - Unknown verification is never reported as a passed check
    */
   private async verificationPhase(
     agentType: AgentType,
@@ -1344,12 +1370,7 @@ export class WorkflowEngineService {
     locale: string,
     budgetTracker?: AgentRunBudgetTracker,
     remainingToolCalls = 5,
-  ): Promise<{
-    allCorrect: boolean;
-    verified: number;
-    toolCalls: number;
-    corrections: Array<{ claim: string; actual: string; tool: string }>;
-  }> {
+  ): Promise<Awaited<ReturnType<typeof verifySchoolFacts>>> {
     try {
       // Step 1: Extract verifiable facts from the response
       const extractPrompt =
@@ -1372,6 +1393,7 @@ ${solveOutput.slice(0, 2000)}
 用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
 
       const extractResult = await this.llm.call(extractPrompt, [], {
+        taskType: 'agent.verify',
         model: config.reflectionModel || 'gpt-5.4-mini',
         temperature: 0,
         maxTokens: 500,
@@ -1381,94 +1403,37 @@ ${solveOutput.slice(0, 2000)}
         runBudget: budgetTracker,
       });
 
-      const extracted = extractJsonFromLlm<{
-        facts: Array<{ claim: string; schoolName: string; field: string }>;
-      }>(extractResult.content);
+      const facts = parseVerificationFacts(
+        extractJsonFromLlm(extractResult.content),
+      );
 
-      if (!extracted?.facts?.length) {
+      if (!facts?.length) {
         return {
-          allCorrect: true,
+          allCorrect: false,
+          status: facts ? 'not_applicable' : 'unverified',
+          unverified: facts ? 0 : 1,
           verified: 0,
           toolCalls: 0,
           corrections: [],
         };
       }
 
-      // Step 2: Verify each fact against database (parallel)
-      const corrections: Array<{
-        claim: string;
-        actual: string;
-        tool: string;
-      }> = [];
-      let verified = 0;
-      let toolCalls = 0;
-
-      const verifications = extracted.facts
-        .slice(0, Math.max(0, Math.min(5, remainingToolCalls)))
-        .map(async (fact) => {
-          try {
-            toolCalls++;
-            const toolResult = await this.toolExecutor.execute(
-              {
-                id: `cove_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                name: 'get_school_details',
-                arguments: { schoolName: fact.schoolName },
-              },
-              conversation.userId,
-              conversation.context,
-              locale,
-            );
-
-            if (!toolResult.success || !toolResult.result) return;
-
-            const schoolData = toolResult.result as Record<string, unknown>;
-            const rawValue = schoolData[fact.field];
-            const actualValue =
-              typeof rawValue === 'string' || typeof rawValue === 'number'
-                ? String(rawValue)
-                : 'N/A';
-
-            // Simple mismatch check: if the claim contains a number, compare with actual
-            const claimNumbers = fact.claim.match(/[\d.]+%?/g);
-            const actualNumbers = actualValue.match(/[\d.]+%?/g);
-
-            if (claimNumbers && actualNumbers) {
-              const claimNum = parseFloat(claimNumbers[0]);
-              const actualNum = parseFloat(actualNumbers[0]);
-              if (
-                !isNaN(claimNum) &&
-                !isNaN(actualNum) &&
-                Math.abs(claimNum - actualNum) > 0.5
-              ) {
-                corrections.push({
-                  claim: fact.claim,
-                  actual: `${fact.field}: ${actualValue}`,
-                  tool: 'get_school_details',
-                });
-                return;
-              }
-            }
-            verified++;
-          } catch {
-            // Verification tool failed — skip this fact (fail-open)
-          }
-        });
-
-      await Promise.allSettled(verifications);
-
-      return {
-        allCorrect: corrections.length === 0,
-        verified,
-        toolCalls,
-        corrections,
-      };
+      return await verifySchoolFacts(
+        facts,
+        this.toolExecutor,
+        conversation,
+        locale,
+        remainingToolCalls,
+      );
     } catch (error) {
       if (this.isBudgetError(error)) throw error;
       this.logger.warn(
-        `[${agentType}] CoVE failed, defaulting to pass: ${error instanceof Error ? error.message : String(error)}`,
+        `[${agentType}] CoVE unavailable; factual claims remain unverified`,
       );
       return {
-        allCorrect: true,
+        allCorrect: false,
+        status: 'unverified',
+        unverified: 1,
         verified: 0,
         toolCalls: 0,
         corrections: [],
@@ -1505,6 +1470,7 @@ ${solveOutput.slice(0, 2000)}
     const systemPrompt = basePrompt + correctionSuffix;
     const messages = this.memory.getRecentMessages(conversation);
     const llmOpts = {
+      taskType: 'agent.revise' as const,
       model: config.model,
       temperature: config.temperature,
       maxTokens: config.maxTokens,
@@ -1521,6 +1487,8 @@ ${solveOutput.slice(0, 2000)}
       messages,
       llmOpts,
     )) {
+      if (chunk.type === 'error' && budgetTracker?.limits.routing)
+        throw new InternalServerErrorException('MODEL_ROUTING_STREAM_FAILED');
       if (chunk.type === 'content' && chunk.content) {
         fullContent += chunk.content;
         yield chunk.content;
@@ -1591,15 +1559,7 @@ ${solveOutput.slice(0, 2000)}
   }
 
   private getRunBudget(): AgentRunBudgetV1 {
-    return {
-      version: 1,
-      maxTokens:
-        this.configService?.get<number>('AI_AGENT_MAX_TOKENS_PER_RUN') ?? 24000,
-      maxToolCalls: MAX_TOOL_CALLS_PER_RUN,
-      maxSupplementalRounds: MAX_SUPPLEMENTAL_PLANNING_ROUNDS,
-      maxDurationMs:
-        this.configService?.get<number>('AI_AGENT_MAX_DURATION_MS') ?? 120000,
-    };
+    return getConfiguredRunBudget(this.configService ?? new ConfigService());
   }
 
   private isBudgetError(error: unknown): boolean {

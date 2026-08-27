@@ -26,6 +26,7 @@ import { LLMResponse } from './llm.service';
 import { ToolPolicyService } from './tool-policy.service';
 import { TOOLS } from '../config/tools.config';
 import { AgentRunService, getApprovalFingerprint } from './agent-run.service';
+import { routingFixture } from '../routing/model-routing.fixtures';
 
 // Helper: create a minimal valid LLMResponse
 function mockLLMResponse(
@@ -146,6 +147,140 @@ describe('WorkflowEngineService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it.each([
+    'extract-error',
+    'invalid-extraction',
+    'tool-error',
+    'missing-value',
+    'budget-limit',
+  ])('does not certify facts when verification is %s', async (scenario) => {
+    const facts = {
+      facts: [
+        {
+          claim: 'Synthetic tuition is 30000',
+          schoolName: 'Synthetic',
+          field: 'tuition',
+        },
+      ],
+    };
+    if (scenario === 'extract-error')
+      llm.call.mockRejectedValue(new Error('synthetic failure'));
+    else
+      llm.call.mockResolvedValue(
+        mockLLMResponse({
+          content: JSON.stringify(
+            scenario === 'invalid-extraction' ? {} : facts,
+          ),
+        }),
+      );
+    if (scenario === 'tool-error')
+      toolExecutor.execute.mockRejectedValue(new Error('synthetic failure'));
+    else
+      toolExecutor.execute.mockResolvedValue({
+        success: true,
+        result: {},
+        duration: 1,
+      });
+    const result = await service['verificationPhase'](
+      AgentType.SCHOOL,
+      mockConfig,
+      'Synthetic',
+      { steps: [], reasoning: '' } as never,
+      mockConversation,
+      'en',
+      undefined,
+      scenario === 'budget-limit' ? 0 : 5,
+    );
+    expect(result.allCorrect).toBe(false);
+    expect(result.status).toBe('unverified');
+    expect(result.verified).toBe(0);
+    expect(result.corrections).toEqual([]);
+    if (scenario === 'budget-limit')
+      expect(toolExecutor.execute).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [30000, 'verified'],
+    [40000, 'conflict'],
+  ] as const)(
+    'reports only comparable values as %s / %s',
+    async (tuition, status) => {
+      llm.call.mockResolvedValue(
+        mockLLMResponse({
+          content: JSON.stringify({
+            facts: [
+              {
+                claim: 'Synthetic tuition is 30000',
+                schoolName: 'Synthetic',
+                field: 'tuition',
+              },
+            ],
+          }),
+        }),
+      );
+      toolExecutor.execute.mockResolvedValue({
+        success: true,
+        result: { tuition },
+        duration: 1,
+      });
+      const result = await service['verificationPhase'](
+        AgentType.SCHOOL,
+        mockConfig,
+        'Synthetic',
+        { steps: [] } as never,
+        mockConversation,
+        'en',
+      );
+      expect(result.status).toBe(status);
+      expect(result.allCorrect).toBe(status === 'verified');
+    },
+  );
+
+  it('routes workflow stages and never retries a failed routed stream outside the router', async () => {
+    const values: Record<string, unknown> = {
+      AI_AGENT_HARNESS_V1: 'true',
+      AI_AGENT_CONTEXT_V1: 'true',
+      AI_AGENT_MODEL_ROUTING_V1: 'true',
+      LLM_PROVIDER: 'openai',
+      AI_AGENT_MODEL_ROUTING_CONFIG: JSON.stringify(routingFixture()),
+    };
+    configService.get.mockImplementation(
+      (key: string, fallback?: unknown) => values[key] ?? fallback,
+    );
+    llm.call
+      .mockResolvedValueOnce(
+        mockLLMResponse({
+          content: '',
+          toolCalls: [
+            { id: 'synthetic-tool', name: 'get_profile', arguments: {} },
+          ],
+        }),
+      )
+      .mockResolvedValue(mockLLMResponse({ content: 'enough' }));
+    toolExecutor.execute.mockResolvedValue({
+      success: true,
+      result: { gpa: 3.8 },
+      duration: 1,
+    });
+    llm.callStream.mockImplementation(async function* () {
+      yield { type: 'error', error: 'MODEL_MISMATCH' };
+    });
+    const events = await collectEvents(
+      service.runStream(
+        AgentType.PROFILE,
+        mockConfig,
+        mockConversation,
+        TOOLS.filter((t) => t.name === 'get_profile'),
+      ),
+    );
+    const tasks = llm.call.mock.calls.map((call) => call[2]?.taskType);
+    expect(tasks[0]).toBe('agent.plan');
+    expect(tasks).not.toContain('agent.solve');
+    expect(llm.callStream.mock.calls[0][2]?.taskType).toBe('agent.solve');
+    expect(events.some((e) => e.type === 'error')).toBe(true);
+    expect(events.some((e) => e.type === 'done')).toBe(false);
   });
 
   it('loads the budget frozen on a durable run', async () => {

@@ -107,6 +107,29 @@ describe('LLMService', () => {
   });
 
   // === 基础调用测试 ===
+  it('settles non-routed SSE usage against the unchanged run token budget', async () => {
+    const runBudget = new AgentRunBudgetTracker({
+      version: 1,
+      maxTokens: 24000,
+      maxToolCalls: 16,
+      maxSupplementalRounds: 2,
+      maxDurationMs: 120000,
+    });
+    mockProvider.chatStream.mockImplementation(async function* () {
+      yield { type: 'content', content: 'OK' };
+      yield {
+        type: 'done',
+        usage: { promptTokens: 2500, completionTokens: 1, totalTokens: 2501 },
+      };
+    });
+    for await (const chunk of service.callStream('Synthetic', [], {
+      runBudget,
+    })) {
+      expect(chunk.type).not.toBe('error');
+    }
+    expect(runBudget.snapshot(0, 0).estimatedTokens).toBe(2501);
+  });
+
   describe('call', () => {
     it('enforces the run token budget before provider execution', async () => {
       const runBudget = new AgentRunBudgetTracker({

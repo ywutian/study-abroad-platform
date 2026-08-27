@@ -22,6 +22,7 @@
 
 import { execSync } from 'child_process';
 import * as path from 'path';
+import { verificationTimeoutMs } from './ci/verification-timeout.mjs';
 
 // ── Config ──────────────────────────────────────────────────
 
@@ -32,6 +33,8 @@ const verbose = process.argv.includes('--verbose');
 // Fast-push: skip the slow test suite locally and let CI run it. The pre-push
 // hook passes this so `git push` stays fast; tests still gate the PR in CI.
 const noTest = process.argv.includes('--no-test');
+// Optional local watchdog override (120000..3600000 ms); never applies in CI.
+const checkTimeoutMs = verificationTimeoutMs();
 
 type App = 'api' | 'web' | 'mobile' | 'shared';
 
@@ -108,7 +111,7 @@ function runCheck(name: string, command: string): CheckResult {
       encoding: 'utf8',
       cwd: ROOT,
       stdio: verbose ? 'inherit' : 'pipe',
-      timeout: 120_000, // 2 minutes per check
+      timeout: checkTimeoutMs,
     });
     return { name, passed: true, duration: Date.now() - start };
   } catch (err: unknown) {
@@ -145,6 +148,7 @@ function hasRouteChanges(files: string[]): boolean {
 function main() {
   const mode = prePush ? 'pre-push' : stagedOnly ? 'staged' : 'uncommitted';
   console.log(`\n🔍 Verify Gate — checking ${mode} changes...\n`);
+  console.log(`⏱️  Per-check watchdog: ${checkTimeoutMs}ms`);
 
   const files = getChangedFiles();
   if (files.length === 0) {

@@ -1,0 +1,123 @@
+import { z } from 'zod';
+import type { ToolExecutorService } from './tool-executor.service';
+import type { ConversationState } from '../types';
+
+const factsSchema = z
+  .object({
+    facts: z
+      .array(
+        z
+          .object({
+            claim: z.string().trim().min(1).max(500),
+            schoolName: z.string().trim().min(1).max(200),
+            field: z
+              .string()
+              .regex(/^[a-zA-Z][a-zA-Z0-9]{0,63}$/)
+              .refine((value) => !['constructor', 'prototype'].includes(value)),
+          })
+          .strict(),
+      )
+      .max(5),
+  })
+  .strict();
+export function parseVerificationFacts(value: unknown) {
+  const parsed = factsSchema.safeParse(value);
+  return parsed.success ? parsed.data.facts : undefined;
+}
+
+/** Do not equate missing data, dates or ambiguous units with a checked fact. */
+export function compareVerificationNumber(
+  claim: string,
+  actual: unknown,
+): 'verified' | 'conflict' | 'unverified' {
+  if (
+    /(?:\bnot\b|\bat least\b|\bat most\b|\bmore than\b|\bless than\b|不是|不等于|至少|至多|高于|低于|超过|不到|[<>≤≥]|-\d)/i.test(
+      claim,
+    )
+  )
+    return 'unverified';
+  if (typeof actual !== 'number' && typeof actual !== 'string')
+    return 'unverified';
+  const expected = String(actual).trim();
+  if (!/^\d+(?:\.\d+)?%?$/.test(expected)) return 'unverified';
+  const numbers = claim.match(/\d+(?:\.\d+)?%?/g);
+  if (numbers?.length !== 1) return 'unverified';
+  const value = numbers[0];
+  // A percentage versus a ratio may be a unit mismatch; do not invent a verdict.
+  if (value.endsWith('%') !== expected.endsWith('%')) return 'unverified';
+  return Number.parseFloat(value) === Number.parseFloat(expected)
+    ? 'verified'
+    : 'conflict';
+}
+
+export function verificationStatus(
+  verified: number,
+  conflicts: number,
+  unverified: number,
+): 'verified' | 'conflict' | 'unverified' | 'not_applicable' {
+  if (conflicts > 0) return 'conflict';
+  if (unverified > 0) return 'unverified';
+  return verified > 0 ? 'verified' : 'not_applicable';
+}
+
+/** Read-only fact lookup; missing fields and failed lookups remain unknown. */
+export async function verifySchoolFacts(
+  facts: z.infer<typeof factsSchema>['facts'],
+  executor: Pick<ToolExecutorService, 'execute'>,
+  conversation: ConversationState,
+  locale: string,
+  remainingToolCalls: number,
+) {
+  const corrections: Array<{ claim: string; actual: string; tool: string }> =
+    [];
+  let verified = 0;
+  let toolCalls = 0;
+  const limit = Math.max(0, Math.min(5, remainingToolCalls));
+  let unverified = Math.max(0, facts.length - limit);
+  await Promise.allSettled(
+    facts.slice(0, limit).map(async (fact) => {
+      try {
+        toolCalls++;
+        const result = await executor.execute(
+          {
+            id: `cove_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: 'get_school_details',
+            arguments: { schoolName: fact.schoolName },
+          },
+          conversation.userId,
+          conversation.context,
+          locale,
+        );
+        if (!result.success || !result.result) {
+          unverified++;
+          return;
+        }
+        const value = (result.result as Record<string, unknown>)[fact.field];
+        const verdict = compareVerificationNumber(fact.claim, value);
+        if (verdict === 'unverified') {
+          unverified++;
+          return;
+        }
+        if (verdict === 'conflict') {
+          corrections.push({
+            claim: fact.claim,
+            actual: `${fact.field}: ${String(value)}`,
+            tool: 'get_school_details',
+          });
+          return;
+        }
+        verified++;
+      } catch {
+        unverified++;
+      }
+    }),
+  );
+  return {
+    allCorrect: verified > 0 && corrections.length === 0 && unverified === 0,
+    status: verificationStatus(verified, corrections.length, unverified),
+    unverified,
+    verified,
+    toolCalls,
+    corrections,
+  };
+}

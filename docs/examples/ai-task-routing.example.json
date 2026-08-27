@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "revision": "local-evaluation-v1",
+  "provider": "openai",
+  "models": {
+    "gpt-5.4": {
+      "capabilities": ["text", "tools", "json"],
+      "contextWindow": 32000,
+      "maxOutputTokens": 4000
+    },
+    "gpt-5.5": {
+      "capabilities": ["text", "tools", "json"],
+      "contextWindow": 32000,
+      "maxOutputTokens": 4000
+    }
+  },
+  "routes": {
+    "general": {
+      "models": ["gpt-5.4", "gpt-5.5"],
+      "requires": ["text"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "agent.plan": {
+      "models": ["gpt-5.5"],
+      "requires": ["text", "tools"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "agent.replan": {
+      "models": ["gpt-5.5"],
+      "requires": ["text", "tools"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "agent.solve": {
+      "models": ["gpt-5.4", "gpt-5.5"],
+      "requires": ["text"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "agent.verify": {
+      "models": ["gpt-5.5"],
+      "requires": ["text", "json"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "agent.revise": {
+      "models": ["gpt-5.5"],
+      "requires": ["text"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "memory.summary": {
+      "models": ["gpt-5.4", "gpt-5.5"],
+      "requires": ["text"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "memory.extract": {
+      "models": ["gpt-5.4", "gpt-5.5"],
+      "requires": ["text", "json"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "recommendation.generate": {
+      "models": ["gpt-5.4", "gpt-5.5"],
+      "requires": ["text", "json"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "analysis.school": {
+      "models": ["gpt-5.5"],
+      "requires": ["text", "json"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "analysis.portfolio": {
+      "models": ["gpt-5.5"],
+      "requires": ["text", "json"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    },
+    "essay.debate": {
+      "models": ["gpt-5.4", "gpt-5.5"],
+      "requires": ["text"],
+      "timeoutMs": 30000,
+      "maxOutputTokens": 2000
+    }
+  }
+}

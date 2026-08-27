@@ -1,7 +1,7 @@
 /**
  * Provider-neutral LLM interface.
  *
- * Current implementation: OpenAIProvider (including compatible endpoints).
+ * Implementations: OpenAI-compatible (default), native Claude (explicit opt-in).
  */
 
 import {

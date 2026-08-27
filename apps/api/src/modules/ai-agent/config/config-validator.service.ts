@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { AGENT_CONFIGS } from './agents.config';
 import { TOOLS } from './tools.config';
 import { AgentType, AgentConfig } from '../types';
+import { configuredRuntimeModel } from '../providers/runtime-model';
 
 export interface ConfigValidationResult {
   valid: boolean;
@@ -304,13 +305,15 @@ export class ConfigValidatorService implements OnModuleInit {
       return null;
     }
 
-    const runtimeModel = this.configService.get<string>('OPENAI_MODEL')?.trim();
+    const runtimeModel = configuredRuntimeModel((key) =>
+      this.configService.get<string>(key),
+    );
     if (!runtimeModel) return config;
 
     // Agent configs define a safe development fallback, while production's
-    // OpenAI-compatible gateway and model are selected together through the
+    // provider gateway and model are selected together through the
     // environment. Keeping the Agent model hard-coded would make domain LLM
-    // calls use OPENAI_MODEL while Agent runs silently target another model on
+    // calls use the configured model while Agent runs target another model on
     // the same gateway. Return a copy so the immutable source configuration is
     // never mutated and declarative Skills still cannot change the model.
     return {

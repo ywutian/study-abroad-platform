@@ -20,6 +20,11 @@ import {
 } from './llm-provider.types';
 
 import { MODEL_CATALOG } from '../constants';
+import { resolveOpenAIChatConfig } from '../../../common/config/openai-chat.config';
+import {
+  streamRoutedOpenAI,
+  collectRoutedOpenAI,
+} from './openai-routed.stream';
 
 @Injectable()
 export class OpenAIProvider implements ILLMProvider {
@@ -28,12 +33,17 @@ export class OpenAIProvider implements ILLMProvider {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private readonly requestTimeoutMs: number;
+  private readonly streamOnly: boolean;
+  private readonly reasoningEffort?: 'none';
 
   constructor(private configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('OPENAI_API_KEY') || '';
-    this.baseUrl =
-      this.configService.get<string>('OPENAI_BASE_URL') ||
-      'https://api.openai.com/v1';
+    const chat = resolveOpenAIChatConfig((key) =>
+      this.configService.get<string>(key),
+    );
+    this.apiKey = chat.apiKey;
+    this.baseUrl = chat.baseUrl;
+    this.streamOnly = chat.streamOnly;
+    this.reasoningEffort = chat.reasoningEffort;
     this.requestTimeoutMs = this.configService.get<number>(
       'AI_REQUEST_TIMEOUT_MS',
       120_000,
@@ -57,6 +67,8 @@ export class OpenAIProvider implements ILLMProvider {
   }
 
   async chat(request: LLMChatRequest): Promise<LLMChatResponse> {
+    if (request.routed || this.streamOnly)
+      return collectRoutedOpenAI(this.chatStream(request));
     const body = this.buildRequestBody(request, false);
 
     const response = await this.doFetch(body);
@@ -66,6 +78,19 @@ export class OpenAIProvider implements ILLMProvider {
   }
 
   async *chatStream(request: LLMChatRequest): AsyncGenerator<LLMStreamChunk> {
+    if (request.routed || this.streamOnly) {
+      yield* streamRoutedOpenAI({
+        baseUrl: this.baseUrl,
+        apiKey: this.apiKey,
+        timeoutMs: Math.min(
+          this.requestTimeoutMs,
+          request.timeoutMs ?? (request.routed ? 30000 : this.requestTimeoutMs),
+        ),
+        body: this.buildRequestBody(request, true),
+        request,
+      });
+      return;
+    }
     const body = this.buildRequestBody(request, true);
 
     let response: Response;
@@ -198,6 +223,12 @@ export class OpenAIProvider implements ILLMProvider {
       messages,
       stream,
     };
+    const reasoning = request.routed
+      ? request.reasoningEffort
+      : this.reasoningEffort;
+    if (reasoning !== undefined) {
+      body.reasoning_effort = reasoning;
+    }
     if (newGenModel) {
       body.max_completion_tokens = request.maxTokens ?? 4000;
       // gpt-5/o-series only accept the default temperature (1); omit overrides.
@@ -322,14 +353,13 @@ export class OpenAIProvider implements ILLMProvider {
         body: JSON.stringify(body),
         signal: controller.signal,
       });
-    } catch (error) {
+    } catch {
       const timedOut = controller.signal.aborted;
       throw new LLMProviderError(
         timedOut ? 'OpenAI request timed out' : 'OpenAI network request failed',
         LLMErrorCode.NETWORK_ERROR,
         true,
         undefined,
-        error instanceof Error ? { cause: error.message } : undefined,
       );
     } finally {
       clearTimeout(timeout);
@@ -337,7 +367,7 @@ export class OpenAIProvider implements ILLMProvider {
 
     if (!response.ok) {
       const errorText = await response.text();
-      this.logger.error(`OpenAI API error ${response.status}: ${errorText}`);
+      this.logger.error(`OpenAI API error ${response.status}`);
       throw this.classifyError(response.status, errorText);
     }
 

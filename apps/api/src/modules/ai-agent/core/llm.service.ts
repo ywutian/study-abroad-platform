@@ -20,8 +20,6 @@ import {
   LLMMessage,
   LLMToolDefinition,
   LLMChatRequest,
-  LLMChatResponse,
-  LLMStreamChunk,
 } from '../providers/llm-provider.types';
 import { estimateModelCost, UNKNOWN_MODEL_PRICING } from '../constants';
 import { ResilienceService } from './resilience.service';
@@ -29,15 +27,23 @@ import { TokenTrackerService, TokenUsage } from './token-tracker.service';
 import { PromptGuardService } from '../security/prompt-guard.service';
 import { ToolCall } from '../types';
 import { AgentRunBudgetTracker } from './agent-run-context';
+import { runtimeModel } from '../providers/runtime-model';
+import {
+  ModelRouterService,
+  RoutedCallOptions,
+} from '../routing/model-router.service';
+import type { ModelRouteAttempt } from '../routing/model-routing.policy';
+import { toInternalResponse, adaptStreamChunk } from './llm-response-adapter';
 
 export interface LLMResponse {
+  routing?: ModelRouteAttempt;
   content: string;
   toolCalls?: ToolCall[];
   finishReason: 'stop' | 'tool_calls' | 'length';
   usage?: TokenUsage;
 }
 
-export interface LLMOptions {
+export interface LLMOptions extends RoutedCallOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
@@ -61,7 +67,7 @@ export interface ChatSimpleMessage {
   content: string;
 }
 
-export interface ChatSimpleOptions {
+export interface ChatSimpleOptions extends RoutedCallOptions {
   temperature?: number;
   maxTokens?: number;
   seed?: number;
@@ -114,9 +120,18 @@ export class LLMService {
     @Optional() private resilience?: ResilienceService,
     @Optional() private tokenTracker?: TokenTrackerService,
     @Optional() private promptGuard?: PromptGuardService,
+    @Optional() private modelRouter?: ModelRouterService,
   ) {
-    this.defaultModel =
-      this.configService.get<string>('OPENAI_MODEL') || 'gpt-5.4-mini';
+    this.defaultModel = runtimeModel((key) =>
+      this.configService.get<string>(key),
+    );
+  }
+
+  createRoutingBudget(): AgentRunBudgetTracker | undefined {
+    return this.modelRouter?.createBudget();
+  }
+  routingPolicyHash(): string | undefined {
+    return this.modelRouter?.policyHash();
   }
 
   /**
@@ -128,6 +143,34 @@ export class LLMService {
     options: LLMOptions = {},
   ): Promise<LLMResponse> {
     const model = options.model || this.defaultModel;
+    if (this.modelRouter?.shouldRoute(options.runBudget)) {
+      const start = Date.now();
+      const { response, routing } = await this.modelRouter.call(
+        this.buildRequest(systemPrompt, messages, options, model),
+        options,
+      );
+      const result = { ...toInternalResponse(response), routing };
+      if (response.usage) {
+        result.usage = {
+          ...response.usage,
+          model: routing.model,
+          estimatedCost: this.estimateCost(
+            routing.model,
+            response.usage.promptTokens,
+            response.usage.completionTokens,
+          ),
+        };
+        if (this.tokenTracker && options.userId)
+          await this.tokenTracker.trackUsage(options.userId, result.usage, {
+            conversationId: options.conversationId,
+            agentType: options.agentType as AgentType | undefined,
+            latencyMs: Date.now() - start,
+            finishReason: result.finishReason,
+            messageCount: messages.length,
+          });
+      }
+      return result;
+    }
     const timeoutMs = options.timeoutMs || LLM_CONFIG.defaultTimeoutMs;
     const reservation = options.runBudget?.reserveLlmCall(
       systemPrompt,
@@ -171,7 +214,7 @@ export class LLMService {
         model,
       );
       const response = await this.provider.chat(request);
-      const result = this.toInternalResponse(response);
+      const result = toInternalResponse(response);
 
       // Usage belongs to the provider response even when the caller deliberately
       // omits a userId (for example, synthetic offline evaluations). Persistence
@@ -242,6 +285,25 @@ export class LLMService {
     options: LLMOptions = {},
   ): AsyncGenerator<StreamChunk> {
     const model = options.model || this.defaultModel;
+    if (this.modelRouter?.shouldRoute(options.runBudget)) {
+      try {
+        for await (const chunk of this.modelRouter.stream(
+          this.buildRequest(systemPrompt, messages, options, model),
+          options,
+        ))
+          yield adaptStreamChunk(chunk);
+      } catch (error) {
+        yield {
+          type: 'error',
+          error:
+            error instanceof Error &&
+            /^(MODEL_ROUTING_|AGENT_|MODEL_MISMATCH)/.test(error.message)
+              ? error.message
+              : 'MODEL_ROUTING_FAILED',
+        };
+      }
+      return;
+    }
     const reservation = options.runBudget?.reserveLlmCall(
       systemPrompt,
       messages,
@@ -256,11 +318,13 @@ export class LLMService {
       model,
     );
     let output = '';
+    let reportedUsage: { totalTokens: number } | undefined;
 
     try {
       for await (const chunk of this.provider.chatStream(request)) {
         if (chunk.type === 'content' && chunk.content) output += chunk.content;
-        yield this.adaptStreamChunk(chunk);
+        if (chunk.type === 'done' && chunk.usage) reportedUsage = chunk.usage;
+        yield adaptStreamChunk(chunk);
       }
     } catch (error) {
       this.logger.error('LLM stream failed', error);
@@ -270,7 +334,7 @@ export class LLMService {
       };
     } finally {
       if (reservation && options.runBudget) {
-        options.runBudget.settleLlmCall(reservation, output);
+        options.runBudget.settleLlmCall(reservation, output, reportedUsage);
       }
     }
   }
@@ -320,6 +384,9 @@ export class LLMService {
       userId: options?.userId,
       seed: options?.seed,
       providerOptions: options?.providerOptions,
+      taskType: options?.taskType,
+      runBudget: options?.runBudget,
+      validateOutput: options?.validateOutput,
     });
 
     return result.content;
@@ -429,56 +496,12 @@ export class LLMService {
       model,
       temperature: options.temperature,
       maxTokens: options.maxTokens,
+      timeoutMs: options.timeoutMs ?? LLM_CONFIG.defaultTimeoutMs,
       tools,
       toolChoice: tools?.length ? 'auto' : undefined,
       ...(Object.keys(mergedProviderOptions).length > 0 && {
         providerOptions: mergedProviderOptions,
       }),
     };
-  }
-
-  private toInternalResponse(response: LLMChatResponse): LLMResponse {
-    return {
-      content: response.content,
-      toolCalls: response.toolCalls?.map((tc) => ({
-        id: tc.id,
-        name: tc.name,
-        arguments: tc.arguments,
-      })),
-      finishReason:
-        response.finishReason === 'tool_calls'
-          ? 'tool_calls'
-          : response.finishReason === 'length'
-            ? 'length'
-            : 'stop',
-    };
-  }
-
-  /**
-   * Adapt provider stream chunk format to internal StreamChunk format.
-   */
-  private adaptStreamChunk(chunk: LLMStreamChunk): StreamChunk {
-    switch (chunk.type) {
-      case 'content':
-        return { type: 'content', content: chunk.content };
-      case 'tool_call_end':
-        return {
-          type: 'tool_call',
-          toolCall: chunk.toolCall
-            ? {
-                id: chunk.toolCall.id,
-                name: chunk.toolCall.name,
-                arguments: chunk.toolCall.arguments,
-              }
-            : undefined,
-        };
-      case 'done':
-        return { type: 'done' };
-      case 'error':
-        return { type: 'error', error: chunk.error };
-      // tool_call_start and tool_call_delta are internal to provider; skip
-      default:
-        return { type: 'content' };
-    }
   }
 }

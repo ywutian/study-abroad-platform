@@ -11,6 +11,7 @@
  */
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { LLMProviderError } from '../providers/llm-provider.types';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 
@@ -252,9 +253,9 @@ export class ResilienceService {
   /**
    * Execute a function with automatic retry on transient failures.
    *
-   * Uses exponential backoff between attempts. Only errors matching the
-   * `retryableErrors` list (checked against error message and name) trigger
-   * a retry; non-retryable errors are thrown immediately.
+   * Uses exponential backoff and explicit Provider retryability metadata.
+   * Legacy errors fall back to `retryableErrors` message/name matching;
+   * non-retryable errors are thrown immediately.
    *
    * @param fn - The async function to execute
    * @param config - Partial retry configuration (merged with defaults: 3 attempts, 1s base delay, 10s max)
@@ -379,14 +380,19 @@ export class ResilienceService {
     timeoutMs: number,
     operationName: string = 'operation',
   ): Promise<T> {
-    return Promise.race([
-      fn(),
-      new Promise<T>((_, reject) => {
-        setTimeout(() => {
-          reject(new TimeoutError(operationName, timeoutMs));
-        }, timeoutMs);
-      }),
-    ]);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        fn(),
+        new Promise<T>((_, reject) => {
+          timer = setTimeout(() => {
+            reject(new TimeoutError(operationName, timeoutMs));
+          }, timeoutMs);
+        }),
+      ]);
+    } finally {
+      if (timer !== undefined) clearTimeout(timer);
+    }
   }
 
   /**
@@ -409,9 +415,6 @@ export class ResilienceService {
    * @throws {CircuitOpenError} When the circuit breaker is open
    * @throws {TimeoutError} When an attempt exceeds the timeout
    * @throws {Error} The last error after all retries are exhausted
-   */
-  /**
-   * 组合：重试 + 熔断 + 超时
    */
   async execute<T>(
     serviceName: string,
@@ -495,15 +498,10 @@ export class ResilienceService {
     return this.fallbackStorage;
   }
 
-  /**
-   * Check whether an error matches any of the retryable error codes.
-   *
-   * @param error - The error to check
-   * @param retryableErrors - List of error code substrings to match against
-   * @returns True if the error message or name contains any retryable code
-   */
-
+  /** Provider metadata wins; legacy errors use the configured text-code list. */
   private isRetryable(error: Error, retryableErrors?: string[]): boolean {
+    // Provider metadata is authoritative: sanitized messages omit upstream details.
+    if (error instanceof LLMProviderError) return error.retryable;
     const errorStr = error.message + (error.name || '');
     return (retryableErrors || []).some((code) => errorStr.includes(code));
   }
