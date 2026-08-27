@@ -20,6 +20,10 @@ import {
 } from './llm-provider.types';
 
 import { MODEL_CATALOG } from '../constants';
+import {
+  streamRoutedOpenAI,
+  collectRoutedOpenAI,
+} from './openai-routed.stream';
 
 @Injectable()
 export class OpenAIProvider implements ILLMProvider {
@@ -57,6 +61,7 @@ export class OpenAIProvider implements ILLMProvider {
   }
 
   async chat(request: LLMChatRequest): Promise<LLMChatResponse> {
+    if (request.routed) return collectRoutedOpenAI(this.chatStream(request));
     const body = this.buildRequestBody(request, false);
 
     const response = await this.doFetch(body);
@@ -66,6 +71,16 @@ export class OpenAIProvider implements ILLMProvider {
   }
 
   async *chatStream(request: LLMChatRequest): AsyncGenerator<LLMStreamChunk> {
+    if (request.routed) {
+      yield* streamRoutedOpenAI({
+        baseUrl: this.baseUrl,
+        apiKey: this.apiKey,
+        timeoutMs: Math.min(this.requestTimeoutMs, request.timeoutMs ?? 30000),
+        body: this.buildRequestBody(request, true),
+        request,
+      });
+      return;
+    }
     const body = this.buildRequestBody(request, true);
 
     let response: Response;
@@ -198,6 +213,9 @@ export class OpenAIProvider implements ILLMProvider {
       messages,
       stream,
     };
+    if (request.routed && request.reasoningEffort !== undefined) {
+      body.reasoning_effort = request.reasoningEffort;
+    }
     if (newGenModel) {
       body.max_completion_tokens = request.maxTokens ?? 4000;
       // gpt-5/o-series only accept the default temperature (1); omit overrides.

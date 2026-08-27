@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Logger } from '@nestjs/common';
+import { configuredRoutingSnapshot } from '../../modules/ai-agent/routing/model-routing.policy';
 
 /**
  * Zod schema for environment variable validation.
@@ -123,7 +124,29 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-5.4-mini'),
   OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
-  LLM_PROVIDER: z.literal('openai').default('openai'),
+  LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
+  AI_AGENT_NATIVE_CLAUDE_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_MODEL_ROUTING_V1: z.enum(['true', 'false']).default('false'),
+  AI_AGENT_MODEL_ROUTING_CONFIG: z.string().max(32768).default('{}'),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_MODEL: z
+    .string()
+    .regex(/^claude-[a-z0-9-]{1,80}$/)
+    .optional(),
+  ANTHROPIC_BASE_URL: z
+    .string()
+    .url()
+    .refine((value) => {
+      const url = new URL(value);
+      return (
+        url.protocol === 'https:' &&
+        !url.username &&
+        !url.password &&
+        !url.search &&
+        !url.hash
+      );
+    }, 'Native Claude base URL must be HTTPS without credentials, query, or fragment')
+    .default('https://api.anthropic.com/v1'),
   EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
   AI_AGENT_HARNESS_V1: z.enum(['true', 'false']).default('false'),
   AI_AGENT_HARNESS_MODE: z.enum(['advisory', 'action']).default('advisory'),
@@ -309,6 +332,29 @@ export function validateEnv(
     throw new Error(errorMessage);
   }
 
+  if (
+    result.data.LLM_PROVIDER === 'anthropic' &&
+    (result.data.AI_AGENT_NATIVE_CLAUDE_V1 !== 'true' ||
+      !result.data.ANTHROPIC_API_KEY?.trim() ||
+      !result.data.ANTHROPIC_MODEL)
+  ) {
+    throw new Error(
+      'LLM_PROVIDER=anthropic requires AI_AGENT_NATIVE_CLAUDE_V1=true, ANTHROPIC_API_KEY, and ANTHROPIC_MODEL.',
+    );
+  }
+
+  if (result.data.AI_AGENT_MODEL_ROUTING_V1 === 'true') {
+    if (
+      result.data.AI_AGENT_HARNESS_V1 !== 'true' ||
+      result.data.AI_AGENT_CONTEXT_V1 !== 'true'
+    ) {
+      throw new Error('Model routing requires Harness and Context enabled');
+    }
+    configuredRoutingSnapshot(
+      (key) => result.data[key as keyof typeof result.data],
+    );
+  }
+
   // Production checks — errors for security-critical, warnings for recommended
   if (result.data.NODE_ENV === 'production') {
     if (
@@ -383,7 +429,9 @@ export function validateEnv(
     // Recommended but non-fatal
     if (!result.data.OPENAI_API_KEY) {
       logger.warn(
-        'OPENAI_API_KEY is not set — AI chat, essay review, and recommendation features disabled',
+        result.data.LLM_PROVIDER === 'anthropic'
+          ? 'OPENAI_API_KEY is not set — OpenAI embeddings and OpenAI-only jobs remain unavailable'
+          : 'OPENAI_API_KEY is not set — AI chat, essay review, and recommendation features disabled',
       );
     }
     if (!result.data.SENTRY_DSN) {

@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  LLMErrorCode,
+  LLMProviderError,
+} from '../providers/llm-provider.types';
+import {
   ResilienceService,
   CircuitOpenError,
   TimeoutError,
@@ -21,7 +25,61 @@ describe('ResilienceService', () => {
     service.resetCircuit('test-service');
   });
 
+  it.each([false, true])(
+    'clears deadline timers after settlement (failure=%s)',
+    async (fails) => {
+      jest.useFakeTimers();
+      try {
+        const result = service.withTimeout(
+          () =>
+            fails
+              ? Promise.reject(new Error('synthetic'))
+              : Promise.resolve('ok'),
+          30000,
+        );
+        if (fails) await expect(result).rejects.toThrow('synthetic');
+        else await expect(result).resolves.toBe('ok');
+        expect(jest.getTimerCount()).toBe(0);
+      } finally {
+        jest.useRealTimers();
+      }
+    },
+  );
+
   describe('withRetry', () => {
+    it('retries sanitized transient provider errors using metadata', async () => {
+      const fn = jest
+        .fn()
+        .mockRejectedValueOnce(
+          new LLMProviderError(
+            'Native Claude transport failed',
+            LLMErrorCode.NETWORK_ERROR,
+            true,
+          ),
+        )
+        .mockResolvedValue('recovered');
+      await expect(
+        service.withRetry(fn, { maxAttempts: 2, baseDelayMs: 1 }),
+      ).resolves.toBe('recovered');
+      expect(fn).toHaveBeenCalledTimes(2);
+    });
+
+    it('never retries model mismatch, even if text contains a retryable code', async () => {
+      const fn = jest
+        .fn()
+        .mockRejectedValue(
+          new LLMProviderError(
+            'Synthetic MODEL_MISMATCH 500',
+            LLMErrorCode.MODEL_MISMATCH,
+            false,
+          ),
+        );
+      await expect(
+        service.withRetry(fn, { maxAttempts: 2, baseDelayMs: 1 }),
+      ).rejects.toMatchObject({ code: LLMErrorCode.MODEL_MISMATCH });
+      expect(fn).toHaveBeenCalledTimes(1);
+    });
+
     it('should return result on first success', async () => {
       const fn = jest.fn().mockResolvedValue('success');
 

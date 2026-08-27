@@ -22,6 +22,7 @@ import { PrismaService } from '../../../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { AgentType } from '../../types';
 import { AgentConfigPersistenceService } from './config-persistence.service';
+import { runtimeModel } from '../../providers/runtime-model';
 import {
   DEFAULT_RATE_LIMITS,
   VIP_RATE_LIMITS,
@@ -508,7 +509,7 @@ export class AgentConfigService implements OnModuleInit {
           AgentType.TIMELINE,
           AgentType.RESUME,
         ],
-        model: this.nestConfig.get('OPENAI_MODEL', 'gpt-5.4-mini'),
+        model: runtimeModel((key) => this.nestConfig.get<string>(key)),
         temperature: 0.7,
         maxTokens: 2000,
         enabled: true,
@@ -651,7 +652,7 @@ export class AgentConfigService implements OnModuleInit {
   private getDefaultSystemConfig(): SystemConfig {
     return {
       llm: {
-        defaultModel: this.nestConfig.get('OPENAI_MODEL', 'gpt-5.4-mini'),
+        defaultModel: runtimeModel((key) => this.nestConfig.get<string>(key)),
         fallbackModel: 'gpt-3.5-turbo',
         maxRetries: 3,
         timeoutMs: 30000,

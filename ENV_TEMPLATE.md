@@ -48,6 +48,13 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
 LLM_PROVIDER=openai
 # Harness core. All flags default off for local compatibility.
+AI_AGENT_NATIVE_CLAUDE_V1=false
+AI_AGENT_MODEL_ROUTING_V1=false
+AI_AGENT_MODEL_ROUTING_CONFIG={}
+# Native Claude requires LLM_PROVIDER=anthropic, flag=true, and managed credentials.
+# ANTHROPIC_API_KEY is intentionally not populated in this template.
+# ANTHROPIC_MODEL=claude-sonnet-5
+# ANTHROPIC_BASE_URL=https://api.anthropic.com/v1
 AI_AGENT_HARNESS_V1=false
 AI_AGENT_HARNESS_MODE=advisory
 AI_AGENT_APPROVALS_V1=false
@@ -229,6 +236,13 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
 LLM_PROVIDER=openai
 # Harness core. Enable production values only through reviewed deploy config.
+AI_AGENT_NATIVE_CLAUDE_V1=false
+AI_AGENT_MODEL_ROUTING_V1=false
+AI_AGENT_MODEL_ROUTING_CONFIG={}
+# Native model identity and credentials must pass acceptance before enabling.
+# ANTHROPIC_API_KEY is supplied by the administrator, never committed.
+# ANTHROPIC_MODEL=claude-sonnet-5
+# ANTHROPIC_BASE_URL=https://api.anthropic.com/v1
 AI_AGENT_HARNESS_V1=false
 AI_AGENT_HARNESS_MODE=advisory
 AI_AGENT_APPROVALS_V1=false

@@ -187,7 +187,7 @@ describe('EssayDebateService', () => {
     );
   });
 
-  it('passes temperature 0.3 and the configured ANTHROPIC_MODEL to LLMService', async () => {
+  it('keeps temperature 0.3 but leaves model selection to the unified provider', async () => {
     process.env.ANTHROPIC_MODEL = 'claude-sonnet-4-6';
     happyBudget();
     newSessionStub();
@@ -204,15 +204,12 @@ describe('EssayDebateService', () => {
       userText: 'I disagree.',
     });
 
-    expect(mockLLM.chatSimple).toHaveBeenCalledWith(
-      expect.any(Array),
-      expect.objectContaining({
-        temperature: 0.3,
-        providerOptions: expect.objectContaining({
-          model: 'claude-sonnet-4-6',
-        }),
-      }),
-    );
+    expect(mockLLM.chatSimple).toHaveBeenCalledWith(expect.any(Array), {
+      temperature: 0.3,
+      taskType: 'essay.debate',
+      maxTokens: 800,
+      userId: 'user-1',
+    });
   });
 
   it('strips a fabricated evidence quote rather than echoing it', async () => {

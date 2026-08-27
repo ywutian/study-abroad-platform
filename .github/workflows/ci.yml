@@ -19,6 +19,11 @@ on:
         required: false
         type: boolean
         default: true
+      inspect_release:
+        description: 'Read-only Cloud Run revision/configuration and sanitized Provider error inspection'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,6 +38,30 @@ env:
   NODE_VERSION: '20'
 
 jobs:
+  release-inspection:
+    name: Inspect production release (read-only)
+    if: github.event_name == 'workflow_dispatch' && inputs.inspect_release == true && inputs.deploy == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: github-actions-deploy@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Inspect without reading secret values or changing production
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+        run: node scripts/ci/inspect-agent-release.mjs
+
   # ── Change Detection ─────────────────────────────────────
   detect-changes:
     name: Detect Changes
@@ -1741,7 +1770,7 @@ jobs:
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
             --add-volume=name=uploads,type=cloud-storage,bucket=study-abroad-prod-2025-uploads \
             --add-volume-mount=volume=uploads,mount-path=/mnt/uploads \
-            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|LLM_PROVIDER=openai|OPENAI_MODEL=gpt-4o-mini|OPENAI_BASE_URL=https://api.openai.com/v1|AI_AGENT_HARNESS_V1=true|AI_AGENT_HARNESS_MODE=action|AI_AGENT_APPROVALS_V1=true|AI_AGENT_APPROVAL_TTL_MS=900000|AI_AGENT_RUN_TTL_MS=86400000|AI_AGENT_RUN_RETENTION_DAYS=90|AI_AGENT_TRACE_RETENTION_DAYS=30|AI_AGENT_EXECUTION_LEASE_MS=120000|AI_AGENT_CONTEXT_V1=true|AI_AGENT_ACCEPTANCE_V1=true|AI_AGENT_SKILLS_V1=true|AI_AGENT_SKILLS_EVOLUTION_V1=true|AI_AGENT_SKILLS_AUTO_PUBLISH_V1=true|AI_AGENT_MAX_TOKENS_PER_RUN=24000|AI_AGENT_MAX_DURATION_MS=120000|AI_AGENT_CONTEXT_RECENT_MESSAGES=10|ADMIN_BOOTSTRAP_EMAIL=admin@example.com|ADMIN_BOOTSTRAP_PASSWORD_HASH_B64=${{ secrets.ADMIN_BOOTSTRAP_PASSWORD_HASH_B64 }}|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
+            --set-env-vars="^|^NODE_ENV=production|STORAGE_LOCAL_PATH=/mnt/uploads|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|LLM_PROVIDER=openai|OPENAI_MODEL=gpt-4o-mini|OPENAI_BASE_URL=https://api.openai.com/v1|AI_AGENT_NATIVE_CLAUDE_V1=false|AI_AGENT_MODEL_ROUTING_V1=false|AI_AGENT_MODEL_ROUTING_CONFIG={}|AI_AGENT_HARNESS_V1=true|AI_AGENT_HARNESS_MODE=action|AI_AGENT_APPROVALS_V1=true|AI_AGENT_APPROVAL_TTL_MS=900000|AI_AGENT_RUN_TTL_MS=86400000|AI_AGENT_RUN_RETENTION_DAYS=90|AI_AGENT_TRACE_RETENTION_DAYS=30|AI_AGENT_EXECUTION_LEASE_MS=120000|AI_AGENT_CONTEXT_V1=true|AI_AGENT_ACCEPTANCE_V1=true|AI_AGENT_SKILLS_V1=true|AI_AGENT_SKILLS_EVOLUTION_V1=true|AI_AGENT_SKILLS_AUTO_PUBLISH_V1=true|AI_AGENT_MAX_TOKENS_PER_RUN=24000|AI_AGENT_MAX_DURATION_MS=120000|AI_AGENT_CONTEXT_RECENT_MESSAGES=10|ADMIN_BOOTSTRAP_EMAIL=admin@example.com|ADMIN_BOOTSTRAP_PASSWORD_HASH_B64=${{ secrets.ADMIN_BOOTSTRAP_PASSWORD_HASH_B64 }}|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni|ACCOUNT_PURGE_ENABLED=true|ACCOUNT_PURGE_GRACE_DAYS=30|REDIS_COMMAND_TIMEOUT_MS=3000|CRON_DRIVER=http" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest,CRON_SECRET=cron-secret:latest" \
             --timeout=1800 \
             --no-traffic \
@@ -1801,6 +1830,28 @@ jobs:
           echo "::add-mask::$CRON_SECRET"
           CRON_TARGET_URL="$CANARY_URL" CRON_SECRET="$CRON_SECRET" \
             node scripts/ci/assert-cron-manifest.mjs
+
+      # Database/Redis health alone cannot prove the Provider, planning,
+      # compression or approval path. Prove those on the isolated revision too.
+      - name: Run Harness acceptance before traffic promotion
+        id: harness-pre-promote
+        if: success()
+        env:
+          HARNESS_API_BASE: ${{ steps.canary-smoke.outputs.canary_url }}/api/v1
+          HARNESS_ADMIN_EMAIL: admin@example.com
+          HARNESS_ADMIN_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}
+          HARNESS_EXPECTED_REVISION: ${{ steps.deploy-canary.outputs.revision }}
+        run: |
+          node scripts/ci/run-harness-pre-promote.mjs
+
+      - name: Upload sanitized pre-promotion Harness evidence
+        if: always() && steps.harness-pre-promote.outcome != 'skipped'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ai-agent-harness-pre-promote-${{ github.sha }}
+          path: /tmp/harness-pre-promote/harness-acceptance.json
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Promote canary to full traffic
         if: success()

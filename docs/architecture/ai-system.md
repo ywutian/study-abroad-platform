@@ -407,19 +407,31 @@ candidateTools ⊆ parentTools ∩ agentAllowedTools
 
 ## 8. LLM Providers
 
-**接口**: `ILLMProvider` → 唯一实现: `OpenAIProvider`
+**接口**: `ILLMProvider` → `OpenAIProvider`（默认）或 `AnthropicProvider`（原生 Messages，显式启用）。
 
 ### 生产模型配置
 
-| Model              | 用途                                                     | 上下文         |
-| ------------------ | -------------------------------------------------------- | -------------- |
-| **`OPENAI_MODEL`** | 所有 6 个 Agent、反思步骤和领域 LLM 调用的统一运行时模型 | 取决于所选模型 |
-| **gpt-4o-mini**    | 未配置环境变量时的代码级开发回退                         | 128k           |
+| Model              | 用途                                                     | 上下文                 |
+| ------------------ | -------------------------------------------------------- | ---------------------- |
+| **`OPENAI_MODEL`** | 所有 6 个 Agent、反思步骤和领域 LLM 调用的统一运行时模型 | 取决于所选模型         |
+| **gpt-5.4-mini**   | 环境校验及 LLMService 的默认 OpenAI 模型                 | 由 Provider 能力表决定 |
 
-`LLM_PROVIDER` 只接受当前已经实现的 `openai`。`OPENAI_MODEL` 同时覆盖 Agent
-配置中的开发回退值，避免领域调用与 Agent Loop 在同一网关上静默使用不同模型。
-不配置 Anthropic，也不允许
-“配置可选但运行时无实现”的 provider 值。`OpenAIProvider` 通过 base URL 可连接：
+Agent 静态模板仍含历史开发模型；正常启动时由环境校验产生的 `OPENAI_MODEL` 统一覆盖。
+
+默认 `LLM_PROVIDER=openai` 使用 `OPENAI_MODEL`。显式设置
+`LLM_PROVIDER=anthropic` 和 `AI_AGENT_NATIVE_CLAUDE_V1=true` 后，必须同时配置
+`ANTHROPIC_API_KEY`、`ANTHROPIC_MODEL`；`ANTHROPIC_BASE_URL` 指向原生 Messages
+服务。`runtime-model.ts` 让六个 Agent、反思和领域调用采用同一已选 Provider 的模型。
+上表展示默认 OpenAI 路径。原生开关默认关闭，不隐式替换既有生产 Provider。
+
+原生适配在普通响应和流的 message_start 校验返回型号；缺失或与请求不完全一致
+即 `MODEL_MISMATCH`，不发出内容/工具，不回退到其他型号。流式工具仅在完整
+message_stop 后发出；截断流、未知工具、非法参数对象均失败。近期 Claude 的
+temperature 不透传；`json_schema` 转为 `output_config.format`，旧 `json_object`
+则追加 JSON 指令并继续由业务解析/验证，不能宣称该模式有服务端 Schema 保证。
+当前原生路径不支持 seed 确定性。Embeddings 仍独立使用 OpenAI 配置。
+
+`OpenAIProvider` 通过 base URL 可连接经合同验证的：
 
 - Azure OpenAI
 - DeepSeek (deepseek-chat, deepseek-reasoner)
@@ -582,6 +594,20 @@ Harness 还会发出 `approval_required`、`run_paused` 与 `run_resumed`。客�
 ---
 
 ## 12. 关键约束
+
+### 任务模型路由（默认关闭）
+
+`业务 taskType → 现有 LLMService → ModelRouter → 现有 OpenAIProvider`。
+不是第二套 Agent；工具执行仍由原 ToolPolicy/ToolExecutor 管理。12 类任务覆盖
+通用、规划/补充规划/解答/验证/修订、摘要/提取、选校建议、逐校/组合分析和文书辩论。
+选校预测的确定性算法与概率没有改为让 LLM 生成。
+
+`AI_AGENT_MODEL_ROUTING_V1` 与完整的 `AI_AGENT_MODEL_ROUTING_CONFIG` 显式启用。
+任务模型、能力、输出限额和回退顺序由服务端配置，模型和 Skill 不能自行扩大。
+AgentRun 冻结策略及哈希，恢复时继承预算与最多64条脱敏尝试记录；全局白名单可以撤销模型。
+无快照的旧运行继续旧路径。调用失败最多换至一个已批准的备用模型，认证/安全/型号异常不换模，
+已开始输出的流不拼接第二模型。详细启用、验证与回退见
+[任务路由变更记录](../AI_TASK_MODEL_ROUTING.normalized.md)。
 
 ### Non-Negotiable 规则
 

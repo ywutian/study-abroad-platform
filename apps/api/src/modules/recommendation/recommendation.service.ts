@@ -215,6 +215,11 @@ export class RecommendationService {
         ],
         {
           temperature: 0.6,
+          taskType: 'recommendation.generate',
+          validateOutput: (response) => {
+            const value: unknown = extractJsonFromLlm(response.content);
+            return isJsonRecord(value) && Array.isArray(value.recommendations);
+          },
           maxTokens: 3000,
           timeoutMs: 90000,
           providerOptions: {

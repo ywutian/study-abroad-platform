@@ -208,6 +208,9 @@ A green merge therefore does **not** mean a student already sees the fix:
 For the Agent Harness production revision, keep these non-secret values explicit
 in the Cloud Run deploy command so release drift remains reviewable:
 
+- `AI_AGENT_NATIVE_CLAUDE_V1=false` keeps the opt-in native Messages adapter disabled.
+- `AI_AGENT_MODEL_ROUTING_V1=false` and `AI_AGENT_MODEL_ROUTING_CONFIG={}` keep
+  task routing off until a complete, validated policy is explicitly configured.
 - `AI_AGENT_HARNESS_V1`, `AI_AGENT_HARNESS_MODE`,
   `AI_AGENT_APPROVALS_V1`, `AI_AGENT_CONTEXT_V1`
 - `AI_AGENT_ACCEPTANCE_V1=true` enables admin-issued, one-shot synthetic
@@ -231,6 +234,62 @@ in pre-push, and in CI.
 from source, checks ToolName/ToolMetadata exhaustiveness, and fails if the module
 BRIEF or AI architecture keeps a stale count.
 
+### Native Claude (implemented, not enabled in production)
+
+The existing unified `LLMService` can select a native Messages adapter with
+`LLM_PROVIDER=anthropic` and `AI_AGENT_NATIVE_CLAUDE_V1=true`. This requires an
+administrator-managed `ANTHROPIC_API_KEY`, an explicit `ANTHROPIC_MODEL`, and an
+HTTPS `ANTHROPIC_BASE_URL` (defaults to `https://api.anthropic.com/v1`). These are
+not configured by this change; the canonical production/staging provider remains
+OpenAI. Embedding configuration is separate and must not be repointed to Messages.
+
+Response models must exactly match the requested ID. A relay substituting another
+model is blocked, not relabeled as success. Aliases must be replaced by a verified
+explicit ID; there is no automatic cross-model fallback. Token counts use native
+usage including cached prompt tokens; unknown model prices retain the existing
+conservative estimate, not a claim about a relay's bill. Verify real pricing and
+model identity before enabling.
+
+Release still requires valid credentials, model identity and contract acceptance,
+the existing full deployment gates, and a retained rollback revision. The native
+adapter's local tests are not evidence that Sonnet/Opus production calls are ready.
+See [change and acceptance record](AI_NATIVE_CLAUDE_PROVIDER.normalized.md).
+
+### Task model routing (implemented, default off)
+
+The existing OpenAI adapter can use different GPT models for planning, solving,
+verification, summaries, extraction, recommendations, application analysis and
+essay debate. Enable only with `LLM_PROVIDER=openai`, Harness/Context enabled,
+and a complete JSON policy in `AI_AGENT_MODEL_ROUTING_CONFIG`. Use the
+[example policy](examples/ai-task-routing.example.json) as a contract-test input,
+not a recommendation about quality or price. Never put credentials in that JSON.
+
+Routes are server-owned. AgentRun budget snapshots pin policy hashes, while the
+active allowlist/capabilities can revoke a model. Old checkpoints retain their
+legacy behavior. Disabling the flag blocks pinned routed runs explicitly; it does
+not silently move them onto a different model. Restore the validated policy or
+cancel the run before retrying. Application analysis shares a budget across its
+school and portfolio steps and keys its cache by policy; this does not add a new
+cross-restart analysis-resume mechanism. Memory background tasks receive their
+own bounded routing calls, not the foreground AgentRun budget.
+
+Only preconfigured transient-failure/output-validation fallback is allowed, at
+most two attempts within the same deadline and token budget. Model mismatch,
+authentication, invalid tool or safety refusal never triggers fallback. Once
+streaming text is emitted, another model cannot be spliced into that answer.
+Tools are withheld until a complete, validated response. The routing path uses
+SSE even for ordinary calls, with exact reported-model, finish and usage checks.
+Model fields are provider claims, not independent proof of vendor identity.
+
+Repeatable synthetic comparison (no database/user data; network disabled without
+`--live`): from `apps/api`, run `pnpm exec tsx scripts/ai-model-routing-eval.ts`.
+For a live run, supply the already-managed `OPENAI_API_KEY` and `OPENAI_BASE_URL`
+in process environment, then pass `--live --baseline <policy.json> --candidate
+<policy.json>`. It compares the same 12 inputs, exits nonzero on any failure and
+prints only sanitized evidence. Do not paste keys into commands or commit outputs.
+These tests do not establish admissions accuracy or optimal task/model choices.
+See [routing acceptance record](AI_TASK_MODEL_ROUTING.normalized.md).
+
 The production image is promoted by Artifact Registry digest. CI captures that
 digest from the successful SHA-tagged Docker push, so digest pinning does not
 depend on the broader Container Analysis API permission. CI then creates a
@@ -246,5 +305,22 @@ validates, the independent alert monitor is clear, and the previous production
 revision remains available for rollback. CI invokes the production acceptance
 runner through direct Node/tsx, not a nested package-manager command, so JSONL
 evidence cannot be polluted by lifecycle output.
+
+### AI release pre-promotion proof
+
+The isolated zero-traffic revision now runs the same synthetic Harness acceptance
+before promotion, in addition to health and Cron checks. `run-harness-pre-promote.mjs`
+requires both the direct Node/tsx runner and the strict artifact validator to pass.
+Only validated, allowlisted evidence is uploaded; raw child output is not forwarded.
+An AI/approval/compression failure cannot promote traffic merely because DB/Redis
+health is green. The post-100% acceptance and existing rollback path remain required.
+
+The existing CI workflow also has an explicitly read-only `inspect_release=true`
+mode, used with `deploy=false`. It reads the active/latest Cloud Run revision,
+non-secret Provider configuration and aggregate error categories using the existing
+deployment identity. It never reads secret values or changes IAM, configuration,
+database state or traffic. Log-read permission failures remain explicitly unknown;
+they do not trigger privilege changes. This inspection does not itself prove that
+a model request succeeds.
 
 Do not write "landed on main, so production is fixed."

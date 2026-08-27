@@ -84,7 +84,7 @@ export class AgentRunService {
     const acceptanceBudget =
       await this.harnessOperations?.consumeBudgetOverride(input.userId);
     const budget = isRunContextEnabled(this.config)
-      ? (acceptanceBudget ?? getConfiguredRunBudget(this.config))
+      ? { ...getConfiguredRunBudget(this.config), ...acceptanceBudget }
       : undefined;
     return this.prisma.agentRun.create({
       data: {

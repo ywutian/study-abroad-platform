@@ -56,7 +56,7 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
           },
           { role: 'user', content: prompt },
         ],
-        { temperature: 0.3, maxTokens: 1500 },
+        { taskType: 'memory.summary', temperature: 0.3, maxTokens: 1500 },
       );
 
       const parsed = this.parseSummaryResponse(content);
@@ -109,7 +109,7 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
           },
           { role: 'user', content: message.content },
         ],
-        { temperature: 0.2, maxTokens: 500 },
+        { taskType: 'memory.extract', temperature: 0.2, maxTokens: 500 },
       );
 
       const parsed = extractJsonFromLlm<{
@@ -190,7 +190,7 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
           },
           { role: 'user', content: `- ${combined}` },
         ],
-        { temperature: 0.3, maxTokens: 300 },
+        { taskType: 'memory.summary', temperature: 0.3, maxTokens: 300 },
       );
     } catch {
       return texts.slice(0, 3).join('; ');
@@ -210,7 +210,11 @@ category 说明: competition=竞赛, summer_program=夏校/暑期项目, interns
           },
           { role: 'user', content: text },
         ],
-        { temperature: 0.2, maxTokens: maxTokens * 2 },
+        {
+          taskType: 'memory.summary',
+          temperature: 0.2,
+          maxTokens: maxTokens * 2,
+        },
       );
     } catch {
       return text.slice(0, maxTokens * 4);

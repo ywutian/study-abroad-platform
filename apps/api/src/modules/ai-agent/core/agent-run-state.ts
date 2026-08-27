@@ -1,6 +1,12 @@
 import { AgentApprovalStatus, Prisma } from '@prisma/client';
 import { createHash } from 'crypto';
 import type { AgentType, ToolCall } from '../types';
+import {
+  parseRoutingSnapshot,
+  modelAttemptsSchema,
+  type ModelRoutingSnapshot,
+  type ModelRouteAttempt,
+} from '../routing/model-routing.policy';
 
 export interface AgentRunBudgetV1 {
   version: 1;
@@ -8,6 +14,7 @@ export interface AgentRunBudgetV1 {
   maxToolCalls: number;
   maxSupplementalRounds: number;
   maxDurationMs: number;
+  routing?: ModelRoutingSnapshot;
 }
 
 export interface AgentRunUsageV1 {
@@ -16,6 +23,7 @@ export interface AgentRunUsageV1 {
   toolCalls: number;
   supplementalRounds: number;
   elapsedMs: number;
+  modelAttempts?: ModelRouteAttempt[];
 }
 
 export interface AgentRunContextSummaryV1 {
@@ -122,6 +130,18 @@ export function isAgentRunCheckpoint(
   if (!isAgentRunCheckpointV1({ ...value, version: 1 })) return false;
   if (!isRecord(value.context) || !isRecord(value.budget)) return false;
   if (!isRecord(value.usage)) return false;
+  if (
+    value.usage.modelAttempts !== undefined &&
+    !modelAttemptsSchema.safeParse(value.usage.modelAttempts).success
+  )
+    return false;
+  if (value.budget.routing !== undefined) {
+    try {
+      parseRoutingSnapshot(value.budget.routing);
+    } catch {
+      return false;
+    }
+  }
   return (
     value.context.version === 1 &&
     typeof value.context.taskGoal === 'string' &&

@@ -5,6 +5,7 @@ import type {
   AgentRunUsageV1,
 } from './agent-run-state';
 import type { TokenUsage } from './token-tracker.service';
+import type { ModelRouteAttempt } from '../routing/model-routing.policy';
 
 export interface BudgetReservation {
   inputTokens: number;
@@ -13,8 +14,10 @@ export interface BudgetReservation {
 
 export class AgentRunBudgetTracker {
   private estimatedTokens: number;
+  private heldTokens = 0;
   private readonly activeStartedAt = Date.now();
   private readonly priorElapsedMs: number;
+  private readonly modelAttempts: ModelRouteAttempt[];
 
   constructor(
     readonly limits: AgentRunBudgetV1,
@@ -22,6 +25,36 @@ export class AgentRunBudgetTracker {
   ) {
     this.estimatedTokens = initial?.estimatedTokens ?? 0;
     this.priorElapsedMs = initial?.elapsedMs ?? 0;
+    this.modelAttempts = [...(initial?.modelAttempts ?? [])].slice(-64);
+  }
+
+  remainingDurationMs(): number {
+    return Math.max(0, this.limits.maxDurationMs - this.elapsedMs());
+  }
+
+  /** Temporary scheduling hold, not consumed usage. Shared by concurrent calls. */
+  holdTokensForLater(requested: number): () => void {
+    if (!Number.isSafeInteger(requested) || requested < 0)
+      throw new Error('AGENT_TOKEN_HOLD_INVALID');
+    const held = Math.min(
+      requested,
+      Math.max(
+        0,
+        this.limits.maxTokens - this.estimatedTokens - this.heldTokens,
+      ),
+    );
+    this.heldTokens += held;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.heldTokens -= held;
+    };
+  }
+
+  recordModelAttempt(attempt: ModelRouteAttempt): void {
+    this.modelAttempts.push(attempt);
+    if (this.modelAttempts.length > 64) this.modelAttempts.shift();
   }
 
   assertWithinDuration(): void {
@@ -41,7 +74,8 @@ export class AgentRunBudgetTracker {
         messages.reduce((sum, message) => sum + message.content.length, 0)) /
         3,
     );
-    const remaining = this.limits.maxTokens - this.estimatedTokens;
+    const remaining =
+      this.limits.maxTokens - this.estimatedTokens - this.heldTokens;
     const outputTokens = Math.min(
       requestedOutputTokens,
       remaining - inputTokens,
@@ -83,6 +117,9 @@ export class AgentRunBudgetTracker {
       toolCalls,
       supplementalRounds,
       elapsedMs: this.elapsedMs(),
+      ...(this.modelAttempts.length
+        ? { modelAttempts: [...this.modelAttempts] }
+        : {}),
     };
   }
 

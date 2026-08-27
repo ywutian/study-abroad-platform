@@ -17,6 +17,17 @@ import {
  *     minimum and only backfills the floor when the LLM came back sparse.
  */
 describe('resolveAnalysisDegradation — systemic LLM failure is not silent', () => {
+  it('reports partial failure for an explicitly enabled analysis policy', () => {
+    expect(
+      resolveAnalysisDegradation({
+        llmCallsAttempted: 4,
+        llmCallsFailed: 1,
+        validationErrorCount: 1,
+        schoolResultCount: 3,
+        strictPartialFailure: true,
+      }),
+    ).toEqual({ isDegraded: true, degradedReason: 'partialAnalysisFailed' });
+  });
   it('degrades with llmUnavailable when EVERY live LLM call failed', () => {
     const r = resolveAnalysisDegradation({
       llmCallsAttempted: 4, // 3 school analysts + portfolio

@@ -6,6 +6,22 @@ import { RedisService } from '../../common/redis/redis.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { runtimeModel } from '../ai-agent/providers/runtime-model';
+import { filterAllowedEvidenceIds } from './profile-application-analysis-runtime';
+export { filterAllowedEvidenceIds } from './profile-application-analysis-runtime';
+import { ModelRoutingError } from '../ai-agent/routing/model-router.service';
+import { usesCompactAnalysis, withPortfolioReserve } from './analysis-compact';
+import { createSchoolAnalysisCaller } from './analysis-shared';
+import {
+  AnalysisSegmentError,
+  callApplicationAnalysis,
+  isSegmentedAnalysis,
+} from './analysis-segments';
+import {
+  analysisAcademicFacts,
+  buildPortfolioPromptInput,
+  buildSchoolPromptInput,
+} from './analysis-segments.input';
 import {
   AnalysisActionPlan,
   AnalysisState,
@@ -50,83 +66,22 @@ import { getSchoolDisplayName } from '@study-abroad/shared/utils';
 
 const ANALYSIS_CACHE_TTL_SECONDS = REDIS_TTL.ANALYSIS_CACHE;
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v2';
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
 const PREDICTION_CONTEXT_STALE_AFTER_MS = 1000 * 60 * 60 * 24 * 30;
 
-function readBoundedPositiveInteger(
-  value: string | undefined,
-  fallback: number,
-  min: number,
-  max: number,
-): number {
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed >= min && parsed <= max
-    ? parsed
-    : fallback;
-}
-
-// The per-school analyst LLM steps are independent, so run them with bounded
-// concurrency instead of serially. Serially, MAX_FOCUS_SCHOOLS (5) steps × the
-// per-step timeout + the portfolio step could reach ~180s and blow the 120s
-// TimeoutMiddleware budget → 408 on prod (slow deepseek proxy hits each ceiling).
-// The product caps focus schools at five. Run that bounded set in one wave so a
-// provider outage cannot create a second full timeout wave.
-export const SCHOOL_ANALYST_CONCURRENCY = readBoundedPositiveInteger(
-  process.env.APPLICATION_ANALYSIS_SCHOOL_CONCURRENCY,
-  5,
-  1,
-  5,
-);
-// These are deliberately below the API request timeout. Both remain tunable for
-// a slower private provider, while bad values fall back to safe defaults.
-export const SCHOOL_ANALYST_TIMEOUT_MS = readBoundedPositiveInteger(
-  process.env.APPLICATION_ANALYSIS_SCHOOL_TIMEOUT_MS,
-  12_000,
-  1_000,
-  60_000,
-);
-export const PORTFOLIO_SYNTHESIZER_TIMEOUT_MS = readBoundedPositiveInteger(
-  process.env.APPLICATION_ANALYSIS_PORTFOLIO_TIMEOUT_MS,
-  15_000,
-  1_000,
-  60_000,
-);
-// A provider-wide failure is useful deterministic output, but retrying it on
-// every screen mount creates a thundering herd. Keep it briefly and preserve the
-// degraded status so clients never mistake it for a healthy cache hit.
-export const APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS =
-  readBoundedPositiveInteger(
-    process.env.APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS,
-    90,
-    10,
-    600,
-  );
-
-/**
- * Map over `items` running `fn` with at most `limit` in flight at once,
- * preserving input order in the result. No external dependency; used to bound
- * concurrent LLM calls (avoid both serial-timeout pileup and unbounded fan-out
- * at the proxy).
- */
-async function mapWithConcurrency<T, R>(
-  items: readonly T[],
-  limit: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let cursor = 0;
-  const worker = async (): Promise<void> => {
-    while (cursor < items.length) {
-      const index = cursor;
-      cursor += 1;
-      results[index] = await fn(items[index]);
-    }
-  };
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, () => worker()),
-  );
-  return results;
-}
+import {
+  SCHOOL_ANALYST_CONCURRENCY,
+  SCHOOL_ANALYST_TIMEOUT_MS,
+  PORTFOLIO_SYNTHESIZER_TIMEOUT_MS,
+  APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS,
+  mapWithConcurrency,
+  normalizeUsage,
+} from './profile-application-analysis-runtime';
+export {
+  SCHOOL_ANALYST_CONCURRENCY,
+  SCHOOL_ANALYST_TIMEOUT_MS,
+  PORTFOLIO_SYNTHESIZER_TIMEOUT_MS,
+  APPLICATION_ANALYSIS_DEGRADED_CACHE_TTL_SECONDS,
+} from './profile-application-analysis-runtime';
 
 interface GetAnalysisOptions {
   debug?: boolean;
@@ -200,6 +155,8 @@ export interface AnalysisSnapshot {
 
 @Injectable()
 export class ProfileApplicationAnalysisV2Service {
+  // Resolve after Nest loads environment configuration, not at module import time.
+  private readonly defaultModel = runtimeModel((key) => process.env[key]);
   private readonly logger = new Logger(
     ProfileApplicationAnalysisV2Service.name,
   );
@@ -531,6 +488,8 @@ export class ProfileApplicationAnalysisV2Service {
     options: GetAnalysisOptions,
   ): Promise<ApplicationAnalysisResponseV2> {
     const mode = options.mode ?? 'live';
+    const routingBudget =
+      mode === 'live' ? this.llmService.createRoutingBudget?.() : undefined;
     const persistRun = options.persistRun !== false;
     const traceId = randomUUID();
     const now = new Date().toISOString();
@@ -564,8 +523,16 @@ export class ProfileApplicationAnalysisV2Service {
               state,
               dataQuality,
               debugEnabled: Boolean(options.debug),
-              inputHash: hashObject(snapshot),
-              inputSnapshot: toJson(snapshot),
+              inputHash: hashObject(
+                routingBudget
+                  ? { ...snapshot, modelRouting: routingBudget.limits.routing }
+                  : snapshot,
+              ),
+              inputSnapshot: toJson(
+                routingBudget
+                  ? { ...snapshot, modelRouting: routingBudget.limits.routing }
+                  : snapshot,
+              ),
               selectedSchoolIds: snapshot.focusSchools.map(
                 (item) => item.schoolId,
               ),
@@ -716,6 +683,12 @@ export class ProfileApplicationAnalysisV2Service {
     // captured so the per-school closure keeps the narrowing the old in-scope
     // serial loop relied on (matches the existing `as LoadedProfile` usage).
     const analysisProfile = snapshot.profile;
+    const schoolCall = createSchoolAnalysisCaller(
+      this.llmService,
+      routingBudget,
+      snapshot.locale,
+      snapshot.focusSchools.length,
+    );
 
     // Run the independent per-school analyst steps with bounded concurrency.
     // (Was a serial for-loop: 5 schools × 30s + the 30s portfolio step could sum
@@ -743,17 +716,19 @@ export class ProfileApplicationAnalysisV2Service {
         snapshot.locale,
       );
       const llmStart = Date.now();
-      const schoolPromptInput = {
+      const schoolPromptInput = buildSchoolPromptInput(
         profileSummary,
-        schoolId: policyEntry.schoolId,
-        schoolName: policyEntry.schoolName,
-        tier: deterministic.tier,
-        round: deterministic.round,
-        prediction: deterministic.prediction,
-        policyCard: deterministic.policyCard,
-        deterministicAssessment: deterministic.assessment,
-        allowedEvidenceIds: deterministic.evidenceIds,
-      };
+        policyEntry,
+        deterministic,
+        usesCompactAnalysis(routingBudget, 'analysis.school') ||
+          isSegmentedAnalysis(
+            routingBudget,
+            'analysis.school',
+            snapshot.focusSchools.length,
+          )
+          ? analysisAcademicFacts(analysisProfile, policyEntry.item)
+          : undefined,
+      );
       const schoolSystemPrompt = buildSchoolAnalystSystemPrompt(
         snapshot.locale,
       );
@@ -792,18 +767,27 @@ export class ProfileApplicationAnalysisV2Service {
       }
 
       try {
-        const llmResponse = await this.llmService.call(
-          schoolSystemPrompt,
-          [
-            {
-              id: `school-${policyEntry.schoolId}`,
-              role: 'user',
-              content: schoolUserPrompt,
-              timestamp: new Date(),
-            },
-          ],
+        const llmResponse = await schoolCall(
+          this.llmService,
+          'analysis.school',
+          schoolPromptInput,
+          snapshot.locale,
           {
-            model: DEFAULT_MODEL,
+            model: this.defaultModel,
+            taskType: 'analysis.school',
+            runBudget: routingBudget,
+            validateOutput: (response) => {
+              const parsed = extractJsonFromLlm<Record<string, unknown>>(
+                response.content,
+              );
+              return (
+                isRecord(parsed) &&
+                typeof parsed.summary === 'string' &&
+                !!parsed.summary.trim() &&
+                normalizeSchoolAnalysis(deterministic, parsed).validationErrors
+                  .length === 0
+              );
+            },
             temperature: 0.2,
             // Headroom for the richer, personalized narrative the strengthened
             // prompts now request — a truncated JSON would fail extraction and
@@ -812,6 +796,7 @@ export class ProfileApplicationAnalysisV2Service {
             userId: analysisProfile.userId,
             timeoutMs: SCHOOL_ANALYST_TIMEOUT_MS,
           },
+          snapshot.focusSchools.length,
         );
         const parsed =
           extractJsonFromLlm<Record<string, unknown>>(llmResponse.content) ??
@@ -839,12 +824,18 @@ export class ProfileApplicationAnalysisV2Service {
             normalized.validationErrors.length > 0
               ? 'COMPLETED_WITH_WARNINGS'
               : 'COMPLETED',
-          model: DEFAULT_MODEL,
+          model: llmResponse.segments
+            ? llmResponse.usage?.model
+            : (llmResponse.routing?.model ?? this.defaultModel),
           normalizedInput: toJson(schoolPromptInput),
           normalizedOutput: toJson(mergedSchool),
           inputHash: hashObject(schoolPromptInput),
-          promptHash,
-          tokenUsage: normalizeUsage(llmResponse.usage),
+          promptHash: llmResponse.segments
+            ? hashObject(llmResponse.segments.map((s) => s.promptHash))
+            : promptHash,
+          tokenUsage: llmResponse.segments
+            ? toJson({ ...llmResponse.usage, segments: llmResponse.segments })
+            : normalizeUsage(llmResponse.usage),
           latencyMs: Date.now() - llmStart,
           validationErrors: toJson(normalized.validationErrors),
         });
@@ -857,7 +848,9 @@ export class ProfileApplicationAnalysisV2Service {
           stepKey,
           stepTimingMs: schoolStep.latencyMs ?? 0,
           promptHashKey,
-          promptHash,
+          promptHash: llmResponse.segments
+            ? hashObject(llmResponse.segments.map((s) => s.promptHash))
+            : promptHash,
         };
       } catch (error) {
         const message =
@@ -866,12 +859,23 @@ export class ProfileApplicationAnalysisV2Service {
           runId,
           stepName: stepKey,
           status: 'FAILED',
-          model: DEFAULT_MODEL,
+          model: routingBudget
+            ? error instanceof ModelRoutingError
+              ? error.routing?.model
+              : undefined
+            : this.defaultModel,
           normalizedInput: toJson(schoolPromptInput),
           normalizedOutput: toJson(deterministic),
           inputHash: hashObject(schoolPromptInput),
           promptHash,
           latencyMs: Date.now() - llmStart,
+          tokenUsage:
+            error instanceof AnalysisSegmentError
+              ? toJson({
+                  segments: error.segments,
+                  failedAttempt: error.routing,
+                })
+              : undefined,
           error: message,
           validationErrors: toJson([message]),
         });
@@ -889,10 +893,14 @@ export class ProfileApplicationAnalysisV2Service {
       }
     };
 
-    const perSchoolResults = await mapWithConcurrency(
-      policyCards,
-      SCHOOL_ANALYST_CONCURRENCY,
-      analyzeSchool,
+    const perSchoolResults = await withPortfolioReserve(routingBudget, () =>
+      mapWithConcurrency(
+        policyCards,
+        usesCompactAnalysis(routingBudget, 'analysis.school')
+          ? Math.min(2, SCHOOL_ANALYST_CONCURRENCY)
+          : SCHOOL_ANALYST_CONCURRENCY,
+        analyzeSchool,
+      ),
     );
     for (const result of perSchoolResults) {
       schoolResults.push(result.school);
@@ -920,12 +928,16 @@ export class ProfileApplicationAnalysisV2Service {
     );
 
     const portfolioStart = Date.now();
-    const portfolioInput = {
+    const portfolioInput = buildPortfolioPromptInput(
       profileSummary,
-      schools: schoolResults,
-      fallbackPortfolioSummary: fallbackPortfolio,
+      schoolResults,
+      fallbackPortfolio,
       fallbackActionPlan,
-    };
+      usesCompactAnalysis(routingBudget, 'analysis.portfolio')
+        ? analysisAcademicFacts(analysisProfile, snapshot.focusSchools[0])
+            .applicantFacts
+        : undefined,
+    );
     const portfolioSystemPrompt = buildPortfolioSystemPrompt(snapshot.locale);
     const portfolioUserPrompt = buildPortfolioUserPrompt(
       portfolioInput,
@@ -988,18 +1000,30 @@ export class ProfileApplicationAnalysisV2Service {
     } else {
       llmCallsAttempted += 1;
       try {
-        const llmResponse = await this.llmService.call(
-          portfolioSystemPrompt,
-          [
-            {
-              id: 'portfolio-synthesizer',
-              role: 'user',
-              content: portfolioUserPrompt,
-              timestamp: new Date(),
-            },
-          ],
+        const llmResponse = await callApplicationAnalysis(
+          this.llmService,
+          'analysis.portfolio',
+          portfolioInput,
+          snapshot.locale,
           {
-            model: DEFAULT_MODEL,
+            model: this.defaultModel,
+            taskType: 'analysis.portfolio',
+            runBudget: routingBudget,
+            validateOutput: (response) => {
+              const parsed = extractJsonFromLlm<Record<string, unknown>>(
+                response.content,
+              );
+              return (
+                isRecord(parsed) &&
+                typeof parsed.verdict === 'string' &&
+                !!parsed.verdict.trim() &&
+                normalizePortfolioSynthesis(
+                  fallbackPortfolio,
+                  fallbackActionPlan,
+                  parsed,
+                ).validationErrors.length === 0
+              );
+            },
             temperature: 0.2,
             // Headroom for the richer, personalized narrative the strengthened
             // prompts now request — a truncated JSON would fail extraction and
@@ -1008,6 +1032,7 @@ export class ProfileApplicationAnalysisV2Service {
             userId: snapshot.profile.userId,
             timeoutMs: PORTFOLIO_SYNTHESIZER_TIMEOUT_MS,
           },
+          snapshot.focusSchools.length,
         );
         const parsed =
           extractJsonFromLlm<Record<string, unknown>>(llmResponse.content) ??
@@ -1025,7 +1050,9 @@ export class ProfileApplicationAnalysisV2Service {
             normalizedPortfolio.validationErrors.length > 0
               ? 'COMPLETED_WITH_WARNINGS'
               : 'COMPLETED',
-          model: DEFAULT_MODEL,
+          model: llmResponse.segments
+            ? llmResponse.usage?.model
+            : (llmResponse.routing?.model ?? this.defaultModel),
           normalizedInput: toJson(portfolioInput),
           normalizedOutput: toJson({
             portfolioSummary: normalizedPortfolio.portfolioSummary,
@@ -1033,13 +1060,21 @@ export class ProfileApplicationAnalysisV2Service {
             unknowns: normalizedPortfolio.unknowns,
           }),
           inputHash: hashObject(portfolioInput),
-          promptHash: portfolioPromptHash,
-          tokenUsage: normalizeUsage(llmResponse.usage),
+          promptHash: llmResponse.segments
+            ? hashObject(llmResponse.segments.map((s) => s.promptHash))
+            : portfolioPromptHash,
+          tokenUsage: llmResponse.segments
+            ? toJson({ ...llmResponse.usage, segments: llmResponse.segments })
+            : normalizeUsage(llmResponse.usage),
           latencyMs: Date.now() - portfolioStart,
           validationErrors: toJson(normalizedPortfolio.validationErrors),
         });
         stepIds.push(portfolioStep.id);
         stepTimingsMs.portfolio_synthesizer = portfolioStep.latencyMs ?? 0;
+        if (llmResponse.segments)
+          promptHashes.portfolio_synthesizer = hashObject(
+            llmResponse.segments.map((s) => s.promptHash),
+          );
       } catch (error) {
         llmCallsFailed += 1;
         const message =
@@ -1049,7 +1084,11 @@ export class ProfileApplicationAnalysisV2Service {
           runId,
           stepName: 'portfolio_synthesizer',
           status: 'FAILED',
-          model: DEFAULT_MODEL,
+          model: routingBudget
+            ? error instanceof ModelRoutingError
+              ? error.routing?.model
+              : undefined
+            : this.defaultModel,
           normalizedInput: toJson(portfolioInput),
           normalizedOutput: toJson({
             portfolioSummary: fallbackPortfolio,
@@ -1059,6 +1098,13 @@ export class ProfileApplicationAnalysisV2Service {
           inputHash: hashObject(portfolioInput),
           promptHash: portfolioPromptHash,
           latencyMs: Date.now() - portfolioStart,
+          tokenUsage:
+            error instanceof AnalysisSegmentError
+              ? toJson({
+                  segments: error.segments,
+                  failedAttempt: error.routing,
+                })
+              : undefined,
           error: message,
           validationErrors: toJson([message]),
         });
@@ -1104,6 +1150,12 @@ export class ProfileApplicationAnalysisV2Service {
       llmCallsFailed,
       validationErrorCount: validationErrors.length,
       schoolResultCount: schoolResults.length,
+      strictPartialFailure: Boolean(
+        routingBudget?.limits.routing?.policy.routes['analysis.school']
+          ?.execution ||
+        routingBudget?.limits.routing?.policy.routes['analysis.portfolio']
+          ?.execution,
+      ),
     });
 
     const response = this.enrichApplicantResponse(
@@ -1288,7 +1340,7 @@ export class ProfileApplicationAnalysisV2Service {
       activePolicy?.analysisVersion ?? DEFAULT_ANALYSIS_VERSION
     }:${profile?.updatedAt.getTime() ?? 0}:${
       schoolList._max.updatedAt?.getTime() ?? 0
-    }:${schoolList._count._all ?? 0}`;
+    }:${schoolList._count._all ?? 0}${this.llmService.routingPolicyHash?.() ? `:routing:${this.llmService.routingPolicyHash()}` : ''}`;
   }
 
   private async resolveStaleFocusSchoolIds(
@@ -1827,6 +1879,7 @@ export function resolveAnalysisDegradation(input: {
   llmCallsFailed: number;
   validationErrorCount: number;
   schoolResultCount: number;
+  strictPartialFailure?: boolean;
 }): { isDegraded: boolean; degradedReason?: string } {
   const noSchoolResults =
     input.validationErrorCount > 0 && input.schoolResultCount === 0;
@@ -1838,6 +1891,12 @@ export function resolveAnalysisDegradation(input: {
     input.llmCallsFailed === input.llmCallsAttempted;
   if (llmSystemicallyDown) {
     return { isDegraded: true, degradedReason: 'llmUnavailable' };
+  }
+  if (
+    input.strictPartialFailure &&
+    (input.llmCallsFailed > 0 || input.validationErrorCount > 0)
+  ) {
+    return { isDegraded: true, degradedReason: 'partialAnalysisFailed' };
   }
   return { isDegraded: false };
 }
@@ -1875,34 +1934,6 @@ function normalizeRecourse(value: unknown): RecourseGuidance | undefined {
     constraints: ensureStringArray(value.constraints),
     whyNotGuaranteed,
   };
-}
-
-/**
- * Anti-hallucination guard: the LLM may only cite evidence IDs that the
- * deterministic layer actually produced. Any ID the model invents is stripped,
- * and the mismatch is recorded so the response can be flagged/degraded — the
- * model can never fabricate a source binding. Returns the filtered IDs plus
- * validation errors (`school-analysis-evidence-id-not-allowed` when the model
- * cited IDs outside the allow-list; `school-analysis-missing-evidence-binding`
- * when filtering removed every ID despite the deterministic layer having some).
- */
-export function filterAllowedEvidenceIds(
-  allowedEvidenceIds: string[],
-  rawEvidenceIds: string[],
-): { evidenceIds: string[]; validationErrors: string[] } {
-  const allowed = new Set(allowedEvidenceIds);
-  const evidenceIds = rawEvidenceIds.filter((item) => allowed.has(item));
-  const validationErrors: string[] = [];
-  if (
-    rawEvidenceIds.length > 0 &&
-    evidenceIds.length !== rawEvidenceIds.length
-  ) {
-    validationErrors.push('school-analysis-evidence-id-not-allowed');
-  }
-  if (evidenceIds.length === 0 && allowedEvidenceIds.length > 0) {
-    validationErrors.push('school-analysis-missing-evidence-binding');
-  }
-  return { evidenceIds, validationErrors };
 }
 
 const VALID_PORTFOLIO_BALANCES: readonly ApplicationAnalysisPortfolioSummary['balance'][] =
@@ -1958,21 +1989,6 @@ export function normalizeUncertainty(
     intervalLabel: intervalLabel as 'tight' | 'balanced' | 'wide',
     reasons: ensureStringArray(value.reasons),
   };
-}
-
-function normalizeUsage(
-  usage:
-    | {
-        promptTokens: number;
-        completionTokens: number;
-        totalTokens: number;
-        model: string;
-        estimatedCost?: number;
-      }
-    | undefined,
-): Prisma.InputJsonValue | undefined {
-  if (!usage) return undefined;
-  return usage;
 }
 
 function buildReplayFailures(metrics: Record<string, number | boolean>) {
