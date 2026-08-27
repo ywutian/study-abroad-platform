@@ -138,6 +138,8 @@
 
 [CODE] FR-005：现有CI增加0流量完整Harness验收和只读inspection；inspection模式强制排除部署，即使deploy输入保持默认true也不会部署。URL只输出已知公开Provider地址，其它地址不输出路径。
 
+[CODE] 本机并发工作使pre-push的类型/Lint/集成检查均触发原120秒watchdog。新增仅本地的 `VERIFY_GATE_TIMEOUT_MS`（120000–900000）参数；默认和CI仍120000，检查项目/断言不变，不涉及产品运行预算。非法/无限值拒绝，单元测试覆盖。
+
 <!-- section:verification -->
 
 ## 19. 验证证据
