@@ -116,7 +116,8 @@ test('inspection finds DEFAULT-severity Nest provider failures without broadenin
       query = args[2];
       const coversDefault =
         query.includes('textPayload:"OpenAI API error"') &&
-        query.includes('jsonPayload.message:"LLM stream failed"');
+        query.includes('jsonPayload.message:"LLM stream failed"') &&
+        query.includes('textPayload:"Routed OpenAI"');
       return {
         status: 0,
         stdout: JSON.stringify(
@@ -143,4 +144,13 @@ test('inspection finds DEFAULT-severity Nest provider failures without broadenin
   );
   assert.ok(query.endsWith(')'));
   assert.doesNotMatch(JSON.stringify(result), /private-value/);
+});
+
+test('strict stream authentication errors retain the fixed sanitized category', () => {
+  assert.deepEqual(
+    summarizeErrors([
+      { severity: 'DEFAULT', textPayload: 'Routed OpenAI AUTHENTICATION private-value' },
+    ]),
+    { AUTHENTICATION: 1 }
+  );
 });

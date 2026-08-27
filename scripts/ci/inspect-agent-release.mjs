@@ -2,7 +2,12 @@ import { spawnSync } from 'node:child_process';
 
 // Nest stdout errors may be ingested with DEFAULT severity. Keep the service
 // restriction outside this OR group and select explicit failures, not all LLM logs.
-const providerFailureMarkers = ['OpenAI API error', 'LLM stream failed', 'Authentication failed:'];
+const providerFailureMarkers = [
+  'OpenAI API error',
+  'LLM stream failed',
+  'Authentication failed:',
+  'Routed OpenAI',
+];
 const providerErrorLogQuery =
   'resource.type="cloud_run_revision" AND resource.labels.service_name="study-abroad-api" AND (' +
   [
