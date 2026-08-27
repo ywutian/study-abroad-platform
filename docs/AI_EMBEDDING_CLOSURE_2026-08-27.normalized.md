@@ -122,6 +122,8 @@
 
 ## 18. 实施结果
 
+[CODE] FR-005/NFR-001兼容性复查：生成向量失败的内容更新仍按旧ORM行为限制importance到[0,1]、忽略空category，同时原子清除旧向量。AC-005增加四项边界单测及实库断言；定向19/19通过。
+
 [CODE] 已实现共享向量契约、有界请求、v2缓存命名空间及单元测试。新增ADMIN+AI_CONFIG受保护的embedding-acceptance接口，双开关控制，只接受两个不同的合成账号，内容由服务端固定生成。复用Memory服务完成实际向量入库、改写召回、双用户隔离；请求内无key适配器测试既有FTS降级，不改变全局实例。随机category绑定清理范围，finally清理并检查残留。Runner独立创建/清理第二账号，严格artifact逐项检查布尔证据。保持已有聊天闭环文档不变。
 
 <!-- section:verification -->

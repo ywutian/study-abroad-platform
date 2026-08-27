@@ -92,6 +92,7 @@ describe('Embedding memory persistence (e2e)', () => {
     const created = await memory.createMemory(userIds[0], {
       type: MemoryType.FACT,
       content: 'Synthetic original academic goal',
+      category: 'synthetic-original',
     });
     const unavailable = new EmbeddingService(
       {} as RedisService,
@@ -107,16 +108,27 @@ describe('Embedding memory persistence (e2e)', () => {
     ).rejects.toThrow();
     await fallback.updateMemory(
       created.id,
-      { content: 'Synthetic replacement' },
+      { content: 'Synthetic replacement', importance: 2, category: '' },
       userIds[0],
     );
     const stored = await prisma.$queryRaw<
-      Array<{ absent: boolean; content: string }>
+      Array<{
+        absent: boolean;
+        content: string;
+        importance: number;
+        category: string;
+      }>
     >`
-      SELECT embedding IS NULL AS absent, content FROM "Memory" WHERE id = ${created.id}
+      SELECT embedding IS NULL AS absent, content, importance, category
+      FROM "Memory" WHERE id = ${created.id}
     `;
     expect(stored).toEqual([
-      { absent: true, content: 'Synthetic replacement' },
+      {
+        absent: true,
+        content: 'Synthetic replacement',
+        importance: 1,
+        category: 'synthetic-original',
+      },
     ]);
     await prisma.memory.deleteMany({
       where: { id: created.id, userId: userIds[0] },

@@ -56,6 +56,12 @@ using an invalid two-dimensional response. Its fixture now satisfies the real
 isolation assertion. A test-only double cast was replaced with Nest dependency
 injection to preserve the type-safety ratchet. Neither gate was weakened.
 
+Final compatibility review retained the old failed-embedding update behavior:
+importance is clamped to [0, 1] and an empty category leaves the existing category
+unchanged, while clearing the stale vector atomically. Four new unit cases cover
+importance boundaries; the real-database regression also asserts category and
+importance. The targeted memory/acceptance run passed 19/19 tests.
+
 ## Release criteria
 
 An additional real-provider probe measured positive cosine 0.4763 versus negative

@@ -456,7 +456,20 @@ export class PersistentMemoryService {
       // not leave the old content's vector attached to new text.
       const row = await this.updateMemoryRaw(
         memoryId,
-        { ...data, content: data.content },
+        {
+          ...data,
+          content: data.content,
+          // Preserve the old ORM fallback's normalization when no vector exists.
+          ...(embeddingVector.length === 0
+            ? {
+                importance:
+                  data.importance === undefined
+                    ? undefined
+                    : Math.max(0, Math.min(1, data.importance)),
+                category: data.category || undefined,
+              }
+            : {}),
+        },
         embeddingVector.length > 0 ? embeddingVector : null,
       );
       return this.toMemoryRecord(row);
