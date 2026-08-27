@@ -134,7 +134,7 @@ export class PersistentMemoryService {
         ${input.category},
         ${input.content},
         ${input.importance ?? 0.5},
-        ${embedding}::vector,
+        ${JSON.stringify(embedding)}::vector,
         ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb,
         ${input.expiresAt},
         NOW(),
@@ -165,7 +165,7 @@ export class PersistentMemoryService {
       metadata?: Record<string, any>;
       category?: string;
     },
-    embedding: number[],
+    embedding: number[] | null,
   ): Promise<RawMemoryRow> {
     // governance: parent-scoped — caller updateMemory() validates ownership
     const result = await this.prisma.$queryRaw<RawMemoryRow[]>(
@@ -175,7 +175,7 @@ export class PersistentMemoryService {
         importance = COALESCE(${data.importance}, importance),
         metadata = COALESCE(${data.metadata ? JSON.stringify(data.metadata) : null}::jsonb, metadata),
         category = COALESCE(${data.category}, category),
-        embedding = ${embedding}::vector,
+        embedding = ${embedding === null ? null : JSON.stringify(embedding)}::vector,
         "updatedAt" = NOW()
       WHERE id = ${memoryId}
       RETURNING ${Prisma.raw(MEMORY_COLUMNS)}
@@ -388,7 +388,7 @@ export class PersistentMemoryService {
         m."accessCount", m."lastAccessedAt", m.metadata, m."expiresAt",
         m."createdAt", m."updatedAt",
         CASE WHEN m.embedding IS NOT NULL
-          THEN ${alpha} * (1 - (m.embedding <=> ${queryEmbedding}::vector))
+          THEN ${alpha} * (1 - (m.embedding <=> ${JSON.stringify(queryEmbedding)}::vector))
                + ${1 - alpha} * COALESCE(ts_rank(to_tsvector('simple', m.content), plainto_tsquery('simple', ${sanitizedQuery})), 0)
           ELSE COALESCE(ts_rank(to_tsvector('simple', m.content), plainto_tsquery('simple', ${sanitizedQuery})), 0)
         END AS similarity
@@ -452,14 +452,14 @@ export class PersistentMemoryService {
     if (data.content) {
       const embeddingVector = await this.embedding.embed(data.content);
 
-      if (embeddingVector.length > 0) {
-        const row = await this.updateMemoryRaw(
-          memoryId,
-          { ...data, content: data.content },
-          embeddingVector,
-        );
-        return this.toMemoryRecord(row);
-      }
+      // Content and vector must change atomically. A failed re-embedding must
+      // not leave the old content's vector attached to new text.
+      const row = await this.updateMemoryRaw(
+        memoryId,
+        { ...data, content: data.content },
+        embeddingVector.length > 0 ? embeddingVector : null,
+      );
+      return this.toMemoryRecord(row);
     }
 
     this.logger.warn(
@@ -1152,7 +1152,7 @@ export class PersistentMemoryService {
         // governance: batch-operation — system embedding backfill by memory ID
         await this.prisma.$executeRaw`
           UPDATE "Memory"
-          SET embedding = ${emb}::vector, "updatedAt" = NOW()
+          SET embedding = ${JSON.stringify(emb)}::vector, "updatedAt" = NOW()
           WHERE id = ${memoryIds[i]}
         `;
       }

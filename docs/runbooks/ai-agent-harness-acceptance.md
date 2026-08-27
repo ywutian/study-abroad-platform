@@ -86,22 +86,35 @@ Budget grants can only reduce the frozen per-Run budget.
 
 ## Required records
 
-| Record                         | Required evidence                                                                                                                          |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `declarative_skills_boundary`  | Six active deployments, auto-publish status, safe candidate accepted, permission expansion rejected, historical public credential rejected |
-| `setup`                        | Synthetic account created; evidence contains only its one-way hash                                                                         |
-| `skill_version_pinning`        | New Run persists the active version; later deployment changes cannot alter that Run                                                        |
-| `memory_disabled`              | No extraction, recall, entity lookup, or memory prompt injection; Conversation and Run persistence still work                              |
-| `context_compression`          | Valid structured summary persists, recent messages remain, and tool payload is represented only by reference                               |
-| `context_compression_fallback` | Previous valid summary hash is unchanged; fallback metric and durable opaque alert are emitted                                             |
-| `approval_disconnect_recovery` | Approval fingerprint is stable; reconnect/resume returns the terminal result; side effect occurs at most once                              |
-| `budget_exhaustion`            | Run reaches deterministic terminal failure with no extra side effect and the budget metric increments                                      |
-| `cleanup`                      | Synthetic event deleted, AI data cleared, and account soft-deleted                                                                         |
+| Record                         | Required evidence                                                                                                                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `declarative_skills_boundary`  | Six active deployments, auto-publish status, safe candidate accepted, permission expansion rejected, historical public credential rejected                                                     |
+| `setup`                        | Synthetic account created; evidence contains only its one-way hash                                                                                                                             |
+| `skill_version_pinning`        | New Run persists the active version; later deployment changes cannot alter that Run                                                                                                            |
+| `memory_disabled`              | No extraction, recall, entity lookup, or memory prompt injection; Conversation and Run persistence still work                                                                                  |
+| `context_compression`          | Valid structured summary persists, recent messages remain, and tool payload is represented only by reference                                                                                   |
+| `context_compression_fallback` | Previous valid summary hash is unchanged; fallback metric and durable opaque alert are emitted                                                                                                 |
+| `approval_disconnect_recovery` | Approval fingerprint is stable; reconnect/resume returns the terminal result; side effect occurs at most once                                                                                  |
+| `budget_exhaustion`            | Run reaches deterministic terminal failure with no extra side effect and the budget metric increments                                                                                          |
+| `cleanup`                      | Synthetic event deleted, AI data cleared, and account soft-deleted                                                                                                                             |
+| `embedding_memory`             | Real single/batch vectors, cache consistency, semantic positive-over-negative ordering, pgvector storage/recall, tenant isolation, scoped failure fallback, fixture and second-account cleanup |
 
 The top-level record must have `pass=true` and an empty `reasonCodes` array.
 `scripts/ci/validate-harness-acceptance-evidence.mjs` is the machine-readable
 contract. Never treat a successful process exit as sufficient without validating
 the artifact.
+
+Embedding acceptance uses `POST /admin/ai-agent/harness/embedding-acceptance`,
+protected by ADMIN + AI_CONFIG and both Harness/acceptance flags. Both supplied
+account IDs must resolve to distinct, non-deleted `agent-harness-<14 digits>@example.invalid`
+accounts. Texts are server-owned synthetic fixtures, never request-supplied content.
+The runner creates a second account and cleans it independently. The service deletes
+only its random fixture category within those two users in `finally`; fixtures also
+expire after ten minutes. The fallback check uses a request-local missing-key
+adapter with the existing memory service, never changing global credentials or
+the production singleton. This is a deterministic degradation test, not evidence
+that an actual provider outage occurred. Passing this small synthetic smoke test
+does not establish broad retrieval accuracy or admission-prediction accuracy.
 
 ## Evidence allowlist
 

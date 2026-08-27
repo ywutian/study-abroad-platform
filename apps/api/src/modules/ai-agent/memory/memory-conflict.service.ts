@@ -336,14 +336,14 @@ export class MemoryConflictService {
         m.id, m."userId", m.type, m.category, m.content, m.importance,
         m."accessCount", m."lastAccessedAt", m.metadata, m."expiresAt",
         m."createdAt", m."updatedAt",
-        1 - (m.embedding <=> ${newEmbedding}::vector) AS similarity
+        1 - (m.embedding <=> ${JSON.stringify(newEmbedding)}::vector) AS similarity
       FROM "Memory" m
       WHERE 
         m."userId" = ${memory.userId}
         AND m.type = ${memory.type}::"MemoryType"
         AND m.embedding IS NOT NULL
-        AND 1 - (m.embedding <=> ${newEmbedding}::vector) >= ${this.semanticThreshold}
-      ORDER BY m.embedding <=> ${newEmbedding}::vector
+        AND 1 - (m.embedding <=> ${JSON.stringify(newEmbedding)}::vector) >= ${this.semanticThreshold}
+      ORDER BY m.embedding <=> ${JSON.stringify(newEmbedding)}::vector
       LIMIT 1
     `;
 

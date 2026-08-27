@@ -11,6 +11,7 @@ const scenarios = [
   'approval_disconnect_recovery',
   'budget_exhaustion',
   'cleanup',
+  'embedding_memory',
 ];
 
 function fixture(extra = {}) {
@@ -22,6 +23,21 @@ function fixture(extra = {}) {
         scenario,
         pass: true,
         reasonCode: 'OK',
+        ...(scenario === 'embedding_memory'
+          ? {
+              singleVector: true,
+              batchVectors: true,
+              cacheConsistent: true,
+              vectorStored: true,
+              semanticRecall: true,
+              semanticOrdering: true,
+              userIsolation: true,
+              fallbackStored: true,
+              fallbackRecall: true,
+              fixtureCleanup: true,
+              isolationAccountCleaned: true,
+            }
+          : {}),
         ...extra,
       })
     )
@@ -66,3 +82,28 @@ test('rejects a failed scenario and revision mismatch', () => {
   assert.equal(result.errors.includes('line_1_revision_mismatch'), true);
   assert.equal(result.errors.includes('scenario_budget_exhaustion_failed'), true);
 });
+
+for (const key of [
+  'singleVector',
+  'batchVectors',
+  'cacheConsistent',
+  'vectorStored',
+  'semanticRecall',
+  'semanticOrdering',
+  'userIsolation',
+  'fallbackStored',
+  'fallbackRecall',
+  'fixtureCleanup',
+  'isolationAccountCleaned',
+]) {
+  test(`rejects incomplete embedding evidence: ${key}`, () => {
+    const records = fixture().split('\n').map(JSON.parse);
+    delete records.find((record) => record.scenario === 'embedding_memory')[key];
+    const result = validateHarnessEvidence({
+      text: records.map((record) => JSON.stringify(record)).join('\n'),
+      expectedRevision: 'api-001',
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors.includes('scenario_embedding_memory_incomplete'), true);
+  });
+}

@@ -4,17 +4,18 @@
  * Redis 缓存 + 内存LRU降级
  */
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash } from 'crypto';
+import {
+  embeddingCacheKey,
+  EMBEDDING_INPUT_LIMIT,
+  isEmbeddingVector,
+  requestEmbeddings,
+} from './embedding-contract';
 import { RedisService } from '../../../common/redis/redis.service';
 import { REDIS_TTL } from '../../../common/redis/redis-ttl.constants';
 import { ResilienceService } from '../core/resilience.service';
+import { LLMProviderError } from '../providers/llm-provider.types';
 
 const EMBEDDING_CONFIG = {
   timeoutMs: 15000,
@@ -107,156 +108,47 @@ export class EmbeddingService {
    */
   // 生成文本的向量嵌入
   async embed(text: string): Promise<number[]> {
-    if (!this.apiKey) {
-      this.logger.warn(
-        'OpenAI API key not configured, returning empty embedding',
-      );
-      return [];
-    }
-
-    const cacheKey = this.hashText(text);
-    const cached = await this.getCachedEmbedding(cacheKey);
-    if (cached) return cached;
-
-    try {
-      if (text.length > 8000) {
-        this.logger.warn(
-          `Embedding text truncated: ${text.length} → 8000 chars`,
-        );
-      }
-
-      const embedding = await this.executeWithResilience(async () => {
-        const response = await fetch(`${this.baseUrl}/embeddings`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body: JSON.stringify({
-            model: this.model,
-            input: text.slice(0, 8000),
-          }),
-        });
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          this.logger.error(
-            `Embedding API error: ${response.status} - ${errorBody}`,
-          );
-          throw new InternalServerErrorException(
-            `Embedding API error: ${response.status} - ${errorBody}`,
-          );
-        }
-
-        const data: unknown = await response.json();
-        if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
-        const rows = (data as Record<string, unknown>).data;
-        if (!Array.isArray(rows) || !rows[0] || typeof rows[0] !== 'object') {
-          return [];
-        }
-        const embedding = (rows[0] as Record<string, unknown>).embedding;
-        return Array.isArray(embedding) &&
-          embedding.every((value) => typeof value === 'number')
-          ? embedding
-          : [];
-      });
-
-      if (embedding.length > 0) {
-        await this.cacheEmbedding(cacheKey, embedding);
-      }
-      return embedding;
-    } catch (error) {
-      this.logger.warn(
-        `Embedding generation failed, degrading to empty vector: ${String(error instanceof Error ? error.message : error)}`,
-      );
-      return [];
-    }
+    return (await this.embedBatch([text]))[0];
   }
 
-  /**
-   * Generate embedding vectors for multiple texts in a single API call.
-   *
-   * Cached embeddings are returned from cache; only uncached texts are sent
-   * to the API. The API response indices are mapped back to the original
-   * input positions. Returns empty vectors for any texts that fail.
-   *
-   * @param texts - Array of texts to embed (each truncated to 8000 chars)
-   * @returns Array of embedding vectors matching the input order; empty arrays for failures
-   */
-  // 批量生成向量嵌入
+  /** Validate the whole response before caching; preserve successful cache hits on failure. */
   async embedBatch(texts: string[]): Promise<number[][]> {
-    if (!this.apiKey || texts.length === 0) {
-      return texts.map(() => []);
-    }
-
-    const cacheKeys = texts.map((t) => this.hashText(t));
-    const cachedResults = await Promise.all(
-      cacheKeys.map((key) => this.getCachedEmbedding(key)),
+    if (!this.apiKey || texts.length === 0) return texts.map(() => []);
+    const inputs = texts.map((text) => text.slice(0, EMBEDDING_INPUT_LIMIT));
+    const keys = inputs.map((text) => this.hashText(text));
+    const results = await Promise.all(
+      inputs.map((text, index) =>
+        text.trim()
+          ? this.getCachedEmbedding(keys[index])
+          : Promise.resolve([]),
+      ),
     );
-
-    const results: (number[] | null)[] = cachedResults;
-    const toFetch: { index: number; text: string }[] = [];
-    results.forEach((r, i) => {
-      if (!r) {
-        toFetch.push({ index: i, text: texts[i] });
-      }
-    });
-
-    if (toFetch.length === 0) {
-      return results as number[][];
-    }
-
+    const pending = inputs
+      .map((text, index) => ({ text, index }))
+      .filter(({ index }) => results[index] === null);
+    if (pending.length === 0) return results.map((value) => value ?? []);
     try {
-      const apiEmbeddings = await this.executeWithResilience(async () => {
-        const response = await fetch(`${this.baseUrl}/embeddings`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body: JSON.stringify({
-            model: this.model,
-            input: toFetch.map((t) => t.text.slice(0, 8000)),
-          }),
-        });
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          this.logger.error(
-            `Embedding batch API error: ${response.status} - ${errorBody}`,
-          );
-          throw new InternalServerErrorException(
-            `Embedding API error: ${response.status} - ${errorBody}`,
-          );
-        }
-
-        const data = (await response.json()) as {
-          data?: Array<{ index: number; embedding: number[] }>;
-        };
-        return data.data || [];
-      });
-
+      const vectors = await this.executeWithResilience(() =>
+        requestEmbeddings(
+          this.baseUrl,
+          this.apiKey,
+          this.model,
+          pending.map(({ text }) => text),
+          EMBEDDING_CONFIG.timeoutMs,
+        ),
+      );
       await Promise.all(
-        apiEmbeddings.map(async (item) => {
-          if (item.index < 0 || item.index >= toFetch.length) {
-            this.logger.warn(
-              `Embedding batch: unexpected index ${item.index} (expected 0-${toFetch.length - 1})`,
-            );
-            return;
-          }
-          const { index: originalIndex, text } = toFetch[item.index];
-          results[originalIndex] = item.embedding;
-          await this.cacheEmbedding(this.hashText(text), item.embedding);
+        pending.map(async ({ index }, offset) => {
+          results[index] = vectors[offset];
+          await this.cacheEmbedding(keys[index], vectors[offset]);
         }),
       );
-
-      return results.map((r) => r || []);
     } catch (error) {
       this.logger.warn(
-        `Batch embedding failed, degrading to empty vectors: ${String(error instanceof Error ? error.message : error)}`,
+        `embedding_generation_failed: ${error instanceof LLMProviderError ? error.code : 'UNAVAILABLE'}`,
       );
-      return texts.map(() => []);
     }
+    return results.map((value) => value ?? []);
   }
 
   /**
@@ -313,24 +205,23 @@ export class EmbeddingService {
     const redisKey = `emb:${key}`;
     // `get` returns null on a miss OR when Redis is down — both fall through to
     // the in-memory cache below, matching the previous try/catch behavior.
-    const raw = await this.redis.get(redisKey);
-    if (raw) {
-      try {
-        // @cache-parse-allowed - number[]; no Date to lose
+    try {
+      const raw = await this.redis.get(redisKey);
+      if (raw) {
+        // @cache-parse-allowed - validated numeric vector; no Date to lose
         const parsed: unknown = JSON.parse(raw);
-        if (
-          Array.isArray(parsed) &&
-          parsed.every((value) => typeof value === 'number')
-        ) {
-          return parsed;
-        }
-      } catch {
-        // corrupt entry — fall through to memory
+        if (isEmbeddingVector(parsed)) return parsed;
       }
+    } catch {
+      this.logger.debug('embedding_cache_read_failed');
     }
 
     // 降级到内存
-    return this.fallbackCache.get(key) || null;
+    const cached = this.fallbackCache.get(key);
+    if (!isEmbeddingVector(cached)) return null;
+    this.fallbackCache.delete(key);
+    this.fallbackCache.set(key, cached);
+    return [...cached];
   }
 
   private async cacheEmbedding(
@@ -347,8 +238,8 @@ export class EmbeddingService {
         client.set(redisKey, JSON.stringify(embedding), 'EX', this.CACHE_TTL),
       );
       return;
-    } catch (err) {
-      this.logger.debug(`Redis cacheEmbedding failed: ${String(err)}`);
+    } catch {
+      this.logger.debug('embedding_cache_write_failed');
     }
 
     // 降级到内存
@@ -358,14 +249,13 @@ export class EmbeddingService {
         this.fallbackCache.delete(firstKey);
       }
     }
-    this.fallbackCache.set(key, embedding);
+    this.fallbackCache.set(key, [...embedding]);
   }
 
   // ==================== 私有方法 ====================
 
   private hashText(text: string): string {
-    // 使用 SHA256 前16字节，比简单哈希更可靠
-    return createHash('sha256').update(text).digest('hex').slice(0, 16);
+    return embeddingCacheKey(this.baseUrl, this.model, text);
   }
 
   async getCacheStats(): Promise<{
@@ -374,8 +264,8 @@ export class EmbeddingService {
     redisKeyCount?: number;
   }> {
     try {
-      const keys = await this.redis.withClient('read', 'emb:*', (client) =>
-        client.keys('emb:*'),
+      const keys = await this.redis.withClient('read', 'emb:v2:*', (client) =>
+        client.keys('emb:v2:*'),
       );
       return {
         mode: 'redis',

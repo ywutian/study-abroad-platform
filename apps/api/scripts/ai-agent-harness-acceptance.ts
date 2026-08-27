@@ -1,6 +1,7 @@
-import { randomBytes } from 'node:crypto';
+import { verifyEmbeddingMemory } from './ai-agent-embedding-acceptance-support';
 import {
   fingerprint,
+  createSyntheticHarnessIdentity,
   JsonRecord,
   parseAcceptanceSse,
   pollTerminalAgentRun,
@@ -25,13 +26,8 @@ const apiBase = requiredEnv('HARNESS_API_BASE').replace(/\/$/, '');
 const adminEmail = requiredEnv('HARNESS_ADMIN_EMAIL');
 const adminPassword = requiredEnv('HARNESS_ADMIN_PASSWORD');
 const expectedRevision = requiredEnv('HARNESS_EXPECTED_REVISION');
-const stamp = new Date()
-  .toISOString()
-  .replace(/[-:.TZ]/g, '')
-  .slice(0, 14);
-const syntheticEmail = `agent-harness-${stamp}@example.invalid`;
-const syntheticPassword = `Harness9!${randomBytes(8).toString('hex')}`;
-const eventTitle = `Harness synthetic event ${stamp}`;
+const { syntheticEmail, syntheticPassword, eventTitle } =
+  createSyntheticHarnessIdentity();
 let adminToken = '';
 let token = '';
 let userId = '';
@@ -174,6 +170,12 @@ async function main(): Promise<void> {
   const preference = await request('/ai-agent/user-data/preferences', {
     method: 'PUT',
     body: { enableMemory: false },
+  });
+  const embeddingPass = await verifyEmbeddingMemory({
+    apiBase,
+    adminToken,
+    targetUserId: userId,
+    emit,
   });
   const beforeStats = await request('/ai-agent/user-data/stats');
   const memoryRun = await streamChat(
@@ -408,6 +410,7 @@ async function main(): Promise<void> {
 
   if (
     !skillsPass ||
+    !embeddingPass ||
     !skillPinPass ||
     !memoryPass ||
     !compressionPass ||
