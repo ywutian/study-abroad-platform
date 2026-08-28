@@ -30,6 +30,13 @@
       "sourceFile": "apps/api/src/modules/ai-agent/skills/agent-skill-evolution.service.ts"
     },
     {
+      "name": "agent-skill-monitor",
+      "schedule": "* * * * *",
+      "className": "AgentSkillMonitorService",
+      "methodName": "scheduledMonitor",
+      "sourceFile": "apps/api/src/modules/ai-agent/skills/agent-skill-monitor.service.ts"
+    },
+    {
       "name": "alert-channel-service-deliver-pending-alerts",
       "schedule": "* * * * *",
       "className": "AlertChannelService",

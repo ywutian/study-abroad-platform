@@ -100,6 +100,8 @@ import { AgentSkillPolicyService } from './skills/agent-skill-policy.service';
 import { AgentSkillService } from './skills/agent-skill.service';
 import { AgentSkillEvaluationService } from './skills/agent-skill-evaluation.service';
 import { AgentSkillEvolutionService } from './skills/agent-skill-evolution.service';
+import { AgentSkillSignalCollector } from './skills/agent-skill-signal-collector.service';
+import { AgentSkillMonitorService } from './skills/agent-skill-monitor.service';
 import { AgentRuntimeConfigService } from './skills/agent-runtime-config.service';
 
 // Middleware
@@ -179,6 +181,8 @@ import { AgentSecurityMiddleware } from './middleware/security.middleware';
     AgentSkillService,
     AgentSkillEvaluationService,
     AgentSkillEvolutionService,
+    AgentSkillSignalCollector,
+    AgentSkillMonitorService,
     AgentRuntimeConfigService,
     AgentRunRetentionService,
     AgentRunService,

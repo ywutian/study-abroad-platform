@@ -3586,22 +3586,24 @@ model AgentRun {
 // Redacted, structured evidence used for offline evaluation and future Skill improvement.
 // Raw prompts, tool arguments/results, credentials, and personal materials are never stored here.
 model AgentEvaluationTrace {
-  id             String              @id @default(cuid())
-  runId          String              @unique
-  run            AgentRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
-  traceVersion   Int                 @default(1)
-  agentType      String
-  skillVersionId String?
-  skillVersion   AgentConfigVersion? @relation("AgentTraceSkillVersion", fields: [skillVersionId], references: [id], onDelete: SetNull)
-  outcome        String
-  payload        Json
-  redactedTypes  String[]
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  id                    String              @id @default(cuid())
+  runId                 String              @unique
+  run                   AgentRun            @relation(fields: [runId], references: [id], onDelete: Cascade)
+  traceVersion          Int                 @default(1)
+  agentType             String
+  skillVersionId        String?
+  skillVersion          AgentConfigVersion? @relation("AgentTraceSkillVersion", fields: [skillVersionId], references: [id], onDelete: SetNull)
+  outcome               String
+  payload               Json
+  redactedTypes         String[]
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  skillSignalConsumedAt DateTime?
 
   @@index([agentType, outcome])
   @@index([skillVersionId, createdAt])
   @@index([createdAt])
+  @@index([skillSignalConsumedAt, createdAt, id])
 }
 
 // Versioned evaluation evidence for a declarative Skill candidate.
