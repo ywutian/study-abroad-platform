@@ -11,13 +11,13 @@
  * - runStream() 是唯一的工作流实现（单一事实来源）
  * - run() 是 runStream() 的薄包装，结构性杜绝流式/非流式路径不一致
  * - 每个阶段的核心逻辑封装为独立方法，不存在重复代码
- * - Solve 阶段内置空内容 fallback（流式失败自动重试非流式）
+ * - Solve 内置成功空响应 fallback；Harness 错误或缺终态不重试
  *
  * 降级策略：
  * - Plan 阶段 LLM 未返回工具调用 → 直接返回文本回复（无需 Solve）
  * - Plan 阶段返回 delegate_to_agent → 直接委派，不进入 Execute
  * - Execute 阶段某工具失败 → 标记失败，Solve 阶段基于已有结果生成回复
- * - Solve 阶段流式输出为空 → 自动 fallback 到非流式重试
+ * - Solve 成功完成但内容为空 → fallback 到非流式重试（仍受预算约束）
  */
 
 import {
@@ -55,6 +55,11 @@ import {
   type AgentRunBudgetV1,
 } from './agent-run.service';
 import { AgentRunBudgetTracker } from './agent-run-context';
+import {
+  canAffordVerification,
+  withSupplementalBudget,
+} from './workflow-budget';
+import { checkedWorkflowStream } from './workflow-stream';
 import { getConfiguredRunBudget } from './agent-run-settings';
 import type { AgentRunCheckpoint } from './agent-run-state';
 import {
@@ -117,12 +122,6 @@ export class WorkflowEngineService {
    * @param tools - Available tool definitions for this agent
    * @returns The complete workflow result including message, tools used, timing, and plan details
    * @throws {Error} If the workflow completes without producing a result or encounters an error event
-   */
-  /**
-   * 运行完整的三阶段工作流（非流式）
-   *
-   * 消费 runStream() 的事件流并聚合为最终结果。
-   * 与 runStream() 共享同一套实现，不可能产生不一致。
    */
   async run(
     agentType: AgentType,
@@ -383,18 +382,20 @@ export class WorkflowEngineService {
             break;
           }
 
-          supplementalRounds += 1;
           const supplementalStart = Date.now();
-          currentRound = await this.supplementalPlanPhase(
+          const nextRound = await this.supplementalPlanPhase(
             agentType,
             config,
             conversation,
             tools,
             cachedMemoryContext,
-            supplementalRounds,
+            supplementalRounds + 1,
             budgetTracker,
           );
           planMs += Date.now() - supplementalStart;
+          if (!nextRound) break;
+          supplementalRounds += 1;
+          currentRound = nextRound;
         }
 
         plan = aggregatePlan;
@@ -727,12 +728,6 @@ export class WorkflowEngineService {
    * @param tools - Available tool definitions
    * @returns The execution plan including steps, planning content, and optional delegation
    */
-  /**
-   * 规划阶段 —— 调用 LLM 获取执行计划
-   *
-   * 使用 tool_choice: 'auto' 让 LLM 自己决定需要哪些工具
-   * LLM 会在一次调用中返回所有需要的工具调用
-   */
   private async planPhase(
     agentType: AgentType,
     config: AgentConfig,
@@ -773,7 +768,7 @@ export class WorkflowEngineService {
     memoryContext: string,
     round: number,
     budgetTracker?: AgentRunBudgetTracker,
-  ): Promise<ExecutionPlan> {
+  ): Promise<ExecutionPlan | undefined> {
     const locale = (conversation.metadata?.locale as string) || 'zh';
     const instruction =
       locale === 'en'
@@ -783,17 +778,32 @@ export class WorkflowEngineService {
       this.buildPlanPrompt(config, conversation, memoryContext, true) +
       instruction;
     const messages = this.memory.getRecentMessages(conversation);
-    const response = await this.llm.call(systemPrompt, messages, {
-      taskType: 'agent.replan',
-      model: config.model,
-      temperature: config.temperature,
-      maxTokens: config.maxTokens,
-      tools: tools.filter((tool) => tool.name !== 'delegate_to_agent'),
-      userId: conversation.userId,
-      conversationId: conversation.id,
-      agentType,
-      runBudget: budgetTracker,
+    const replanTools = tools.filter(
+      (tool) => tool.name !== 'delegate_to_agent',
+    );
+    const response = await withSupplementalBudget<LLMResponse>({
+      budget: budgetTracker,
+      solvePrompt: this.buildSolvePrompt(config, conversation, memoryContext),
+      replanPrompt: systemPrompt,
+      messages,
+      tools: replanTools,
+      maxTokens: config.maxTokens ?? 4000,
+      observe: (decision) =>
+        this.logger.log(`Workflow budget ${JSON.stringify(decision)}`),
+      call: (maxTokens) =>
+        this.llm.call(systemPrompt, messages, {
+          taskType: 'agent.replan',
+          model: config.model,
+          temperature: config.temperature,
+          maxTokens,
+          tools: replanTools,
+          userId: conversation.userId,
+          conversationId: conversation.id,
+          agentType,
+          runBudget: budgetTracker,
+        }),
     });
+    if (!response) return undefined;
 
     const plan = this.parsePlanResponse(response, agentType, true);
     if (plan.delegation) {
@@ -1227,8 +1237,8 @@ export class WorkflowEngineService {
    * empty-content fallback:
    *
    * 1. Streams the LLM response via `callStream`, yielding each text chunk
-   * 2. If streaming produces empty content (network issue, LLM anomaly),
-   *    automatically retries with a non-streaming `call` as fallback
+   * 2. If a successful stream is empty, retry once with a non-streaming call.
+   *    Harness stream errors/missing terminals fail without replay.
    * 3. Logs a warning if the response is suspiciously short despite tool results
    * 4. Records the final assistant response to conversation history
    *
@@ -1239,16 +1249,6 @@ export class WorkflowEngineService {
    * @param config - Agent configuration (model, temperature, maxTokens)
    * @param conversation - Current conversation state (contains tool results from Execute phase)
    * @returns An async generator yielding text chunks of the final response
-   */
-  /**
-   * 总结阶段核心 —— 单一事实来源，内置空内容 fallback
-   *
-   * 策略：
-   * 1. 流式调用 LLM (callStream)，逐 chunk yield
-   * 2. 如果流式输出为空（网络异常、LLM 异常），自动 fallback 到非流式重试
-   * 3. 记录最终 assistant 回复到对话历史
-   *
-   * 关键：不传入 tools，让 LLM 无法调用任何工具
    */
   private async *solvePhaseCore(
     agentType: AgentType,
@@ -1278,13 +1278,10 @@ export class WorkflowEngineService {
     let fullContent = '';
 
     // 1. 流式输出
-    for await (const chunk of this.llm.callStream(
-      systemPrompt,
-      messages,
-      llmOpts,
+    for await (const chunk of checkedWorkflowStream(
+      this.llm.callStream(systemPrompt, messages, llmOpts),
+      budgetTracker,
     )) {
-      if (chunk.type === 'error' && budgetTracker?.limits.routing)
-        throw new InternalServerErrorException('MODEL_ROUTING_STREAM_FAILED');
       if (chunk.type === 'content' && chunk.content) {
         fullContent += chunk.content;
         yield chunk.content;
@@ -1392,6 +1389,19 @@ ${solveOutput.slice(0, 2000)}
 
 用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
 
+      if (!canAffordVerification(budgetTracker, extractPrompt)) {
+        this.logger.log(
+          'Workflow budget {"phase":"verify","decision":"skip_insufficient_budget"}',
+        );
+        return {
+          allCorrect: false,
+          status: 'unverified',
+          unverified: 1,
+          verified: 0,
+          toolCalls: 0,
+          corrections: [],
+        };
+      }
       const extractResult = await this.llm.call(extractPrompt, [], {
         taskType: 'agent.verify',
         model: config.reflectionModel || 'gpt-5.4-mini',
@@ -1482,13 +1492,10 @@ ${solveOutput.slice(0, 2000)}
 
     let fullContent = '';
 
-    for await (const chunk of this.llm.callStream(
-      systemPrompt,
-      messages,
-      llmOpts,
+    for await (const chunk of checkedWorkflowStream(
+      this.llm.callStream(systemPrompt, messages, llmOpts),
+      budgetTracker,
     )) {
-      if (chunk.type === 'error' && budgetTracker?.limits.routing)
-        throw new InternalServerErrorException('MODEL_ROUTING_STREAM_FAILED');
       if (chunk.type === 'content' && chunk.content) {
         fullContent += chunk.content;
         yield chunk.content;
