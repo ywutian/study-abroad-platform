@@ -11,6 +11,11 @@ Codex 评分。只使用合成账号和合成输入，不审批任何写工具�
 
 ## 1. 三次独立采样
 
+修复后可先使用`--case-ids route-school-compare-v1,route-school-compare-v2`诊断冻结失败组。
+未知/重复/空case拒绝；仍执行相同请求与清理。显式选择始终标为`captureScope=diagnostic`，
+即使完成也保持`complete=false`、`pass=false`，仅`diagnosticPass=true`表示子集诊断通过。
+不得将诊断结果提交全量盲审或声称280题完成；不传该参数才执行默认完整矩阵。
+
 Revision 必须是当前 100% 流量 Revision。三个进程可并行，每个账号仍遵守普通用户
 每分钟 10 次的限流，Runner 最小间隔为 6 秒。
 
@@ -31,8 +36,13 @@ wait
 ```
 
 `os.tmpdir()` 在 Linux 通常是 `/tmp`，在 macOS 通常是 `/var/folders/.../T`；Runner
-必须使用 Node 实际返回的目录。明确要求 `refuse` 的冻结 case 若被输入安全层以 HTTP 400
-拒绝，会记录为规范化的 `INPUT_REJECTED`；其他 case 的 400 和所有服务端错误仍使采样失败。
+必须使用 Node 实际返回的目录。所有case通过`x-locale`请求头显式指定语言；仅传
+ChatDto.locale不会覆盖服务端CurrentLocale选择。HTTP 400本身不证明输入安全拒绝，
+在没有可验证安全原因码的当前合同下，任何400均使采样失败，不再推断成INPUT_REJECTED。
+错误SSE、缺Agent终态、空完成及损坏JSON不得计为有效捕获；仅`[DONE]`不算Agent完成。
+连接及读体共用150秒截止，管理/清理请求30秒；不自动重放已开始的chat请求。
+SIGINT/SIGTERM等待有界在途请求结束再清理。macOS可在命令前使用`caffeinate -i`
+临时避免空闲睡眠，但无法保证合盖期间继续运行。中断批次保留失败记录，不混入新批次。
 
 每个 summary 必须满足：
 

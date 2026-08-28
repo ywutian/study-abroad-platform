@@ -32,6 +32,13 @@ export class AgentRunBudgetTracker {
     return Math.max(0, this.limits.maxDurationMs - this.elapsedMs());
   }
 
+  remainingTokens(): number {
+    return Math.max(
+      0,
+      this.limits.maxTokens - this.estimatedTokens - this.heldTokens,
+    );
+  }
+
   /** Temporary scheduling hold, not consumed usage. Shared by concurrent calls. */
   holdTokensForLater(requested: number): () => void {
     if (!Number.isSafeInteger(requested) || requested < 0)

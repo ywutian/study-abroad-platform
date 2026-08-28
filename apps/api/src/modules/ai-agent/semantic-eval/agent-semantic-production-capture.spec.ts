@@ -2,13 +2,105 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   assertPrivateTemporaryCapturePath,
+  buildSemanticChatRequest,
+  parseSemanticCaptureSse,
   renderProductionCaseInput,
   summarizeExpectedInputRejection,
   summarizeProductionEvents,
 } from './agent-semantic-production-capture';
 import type { SemanticEvalCase } from './agent-semantic-eval.types';
+import { AGENT_SEMANTIC_EVAL_CASES } from './agent-semantic-eval.dataset';
+import { resolveRequestLocale } from '../../../common/utils/request-locale.util';
 
 describe('semantic production capture', () => {
+  it.each([
+    'data: {broken}',
+    'data: null',
+    'data: []',
+    'data: {"content":"missing type"}',
+  ])('rejects malformed SSE rather than silently dropping it (%s)', (text) => {
+    expect(() => parseSemanticCaptureSse(text)).toThrow(
+      'SEMANTIC_EVENT_INVALID',
+    );
+  });
+
+  it('parses the deployed SSE frame format without treating DONE as an Agent terminal', () => {
+    expect(
+      parseSemanticCaptureSse('data: {"type":"start"}\r\n\r\ndata: [DONE]\r\n'),
+    ).toEqual([{ type: 'start' }]);
+  });
+  it.each(['zh', 'en'] as const)(
+    'uses the deployed locale header contract for %s',
+    (locale) => {
+      const evalCase = AGENT_SEMANTIC_EVAL_CASES.find(
+        (item) => item.locale === locale,
+      )!;
+      const request = buildSemanticChatRequest(evalCase, 'synthetic-session');
+      const headers = new Headers(request.headers);
+      expect(
+        resolveRequestLocale({
+          explicitLocale: headers.get('x-locale') ?? undefined,
+          userLocale: locale === 'zh' ? 'en' : 'zh',
+        }),
+      ).toBe(locale);
+      expect(JSON.parse(request.body as string)).toEqual({
+        message: renderProductionCaseInput(evalCase),
+        locale,
+        agentHint: evalCase.agentType,
+        stream: true,
+      });
+    },
+  );
+  const captureOptions = {
+    caseId: 'terminal-contract',
+    repetition: 1,
+    latencyMs: 1,
+    httpStatus: 201,
+    hashRunId: () => 'hash',
+  };
+
+  it.each(
+    [
+      [],
+      [{ type: 'start' }],
+      [{ type: 'content', content: 'partial answer' }],
+    ].map((events) => ({ events })),
+  )('rejects HTTP success without a terminal event (%j)', ({ events }) => {
+    expect(() => summarizeProductionEvents(events, captureOptions)).toThrow(
+      'SEMANTIC_TERMINAL_MISSING',
+    );
+  });
+
+  it.each(
+    [
+      [{ type: 'error', content: 'private upstream text' }],
+      [
+        { type: 'content', content: 'partial' },
+        { type: 'done', runStatus: 'FAILED', response: { message: 'failed' } },
+      ],
+      [
+        { type: 'error' },
+        { type: 'done', response: { message: 'apparently complete' } },
+      ],
+    ].map((events) => ({ events })),
+  )('rejects error events and failed terminal states (%j)', ({ events }) => {
+    expect(() => summarizeProductionEvents(events, captureOptions)).toThrow(
+      'SEMANTIC_TERMINAL_FAILED',
+    );
+  });
+
+  it.each(
+    [
+      [{ type: 'done' }],
+      [{ type: 'done', response: { message: '   ' } }],
+      [{ type: 'approval_required' }],
+    ].map((events) => ({ events })),
+  )('rejects empty completion or invalid approval (%j)', ({ events }) => {
+    expect(() => summarizeProductionEvents(events, captureOptions)).toThrow(
+      'SEMANTIC_TERMINAL_INVALID',
+    );
+  });
+
   it('records expected input-safety refusals without accepting unrelated errors', () => {
     const evalCase = {
       id: 'refuse-case',

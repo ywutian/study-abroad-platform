@@ -4,16 +4,19 @@ import { dirname } from 'node:path';
 import { AGENT_SEMANTIC_EVAL_CASES } from '../src/modules/ai-agent/semantic-eval/agent-semantic-eval.dataset';
 import {
   assertPrivateTemporaryCapturePath,
-  renderProductionCaseInput,
-  summarizeExpectedInputRejection,
+  buildSemanticChatRequest,
+  parseSemanticCaptureSse,
   summarizeProductionEvents,
-  type SemanticCaptureEvent,
   type SemanticCaptureItem,
 } from '../src/modules/ai-agent/semantic-eval/agent-semantic-production-capture';
 import { SEMANTIC_EVAL_DATASET_VERSION } from '../src/modules/ai-agent/semantic-eval/agent-semantic-eval.types';
+import { fetchSemanticCapture } from '../src/modules/ai-agent/semantic-eval/semantic-capture-http';
+import {
+  selectCaptureCases,
+  captureSelectionVerdict,
+} from '../src/modules/ai-agent/semantic-eval/semantic-capture-selection';
 import {
   fingerprint,
-  parseAcceptanceSse,
   requiredEnv,
   sleep,
   unwrapAcceptancePayload,
@@ -36,6 +39,12 @@ const outputPath = assertPrivateTemporaryCapturePath(
   requiredEnv('SEMANTIC_CAPTURE_OUTPUT'),
 );
 const repetition = Number(option('--repetition') ?? '1');
+if (args.includes('--case-ids') && option('--case-ids') === undefined)
+  throw new Error('SEMANTIC_SELECTION_INVALID');
+const selection = selectCaptureCases(
+  AGENT_SEMANTIC_EVAL_CASES,
+  option('--case-ids'),
+);
 if (!Number.isInteger(repetition) || repetition < 1 || repetition > 10) {
   throw new Error('Repetition must be an integer between 1 and 10');
 }
@@ -64,6 +73,15 @@ let accountCount = 0;
 let cleanupCount = 0;
 let cleanupFailed = false;
 let refreshCount = 0;
+let failureCode: string | null = null;
+let stopRequested = false;
+// Let the bounded in-flight request settle before deleting its account data.
+process.once('SIGINT', () => {
+  stopRequested = true;
+});
+process.once('SIGTERM', () => {
+  stopRequested = true;
+});
 const items: SemanticCaptureItem[] = [];
 
 async function rawRequest(
@@ -75,22 +93,25 @@ async function rawRequest(
     headers?: Record<string, string>;
   } = {},
 ) {
-  const response = await fetch(`${apiBase}${path}`, {
-    method: options.method ?? 'GET',
-    headers: {
+  const { response, text } = await fetchSemanticCapture(
+    `${apiBase}${path}`,
+    {
+      method: options.method ?? 'GET',
+      headers: {
+        ...(options.body === undefined
+          ? {}
+          : { 'content-type': 'application/json' }),
+        ...(options.authenticated !== false && token
+          ? { authorization: `Bearer ${token}` }
+          : {}),
+        ...options.headers,
+      },
       ...(options.body === undefined
         ? {}
-        : { 'content-type': 'application/json' }),
-      ...(options.authenticated !== false && token
-        ? { authorization: `Bearer ${token}` }
-        : {}),
-      ...options.headers,
+        : { body: JSON.stringify(options.body) }),
     },
-    ...(options.body === undefined
-      ? {}
-      : { body: JSON.stringify(options.body) }),
-  });
-  const text = await response.text();
+    30_000,
+  );
   let payload: unknown = null;
   try {
     payload = text ? JSON.parse(text) : null;
@@ -159,8 +180,12 @@ async function writeCapture(complete: boolean): Promise<void> {
           version: revision,
         },
         repetition,
-        complete,
+        complete: complete && !selection.diagnostic,
+        selectionComplete: complete,
+        captureScope: selection.diagnostic ? 'diagnostic' : 'full',
+        selectedCases: selection.indices.length,
         capturedCases: items.length,
+        failureCode,
         items,
       },
       null,
@@ -227,21 +252,13 @@ async function retireSyntheticAccount(): Promise<void> {
 async function captureCase(index: number): Promise<void> {
   const evalCase = AGENT_SEMANTIC_EVAL_CASES[index];
   for (let attempt = 1; attempt <= 4; attempt++) {
+    if (stopRequested) throw new Error('SEMANTIC_CAPTURE_INTERRUPTED');
     const started = Date.now();
-    const response = await fetch(`${apiBase}/ai-agent/chat`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        message: renderProductionCaseInput(evalCase),
-        locale: evalCase.locale,
-        agentHint: evalCase.agentType,
-        stream: true,
-      }),
-    });
-    const text = await response.text();
+    const { response, text } = await fetchSemanticCapture(
+      `${apiBase}/ai-agent/chat`,
+      buildSemanticChatRequest(evalCase, token),
+      150_000,
+    );
     if (response.status === 401 && attempt < 4) {
       if (!(await refreshSyntheticSession())) {
         throw new Error(`capture_refresh_failed_case_${index + 1}`);
@@ -249,27 +266,20 @@ async function captureCase(index: number): Promise<void> {
       continue;
     }
     if (response.status === 429 && attempt < 4) {
-      const retryAfter = Math.max(
-        Number(response.headers.get('retry-after') ?? 60),
-        1,
-      );
+      const retryAfter = Number(response.headers.get('retry-after') ?? 60);
+      // Do not shorten a server-mandated delay to fit this worker's wait cap.
+      if (!Number.isFinite(retryAfter) || retryAfter > 60 || retryAfter < 0) {
+        throw new Error('SEMANTIC_RATE_LIMIT_WAIT_EXCEEDED');
+      }
       await sleep(retryAfter * 1000 + 250);
+      if (stopRequested) throw new Error('SEMANTIC_CAPTURE_INTERRUPTED');
       continue;
     }
-    const expectedRejection = summarizeExpectedInputRejection({
-      evalCase,
-      repetition,
-      latencyMs: Date.now() - started,
-      httpStatus: response.status,
-    });
-    if (expectedRejection) {
-      items.push(expectedRejection);
-      await writeCapture(false);
-      return;
-    }
+    // HTTP 400 alone does not prove an input-safety refusal. No current
+    // response contract distinguishes it from validation/infrastructure errors.
     if (!response.ok)
       throw new Error(`capture_http_${response.status}_case_${index + 1}`);
-    const events = parseAcceptanceSse(text) as SemanticCaptureEvent[];
+    const events = parseSemanticCaptureSse(text);
     items.push(
       summarizeProductionEvents(events, {
         caseId: evalCase.id,
@@ -285,15 +295,16 @@ async function captureCase(index: number): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  for (let index = 0; index < AGENT_SEMANTIC_EVAL_CASES.length; index++) {
+  for (let index = 0; index < selection.indices.length; index++) {
+    if (stopRequested) throw new Error('SEMANTIC_CAPTURE_INTERRUPTED');
     if (index % casesPerAccount === 0) {
       await retireSyntheticAccount();
       await createSyntheticAccount();
     }
     const loopStarted = Date.now();
-    await captureCase(index);
+    await captureCase(selection.indices[index]);
     const remaining = minimumIntervalMs - (Date.now() - loopStarted);
-    if (remaining > 0 && index + 1 < AGENT_SEMANTIC_EVAL_CASES.length) {
+    if (remaining > 0 && index + 1 < selection.indices.length) {
       await sleep(remaining);
     }
   }
@@ -320,10 +331,13 @@ async function cleanup(): Promise<void> {
       cleanupCount,
       cleanupFailed,
       refreshCount,
-      pass:
-        items.length === AGENT_SEMANTIC_EVAL_CASES.length &&
-        cleanupCount === accountCount &&
-        !cleanupFailed,
+      failureCode,
+      ...captureSelectionVerdict(
+        selection,
+        items.length,
+        failureCode !== null,
+        cleanupCount === accountCount && !cleanupFailed,
+      ),
     })}\n`,
   );
   if (cleanupCount !== accountCount || cleanupFailed) process.exitCode = 1;
@@ -331,10 +345,15 @@ async function cleanup(): Promise<void> {
 
 main()
   .catch(async (error: unknown) => {
+    const message = error instanceof Error ? error.message : '';
+    failureCode =
+      /^(SEMANTIC_[A-Z_]+|(?:semantic|capture|synthetic)_[a-z0-9_]+)$/.test(
+        message,
+      )
+        ? message
+        : 'SEMANTIC_CAPTURE_FAILED';
     await writeCapture(false);
-    process.stderr.write(
-      `${error instanceof Error ? error.message.slice(0, 160) : 'UNKNOWN_ERROR'}\n`,
-    );
+    process.stderr.write(`${failureCode}\n`);
     process.exitCode = 1;
   })
   .finally(cleanup);
