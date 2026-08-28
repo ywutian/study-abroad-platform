@@ -180,4 +180,32 @@ describe('AgentSkillService', () => {
     );
     expect(prisma.agentRun.findUnique).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { activeVersionId: 'new-v3', activatedAt: new Date(0), status: 'ACTIVE' },
+    {
+      activeVersionId: 'candidate-v2',
+      activatedAt: new Date(1000),
+      status: 'ACTIVE',
+    },
+    {
+      activeVersionId: 'candidate-v2',
+      activatedAt: new Date(0),
+      status: 'ROLLED_BACK',
+    },
+  ])('rejects a stale automatic rollback snapshot: %j', async (current) => {
+    prisma.agentSkillDeployment.findUnique.mockResolvedValue({
+      ...current,
+      previousVersionId: 'baseline-v1',
+    });
+    await expect(
+      service.rollback(AgentType.SCHOOL, 'safety', 'AUTO_MONITOR', {
+        versionId: 'candidate-v2',
+        activatedAt: new Date(0),
+      }),
+    ).resolves.toBeNull();
+    expect(prisma.agentSkillDeployment.update).not.toHaveBeenCalled();
+    expect(prisma.agentConfigVersion.update).not.toHaveBeenCalled();
+    expect(prisma.agentSkillAudit.create).not.toHaveBeenCalled();
+  });
 });

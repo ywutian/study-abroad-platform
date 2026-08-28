@@ -1,4 +1,10 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  Optional,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -10,9 +16,13 @@ import {
   AlertChannelService,
   AlertSeverity,
 } from '../infrastructure/alerting/alert-channel.service';
+import {
+  AgentSkillMonitorService,
+  isSkillSafetyFailure,
+} from '../skills/agent-skill-monitor.service';
 
 @Injectable()
-export class AgentEvaluationTraceService {
+export class AgentEvaluationTraceService implements OnModuleInit {
   private readonly logger = new Logger(AgentEvaluationTraceService.name);
 
   constructor(
@@ -21,7 +31,17 @@ export class AgentEvaluationTraceService {
     @Optional() private readonly sanitizer?: SanitizerService,
     @Optional() private readonly metrics?: MetricsService,
     @Optional() private readonly alerts?: AlertChannelService,
+    @Optional() private readonly skillMonitor?: AgentSkillMonitorService,
   ) {}
+
+  onModuleInit(): void {
+    if (
+      this.config.get('AI_AGENT_SKILLS_EVOLUTION_V1') === 'true' &&
+      !this.skillMonitor
+    ) {
+      throw new ServiceUnavailableException('SKILL_MONITOR_NOT_CONFIGURED');
+    }
+  }
 
   async persist(
     userId: string,
@@ -121,6 +141,14 @@ export class AgentEvaluationTraceService {
         },
       });
       this.metrics?.recordHarnessEvent('evaluation_trace_persisted');
+      if (run.skillVersionId && isSkillSafetyFailure(failure?.errorCode)) {
+        // Await the DB-only check after persistence, before returning.
+        // Its periodic companion recovers a crash between these two operations.
+        await this.skillMonitor?.onSafetyTrace(
+          run.agentType,
+          run.skillVersionId,
+        );
+      }
     } catch (error) {
       this.metrics?.recordHarnessEvent('evaluation_trace_persist_failed');
       this.logger.warn(

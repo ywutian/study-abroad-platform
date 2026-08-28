@@ -3,6 +3,66 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { AgentEvaluationTraceService } from './agent-evaluation-trace.service';
 
 describe('AgentEvaluationTraceService', () => {
+  it('fails startup if evolution is enabled without the immediate safety monitor', () => {
+    const service = new AgentEvaluationTraceService(
+      {} as never,
+      {
+        get: () => 'true',
+      } as never,
+    );
+    expect(() => service.onModuleInit()).toThrow(
+      'SKILL_MONITOR_NOT_CONFIGURED',
+    );
+  });
+
+  it('awaits the safety check only after durable trace persistence', async () => {
+    let stored = false;
+    const monitor = {
+      onSafetyTrace: jest.fn(async () => {
+        expect(stored).toBe(true);
+      }),
+    };
+    const prisma = {
+      agentRun: {
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'synthetic-run',
+          agentType: 'school',
+          skillVersionId: 'v2',
+          approvals: [],
+          startedAt: new Date(),
+          completedAt: new Date(),
+        }),
+      },
+      agentEvaluationTrace: {
+        upsert: jest.fn(async () => {
+          stored = true;
+        }),
+      },
+    };
+    const service = new AgentEvaluationTraceService(
+      prisma as never,
+      {
+        get: () => 'true',
+      } as never,
+      undefined,
+      undefined,
+      undefined,
+      monitor as never,
+    );
+    expect(() => service.onModuleInit()).not.toThrow();
+    await service.persist(
+      'synthetic-user',
+      'synthetic-run',
+      'FAILED',
+      undefined,
+      { errorCode: 'PRIVACY_VIOLATION' },
+    );
+    expect(monitor.onSafetyTrace).toHaveBeenCalledWith('school', 'v2');
+    monitor.onSafetyTrace.mockClear();
+    await service.persist('synthetic-user', 'synthetic-run', 'COMPLETED');
+    expect(monitor.onSafetyTrace).not.toHaveBeenCalled();
+  });
+
   it('stores only bounded, redacted execution evidence', async () => {
     const prisma = {
       agentRun: {

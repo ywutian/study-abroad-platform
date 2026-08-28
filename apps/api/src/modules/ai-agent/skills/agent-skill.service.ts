@@ -308,12 +308,26 @@ export class AgentSkillService implements OnModuleInit {
   }
 
   // governance: system-scope — rollback atomically changes a global configuration pointer.
-  async rollback(agentType: AgentType, reason: string, actor: string) {
+  async rollback(
+    agentType: AgentType,
+    reason: string,
+    actor: string,
+    expected?: { versionId: string; activatedAt: Date },
+  ) {
     return this.prisma.$transaction(
       async (tx) => {
         const current = await tx.agentSkillDeployment.findUnique({
           where: { agentType },
         });
+        if (
+          expected &&
+          (!current ||
+            current.status !== AgentSkillDeploymentStatus.ACTIVE ||
+            current.activeVersionId !== expected.versionId ||
+            current.activatedAt.getTime() !== expected.activatedAt.getTime())
+        ) {
+          return null;
+        }
         if (!current?.previousVersionId) {
           throw new ConflictException('No previous Skill version is available');
         }
