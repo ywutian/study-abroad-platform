@@ -6,13 +6,20 @@ import {
   LLMStreamChunk,
   LLMTokenUsage,
   LLMToolCall,
+  LLMStreamFailure,
 } from './llm-provider.types';
 
 export function routedError(
   code = LLMErrorCode.INVALID_RESPONSE,
   retryable = false,
+  httpStatus?: number,
 ): LLMProviderError {
-  return new LLMProviderError(`Routed OpenAI ${code}`, code, retryable);
+  return new LLMProviderError(
+    `Routed OpenAI ${code}`,
+    code,
+    retryable,
+    httpStatus,
+  );
 }
 
 /** Abort is best-effort at the transport layer; don't rely on it settling I/O. */
@@ -207,9 +214,15 @@ export async function* streamRoutedOpenAI(input: {
   request: LLMChatRequest;
 }): AsyncGenerator<LLMStreamChunk> {
   const controller = new AbortController();
-  const deadline = Date.now() + input.timeoutMs;
+  const started = Date.now();
+  const deadline = started + input.timeoutMs;
   const timer = setTimeout(() => controller.abort(), input.timeoutMs);
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+  let phase: LLMStreamFailure['phase'] = 'protocol';
+  let bytes = 0,
+    emittedBytes = 0;
+  let firstByteMs: number | null = null;
+  let retryAfterRequested = false;
   try {
     const url = new URL(input.baseUrl);
     if (
@@ -222,6 +235,7 @@ export async function* streamRoutedOpenAI(input: {
       throw routedError(LLMErrorCode.INVALID_REQUEST);
     if (!input.apiKey.trim()) throw routedError(LLMErrorCode.AUTHENTICATION);
     url.pathname = url.pathname.replace(/\/$/, '') + '/chat/completions';
+    phase = 'connect';
     const response = await beforeDeadline(
       () =>
         fetch(url, {
@@ -242,6 +256,7 @@ export async function* streamRoutedOpenAI(input: {
       deadline,
     );
     if (!response.ok) {
+      retryAfterRequested = response.headers.has('retry-after');
       cancelBody(response.body);
       const status = response.status;
       const code =
@@ -252,7 +267,7 @@ export async function* streamRoutedOpenAI(input: {
             : status >= 500
               ? LLMErrorCode.SERVER_ERROR
               : LLMErrorCode.INVALID_REQUEST;
-      throw routedError(code, status === 429 || status >= 500);
+      throw routedError(code, status === 429 || status >= 500, status);
     }
     reader = response.body?.getReader();
     if (!reader) throw routedError();
@@ -265,9 +280,18 @@ export async function* streamRoutedOpenAI(input: {
       }
     };
     const state = new OpenAIRoutedStream(input.request);
-    let buffer = '',
-      bytes = 0;
+    let buffer = '';
+    function* consume(frame: string): Generator<LLMStreamChunk> {
+      phase = 'protocol';
+      for (const chunk of state.consume(frame)) {
+        if (chunk.content)
+          emittedBytes += Buffer.byteLength(chunk.content, 'utf8');
+        yield chunk;
+      }
+      phase = 'read';
+    }
     while (true) {
+      phase = 'read';
       const next = await beforeDeadline(
         () => reader!.read(),
         controller.signal,
@@ -278,21 +302,50 @@ export async function* streamRoutedOpenAI(input: {
         break;
       }
       bytes += next.value.byteLength;
+      if (firstByteMs === null && next.value.byteLength)
+        firstByteMs = Date.now() - started;
       if (bytes > 2 * 1024 * 1024) throw routedError();
       buffer += decode(next.value, true);
       let separator: RegExpExecArray | null;
       while ((separator = /\r?\n\r?\n/.exec(buffer))) {
         const frame = buffer.slice(0, separator.index);
         buffer = buffer.slice(separator.index + separator[0].length);
-        yield* state.consume(frame);
+        yield* consume(frame);
         if (state.complete) return;
       }
     }
-    if (buffer.trim()) yield* state.consume(buffer);
+    if (buffer.trim()) yield* consume(buffer);
+    phase = 'protocol';
     if (!state.complete) throw routedError();
   } catch (error) {
-    if (error instanceof LLMProviderError) throw error;
-    throw routedError(LLMErrorCode.NETWORK_ERROR, true);
+    const failure =
+      error instanceof LLMProviderError
+        ? error
+        : routedError(LLMErrorCode.NETWORK_ERROR, true);
+    const reason: LLMStreamFailure['reason'] =
+      failure.code === LLMErrorCode.NETWORK_ERROR
+        ? controller.signal.aborted || Date.now() >= deadline
+          ? 'deadline'
+          : 'transport'
+        : failure.httpStatus
+          ? 'http'
+          : 'protocol';
+    throw new LLMProviderError(
+      `Routed OpenAI ${failure.code}`,
+      failure.code,
+      failure.retryable,
+      failure.httpStatus,
+      undefined,
+      {
+        phase,
+        reason,
+        elapsedMs: Date.now() - started,
+        receivedBytes: bytes,
+        emittedBytes,
+        firstByteMs,
+        ...(retryAfterRequested ? { retryAfterRequested: true } : {}),
+      },
+    );
   } finally {
     clearTimeout(timer);
     controller.abort();
