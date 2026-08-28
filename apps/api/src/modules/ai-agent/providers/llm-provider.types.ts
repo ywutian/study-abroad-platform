@@ -104,6 +104,17 @@ export enum LLMErrorCode {
   INVALID_RESPONSE = 'INVALID_RESPONSE',
 }
 
+/** Content-free transport evidence. Never attach a request, response or Error. */
+export interface LLMStreamFailure {
+  phase: 'connect' | 'read' | 'protocol';
+  reason: 'deadline' | 'transport' | 'http' | 'protocol';
+  elapsedMs: number;
+  receivedBytes: number;
+  emittedBytes: number;
+  firstByteMs: number | null;
+  retryAfterRequested?: boolean;
+}
+
 export class LLMProviderError extends Error {
   constructor(
     message: string,
@@ -111,6 +122,7 @@ export class LLMProviderError extends Error {
     public readonly retryable: boolean,
     public readonly httpStatus?: number,
     public readonly details?: Record<string, unknown>,
+    public readonly streamFailure?: LLMStreamFailure,
   ) {
     super(message);
     this.name = 'LLMProviderError';

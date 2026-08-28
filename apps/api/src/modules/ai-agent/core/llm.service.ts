@@ -16,11 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { AgentType, Message, ToolDefinition } from '../types';
 import type { ILLMProvider } from '../providers/llm-provider.interface';
 import { LLM_PROVIDER_TOKEN } from '../providers/llm-provider.interface';
-import {
-  LLMMessage,
-  LLMToolDefinition,
-  LLMChatRequest,
-} from '../providers/llm-provider.types';
+import { LLMChatRequest } from '../providers/llm-provider.types';
 import { estimateModelCost, UNKNOWN_MODEL_PRICING } from '../constants';
 import { ResilienceService } from './resilience.service';
 import { TokenTrackerService, TokenUsage } from './token-tracker.service';
@@ -34,6 +30,12 @@ import {
 } from '../routing/model-router.service';
 import type { ModelRouteAttempt } from '../routing/model-routing.policy';
 import { toInternalResponse, adaptStreamChunk } from './llm-response-adapter';
+import {
+  harnessSolveStream,
+  isHarnessSolve,
+  harnessStreamReason,
+} from './harness-solve-stream';
+import { buildLlmRequest } from './llm-request-adapter';
 
 export interface LLMResponse {
   routing?: ModelRouteAttempt;
@@ -304,6 +306,35 @@ export class LLMService {
       }
       return;
     }
+    if (isHarnessSolve(this.provider, options)) {
+      try {
+        const request = this.buildRequest(
+          systemPrompt,
+          messages,
+          {
+            ...options,
+            timeoutMs:
+              options.timeoutMs ?? options.runBudget.remainingDurationMs(),
+          },
+          model,
+        );
+        for await (const chunk of harnessSolveStream({
+          provider: this.provider,
+          request,
+          budget: options.runBudget,
+          phase: options.taskType,
+          observe: (evidence) =>
+            this.logger.log(`Harness stream ${JSON.stringify(evidence)}`),
+        }))
+          yield adaptStreamChunk(chunk);
+      } catch (error) {
+        yield {
+          type: 'error',
+          error: harnessStreamReason(error),
+        };
+      }
+      return;
+    }
     const reservation = options.runBudget?.reserveLlmCall(
       systemPrompt,
       messages,
@@ -466,42 +497,12 @@ export class LLMService {
     options: LLMOptions,
     model: string,
   ): LLMChatRequest {
-    const llmMessages: LLMMessage[] = messages.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-      toolCalls: msg.toolCalls?.map((tc) => ({
-        id: tc.id || '',
-        name: tc.name,
-        arguments: tc.arguments || {},
-      })),
-      toolCallId: msg.toolCallId,
-    }));
-
-    const tools: LLMToolDefinition[] | undefined = options.tools?.map((t) => ({
-      name: t.name,
-      description: t.description,
-      parameters: t.parameters,
-    }));
-
-    const mergedProviderOptions: Record<string, unknown> = {
-      ...options.providerOptions,
-    };
-    if (options.seed !== undefined) {
-      mergedProviderOptions.seed = options.seed;
-    }
-
-    return {
+    return buildLlmRequest(
       systemPrompt,
-      messages: llmMessages,
+      messages,
+      options,
       model,
-      temperature: options.temperature,
-      maxTokens: options.maxTokens,
-      timeoutMs: options.timeoutMs ?? LLM_CONFIG.defaultTimeoutMs,
-      tools,
-      toolChoice: tools?.length ? 'auto' : undefined,
-      ...(Object.keys(mergedProviderOptions).length > 0 && {
-        providerOptions: mergedProviderOptions,
-      }),
-    };
+      LLM_CONFIG.defaultTimeoutMs,
+    );
   }
 }
