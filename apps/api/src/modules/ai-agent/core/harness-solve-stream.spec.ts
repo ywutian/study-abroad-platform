@@ -112,7 +112,7 @@ describe('Harness Solve stream with the real OpenAI transport', () => {
       { type: 'done' },
     ]);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(runBudget.snapshot(0, 0).estimatedTokens).toBe(515 + 5);
+    expect(runBudget.snapshot(0, 0).estimatedTokens).toBe(2 + 512 + 5);
   });
 
   it('keeps the full reservation when an attempt fails and retry cannot fit', async () => {
@@ -126,7 +126,7 @@ describe('Harness Solve stream with the real OpenAI transport', () => {
       }),
     );
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(runBudget.snapshot(0, 0).estimatedTokens).toBe(515);
+    expect(runBudget.snapshot(0, 0).estimatedTokens).toBe(2 + 512);
     expect(chunks.some((c) => c.type === 'done')).toBe(false);
   });
 
@@ -290,7 +290,8 @@ describe('Harness Solve stream with the real OpenAI transport', () => {
     },
   );
 
-  it('still requires successful final usage settlement before done', async () => {
+  it('delivers a complete answer that overruns on final usage, then fails closed', async () => {
+    const log = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     fetchMock.mockResolvedValue(
       new Response(
         frame('OK') +
@@ -299,17 +300,28 @@ describe('Harness Solve stream with the real OpenAI transport', () => {
             .replace('"total_tokens":5', '"total_tokens":24002'),
       ),
     );
+    const runBudget = budget();
     const chunks = await collect(
       service.callStream('synthetic', [], {
         taskType: 'agent.solve',
-        runBudget: budget(),
+        runBudget,
       }),
     );
-    expect(chunks.at(-1)).toEqual({
-      type: 'error',
-      error: 'AGENT_TOKEN_BUDGET_EXCEEDED',
+    // The provider was already billed and the client already holds the text.
+    expect(chunks).toContainEqual({ type: 'content', content: 'OK' });
+    expect(chunks.at(-1)?.type).toBe('done');
+    expect(chunks.some((c) => c.type === 'error')).toBe(false);
+    // The overage is recorded, so nothing further in the Run can spend.
+    expect(runBudget.remainingTokens()).toBe(0);
+    expect(() => runBudget.reserveLlmCall('synthetic', [], 512)).toThrow(
+      'AGENT_TOKEN_BUDGET_EXCEEDED',
+    );
+    expect(
+      JSON.parse(log.mock.calls[0][0].slice('Harness stream '.length)),
+    ).toMatchObject({
+      outcome: 'complete',
+      reasonCode: 'AGENT_TOKEN_BUDGET_EXCEEDED',
     });
-    expect(chunks.some((c) => c.type === 'done')).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

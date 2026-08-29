@@ -11,7 +11,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { ChatCompletionResponse, TokenUsageMetadata } from './types';
-import { getEncoding, Tiktoken, TiktokenEncoding } from 'js-tiktoken';
+import { sharedEncoding, Tiktoken, TiktokenEncoding } from './token-estimate';
 import { LRUCache } from 'lru-cache';
 
 // 模型到编码的映射
@@ -145,8 +145,8 @@ export class TokenTrackerService implements OnModuleInit {
   onModuleInit() {
     try {
       // 预加载两种常用编码
-      this.encoders.set('cl100k_base', getEncoding('cl100k_base'));
-      this.encoders.set('o200k_base', getEncoding('o200k_base'));
+      this.encoders.set('cl100k_base', sharedEncoding('cl100k_base'));
+      this.encoders.set('o200k_base', sharedEncoding('o200k_base'));
       this.encoderReady = true;
       this.logger.log(
         'Tiktoken encoders initialized (cl100k_base, o200k_base)',

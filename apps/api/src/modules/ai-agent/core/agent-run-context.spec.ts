@@ -25,8 +25,21 @@ describe('Agent run context boundaries', () => {
       toolCalls: 2,
       supplementalRounds: 1,
     });
-    expect(() => tracker.reserveLlmCall('x'.repeat(2400), [], 500)).toThrow(
+    expect(() => tracker.reserveLlmCall('x'.repeat(6000), [], 500)).toThrow(
       'AGENT_TOKEN_BUDGET_EXCEEDED',
+    );
+  });
+
+  it('reserves Chinese input at its real token cost, not chars/3', () => {
+    const tracker = new AgentRunBudgetTracker(budget);
+    const zh =
+      '请比较这两所大学的录取难度、专业实力和奖学金政策，并给出选校建议。';
+    const reservation = tracker.reserveLlmCall(zh, [{ content: zh }], 256);
+
+    // chars/3 claimed 11 tokens per copy where o200k_base charges 26, which is
+    // what let a reservation clear and settlement then overrun the Run budget.
+    expect(reservation.inputTokens).toBeGreaterThan(
+      2 * Math.ceil(zh.length / 3),
     );
   });
 

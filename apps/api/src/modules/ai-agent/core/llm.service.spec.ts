@@ -141,8 +141,22 @@ describe('LLMService', () => {
       });
 
       await expect(
-        service.call('x'.repeat(3000), [], { runBudget, maxTokens: 500 }),
+        service.call('x'.repeat(8000), [], { runBudget, maxTokens: 500 }),
       ).rejects.toThrow('AGENT_TOKEN_BUDGET_EXCEEDED');
+      expect(mockProvider.chat).not.toHaveBeenCalled();
+    });
+
+    it('rejects oversized Chinese input that chars/3 would have let through', async () => {
+      const zh = '请比较这两所大学的录取难度、专业实力和奖学金政策。'.repeat(
+        6000,
+      );
+
+      // 150000 chars: the old heuristic claimed 50000 tokens against a 102400
+      // gate and let this reach the provider; o200k_base charges 120000.
+      expect(Math.ceil(zh.length / 3)).toBeLessThan(128000 * 0.8);
+      await expect(service.call(zh, [])).rejects.toMatchObject({
+        response: { code: 'CONTEXT_WINDOW_EXCEEDED' },
+      });
       expect(mockProvider.chat).not.toHaveBeenCalled();
     });
 

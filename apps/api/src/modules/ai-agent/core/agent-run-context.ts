@@ -1,4 +1,5 @@
 import type { Message } from '../types';
+import { countTokens } from './token-estimate';
 import type {
   AgentRunBudgetV1,
   AgentRunContextSummaryV1,
@@ -76,11 +77,9 @@ export class AgentRunBudgetTracker {
     requestedOutputTokens: number,
   ): BudgetReservation {
     this.assertWithinDuration();
-    const inputTokens = Math.ceil(
-      (systemPrompt.length +
-        messages.reduce((sum, message) => sum + message.content.length, 0)) /
-        3,
-    );
+    const inputTokens =
+      countTokens(systemPrompt) +
+      messages.reduce((sum, message) => sum + countTokens(message.content), 0);
     const remaining =
       this.limits.maxTokens - this.estimatedTokens - this.heldTokens;
     const outputTokens = Math.min(
@@ -101,12 +100,32 @@ export class AgentRunBudgetTracker {
   ): void {
     this.estimatedTokens -= reservation.inputTokens + reservation.outputTokens;
     this.estimatedTokens +=
-      usage?.totalTokens ??
-      reservation.inputTokens + Math.ceil(output.length / 3);
+      usage?.totalTokens ?? reservation.inputTokens + countTokens(output);
     if (this.estimatedTokens > this.limits.maxTokens) {
       throw new Error('AGENT_TOKEN_BUDGET_EXCEEDED');
     }
     this.assertWithinDuration();
+  }
+
+  /**
+   * Settlement for the terminal Solve/Revise answer, which has already been
+   * generated, billed by the provider and streamed to the client. Throwing
+   * here would discard a complete answer to protect spend that is already
+   * spent; the overage is recorded instead, which drives remainingTokens() to
+   * zero so every later call — including optional verification — still fails
+   * closed. Incomplete streams never reach this point.
+   */
+  settleTerminalLlmCall(
+    reservation: BudgetReservation,
+    output: string,
+    usage?: Pick<TokenUsage, 'totalTokens'>,
+  ): string | undefined {
+    try {
+      this.settleLlmCall(reservation, output, usage);
+      return undefined;
+    } catch (error) {
+      return error instanceof Error ? error.message : 'AGENT_SETTLE_FAILED';
+    }
   }
 
   settleFailedLlmCall(reservation: BudgetReservation): void {
