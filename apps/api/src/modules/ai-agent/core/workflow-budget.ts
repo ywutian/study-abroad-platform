@@ -1,5 +1,6 @@
 import type { Message, ToolDefinition } from '../types';
 import type { AgentRunBudgetTracker } from './agent-run-context';
+import { countTokens } from './token-estimate';
 
 /** Scheduling estimate, not provider usage or a change to the central budget. */
 function inputTokens(
@@ -7,17 +8,18 @@ function inputTokens(
   messages: Message[],
   tools: ToolDefinition[] = [],
 ): number {
-  const chars =
-    prompt.length +
+  return (
+    countTokens(prompt) +
     messages.reduce(
       (sum, message) =>
         sum +
-        message.content.length +
-        (message.toolCalls ? JSON.stringify(message.toolCalls).length : 0),
+        countTokens(message.content) +
+        (message.toolCalls
+          ? countTokens(JSON.stringify(message.toolCalls))
+          : 0),
       0,
-    );
-  return Math.ceil(
-    (chars + (tools.length ? JSON.stringify(tools).length : 0)) / 3,
+    ) +
+    (tools.length ? countTokens(JSON.stringify(tools)) : 0)
   );
 }
 

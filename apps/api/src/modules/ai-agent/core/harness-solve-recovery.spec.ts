@@ -101,7 +101,8 @@ describe('Tool-free Solve recovery boundaries', () => {
       error: 'NETWORK_ERROR',
     });
     expect(provider.chatStream).toHaveBeenCalledTimes(2);
-    expect(budget.snapshot(0, 0).estimatedTokens).toBe(1030);
+    // Two fully retained reservations: countTokens('synthetic') + maxTokens.
+    expect(budget.snapshot(0, 0).estimatedTokens).toBe(2 * (2 + 512));
     expect(JSON.stringify(observe.mock.calls)).not.toContain('PRIVATE');
   });
 
@@ -235,7 +236,7 @@ describe('Tool-free Solve recovery boundaries', () => {
     await source.return(undefined);
     expect(closed).toHaveBeenCalledTimes(1);
     expect(provider.chatStream).toHaveBeenCalledTimes(1);
-    expect(budget.snapshot(0, 0).estimatedTokens).toBe(515);
+    expect(budget.snapshot(0, 0).estimatedTokens).toBe(2 + 512);
     expect(observe).toHaveBeenLastCalledWith(
       expect.objectContaining({ outcome: 'cancelled' }),
     );

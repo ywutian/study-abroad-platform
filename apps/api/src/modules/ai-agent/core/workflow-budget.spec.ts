@@ -5,6 +5,7 @@ import { AGENT_SEMANTIC_EVAL_CASES } from '../semantic-eval/agent-semantic-eval.
 import { AgentType, type ConversationState } from '../types';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MemoryService } from './memory.service';
+import { countTokens } from './token-estimate';
 import { ToolPolicyService } from './tool-policy.service';
 import type { LLMOptions, LLMResponse, StreamChunk } from './llm.service';
 import {
@@ -13,12 +14,21 @@ import {
   type WorkflowStreamEvent,
 } from './workflow-engine.service';
 
+// Sized in tokens, not characters: the budget counts tokens, and a long run of
+// one repeated ASCII character is both unrepresentative (8 chars/token) and
+// slow to encode. Chinese evidence matches what this agent actually carries.
+const EVIDENCE_UNIT = '录取难度、专业实力与奖学金政策的对比说明。';
+const evidence = (tokens: number) =>
+  tokens
+    ? EVIDENCE_UNIT.repeat(Math.ceil(tokens / countTokens(EVIDENCE_UNIT)))
+    : '';
+
 const school = AGENT_CONFIGS[AgentType.SCHOOL];
 const tools = TOOLS.filter((tool) => school.tools.includes(tool.name));
 
 function fixture(
   options: {
-    evidenceChars?: number;
+    evidenceTokens?: number;
     stream?: 'error' | 'partial-error' | 'missing-done' | 'partial-missing';
     budget?: number;
     enabled?: boolean;
@@ -120,7 +130,7 @@ function fixture(
         {
           name: 'Synthetic A',
           source: 'https://example.invalid/source',
-          evidence: 'x'.repeat(options.evidenceChars ?? 0),
+          evidence: evidence(options.evidenceTokens ?? 0),
         },
       ],
     },
@@ -154,7 +164,7 @@ describe('Workflow budget scheduling with real accounting', () => {
   it.each([false, true])(
     'preserves Solve budget for large evidence (reflection=%s)',
     async (reflection) => {
-      const f = fixture({ evidenceChars: 42000 });
+      const f = fixture({ evidenceTokens: 14000 });
       const events = await collect(f, reflection);
       expect(events.filter((e) => e.type === 'error')).toEqual([]);
       const result = events.find((e) => e.type === 'done')?.result;
@@ -173,7 +183,7 @@ describe('Workflow budget scheduling with real accounting', () => {
       expect(f.execute).toHaveBeenCalledTimes(1);
       expect(
         f.conversation.messages.find((m) => m.role === 'tool')?.content,
-      ).toContain('x'.repeat(42000));
+      ).toContain(evidence(14000));
       expect(
         f.callStream.mock.calls[0][1].find((m) => m.role === 'tool')?.content,
       ).toContain('https://example.invalid/source');
@@ -191,7 +201,9 @@ describe('Workflow budget scheduling with real accounting', () => {
   });
 
   it('marks optional verification as unverified when only Solve fits', async () => {
-    const f = fixture({ evidenceChars: 66000 });
+    // Calibrated: Solve's input still fits, the leftover does not cover the
+    // verification extract prompt plus its 500-token floor.
+    const f = fixture({ evidenceTokens: 21000 });
     const events = await collect(f, true);
     expect(events.some((e) => e.type === 'error')).toBe(false);
     const result = events.find((e) => e.type === 'done')?.result;
@@ -267,7 +279,7 @@ describe('Workflow budget scheduling with real accounting', () => {
   );
 
   it('still rejects a task when Solve itself cannot fit', async () => {
-    const f = fixture({ evidenceChars: 90000 });
+    const f = fixture({ evidenceTokens: 30000 });
     const events = await collect(f);
     expect(events.some((e) => e.type === 'done')).toBe(false);
     expect(events.find((e) => e.type === 'error')?.error).toBe(

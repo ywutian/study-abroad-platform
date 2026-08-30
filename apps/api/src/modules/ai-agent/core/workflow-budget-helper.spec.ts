@@ -1,5 +1,6 @@
 import { AgentRunBudgetTracker } from './agent-run-context';
 import { withSupplementalBudget } from './workflow-budget';
+import { countTokens } from './token-estimate';
 
 const limits = {
   version: 1 as const,
@@ -9,6 +10,11 @@ const limits = {
   maxDurationMs: 120000,
 };
 
+// Derived, not pinned: the hold is the Solve input plus its requested output,
+// so the numbers move with the token count rather than with a char heuristic.
+const SOLVE_PROMPT = 'x'.repeat(3000);
+const SOLVE_HOLD = countTokens(SOLVE_PROMPT) + 4000;
+
 describe('Supplemental planning reservation', () => {
   it.each([false, true])(
     'releases the exact hold after error=%s',
@@ -17,14 +23,14 @@ describe('Supplemental planning reservation', () => {
       const observe = jest.fn();
       const execute = withSupplementalBudget({
         budget,
-        solvePrompt: 'x'.repeat(3000),
+        solvePrompt: SOLVE_PROMPT,
         replanPrompt: 'x'.repeat(1500),
         messages: [],
         tools: [],
         maxTokens: 4000,
         observe,
         call: async (maxTokens) => {
-          expect(budget.remainingTokens()).toBe(5000);
+          expect(budget.remainingTokens()).toBe(limits.maxTokens - SOLVE_HOLD);
           expect(maxTokens).toBe(4000);
           const r = budget.reserveLlmCall('x'.repeat(1500), [], maxTokens);
           budget.settleLlmCall(r, 'answer', { totalTokens: 600 });
@@ -41,7 +47,7 @@ describe('Supplemental planning reservation', () => {
         expect.objectContaining({
           phase: 'replan',
           decision: 'allow',
-          solveReservedTokens: 5000,
+          solveReservedTokens: SOLVE_HOLD,
         }),
       );
     },
@@ -60,7 +66,7 @@ describe('Supplemental planning reservation', () => {
     ];
     const result = await withSupplementalBudget({
       budget,
-      solvePrompt: 'x'.repeat(3000),
+      solvePrompt: SOLVE_PROMPT,
       replanPrompt: '',
       messages: [],
       tools,
@@ -68,10 +74,12 @@ describe('Supplemental planning reservation', () => {
       observe,
       call,
     });
-    expect(result).toBeLessThan(400);
+    const schema = countTokens(JSON.stringify(tools));
+    expect(result).toBe(6000 - SOLVE_HOLD - schema);
+    expect(result).toBeLessThan(4000);
     expect(result).toBeGreaterThanOrEqual(256);
     expect(budget.remainingTokens()).toBe(6000);
-    expect(observe.mock.calls[0][0].replanInputTokens).toBeGreaterThan(600);
+    expect(observe.mock.calls[0][0].replanInputTokens).toBe(schema);
   });
 
   it('does not run when another concurrent hold leaves insufficient room', async () => {

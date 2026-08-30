@@ -165,11 +165,18 @@ export async function* harnessSolveStream(options: {
         }
       }
       if (!terminal) throw new Error('AGENT_STREAM_INCOMPLETE');
-      // Settle only after the source has ended; never expose done before settlement.
+      // Settle only after the source has ended; never expose done before
+      // settlement. A complete answer is delivered even when final usage
+      // overruns the Run budget — the overage is recorded, so the next call
+      // still fails closed — but an incomplete stream never reaches here.
       unsafeToRetry = true;
-      budget.settleLlmCall(reservation, output, terminal.usage);
+      const overrun = budget.settleTerminalLlmCall(
+        reservation,
+        output,
+        terminal.usage,
+      );
       finished = true;
-      emit('complete', 'OK');
+      emit('complete', overrun ?? 'OK');
       yield terminal;
       return;
     } catch (error) {

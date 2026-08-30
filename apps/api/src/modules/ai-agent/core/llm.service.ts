@@ -23,6 +23,7 @@ import { TokenTrackerService, TokenUsage } from './token-tracker.service';
 import { PromptGuardService } from '../security/prompt-guard.service';
 import { ToolCall } from '../types';
 import { AgentRunBudgetTracker } from './agent-run-context';
+import { countTokens } from './token-estimate';
 import { runtimeModel } from '../providers/runtime-model';
 import {
   ModelRouterService,
@@ -190,15 +191,14 @@ export class LLMService {
     // Pre-flight: reject if input likely exceeds model context window
     const contextWindow = this.provider.getContextWindow(model);
     if (contextWindow) {
-      const totalChars =
-        systemPrompt.length +
-        messages.reduce((s, m) => s + m.content.length, 0);
-      const estimatedTokens = Math.ceil(totalChars / 3); // ~3 chars/token average
-      if (estimatedTokens > contextWindow * 0.8) {
+      const inputTokens =
+        countTokens(systemPrompt) +
+        messages.reduce((sum, m) => sum + countTokens(m.content), 0);
+      if (inputTokens > contextWindow * 0.8) {
         throw new HttpException(
           {
             statusCode: 400,
-            message: `Input too long (~${estimatedTokens} tokens, model capacity: ${contextWindow}). Please shorten your message.`,
+            message: `Input too long (${inputTokens} tokens, model capacity: ${contextWindow}). Please shorten your message.`,
             code: 'CONTEXT_WINDOW_EXCEEDED',
           },
           400,
