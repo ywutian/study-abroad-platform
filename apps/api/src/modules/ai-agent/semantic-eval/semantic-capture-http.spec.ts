@@ -1,4 +1,6 @@
-import { fetchSemanticCapture } from './semantic-capture-http';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { fetchSemanticCapture, httpsFetchImpl } from './semantic-capture-http';
 
 describe('bounded semantic capture HTTP', () => {
   beforeEach(() => jest.useFakeTimers());
@@ -59,5 +61,47 @@ describe('bounded semantic capture HTTP', () => {
       fetchSemanticCapture('https://example.invalid', {}, 30, fetchImpl),
     ).rejects.toThrow('SEMANTIC_REQUEST_TIMEOUT');
     expect(jest.getTimerCount()).toBe(0);
+  });
+});
+
+describe('https fetch shim for DELETE bodies', () => {
+  const server = createServer((req, res) => {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => {
+      res.writeHead(req.headers.authorization ? 200 : 401, {
+        'content-type': 'application/json',
+        'x-echo-method': req.method ?? '',
+      });
+      res.end(JSON.stringify({ received: body }));
+    });
+  });
+
+  afterAll(() => server.close());
+
+  it('delivers a DELETE body, which Node fetch does not against this API', async () => {
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+    const port = (server.address() as AddressInfo).port;
+    // The shim is transport-shaped, so exercise it through the same boundary
+    // the capture uses rather than calling it directly.
+    const { response, text } = await fetchSemanticCapture(
+      `http://127.0.0.1:${port}/users/me`,
+      {
+        method: 'DELETE',
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Bearer synthetic',
+        },
+        body: JSON.stringify({ password: 'synthetic' }),
+      },
+      5_000,
+      httpsFetchImpl,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.ok).toBe(true);
+    expect(response.headers.get('x-echo-method')).toBe('DELETE');
+    // The body is the whole point: an empty one is what stranded the accounts.
+    expect(JSON.parse(text).received).toBe('{"password":"synthetic"}');
   });
 });
