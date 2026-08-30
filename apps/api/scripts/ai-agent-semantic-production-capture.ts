@@ -10,7 +10,10 @@ import {
   type SemanticCaptureItem,
 } from '../src/modules/ai-agent/semantic-eval/agent-semantic-production-capture';
 import { SEMANTIC_EVAL_DATASET_VERSION } from '../src/modules/ai-agent/semantic-eval/agent-semantic-eval.types';
-import { fetchSemanticCapture } from '../src/modules/ai-agent/semantic-eval/semantic-capture-http';
+import {
+  fetchSemanticCapture,
+  httpsFetchImpl,
+} from '../src/modules/ai-agent/semantic-eval/semantic-capture-http';
 import {
   selectCaptureCases,
   captureSelectionVerdict,
@@ -72,6 +75,7 @@ let password = '';
 let accountCount = 0;
 let cleanupCount = 0;
 let cleanupFailed = false;
+const cleanupStatuses: string[] = [];
 let refreshCount = 0;
 let failureCode: string | null = null;
 let stopRequested = false;
@@ -93,6 +97,10 @@ async function rawRequest(
     headers?: Record<string, string>;
   } = {},
 ) {
+  // Node's fetch silently drops a DELETE body against this API; see
+  // httpsFetchImpl. Everything else keeps the default transport.
+  const needsBodyOnDelete =
+    options.body !== undefined && (options.method ?? 'GET') === 'DELETE';
   const { response, text } = await fetchSemanticCapture(
     `${apiBase}${path}`,
     {
@@ -111,6 +119,7 @@ async function rawRequest(
         : { body: JSON.stringify(options.body) }),
     },
     30_000,
+    needsBodyOnDelete ? httpsFetchImpl : undefined,
   );
   let payload: unknown = null;
   try {
@@ -232,14 +241,19 @@ async function createSyntheticAccount(): Promise<void> {
 
 async function retireSyntheticAccount(): Promise<void> {
   if (!token) return;
-  const aiDataCleared = (
-    await request('/ai-agent/user-data/all', { method: 'DELETE' })
-  ).ok;
-  const accountSoftDeleted = (
-    await request('/users/me', { method: 'DELETE', body: { password } })
-  ).ok;
+  const aiData = await request('/ai-agent/user-data/all', { method: 'DELETE' });
+  const account = await request('/users/me', {
+    method: 'DELETE',
+    body: { password },
+  });
+  const aiDataCleared = aiData.ok;
+  const accountSoftDeleted = account.ok;
   cleanupCount += 1;
   cleanupFailed ||= !aiDataCleared || !accountSoftDeleted;
+  // A bare `cleanupFailed: true` cost a full investigation to turn back into a
+  // status code. Stranding an account on production is worth one status line.
+  if (!aiDataCleared || !accountSoftDeleted)
+    cleanupStatuses.push(`ai=${aiData.status} account=${account.status}`);
   token = '';
   refreshToken = '';
   userId = '';
@@ -330,6 +344,7 @@ async function cleanup(): Promise<void> {
       accountCount,
       cleanupCount,
       cleanupFailed,
+      ...(cleanupStatuses.length ? { cleanupStatuses } : {}),
       refreshCount,
       failureCode,
       ...captureSelectionVerdict(
