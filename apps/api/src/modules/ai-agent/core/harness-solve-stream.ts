@@ -16,6 +16,8 @@ export interface SolveStreamEvidence {
   reasonCode: string;
   elapsedMs: number;
   timeoutMs: number;
+  /** Reserved input tokens for this attempt: the other half of the Run budget. */
+  inputTokens: number;
   outputBytes: number;
   firstContentMs: number | null;
   transport?: LLMStreamFailure;
@@ -133,6 +135,7 @@ export async function* harnessSolveStream(options: {
         reasonCode,
         elapsedMs: Date.now() - started,
         timeoutMs,
+        inputTokens: reservation.inputTokens,
         outputBytes: Buffer.byteLength(output, 'utf8'),
         firstContentMs,
         ...(transport ? { transport } : {}),
