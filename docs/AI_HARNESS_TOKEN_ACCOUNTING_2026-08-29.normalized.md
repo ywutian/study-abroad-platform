@@ -4,7 +4,7 @@
 
 ## 1. 变更身份
 
-[REQUESTER] AI-HARNESS-TOKEN-ACCOUNTING-20260829。用户在4/6诊断报告后要求「减少重复输入、校正token预估和核验预算，不需要先换更贵的模型」，随后确认按「终态不丢答案 → 预留改真实计数」的顺序出最小改动，并追加要求一并修正上下文窗口预检。来源：AI_HARNESS_STREAM_RECOVERY_2026-08-27.normalized.md §15 [UNRESOLVED]。[RUNTIME] 状态LOCALLY VERIFIED，未进入CI、未发布、未复测业务完成率。
+[REQUESTER] AI-HARNESS-TOKEN-ACCOUNTING-20260829。用户在4/6诊断报告后要求「减少重复输入、校正token预估和核验预算，不需要先换更贵的模型」，随后确认按「终态不丢答案 → 预留改真实计数」的顺序出最小改动，并追加要求一并修正上下文窗口预检。来源：AI_HARNESS_STREAM_RECOVERY_2026-08-27.normalized.md §15 [UNRESOLVED]。[RUNTIME] 状态RELEASED并已线上复测：PR #639 squash为e7e652c3，revision study-abroad-api-01016-vet承接100%流量；冻结的两道选校题3批6次全部送达。
 
 <!-- section:executive-summary -->
 
@@ -99,7 +99,11 @@
 
 [ASSUMPTION] 切片计数在真实提示上多算约1%，属安全方向，但会让预留略早触发拒绝；这正是把失败从「花完钱之后」前移到「花钱之前」的预期效果。
 
-[UNRESOLVED] 本次不改变Agent回答质量，因此不能据此宣称完成率改善；冻结的两道选校题需要重跑才能判定。用户提出的「减少重复输入」仍未做——本次先把计量修正，使输入是否真的过大有了可信数字，再决定是否压缩。
+[RUNTIME] 已复测，见§19。送达率6/6，但生产日志显示2/6仍触发`AGENT_TOKEN_BUDGET_EXCEEDED`——与修复前同样的比例。送达率的改善完全来自「终态不再判失败」，与估算修正无关：估算修正没有减少消耗，只是让账算对了。不得据6/6宣称预算压力下降。
+
+[RUNTIME] 「减少重复输入」这一假设经本地测量被推翻：school agent系统提示617 token、题面15 token，固定开销合计632，占24000预算的2.6%；`getConversationContinuitySummary`与`getUiContextSummary`在单轮新会话中均返回空串，prompt层没有内容进两遍。消耗集中在工具结果（`compare_schools` + `get_school_details`），且只发送一次。压缩对象应是工具结果本身，不是重复片段。
+
+[UNRESOLVED] Solve输入的实际token数仍无观测：`SolveStreamEvidence`记录`outputBytes`而不记输入，尽管`reservation.inputTokens`就在同一函数内。补上该字段后，一次诊断即可定位24000的去向；在此之前不应动工具结果的裁剪逻辑。
 
 [CODE] `TokenTrackerService.countTokens`（成本上报路径）仍直接调用`encoder.encode`，同样暴露于O(n²)风险，本次未改，因为它不在预算闸门上且改动面更大。
 
@@ -141,8 +145,23 @@
 
 [RUNTIME] 性能数据为本机实测：切片后56KB工具JSON 32ms、44KB中文散文264ms、42000重复字符1.8秒；第二个o200k_base实例额外约63MB堆。
 
+[RUNTIME] 发布后线上复测（2026-08-30，revision study-abroad-api-01016-vet）：冻结的两道题由case id的sha256反查确认为`route-school-compare-v1`（f63bd496…）与`-v2`（da2f8385…），与上一轮同一组。3批各1个合成账号，建后即销，`cleanupFailed=false`，采样文件写入私有临时目录后删除。
+
+6次全部`runStatus=COMPLETED`（上一轮4/6），工具链均为`compare_schools + get_school_details`。生产`Harness stream`日志逐条对应：
+
+| 批次  | reasonCode                  | Solve耗时ms | 输出字节 |
+| ----- | --------------------------- | ----------- | -------- |
+| r1/v1 | AGENT_TOKEN_BUDGET_EXCEEDED | 29368       | 5598     |
+| r1/v2 | OK                          | 21494       | 3861     |
+| r2/v1 | OK                          | 15598       | 2506     |
+| r2/v2 | AGENT_TOKEN_BUDGET_EXCEEDED | 27106       | 4730     |
+| r3/v1 | OK                          | 19426       | 3096     |
+| r3/v2 | OK                          | 19796       | 3368     |
+
+[RUNTIME] 上一轮超支发生在6445输出字节，本轮在4730即触发。输入算准（此前中文低估）后留给输出的额度变小，门槛因此提前。推论：若只上估算修正而不上终态不丢答案，线上失败会比修复前更多——两个改动必须同批发布。
+
 <!-- section:release-decision -->
 
 ## 20. 结论
 
-[DECISION] 本地验证CLOSED，发布NOT STARTED。本次修正的是计量与终态判定，不构成Agent回答质量或选校完成率的改善证据；冻结的两道题需在发布后重跑才能判定。上一轮报告中的4/6结论继续有效，未被本次改动推翻。
+[DECISION] CLOSED：已发布并完成冻结用例复测。用户可见结果是6/6送达，但预算超支率未变（2/6），因此本次不构成Agent回答质量或预算压力下降的证据。280×3全量评测的前置条件（两题各三次全部送达）已满足，但未启动——那是840次生产调用，需单独批准。下一步是先补Solve输入token的观测字段，再决定工具结果的裁剪方案。
