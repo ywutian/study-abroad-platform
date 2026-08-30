@@ -321,6 +321,8 @@ describe('Harness Solve stream with the real OpenAI transport', () => {
     ).toMatchObject({
       outcome: 'complete',
       reasonCode: 'AGENT_TOKEN_BUDGET_EXCEEDED',
+      // The overrun is only actionable next to what the input cost.
+      inputTokens: 2,
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
