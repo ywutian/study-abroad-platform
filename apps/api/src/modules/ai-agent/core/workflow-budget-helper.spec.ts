@@ -1,5 +1,5 @@
 import { AgentRunBudgetTracker } from './agent-run-context';
-import { withSupplementalBudget } from './workflow-budget';
+import { withSupplementalBudget, VERIFY_RESERVE } from './workflow-budget';
 import { countTokens } from './token-estimate';
 
 const limits = {
@@ -80,6 +80,72 @@ describe('Supplemental planning reservation', () => {
     expect(result).toBeGreaterThanOrEqual(256);
     expect(budget.remainingTokens()).toBe(6000);
     expect(observe.mock.calls[0][0].replanInputTokens).toBe(schema);
+  });
+
+  // The reserve is only visible when the remaining budget binds, not the
+  // maxTokens cap — sizing these from SOLVE_HOLD keeps that true if either moves.
+  it('holds verification budget back from optional planning', async () => {
+    const headroom = 3000; // below the 4000 cap, so the subtraction shows
+    const budget = new AgentRunBudgetTracker({
+      ...limits,
+      maxTokens: SOLVE_HOLD + headroom,
+    });
+    const observe = jest.fn();
+    const call = jest.fn(async (maxTokens: number) => maxTokens);
+    const run = (verifyReserveTokens: number) =>
+      withSupplementalBudget({
+        budget,
+        solvePrompt: SOLVE_PROMPT,
+        replanPrompt: '',
+        messages: [],
+        tools: [],
+        maxTokens: 4000,
+        verifyReserveTokens,
+        observe,
+        call,
+      });
+
+    expect(await run(0)).toBe(headroom);
+    expect(await run(VERIFY_RESERVE)).toBe(headroom - VERIFY_RESERVE);
+    expect(observe).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        decision: 'allow',
+        verifyReservedTokens: VERIFY_RESERVE,
+      }),
+    );
+    // The hold is released either way, so the reserve cannot leak between runs.
+    expect(budget.remainingTokens()).toBe(SOLVE_HOLD + headroom);
+  });
+
+  it('skips the round that would have eaten the verification budget', async () => {
+    // Room for a round without the reserve, not enough once it is held back.
+    const headroom = VERIFY_RESERVE + 100;
+    const budget = new AgentRunBudgetTracker({
+      ...limits,
+      maxTokens: SOLVE_HOLD + headroom,
+    });
+    const observe = jest.fn();
+    const call = jest.fn(async (maxTokens: number) => maxTokens);
+    const run = (verifyReserveTokens: number) =>
+      withSupplementalBudget({
+        budget,
+        solvePrompt: SOLVE_PROMPT,
+        replanPrompt: '',
+        messages: [],
+        tools: [],
+        maxTokens: 4000,
+        verifyReserveTokens,
+        observe,
+        call,
+      });
+
+    expect(await run(0)).toBe(headroom); // this is what used to happen
+    expect(await run(VERIFY_RESERVE)).toBeUndefined();
+    expect(observe).toHaveBeenLastCalledWith(
+      expect.objectContaining({ decision: 'skip_for_solve' }),
+    );
+    // What the skipped round leaves behind is what verification needs.
+    expect(budget.remainingTokens()).toBeGreaterThanOrEqual(VERIFY_RESERVE);
   });
 
   it('does not run when another concurrent hold leaves insufficient room', async () => {

@@ -57,6 +57,7 @@ import {
 import { AgentRunBudgetTracker } from './agent-run-context';
 import {
   canAffordVerification,
+  VERIFY_RESERVE,
   withSupplementalBudget,
 } from './workflow-budget';
 import { checkedWorkflowStream } from './workflow-stream';
@@ -788,6 +789,7 @@ export class WorkflowEngineService {
       messages,
       tools: replanTools,
       maxTokens: config.maxTokens ?? 4000,
+      verifyReserveTokens: config.enableReflection ? VERIFY_RESERVE : 0,
       observe: (decision) =>
         this.logger.log(`Workflow budget ${JSON.stringify(decision)}`),
       call: (maxTokens) =>
