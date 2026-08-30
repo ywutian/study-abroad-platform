@@ -30,12 +30,37 @@ function inputTokens(
  */
 export const VERIFY_RESERVE = 2226;
 
+export interface VerificationBudgetDecision {
+  phase: 'verify';
+  decision: 'allow' | 'skip_insufficient_budget';
+  remainingTokens: number;
+  requiredTokens: number;
+}
+
+/**
+ * Returns the decision, not just a boolean: the skip used to log a bare
+ * `skip_insufficient_budget`, so a run that never verified could not be told
+ * apart from one that missed by a hundred tokens. Reserving room for the check
+ * (VERIFY_RESERVE) did not make it affordable in production, and without these
+ * two numbers the next step is guesswork.
+ */
 export function canAffordVerification(
   budget: AgentRunBudgetTracker | undefined,
   prompt: string,
-): boolean {
+): { affordable: boolean; decision: VerificationBudgetDecision } {
   budget?.assertWithinDuration();
-  return !budget || budget.remainingTokens() >= inputTokens(prompt, []) + 500;
+  const requiredTokens = inputTokens(prompt, []) + 500;
+  const remainingTokens = budget ? budget.remainingTokens() : Infinity;
+  const affordable = !budget || remainingTokens >= requiredTokens;
+  return {
+    affordable,
+    decision: {
+      phase: 'verify',
+      decision: affordable ? 'allow' : 'skip_insufficient_budget',
+      remainingTokens: Number.isFinite(remainingTokens) ? remainingTokens : -1,
+      requiredTokens,
+    },
+  };
 }
 
 export interface SupplementalBudgetDecision {

@@ -1,5 +1,9 @@
 import { AgentRunBudgetTracker } from './agent-run-context';
-import { withSupplementalBudget, VERIFY_RESERVE } from './workflow-budget';
+import {
+  withSupplementalBudget,
+  canAffordVerification,
+  VERIFY_RESERVE,
+} from './workflow-budget';
 import { countTokens } from './token-estimate';
 
 const limits = {
@@ -146,6 +150,42 @@ describe('Supplemental planning reservation', () => {
     );
     // What the skipped round leaves behind is what verification needs.
     expect(budget.remainingTokens()).toBeGreaterThanOrEqual(VERIFY_RESERVE);
+  });
+
+  it('reports how far short verification fell, not just that it skipped', () => {
+    // Sized from the prompt so the fixture cannot silently become affordable.
+    const prompt = 'x'.repeat(4000);
+    const maxTokens = countTokens(prompt) + 500 - 1;
+    const budget = new AgentRunBudgetTracker({ ...limits, maxTokens });
+
+    const verify = canAffordVerification(budget, prompt);
+
+    // A bare skip could not be told apart from a run that missed by a hundred
+    // tokens; the gap is the whole point of the line.
+    expect(verify.affordable).toBe(false);
+    expect(verify.decision).toMatchObject({
+      phase: 'verify',
+      decision: 'skip_insufficient_budget',
+      remainingTokens: maxTokens,
+      requiredTokens: maxTokens + 1,
+    });
+    expect(verify.decision.requiredTokens).toBeGreaterThan(
+      verify.decision.remainingTokens,
+    );
+  });
+
+  it('says allow, with the same two numbers, when the check fits', () => {
+    const verify = canAffordVerification(
+      new AgentRunBudgetTracker(limits),
+      'short',
+    );
+
+    expect(verify.affordable).toBe(true);
+    expect(verify.decision).toMatchObject({
+      phase: 'verify',
+      decision: 'allow',
+      remainingTokens: limits.maxTokens,
+    });
   });
 
   it('does not run when another concurrent hold leaves insufficient room', async () => {

@@ -1391,10 +1391,9 @@ ${solveOutput.slice(0, 2000)}
 
 用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
 
-      if (!canAffordVerification(budgetTracker, extractPrompt)) {
-        this.logger.log(
-          'Workflow budget {"phase":"verify","decision":"skip_insufficient_budget"}',
-        );
+      const verify = canAffordVerification(budgetTracker, extractPrompt);
+      if (!verify.affordable) {
+        this.logger.log(`Workflow budget ${JSON.stringify(verify.decision)}`);
         return {
           allCorrect: false,
           status: 'unverified',
