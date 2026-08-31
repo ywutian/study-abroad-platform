@@ -83,6 +83,32 @@ export function verificationStatus(
   return verified > 0 ? 'verified' : 'not_applicable';
 }
 
+/** Adapt the school tool's sourced-percent contract without guessing units. */
+function comparableSchoolValue(actual: unknown): unknown {
+  if (!actual || typeof actual !== 'object' || Array.isArray(actual))
+    return actual;
+  const fact = actual as Record<string, unknown>;
+  if (
+    !fact.source ||
+    typeof fact.source !== 'object' ||
+    Array.isArray(fact.source)
+  )
+    return undefined;
+  const source = fact.source as Record<string, unknown>;
+  if (
+    fact.consumerPolicy !== 'use_with_field_source' ||
+    source.isVerified !== true ||
+    (source.staleness !== 'FRESH' && source.staleness !== 'AGING') ||
+    typeof fact.value !== 'number' ||
+    !Number.isFinite(fact.value) ||
+    fact.value < 0 ||
+    fact.value > 100 ||
+    fact.displayValue !== `${fact.value}%`
+  )
+    return undefined;
+  return fact.displayValue;
+}
+
 /** Read-only fact lookup; missing fields and failed lookups remain unknown. */
 export async function verifySchoolFacts(
   facts: z.infer<typeof factsSchema>['facts'],
@@ -115,7 +141,9 @@ export async function verifySchoolFacts(
           unverified++;
           return;
         }
-        const value = (result.result as Record<string, unknown>)[fact.field];
+        const value = comparableSchoolValue(
+          (result.result as Record<string, unknown>)[fact.field],
+        );
         const verdict = compareVerificationNumber(fact.claim, value);
         if (verdict === 'unverified') {
           unverified++;

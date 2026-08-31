@@ -46,26 +46,28 @@
 
 ## 8. 需求
 
-| ID      | 需求                                                                   | 来源        |
-| ------- | ---------------------------------------------------------------------- | ----------- |
-| FR-001  | 可容纳Solve最低输出及verify时，verify预留贯穿Solve并在所有退出路径释放 | [DECISION]  |
-| FR-002  | 诊断读取本人Run预算及结算用量，只保存数值与固定原因码                  | [DECISION]  |
-| FR-003  | 经既有门禁发布，固定失败组通过后才扩大到280×3和独立审阅                | [REQUESTER] |
-| FR-004  | 预检合成账号数量，再按精确数量清理并验证归零                           | [REQUESTER] |
-| NFR-001 | 不增加预算或权限，不损坏已完成回答，不泄漏正文/密钥/账号               | [DECISION]  |
+| ID      | 需求                                                                       | 来源        |
+| ------- | -------------------------------------------------------------------------- | ----------- |
+| FR-001  | 可容纳Solve最低输出及verify时，verify预留贯穿Solve并在所有退出路径释放     | [DECISION]  |
+| FR-002  | 诊断读取本人Run预算及结算用量，只保存数值与固定原因码                      | [DECISION]  |
+| FR-003  | 经既有门禁发布，固定失败组通过后才扩大到280×3和独立审阅                    | [REQUESTER] |
+| FR-004  | 预检合成账号数量，再按精确数量清理并验证归零                               | [REQUESTER] |
+| FR-005  | 核验器识别学校工具的已验证、未过期来源百分比对象，不放宽缺失来源或单位歧义 | [CODE]      |
+| NFR-001 | 不增加预算或权限，不损坏已完成回答，不泄漏正文/密钥/账号                   | [DECISION]  |
 
 <!-- section:acceptance -->
 
 ## 9. 验收
 
-| ID     | 映射           | Given / When / Then                                                                                         |
-| ------ | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| AC-001 | FR-001/NFR-001 | Given输出能吃掉verify余额，When完整工作流Solve结算，Then verify仍被调用、用量不超限；旧行为测试失败         |
-| AC-002 | FR-001/NFR-001 | Given取消/异常/不反思/仅Solve可容纳，When执行，Then无hold泄漏、非反思不受影响、已完成回答不因可选检查丢失   |
-| AC-003 | FR-002/NFR-001 | Given诊断合成Run，When读取本人摘要，Then只输出预算/用量/次数等白名单；读取失败显式unknown，不输出原始摘要   |
-| AC-004 | FR-003/NFR-001 | Given精确提交，When现有CI发布，Then无流量及正式Harness/清理、健康/Cron/告警/备份PITR/回滚目标全部通过       |
-| AC-005 | FR-003         | Given同一生产源身份，When两题各三次，Then送达6/6且verify运行/预算检查；之后全量及原质量门禁才能声明业务闭环 |
-| AC-006 | FR-004/NFR-001 | Given受保护CI凭据，When预检，Then无删除只输出匹配数；实际清理要求精确数一致并归零，不匹配不写               |
+| ID     | 映射           | Given / When / Then                                                                                                                                           |
+| ------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-001 | FR-001/NFR-001 | Given输出能吃掉verify余额，When完整工作流Solve结算，Then verify仍被调用、用量不超限；旧行为测试失败                                                           |
+| AC-002 | FR-001/NFR-001 | Given取消/异常/不反思/仅Solve可容纳，When执行，Then无hold泄漏、非反思不受影响、已完成回答不因可选检查丢失                                                     |
+| AC-003 | FR-002/NFR-001 | Given诊断合成Run，When读取本人摘要，Then只输出预算/用量/次数等白名单；读取失败显式unknown，不输出原始摘要                                                     |
+| AC-004 | FR-003/NFR-001 | Given精确提交，When现有CI发布，Then无流量及正式Harness/清理、健康/Cron/告警/备份PITR/回滚目标全部通过                                                         |
+| AC-005 | FR-003         | Given同一生产源身份，When两题各三次，Then送达6/6且verify运行/预算检查；之后全量及原质量门禁才能声明业务闭环                                                   |
+| AC-006 | FR-004/NFR-001 | Given受保护CI凭据，When预检，Then无删除只输出匹配数；实际清理要求精确数一致并归零，不匹配不写                                                                 |
+| AC-007 | FR-005/NFR-001 | Given学校工具真实百分比投影，When核验，Then来源已验证且FRESH/AGING、value/display一致才可比较；无来源/STALE/隐藏/单位不符均unverified，冲突更正保留明确百分比 |
 
 <!-- section:technical-impact -->
 
@@ -109,6 +111,8 @@
 
 [DECISION] 不调大预算、不砍固定轮数、不默默截断证据；先复现已知生命周期缺口。无阻塞本地实施的产品决定。生产实际缺口、历史账号精确数为待测事实，不猜测。若同预算无法容纳所需证据，保留未解决状态并提交具体取舍。
 
+[CODE] SchoolToolsService.formatSourcedPercentFact返回value/displayValue/source/consumerPolicy对象，旧核验器拒绝全部对象，导致录取率即使有来源也不核验。[DECISION] 按已有SchoolFieldSource.isVerified及staleness契约保守适配；不新增信任级别，不推断货币、日期或比例单位。先用生产工具投影构造契约测试，后参与同一PR/真实诊断。
+
 <!-- section:implementation-plan -->
 
 ## 17. 实施计划
@@ -123,6 +127,8 @@
 
 [CODE] FR-002：agent-run-context.ts/agent-run-state.ts为已有usage增加可选核验数值/状态证据。semantic-budget-evidence.ts白名单投影本人Run，采集器只在diagnostic读取；旧Run缺少字段明确null。FR-004：既有cleanup工作流增加默认dry_run=true预检，实际清理仍要求精确数量一致。
 
+[CODE] FR-005：workflow-verification.ts保守适配SchoolToolsService实际百分比对象，只接受既有isVerified=true、FRESH/AGING来源与一致value/displayValue。缺失/过期/隐藏来源继续unverified，不把含货币格式、日期、多数字或比例歧义误报为verified；这些仍是核验覆盖边界。
+
 [RUNTIME] 文件大小棘轮实测45504→45453，下降51，无抬高基线。FR-003发布和全量评测待门禁。
 
 [RUNTIME] PR #646首轮CI 33419613769的API测试4654条中4653通过，路由空回答fallback用例因真实时钟超过fixture的1000ms截止失败。该用例触发冷tokenizer且CI启用coverage；不修改生产截止或全局fixture阈值。将路由契约测试统一使用受控时钟，已有截止用例显式推进fixture.timeoutMs+1，仍断言不能调用backup。此测试稳定性修正属于FR-003发布门禁。
@@ -136,6 +142,10 @@
 [RUNTIME] AC-001/002本地PASS：105 suites/1077 tests通过，TypeScript通过。将Solve hold替换为空操作后，完整流程新测试出现缺少agent.verify、余额0/required594的预期失败；还原后全绿。覆盖取消/错误释放、仅Solve可容纳、非反思、核验预算异常与无重写预算时的数据库更正。
 
 [RUNTIME] AC-003本地PASS：新增白名单/未知数值/未知核验状态测试。AC-006本地PASS：3条cleanup契约测试，预检只有登录和列表两次请求，没有删除。
+
+[RUNTIME] AC-007负控：使用SchoolToolsService.formatSourcedPercentFact的真实投影生成fixture，旧代码的正确值和冲突值两条测试均失败（均返回unverified），并非手写裸数字fixture。新增7条来源/单位一致性拒绝用例。
+
+[RUNTIME] AC-007本地PASS：适配后完整API覆盖率回归354 suites/4663 tests全绿，覆盖率阈值不变。CI 33420566466的完整Unit Tests通过，验证了c1d8f916测试时钟修正；百分比适配待最终源身份CI。
 
 [RUNTIME] AC-006生产PASS：33419611406预检matched=5/cleaned=0/remaining=5；33419662473执行matched=5/cleaned=5/remaining=0。使用受保护CI凭据，未导出管理员密码；撤销刷新令牌、清除AI数据及匿名化账号，清除内容不可经该流程恢复。本轮诊断账号另已3/3清理。
 
