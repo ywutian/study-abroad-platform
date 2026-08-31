@@ -92,6 +92,13 @@ describe('Harness Solve stream with the real OpenAI transport', () => {
       { type: 'done' },
     ]);
     expect(runBudget.snapshot(0, 0).estimatedTokens).toBe(5);
+    expect(runBudget.snapshot(0, 0).budgetCalls?.[0]).toMatchObject({
+      phase: 'agent.solve',
+      outputLimitTokens: 512,
+      reportedInputTokens: 3,
+      reportedOutputTokens: 2,
+      reportedTotalTokens: 5,
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

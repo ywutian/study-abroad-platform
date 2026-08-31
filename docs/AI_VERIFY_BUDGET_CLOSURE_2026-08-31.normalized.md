@@ -4,7 +4,7 @@
 
 ## 1. 变更身份
 
-[REQUESTER] AI-VERIFY-BUDGET-20260831；本任务用户要求“继续全面闭环”。Owner Codex，项目study-abroad-platform，类型Bug修复及验收。来源为本任务粘贴的#639–#644复盘，原文保留于附件。基线main=20b0b1274f97419670c19d2d8b8440289471cb87。状态Intake Ready。
+[REQUESTER] AI-VERIFY-BUDGET-20260831；本任务用户要求“继续全面闭环”。Owner Codex，项目study-abroad-platform，类型Bug修复及验收。来源为本任务粘贴的#639–#644复盘，原文保留于附件。基线main=20b0b1274f97419670c19d2d8b8440289471cb87。状态Implementation Verified / Release Pending。
 
 <!-- section:executive-summary -->
 
@@ -46,28 +46,30 @@
 
 ## 8. 需求
 
-| ID      | 需求                                                                       | 来源        |
-| ------- | -------------------------------------------------------------------------- | ----------- |
-| FR-001  | 可容纳Solve最低输出及verify时，verify预留贯穿Solve并在所有退出路径释放     | [DECISION]  |
-| FR-002  | 诊断读取本人Run预算及结算用量，只保存数值与固定原因码                      | [DECISION]  |
-| FR-003  | 经既有门禁发布，固定失败组通过后才扩大到280×3和独立审阅                    | [REQUESTER] |
-| FR-004  | 预检合成账号数量，再按精确数量清理并验证归零                               | [REQUESTER] |
-| FR-005  | 核验器识别学校工具的已验证、未过期来源百分比对象，不放宽缺失来源或单位歧义 | [CODE]      |
-| NFR-001 | 不增加预算或权限，不损坏已完成回答，不泄漏正文/密钥/账号                   | [DECISION]  |
+| ID      | 需求                                                                               | 来源        |
+| ------- | ---------------------------------------------------------------------------------- | ----------- |
+| FR-001  | 可容纳Solve最低输出及verify时，verify预留贯穿Solve并在所有退出路径释放             | [DECISION]  |
+| FR-002  | 诊断读取本人Run预算及结算用量，只保存数值与固定原因码                              | [DECISION]  |
+| FR-003  | 经既有门禁发布，固定失败组通过后才扩大到280×3和独立审阅                            | [REQUESTER] |
+| FR-004  | 预检合成账号数量，再按精确数量清理并验证归零                                       | [REQUESTER] |
+| FR-005  | 核验器识别学校工具的已验证、未过期来源百分比对象，不放宽缺失来源或单位歧义         | [CODE]      |
+| FR-006  | 保留有界调用数值账目及固定未核验原因码，区分预留、Provider输入/输出/总量和未知用量 | [RUNTIME]   |
+| NFR-001 | 不增加预算或权限，不损坏已完成回答，不泄漏正文/密钥/账号                           | [DECISION]  |
 
 <!-- section:acceptance -->
 
 ## 9. 验收
 
-| ID     | 映射           | Given / When / Then                                                                                                                                           |
-| ------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-001 | FR-001/NFR-001 | Given输出能吃掉verify余额，When完整工作流Solve结算，Then verify仍被调用、用量不超限；旧行为测试失败                                                           |
-| AC-002 | FR-001/NFR-001 | Given取消/异常/不反思/仅Solve可容纳，When执行，Then无hold泄漏、非反思不受影响、已完成回答不因可选检查丢失                                                     |
-| AC-003 | FR-002/NFR-001 | Given诊断合成Run，When读取本人摘要，Then只输出预算/用量/次数等白名单；读取失败显式unknown，不输出原始摘要                                                     |
-| AC-004 | FR-003/NFR-001 | Given精确提交，When现有CI发布，Then无流量及正式Harness/清理、健康/Cron/告警/备份PITR/回滚目标全部通过                                                         |
-| AC-005 | FR-003         | Given同一生产源身份，When两题各三次，Then送达6/6且verify运行/预算检查；之后全量及原质量门禁才能声明业务闭环                                                   |
-| AC-006 | FR-004/NFR-001 | Given受保护CI凭据，When预检，Then无删除只输出匹配数；实际清理要求精确数一致并归零，不匹配不写                                                                 |
-| AC-007 | FR-005/NFR-001 | Given学校工具真实百分比投影，When核验，Then来源已验证且FRESH/AGING、value/display一致才可比较；无来源/STALE/隐藏/单位不符均unverified，冲突更正保留明确百分比 |
+| ID     | 映射           | Given / When / Then                                                                                                                                                 |
+| ------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-001 | FR-001/NFR-001 | Given输出能吃掉verify余额，When完整工作流Solve结算，Then verify仍被调用、用量不超限；旧行为测试失败                                                                 |
+| AC-002 | FR-001/NFR-001 | Given取消/异常/不反思/仅Solve可容纳，When执行，Then无hold泄漏、非反思不受影响、已完成回答不因可选检查丢失                                                           |
+| AC-003 | FR-002/NFR-001 | Given诊断合成Run，When读取本人摘要，Then只输出预算/用量/次数等白名单；读取失败显式unknown，不输出原始摘要                                                           |
+| AC-004 | FR-003/NFR-001 | Given精确提交，When现有CI发布，Then无流量及正式Harness/清理、健康/Cron/告警/备份PITR/回滚目标全部通过                                                               |
+| AC-005 | FR-003         | Given同一生产源身份，When两题各三次，Then送达6/6且verify运行/预算检查；之后全量及原质量门禁才能声明业务闭环                                                         |
+| AC-006 | FR-004/NFR-001 | Given受保护CI凭据，When预检，Then无删除只输出匹配数；实际清理要求精确数一致并归零，不匹配不写                                                                       |
+| AC-007 | FR-005/NFR-001 | Given学校工具真实百分比投影，When核验，Then来源已验证且FRESH/AGING、value/display一致才可比较；无来源/STALE/隐藏/单位不符均unverified，冲突更正保留明确百分比       |
+| AC-008 | FR-006/NFR-001 | GivenProvider用量偏离预留或事实未核验，WhenRun结算，Then本人诊断可见有界阶段/数值/固定原因，无正文/模型原始响应；缺失用量仍unknown，旧Run兼容，预算行为不因观测改变 |
 
 <!-- section:technical-impact -->
 
@@ -147,6 +149,22 @@
 
 [RUNTIME] AC-007本地PASS：适配后完整API覆盖率回归354 suites/4663 tests全绿，覆盖率阈值不变。CI 33420566466的完整Unit Tests通过，验证了c1d8f916测试时钟修正；百分比适配待最终源身份CI。
 
+[RUNTIME] 最终实现冻结为ded48a460484cbdc2f48c6ea97532c56edf430ee，PR #646；完整pre-push检查通过。最终CI 33421532525运行中；上一轮33420566466因推送新提交而取消，不计作整轮通过。只使用最终源身份的成功门禁作为合并依据。
+
+[RUNTIME] 2026-08-31T18:05:57Z，最终CI 33421532525整轮SUCCESS，所有PR检查完成、mergeState=CLEAN后，#646按精确head合并为main 44f7aaa6a14207975c5f67c91a2c77235a9672b0。最终CI API日志确认354 suites/4663 tests全部通过；未绕过门禁。生产发布仍需主线CI和无流量/正式验收。
+
+[RUNTIME] 主线CI 33423138202部署进行中，前置测试/运行时/构建及镜像门禁均通过。备份artifact 9770315397核对PASS、reasonCodes=[]：2026-08-31T18:24:37Z检查时自动备份及PITR均开启、transactionLogRetentionDays=7、retainedBackups=7；最近自动备份2026-08-31T05:46:55Z成功结束。此为只读证据，不曾创建/恢复/删除备份。
+
+[RUNTIME] AC-004发布PASS：主线CI 33423138202最终SUCCESS。01029-hip在18:32:41Z以0%部署；健康/Cron及pre-promote验收通过后，18:34:35Z切至100%。独立检查job 99598446812于18:33:35Z确认01027-pin仍为100%且Ready、新版也Ready，作为切流前可用回滚目标证据；job 99599731853于18:37:45Z确认01029-hip为100%且Ready。GPT-5.4、routing=false、Harness/context/approvals=true保持不变。两个只读检查job均SUCCESS，之后取消其附带重复测试，不把这两条整轮CI标SUCCESS。日志读取仍BLOCKED，不据此声称无Provider错误。
+
+[RUNTIME] pre-promote artifact 9770648524及post-promote artifact 9770747732均用仓库严格validator按01029-hip重验：10 records、pass=true、reasonCodes=[]，包括embedding、权限/审批、预算耗尽和cleanup。切流前后均34 Cron、driver=http、0 in-process timers、未认证调度拒绝；Scheduler更新34/创建0/删除0。独立健康检查API/DB/Redis均ok；独立告警CI 33426086755成功，18:38:04Z activeAlerts=0、各严重级别均0。AC-005诊断进行中，发布成功不等于质量闭环。
+
+[RUNTIME] AC-005首轮候选诊断FAIL：01029-hip送达6/6、3账号清理3/3、cleanupFailed=false、Run用量超24000为0/6，但2/6未启动verify：r1两题分别remaining/required=672/1394及7/1759，均supplementalRounds=2。另外4/6 attempted=true却verified=0，unverified分别4/4/2/4；其verify前后Run用量差分别3563/3887/3927/3778，预算判据只预估1459/1789/1876/1665。此差值尚不能区分Provider输入附加开销、输出超限或其他结算差异。不猜预留值；FR-006先补数值账目及拒绝原因，280×3暂停扩量。采集器diagnosticPass=true仅表示交付/清理成功，不代表AC-005通过。
+
+[CODE] FR-006：budgetCalls保留最近16次结算的固定阶段、输入估算、输出上限、当时heldTokens及Provider报告的输入/输出/总量，缺失为null；不是涵盖未知重试费用的完整账单。未核验原因仅六种固定枚举及计数，不含声明、字段原值或学校名。诊断仍仅读合成账号本人Run。预算算法及事实比较规则不变。
+
+[RUNTIME] AC-008本地PASS：针对性6 suites/102 tests、TypeScript通过；负控去掉合法账目后3条新增测试失败，还原后完整API覆盖率回归354 suites/4673 tests通过。棘轮实测45453→45454（+1），唯一超长文件增长为LLMService结算传入阶段名的一行参数，已在基线文件同PR记录理由；未改变500行阈值、预算或测试阈值。
+
 [RUNTIME] AC-006生产PASS：33419611406预检matched=5/cleaned=0/remaining=5；33419662473执行matched=5/cleaned=5/remaining=0。使用受保护CI凭据，未导出管理员密码；撤销刷新令牌、清除AI数据及匿名化账号，清除内容不可经该流程恢复。本轮诊断账号另已3/3清理。
 
 [RUNTIME] 旧版01027-pin基线诊断三批完成6/6、3个账号清理3/3、cleanupFailed=false。下表为本人Run结束后的持久化usage；不是逐阶段账单，post-run提取模板估计不能证明verify实际启动。所有6条均有未核验提示，旧usage没有核验状态。原始内容仅留私有临时目录，未上传。
@@ -166,4 +184,4 @@
 
 ## 20. 发布结论
 
-[DECISION] NEEDS CHANGES；尚未提交或部署新实现，不声明业务闭环。Owner Codex继续诊断、修复及门禁验证。
+[DECISION] RELEASE PASS / DIAGNOSTIC FAIL / FULL EVAL NOT RUN；#646已成功发布，生产诊断仍暴露预算和事实核验缺口，不声明业务闭环。Owner Codex在main 44f7aaa6基础上继续FR-006诊断，保持24000预算、模型、冻结题集及阈值不变。生产失败证据保留，不用新批次覆盖。

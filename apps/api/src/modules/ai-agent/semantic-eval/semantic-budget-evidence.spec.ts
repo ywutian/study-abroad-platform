@@ -1,6 +1,52 @@
 import assert from 'node:assert/strict';
 import { semanticBudgetEvidence } from './semantic-budget-evidence';
 
+test('settled-call and reason projections are bounded, numeric and deny unknown keys', () => {
+  const calls = Array.from({ length: 20 }, () => ({
+    phase: 'agent.verify',
+    estimatedInputTokens: 900,
+    outputLimitTokens: 500,
+    heldTokens: 2226,
+    reportedInputTokens: 'private-input',
+    reportedOutputTokens: -1,
+    reportedTotalTokens: 3500,
+    response: 'private-response',
+  }));
+  const result = semanticBudgetEvidence(
+    {
+      usage: {
+        budgetCalls: calls,
+        verification: {
+          attempted: true,
+          outcome: 'unverified',
+          unverifiedReasons: {
+            field_missing: 2,
+            source_unusable: -1,
+            'private-reason': 3,
+          },
+        },
+      },
+    },
+    '',
+    'en',
+  );
+  assert.equal(result.budgetCalls.length, 16);
+  assert.equal(result.budgetCalls[0].reportedInputTokens, null);
+  assert.equal(result.budgetCalls[0].reportedOutputTokens, null);
+  assert.deepEqual(result.verification?.unverifiedReasons, {
+    field_missing: 2,
+  });
+  assert.doesNotMatch(JSON.stringify(result), /private-/);
+  assert.deepEqual(
+    semanticBudgetEvidence(
+      { usage: { budgetCalls: [{ phase: 'private-phase' }] } },
+      '',
+      'en',
+    ).budgetCalls,
+    [],
+  );
+});
+
 test('only numeric owned-run evidence survives the privacy projection', () => {
   const result = semanticBudgetEvidence(
     {

@@ -270,6 +270,7 @@ export class LLMService {
         reservation,
         response.content,
         response.usage,
+        options.taskType,
       );
     }
     return response;

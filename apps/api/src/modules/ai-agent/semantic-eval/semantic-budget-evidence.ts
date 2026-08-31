@@ -1,5 +1,9 @@
 import { countTokens } from '../core/token-estimate';
 import { buildVerificationPrompt } from '../core/workflow-verification';
+import {
+  projectBudgetCalls,
+  projectUnverifiedReasons,
+} from '../core/budget-call-evidence';
 
 /** Project an owned synthetic Run in memory; never return its raw fields. */
 export function semanticBudgetEvidence(
@@ -39,6 +43,7 @@ export function semanticBudgetEvidence(
     supplementalRounds: number(usage?.supplementalRounds),
     toolCalls: number(usage?.toolCalls),
     elapsedMs: number(usage?.elapsedMs),
+    budgetCalls: projectBudgetCalls(usage?.budgetCalls),
     verification:
       verification &&
       typeof verification.attempted === 'boolean' &&
@@ -59,6 +64,9 @@ export function semanticBudgetEvidence(
             verified: number(verification.verified),
             unverified: number(verification.unverified),
             toolCalls: number(verification.toolCalls),
+            unverifiedReasons: projectUnverifiedReasons(
+              verification.unverifiedReasons,
+            ),
           }
         : null,
     unverifiedNotice:

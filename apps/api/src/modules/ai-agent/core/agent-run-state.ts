@@ -1,6 +1,10 @@
 import { AgentApprovalStatus, Prisma } from '@prisma/client';
 import { createHash } from 'crypto';
 import type { AgentType, ToolCall } from '../types';
+import type {
+  BudgetCallEvidence,
+  UnverifiedReasons,
+} from './budget-call-evidence';
 import {
   parseRoutingSnapshot,
   modelAttemptsSchema,
@@ -24,6 +28,7 @@ export interface AgentRunUsageV1 {
   supplementalRounds: number;
   elapsedMs: number;
   modelAttempts?: ModelRouteAttempt[];
+  budgetCalls?: BudgetCallEvidence[];
   verification?: {
     attempted: boolean;
     remainingTokens: number;
@@ -38,6 +43,7 @@ export interface AgentRunUsageV1 {
     verified: number;
     unverified: number;
     toolCalls: number;
+    unverifiedReasons?: UnverifiedReasons;
   };
 }
 

@@ -13,6 +13,78 @@ const budget = {
 };
 
 describe('Agent run context boundaries', () => {
+  it('records provider input/output separately from the request limit and hold', () => {
+    const tracker = new AgentRunBudgetTracker({ ...budget, maxTokens: 24000 });
+    const release = tracker.holdTokensForLater(2226);
+    const reservation = tracker.reserveLlmCall('synthetic', [], 500);
+    tracker.settleLlmCall(
+      reservation,
+      'private-output',
+      {
+        promptTokens: 3100,
+        completionTokens: 463,
+        totalTokens: 3563,
+      },
+      'agent.verify',
+    );
+    release();
+    expect(tracker.snapshot(0, 0).budgetCalls).toEqual([
+      {
+        phase: 'agent.verify',
+        estimatedInputTokens: reservation.inputTokens,
+        outputLimitTokens: 500,
+        heldTokens: 2226,
+        reportedInputTokens: 3100,
+        reportedOutputTokens: 463,
+        reportedTotalTokens: 3563,
+      },
+    ]);
+    expect(tracker.remainingTokens()).toBe(24000 - 3563);
+    expect(JSON.stringify(tracker.snapshot(0, 0))).not.toContain('private-');
+  });
+
+  it('keeps unknown usage unknown and preserves evidence when settlement rejects an overrun', () => {
+    const tracker = new AgentRunBudgetTracker(budget);
+    const reservation = tracker.reserveLlmCall('synthetic', [], 500);
+    expect(() =>
+      tracker.settleLlmCall(
+        reservation,
+        '',
+        { totalTokens: 1200 },
+        'agent.solve',
+      ),
+    ).toThrow('AGENT_TOKEN_BUDGET_EXCEEDED');
+    expect(tracker.snapshot(0, 0).budgetCalls?.[0]).toMatchObject({
+      phase: 'agent.solve',
+      reportedInputTokens: null,
+      reportedOutputTokens: null,
+      reportedTotalTokens: 1200,
+    });
+    expect(tracker.remainingTokens()).toBe(0);
+  });
+
+  it('bounds and copies settled-call evidence across resume without retaining extra fields', () => {
+    const tracker = new AgentRunBudgetTracker({ ...budget, maxTokens: 24000 });
+    for (let i = 0; i < 20; i++) {
+      const reservation = tracker.reserveLlmCall('synthetic', [], 500);
+      tracker.settleLlmCall(reservation, 'x', undefined, 'private-phase');
+    }
+    const snapshot = tracker.snapshot(0, 0);
+    expect(snapshot.budgetCalls).toHaveLength(16);
+    expect(snapshot.budgetCalls?.[0]).toMatchObject({
+      phase: 'other',
+      reportedTotalTokens: null,
+    });
+    const resumed = new AgentRunBudgetTracker(
+      { ...budget, maxTokens: 24000 },
+      snapshot,
+    );
+    snapshot.budgetCalls![0].reportedTotalTokens = 999;
+    expect(
+      resumed.snapshot(0, 0).budgetCalls?.[0].reportedTotalTokens,
+    ).toBeNull();
+  });
+
   it('enforces and records the per-run token budget', () => {
     const tracker = new AgentRunBudgetTracker(budget);
     const reservation = tracker.reserveLlmCall('system', [], 500);

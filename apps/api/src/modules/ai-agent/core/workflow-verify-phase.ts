@@ -43,6 +43,7 @@ export async function runWorkflowVerification(options: {
     verified: 0,
     unverified: 1,
     toolCalls: 0,
+    unverifiedReasons: {},
   };
   try {
     const check = canAffordVerification(budget, prompt);
@@ -75,6 +76,10 @@ export async function runWorkflowVerification(options: {
             conversation,
             locale,
             options.remainingToolCalls,
+            (reason) => {
+              const counts = evidence.unverifiedReasons!;
+              counts[reason] = (counts[reason] ?? 0) + 1;
+            },
           );
     Object.assign(evidence, {
       outcome: result.status,

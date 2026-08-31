@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { ToolExecutorService } from './tool-executor.service';
 import type { ConversationState } from '../types';
+import type { UnverifiedReason } from './budget-call-evidence';
 
 export function buildVerificationPrompt(
   solveOutput: string,
@@ -116,6 +117,7 @@ export async function verifySchoolFacts(
   conversation: ConversationState,
   locale: string,
   remainingToolCalls: number,
+  onUnverified?: (reason: UnverifiedReason) => void,
 ) {
   const corrections: Array<{ claim: string; actual: string; tool: string }> =
     [];
@@ -123,6 +125,7 @@ export async function verifySchoolFacts(
   let toolCalls = 0;
   const limit = Math.max(0, Math.min(5, remainingToolCalls));
   let unverified = Math.max(0, facts.length - limit);
+  for (let i = 0; i < unverified; i++) onUnverified?.('tool_limit');
   await Promise.allSettled(
     facts.slice(0, limit).map(async (fact) => {
       try {
@@ -139,14 +142,21 @@ export async function verifySchoolFacts(
         );
         if (!result.success || !result.result) {
           unverified++;
+          onUnverified?.('lookup_failed');
           return;
         }
-        const value = comparableSchoolValue(
-          (result.result as Record<string, unknown>)[fact.field],
-        );
+        const raw = (result.result as Record<string, unknown>)[fact.field];
+        const value = comparableSchoolValue(raw);
         const verdict = compareVerificationNumber(fact.claim, value);
         if (verdict === 'unverified') {
           unverified++;
+          onUnverified?.(
+            raw == null
+              ? 'field_missing'
+              : value === undefined
+                ? 'source_unusable'
+                : 'claim_uncomparable',
+          );
           return;
         }
         if (verdict === 'conflict') {
@@ -160,6 +170,7 @@ export async function verifySchoolFacts(
         verified++;
       } catch {
         unverified++;
+        onUnverified?.('tool_exception');
       }
     }),
   );
