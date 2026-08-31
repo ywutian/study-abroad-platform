@@ -131,6 +131,25 @@ describe('LLMService', () => {
   });
 
   describe('call', () => {
+    it('records the fixed verification phase and reported usage in the owned Run', async () => {
+      const runBudget = new AgentRunBudgetTracker({
+        version: 1,
+        maxTokens: 24000,
+        maxToolCalls: 16,
+        maxSupplementalRounds: 2,
+        maxDurationMs: 120000,
+      });
+      await service.call('synthetic', [], {
+        taskType: 'agent.verify',
+        maxTokens: 500,
+        runBudget,
+      });
+      expect(runBudget.snapshot(0, 0).budgetCalls?.[0]).toMatchObject({
+        phase: 'agent.verify',
+        outputLimitTokens: 500,
+        reportedTotalTokens: expect.any(Number),
+      });
+    });
     it('enforces the run token budget before provider execution', async () => {
       const runBudget = new AgentRunBudgetTracker({
         version: 1,

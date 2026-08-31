@@ -177,6 +177,7 @@ export async function* harnessSolveStream(options: {
         reservation,
         output,
         terminal.usage,
+        options.phase,
       );
       finished = true;
       emit('complete', overrun ?? 'OK');

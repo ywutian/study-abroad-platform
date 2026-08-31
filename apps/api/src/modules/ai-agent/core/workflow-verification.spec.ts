@@ -8,6 +8,46 @@ import type { ConversationState } from '../types';
 
 describe('Verification fails unknown, never silently passes', () => {
   it.each([
+    ['lookup_failed', { success: false }],
+    ['field_missing', { success: true, result: {} }],
+    ['source_unusable', { success: true, result: { rank: { value: 25 } } }],
+    ['claim_uncomparable', { success: true, result: { rank: '$25' } }],
+  ])(
+    'reports only the fixed reason %s without changing the verdict',
+    async (reason, result) => {
+      const observe = jest.fn();
+      const verified = await verifySchoolFacts(
+        [
+          {
+            claim: 'private-claim 25',
+            schoolName: 'private-school',
+            field: 'rank',
+          },
+        ],
+        { execute: jest.fn().mockResolvedValue(result) },
+        { userId: 'synthetic', context: {} } as ConversationState,
+        'en',
+        5,
+        observe,
+      );
+      expect(verified.status).toBe('unverified');
+      expect(observe.mock.calls).toEqual([[reason]]);
+    },
+  );
+  it('distinguishes exhausted tool slots and thrown lookups', async () => {
+    const observe = jest.fn();
+    const fact = { claim: 'Rank 25', schoolName: 'Synthetic', field: 'rank' };
+    await verifySchoolFacts(
+      [fact, fact],
+      { execute: jest.fn().mockRejectedValue(new Error('private-error')) },
+      { userId: 'synthetic', context: {} } as ConversationState,
+      'en',
+      1,
+      observe,
+    );
+    expect(observe.mock.calls).toEqual([['tool_limit'], ['tool_exception']]);
+  });
+  it.each([
     { source: null },
     { source: { isVerified: false, staleness: 'FRESH' } },
     { source: { isVerified: true, staleness: 'STALE' } },

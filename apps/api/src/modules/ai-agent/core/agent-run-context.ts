@@ -7,6 +7,11 @@ import type {
 } from './agent-run-state';
 import type { TokenUsage } from './token-tracker.service';
 import type { ModelRouteAttempt } from '../routing/model-routing.policy';
+import { BUDGET_CALL_PHASES, projectBudgetCalls } from './budget-call-evidence';
+import type { BudgetCallEvidence } from './budget-call-evidence';
+
+type ReportedUsage = Pick<TokenUsage, 'totalTokens'> &
+  Partial<Pick<TokenUsage, 'promptTokens' | 'completionTokens'>>;
 
 export interface BudgetReservation {
   inputTokens: number;
@@ -20,6 +25,7 @@ export class AgentRunBudgetTracker {
   private readonly priorElapsedMs: number;
   private readonly modelAttempts: ModelRouteAttempt[];
   private verification?: AgentRunUsageV1['verification'];
+  private readonly budgetCalls: BudgetCallEvidence[];
 
   constructor(
     readonly limits: AgentRunBudgetV1,
@@ -29,6 +35,7 @@ export class AgentRunBudgetTracker {
     this.priorElapsedMs = initial?.elapsedMs ?? 0;
     this.modelAttempts = [...(initial?.modelAttempts ?? [])].slice(-64);
     this.verification = initial?.verification;
+    this.budgetCalls = projectBudgetCalls(initial?.budgetCalls);
   }
 
   remainingDurationMs(): number {
@@ -104,8 +111,27 @@ export class AgentRunBudgetTracker {
   settleLlmCall(
     reservation: BudgetReservation,
     output: string,
-    usage?: Pick<TokenUsage, 'totalTokens'>,
+    usage?: ReportedUsage,
+    phase?: string,
   ): void {
+    this.budgetCalls.push(
+      ...projectBudgetCalls([
+        {
+          phase: BUDGET_CALL_PHASES.includes(
+            phase as BudgetCallEvidence['phase'],
+          )
+            ? phase
+            : 'other',
+          estimatedInputTokens: reservation.inputTokens,
+          outputLimitTokens: reservation.outputTokens,
+          heldTokens: this.heldTokens,
+          reportedInputTokens: usage?.promptTokens,
+          reportedOutputTokens: usage?.completionTokens,
+          reportedTotalTokens: usage?.totalTokens,
+        },
+      ]),
+    );
+    if (this.budgetCalls.length > 16) this.budgetCalls.shift();
     this.estimatedTokens -= reservation.inputTokens + reservation.outputTokens;
     this.estimatedTokens +=
       usage?.totalTokens ?? reservation.inputTokens + countTokens(output);
@@ -126,10 +152,11 @@ export class AgentRunBudgetTracker {
   settleTerminalLlmCall(
     reservation: BudgetReservation,
     output: string,
-    usage?: Pick<TokenUsage, 'totalTokens'>,
+    usage?: ReportedUsage,
+    phase?: string,
   ): string | undefined {
     try {
-      this.settleLlmCall(reservation, output, usage);
+      this.settleLlmCall(reservation, output, usage, phase);
       return undefined;
     } catch (error) {
       return error instanceof Error ? error.message : 'AGENT_SETTLE_FAILED';
@@ -152,6 +179,9 @@ export class AgentRunBudgetTracker {
       supplementalRounds,
       elapsedMs: this.elapsedMs(),
       ...(this.verification ? { verification: { ...this.verification } } : {}),
+      ...(this.budgetCalls.length
+        ? { budgetCalls: projectBudgetCalls(this.budgetCalls) }
+        : {}),
       ...(this.modelAttempts.length
         ? { modelAttempts: [...this.modelAttempts] }
         : {}),
