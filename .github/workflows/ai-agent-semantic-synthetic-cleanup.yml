@@ -3,6 +3,11 @@ name: AI Agent semantic synthetic cleanup
 on:
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: Inspect exact synthetic account count without deleting
+        required: false
+        type: boolean
+        default: true
       expected_account_count:
         description: Exact number of active semantic synthetic accounts to clean
         required: true
@@ -29,6 +34,7 @@ jobs:
           HARNESS_ADMIN_EMAIL: admin@example.com
           HARNESS_ADMIN_PASSWORD: ${{ secrets.ADMIN_BOOTSTRAP_PASSWORD }}
           SEMANTIC_EXPECTED_ACCOUNT_COUNT: ${{ inputs.expected_account_count }}
+          SEMANTIC_CLEANUP_DRY_RUN: ${{ inputs.dry_run }}
         run: |
           if [ -z "$HARNESS_ADMIN_PASSWORD" ]; then
             echo "::error::ADMIN_BOOTSTRAP_PASSWORD is required"

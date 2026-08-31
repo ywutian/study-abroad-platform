@@ -73,3 +73,32 @@ test('fails closed when the discovered count differs from operator intent', asyn
     /synthetic_count_mismatch/
   );
 });
+
+test('preflight reports only the exact count and never calls cleanup', async () => {
+  const calls = [];
+  const result = await cleanupSemanticSyntheticAccounts({
+    fetchImpl: async (url) => {
+      calls.push(url);
+      if (url.endsWith('/auth/login')) return response({ data: { accessToken: 'private-token' } });
+      assert.ok(url.includes('/admin/users?'));
+      return response({
+        data: {
+          total: 3,
+          data: [
+            { id: 'private-id', email: 'agent-semantic-20260825010101-r1-s1@example.invalid' },
+            { id: 'real-id', email: 'real@example.com' },
+            { id: 'near-match', email: 'agent-semantic-not-a-fixture@example.invalid' },
+          ],
+        },
+      });
+    },
+    apiBase: 'https://example.invalid',
+    email: 'admin@example.invalid',
+    password: 'private-secret',
+    expectedCount: 0,
+    dryRun: true,
+  });
+  assert.deepEqual(result, { matched: 1, cleaned: 0, remaining: 1, dryRun: true });
+  assert.equal(calls.length, 2);
+  assert.doesNotMatch(JSON.stringify(result), /private-|real-|@/);
+});

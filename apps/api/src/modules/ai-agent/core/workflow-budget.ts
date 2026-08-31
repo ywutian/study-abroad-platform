@@ -24,11 +24,31 @@ function inputTokens(
 }
 
 /**
- * What verification needs to still be affordable after Solve: the extract
- * prompt at its cap (the zh template plus solveOutput.slice(0, 2000) measures
- * 1726 tokens) plus the 500-token floor canAffordVerification applies.
+ * Scheduling allowance: a sampled zh extract prompt at the 2000-character
+ * cap measured 1726 tokens, plus the 500-token extraction output allowance.
+ * This is not a universal token bound for arbitrary Unicode; the actual prompt
+ * must still pass canAffordVerification after Solve settles provider usage.
  */
 export const VERIFY_RESERVE = 2226;
+
+/** Keep the optional check affordable across Solve, including its fallback.
+ * If even the minimum Solve plus this hold cannot fit, preserve answer delivery.
+ */
+export function holdVerificationForSolve(
+  budget: AgentRunBudgetTracker | undefined,
+  prompt: string,
+  messages: Message[],
+  enabled: boolean,
+): () => void {
+  if (
+    !enabled ||
+    !budget ||
+    budget.remainingTokens() <
+      inputTokens(prompt, messages) + 256 + VERIFY_RESERVE
+  )
+    return () => {};
+  return budget.holdTokensForLater(VERIFY_RESERVE);
+}
 
 export interface VerificationBudgetDecision {
   phase: 'verify';

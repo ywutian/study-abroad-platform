@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { chmod, mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { semanticBudgetEvidence } from '../src/modules/ai-agent/semantic-eval/semantic-budget-evidence';
 import { AGENT_SEMANTIC_EVAL_CASES } from '../src/modules/ai-agent/semantic-eval/agent-semantic-eval.dataset';
 import {
   assertPrivateTemporaryCapturePath,
@@ -303,6 +304,31 @@ async function captureCase(index: number): Promise<void> {
         hashRunId: fingerprint,
       }),
     );
+    if (selection.diagnostic) {
+      const runId = events.find((event) => event.runId)?.runId;
+      let summary: unknown;
+      try {
+        if (runId) {
+          const result = await request(
+            `/ai-agent/runs/${encodeURIComponent(runId)}`,
+          );
+          if (result.ok) summary = result.payload;
+        }
+      } catch {
+        // Missing telemetry is unknown; it does not invalidate a delivered answer.
+      }
+      process.stdout.write(
+        `${JSON.stringify({
+          repetition,
+          caseHash: fingerprint(evalCase.id),
+          ...semanticBudgetEvidence(
+            summary,
+            items[items.length - 1].output,
+            evalCase.locale,
+          ),
+        })}\n`,
+      );
+    }
     await writeCapture(false);
     return;
   }

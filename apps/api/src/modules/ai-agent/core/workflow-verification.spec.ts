@@ -2,9 +2,51 @@ import {
   compareVerificationNumber,
   parseVerificationFacts,
   verificationStatus,
+  verifySchoolFacts,
 } from './workflow-verification';
+import type { ConversationState } from '../types';
 
 describe('Verification fails unknown, never silently passes', () => {
+  it.each([
+    { source: null },
+    { source: { isVerified: false, staleness: 'FRESH' } },
+    { source: { isVerified: true, staleness: 'STALE' } },
+    { consumerPolicy: 'hidden_until_field_provenance_exists' },
+    { displayValue: '34%' },
+    { value: null },
+    { value: 120, displayValue: '120%' },
+  ])(
+    'does not unwrap untrusted or inconsistent percentage data %j',
+    async (override) => {
+      const acceptanceRate = {
+        value: 3.4,
+        displayValue: '3.4%',
+        consumerPolicy: 'use_with_field_source',
+        source: { isVerified: true, staleness: 'FRESH' },
+        ...override,
+      };
+      const result = await verifySchoolFacts(
+        [
+          {
+            claim: 'Rate 3.4%',
+            schoolName: 'Synthetic',
+            field: 'acceptanceRate',
+          },
+        ],
+        {
+          execute: jest
+            .fn()
+            .mockResolvedValue({ success: true, result: { acceptanceRate } }),
+        },
+        { userId: 'synthetic', context: {} } as ConversationState,
+        'en',
+        5,
+      );
+      expect(result.status).toBe('unverified');
+      expect(result.verified).toBe(0);
+      expect(result.corrections).toEqual([]);
+    },
+  );
   it.each([
     'Rank is not 25',
     'Rank is at most 25',

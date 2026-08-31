@@ -19,6 +19,7 @@ export class AgentRunBudgetTracker {
   private readonly activeStartedAt = Date.now();
   private readonly priorElapsedMs: number;
   private readonly modelAttempts: ModelRouteAttempt[];
+  private verification?: AgentRunUsageV1['verification'];
 
   constructor(
     readonly limits: AgentRunBudgetV1,
@@ -27,6 +28,7 @@ export class AgentRunBudgetTracker {
     this.estimatedTokens = initial?.estimatedTokens ?? 0;
     this.priorElapsedMs = initial?.elapsedMs ?? 0;
     this.modelAttempts = [...(initial?.modelAttempts ?? [])].slice(-64);
+    this.verification = initial?.verification;
   }
 
   remainingDurationMs(): number {
@@ -63,6 +65,12 @@ export class AgentRunBudgetTracker {
   recordModelAttempt(attempt: ModelRouteAttempt): void {
     this.modelAttempts.push(attempt);
     if (this.modelAttempts.length > 64) this.modelAttempts.shift();
+  }
+
+  recordVerification(
+    evidence: NonNullable<AgentRunUsageV1['verification']>,
+  ): void {
+    this.verification = { ...evidence };
   }
 
   assertWithinDuration(): void {
@@ -143,6 +151,7 @@ export class AgentRunBudgetTracker {
       toolCalls,
       supplementalRounds,
       elapsedMs: this.elapsedMs(),
+      ...(this.verification ? { verification: { ...this.verification } } : {}),
       ...(this.modelAttempts.length
         ? { modelAttempts: [...this.modelAttempts] }
         : {}),

@@ -2,6 +2,29 @@ import { z } from 'zod';
 import type { ToolExecutorService } from './tool-executor.service';
 import type { ConversationState } from '../types';
 
+export function buildVerificationPrompt(
+  solveOutput: string,
+  locale: string,
+): string {
+  return locale === 'en'
+    ? `Extract up to 5 verifiable factual claims from this college admissions response.
+Only include claims that can be checked against a school database (acceptance rates, rankings, deadlines, tuition).
+Skip subjective opinions or advice.
+
+Response:
+${solveOutput.slice(0, 2000)}
+
+Reply in JSON: {"facts": [{"claim": "MIT has a 3.4% acceptance rate", "schoolName": "MIT", "field": "acceptanceRate"}]}`
+    : `从以下留学申请回复中提取最多 5 个可验证的事实性声明。
+只包含可以通过学校数据库验证的声明（录取率、排名、截止日期、学费）。
+跳过主观建议。
+
+回复：
+${solveOutput.slice(0, 2000)}
+
+用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
+}
+
 const factsSchema = z
   .object({
     facts: z
@@ -60,6 +83,32 @@ export function verificationStatus(
   return verified > 0 ? 'verified' : 'not_applicable';
 }
 
+/** Adapt the school tool's sourced-percent contract without guessing units. */
+function comparableSchoolValue(actual: unknown): unknown {
+  if (!actual || typeof actual !== 'object' || Array.isArray(actual))
+    return actual;
+  const fact = actual as Record<string, unknown>;
+  if (
+    !fact.source ||
+    typeof fact.source !== 'object' ||
+    Array.isArray(fact.source)
+  )
+    return undefined;
+  const source = fact.source as Record<string, unknown>;
+  if (
+    fact.consumerPolicy !== 'use_with_field_source' ||
+    source.isVerified !== true ||
+    (source.staleness !== 'FRESH' && source.staleness !== 'AGING') ||
+    typeof fact.value !== 'number' ||
+    !Number.isFinite(fact.value) ||
+    fact.value < 0 ||
+    fact.value > 100 ||
+    fact.displayValue !== `${fact.value}%`
+  )
+    return undefined;
+  return fact.displayValue;
+}
+
 /** Read-only fact lookup; missing fields and failed lookups remain unknown. */
 export async function verifySchoolFacts(
   facts: z.infer<typeof factsSchema>['facts'],
@@ -92,7 +141,9 @@ export async function verifySchoolFacts(
           unverified++;
           return;
         }
-        const value = (result.result as Record<string, unknown>)[fact.field];
+        const value = comparableSchoolValue(
+          (result.result as Record<string, unknown>)[fact.field],
+        );
         const verdict = compareVerificationNumber(fact.claim, value);
         if (verdict === 'unverified') {
           unverified++;

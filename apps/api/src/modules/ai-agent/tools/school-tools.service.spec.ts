@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SchoolToolsService } from './school-tools.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
+import { verifySchoolFacts } from '../core/workflow-verification';
+import type { ConversationState } from '../types';
 
 describe('SchoolToolsService', () => {
   let service: SchoolToolsService;
@@ -57,6 +59,51 @@ describe('SchoolToolsService', () => {
     expect(handlers.has('get_school_details')).toBe(true);
     expect(handlers.has('compare_schools')).toBe(true);
   });
+
+  it.each([
+    ['3.4%', 'verified'],
+    ['3.5%', 'conflict'],
+  ] as const)(
+    'verifies the real sourced-percent tool projection for %s',
+    async (rate, status) => {
+      const acceptanceRate = service['formatSourcedPercentFact'](
+        {
+          acceptanceRate: 3.4,
+          metadata: {
+            provenance: {
+              acceptanceRate: {
+                source: 'SYNTHETIC_CDS',
+                tier: 'OFFICIAL',
+                fetchedAt: new Date().toISOString(),
+                staleness: 'FRESH',
+              },
+            },
+          },
+        },
+        'acceptanceRate',
+      );
+      const result = await verifySchoolFacts(
+        [
+          {
+            claim: `Synthetic acceptance rate is ${rate}`,
+            schoolName: 'Synthetic',
+            field: 'acceptanceRate',
+          },
+        ],
+        {
+          execute: jest
+            .fn()
+            .mockResolvedValue({ success: true, result: { acceptanceRate } }),
+        },
+        { userId: 'synthetic', context: {} } as ConversationState,
+        'en',
+        5,
+      );
+      expect(result.status).toBe(status);
+      if (status === 'conflict')
+        expect(result.corrections[0].actual).toBe('acceptanceRate: 3.4%');
+    },
+  );
 
   it('should search schools via lookup helper', async () => {
     schoolLookup.searchSchools.mockResolvedValue([

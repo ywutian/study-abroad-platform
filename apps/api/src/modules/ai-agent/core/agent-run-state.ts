@@ -24,6 +24,21 @@ export interface AgentRunUsageV1 {
   supplementalRounds: number;
   elapsedMs: number;
   modelAttempts?: ModelRouteAttempt[];
+  verification?: {
+    attempted: boolean;
+    remainingTokens: number;
+    requiredTokens: number;
+    outcome:
+      | 'skip_insufficient_budget'
+      | 'verified'
+      | 'conflict'
+      | 'unverified'
+      | 'not_applicable'
+      | 'failed';
+    verified: number;
+    unverified: number;
+    toolCalls: number;
+  };
 }
 
 export interface AgentRunContextSummaryV1 {
