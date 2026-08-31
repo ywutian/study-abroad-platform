@@ -6,6 +6,8 @@ import { AgentType, type ConversationState } from '../types';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MemoryService } from './memory.service';
 import { countTokens } from './token-estimate';
+import { AgentRunBudgetTracker } from './agent-run-context';
+import { VERIFY_RESERVE } from './workflow-budget';
 import { ToolPolicyService } from './tool-policy.service';
 import type { LLMOptions, LLMResponse, StreamChunk } from './llm.service';
 import {
@@ -32,6 +34,7 @@ function fixture(
     stream?: 'error' | 'partial-error' | 'missing-done' | 'partial-missing';
     budget?: number;
     enabled?: boolean;
+    solveUsesCap?: boolean;
   } = {},
 ) {
   const conversation: ConversationState = {
@@ -74,7 +77,11 @@ function fixture(
       opts.maxTokens ?? 4000,
     );
     tracker.settleLlmCall(reservation, 'synthetic answer', {
-      totalTokens: reservation.inputTokens + 100,
+      totalTokens:
+        reservation.inputTokens +
+        (options.solveUsesCap && opts.taskType === 'agent.solve'
+          ? reservation.outputTokens
+          : 100),
     });
     charges.push({
       phase: opts.taskType ?? 'unknown',
@@ -161,6 +168,116 @@ async function collect(f: ReturnType<typeof fixture>, reflection = false) {
 }
 
 describe('Workflow budget scheduling with real accounting', () => {
+  it('keeps verification affordable when Solve consumes its entire output cap', async () => {
+    const probe = fixture({ evidenceTokens: 14000 });
+    await collect(probe);
+    const plan = probe.charges.find((c) => c.phase === 'agent.plan')!;
+    const solve = probe.charges.find((c) => c.phase === 'agent.solve')!;
+    const budget = plan.total + solve.input + VERIFY_RESERVE + 300;
+    const f = fixture({ evidenceTokens: 14000, budget, solveUsesCap: true });
+    const events = await collect(f, true);
+    const result = events.find((e) => e.type === 'done')?.result;
+    expect(events.some((e) => e.type === 'error')).toBe(false);
+    expect(f.charges.map((c) => c.phase)).toEqual([
+      'agent.plan',
+      'agent.solve',
+      'agent.verify',
+    ]);
+    expect(result?.usage?.estimatedTokens).toBeLessThanOrEqual(budget);
+    expect(result?.usage?.verification).toMatchObject({
+      attempted: true,
+      outcome: 'not_applicable',
+    });
+  });
+
+  it.each(['cancel', 'error'] as const)(
+    'releases the Solve hold on %s',
+    async (exit) => {
+      const f = fixture({
+        stream: exit === 'error' ? 'partial-error' : undefined,
+      });
+      const budget = new AgentRunBudgetTracker({
+        version: 1,
+        maxTokens: 12000,
+        maxDurationMs: 120000,
+        maxSupplementalRounds: 2,
+        maxToolCalls: 16,
+      });
+      const iterator = f.service['solvePhaseCore'](
+        AgentType.SCHOOL,
+        school,
+        f.conversation,
+        '',
+        budget,
+        true,
+      );
+      await iterator.next();
+      if (exit === 'cancel') await iterator.return(undefined);
+      else await expect(iterator.next()).rejects.toThrow('AGENT_STREAM_FAILED');
+      expect(
+        budget.remainingTokens() + budget.snapshot(0, 0).estimatedTokens,
+      ).toBe(12000);
+    },
+  );
+
+  it('delivers the completed answer if optional verification exhausts its budget', async () => {
+    const f = fixture();
+    const original = f.call.getMockImplementation()!;
+    f.call.mockImplementation(async (prompt, messages, opts) => {
+      if (opts?.taskType === 'agent.verify')
+        throw new Error('AGENT_TOKEN_BUDGET_EXCEEDED');
+      return original(prompt, messages, opts);
+    });
+    const events = await collect(f, true);
+    expect(events.some((e) => e.type === 'error')).toBe(false);
+    const result = events.find((e) => e.type === 'done')?.result;
+    expect(result?.message).toContain('部分事实尚未完成独立核验');
+    expect(result?.usage?.verification).toMatchObject({
+      attempted: true,
+      outcome: 'failed',
+    });
+  });
+
+  it('delivers checked corrections without another LLM call when revision cannot fit', async () => {
+    const f = fixture();
+    const original = f.call.getMockImplementation()!;
+    f.call.mockImplementation(async (prompt, messages, opts) => {
+      const result = await original(prompt, messages, opts);
+      if (opts?.taskType !== 'agent.verify') return result;
+      // The database check is free of token calls; force no room for a re-solve.
+      const budget = opts.runBudget!;
+      const remaining = budget.remainingTokens();
+      const reservation = budget.reserveLlmCall('', [], remaining);
+      budget.settleLlmCall(reservation, '', { totalTokens: remaining });
+      return {
+        content: JSON.stringify({
+          facts: [
+            {
+              claim: 'Tuition is 30000',
+              schoolName: 'Synthetic',
+              field: 'tuition',
+            },
+          ],
+        }),
+        finishReason: 'stop',
+      };
+    });
+    f.execute.mockResolvedValue({
+      success: true,
+      result: { tuition: 40000 },
+      duration: 1,
+    });
+    const events = await collect(f, true);
+    expect(events.some((e) => e.type === 'error')).toBe(false);
+    const result = events.find((e) => e.type === 'done')?.result;
+    expect(result?.message).toContain('Synthetic comparison');
+    expect(result?.message).toContain('tuition: 40000');
+    expect(result?.usage?.verification).toMatchObject({
+      attempted: true,
+      outcome: 'conflict',
+    });
+  });
+
   it.each([false, true])(
     'preserves Solve budget for large evidence (reflection=%s)',
     async (reflection) => {

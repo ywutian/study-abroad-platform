@@ -1,0 +1,153 @@
+# Verify预算与生产评测闭环
+
+<!-- section:change-identity -->
+
+## 1. 变更身份
+
+[REQUESTER] AI-VERIFY-BUDGET-20260831；本任务用户要求“继续全面闭环”。Owner Codex，项目study-abroad-platform，类型Bug修复及验收。来源为本任务粘贴的#639–#644复盘，原文保留于附件。基线main=20b0b1274f97419670c19d2d8b8440289471cb87。状态Intake Ready。
+
+<!-- section:executive-summary -->
+
+## 2. 摘要
+
+[REQUESTER] 旧诊断送达6/6但verify仍跳过、存在预算超支，合成账号清理和280×3尚未闭环。[DECISION] 固定24000 token及原模型，先补充合成Run预算证据，再修复已复现的预留生命周期问题；通过诊断后才扩大评测。
+
+<!-- section:current-state -->
+
+## 3. 当前状态
+
+[RUNTIME] 2026-08-31只读CI 33417868718确认01027-pin为100%、GPT-5.4、routing=false；稳定URL API/DB/Redis健康。本机认证过期且CI日志读取失败，缺口数字未知。[CODE] workflow-budget.ts在replan finally释放Solve+verify hold；Solve未持有verify hold。ai-agent.controller.ts的runs/:runId返回本人Run的budget/usage，可供合成账号自查。原工作区20项变更保留。
+
+<!-- section:target-outcome -->
+
+## 4. 目标
+
+[DECISION] 在预算允许Solve和verify同时执行时，Solve不能消费为verify预留的额度；无法同时容纳时保持已完成回答及诚实的未核验提示。预算估算与Provider结算分开报告；正式发布及语义质量分别验收。
+
+<!-- section:scope -->
+
+## 5. 范围
+
+[DECISION] In scope：预算辅助函数、Solve接线、针对性回归、合成诊断预算观测、现有合成账号清理工作流安全预检、既有CI发布和评测。Out of scope：增加总预算、切换模型、改题/阈值、扩大权限、读写真实用户内容、改Skill部署、DB迁移及其他工作区报告。
+
+<!-- section:users-permissions -->
+
+## 6. 权限
+
+[DECISION] 用户本轮要求延续修复、既有发布及验收闭环。生产发布仅经现有主线门禁；不修改IAM，不导出管理员凭据。清理仅严格匹配的历史semantic合成账号，先预检精确数量再调用既有清理端点。普通合成账号仅读本人Run；不批准真实业务写入。
+
+<!-- section:user-flows -->
+
+## 7. 流程
+
+[DECISION] 只读检查→合成诊断/账号finally清理→确定性复现→修复→本地/PR门禁→无流量及100%发布验收→固定两题各三次→满足门禁后280×3及独立Codex审阅。错误、取消、离线、超时保持明确失败，不重放工具或隐藏未核验状态。
+
+<!-- section:requirements -->
+
+## 8. 需求
+
+| ID      | 需求                                                                   | 来源        |
+| ------- | ---------------------------------------------------------------------- | ----------- |
+| FR-001  | 可容纳Solve最低输出及verify时，verify预留贯穿Solve并在所有退出路径释放 | [DECISION]  |
+| FR-002  | 诊断读取本人Run预算及结算用量，只保存数值与固定原因码                  | [DECISION]  |
+| FR-003  | 经既有门禁发布，固定失败组通过后才扩大到280×3和独立审阅                | [REQUESTER] |
+| FR-004  | 预检合成账号数量，再按精确数量清理并验证归零                           | [REQUESTER] |
+| NFR-001 | 不增加预算或权限，不损坏已完成回答，不泄漏正文/密钥/账号               | [DECISION]  |
+
+<!-- section:acceptance -->
+
+## 9. 验收
+
+| ID     | 映射           | Given / When / Then                                                                                         |
+| ------ | -------------- | ----------------------------------------------------------------------------------------------------------- |
+| AC-001 | FR-001/NFR-001 | Given输出能吃掉verify余额，When完整工作流Solve结算，Then verify仍被调用、用量不超限；旧行为测试失败         |
+| AC-002 | FR-001/NFR-001 | Given取消/异常/不反思/仅Solve可容纳，When执行，Then无hold泄漏、非反思不受影响、已完成回答不因可选检查丢失   |
+| AC-003 | FR-002/NFR-001 | Given诊断合成Run，When读取本人摘要，Then只输出预算/用量/次数等白名单；读取失败显式unknown，不输出原始摘要   |
+| AC-004 | FR-003/NFR-001 | Given精确提交，When现有CI发布，Then无流量及正式Harness/清理、健康/Cron/告警/备份PITR/回滚目标全部通过       |
+| AC-005 | FR-003         | Given同一生产源身份，When两题各三次，Then送达6/6且verify运行/预算检查；之后全量及原质量门禁才能声明业务闭环 |
+| AC-006 | FR-004/NFR-001 | Given受保护CI凭据，When预检，Then无删除只输出匹配数；实际清理要求精确数一致并归零，不匹配不写               |
+
+<!-- section:technical-impact -->
+
+## 10. 技术影响
+
+[DECISION] api ai-agent核心及本地采集脚本、既有cleanup工作流。无新公共API/DB迁移/Secret/模型配置。保留现有标志和非反思行为。实测使用既有OpenAI兼容Provider；不添加生成参考内容所需外部调用。诊断小样本和全量成本分别受既有门禁约束。
+
+<!-- section:nonfunctional -->
+
+## 11. 隐私与质量
+
+[DECISION] 原始合成回答仅保存在采集器规定的私有临时目录用于审阅；不提交或上传CI。持久化报告只记脱敏计数/原因。国际化未核验提示保持原样，无UI/可访问性改动。
+
+<!-- section:observability -->
+
+## 12. 可观测性
+
+[DECISION] 预算输出上限不称实际消耗；Run usage含Provider结算及未知用量估计，不能称账单。读取缺失记unknown。记录每批版本、完成数、清理数、预算缺口和核验状态的证据来源，不推断没有日志的成功。
+
+<!-- section:test-plan -->
+
+## 13. 测试
+
+[DECISION] AC-001/002：真实tracker+工作流模拟Provider、失败/取消、旧行为负控；AC-003/006：HTTP契约/脱敏及无写入测试；AC-004：既有PR及主线门禁；AC-005：部署Agent生成固定诊断/全量输出，Codex独立审阅，非人工专家签署。Owner Codex。
+
+<!-- section:rollout -->
+
+## 14. 发布与回滚
+
+[DECISION] 当前稳定01027-pin保留；PR门禁后主线部署，精确无流量revision验收后直接100%，不跳过门禁。正式验收/隐私/审批/清理硬失败走既有回滚；诊断失败停止扩量并保留证据。无迁移或不可逆产品数据变更；合成账号清理使用既有软删除契约。
+
+<!-- section:risks-dependencies -->
+
+## 15. 风险
+
+[ASSUMPTION] 实际Provider输入可能偏离估算，工具结果增长也可能让Solve+verify本就无法共存；本地测试不证明生产缺口已经消失。Owner Codex用真实诊断验证。认证影响日志读取但不阻塞代码/本人Run诊断；管理员清理依赖既有CI secret。
+
+<!-- section:open-decisions -->
+
+## 16. 决策与未决项
+
+[DECISION] 不调大预算、不砍固定轮数、不默默截断证据；先复现已知生命周期缺口。无阻塞本地实施的产品决定。生产实际缺口、历史账号精确数为待测事实，不猜测。若同预算无法容纳所需证据，保留未解决状态并提交具体取舍。
+
+<!-- section:implementation-plan -->
+
+## 17. 实施计划
+
+[DECISION] Codex先增加诊断观测及预检，取得生产事实；然后追加能复现预算耗尽的测试，修复hold生命周期并验证。所有改动按白名单提交，不携带其他报告。使用operate-study-abroad-agent-harness负责发布与验收，所有结果回填本文件。
+
+<!-- section:implementation-summary -->
+
+## 18. 实施结果
+
+[CODE] FR-001：workflow-budget.ts在Solve可同时容纳最低输出与verify时保留2226调度额度，workflow-engine.service.ts在finally释放；恢复路径不预留不存在的核验。可选核验预算异常保持unverified；预算不足以重新生成时输出数据库更正并保留原答案。核验实现抽入workflow-verify-phase.ts，原中英文模板移入workflow-verification.ts复用。
+
+[CODE] FR-002：agent-run-context.ts/agent-run-state.ts为已有usage增加可选核验数值/状态证据。semantic-budget-evidence.ts白名单投影本人Run，采集器只在diagnostic读取；旧Run缺少字段明确null。FR-004：既有cleanup工作流增加默认dry_run=true预检，实际清理仍要求精确数量一致。
+
+[RUNTIME] 文件大小棘轮实测45504→45453，下降51，无抬高基线。FR-003发布和全量评测待门禁。
+
+<!-- section:verification -->
+
+## 19. 验证证据
+
+[RUNTIME] AC-001/002本地PASS：105 suites/1077 tests通过，TypeScript通过。将Solve hold替换为空操作后，完整流程新测试出现缺少agent.verify、余额0/required594的预期失败；还原后全绿。覆盖取消/错误释放、仅Solve可容纳、非反思、核验预算异常与无重写预算时的数据库更正。
+
+[RUNTIME] AC-003本地PASS：新增白名单/未知数值/未知核验状态测试。AC-006本地PASS：3条cleanup契约测试，预检只有登录和列表两次请求，没有删除。生产预检与清理NOT RUN。
+
+[RUNTIME] 旧版01027-pin基线诊断三批完成6/6、3个账号清理3/3、cleanupFailed=false。下表为本人Run结束后的持久化usage；不是逐阶段账单，post-run提取模板估计不能证明verify实际启动。所有6条均有未核验提示，旧usage没有核验状态。原始内容仅留私有临时目录，未上传。
+
+| 重复/案例hash前16位 | Run用量 | 剩余 | 最终输出提取模板估计需求 |
+| ------------------- | ------- | ---- | ------------------------ |
+| 1/f63bd49655a4f41a  | 20902   | 3098 | 1687                     |
+| 2/f63bd49655a4f41a  | 21321   | 2679 | 1353                     |
+| 3/f63bd49655a4f41a  | 22140   | 1860 | 1691                     |
+| 1/da2f83851113c81a  | 23775   | 225  | 1769                     |
+| 2/da2f83851113c81a  | 23971   | 29   | 1587                     |
+| 3/da2f83851113c81a  | 21497   | 2503 | 1451                     |
+
+[RUNTIME] 只读CI 33417868718确认生产01027-pin 100%，日志BLOCKED；API/DB/Redis健康。独立告警检查33419081268成功，activeAlerts=0。AC-004/005修复后验证NOT RUN，不从基线小样本0/6超支推断已修复。历史失败证据保留。
+
+<!-- section:release-decision -->
+
+## 20. 发布结论
+
+[DECISION] NEEDS CHANGES；尚未提交或部署新实现，不声明业务闭环。Owner Codex继续诊断、修复及门禁验证。

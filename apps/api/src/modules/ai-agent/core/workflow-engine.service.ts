@@ -29,10 +29,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LLMService, LLMResponse } from './llm.service';
-import {
-  parseVerificationFacts,
-  verifySchoolFacts,
-} from './workflow-verification';
+import type { verifySchoolFacts } from './workflow-verification';
+import { runWorkflowVerification } from './workflow-verify-phase';
 import { ToolExecutorService } from './tool-executor.service';
 import { MemoryService } from './memory.service';
 import { ResilienceService } from './resilience.service';
@@ -47,7 +45,6 @@ import {
 } from '../types';
 import { getLocalizedSystemPrompt } from '../config/agents.config';
 import { getToolMetadata, TOOL_READONLY } from '../config/tools.config';
-import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { MetricsService } from '../infrastructure/observability/metrics.service';
 import { ToolPolicyService } from './tool-policy.service';
 import {
@@ -56,7 +53,7 @@ import {
 } from './agent-run.service';
 import { AgentRunBudgetTracker } from './agent-run-context';
 import {
-  canAffordVerification,
+  holdVerificationForSolve,
   VERIFY_RESERVE,
   withSupplementalBudget,
 } from './workflow-budget';
@@ -422,6 +419,7 @@ export class WorkflowEngineService {
         conversation,
         cachedMemoryContext,
         budgetTracker,
+        !!config.enableReflection && plan.steps.length > 0,
       )) {
         finalMessage += chunk;
         yield { type: 'solve_content', content: chunk };
@@ -468,16 +466,23 @@ export class WorkflowEngineService {
             .join('\n');
 
           let resolvedMessage = '';
-          for await (const chunk of this.reSolvePhase(
-            agentType,
-            config,
-            conversation,
-            `The following facts in your response were verified against the database and found to be inaccurate. Please correct them:\n${correctionReport}`,
-            cachedMemoryContext,
-            budgetTracker,
-          )) {
-            resolvedMessage += chunk;
-            yield { type: 'solve_content', content: chunk };
+          try {
+            for await (const chunk of this.reSolvePhase(
+              agentType,
+              config,
+              conversation,
+              `The following facts in your response were verified against the database and found to be inaccurate. Please correct them:\n${correctionReport}`,
+              cachedMemoryContext,
+              budgetTracker,
+            )) {
+              resolvedMessage += chunk;
+              yield { type: 'solve_content', content: chunk };
+            }
+          } catch (error) {
+            if (!this.isBudgetError(error)) throw error;
+            const notice = `\n\n${locale === 'en' ? 'Database fact corrections' : '数据库事实更正'}:\n${correctionReport}`;
+            resolvedMessage = finalMessage + notice;
+            yield { type: 'solve_content', content: notice };
           }
 
           if (resolvedMessage) {
@@ -1258,6 +1263,7 @@ export class WorkflowEngineService {
     conversation: ConversationState,
     memoryContext: string = '',
     budgetTracker?: AgentRunBudgetTracker,
+    verifyAfterSolve = false,
   ): AsyncGenerator<string> {
     const systemPrompt = this.buildSolvePrompt(
       config,
@@ -1265,83 +1271,95 @@ export class WorkflowEngineService {
       memoryContext,
     );
     const messages = this.memory.getRecentMessages(conversation);
-    const llmOpts = {
-      taskType: 'agent.solve' as const,
-      model: config.model,
-      temperature: config.temperature,
-      maxTokens: config.maxTokens,
-      // 故意不传 tools → LLM 只能输出文本
-      userId: conversation.userId,
-      conversationId: conversation.id,
-      agentType,
-      runBudget: budgetTracker,
-    };
-
-    let fullContent = '';
-
-    // 1. 流式输出
-    for await (const chunk of checkedWorkflowStream(
-      this.llm.callStream(systemPrompt, messages, llmOpts),
+    const release = holdVerificationForSolve(
       budgetTracker,
-    )) {
-      if (chunk.type === 'content' && chunk.content) {
-        fullContent += chunk.content;
-        yield chunk.content;
+      systemPrompt,
+      messages,
+      verifyAfterSolve,
+    );
+    try {
+      const llmOpts = {
+        taskType: 'agent.solve' as const,
+        model: config.model,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+        // 故意不传 tools → LLM 只能输出文本
+        userId: conversation.userId,
+        conversationId: conversation.id,
+        agentType,
+        runBudget: budgetTracker,
+      };
+
+      let fullContent = '';
+
+      // 1. 流式输出
+      for await (const chunk of checkedWorkflowStream(
+        this.llm.callStream(systemPrompt, messages, llmOpts),
+        budgetTracker,
+      )) {
+        if (chunk.type === 'content' && chunk.content) {
+          fullContent += chunk.content;
+          yield chunk.content;
+        }
+        if (chunk.type === 'done') break;
       }
-      if (chunk.type === 'done') break;
-    }
 
-    // 2. 空内容 fallback：非流式重试一次
-    if (!fullContent.trim()) {
-      this.logger.warn(
-        `[${agentType}] Solve streaming produced empty content, retrying non-streaming`,
-      );
+      // 2. 空内容 fallback：非流式重试一次
+      if (!fullContent.trim()) {
+        this.logger.warn(
+          `[${agentType}] Solve streaming produced empty content, retrying non-streaming`,
+        );
 
-      const response = await this.llm.call(systemPrompt, messages, llmOpts);
-      fullContent = response.content;
+        const response = await this.llm.call(systemPrompt, messages, llmOpts);
+        fullContent = response.content;
 
-      if (fullContent) {
+        if (fullContent) {
+          yield fullContent;
+        } else {
+          this.logger.error(
+            `[${agentType}] Solve fallback also produced empty content`,
+          );
+        }
+      }
+
+      // 3. 兜底：双重失败后返回有意义的消息（含已成功的工具信息）
+      if (!fullContent.trim()) {
+        const solveLocale = (conversation.metadata?.locale as string) || 'zh';
+        // Check which tools succeeded (plan is accessible in runStream scope)
+        const succeededTools = conversation.messages
+          .filter((m) => m.role === 'tool')
+          .map((m) => m.toolCallId)
+          .filter(Boolean);
+
+        if (succeededTools.length > 0) {
+          fullContent =
+            solveLocale === 'en'
+              ? `I retrieved some data but couldn't generate a complete response. Please try again.`
+              : `我已获取了部分数据，但未能生成完整回复。请重试。`;
+        } else {
+          fullContent =
+            solveLocale === 'en'
+              ? 'I was unable to generate a response. Please try again.'
+              : '抱歉，我无法生成回复，请稍后重试。';
+        }
         yield fullContent;
-      } else {
-        this.logger.error(
-          `[${agentType}] Solve fallback also produced empty content`,
+      }
+
+      // 4. 可观测性：工具结果存在但回复过短
+      const hasToolResults = conversation.messages.some(
+        (m) => m.role === 'tool',
+      );
+      if (hasToolResults && fullContent.length > 0 && fullContent.length < 20) {
+        this.logger.warn(
+          `[${agentType}] Solve output suspiciously short (${fullContent.length} chars) with tool results`,
         );
       }
+
+      // Note: final assistant message persistence is handled by the Orchestrator
+      // (collectAndPersistStream / persistAssistantResponse) to avoid double-write.
+    } finally {
+      release();
     }
-
-    // 3. 兜底：双重失败后返回有意义的消息（含已成功的工具信息）
-    if (!fullContent.trim()) {
-      const solveLocale = (conversation.metadata?.locale as string) || 'zh';
-      // Check which tools succeeded (plan is accessible in runStream scope)
-      const succeededTools = conversation.messages
-        .filter((m) => m.role === 'tool')
-        .map((m) => m.toolCallId)
-        .filter(Boolean);
-
-      if (succeededTools.length > 0) {
-        fullContent =
-          solveLocale === 'en'
-            ? `I retrieved some data but couldn't generate a complete response. Please try again.`
-            : `我已获取了部分数据，但未能生成完整回复。请重试。`;
-      } else {
-        fullContent =
-          solveLocale === 'en'
-            ? 'I was unable to generate a response. Please try again.'
-            : '抱歉，我无法生成回复，请稍后重试。';
-      }
-      yield fullContent;
-    }
-
-    // 4. 可观测性：工具结果存在但回复过短
-    const hasToolResults = conversation.messages.some((m) => m.role === 'tool');
-    if (hasToolResults && fullContent.length > 0 && fullContent.length < 20) {
-      this.logger.warn(
-        `[${agentType}] Solve output suspiciously short (${fullContent.length} chars) with tool results`,
-      );
-    }
-
-    // Note: final assistant message persistence is handled by the Orchestrator
-    // (collectAndPersistStream / persistAssistantResponse) to avoid double-write.
   }
 
   // ==================== Phase 4: Chain-of-Verification (CoVE) ====================
@@ -1370,86 +1388,17 @@ export class WorkflowEngineService {
     budgetTracker?: AgentRunBudgetTracker,
     remainingToolCalls = 5,
   ): Promise<Awaited<ReturnType<typeof verifySchoolFacts>>> {
-    try {
-      // Step 1: Extract verifiable facts from the response
-      const extractPrompt =
-        locale === 'en'
-          ? `Extract up to 5 verifiable factual claims from this college admissions response.
-Only include claims that can be checked against a school database (acceptance rates, rankings, deadlines, tuition).
-Skip subjective opinions or advice.
-
-Response:
-${solveOutput.slice(0, 2000)}
-
-Reply in JSON: {"facts": [{"claim": "MIT has a 3.4% acceptance rate", "schoolName": "MIT", "field": "acceptanceRate"}]}`
-          : `从以下留学申请回复中提取最多 5 个可验证的事实性声明。
-只包含可以通过学校数据库验证的声明（录取率、排名、截止日期、学费）。
-跳过主观建议。
-
-回复：
-${solveOutput.slice(0, 2000)}
-
-用 JSON 回复：{"facts": [{"claim": "MIT 录取率 3.4%", "schoolName": "MIT", "field": "acceptanceRate"}]}`;
-
-      const verify = canAffordVerification(budgetTracker, extractPrompt);
-      if (!verify.affordable) {
-        this.logger.log(`Workflow budget ${JSON.stringify(verify.decision)}`);
-        return {
-          allCorrect: false,
-          status: 'unverified',
-          unverified: 1,
-          verified: 0,
-          toolCalls: 0,
-          corrections: [],
-        };
-      }
-      const extractResult = await this.llm.call(extractPrompt, [], {
-        taskType: 'agent.verify',
-        model: config.reflectionModel || 'gpt-5.4-mini',
-        temperature: 0,
-        maxTokens: 500,
-        userId: 'system',
-        agentType: `${agentType}_cove_extract`,
-        providerOptions: { response_format: { type: 'json_object' } },
-        runBudget: budgetTracker,
-      });
-
-      const facts = parseVerificationFacts(
-        extractJsonFromLlm(extractResult.content),
-      );
-
-      if (!facts?.length) {
-        return {
-          allCorrect: false,
-          status: facts ? 'not_applicable' : 'unverified',
-          unverified: facts ? 0 : 1,
-          verified: 0,
-          toolCalls: 0,
-          corrections: [],
-        };
-      }
-
-      return await verifySchoolFacts(
-        facts,
-        this.toolExecutor,
-        conversation,
-        locale,
-        remainingToolCalls,
-      );
-    } catch (error) {
-      if (this.isBudgetError(error)) throw error;
-      this.logger.warn(
-        `[${agentType}] CoVE unavailable; factual claims remain unverified`,
-      );
-      return {
-        allCorrect: false,
-        status: 'unverified',
-        unverified: 1,
-        verified: 0,
-        toolCalls: 0,
-        corrections: [],
-      };
-    }
+    return runWorkflowVerification({
+      config,
+      output: solveOutput,
+      conversation,
+      locale,
+      budget: budgetTracker,
+      remainingToolCalls,
+      llm: this.llm,
+      executor: this.toolExecutor,
+      logger: this.logger,
+    });
   }
 
   /**

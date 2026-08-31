@@ -18,6 +18,7 @@ export async function cleanupSemanticSyntheticAccounts({
   email,
   password,
   expectedCount,
+  dryRun = false,
 }) {
   const login = await fetchImpl(`${apiBase}/auth/login`, {
     method: 'POST',
@@ -53,6 +54,8 @@ export async function cleanupSemanticSyntheticAccounts({
   };
 
   const targets = await list();
+  if (dryRun)
+    return { matched: targets.length, cleaned: 0, remaining: targets.length, dryRun: true };
   if (targets.length !== expectedCount) {
     throw new Error('synthetic_count_mismatch');
   }
@@ -86,6 +89,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const email = process.env.HARNESS_ADMIN_EMAIL;
   const password = process.env.HARNESS_ADMIN_PASSWORD;
   const expectedCount = Number(process.env.SEMANTIC_EXPECTED_ACCOUNT_COUNT);
+  const dryRun = process.env.SEMANTIC_CLEANUP_DRY_RUN !== 'false';
   if (
     !apiBase ||
     !email ||
@@ -104,6 +108,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       email,
       password,
       expectedCount,
+      dryRun,
     });
     console.log(JSON.stringify({ ...result, pass: true }));
   } catch (error) {
