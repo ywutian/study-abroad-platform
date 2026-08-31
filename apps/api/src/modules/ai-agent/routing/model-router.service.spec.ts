@@ -55,6 +55,11 @@ function setup(policy = routingFixture()) {
 }
 
 describe('Task model routing contracts', () => {
+  // These are routing contracts, not CI machine-speed tests. A cold tokenizer
+  // under coverage can exceed the fixture's 1s deadline before the backup.
+  // Deadline tests advance the same clock explicitly below.
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
   it('rejects empty ordinary responses and records the validation fallback', async () => {
     const { router, provider } = setup();
     provider.chat.mockResolvedValueOnce({
@@ -68,20 +73,13 @@ describe('Task model routing contracts', () => {
     );
   });
   it('does not reset the route deadline for a backup', async () => {
-    jest.useFakeTimers();
-    try {
-      const { router, provider } = setup();
-      provider.chat.mockImplementationOnce(async () => {
-        jest.advanceTimersByTime(30001);
-        throw new LLMProviderError('PRIVATE', LLMErrorCode.NETWORK_ERROR, true);
-      });
-      await expect(router.call(request, {})).rejects.toThrow(
-        'DEADLINE_EXCEEDED',
-      );
-      expect(provider.chat).toHaveBeenCalledTimes(1);
-    } finally {
-      jest.useRealTimers();
-    }
+    const { router, provider } = setup();
+    provider.chat.mockImplementationOnce(async () => {
+      jest.advanceTimersByTime(routingFixture().routes.general!.timeoutMs + 1);
+      throw new LLMProviderError('PRIVATE', LLMErrorCode.NETWORK_ERROR, true);
+    });
+    await expect(router.call(request, {})).rejects.toThrow('DEADLINE_EXCEEDED');
+    expect(provider.chat).toHaveBeenCalledTimes(1);
   });
   it('shares a reservation across concurrent calls and rejects budget fan-out', async () => {
     const { router, provider } = setup();

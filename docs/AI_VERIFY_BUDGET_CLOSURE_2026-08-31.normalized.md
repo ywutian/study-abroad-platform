@@ -125,13 +125,19 @@
 
 [RUNTIME] 文件大小棘轮实测45504→45453，下降51，无抬高基线。FR-003发布和全量评测待门禁。
 
+[RUNTIME] PR #646首轮CI 33419613769的API测试4654条中4653通过，路由空回答fallback用例因真实时钟超过fixture的1000ms截止失败。该用例触发冷tokenizer且CI启用coverage；不修改生产截止或全局fixture阈值。将路由契约测试统一使用受控时钟，已有截止用例显式推进fixture.timeoutMs+1，仍断言不能调用backup。此测试稳定性修正属于FR-003发布门禁。
+
+[RUNTIME] 修正测试时钟后，按CI完整覆盖率入口本地执行jest --coverage --forceExit --maxWorkers=2：354 suites/4654 tests全部通过，未更改覆盖率阈值。原CI失败记录保留，等待新源身份的完整CI。
+
 <!-- section:verification -->
 
 ## 19. 验证证据
 
 [RUNTIME] AC-001/002本地PASS：105 suites/1077 tests通过，TypeScript通过。将Solve hold替换为空操作后，完整流程新测试出现缺少agent.verify、余额0/required594的预期失败；还原后全绿。覆盖取消/错误释放、仅Solve可容纳、非反思、核验预算异常与无重写预算时的数据库更正。
 
-[RUNTIME] AC-003本地PASS：新增白名单/未知数值/未知核验状态测试。AC-006本地PASS：3条cleanup契约测试，预检只有登录和列表两次请求，没有删除。生产预检与清理NOT RUN。
+[RUNTIME] AC-003本地PASS：新增白名单/未知数值/未知核验状态测试。AC-006本地PASS：3条cleanup契约测试，预检只有登录和列表两次请求，没有删除。
+
+[RUNTIME] AC-006生产PASS：33419611406预检matched=5/cleaned=0/remaining=5；33419662473执行matched=5/cleaned=5/remaining=0。使用受保护CI凭据，未导出管理员密码；撤销刷新令牌、清除AI数据及匿名化账号，清除内容不可经该流程恢复。本轮诊断账号另已3/3清理。
 
 [RUNTIME] 旧版01027-pin基线诊断三批完成6/6、3个账号清理3/3、cleanupFailed=false。下表为本人Run结束后的持久化usage；不是逐阶段账单，post-run提取模板估计不能证明verify实际启动。所有6条均有未核验提示，旧usage没有核验状态。原始内容仅留私有临时目录，未上传。
 
