@@ -7,6 +7,8 @@
 
 import { PrismaClient } from '@prisma/client';
 
+import { SEED_PROVENANCE_AT } from '../scripts/lib/seed-helpers';
+
 const prisma = new PrismaClient();
 
 // 2025 US News Top 100 排名 + 申请信息
@@ -191,11 +193,11 @@ export async function seedRankings(
       const provenance = {
         ...(((metadata.provenance as Record<string, unknown> | null) ??
           {}) as Record<string, unknown>),
-        usNewsRank: { source: 'SEED', at: '2025-09-01' },
-        intlAcceptanceRate: { source: 'SEED', at: '2025-09-01' },
-        deadlines: { source: 'SEED', at: '2025-09-01' },
-        essayCount: { source: 'SEED', at: '2025-09-01' },
-        lastRankingUpdate: { source: 'SEED', at: '2025-09-01' },
+        usNewsRank: { source: 'SEED', at: SEED_PROVENANCE_AT },
+        intlAcceptanceRate: { source: 'SEED', at: SEED_PROVENANCE_AT },
+        deadlines: { source: 'SEED', at: SEED_PROVENANCE_AT },
+        essayCount: { source: 'SEED', at: SEED_PROVENANCE_AT },
+        lastRankingUpdate: { source: 'SEED', at: SEED_PROVENANCE_AT },
       };
 
       await prismaClient.school.update({
