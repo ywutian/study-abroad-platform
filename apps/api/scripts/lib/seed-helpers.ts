@@ -347,3 +347,6 @@ export function seedProvenanceAt(ageDays: number, now = new Date()): string {
     .toISOString()
     .slice(0, 10);
 }
+
+/** Stamp for the static catalog fixtures. See seedProvenanceAt(). */
+export const SEED_PROVENANCE_AT = seedProvenanceAt(30);
