@@ -8,13 +8,16 @@
     "provider": "openai",
     "model": "gpt-4o-mini",
     "baseUrl": "https://api.openai.com/v1",
-    "productionEmbeddingBaseUrl": "https://xh.v1api.cc/v1",
+    "productionEmbeddingBaseUrl": "https://api.openai.com/v1",
+    "productionEmbeddingSecret": "openai-embedding-api-key",
+    "productionEmbeddingSecretVersion": 1,
     "productionChat": {
-      "model": "deepseek-v4-pro",
-      "baseUrl": "https://xh.v1api.cc/v1",
-      "secret": "openai-api-key",
-      "secretVersion": 2,
-      "transport": "sse"
+      "model": "gpt-5.4",
+      "baseUrl": "https://claude-relay.liziqiao.com/openai/v1",
+      "secret": "openai-chat-api-key",
+      "secretVersion": 1,
+      "transport": "sse",
+      "reasoningEffort": "none"
     }
   },
   "services": {
