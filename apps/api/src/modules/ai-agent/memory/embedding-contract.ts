@@ -128,13 +128,16 @@ export async function requestEmbeddings(
         if (!response.ok) {
           void response.body?.cancel().catch(() => undefined);
           const retryable = [429, 500, 502, 503, 504].includes(response.status);
-          const code = [401, 403].includes(response.status)
-            ? LLMErrorCode.AUTHENTICATION
-            : response.status === 429
-              ? LLMErrorCode.RATE_LIMIT
-              : response.status >= 500
-                ? LLMErrorCode.SERVER_ERROR
-                : LLMErrorCode.INVALID_REQUEST;
+          const code =
+            response.status === 401
+              ? LLMErrorCode.AUTHENTICATION
+              : response.status === 403
+                ? LLMErrorCode.PERMISSION_DENIED
+                : response.status === 429
+                  ? LLMErrorCode.RATE_LIMIT
+                  : response.status >= 500
+                    ? LLMErrorCode.SERVER_ERROR
+                    : LLMErrorCode.INVALID_REQUEST;
           throw new LLMProviderError(
             `embedding_http_${response.status}`,
             code,

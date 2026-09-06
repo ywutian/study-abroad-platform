@@ -260,13 +260,15 @@ export async function* streamRoutedOpenAI(input: {
       cancelBody(response.body);
       const status = response.status;
       const code =
-        status === 401 || status === 403
+        status === 401
           ? LLMErrorCode.AUTHENTICATION
-          : status === 429
-            ? LLMErrorCode.RATE_LIMIT
-            : status >= 500
-              ? LLMErrorCode.SERVER_ERROR
-              : LLMErrorCode.INVALID_REQUEST;
+          : status === 403
+            ? LLMErrorCode.PERMISSION_DENIED
+            : status === 429
+              ? LLMErrorCode.RATE_LIMIT
+              : status >= 500
+                ? LLMErrorCode.SERVER_ERROR
+                : LLMErrorCode.INVALID_REQUEST;
       throw routedError(code, status === 429 || status >= 500, status);
     }
     reader = response.body?.getReader();

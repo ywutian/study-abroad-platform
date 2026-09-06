@@ -216,6 +216,8 @@ describe('Routed OpenAI transport', () => {
   });
   it.each([
     [401, LLMErrorCode.AUTHENTICATION],
+    // 403 is a drained balance or a missing entitlement, not a bad credential.
+    [403, LLMErrorCode.PERMISSION_DENIED],
     [429, LLMErrorCode.RATE_LIMIT],
     [503, LLMErrorCode.SERVER_ERROR],
   ])('sanitizes HTTP %s', async (status, code) => {

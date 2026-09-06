@@ -208,6 +208,50 @@ describe('OpenAIProvider contract', () => {
     await assertion;
   });
 
+  // The whole point of splitting 403 off AUTHENTICATION: a 403 body naming an
+  // exhausted balance must say so, because "Authentication failed: 403" is what
+  // sent three separate investigations after a credential that was never wrong.
+  it.each([
+    [
+      '{"error":{"code":"insufficient_user_quota","message":"\u4f59\u989d\u4e0d\u8db3"}}',
+      'Quota exhausted: 403 (insufficient_user_quota)',
+    ],
+    ['{"error":{"code":"model_not_allowed"}}', 'Permission denied: 403'],
+  ])('classifies a 403 body as %#', async (body, message) => {
+    fetchMock.mockResolvedValue(new Response(body, { status: 403 }));
+    await expect(
+      createProvider().chat({
+        systemPrompt: 'system',
+        messages: [],
+        model: 'gpt-4o',
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining<Partial<LLMProviderError>>({
+        code: LLMErrorCode.PERMISSION_DENIED,
+        retryable: false,
+        message,
+      }),
+    );
+  });
+
+  it('keeps 401 an authentication failure', async () => {
+    fetchMock.mockResolvedValue(
+      new Response('{"error":{"code":"invalid_api_key"}}', { status: 401 }),
+    );
+    await expect(
+      createProvider().chat({
+        systemPrompt: 'system',
+        messages: [],
+        model: 'gpt-4o',
+      }),
+    ).rejects.toEqual(
+      expect.objectContaining<Partial<LLMProviderError>>({
+        code: LLMErrorCode.AUTHENTICATION,
+        message: 'Authentication failed: 401',
+      }),
+    );
+  });
+
   it('fails locally when no API key is configured', async () => {
     await expect(
       createProvider({ OPENAI_API_KEY: '' }).chat({

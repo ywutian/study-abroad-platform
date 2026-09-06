@@ -94,6 +94,15 @@ export interface LLMTokenUsage {
 
 export enum LLMErrorCode {
   AUTHENTICATION = 'AUTHENTICATION',
+  /**
+   * HTTP 403. The credential was accepted and then refused the operation —
+   * exhausted quota, a missing model entitlement, or endpoint policy. It is
+   * NOT a credential problem, and reporting it as one has now sent three
+   * separate investigations at the wrong target: a relay whose balance ran
+   * out answered 403 `insufficient_user_quota`, the logs said
+   * "Authentication failed: 403", and #632 rotated the endpoint over it.
+   */
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
   RATE_LIMIT = 'RATE_LIMIT',
   CONTEXT_LENGTH = 'CONTEXT_LENGTH',
   CONTENT_FILTER = 'CONTENT_FILTER',
