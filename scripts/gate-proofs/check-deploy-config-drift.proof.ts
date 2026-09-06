@@ -32,8 +32,8 @@ export async function prove(): Promise<void> {
     () => expectFired(runGate('check-deploy-config-drift.ts'), 'canonical LLM setting')
   );
   for (const setting of [
-    'OPENAI_CHAT_API_KEY=openai-api-key:2',
-    'OPENAI_CHAT_BASE_URL=https://xh.v1api.cc/v1',
+    'OPENAI_CHAT_API_KEY=deepseek-api-key:1',
+    'OPENAI_CHAT_BASE_URL=https://api.deepseek.com/v1',
   ]) {
     await withPatchedFile(
       '.github/workflows/ci.yml',
