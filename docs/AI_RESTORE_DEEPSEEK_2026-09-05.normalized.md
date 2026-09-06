@@ -4,7 +4,7 @@
 
 ## 1. Change Identity
 
-[DECISION] Change ID: AI-RESTORE-DEEPSEEK-2026-09-05. Configuration restoration for study-abroad-platform. Requester/owner: user; implementation: Codex. Source: current conversation, user requests "我之前用的DeepSeek 还是换成DeepSeek吧" and confirms "就之前的就行了" after TLS failure disclosure. Status: Intake Ready.
+[DECISION] Change ID: AI-RESTORE-DEEPSEEK-2026-09-05. Configuration restoration for study-abroad-platform. Requester/owner: user; implementation: Codex. Source: current conversation, user requests "我之前用的DeepSeek 还是换成DeepSeek吧" and confirms "就之前的就行了" after TLS failure disclosure. Status: Implemented; release blocked.
 
 <!-- section:executive-summary -->
 
@@ -114,16 +114,16 @@
 
 ## 18. Implementation Summary
 
-[DECISION] NOT RUN: implementation follows intake validation.
+[CODE] FR-001: .github/deploy-config.json and ci.yml restore deepseek-v4-pro, historical endpoint and existing secret version 2. FR-002: dedicated startup validation permits the exact model; absent reasoning option is enforced by drift guard. NFR-001: original worktree and embedding configuration preserved. Implementation commit a02d73ee; PR #649.
 
 <!-- section:verification -->
 
 ## 19. Verification Evidence
 
-[RUNTIME] AC-001 NOT RUN. AC-002 NOT RUN. AC-003 NOT RUN. No synthetic users or production mutations have been made. Known remaining risk: upstream TLS reachability.
+[RUNTIME] AC-001 PASS: deploy drift guard and seeded negative proofs. AC-002 PASS: 40 Jest tests across configuration, environment validation and provider suites. AI_AGENT environment documentation gate PASS. AC-003 BLOCKED: CI run 34013165991 Security Scan failed with six HIGH dependency findings (browserslist 4.28.2: CVE-2026-73088/73089; fast-uri 3.1.5: CVE-2026-75899/75931/75975/76172). Lockfile is unchanged from main. Release was cancelled after the hard failure; no deploy or production acceptance occurred. Read-only Cloud Run recheck confirms revision 01031-qub still receives 100% traffic. No synthetic users created and no secrets modified. Original dirty worktree remains untouched. Local TLS failure remains unverified from production.
 
 <!-- section:release-decision -->
 
 ## 20. Release Decision
 
-[DECISION] Implementation: NOT RUN. Merge: NOT CLAIMED. Release: NOT CLAIMED. Next owner/action: Codex implement and validate; report any release gate failure precisely.
+[DECISION] Implementation: complete for FR-001 and FR-002; release BLOCKED by existing security gate. Merge: NOT CLAIMED; draft PR https://github.com/ywutian/study-abroad-platform/pull/649. Production is NOT switched. Existing release Skill requires stopping on first hard failure. Next owner/action: dependency remediation and rerun existing release workflow, then verify provider connectivity and Harness acceptance before claiming restoration. CI evidence: https://github.com/ywutian/study-abroad-platform/actions/runs/34013165991.
