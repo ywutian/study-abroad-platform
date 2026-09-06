@@ -32,8 +32,8 @@ export async function prove(): Promise<void> {
     () => expectFired(runGate('check-deploy-config-drift.ts'), 'canonical LLM setting')
   );
   for (const setting of [
-    'OPENAI_CHAT_API_KEY=openai-chat-api-key:1',
-    'OPENAI_CHAT_BASE_URL=https://claude-relay.liziqiao.com/openai/v1',
+    'OPENAI_CHAT_API_KEY=openai-api-key:2',
+    'OPENAI_CHAT_BASE_URL=https://xh.v1api.cc/v1',
   ]) {
     await withPatchedFile(
       '.github/workflows/ci.yml',
@@ -46,5 +46,18 @@ export async function prove(): Promise<void> {
     (s) =>
       s.replace('needs: [build, e2e, security, docker, sbom]', 'needs: [build, e2e, security]'),
     () => expectFired(runGate('check-deploy-config-drift.ts'), 'production image policy failed')
+  );
+  await withPatchedFile(
+    '.github/workflows/ci.yml',
+    (s) =>
+      s.replace(
+        'OPENAI_CHAT_TRANSPORT=sse|',
+        'OPENAI_CHAT_TRANSPORT=sse|OPENAI_CHAT_REASONING_EFFORT=none|'
+      ),
+    () =>
+      expectFired(
+        runGate('check-deploy-config-drift.ts'),
+        'unexpected isolated chat/embedding reasoning setting'
+      )
   );
 }
