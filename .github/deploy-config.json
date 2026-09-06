@@ -11,9 +11,9 @@
     "productionEmbeddingBaseUrl": "https://xh.v1api.cc/v1",
     "productionChat": {
       "model": "deepseek-v4-pro",
-      "baseUrl": "https://xh.v1api.cc/v1",
-      "secret": "openai-api-key",
-      "secretVersion": 2,
+      "baseUrl": "https://api.deepseek.com/v1",
+      "secret": "deepseek-api-key",
+      "secretVersion": 1,
       "transport": "sse"
     }
   },
