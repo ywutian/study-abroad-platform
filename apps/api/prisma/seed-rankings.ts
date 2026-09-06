@@ -7,7 +7,12 @@
 
 import { PrismaClient } from '@prisma/client';
 
+import { seedProvenanceAt } from '../scripts/lib/seed-helpers';
+
 const prisma = new PrismaClient();
+
+// Fixture provenance stamp. Age, not a literal — see seedProvenanceAt().
+const RANKINGS_AT = seedProvenanceAt(30);
 
 // 2025 US News Top 100 排名 + 申请信息
 export const RANKING_ENRICHMENTS = [
@@ -191,11 +196,11 @@ export async function seedRankings(
       const provenance = {
         ...(((metadata.provenance as Record<string, unknown> | null) ??
           {}) as Record<string, unknown>),
-        usNewsRank: { source: 'SEED', at: '2025-09-01' },
-        intlAcceptanceRate: { source: 'SEED', at: '2025-09-01' },
-        deadlines: { source: 'SEED', at: '2025-09-01' },
-        essayCount: { source: 'SEED', at: '2025-09-01' },
-        lastRankingUpdate: { source: 'SEED', at: '2025-09-01' },
+        usNewsRank: { source: 'SEED', at: RANKINGS_AT },
+        intlAcceptanceRate: { source: 'SEED', at: RANKINGS_AT },
+        deadlines: { source: 'SEED', at: RANKINGS_AT },
+        essayCount: { source: 'SEED', at: RANKINGS_AT },
+        lastRankingUpdate: { source: 'SEED', at: RANKINGS_AT },
       };
 
       await prismaClient.school.update({

@@ -327,3 +327,23 @@ export async function batchUpsertSchools(
 
   return { created, updated, errors };
 }
+
+/**
+ * Provenance `at` stamp for fixture data, expressed as an age instead of a
+ * literal date.
+ *
+ * `deriveProvenanceStaleness()` reads `at` as a wall-clock age (>365d = STALE),
+ * and `PredictionTransformerService` DROPS any field whose provenance is STALE.
+ * A hardcoded literal therefore rots: on 2026-09-01 the catalog's `2025-09-01`
+ * stamps crossed 365 days, acceptanceRate vanished for all 50 stamped schools,
+ * and the Prediction Gate went red on every branch with no code change.
+ *
+ * ponytail: keeps fixtures out of the STALE branch. It does NOT decide whether
+ * a >365d official rate should be dropped in production — that is prediction
+ * policy, and prod stamps acceptanceRate for only 9 schools today.
+ */
+export function seedProvenanceAt(ageDays: number, now = new Date()): string {
+  return new Date(now.getTime() - ageDays * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+}

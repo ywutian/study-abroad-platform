@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import {
   batchUpsertSchools,
   SeedSchoolData,
+  seedProvenanceAt,
 } from '../scripts/lib/seed-helpers';
 import { buildUnifiedCollegeCatalog } from '../scripts/lib/college-catalog';
 import { backfillSchoolLogos } from '../scripts/lib/school-logo-backfill';
@@ -28,6 +29,11 @@ import { seedTeamData } from './seed-teams';
 import { seedAdmin } from './seeds/seed-admin';
 
 const prisma = new PrismaClient();
+
+// Fixture provenance stamps. Ages, not literals — see seedProvenanceAt().
+const SCORECARD_AT = seedProvenanceAt(30);
+const IPEDS_AT = seedProvenanceAt(45);
+const REQUIREMENTS_AT = seedProvenanceAt(60);
 
 async function ensureLegacyPredictionPolicyVersion() {
   await prisma.predictionPolicyVersion.upsert({
@@ -77,11 +83,11 @@ const schools = [
     website: 'https://www.princeton.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -113,11 +119,11 @@ const schools = [
     website: 'https://www.mit.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -149,11 +155,11 @@ const schools = [
     website: 'https://www.harvard.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -185,11 +191,11 @@ const schools = [
     website: 'https://www.stanford.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -221,11 +227,11 @@ const schools = [
     website: 'https://www.yale.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -257,11 +263,11 @@ const schools = [
     website: 'https://www.upenn.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -293,11 +299,11 @@ const schools = [
     website: 'https://www.caltech.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -329,11 +335,11 @@ const schools = [
     website: 'https://www.duke.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -365,11 +371,11 @@ const schools = [
     website: 'https://www.brown.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -400,11 +406,11 @@ const schools = [
     website: 'https://www.jhu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -435,11 +441,11 @@ const schools = [
     website: 'https://www.northwestern.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -471,11 +477,11 @@ const schools = [
     website: 'https://www.columbia.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -507,11 +513,11 @@ const schools = [
     website: 'https://www.cornell.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -542,11 +548,11 @@ const schools = [
     website: 'https://www.uchicago.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -577,11 +583,11 @@ const schools = [
     website: 'https://www.berkeley.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -612,11 +618,11 @@ const schools = [
     website: 'https://www.ucla.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -647,11 +653,11 @@ const schools = [
     website: 'https://www.rice.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -683,11 +689,11 @@ const schools = [
     website: 'https://www.dartmouth.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -718,11 +724,11 @@ const schools = [
     website: 'https://www.vanderbilt.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -753,11 +759,11 @@ const schools = [
     website: 'https://www.nd.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -788,11 +794,11 @@ const schools = [
     website: 'https://umich.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -823,11 +829,11 @@ const schools = [
     website: 'https://www.georgetown.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -858,11 +864,11 @@ const schools = [
     website: 'https://www.unc.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -893,11 +899,11 @@ const schools = [
     website: 'https://www.cmu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -928,11 +934,11 @@ const schools = [
     website: 'https://www.emory.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -963,11 +969,11 @@ const schools = [
     website: 'https://www.virginia.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -998,11 +1004,11 @@ const schools = [
     website: 'https://wustl.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1033,11 +1039,11 @@ const schools = [
     website: 'https://www.ucdavis.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1068,11 +1074,11 @@ const schools = [
     website: 'https://ucsd.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1103,11 +1109,11 @@ const schools = [
     website: 'https://www.ufl.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1138,11 +1144,11 @@ const schools = [
     website: 'https://www.usc.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1173,11 +1179,11 @@ const schools = [
     website: 'https://www.utexas.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1208,11 +1214,11 @@ const schools = [
     website: 'https://www.gatech.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1243,11 +1249,11 @@ const schools = [
     website: 'https://uci.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1278,11 +1284,11 @@ const schools = [
     website: 'https://www.nyu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1313,11 +1319,11 @@ const schools = [
     website: 'https://www.ucsb.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1348,11 +1354,11 @@ const schools = [
     website: 'https://illinois.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1383,11 +1389,11 @@ const schools = [
     website: 'https://www.wisc.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1418,11 +1424,11 @@ const schools = [
     website: 'https://www.bc.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1453,11 +1459,11 @@ const schools = [
     website: 'https://www.rutgers.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1488,11 +1494,11 @@ const schools = [
     website: 'https://www.tufts.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1523,11 +1529,11 @@ const schools = [
     website: 'https://www.washington.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1558,11 +1564,11 @@ const schools = [
     website: 'https://www.bu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1593,11 +1599,11 @@ const schools = [
     website: 'https://www.osu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1628,11 +1634,11 @@ const schools = [
     website: 'https://www.purdue.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1663,11 +1669,11 @@ const schools = [
     website: 'https://www.umd.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1698,11 +1704,11 @@ const schools = [
     website: 'https://www1.lehigh.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1733,11 +1739,11 @@ const schools = [
     website: 'https://www.tamu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1768,11 +1774,11 @@ const schools = [
     website: 'https://www.uga.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1803,11 +1809,11 @@ const schools = [
     website: 'https://www.wfu.edu',
     metadata: {
       provenance: {
-        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        satAvg: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
-        tuition: { source: 'IPEDS', at: '2025-08-15' },
-        graduationRate: { source: 'IPEDS', at: '2025-08-15' },
-        retentionRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' },
+        acceptanceRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        satAvg: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
+        tuition: { source: 'IPEDS', at: IPEDS_AT },
+        graduationRate: { source: 'IPEDS', at: IPEDS_AT },
+        retentionRate: { source: 'COLLEGE_SCORECARD', at: SCORECARD_AT },
       },
     },
   },
@@ -1962,13 +1968,13 @@ const baseCollegeSchools = schools.map((s) => {
       provenance: {
         ...existingProv,
         ...(reqs.toeflMin !== undefined
-          ? { toeflMin: { source: 'SEED', at: '2026-03-25' } }
+          ? { toeflMin: { source: 'SEED', at: REQUIREMENTS_AT } }
           : {}),
         ...(reqs.ieltsMin !== undefined
-          ? { ieltsMin: { source: 'SEED', at: '2026-03-25' } }
+          ? { ieltsMin: { source: 'SEED', at: REQUIREMENTS_AT } }
           : {}),
         ...(reqs.essayCount !== undefined
-          ? { essayCount: { source: 'SEED', at: '2026-03-25' } }
+          ? { essayCount: { source: 'SEED', at: REQUIREMENTS_AT } }
           : {}),
       },
     },
