@@ -162,13 +162,11 @@ describe('Embedding contract', () => {
     [401, LLMErrorCode.AUTHENTICATION],
     [403, LLMErrorCode.PERMISSION_DENIED],
   ])('classifies HTTP %i as %s', async (status, code) => {
-    jest
-      .spyOn(global, 'fetch')
-      .mockResolvedValue(
-        new Response('{"error":{"code":"insufficient_user_quota"}}', {
-          status,
-        }),
-      );
+    jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response('{"error":{"code":"insufficient_user_quota"}}', {
+        status,
+      }),
+    );
     await expect(
       requestEmbeddings('https://provider/v1', 'key', 'm', ['private'], 100),
     ).rejects.toMatchObject({ code, retryable: false });
