@@ -4,7 +4,7 @@
 
 ## 1. Change Identity
 
-[DECISION] Change ID: AI-RESTORE-DEEPSEEK-2026-09-05. Configuration restoration for study-abroad-platform. Requester/owner: user; implementation: Codex. Source: current conversation, user requests "我之前用的DeepSeek 还是换成DeepSeek吧" and confirms "就之前的就行了" after TLS failure disclosure. Status: Implemented; release blocked.
+[DECISION] Change ID: AI-RESTORE-DEEPSEEK-2026-09-05. Configuration restoration for study-abroad-platform. Requester/owner: user; implementation: Codex. Source: current conversation, user requests "我之前用的DeepSeek 还是换成DeepSeek吧" and confirms "就之前的就行了" after TLS failure disclosure. Status: Remediation authorized; implementation resumed.
 
 <!-- section:executive-summary -->
 
@@ -127,3 +127,52 @@
 ## 20. Release Decision
 
 [DECISION] Implementation: complete for FR-001 and FR-002; release BLOCKED by existing security gate. Merge: NOT CLAIMED; draft PR https://github.com/ywutian/study-abroad-platform/pull/649. Production is NOT switched. Existing release Skill requires stopping on first hard failure. Next owner/action: dependency remediation and rerun existing release workflow, then verify provider connectivity and Harness acceptance before claiming restoration. CI evidence: https://github.com/ywutian/study-abroad-platform/actions/runs/34013165991.
+
+[REQUESTER] Follow-up "修复然后切" authorizes repairing release blockers and completing the DeepSeek switch. [DECISION] Scope includes narrow patched dependency overrides and regeneration or repair of failing release evidence without weakening gates. FR-003: remove reported vulnerable dependency versions. AC-004: both dependency scanners and frozen-lockfile checks pass. Existing AC-003 still requires real release and provider acceptance.
+
+<!-- section:blocker-remediation -->
+
+## 21. Blocker Remediation (2026-09-05)
+
+[DECISION] Two release blockers were repaired without weakening any gate. Neither
+originates in this change; both block the merge, so both are carried here.
+
+**B-1 — dependency advisories (FR-003 / AC-004).** `browserslist@4.28.2`
+(GHSA-73wf-gq98-2v4g, GHSA-c83g-rgw3-j3cx) and `fast-uri@3.1.5`
+(GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf,
+GHSA-jqff-g426-hqxp) failed both the osv-scanner dependency-audit gate and the
+Trivy scan. Fixed with the narrowest `pnpm.overrides` pins — browserslist
+`>=4.28.7`, fast-uri `>=3.1.6 <4` / `>=4.1.3 <5` — resolving to
+browserslist@4.28.7 and fast-uri@3.1.7. [RUNTIME] Local
+`check-dependency-audit.ts` exit 0 ("0 unignored high/critical") and
+`pnpm install --frozen-lockfile` exit 0.
+
+**B-2 — Prediction Gate fixture rot.** `verify:counselor-coverage --launch`
+hard-failed with `unreviewedManualReviewCount: 50`, every row reporting
+`school_missing_acceptance_rate` for schools including Brown, Boston University
+and Boston College. Root cause is a calendar boundary, not a code change:
+`seed.ts` stamped 50 schools with
+`acceptanceRate: { source: 'COLLEGE_SCORECARD', at: '2025-09-01' }`;
+`deriveProvenanceStaleness()` reads `at` as a wall-clock age and returns `STALE`
+past 365 days; `PredictionTransformerService.resolveTrustedSchoolField()` then
+drops the field, leaving the counselor with no anchor. The last green run on
+`main` (2026-08-31 19:12Z) sat at 364.8 days; the gate has been red on every
+branch since 2026-09-01. Fixed by expressing the seed stamps as ages
+(`seedProvenanceAt()`) in `seed.ts` and `seed-rankings.ts`.
+
+[EVIDENCE] main run 33429296661 (2026-08-31, green): tier distribution
+1:77 / 2:2339 / 3:548 / 4:169, manualReviewCount 13, unreviewedCount 0.
+PR run 34013277587 (2026-09-06, red): 1:77 / 2:1839 / 3:453 / 4:764,
+manualReviewCount 63, unreviewedCount 50. Occurrence counts of the rotting
+literals match the failure exactly: 50 schools x 3 fields at `2025-09-01`.
+
+[DECISION] Production behaviour is unchanged. The prod-derived closure overlay
+carries `acceptanceRate` provenance for only 9 of 243 schools (2026-05-17 and
+2026-05-25, both still inside the window); the other ~234 carry none and take
+the absent-provenance path established in #413. B-2 is gate/local fixture rot,
+not a prediction-policy change.
+
+[OPEN] A provenance-stamped official acceptance rate older than 365 days is
+deleted rather than downweighted, so the 9 prod stamps arm the same failure for
+2027-05-17. Whether an annually published figure should be dropped at one year
+is a prediction-policy question and is deliberately NOT decided here.
