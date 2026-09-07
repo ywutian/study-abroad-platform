@@ -34,6 +34,8 @@ const CONFIG = JSON.parse(
     model: string;
     baseUrl: string;
     productionEmbeddingBaseUrl: string;
+    productionEmbeddingSecret: string;
+    productionEmbeddingSecretVersion: number;
     productionChat: {
       model: string;
       baseUrl: string;
@@ -123,7 +125,7 @@ function main() {
       ? []
       : [`OPENAI_CHAT_REASONING_EFFORT=${chat.reasoningEffort}`]),
     `OPENAI_CHAT_API_KEY=${chat.secret}:${chat.secretVersion}`,
-    'OPENAI_API_KEY=openai-api-key:latest',
+    `OPENAI_API_KEY=${CONFIG.llm.productionEmbeddingSecret}:${CONFIG.llm.productionEmbeddingSecretVersion}`,
   ]) {
     // Require an exact env/secret token, not a prefix or a commented declaration.
     const lines = productionWorkflow
