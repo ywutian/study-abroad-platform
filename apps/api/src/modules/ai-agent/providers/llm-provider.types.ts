@@ -94,6 +94,15 @@ export interface LLMTokenUsage {
 
 export enum LLMErrorCode {
   AUTHENTICATION = 'AUTHENTICATION',
+  /**
+   * HTTP 403. The credential was accepted and then refused the operation —
+   * exhausted quota, a missing model entitlement, or endpoint policy. It is
+   * NOT a credential problem, and reporting it as one has now sent three
+   * separate investigations at the wrong target: a relay whose balance ran
+   * out answered 403 `insufficient_user_quota`, the logs said
+   * "Authentication failed: 403", and #632 rotated the endpoint over it.
+   */
+  PERMISSION_DENIED = 'PERMISSION_DENIED',
   RATE_LIMIT = 'RATE_LIMIT',
   CONTEXT_LENGTH = 'CONTEXT_LENGTH',
   CONTENT_FILTER = 'CONTENT_FILTER',
@@ -102,6 +111,34 @@ export enum LLMErrorCode {
   INVALID_REQUEST = 'INVALID_REQUEST',
   MODEL_MISMATCH = 'MODEL_MISMATCH',
   INVALID_RESPONSE = 'INVALID_RESPONSE',
+}
+
+/**
+ * Upstream error slugs worth naming in a log line. Matched against an error
+ * body only to select one of these fixed strings — the body itself is never
+ * retained, so no prompt, tool argument, response content or credential can
+ * escape through here.
+ *
+ * They exist because the HTTP status alone lies about the cause twice over:
+ * a drained gateway answers 403 (read as "bad credential" three times over
+ * eleven days), and OpenAI answers 429 for an unfunded account (read as
+ * "rate limited"). In both cases the account balance was the answer and the
+ * word never reached the log.
+ */
+export const UPSTREAM_ERROR_SLUGS = [
+  'insufficient_user_quota',
+  'insufficient_quota',
+  'insufficient_balance',
+  'billing_hard_limit_reached',
+  'exceeded_current_quota',
+  'rate_limit_exceeded',
+  'model_not_found',
+  'invalid_api_key',
+] as const;
+
+/** Returns the first known slug present in `body`, or undefined. */
+export function upstreamErrorSlug(body: string): string | undefined {
+  return UPSTREAM_ERROR_SLUGS.find((slug) => body.includes(slug));
 }
 
 /** Content-free transport evidence. Never attach a request, response or Error. */

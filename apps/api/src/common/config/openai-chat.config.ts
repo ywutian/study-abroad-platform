@@ -27,7 +27,12 @@ export function resolveOpenAIChatConfig(
   const reasoningEffort = get('OPENAI_CHAT_REASONING_EFFORT');
   const invalid = () =>
     new Error('OPENAI_CHAT configuration is incomplete or invalid');
-  if (!apiKey || !baseUrl || !model || !/^gpt-[a-z0-9.-]+$/.test(model))
+  if (
+    !apiKey ||
+    !baseUrl ||
+    !model ||
+    (!/^gpt-[a-z0-9.-]+$/.test(model) && model !== 'deepseek-v4-pro')
+  )
     throw invalid();
   let url: URL;
   try {

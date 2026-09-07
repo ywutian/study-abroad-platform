@@ -17,6 +17,7 @@ import {
   LLMTokenUsage,
   LLMErrorCode,
   LLMProviderError,
+  upstreamErrorSlug,
 } from './llm-provider.types';
 
 import { MODEL_CATALOG } from '../constants';
@@ -436,7 +437,7 @@ export class OpenAIProvider implements ILLMProvider {
       body.includes('context_length') ||
       body.includes('maximum context length');
 
-    if (status === 401 || status === 403) {
+    if (status === 401) {
       return new LLMProviderError(
         `Authentication failed: ${status}`,
         LLMErrorCode.AUTHENTICATION,
@@ -444,9 +445,28 @@ export class OpenAIProvider implements ILLMProvider {
         status,
       );
     }
-    if (status === 429) {
+    if (status === 403) {
+      // The body is already in hand here (isContextLength reads it the same
+      // way), and the upstream's own error slug is the one fact that tells an
+      // operator whether to top up a balance or chase a credential. It is not
+      // user content and carries no prompt, so naming it is safe — and its
+      // absence is exactly what made a drained relay look like a bad key.
+      const marker = upstreamErrorSlug(body);
       return new LLMProviderError(
-        'Rate limited',
+        marker
+          ? `Quota exhausted: ${status} (${marker})`
+          : `Permission denied: ${status}`,
+        LLMErrorCode.PERMISSION_DENIED,
+        false,
+        status,
+      );
+    }
+    if (status === 429) {
+      // OpenAI returns 429 for an unfunded account, not 403 — so "no credits"
+      // and "too many requests" share a status. Name the slug when present.
+      const slug = upstreamErrorSlug(body);
+      return new LLMProviderError(
+        slug ? `Rate limited: 429 (${slug})` : 'Rate limited',
         LLMErrorCode.RATE_LIMIT,
         true,
         status,

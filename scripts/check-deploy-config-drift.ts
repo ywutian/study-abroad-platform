@@ -34,13 +34,15 @@ const CONFIG = JSON.parse(
     model: string;
     baseUrl: string;
     productionEmbeddingBaseUrl: string;
+    productionEmbeddingSecret: string;
+    productionEmbeddingSecretVersion: number;
     productionChat: {
       model: string;
       baseUrl: string;
       secret: string;
       secretVersion: number;
       transport: string;
-      reasoningEffort: string;
+      reasoningEffort?: string;
     };
   };
 };
@@ -119,9 +121,11 @@ function main() {
     `OPENAI_CHAT_MODEL=${chat.model}`,
     `OPENAI_CHAT_BASE_URL=${chat.baseUrl}`,
     `OPENAI_CHAT_TRANSPORT=${chat.transport}`,
-    `OPENAI_CHAT_REASONING_EFFORT=${chat.reasoningEffort}`,
+    ...(chat.reasoningEffort === undefined
+      ? []
+      : [`OPENAI_CHAT_REASONING_EFFORT=${chat.reasoningEffort}`]),
     `OPENAI_CHAT_API_KEY=${chat.secret}:${chat.secretVersion}`,
-    'OPENAI_API_KEY=openai-api-key:latest',
+    `OPENAI_API_KEY=${CONFIG.llm.productionEmbeddingSecret}:${CONFIG.llm.productionEmbeddingSecretVersion}`,
   ]) {
     // Require an exact env/secret token, not a prefix or a commented declaration.
     const lines = productionWorkflow
@@ -130,6 +134,16 @@ function main() {
     if (!lines.some((line) => line.split(/[|,"]/).includes(setting))) {
       errors.push(`ci.yml: missing canonical isolated chat/embedding setting "${setting}"`);
     }
+  }
+  if (
+    chat.reasoningEffort === undefined &&
+    productionWorkflow
+      .split('\n')
+      .some(
+        (line) => /^\s*--set-env-vars=/.test(line) && line.includes('OPENAI_CHAT_REASONING_EFFORT=')
+      )
+  ) {
+    errors.push('ci.yml: unexpected isolated chat/embedding reasoning setting');
   }
   const provenanceRequirements: Array<[RegExp, string]> = [
     [/attestations:\s*write/, 'grant attestations: write'],

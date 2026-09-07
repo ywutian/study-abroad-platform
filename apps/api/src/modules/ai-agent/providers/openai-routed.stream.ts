@@ -7,15 +7,24 @@ import {
   LLMTokenUsage,
   LLMToolCall,
   LLMStreamFailure,
+  upstreamErrorSlug,
 } from './llm-provider.types';
 
 export function routedError(
   code = LLMErrorCode.INVALID_RESPONSE,
   retryable = false,
   httpStatus?: number,
+  slug?: string,
 ): LLMProviderError {
+  // The status was always captured here and never surfaced: callers log
+  // `error.message`, so an upstream 404 and an upstream 400 both read as
+  // "Routed OpenAI INVALID_REQUEST". A bare status carries no prompt, no
+  // arguments and no credential, so naming it costs nothing and is the
+  // difference between "that model is gone" and "we sent a bad request".
   return new LLMProviderError(
-    `Routed OpenAI ${code}`,
+    `Routed OpenAI ${code}` +
+      (httpStatus === undefined ? '' : ` (HTTP ${httpStatus}`) +
+      (httpStatus === undefined ? '' : slug ? `: ${slug})` : ')'),
     code,
     retryable,
     httpStatus,
@@ -52,6 +61,47 @@ function cancelBody(body: { cancel(): Promise<unknown> } | null | undefined) {
     // AbortController remains the independent transport cleanup mechanism.
   }
 }
+/**
+ * Bounded peek at an error body, kept only long enough to match the fixed slug
+ * allowlist. Never returns free text: the result is always one of
+ * UPSTREAM_ERROR_SLUGS or undefined, so nothing the upstream echoed back can
+ * reach a log. Failure to read is not an error — the status still classifies.
+ */
+async function readErrorSlug(response: Response): Promise<string | undefined> {
+  // A hostile or half-dead peer can make read() never settle, and this runs
+  // on the error path — it must never be what keeps a failed call hanging.
+  // Racing a short timer keeps the peek strictly best-effort.
+  return Promise.race([
+    readErrorSlugInner(response),
+    new Promise<undefined>((resolve) =>
+      setTimeout(() => resolve(undefined), 250),
+    ),
+  ]);
+}
+
+async function readErrorSlugInner(
+  response: Response,
+): Promise<string | undefined> {
+  try {
+    const reader = response.body?.getReader();
+    if (!reader) return undefined;
+    const chunks: string[] = [];
+    const decoder = new TextDecoder('utf-8');
+    let read = 0;
+    // 2 KiB is far past where an OpenAI-compatible error puts its code field.
+    while (read < 2048) {
+      const { done, value } = await reader.read();
+      if (done || !value) break;
+      read += value.length;
+      chunks.push(decoder.decode(value, { stream: true }));
+    }
+    void reader.cancel().catch(() => undefined);
+    return upstreamErrorSlug(chunks.join(''));
+  } catch {
+    return undefined;
+  }
+}
+
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw routedError();
@@ -257,17 +307,25 @@ export async function* streamRoutedOpenAI(input: {
     );
     if (!response.ok) {
       retryAfterRequested = response.headers.has('retry-after');
-      cancelBody(response.body);
+      // Read a bounded prefix before discarding, purely to match it against the
+      // fixed slug allowlist. Only a matched constant is kept; the body is never
+      // retained. Without this the routed path — the one production runs, since
+      // OPENAI_CHAT_TRANSPORT=sse forces routing — cannot tell "no credits" from
+      // "too many requests", which is what a 429 from an unfunded OpenAI
+      // account looks like.
+      const slug = await readErrorSlug(response);
       const status = response.status;
       const code =
-        status === 401 || status === 403
+        status === 401
           ? LLMErrorCode.AUTHENTICATION
-          : status === 429
-            ? LLMErrorCode.RATE_LIMIT
-            : status >= 500
-              ? LLMErrorCode.SERVER_ERROR
-              : LLMErrorCode.INVALID_REQUEST;
-      throw routedError(code, status === 429 || status >= 500, status);
+          : status === 403
+            ? LLMErrorCode.PERMISSION_DENIED
+            : status === 429
+              ? LLMErrorCode.RATE_LIMIT
+              : status >= 500
+                ? LLMErrorCode.SERVER_ERROR
+                : LLMErrorCode.INVALID_REQUEST;
+      throw routedError(code, status === 429 || status >= 500, status, slug);
     }
     reader = response.body?.getReader();
     if (!reader) throw routedError();
@@ -331,7 +389,16 @@ export async function* streamRoutedOpenAI(input: {
           ? 'http'
           : 'protocol';
     throw new LLMProviderError(
-      `Routed OpenAI ${failure.code}`,
+      // Re-wrapping the stream failure dropped the status from the message
+      // while keeping it on the object, so the one line callers actually log
+      // lost it. Same reasoning as routedError() above.
+      // The wrapper must not re-derive the slug (the body is long gone); the
+      // inner message already carries it, so reuse that verbatim.
+      failure.httpStatus === undefined
+        ? `Routed OpenAI ${failure.code}`
+        : failure.message.startsWith('Routed OpenAI ')
+          ? failure.message
+          : `Routed OpenAI ${failure.code} (HTTP ${failure.httpStatus})`,
       failure.code,
       failure.retryable,
       failure.httpStatus,

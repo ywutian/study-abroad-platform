@@ -129,6 +129,50 @@ describe('dedicated chat boundary', () => {
     });
     expect(JSON.stringify(init)).not.toContain('synthetic-embedding');
   });
+  it('restores DeepSeek chat with max_tokens and no GPT reasoning option', async () => {
+    const deepseek = {
+      ...dedicated,
+      OPENAI_CHAT_MODEL: 'deepseek-v4-pro',
+      OPENAI_CHAT_TRANSPORT: 'sse',
+      OPENAI_CHAT_REASONING_EFFORT: undefined,
+    };
+    expect(resolve(deepseek)).toMatchObject({ streamOnly: true });
+    expect(runtimeModel((key) => config(deepseek).get(key))).toBe(
+      'deepseek-v4-pro',
+    );
+    const mock = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          (await sse().text()).replaceAll('gpt-5.4', 'deepseek-v4-pro'),
+        ),
+      );
+    global.fetch = mock;
+    const result = await new OpenAIProvider(config(deepseek)).chat({
+      model: 'deepseek-v4-pro',
+      systemPrompt: 'Synthetic',
+      messages: [],
+      maxTokens: 128,
+    });
+    expect(result).toMatchObject({ model: 'deepseek-v4-pro', content: 'OK' });
+    const body = JSON.parse(mock.mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      model: 'deepseek-v4-pro',
+      stream: true,
+      max_tokens: 128,
+    });
+    expect(body).not.toHaveProperty('reasoning_effort');
+    expect(body).not.toHaveProperty('max_completion_tokens');
+    expect(body).not.toHaveProperty('max_output_tokens');
+  });
+  it.each(['deepseek-fabricated', 'deepseek-v4-pro/other', ''])(
+    'rejects unconfigured DeepSeek model %s',
+    (model) => {
+      expect(() => resolve({ ...dedicated, OPENAI_CHAT_MODEL: model })).toThrow(
+        'OPENAI_CHAT configuration',
+      );
+    },
+  );
   it('leaves actual embedding HTTP requests on the old key, endpoint and model', async () => {
     const vector = Array.from({ length: 1536 }, (_, index) =>
       index === 0 ? 1 : 0,
