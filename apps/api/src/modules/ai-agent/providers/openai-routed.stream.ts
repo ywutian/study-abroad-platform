@@ -14,8 +14,15 @@ export function routedError(
   retryable = false,
   httpStatus?: number,
 ): LLMProviderError {
+  // The status was always captured here and never surfaced: callers log
+  // `error.message`, so an upstream 404 and an upstream 400 both read as
+  // "Routed OpenAI INVALID_REQUEST". A bare status carries no prompt, no
+  // arguments and no credential, so naming it costs nothing and is the
+  // difference between "that model is gone" and "we sent a bad request".
   return new LLMProviderError(
-    `Routed OpenAI ${code}`,
+    httpStatus === undefined
+      ? `Routed OpenAI ${code}`
+      : `Routed OpenAI ${code} (HTTP ${httpStatus})`,
     code,
     retryable,
     httpStatus,
@@ -333,7 +340,12 @@ export async function* streamRoutedOpenAI(input: {
           ? 'http'
           : 'protocol';
     throw new LLMProviderError(
-      `Routed OpenAI ${failure.code}`,
+      // Re-wrapping the stream failure dropped the status from the message
+      // while keeping it on the object, so the one line callers actually log
+      // lost it. Same reasoning as routedError() above.
+      failure.httpStatus === undefined
+        ? `Routed OpenAI ${failure.code}`
+        : `Routed OpenAI ${failure.code} (HTTP ${failure.httpStatus})`,
       failure.code,
       failure.retryable,
       failure.httpStatus,

@@ -226,7 +226,10 @@ describe('Routed OpenAI transport', () => {
     );
     await expect(provider.chat(request)).rejects.toMatchObject({
       code,
-      message: `Routed OpenAI ${code}`,
+      httpStatus: Number(status),
+      // The status must reach the message: callers log error.message, so
+      // without it a 404 and a 400 are indistinguishable in production logs.
+      message: `Routed OpenAI ${code} (HTTP ${status})`,
     });
   });
   it('cancels the transport when the consumer stops early', async () => {
