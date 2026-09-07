@@ -1,9 +1,42 @@
 import { createHash } from 'crypto';
 import {
   LLMErrorCode,
+  upstreamErrorSlug,
   LLMProviderError,
 } from '../providers/llm-provider.types';
 
+/** Bounded allowlist peek; returns a fixed slug or nothing, never body text. */
+async function readSlug(response: Response): Promise<string | undefined> {
+  // A hostile or half-dead peer can make read() never settle, and this runs
+  // on the error path — it must never be what keeps a failed call hanging.
+  // Racing a short timer keeps the peek strictly best-effort.
+  return Promise.race([
+    readSlugInner(response),
+    new Promise<undefined>((resolve) =>
+      setTimeout(() => resolve(undefined), 250),
+    ),
+  ]);
+}
+
+async function readSlugInner(response: Response): Promise<string | undefined> {
+  try {
+    const reader = response.body?.getReader();
+    if (!reader) return undefined;
+    const parts: string[] = [];
+    const decoder = new TextDecoder('utf-8');
+    let read = 0;
+    while (read < 2048) {
+      const { done, value } = await reader.read();
+      if (done || !value) break;
+      read += value.length;
+      parts.push(decoder.decode(value, { stream: true }));
+    }
+    void reader.cancel().catch(() => undefined);
+    return upstreamErrorSlug(parts.join(''));
+  } catch {
+    return undefined;
+  }
+}
 export const EMBEDDING_DIMENSIONS = 1536;
 export const EMBEDDING_INPUT_LIMIT = 8000;
 
@@ -126,7 +159,10 @@ export async function requestEmbeddings(
           },
         );
         if (!response.ok) {
-          void response.body?.cancel().catch(() => undefined);
+          // Same bounded allowlist peek as the routed chat path: an unfunded
+          // OpenAI account answers 429 here too, and "embedding_http_429" on
+          // its own cannot tell that apart from real throttling.
+          const slug = await readSlug(response);
           const retryable = [429, 500, 502, 503, 504].includes(response.status);
           const code =
             response.status === 401
@@ -139,7 +175,9 @@ export async function requestEmbeddings(
                     ? LLMErrorCode.SERVER_ERROR
                     : LLMErrorCode.INVALID_REQUEST;
           throw new LLMProviderError(
-            `embedding_http_${response.status}`,
+            slug
+              ? `embedding_http_${response.status}_${slug}`
+              : `embedding_http_${response.status}`,
             code,
             retryable,
             response.status,

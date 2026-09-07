@@ -232,6 +232,37 @@ describe('Routed OpenAI transport', () => {
       message: `Routed OpenAI ${code} (HTTP ${status})`,
     });
   });
+  // An unfunded OpenAI account answers 429, not 403 — so "no credits" and
+  // "too many requests" share a status. Without the slug the production log
+  // says RATE_LIMIT for both, which is the same blindness that made a drained
+  // relay read as an authentication fault for eleven days.
+  it('names a known upstream slug on the error', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        '{"error":{"code":"insufficient_quota","message":"PRIVATE_DETAIL"}}',
+        { status: 429 },
+      ),
+    );
+    await expect(provider.chat(request)).rejects.toMatchObject({
+      code: LLMErrorCode.RATE_LIMIT,
+      message: 'Routed OpenAI RATE_LIMIT (HTTP 429: insufficient_quota)',
+    });
+  });
+
+  it('never leaks body text when no known slug matches', async () => {
+    fetchMock.mockResolvedValue(
+      new Response('{"error":{"message":"PRIVATE_DETAIL_XYZ"}}', {
+        status: 400,
+      }),
+    );
+    await expect(provider.chat(request)).rejects.toMatchObject({
+      message: 'Routed OpenAI INVALID_REQUEST (HTTP 400)',
+    });
+    await expect(provider.chat(request)).rejects.not.toMatchObject({
+      message: expect.stringContaining('PRIVATE_DETAIL_XYZ'),
+    });
+  });
+
   it('cancels the transport when the consumer stops early', async () => {
     fetchMock.mockResolvedValue(response(events()));
     const iterator = provider.chatStream(request);
