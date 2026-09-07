@@ -26,6 +26,19 @@ import {
   collectRoutedOpenAI,
 } from './openai-routed.stream';
 
+/**
+ * Upstream slugs that mean "the account is out of money", across the
+ * OpenAI-compatible gateways this provider talks to. Matched against the
+ * error body only to pick a message — never logged verbatim.
+ */
+const QUOTA_MARKERS = [
+  'insufficient_user_quota',
+  'insufficient_quota',
+  'insufficient_balance',
+  'billing_hard_limit_reached',
+  'exceeded_current_quota',
+] as const;
+
 @Injectable()
 export class OpenAIProvider implements ILLMProvider {
   readonly providerId = 'openai';
@@ -436,10 +449,26 @@ export class OpenAIProvider implements ILLMProvider {
       body.includes('context_length') ||
       body.includes('maximum context length');
 
-    if (status === 401 || status === 403) {
+    if (status === 401) {
       return new LLMProviderError(
         `Authentication failed: ${status}`,
         LLMErrorCode.AUTHENTICATION,
+        false,
+        status,
+      );
+    }
+    if (status === 403) {
+      // The body is already in hand here (isContextLength reads it the same
+      // way), and the upstream's own error slug is the one fact that tells an
+      // operator whether to top up a balance or chase a credential. It is not
+      // user content and carries no prompt, so naming it is safe — and its
+      // absence is exactly what made a drained relay look like a bad key.
+      const marker = QUOTA_MARKERS.find((needle) => body.includes(needle));
+      return new LLMProviderError(
+        marker
+          ? `Quota exhausted: ${status} (${marker})`
+          : `Permission denied: ${status}`,
+        LLMErrorCode.PERMISSION_DENIED,
         false,
         status,
       );

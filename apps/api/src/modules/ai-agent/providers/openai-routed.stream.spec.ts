@@ -216,6 +216,8 @@ describe('Routed OpenAI transport', () => {
   });
   it.each([
     [401, LLMErrorCode.AUTHENTICATION],
+    // 403 is a drained balance or a missing entitlement, not a bad credential.
+    [403, LLMErrorCode.PERMISSION_DENIED],
     [429, LLMErrorCode.RATE_LIMIT],
     [503, LLMErrorCode.SERVER_ERROR],
   ])('sanitizes HTTP %s', async (status, code) => {
@@ -224,7 +226,10 @@ describe('Routed OpenAI transport', () => {
     );
     await expect(provider.chat(request)).rejects.toMatchObject({
       code,
-      message: `Routed OpenAI ${code}`,
+      httpStatus: Number(status),
+      // The status must reach the message: callers log error.message, so
+      // without it a 404 and a 400 are indistinguishable in production logs.
+      message: `Routed OpenAI ${code} (HTTP ${status})`,
     });
   });
   it('cancels the transport when the consumer stops early', async () => {

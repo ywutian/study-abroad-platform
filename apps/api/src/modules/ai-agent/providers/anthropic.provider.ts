@@ -151,13 +151,15 @@ export class AnthropicProvider implements ILLMProvider {
       await response.body?.cancel().catch(() => undefined);
       const status = response.status;
       const code =
-        status === 401 || status === 403
+        status === 401
           ? LLMErrorCode.AUTHENTICATION
-          : status === 429
-            ? LLMErrorCode.RATE_LIMIT
-            : status >= 500
-              ? LLMErrorCode.SERVER_ERROR
-              : LLMErrorCode.INVALID_REQUEST;
+          : status === 403
+            ? LLMErrorCode.PERMISSION_DENIED
+            : status === 429
+              ? LLMErrorCode.RATE_LIMIT
+              : status >= 500
+                ? LLMErrorCode.SERVER_ERROR
+                : LLMErrorCode.INVALID_REQUEST;
       throw new LLMProviderError(
         `Native Claude HTTP ${status}`,
         code,

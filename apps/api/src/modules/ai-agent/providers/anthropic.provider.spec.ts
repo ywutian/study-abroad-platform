@@ -343,7 +343,7 @@ describe('Native Claude provider contracts', () => {
   });
   it.each([
     [401, LLMErrorCode.AUTHENTICATION, false],
-    [403, LLMErrorCode.AUTHENTICATION, false],
+    [403, LLMErrorCode.PERMISSION_DENIED, false],
     [400, LLMErrorCode.INVALID_REQUEST, false],
     [429, LLMErrorCode.RATE_LIMIT, true],
     [503, LLMErrorCode.SERVER_ERROR, true],

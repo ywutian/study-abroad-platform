@@ -4,6 +4,7 @@ import {
   parseEmbeddingResponse,
   requestEmbeddings,
 } from './embedding-contract';
+import { LLMErrorCode } from '../providers/llm-provider.types';
 import { ResilienceService } from '../core/resilience.service';
 import { RedisService } from '../../../common/redis/redis.service';
 
@@ -154,6 +155,23 @@ describe('Embedding contract', () => {
       });
     },
   );
+  // A drained account answers 403; a bad key answers 401. Collapsing both into
+  // AUTHENTICATION is what made a $0 balance look like a credential fault for
+  // eleven days, so the distinction is pinned here rather than left implied.
+  it.each([
+    [401, LLMErrorCode.AUTHENTICATION],
+    [403, LLMErrorCode.PERMISSION_DENIED],
+  ])('classifies HTTP %i as %s', async (status, code) => {
+    jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response('{"error":{"code":"insufficient_user_quota"}}', {
+        status,
+      }),
+    );
+    await expect(
+      requestEmbeddings('https://provider/v1', 'key', 'm', ['private'], 100),
+    ).rejects.toMatchObject({ code, retryable: false });
+  });
+
   it('redacts network exceptions', async () => {
     jest
       .spyOn(global, 'fetch')
