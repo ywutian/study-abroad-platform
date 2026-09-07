@@ -17,6 +17,7 @@ import {
   LLMTokenUsage,
   LLMErrorCode,
   LLMProviderError,
+  upstreamErrorSlug,
 } from './llm-provider.types';
 
 import { MODEL_CATALOG } from '../constants';
@@ -25,19 +26,6 @@ import {
   streamRoutedOpenAI,
   collectRoutedOpenAI,
 } from './openai-routed.stream';
-
-/**
- * Upstream slugs that mean "the account is out of money", across the
- * OpenAI-compatible gateways this provider talks to. Matched against the
- * error body only to pick a message — never logged verbatim.
- */
-const QUOTA_MARKERS = [
-  'insufficient_user_quota',
-  'insufficient_quota',
-  'insufficient_balance',
-  'billing_hard_limit_reached',
-  'exceeded_current_quota',
-] as const;
 
 @Injectable()
 export class OpenAIProvider implements ILLMProvider {
@@ -463,7 +451,7 @@ export class OpenAIProvider implements ILLMProvider {
       // operator whether to top up a balance or chase a credential. It is not
       // user content and carries no prompt, so naming it is safe — and its
       // absence is exactly what made a drained relay look like a bad key.
-      const marker = QUOTA_MARKERS.find((needle) => body.includes(needle));
+      const marker = upstreamErrorSlug(body);
       return new LLMProviderError(
         marker
           ? `Quota exhausted: ${status} (${marker})`
@@ -474,8 +462,11 @@ export class OpenAIProvider implements ILLMProvider {
       );
     }
     if (status === 429) {
+      // OpenAI returns 429 for an unfunded account, not 403 — so "no credits"
+      // and "too many requests" share a status. Name the slug when present.
+      const slug = upstreamErrorSlug(body);
       return new LLMProviderError(
-        'Rate limited',
+        slug ? `Rate limited: 429 (${slug})` : 'Rate limited',
         LLMErrorCode.RATE_LIMIT,
         true,
         status,
