@@ -10,12 +10,12 @@
     "baseUrl": "https://api.openai.com/v1",
     "productionEmbeddingBaseUrl": "https://api.openai.com/v1",
     "productionEmbeddingSecret": "openai-platform-api-key",
-    "productionEmbeddingSecretVersion": 1,
+    "productionEmbeddingSecretVersion": 2,
     "productionChat": {
       "model": "gpt-5.4",
       "baseUrl": "https://api.openai.com/v1",
       "secret": "openai-platform-api-key",
-      "secretVersion": 1,
+      "secretVersion": 2,
       "transport": "sse"
     }
   },
