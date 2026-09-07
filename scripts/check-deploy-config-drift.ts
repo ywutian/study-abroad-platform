@@ -47,6 +47,19 @@ const CONFIG = JSON.parse(
   };
 };
 
+/**
+ * True when `setting` appears as a whole token on a deploy line — never as a
+ * prefix of a longer value, and never inside a comment. Both the canonical-LLM
+ * and isolated-chat checks go through this, so neither half can quietly be
+ * weaker than the other.
+ */
+function hasExactSetting(text: string, setting: string): boolean {
+  return text
+    .split('\n')
+    .filter((line) => /^\s*--set-(env-vars|secrets)=/.test(line))
+    .some((line) => line.split(/[|,"]/).includes(setting));
+}
+
 // Hardcoded GCP region literals that should come from the secret instead.
 const HARDCODED_REGION =
   /--region[=\s]+["']?(us|europe|asia|northamerica|southamerica|australia)-[a-z]+\d/;
@@ -100,7 +113,14 @@ function main() {
       `OPENAI_BASE_URL=${workflowName === 'ci.yml' ? CONFIG.llm.productionEmbeddingBaseUrl : CONFIG.llm.baseUrl}`,
     ];
     for (const setting of expected) {
-      if (!text.includes(setting)) {
+      // Exact token, not substring. `text.includes()` accepted anything with
+      // the canonical value as a PREFIX, so appending to it sailed through:
+      // OPENAI_BASE_URL=https://api.openai.com/v1-evil.example passed this
+      // gate while pointing production somewhere else entirely. The chat block
+      // below already used the strict check; this half never did, and no proof
+      // had probed it because the old seed replaced the whole URL rather than
+      // extending it.
+      if (!hasExactSetting(text, setting)) {
         errors.push(`${workflowName}: missing canonical LLM setting "${setting}"`);
       }
     }
@@ -127,11 +147,7 @@ function main() {
     `OPENAI_CHAT_API_KEY=${chat.secret}:${chat.secretVersion}`,
     `OPENAI_API_KEY=${CONFIG.llm.productionEmbeddingSecret}:${CONFIG.llm.productionEmbeddingSecretVersion}`,
   ]) {
-    // Require an exact env/secret token, not a prefix or a commented declaration.
-    const lines = productionWorkflow
-      .split('\n')
-      .filter((line) => /^\s*--set-(env-vars|secrets)=/.test(line));
-    if (!lines.some((line) => line.split(/[|,"]/).includes(setting))) {
+    if (!hasExactSetting(productionWorkflow, setting)) {
       errors.push(`ci.yml: missing canonical isolated chat/embedding setting "${setting}"`);
     }
   }
