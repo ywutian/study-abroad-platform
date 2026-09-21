@@ -96,7 +96,7 @@
     "@commitlint/config-conventional": "^20.5.3",
     "@cyclonedx/cdxgen": "^11.3.2",
     "@eslint/js": "^9.39.5",
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^9.39.2",
@@ -106,12 +106,12 @@
     "husky": "^9.1.7",
     "knip": "5.88.1",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.8",
     "ts-morph": "^27.0.2",
-    "tsx": "^4.23.12",
-    "turbo": "^2.10.10",
+    "tsx": "^4.23.13",
+    "turbo": "^2.10.13",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.67.0"
+    "typescript-eslint": "^8.70.0"
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx}": [
